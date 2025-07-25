@@ -1,0 +1,34 @@
+body {
+  font-family: sans-serif;
+  background: #121212;
+  color: #f0f0f0;
+  padding: 2rem;
+  margin: 0;
+}
+
+header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+select {
+  font-size: 1rem;
+  padding: 0.5rem;
+  margin-top: 1rem;
+}
+
+#resultado {
+  margin-top: 2rem;
+  background: #1e1e1e;
+  padding: 1rem;
+  border-radius: 8px;
+}
+
+ul {
+  list-style: none;
+  padding: 0;
+}
+
+li {
+  margin-bottom: 1rem;
+}
