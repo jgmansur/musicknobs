@@ -1,29 +1,48 @@
 body {
-  font-family: 'Helvetica', sans-serif;
+  font-family: 'Montserrat', Arial, sans-serif;
   margin: 0;
   padding: 0;
-  background: #1a1a1a;
+  background: linear-gradient(180deg, #1a1a1a 0%, #222 100%);
   color: #ffffff;
 }
 
 header {
-  background: #f04e23;
+  background: linear-gradient(90deg, #f04e23 0%, #ff8e3c 100%);
   color: white;
   padding: 2rem;
   text-align: center;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+}
+
+header a {
+  color: #ffffff;
 }
 
 main {
   padding: 2rem;
+  max-width: 800px;
+  margin: 0 auto;
 }
 
 section {
   margin-bottom: 2rem;
+  background: rgba(0, 0, 0, 0.4);
+  padding: 1.5rem;
+  border-radius: 8px;
 }
 
 a {
   color: #f04e23;
   text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+audio {
+  width: 100%;
+  margin-top: 1rem;
 }
 
 footer {
