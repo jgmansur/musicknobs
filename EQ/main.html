@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Music Knobs - Guía de Ecualización</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      background-color: #f9f9f9;
+      color: #333;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background-color: #0a5c91;
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+    header img {
+      max-width: 150px;
+      margin-bottom: 10px;
+    }
+    header h1 {
+      margin: 10px 0 5px;
+      font-size: 2em;
+    }
+    header p {
+      font-size: 1.1em;
+    }
+    section {
+      padding: 40px 20px;
+      max-width: 900px;
+      margin: auto;
+    }
+    h2 {
+      color: #0a5c91;
+    }
+    p {
+      line-height: 1.6;
+      font-size: 1.1em;
+    }
+    #search {
+      width: 100%;
+      max-width: 400px;
+      padding: 10px;
+      font-size: 1em;
+      margin: 20px auto;
+      display: block;
+    }
+    #result p {
+      background: #eef;
+      padding: 10px;
+      border-radius: 5px;
+      margin-bottom: 10px;
+    }
+    .instr {
+      font-weight: bold;
+      color: #064579;
+    }
+    footer {
+      background-color: #0a5c91;
+      color: white;
+      text-align: center;
+      padding: 20px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <img src="Fondo Blanco - Music Knobs Logo Negro-2.png" alt="Logo Music Knobs">
+    <h1>Music Knobs - Guía de Ecualización</h1>
+    <p>Tips, filosofía y herramientas interactivas para mezclar con intención</p>
+  </header>
+
+  <section>
+    <h2>Filosofía de la Ecualización</h2>
+    <p>
+      Ecualizar no se trata solo de mover perillas ni de seguir fórmulas preestablecidas. Es un arte basado en la escucha, la intención creativa y el respeto por la naturaleza de cada sonido. A través de la ecualización moldeamos la percepción, esculpimos el espacio sonoro y creamos sensaciones. En Music Knobs creemos que cada ajuste debe tener un propósito: <strong>limpiar, realzar, o conectar emocionalmente</strong> con quien escucha. No se trata de qué tanto boosteas o cortas, sino de <em>saber por qué lo haces</em>, cuándo dejar que algo respire y cuándo tallar para que brille. Esta página y herramienta son para compartir ese conocimiento, con fundamentos técnicos y psicoacústicos, pero también con intuición y experiencia musical. Porque al final, la mejor mezcla... es la que se siente.
+    </p>
+    <div style="margin-top: 30px;">
+      <iframe width="100%" height="400" src="https://www.youtube.com/embed/vk4bLksApaY" 
+        title="Video de filosofía Music Knobs" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen>
+      </iframe>
+    </div>
+  </section>
+
+  <section>
+    <h2>Consulta de Tips de Ecualización</h2>
+    <p>Escribe un instrumento o elemento de mezcla para ver consejos de ecualización:</p>
+    <input type="text" id="search" placeholder="Ejemplo: bombo, caja, voz, guitarra...">
+    <div id="result"></div>
+  </section>
+
+  <footer>
+    <p>© 2025 Music Knobs. Desarrollado por Jay Mansur.</p>
+  </footer>
+
+  <script>
+    const tips = {
+      "bombo": "Graves potentes en 50-80 Hz. Recorta 250-500 Hz si suena boxy. Realza 3-6 kHz para ataque.",
+      "tarola": "Fundamental ~200 Hz. Ring en 300-500 Hz. Ataque en 2-4 kHz. Brillo en 6-10 kHz.",
+      "voz": "HPF 80 Hz. Recorta 200-300 Hz si suena turbia. Realza ~3 kHz para inteligibilidad. Añade aire con shelf 10-12 kHz.",
+      "guitarra eléctrica": "HPF 80 Hz. Añade cuerpo ~120 Hz. Recorta 250-500 Hz. Realza 3 kHz para presencia.",
+      "bajo": "Subgraves en 60 Hz. Cuerpo 80-120 Hz. Recorta 250-300 Hz. Realza 700 Hz-1 kHz para definición."
+    };
+
+    document.getElementById('search').addEventListener('input', function() {
+      const query = this.value.toLowerCase().trim();
+      const resultDiv = document.getElementById('result');
+      resultDiv.innerHTML = "";
+      if (query === "") return;
+      for (let key in tips) {
+        if (key.includes(query)) {
+          resultDiv.innerHTML += `<p><span class="instr">${key.charAt(0).toUpperCase() + key.slice(1)}:</span> ${tips[key]}</p>`;
+        }
+      }
+      if (resultDiv.innerHTML === "") {
+        resultDiv.innerHTML = "<p>No se encontraron resultados para ese instrumento.</p>";
+      }
+    });
+  </script>
+</body>
+</html>
