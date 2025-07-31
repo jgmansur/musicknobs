@@ -74,7 +74,7 @@
     <p>Tips, filosofía y herramientas interactivas para mezclar con intención</p>
   </header>
 
-  <section>
+   <section>
     <h2>Filosofía de la Ecualización</h2>
     <p>
       Ecualizar no se trata solo de mover perillas ni de seguir fórmulas preestablecidas. Es un arte basado en la escucha, la intención creativa y el respeto por la naturaleza de cada sonido. A través de la ecualización moldeamos la percepción, esculpimos el espacio sonoro y creamos sensaciones. En Music Knobs creemos que cada ajuste debe tener un propósito: <strong>limpiar, realzar, o conectar emocionalmente</strong> con quien escucha. No se trata de qué tanto boosteas o cortas, sino de <em>saber por qué lo haces</em>, cuándo dejar que algo respire y cuándo tallar para que brille. Esta página y herramienta son para compartir ese conocimiento, con fundamentos técnicos y psicoacústicos, pero también con intuición y experiencia musical. Porque al final, la mejor mezcla... es la que se siente.
@@ -89,7 +89,7 @@
   <section>
     <h2>Consulta de Tips de Ecualización</h2>
     <p>Escribe un instrumento o elemento de mezcla para ver consejos de ecualización:</p>
-    <input type="text" id="search" placeholder="Ejemplo: bombo, caja, voz, guitarra...">
+    <input type="text" id="search" placeholder="Ejemplo: kick, snare, voz, guitarra...">
     <div id="result"></div>
   </section>
 
@@ -99,11 +99,32 @@
 
   <script>
     const tips = {
-      "bombo": "Graves potentes en 50-80 Hz. Recorta 250-500 Hz si suena boxy. Realza 3-6 kHz para ataque.",
-      "tarola": "Fundamental ~200 Hz. Ring en 300-500 Hz. Ataque en 2-4 kHz. Brillo en 6-10 kHz.",
-      "voz": "HPF 80 Hz. Recorta 200-300 Hz si suena turbia. Realza ~3 kHz para inteligibilidad. Añade aire con shelf 10-12 kHz.",
-      "guitarra eléctrica": "HPF 80 Hz. Añade cuerpo ~120 Hz. Recorta 250-500 Hz. Realza 3 kHz para presencia.",
-      "bajo": "Subgraves en 60 Hz. Cuerpo 80-120 Hz. Recorta 250-300 Hz. Realza 700 Hz-1 kHz para definición."
+      "piano": "Rango amplio. Ataque en 2-4 kHz. Grave en 60-120 Hz. Evita excesos en medios para no opacar otras mezclas.",
+      "organ": "Cuerpo en 250-500 Hz. Brillo en 3-5 kHz. Corte leve en 120-180 Hz si suena lodoso.",
+      "strings": "Cuerpo cálido entre 200-500 Hz. Aire en 10-12 kHz. Cuidado con resonancias en 2-4 kHz.",
+      "violin": "Brillo en 7-10 kHz. Dulzura en 4-6 kHz. Cuerpo en 200-400 Hz.",
+      "mariachi": "Trombón, trompetas y violines: evitar exceso en medios graves. Resalta armónicos entre 4-6 kHz.",
+      "electric piano": "Brillante en 3-5 kHz. Ataque en 1-2 kHz. Grave en 100 Hz. Recorte en 400-600 Hz para limpieza.",
+      "trompetas": "Brillo agresivo en 5-7 kHz. Presencia entre 1-3 kHz. Recorte en 250-500 Hz si suena cargado.",
+      "trumpet": "Brillo agresivo en 5-7 kHz. Presencia entre 1-3 kHz. Recorte en 250-500 Hz si suena cargado.",
+      "sax": "Cuerpo en 200-400 Hz. Ataque en 2-5 kHz. Añade aire en 10-12 kHz.",
+      "trombón": "Presencia en 500 Hz-1.5 kHz. Peso en 80-120 Hz. Cuidado con 200-300 Hz.",
+      "tololoche": "Subgraves en 60 Hz. Definición entre 800 Hz-1.2 kHz. Corta medios turbios en 300 Hz.",
+      "brass": "Presencia general entre 2-5 kHz. Peso en 100-200 Hz. Recorte en medios bajos para claridad.",
+      "brass group": "Presencia general entre 2-5 kHz. Peso en 100-200 Hz. Recorte en medios bajos para claridad.",
+      "strings group": "Cuerpo cálido entre 200-500 Hz. Aire en 10-12 kHz. Cuidado con resonancias en 2-4 kHz.",
+      "congas": "Tono fundamental en 200 Hz. Ataque en 2-5 kHz. Aire en 8-10 kHz.",
+      "bongos": "Tonos entre 200-500 Hz. Ataque en 2-6 kHz.",
+      "timbales": "Fundamental entre 150-250 Hz. Presencia en 2-4 kHz. Brillo en 8-10 kHz.",
+      "timpani": "Fundamental 60-100 Hz. Potencia en 250 Hz. Cuidado con lodo en 200-300 Hz.",
+      "background vocals": "HPF 120 Hz. Añade presencia en 3-5 kHz. Brillo en 10-12 kHz para aire.",
+      "guitarras acústicas": "HPF 80 Hz. Presencia en 5 kHz. Cuerpo en 120 Hz. Recorte en 250 Hz.",
+      "ukelele": "Brillo en 4-8 kHz. Corte leve en 500 Hz si suena nasal. HPF en 100 Hz.",
+      "tres": "Cuerpo en 300 Hz. Brillo en 4-6 kHz. Ataque en 2 kHz.",
+      "cuatro": "Tono en 200-300 Hz. Definición en 4-6 kHz.",
+      "tambora": "Peso en 80 Hz. Ataque entre 2-4 kHz. Recorte medios turbios.",
+      "guira": "Brillo entre 6-10 kHz. HPF en 200 Hz. Añade aire en 12 kHz.",
+      "guiro": "Similar a güira. Brillo en 6-10 kHz. Corta graves innecesarios."
     };
 
     document.getElementById('search').addEventListener('input', function() {
