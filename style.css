@@ -52,21 +52,25 @@ footer {
 .botones-redes {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 10px;
+  gap: 12px;
+  margin-top: 15px;
+  justify-content: center;
 }
 
 .boton-red {
-  background-color: #000;
-  color: #fff;
+  background-color: #000000;
+  color: #ffffff;
   text-decoration: none;
-  padding: 12px 20px;
-  border-radius: 8px;
-  font-weight: 500;
-  transition: background-color 0.3s;
+  padding: 14px 24px;
+  border-radius: 10px;
+  font-weight: 600;
   font-family: 'Montserrat', sans-serif;
+  font-size: 16px;
+  box-shadow: 0px 4px 10px rgba(0,0,0,0.2);
+  transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
 .boton-red:hover {
-  background-color: #444;
+  background-color: #333333;
+  transform: scale(1.05);
 }
