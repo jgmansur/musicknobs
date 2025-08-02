@@ -115,3 +115,75 @@ footer {
   border-top: 1px solid #ccc;
   width: 100%;
 }
+
+/* ESTILOS MUSIC KNOBS AZUL CORPORATIVO */
+
+.theme-knobs {
+  font-family: 'Arial', sans-serif;
+  background-color: #f9f9f9;
+  color: #333;
+}
+
+.theme-knobs header {
+  background-color: #0a5c91;
+  color: white;
+  padding: 20px;
+  text-align: center;
+}
+
+.theme-knobs header img {
+  max-width: 150px;
+  margin-bottom: 10px;
+}
+
+.theme-knobs header h1 {
+  margin: 10px 0 5px;
+  font-size: 2em;
+}
+
+.theme-knobs header p {
+  font-size: 1.1em;
+}
+
+.theme-knobs section {
+  padding: 40px 20px;
+  max-width: 900px;
+  margin: auto;
+}
+
+.theme-knobs h2 {
+  color: #0a5c91;
+}
+
+.theme-knobs p {
+  line-height: 1.6;
+  font-size: 1.1em;
+}
+
+.theme-knobs #search {
+  width: 100%;
+  max-width: 400px;
+  padding: 10px;
+  font-size: 1em;
+  margin: 20px auto;
+  display: block;
+}
+
+.theme-knobs #result p {
+  background: #eef;
+  padding: 10px;
+  border-radius: 5px;
+  margin-bottom: 10px;
+}
+
+.theme-knobs .instr {
+  font-weight: bold;
+  color: #064579;
+}
+
+.theme-knobs footer {
+  background-color: #0a5c91;
+  color: white;
+  text-align: center;
+  padding: 20px;
+}
