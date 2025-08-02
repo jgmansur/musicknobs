@@ -25,12 +25,26 @@ body {
 }
 
 .hero {
-  background-color: #000;
-  color: #fff;
-  padding: 60px 20px;
   width: 100%;
+  height: 300px;
+  background: linear-gradient(to bottom, #1a1a1a, #333);
+  background-image: url('https://images.unsplash.com/photo-1511376777868-611b54f68947');
+  background-size: cover;
+  background-position: center;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 0 25px rgba(0, 0, 0, 0.2);
+}
+
+.hero-overlay {
+  background-color: rgba(0, 0, 0, 0.6);
+  padding: 40px;
   border-radius: 8px;
-  box-shadow: 0 0 20px rgba(0,0,0,0.15);
+  color: white;
 }
 
 .hero h1 {
@@ -40,13 +54,12 @@ body {
 
 .hero p {
   font-size: 1.3em;
-  opacity: 0.9;
   max-width: 600px;
   margin: 0 auto;
 }
 
 .menu-section {
-  margin-top: 40px;
+  margin-top: 50px;
   width: 100%;
 }
 
@@ -84,7 +97,7 @@ ul.menu a {
   transition: all 0.3s ease;
   font-weight: bold;
   border-radius: 8px;
-  background-color: #fff;
+  background-color: #f8f8f8;
   box-shadow: 0 0 10px rgba(0,0,0,0.05);
 }
 
