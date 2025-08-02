@@ -6,13 +6,31 @@ body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   margin: 0;
   padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+
+.wrapper {
+  width: 100%;
+  max-width: 960px;
+  margin: auto;
+  box-sizing: border-box;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
 }
 
 .hero {
   background-color: #000;
   color: #fff;
   padding: 60px 20px;
-  text-align: center;
+  width: 100%;
+  border-radius: 8px;
+  box-shadow: 0 0 20px rgba(0,0,0,0.15);
 }
 
 .hero h1 {
@@ -23,13 +41,13 @@ body {
 .hero p {
   font-size: 1.3em;
   opacity: 0.9;
+  max-width: 600px;
+  margin: 0 auto;
 }
 
 .menu-section {
-  max-width: 800px;
-  margin: 40px auto;
-  padding: 0 20px;
-  text-align: center;
+  margin-top: 40px;
+  width: 100%;
 }
 
 .menu-section h2 {
@@ -47,23 +65,27 @@ ul.menu {
   display: flex;
   flex-direction: column;
   gap: 15px;
-  max-width: 400px;
+  align-items: center;
 }
 
 ul.menu li {
   margin: 0;
+  width: 100%;
+  max-width: 400px;
 }
 
 ul.menu a {
   text-decoration: none;
   font-size: 1.1em;
-  padding: 12px 25px;
-  display: inline-block;
+  padding: 15px 30px;
+  display: block;
   border: 2px solid #000;
   color: #000;
   transition: all 0.3s ease;
   font-weight: bold;
-  letter-spacing: 0.5px;
+  border-radius: 8px;
+  background-color: #fff;
+  box-shadow: 0 0 10px rgba(0,0,0,0.05);
 }
 
 ul.menu a:hover {
@@ -78,4 +100,5 @@ footer {
   font-size: 0.9em;
   color: #777;
   border-top: 1px solid #ccc;
+  width: 100%;
 }
