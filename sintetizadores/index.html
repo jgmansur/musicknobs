@@ -17,8 +17,19 @@
       max-width: 960px;
       margin: 2rem auto;
     }
-    h1,h2{
+    /* h1 centrado; resto a la izquierda */
+    h1{
+      text-align:center;
       color:#c0392b;
+    }
+    h2{
+      color:#c0392b;
+    }
+    /* logo centrado */
+    .logo{
+      display:block;
+      margin:0 auto 1rem auto;
+      max-width:220px;
     }
     iframe{
       width:100%;
@@ -57,7 +68,11 @@
 <body>
 
 <header>
+  <!-- Logo centrado (reemplaza 'logo.png' por tu archivo) -->
+  <img src="logo.png" alt="Logo del Canal" class="logo">
+
   <h1>La Evolución de los Sintetizadores</h1>
+
   <!-- Video embebido -->
   <iframe src="https://www.youtube.com/embed/Qo0fJkeRx88" 
           title="La historia y evolución de los sintetizadores"></iframe>
@@ -99,8 +114,8 @@
       <tr><td>1971</td><td>ARP 2600</td><td>Semi-modular; parches internos</td><td>“Close to the Edge” – Yes</td></tr>
       <tr><td>1978</td><td>Sequential Prophet-5</td><td>Polifonía programable; presets</td><td>“In The Air Tonight” – Phil Collins</td></tr>
       <tr><td>1982</td><td>Roland TB-303</td><td>Bajo sintetizado; secuenciador integrado</td><td>“Acid Tracks” – Phuture</td></tr>
-      <tr><td>1983</td><td>Yamaha DX7</td><td>Síntesis FM digital; 16 voces</td><td>“Take On Me” – a-ha (piano FM)</td></tr>
-      <tr><td>1987</td><td>Roland D-50</td><td>Linear Arithmetic; samples + síntesis</td><td>“Enya” – Orinoco Flow (preset D-50)</td></tr>
+      <tr><td>1983</td><td>Yamaha DX7</td><td>Síntesis FM digital; 16 voces</td><td>“Take On Me” – a-ha</td></tr>
+      <tr><td>1987</td><td>Roland D-50</td><td>Linear Arithmetic; samples + síntesis</td><td>“Orinoco Flow” – Enya</td></tr>
       <tr><td>1988</td><td>Korg M1</td><td>Workstation PCM + secuenciador</td><td>“Show Me Love” – Robin S.</td></tr>
       <tr><td>1995</td><td>Clavia Nord Lead</td><td>Virtual Analog en DSP</td><td>The Prodigy (en vivo)</td></tr>
       <tr><td>1997</td><td>Access Virus</td><td>VA multitimbral; filtros complejos</td><td>Trance de finales 90</td></tr>
@@ -117,10 +132,10 @@
   <ul>
     <li><strong>Control por voltaje (CV):</strong> Introducido en la década de 1960, permitió modular parámetros en tiempo real enlazando módulos con cables.</li>
     <li><strong>MIDI (1983):</strong> Estandarizó la comunicación digital entre instrumentos y computadoras.</li>
-    <li><strong>Síntesis FM:</strong> Popularizada por Yamaha, genera timbres complejos modulando frecuencias portadoras y moduladoras.</li>
-    <li><strong>Sampling digital:</strong> Convertir audio a datos para reproducirlo a distintas alturas; revolución del Fairlight y el Synclavier.</li>
+    <li><strong>Síntesis FM:</strong> Genera timbres complejos modulando frecuencias portadoras y moduladoras; popularizada por Yamaha.</li>
+    <li><strong>Sampling digital:</strong> Revolución con Fairlight y Synclavier al convertir audio a datos reproducibles en distintas alturas.</li>
     <li><strong>Virtual Analog (VA):</strong> Usa DSP para emular circuitos analógicos con estabilidad digital.</li>
-    <li><strong>Formato Eurorack:</strong> Módulos de 3U (1995-hoy) que han democratizado el montaje de sintetizadores modulares personalizados.</li>
+    <li><strong>Formato Eurorack:</strong> Módulos de 3U (1995-hoy) que democratizaron el montaje de sintetizadores modulares personalizados.</li>
     <li><strong>Síntesis moderna:</strong> Wavetable, granular, física modelada y algoritmos híbridos en software y hardware.</li>
   </ul>
 </section>
