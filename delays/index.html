@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>La Historia y Evolución del Delay en el Audio</title>
+  <style>
+    body{font-family:Arial,Helvetica,sans-serif;margin:0;background:#f5f5f5;line-height:1.6}
+    .container{max-width:920px;margin:auto;background:#fff;padding:24px}
+    h1,h2,h3{color:#333;margin-top:1.4em}
+    iframe{width:100%;height:480px;border:none}
+    table{width:100%;border-collapse:collapse;margin:16px 0}
+    th,td{border:1px solid #ddd;padding:8px}
+    th{background:#eee;text-align:left}
+    ul{margin-left:1.2em}
+    input[type="number"]{padding:6px;width:100px}
+    .result-table td,.result-table th{text-align:right}
+    .footer{margin-top:40px;font-size:.9em;color:#666;text-align:center}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>La Historia y Evolución del Delay en el Audio</h1>
+
+    <!-- Video embebido -->
+    <iframe src="https://www.youtube.com/embed/78pxGhg9Yhs" title="La Historia y Evolución del Delay"></iframe>
+
+    <h2>Resumen del Video</h2>
+    <p>El delay comenzó como un experimento con cinta magnética en los años 40 y 50, cuando Les Paul y Sam Phillips descubrieron cómo crear ecos manipulando cabezales de grabación. En 1961 llegó el Echoplex, la primera unidad de delay de cinta portátil, seguida del Binson Echorec, que usaba un tambor magnético. En 1974, Roland lanzó el Space Echo RE‑201, combinando delay de cinta y reverb de muelles.</p>
+    <p>El desgaste de la cinta impulsó la transición a la tecnología <em>bucket‑brigade</em> (BBD) a mediados de los 70, dando vida al Electro‑Harmonix Memory Man (1976) y al Boss DM‑2 (1981), caracterizados por su cálida distorsión analógica. La revolución digital llegó en los 80 con racks como el Roland SDE‑3000 (1983) y pedales como el Boss DD‑2 (1984), capaces de tiempos de delay muy largos y repeticiones cristalinas. El TC Electronic 2290 se convirtió en estándar de estudio gracias a su modulación y hasta 32 s de retardo.</p>
+    <p>En 1999, el Line 6 DL4 popularizó el modelado de delays clásicos en un solo pedal con funciones de looper. Ya en el siglo XXI, pedales como el Strymon Timeline y el Empress Echosystem ofrecen potentes motores DSP, MIDI y presets, mientras que los <em>plugins</em> (Soundtoys EchoBoy, Valhalla Delay) recrean con exactitud hardware histórico dentro de las DAWs. El futuro apunta a la integración de IA y control remoto para un diseño sonoro aún más creativo.</p>
+
+    <h2>Línea Temporal de Dispositivos de Delay</h2>
+    <table>
+      <thead>
+        <tr><th>Año</th><th>Dispositivo</th><th>Tecnología</th><th>Dato relevante / Uso destacado</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>1940‑1950s</td><td>Experimentos de Les Paul</td><td>Cinta (múltiples cabezales)</td><td>Primeros overdubs y ecos manipulando cinta en estudio.</td></tr>
+        <tr><td>1954</td><td>Slapback en Sun Records</td><td>Cinta</td><td>Eco corto (≈120 ms) en grabaciones de Elvis, base del rockabilly.</td></tr>
+        <tr><td>1961</td><td>Echoplex EP‑1 / EP‑2</td><td>Cinta</td><td>Cabezal deslizante para variar tiempo; tono cálido icónico.</td></tr>
+        <tr><td>1960s</td><td>Binson Echorec</td><td>Tambor magnético</td><td>Sonido pulsante usado por Pink Floyd.</td></tr>
+        <tr><td>1974</td><td>Roland Space Echo RE‑201</td><td>Cinta + Reverb de muelles</td><td>Tres cabezales seleccionables; mantenimiento reducido.</td></tr>
+        <tr><td>1976</td><td>Electro‑Harmonix Memory Man</td><td>BBD analógico</td><td>Delay + chorus/vibrato; 550 ms máx.</td></tr>
+        <tr><td>1981</td><td>Boss DM‑2</td><td>BBD analógico</td><td>Pedal compacto, 300 ms de delay cálido.</td></tr>
+        <tr><td>1983</td><td>Roland SDE‑3000</td><td>Digital (rack)</td><td>Precisión de 0.05 ms; hasta 4.5 s de delay.</td></tr>
+        <tr><td>1984</td><td>Boss DD‑2</td><td>Digital (pedal)</td><td>Primer delay digital en formato compacto.</td></tr>
+        <tr><td>1985</td><td>TC Electronic 2290</td><td>Digital (rack)</td><td>Modulación dinámica; hasta 32 s; favorito de The Edge.</td></tr>
+        <tr><td>1999</td><td>Line 6 DL4</td><td>Digital modelador</td><td>16 modelos de delay + looper de 14 s.</td></tr>
+        <tr><td>2011</td><td>Strymon Timeline</td><td>DSP</td><td>12 algoritmos, MIDI, 200 presets.</td></tr>
+        <tr><td>2017</td><td>Empress Echosystem</td><td>DSP dual</td><td>35 tipos de delay combinables en paralelo o serie.</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Datos Curiosos</h2>
+    <ul>
+      <li>El tambor del Binson Echorec podía girar durante años sin necesidad de reemplazar la cinta.</li>
+      <li>El TC 2290 introdujo el <em>ducking delay</em>, reduciendo el volumen de las repeticiones mientras se toca y elevándolo cuando se deja de tocar.</li>
+      <li>La pantalla del Roland SDE‑3000 mostraba el tiempo de delay en milisegundos y en notas musicales, ayudando a sincronizar con el tempo.</li>
+    </ul>
+
+    <h2>Calculadora de Delays</h2>
+    <div class="calc">
+      <label for="bpm">BPM:</label>
+      <input type="number" id="bpm" value="120" min="1">
+    </div>
+
+    <table class="result-table">
+      <thead><tr><th>Figura rítmica</th><th>Factor</th><th>Tiempo (ms)</th></tr></thead>
+      <tbody id="results"></tbody>
+    </table>
+
+    <div class="footer">© 2025 Music Knobs – Jay Mansur</div>
+  </div>
+
+<script>
+const rows=[
+  {fig:"1/1 (Redonda)",factor:4},
+  {fig:"1/2 (Blanca)",factor:2},
+  {fig:"1/4 (Negra)",factor:1},
+  {fig:"1/8 (Corchea)",factor:0.5},
+  {fig:"1/16 (Semicorchea)",factor:0.25},
+  {fig:"1/32 (Fusa)",factor:0.125},
+  {fig:"1/4 Puntillo",factor:1.5},
+  {fig:"1/8 Puntillo",factor:0.75},
+  {fig:"1/4 Triplete",factor:2/3},
+  {fig:"1/8 Triplete",factor:1/3}
+];
+function update(){
+  const bpm=parseFloat(document.getElementById('bpm').value);
+  const tbody=document.getElementById('results');
+  tbody.innerHTML='';
+  if(!bpm||bpm<=0) return;
+  const beatMs=60000/bpm; // negra
+  rows.forEach(r=>{
+    const ms=(beatMs*r.factor).toFixed(1);
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td>${r.fig}</td><td>${r.factor}</td><td>${ms}</td>`;
+    tbody.appendChild(tr);
+  });
+}
+update();
+document.getElementById('bpm').addEventListener('input',update);
+</script>
+</body>
+</html>
