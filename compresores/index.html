@@ -23,8 +23,168 @@
     a{color:var(--accent);text-decoration:none}
     a:hover{text-decoration:underline}
     .small{color:var(--muted);font-size:.95rem}
+
+    /* ===== Timeline (Horizontal) ===== */
+.timeline {
+  background: var(--card);
+  border-radius: 12px;
+  margin: 16px auto;
+  max-width: 960px;
+  box-shadow: 0 4px 20px rgba(0,0,0,.06);
+  padding: 16px 0 8px;
+}
+
+.timeline__header {
+  padding: 0 20px 8px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.timeline__title {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+.timeline__controls {
+  display: flex;
+  gap: 8px;
+}
+
+.timeline__btn {
+  border: 1px solid #ddd;
+  background: #fff;
+  cursor: pointer;
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 0.95rem;
+}
+.timeline__btn:focus { outline: 2px solid var(--accent); }
+.timeline__btn:active { transform: translateY(1px); }
+
+.timeline__rail {
+  position: relative;
+  margin-top: 8px;
+  padding: 12px 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 280px;
+  gap: 16px;
+  scrollbar-width: thin;
+}
+.timeline__rail::-webkit-scrollbar {
+  height: 8px;
+}
+.timeline__rail::-webkit-scrollbar-thumb {
+  background: #ddd;
+  border-radius: 8px;
+}
+
+.timeline__track {
+  position: relative;
+  height: 4px;
+  background: #e6e6e6;
+  margin: 0 20px 12px 20px;
+  border-radius: 999px;
+}
+
+.timeline__card {
+  scroll-snap-align: start;
+  background: #fff;
+  border: 1px solid #eaeaea;
+  border-radius: 12px;
+  padding: 12px;
+  margin: 0 0 10px 0;
+  box-shadow: 0 2px 10px rgba(0,0,0,.04);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  position: relative;
+}
+
+.timeline__dot {
+  --dot-size: 14px;
+  position: absolute;
+  left: 12px;
+  top: -22px;
+  width: var(--dot-size);
+  height: var(--dot-size);
+  background: var(--accent);
+  border: 2px solid #fff;
+  border-radius: 50%;
+  box-shadow: 0 0 0 3px rgba(12,109,253,.15);
+}
+
+.timeline__year {
+  font-weight: 700;
+  font-size: 1rem;
+  color: #111;
+}
+.timeline__model {
+  font-weight: 600;
+}
+.timeline__meta {
+  color: var(--muted);
+  font-size: .95rem;
+  line-height: 1.45;
+}
+
+@media (max-width: 540px) {
+  .timeline__rail { grid-auto-columns: 84vw; }
+}
+
   </style>
 </head>
+
+
+<script>
+  (function(){
+    const rail = document.getElementById('timeline-rail');
+    const btnPrev = document.querySelector('.timeline__btn[data-dir="prev"]');
+    const btnNext = document.querySelector('.timeline__btn[data-dir="next"]');
+
+    function cardWidth(){
+      const first = rail.querySelector('.timeline__card');
+      if(!first) return 320;
+      const style = getComputedStyle(first);
+      const w = first.getBoundingClientRect().width;
+      const gap = parseFloat(getComputedStyle(rail).gap || 16);
+      // ancho + gap para “salto” exacto
+      return w + gap;
+    }
+
+    function scrollByCards(dir = 1){
+      rail.scrollBy({ left: dir * cardWidth(), behavior: 'smooth' });
+    }
+
+    btnPrev?.addEventListener('click', () => scrollByCards(-1));
+    btnNext?.addEventListener('click', () => scrollByCards(1));
+
+    // Navegación con teclado cuando el rail tiene foco
+    rail.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight') { e.preventDefault(); scrollByCards(1); }
+      if (e.key === 'ArrowLeft')  { e.preventDefault(); scrollByCards(-1); }
+    });
+
+    // Ajuste de la barra “track” (decorativa)
+    const track = document.querySelector('.timeline__track');
+    function updateTrack(){
+      const railRect = rail.getBoundingClientRect();
+      track.style.marginLeft = '20px';
+      track.style.marginRight = '20px';
+      track.style.width = `calc(100% - 40px)`;
+    }
+    updateTrack();
+    window.addEventListener('resize', updateTrack);
+  })();
+</script>
+
+
+  
+  
 <body>
 
   <header>
@@ -54,7 +214,76 @@
     </p>
   </section>
 
-  
+  <section class="timeline" aria-label="Línea de tiempo de compresores">
+  <div class="timeline__header">
+    <h2 class="timeline__title">Línea de tiempo</h2>
+    <div class="timeline__controls" aria-label="Controles de navegación">
+      <button class="timeline__btn" type="button" data-dir="prev" aria-label="Ir a la tarjeta anterior">◀</button>
+      <button class="timeline__btn" type="button" data-dir="next" aria-label="Ir a la tarjeta siguiente">▶</button>
+    </div>
+  </div>
+
+  <div class="timeline__track" aria-hidden="true"></div>
+
+  <div class="timeline__rail" id="timeline-rail" tabindex="0" role="region" aria-label="Eventos de la línea de tiempo">
+    <!-- 1937 - Western Electric 110A -->
+    <article class="timeline__card" aria-label="1937 — Western Electric 110A">
+      <span class="timeline__dot" aria-hidden="true"></span>
+      <div class="timeline__year">1937</div>
+      <div class="timeline__model">Western Electric 110A</div>
+      <p class="timeline__meta">Limitador/compresor temprano a válvulas para proteger transmisores de radio de picos.</p>
+    </article>
+
+    <!-- 1959 - Fairchild 660 -->
+    <article class="timeline__card" aria-label="1959 — Fairchild 660">
+      <span class="timeline__dot" aria-hidden="true"></span>
+      <div class="timeline__year">1959</div>
+      <div class="timeline__model">Fairchild 660</div>
+      <p class="timeline__meta">Vari-Mu a válvulas; compresión suave y musical muy apreciada en estudio.</p>
+    </article>
+
+    <!-- 1961–62 - Fairchild 670 -->
+    <article class="timeline__card" aria-label="1961–62 — Fairchild 670">
+      <span class="timeline__dot" aria-hidden="true"></span>
+      <div class="timeline__year">1961–62</div>
+      <div class="timeline__model">Fairchild 670 (estéreo)</div>
+      <p class="timeline__meta">Versión estéreo del 660; referente en mezcla/master por su carácter.</p>
+    </article>
+
+    <!-- 1962 - Teletronix LA-2A -->
+    <article class="timeline__card" aria-label="1962 — Teletronix LA-2A">
+      <span class="timeline__dot" aria-hidden="true"></span>
+      <div class="timeline__year">1962</div>
+      <div class="timeline__model">Teletronix LA-2A</div>
+      <p class="timeline__meta">Óptico + válvulas, tiempos program-dependientes; favorito en voces e instrumentos.</p>
+    </article>
+
+    <!-- 1967 - UA 1176 -->
+    <article class="timeline__card" aria-label="1967 — Universal Audio 1176">
+      <span class="timeline__dot" aria-hidden="true"></span>
+      <div class="timeline__year">1967</div>
+      <div class="timeline__model">Universal Audio 1176LN</div>
+      <p class="timeline__meta">Compresor FET ultrarrápido; carácter y control de picos en percusiones, bajos y voces.</p>
+    </article>
+
+    <!-- 1976 / 1980s - dbx 160 / 160X -->
+    <article class="timeline__card" aria-label="1976 / 1980s — dbx 160 / 160X">
+      <span class="timeline__dot" aria-hidden="true"></span>
+      <div class="timeline__year">1976 / 1980s</div>
+      <div class="timeline__model">dbx 160 / 160X</div>
+      <p class="timeline__meta">VCA analógico; estándar por su precisión y repetibilidad en estudio y en vivo.</p>
+    </article>
+
+    <!-- 2000s - Shadow Hills Mastering Compressor -->
+    <article class="timeline__card" aria-label="2000s — Shadow Hills Mastering Compressor">
+      <span class="timeline__dot" aria-hidden="true"></span>
+      <div class="timeline__year">2000s</div>
+      <div class="timeline__model">Shadow Hills Mastering Compressor</div>
+      <p class="timeline__meta">Enfoque híbrido (Óptico + Discrete/VCA); versatilidad para bus y mastering.</p>
+    </article>
+  </div>
+</section>
+
 
   <section>
     <h2>Tabla cronológica de compresores</h2>
