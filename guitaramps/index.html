@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Historia de Amplificadores y Efectos de Guitarra — Guía Interactiva</title>
+  <style>
+    :root{
+      --bg:#0f1220; --card:#151936; --muted:#8ea0ff; --text:#e9ecff; --accent:#6cf3a6; --warn:#ffd166;
+      --chip:#222856; --chip2:#1a2048; --table:#0c1026; --border:#2a3166;
+    }
+    html,body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Ubuntu,"Helvetica Neue",Arial,sans-serif;}
+    a{color:var(--accent);text-decoration:none}
+    a:hover{text-decoration:underline}
+    header{position:sticky;top:0;background:linear-gradient(180deg,#0f1220 0%, rgba(15,18,32,.8) 100%);backdrop-filter: blur(6px);border-bottom:1px solid var(--border);z-index:50}
+    .wrap{max-width:1200px;margin:0 auto;padding:18px}
+    .title{display:flex;gap:14px;align-items:center}
+    .logo{width:42px;height:42px;border-radius:12px;background:conic-gradient(from 180deg at 50% 50%, #7aa2ff, #6cf3a6, #ffd166, #7aa2ff);}
+    .subtitle{color:var(--muted);font-size:14px}
+
+    .grid{display:grid;gap:16px}
+    @media (min-width:900px){.grid.cols-2{grid-template-columns:1.3fr .7fr}}
+
+    .card{background:linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,.0));border:1px solid var(--border);border-radius:18px;padding:18px}
+    .card h2{margin:.1rem 0 .6rem;font-size:22px}
+    .card h3{margin:1rem 0 .4rem;font-size:18px}
+    .badge{display:inline-flex;gap:8px;align-items:center;padding:6px 10px;background:var(--chip);border:1px solid var(--border);border-radius:999px;font-size:12px;color:#cbd5ff}
+
+    table{width:100%;border-collapse:collapse;background:var(--table);border:1px solid var(--border);border-radius:14px;overflow:hidden}
+    thead{background:#121633}
+    th, td{padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:top}
+    th{font-weight:600;text-align:left;color:#cbd5ff;white-space:nowrap}
+    tbody tr:hover{background:#121633}
+    .note{font-size:12px;color:#cbd5ff}
+
+    .chips{display:flex;flex-wrap:wrap;gap:8px}
+    .chip{background:var(--chip2);border:1px solid var(--border);padding:8px 10px;border-radius:10px;font-size:13px}
+
+    .flex{display:flex;gap:10px;align-items:center}
+    .imgcard{display:grid;grid-template-columns:92px 1fr;gap:12px;align-items:center}
+    .imgcard img{width:92px;height:72px;object-fit:cover;border-radius:10px;border:1px solid var(--border)}
+
+    /* Builder */
+    .builder{display:grid;gap:14px}
+    @media (min-width:900px){.builder{grid-template-columns:1fr 1fr}}
+    .palette,.chain{min-height:120px;background:var(--card);border:1px dashed var(--border);border-radius:14px;padding:12px}
+    .slot{display:inline-flex;gap:8px;align-items:center;background:var(--chip2);border:1px solid var(--border);padding:8px 10px;border-radius:10px;margin:6px 6px 0 0;cursor:grab}
+    .slot[draggable="true"]:active{cursor:grabbing}
+    .ghost{opacity:.3}
+    .hint{font-size:12px;color:#b9c2ff}
+    .preset{background:#192152;border:1px solid var(--border);padding:10px;border-radius:10px;margin:6px 6px 0 0;cursor:pointer}
+
+    .search{display:flex;gap:10px;align-items:center}
+    .search input{flex:1;background:#121633;border:1px solid var(--border);border-radius:10px;padding:10px;color:var(--text)}
+
+    .k{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;background:#131735;border:1px solid var(--border);padding:2px 6px;border-radius:6px;font-size:12px}
+
+    footer{opacity:.7;padding:30px 0}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <div class="title">
+        <div class="logo" aria-hidden="true"></div>
+        <div>
+          <h1 style="margin:0;font-size:22px">Historia de Amplificadores y Efectos de Guitarra</h1>
+          <div class="subtitle">Guía cronológica con tablas + constructor interactivo de cadenas de efectos</div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap" style="padding-top:20px">
+
+    <section class="card">
+      <div class="grid cols-2">
+        <div>
+          <h2>Cómo usar esta guía</h2>
+          <p>Explora la línea del tiempo por décadas, filtra por marca o modelo, y consulta gabinetes, potencia, válvulas y artistas/bandas que usaron cada amplificador. Al final, arma cadenas de efectos para aproximarte a tonos icónicos.</p>
+          <div class="chips">
+            <span class="badge">🔎 Busca por <strong>marca</strong> o <strong>modelo</strong></span>
+            <span class="badge">🎛️ Revisa <strong>gabinetes</strong> recomendados</span>
+            <span class="badge">🎸 Conoce <strong>quién lo usó</strong> y en qué banda</span>
+            <span class="badge">🧪 Prueba la <strong>cadena de efectos</strong> sugerida</span>
+          </div>
+        </div>
+        <div class="imgcard">
+          <img alt="Vox AC30 clásico" src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/44/Vox_AC30CC2.jpg/320px-Vox_AC30CC2.jpg"/>
+          <div>
+            <strong>Icono británico:</strong> Vox AC30 (EL84, 30 W) — usado por The Beatles, The Kinks, Queen.
+            <div class="note">Foto: Wikimedia Commons</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Buscador global -->
+    <section class="card">
+      <h2>Buscador rápido</h2>
+      <div class="search">
+        <input id="q" placeholder="Busca marca, modelo, artista o banda… (p. ej. Marshall, Bassman, Hendrix, U2)"/>
+        <button id="btnClear" class="badge" type="button">Limpiar</button>
+      </div>
+      <div class="hint" style="margin-top:6px">Sugerencias: <span class="k">Fender</span> · <span class="k">Bassman</span> · <span class="k">JCM800</span> · <span class="k">AC30</span> · <span class="k">Dual Rectifier</span> · <span class="k">Tube Screamer</span></div>
+    </section>
+
+    <!-- Línea del tiempo por décadas -->
+    <section class="card">
+      <h2>Décadas • Amplificadores principales</h2>
+      <div id="timeline"></div>
+    </section>
+
+    <!-- Efectos emblemáticos -->
+    <section class="card">
+      <h2>Efectos emblemáticos</h2>
+      <table id="effectsTbl">
+        <thead>
+          <tr>
+            <th>Efecto / Modelo</th>
+            <th>Año</th>
+            <th>Tipo</th>
+            <th>Uso/Color</th>
+            <th>Artista(s) / Banda(s)</th>
+            <th>Notas / Enlaces</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      <div class="hint">Tip: orden típico para tonos clásicos: <span class="k">Wah → Fuzz/OD → Modulación → Delay → Reverb → Amp</span></div>
+    </section>
+
+    <!-- Emuladores y modeladores modernos -->
+    <section class="card">
+      <h2>Emuladores / Modeladores modernos</h2>
+      <table id="modelersTbl">
+        <thead>
+          <tr>
+            <th>Dispositivo / Software</th>
+            <th>Año</th>
+            <th>Categoría</th>
+            <th>Fortalezas</th>
+            <th>Artistas / Uso notable</th>
+            <th>Enlaces</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </section>
+
+    <!-- Constructor de cadenas de efectos -->
+    <section class="card">
+      <h2>Arma tu cadena de efectos</h2>
+      <div class="builder">
+        <div>
+          <h3>Paleta</h3>
+          <div id="palette" class="palette" aria-label="Paleta de efectos"></div>
+          <div style="margin-top:8px" class="hint">Arrastra elementos a la cadena. Reordena para cambiar el resultado.</div>
+          <h3>Presets icónicos</h3>
+          <div id="presets" class="chips"></div>
+        </div>
+        <div>
+          <h3>Cadena</h3>
+          <div id="chain" class="chain" aria-label="Tu cadena" ></div>
+          <div style="margin-top:8px" class="hint">Consejo: coloca <strong>Wah</strong> antes de Fuzz para un estilo Hendrix; usa <strong>TS808</strong> antes del ampli para realzar medios al estilo SRV.</div>
+          <div id="chainText" class="note" style="margin-top:10px"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Créditos / Imágenes -->
+    <section class="card">
+      <h2>Imágenes de referencia</h2>
+      <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr))">
+        <a class="imgcard" href="https://en.wikipedia.org/wiki/Fender_Bassman" target="_blank" rel="noopener">
+          <img alt="Fender Bassman" src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/8b/Fender_Bassman_AB165_head_and_vertical_2x15_cabinet.jpg/320px-Fender_Bassman_AB165_head_and_vertical_2x15_cabinet.jpg"/>
+          <div><strong>Fender Bassman</strong><div class="note">Origen para circuitos Marshall</div></div>
+        </a>
+        <a class="imgcard" href="https://en.wikipedia.org/wiki/Marshall_Amplification" target="_blank" rel="noopener">
+          <img alt="Marshall JCM800" src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/0d/MarshallJCM800LeadSeries.jpg/320px-MarshallJCM800LeadSeries.jpg"/>
+          <div><strong>Marshall JCM800</strong><div class="note">Estándar hard rock/metal 80s</div></div>
+        </a>
+        <a class="imgcard" href="https://en.wikipedia.org/wiki/Roland_Jazz_Chorus" target="_blank" rel="noopener">
+          <img alt="Roland JC-120" src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/Roland-JC-120.jpg/320px-Roland-JC-120.jpg"/>
+          <div><strong>Roland JC‑120</strong><div class="note">Limpio + chorus legendario</div></div>
+        </a>
+        <a class="imgcard" href="https://en.wikipedia.org/wiki/Mesa/Boogie" target="_blank" rel="noopener">
+          <img alt="Mesa Boogie Dual Rectifier" src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/Mesa-Boogie_Dual_Rectifier.jpg/320px-Mesa-Boogie_Dual_Rectifier.jpg"/>
+          <div><strong>Mesa Dual Rectifier</strong><div class="note">Metal 90s/2000s</div></div>
+        </a>
+        <a class="imgcard" href="https://en.wikipedia.org/wiki/Kemper_Profiling_Amplifier" target="_blank" rel="noopener">
+          <img alt="Kemper Profiler" src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/7d/Kemper_Profiling_Amplifier_-_NAMM_2015_%2816357619896%29.jpg/320px-Kemper_Profiling_Amplifier_-_NAMM_2015_%2816357619896%29.jpg"/>
+          <div><strong>Kemper Profiler</strong><div class="note">Perfilado de amplis reales</div></div>
+        </a>
+        <a class="imgcard" href="https://en.wikipedia.org/wiki/Dallas-Arbiter_Fuzz_Face" target="_blank" rel="noopener">
+          <img alt="Fuzz Face" src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2d/Fuzz_face.jpg/320px-Fuzz_face.jpg"/>
+          <div><strong>Fuzz Face</strong><div class="note">J. Hendrix / D. Gilmour</div></div>
+        </a>
+      </div>
+      <div class="note" style="margin-top:10px">Créditos de imágenes: Wikimedia Commons (CC BY-SA o dominio público); consulta cada enlace para licenciamiento específico.</div>
+    </section>
+
+    <footer class="wrap">
+      <div class="note">Esta página resume información histórica y técnica con fines educativos. Sugerencias y correcciones son bienvenidas.</div>
+    </footer>
+  </main>
+
+  <script>
+    // --- Datos base: amplificadores por década (representativo, no exhaustivo) ---
+    const amps = [
+      // 1930s–40s
+      {decada:"1930s–40s", marca:"Gibson", modelo:"EH-150", anio:"1936", tipo:"Válvulas", potencia:"~15 W", gabinete:"Combo 1×10\"", uso:"Diseñado para lap steel y primeras eléctricas", artistas:"Western swing / hawaiano"},
+      {decada:"1930s–40s", marca:"Rickenbacker", modelo:"Model 59 (con kit)", anio:"1932", tipo:"Válvulas", potencia:"Baja", gabinete:"Combo 1×8–10\"", uso:"Pack con guitarra \"frying pan\"", artistas:"Solistas hawaianos"},
+
+      // 1950s Tweed era
+      {decada:"1950s", marca:"Fender", modelo:"Champ (5F1)", anio:"1958", tipo:"Válvulas (6V6)", potencia:"5 W", gabinete:"Combo 1×8\"", uso:"Estudio/crunch a bajo volumen", artistas:"Eric Clapton (solo Layla)"},
+      {decada:"1950s", marca:"Fender", modelo:"Deluxe (5E3)", anio:"1955", tipo:"Válvulas (6V6)", potencia:"12–15 W", gabinete:"Combo 1×12\"", uso:"Blues/rock temprano; overdrive cálido", artistas:"Neil Young"},
+      {decada:"1950s", marca:"Fender", modelo:"Bassman (5F6-A)", anio:"1954–59", tipo:"Válvulas (6L6)", potencia:"45 W", gabinete:"Combo 4×10\"", uso:"Originalmente para bajo; base de Marshall", artistas:"Brian Setzer; Bruce Springsteen"},
+      {decada:"1950s", marca:"Ampeg", modelo:"Reverberocket", anio:"1961", tipo:"Válvulas", potencia:"~15–18 W", gabinete:"Combo 1×12\"", uso:"Primer combo con reverb incorporada", artistas:"Surf / Rock"},
+
+      // 1960s British Invasion
+      {decada:"1960s", marca:"Vox", modelo:"AC15", anio:"1958", tipo:"Válvulas (EL84)", potencia:"15 W", gabinete:"Combo 1×12\"", uso:"Precursor del AC30", artistas:"The Shadows"},
+      {decada:"1960s", marca:"Vox", modelo:"AC30 Top Boost", anio:"1959–64", tipo:"Válvulas (EL84)", potencia:"30 W", gabinete:"Combo 2×12\" (Celestion Blue)", uso:"Brillo/\"jangle\" británico", artistas:"The Beatles; The Kinks; Queen; U2"},
+      {decada:"1960s", marca:"Fender", modelo:"Twin Reverb (blackface)", anio:"1963", tipo:"Válvulas (6L6)", potencia:"85 W", gabinete:"Combo 2×12\"", uso:"Limpio potente con reverb/tremolo", artistas:"Surf; country; jazz"},
+      {decada:"1960s", marca:"Fender", modelo:"Showman 100", anio:"1961", tipo:"Válvulas (6L6)", potencia:"100 W", gabinete:"Head + 1×15\" JBL", uso:"Surf de alto SPL (Dick Dale)", artistas:"Dick Dale (The Del-Tones)"},
+      {decada:"1960s", marca:"Marshall", modelo:"JTM45", anio:"1963", tipo:"Válvulas (KT66)", potencia:"~30–45 W", gabinete:"Head + 4×12\"", uso:"Primer Marshall (inspirado en Bassman)", artistas:"Eric Clapton (Bluesbreaker)"},
+      {decada:"1960s", marca:"Marshall", modelo:"1959 Super Lead \"Plexi\"", anio:"1965–69", tipo:"Válvulas (EL34)", potencia:"100 W", gabinete:"Head + 4×12\" x2", uso:"Rock alto volumen, crunch clásico", artistas:"Jimi Hendrix; Jimmy Page; The Who"},
+      {decada:"1960s", marca:"Hiwatt", modelo:"DR103 Custom 100", anio:"1968", tipo:"Válvulas (EL34/KT88)", potencia:"100 W", gabinete:"Head + 4×12\"", uso:"Limpio/pegada hi‑headroom", artistas:"Pete Townshend; David Gilmour"},
+      {decada:"1960s", marca:"Orange", modelo:"OR120", anio:"1969", tipo:"Válvulas (EL34)", potencia:"120 W", gabinete:"Head + 4×12\"", uso:"Rock/prog británico", artistas:"Fleetwood Mac (Peter Green)"},
+
+      // 1970s
+      {decada:"1970s", marca:"Mesa/Boogie", modelo:"Mark I", anio:"1971", tipo:"Válvulas (6L6/EL34)", potencia:"60–100 W", gabinete:"Combo 1×12\" / Head", uso:"High-gain temprano, sustain", artistas:"Carlos Santana"},
+      {decada:"1970s", marca:"Roland", modelo:"JC‑120 Jazz Chorus", anio:"1975", tipo:"Estado sólido", potencia:"120 W (estéreo)", gabinete:"Combo 2×12\"", uso:"Limpio + chorus integrado", artistas:"Andy Summers (The Police); The Cure"},
+      {decada:"1970s", marca:"Marshall", modelo:"JMP 2203/2204 (MV)", anio:"1975–79", tipo:"Válvulas (EL34)", potencia:"100/50 W", gabinete:"Head + 4×12\"", uso:"Master Volume: distorsión sin volumen brutal", artistas:"Judas Priest; AC/DC"},
+
+      // 1980s
+      {decada:"1980s", marca:"Marshall", modelo:"JCM800 2203/2204", anio:"1981", tipo:"Válvulas (EL34)", potencia:"100/50 W", gabinete:"Head + 4×12\"", uso:"Hard rock / metal clásico", artistas:"Slayer; Zakk Wylde; Guns N’ Roses"},
+      {decada:"1980s", marca:"Soldano", modelo:"SLO‑100", anio:"1987", tipo:"Válvulas (5881/6L6)", potencia:"100 W", gabinete:"Head + 4×12\"", uso:"Lead high‑gain cremoso", artistas:"Eric Clapton; Mark Knopfler; EVH (finales 80s)"},
+      {decada:"1980s", marca:"ADA", modelo:"MP‑1 (preamp)", anio:"1987", tipo:"Rack/estado sólido", potencia:"—", gabinete:"Rack + etapa/4×12\"", uso:"Preamps programables 80s", artistas:"Extreme; White Lion"},
+
+      // 1990s
+      {decada:"1990s", marca:"Mesa/Boogie", modelo:"Dual Rectifier", anio:"1992", tipo:"Válvulas (6L6)", potencia:"100 W", gabinete:"Head + 4×12\" (V30)", uso:"Metal 90s, palm‑mutes, graves", artistas:"Metallica; John Petrucci; Creed"},
+      {decada:"1990s", marca:"Peavey", modelo:"5150 (EVH)", anio:"1992", tipo:"Válvulas (6L6)", potencia:"120 W", gabinete:"Head + 4×12\"", uso:"High‑gain moderno, metal", artistas:"Van Halen; Machine Head"},
+      {decada:"1990s", marca:"Marshall", modelo:"JCM900", anio:"1990", tipo:"Válvulas", potencia:"100/50 W", gabinete:"Head + 4×12\"", uso:"Más ganancia que JCM800", artistas:"Alternative/metal 90s"},
+
+      // 2000s–hoy
+      {decada:"2000s–hoy", marca:"Marshall", modelo:"JCM2000 DSL", anio:"1997–2000s", tipo:"Válvulas", potencia:"100/50 W", gabinete:"Head + 4×12\"", uso:"Versátil multi‑canal", artistas:"Varios"},
+      {decada:"2000s–hoy", marca:"Fender", modelo:"Hot Rod Deluxe", anio:"1996–", tipo:"Válvulas (6L6)", potencia:"40 W", gabinete:"Combo 1×12\"", uso:"Base limpia + OD", artistas:"Backline estándar"},
+      {decada:"2000s–hoy", marca:"EVH", modelo:"5150 III", anio:"2007–", tipo:"Válvulas (6L6/EL34)", potencia:"100/50/15 W", gabinete:"Head/Combo", uso:"High‑gain 3 canales", artistas:"Hard rock/metal actual"},
+      {decada:"2000s–hoy", marca:"Friedman", modelo:"BE‑100", anio:"2011–", tipo:"Válvulas (EL34)", potencia:"100 W", gabinete:"Head + 4×12\"", uso:"Hot‑rodded Marshall boutique", artistas:"Rock/metal"},
+    ];
+
+    // Efectos emblemáticos
+    const effects = [
+      {nombre:"Maestro FZ‑1 Fuzz‑Tone", anio:"1962", tipo:"Fuzz", uso:"Fuzz temprano crudo", artistas:"Keith Richards — The Rolling Stones", links:"https://en.wikipedia.org/wiki/Maestro_FZ-1"},
+      {nombre:"Tone Bender MKI/MKII", anio:"1965–66", tipo:"Fuzz", uso:"Fuzz británico", artistas:"Jeff Beck — The Yardbirds", links:"https://en.wikipedia.org/wiki/Tone_Bender"},
+      {nombre:"Arbiter Fuzz Face", anio:"1966", tipo:"Fuzz", uso:"Fuzz redondo/sustain", artistas:"Jimi Hendrix — The Jimi Hendrix Experience; David Gilmour — Pink Floyd", links:"https://en.wikipedia.org/wiki/Dallas-Arbiter_Fuzz_Face"},
+      {nombre:"Electro‑Harmonix Big Muff Pi", anio:"1969", tipo:"Fuzz/Sustain", uso:"Sustain enorme", artistas:"David Gilmour — Pink Floyd; Santana", links:"https://en.wikipedia.org/wiki/Big_Muff"},
+      {nombre:"Vox / Dunlop Wah‑Wah", anio:"1967→", tipo:"Wah", uso:"Filtro vocal", artistas:"Hendrix; Eric Clapton; Kirk Hammett — Metallica", links:"https://en.wikipedia.org/wiki/Wah-wah_pedal"},
+      {nombre:"Univibe", anio:"1968", tipo:"Vibe/Mod", uso:"Pulsación psicodélica", artistas:"Jimi Hendrix; Robin Trower", links:"https://en.wikipedia.org/wiki/Univibe"},
+      {nombre:"Echoplex (EP‑3)", anio:"1969–73", tipo:"Eco de cinta", uso:"Delay cálido de cinta", artistas:"Jimmy Page — Led Zeppelin", links:"https://en.wikipedia.org/wiki/Maestro_Echoplex"},
+      {nombre:"Electro‑Harmonix Memory Man", anio:"1976", tipo:"Delay analógico", uso:"Delay/chorus vibrante", artistas:"The Edge — U2", links:"https://en.wikipedia.org/wiki/Electro-Harmonix#Delays"},
+      {nombre:"MXR Phase 90", anio:"1974", tipo:"Phaser", uso:"Barrido clásico", artistas:"Eddie Van Halen — Van Halen", links:"https://en.wikipedia.org/wiki/MXR#Phase_90"},
+      {nombre:"Roland CE‑1 / Boss CE‑2", anio:"1976/1979", tipo:"Chorus", uso:"Doble modulado", artistas:"Andy Summers — The Police", links:"https://en.wikipedia.org/wiki/Chorus_effect"},
+      {nombre:"Boss OD‑1 / Ibanez Tube Screamer TS‑808", anio:"1977/1979", tipo:"Overdrive", uso:"Realce de medios, empuja el ampli", artistas:"Stevie Ray Vaughan — Double Trouble", links:"https://en.wikipedia.org/wiki/Ibanez_Tube_Screamer"},
+      {nombre:"ProCo RAT", anio:"1978", tipo:"Distortion", uso:"Distorsión cruda/comprimida", artistas:"Jeff Beck; Nuno Bettencourt", links:"https://en.wikipedia.org/wiki/Pro_Co_RAT"},
+      {nombre:"Boss DS‑1", anio:"1978", tipo:"Distortion", uso:"Clipping duro clásico", artistas:"Kurt Cobain — Nirvana", links:"https://en.wikipedia.org/wiki/Boss_DS-1"},
+      {nombre:"Boss DD‑2", anio:"1983", tipo:"Delay digital", uso:"Repeticiones limpias", artistas:"Prince; guitarristas 80s", links:"https://en.wikipedia.org/wiki/Boss_Corporation#Digital_delay"},
+      {nombre:"Digitech Whammy", anio:"1989", tipo:"Pitch shift", uso:"Saltos de octava, armonías", artistas:"Tom Morello — RATM; Dimebag Darrell — Pantera", links:"https://en.wikipedia.org/wiki/Whammy_pedal"},
+      {nombre:"Talk Box (Heil, Banshee)", anio:"1970s", tipo:"Vocal FX", uso:"\"Hablar\" con la guitarra", artistas:"Peter Frampton; Joe Walsh", links:"https://en.wikipedia.org/wiki/Talk_box"},
+    ];
+
+    // Modeladores / Emuladores
+    const modelers = [
+      {nombre:"Line 6 AxSys 212", anio:"1996", cat:"Amp modeling (combo)", pros:"Primeros modelos digitales en amp", artistas:"—", link:"https://en.wikipedia.org/wiki/Line_6_(company)"},
+      {nombre:"Line 6 POD", anio:"1998", cat:"Modelador de escritorio", pros:"Modelado multi‑amp accesible", artistas:"Petrucci/Satriani (demos)", link:"https://en.wikipedia.org/wiki/Line_6_POD"},
+      {nombre:"Fractal Audio Axe‑Fx", anio:"2006→", cat:"Rack/pedalera", pros:"Modelado profundo + FX", artistas:"Metallica; Megadeth", link:"https://en.wikipedia.org/wiki/Fractal_Audio_Systems"},
+      {nombre:"Kemper Profiler", anio:"2011", cat:"Profiler", pros:"Clona/perfila amplis reales", artistas:"Steve Vai; Muse; Mastodon", link:"https://en.wikipedia.org/wiki/Kemper_Profiling_Amplifier"},
+      {nombre:"Line 6 Helix", anio:"2015", cat:"Pedalera modeladora", pros:"UI excelente + I/O", artistas:"Periphery; Steve Howe", link:"https://en.wikipedia.org/wiki/Line_6_Helix"},
+      {nombre:"Neural DSP Quad Cortex", anio:"2021", cat:"Captura/modelado", pros:"Captura neural + plugins", artistas:"Plini; Gojira", link:"https://neuraldsp.com/quad-cortex"},
+      {nombre:"Boss GT‑1000", anio:"2018", cat:"Pedalera", pros:"AIRD modeling", artistas:"Varios", link:"https://www.boss.info/us/products/gt-1000/"},
+      {nombre:"Headrush Pedalboard", anio:"2017", cat:"Pedalera", pros:"UI táctil", artistas:"—", link:"https://www.headrushfx.com/"},
+      {nombre:"Positive Grid Spark", anio:"2019", cat:"Amp/modelador práctico", pros:"App + práctica hogareña", artistas:"—", link:"https://www.positivegrid.com/"},
+      {nombre:"IK AmpliTube (software)", anio:"2002→", cat:"Plugin", pros:"Colecciones de marcas", artistas:"Estudio", link:"https://en.wikipedia.org/wiki/AmpliTube"},
+      {nombre:"NI Guitar Rig (software)", anio:"2004→", cat:"Plugin", pros:"Modular flexible", artistas:"Estudio", link:"https://en.wikipedia.org/wiki/Guitar_Rig"},
+      {nombre:"Neural DSP plugins", anio:"2018→", cat:"Plugins", pros:"Tonos de artista (Plini, Gojira)", artistas:"Moderno", link:"https://neuraldsp.com/plugins"},
+    ];
+
+    // --- Render helpers ---
+    const q = document.getElementById('q');
+    const btnClear = document.getElementById('btnClear');
+    const timeline = document.getElementById('timeline');
+
+    function groupBy(arr, key){
+      return arr.reduce((acc, item)=>{(acc[item[key]] ||= []).push(item); return acc;}, {});
+    }
+
+    function renderTimeline(filter=""){
+      const groups = groupBy(amps, 'decada');
+      const decs = Object.keys(groups);
+      decs.sort((a,b)=>{
+        const av = a.startsWith('1930')?1930: a.startsWith('1950')?1950: a.startsWith('1960')?1960:
+                   a.startsWith('1970')?1970: a.startsWith('1980')?1980: a.startsWith('1990')?1990: 2000;
+        const bv = b.startsWith('1930')?1930: b.startsWith('1950')?1950: b.startsWith('1960')?1960:
+                   b.startsWith('1970')?1970: b.startsWith('1980')?1980: b.startsWith('1990')?1990: 2000;
+        return av-bv;
+      });
+      timeline.innerHTML = '';
+      for(const d of decs){
+        const items = groups[d].filter(x=> JSON.stringify(x).toLowerCase().includes(filter.toLowerCase()));
+        if(items.length===0) continue;
+        const el = document.createElement('div');
+        el.className = 'card';
+        el.innerHTML = `<h3>${d}</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>Marca</th><th>Modelo</th><th>Año</th><th>Tipo</th><th>Potencia</th><th>Gabinete recomendado/original</th><th>Uso original / Notas</th><th>Artista(s) / Banda(s)</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${items.map(r=>`<tr>
+                <td>${r.marca}</td>
+                <td>${r.modelo}</td>
+                <td>${r.anio}</td>
+                <td>${r.tipo}</td>
+                <td>${r.potencia}</td>
+                <td>${r.gabinete}</td>
+                <td>${r.uso}</td>
+                <td>${r.artistas}</td>
+              </tr>`).join('')}
+            </tbody>
+          </table>`;
+        timeline.appendChild(el);
+      }
+    }
+
+    function renderEffects(filter=""){
+      const tb = document.querySelector('#effectsTbl tbody');
+      tb.innerHTML = effects
+        .filter(x=> JSON.stringify(x).toLowerCase().includes(filter.toLowerCase()))
+        .map(x=> `<tr>
+          <td><strong>${x.nombre}</strong></td>
+          <td>${x.anio}</td>
+          <td>${x.tipo}</td>
+          <td>${x.uso}</td>
+          <td>${x.artistas}</td>
+          <td><a href="${x.links}" target="_blank" rel="noopener">ver</a></td>
+        </tr>`).join('');
+    }
+
+    function renderModelers(filter=""){
+      const tb = document.querySelector('#modelersTbl tbody');
+      tb.innerHTML = modelers
+        .filter(x=> JSON.stringify(x).toLowerCase().includes(filter.toLowerCase()))
+        .map(x=> `<tr>
+          <td><strong>${x.nombre}</strong></td>
+          <td>${x.anio}</td>
+          <td>${x.cat}</td>
+          <td>${x.pros}</td>
+          <td>${x.artistas}</td>
+          <td><a href="${x.link}" target="_blank" rel="noopener">sitio</a></td>
+        </tr>`).join('');
+    }
+
+    q.addEventListener('input', () => {
+      const f = q.value.trim();
+      renderTimeline(f);
+      renderEffects(f);
+      renderModelers(f);
+    });
+    btnClear.addEventListener('click', ()=>{q.value=''; q.dispatchEvent(new Event('input')); q.focus();});
+
+    // --- Builder ---
+    const palette = document.getElementById('palette');
+    const chain = document.getElementById('chain');
+    const chainText = document.getElementById('chainText');
+    const presetsEl = document.getElementById('presets');
+
+    const paletteFx = [
+      {id:'gtr', name:'Guitarra'},
+      {id:'wah', name:'Wah'},
+      {id:'fuzz', name:'Fuzz'},
+      {id:'od', name:'Overdrive (TS‑808)'},
+      {id:'dist', name:'Distortion (RAT/DS‑1)'},
+      {id:'comp', name:'Compresor'},
+      {id:'phaser', name:'Phaser'},
+      {id:'chorus', name:'Chorus'},
+      {id:'flanger', name:'Flanger'},
+      {id:'vibe', name:'Univibe'},
+      {id:'delay', name:'Delay'},
+      {id:'reverb', name:'Reverb'},
+      {id:'amp', name:'Amplificador'},
+      {id:'cab', name:'Cabina (IR 4×12 / 2×12 / 1×12)'}
+    ];
+
+    const presets = [
+      {name:'Hendrix (Voodoo Child)', chain:['gtr','wah','fuzz','vibe','delay','amp','cab']},
+      {name:'SRV Texas Blues', chain:['gtr','od','amp','reverb','cab']},
+      {name:'Queen Lead (Brian May)', chain:['gtr','treble?','delay','delay','amp','cab']},
+      {name:'U2 Ambient (The Edge)', chain:['gtr','delay','chorus','amp','reverb','cab']},
+      {name:'Metal 90s (Rectifier)', chain:['gtr','od','dist','noise?','amp','cab','delay']},
+      {name:'Funk 70s Wah‑Clean', chain:['gtr','wah','comp','chorus','amp','reverb','cab']},
+    ];
+
+    function createSlot(id,name){
+      const el = document.createElement('div');
+      el.className = 'slot'; el.draggable = true; el.dataset.id = id; el.textContent = name;
+      el.addEventListener('dragstart', e=>{ e.dataTransfer.setData('text/plain', id+'::'+name); el.classList.add('ghost'); });
+      el.addEventListener('dragend', ()=> el.classList.remove('ghost'));
+      return el;
+    }
+
+    function renderPalette(){
+      palette.innerHTML = '';
+      paletteFx.forEach(fx => palette.appendChild(createSlot(fx.id, fx.name)));
+    }
+
+    function renderPresets(){
+      presetsEl.innerHTML = '';
+      presets.forEach(p=>{
+        const b = document.createElement('button');
+        b.className='preset'; b.textContent=p.name;
+        b.addEventListener('click', ()=>{
+          chain.innerHTML='';
+          p.chain.forEach(id=>{
+            // support optional names
+            const item = paletteFx.find(x=>x.id===id) || {id, name:id.toUpperCase()};
+            chain.appendChild(createSlot(item.id, item.name));
+          });
+          updateChainText();
+        });
+        presetsEl.appendChild(b);
+      })
+    }
+
+    function enableDnD(box){
+      box.addEventListener('dragover', e=>{e.preventDefault();});
+      box.addEventListener('drop', e=>{
+        e.preventDefault();
+        const data = e.dataTransfer.getData('text/plain');
+        const [id,name] = data.split('::');
+        // If drop inside chain or palette, add clone
+        if(box===chain){ box.appendChild(createSlot(id,name)); updateChainText(); }
+      });
+
+      // Reorder inside chain
+      if(box===chain){
+        box.addEventListener('dragstart', e=>{
+          if(e.target.classList.contains('slot')){ e.dataTransfer.setData('text/plain', e.target.dataset.id+'::'+e.target.textContent); }
+        });
+        box.addEventListener('dragover', e=>{
+          e.preventDefault();
+          const after = getDragAfterElement(box, e.clientX, e.clientY);
+          const draggingId = e.dataTransfer.getData('text/plain');
+          if(!draggingId) return;
+          if(after==null){ box.appendChild(document.querySelector('.ghost')); }
+          else { box.insertBefore(document.querySelector('.ghost'), after); }
+        });
+      }
+    }
+
+    function getDragAfterElement(container, x, y){
+      const els = [...container.querySelectorAll('.slot:not(.ghost)')];
+      return els.reduce((closest, child)=>{
+        const rect = child.getBoundingClientRect();
+        const offset = y - rect.top - rect.height/2; // vertical sorting
+        if(offset < 0 && offset > closest.offset){
+          return {offset, element:child};
+        } else return closest;
+      }, {offset: Number.NEGATIVE_INFINITY}).element;
+    }
+
+    function updateChainText(){
+      const names = [...chain.querySelectorAll('.slot')].map(x=>x.textContent);
+      chainText.textContent = names.length? `Cadena: ${names.join('  →  ')}` : 'Arrastra efectos aquí para construir tu cadena.';
+    }
+
+    // --- Inicialización ---
+    renderTimeline();
+    renderEffects();
+    renderModelers();
+    renderPalette();
+    renderPresets();
+    enableDnD(palette);
+    enableDnD(chain);
+    updateChainText();
+  </script>
+</body>
+</html>
