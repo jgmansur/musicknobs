@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Estudios de grabación en Miami — Opciones para videoclip (playback)</title>
+<style>
+  :root {
+    --bg:#0b0f14;
+    --card:#121821;
+    --muted:#9fb3c8;
+    --accent:#19c37d;
+    --chip:#1d2430;
+    --stroke:#263041;
+  }
+  * { box-sizing:border-box; }
+  html,body { margin:0; background:var(--bg); color:#eaf2fb; font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji", "Segoe UI Symbol"; }
+  a { color: #7ad7ff; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  header.hero {
+    padding: 48px 24px 24px;
+    background: radial-gradient(1000px 400px at 10% -10%, #17304d 0%, rgba(11,15,20,0) 70%),
+                radial-gradient(800px 400px at 90% -20%, #1b5e4b 0%, rgba(11,15,20,0) 70%);
+    border-bottom:1px solid var(--stroke);
+  }
+  .container { max-width:1100px; margin:0 auto; }
+  h1 { font-size: clamp(28px, 4vw, 42px); margin:0 0 6px; line-height:1.1; }
+  .subtitle { color:var(--muted); font-size: 15px; }
+  .chips { display:flex; flex-wrap: wrap; gap:8px; margin-top:14px; }
+  .chip { background:var(--chip); color:#b9c8da; padding:6px 10px; border:1px solid var(--stroke); border-radius:999px; font-size:12px; }
+  .grid { display:grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap:16px; }
+  .card { background:var(--card); border:1px solid var(--stroke); border-radius:16px; padding:16px; display:flex; flex-direction:column; gap:10px; }
+  .card h3 { margin:0; font-size:20px; }
+  .pill { display:inline-block; padding:4px 8px; border-radius:999px; font-size:12px; border:1px solid var(--stroke); background:#101722; color:#cfe2ff; }
+  .row { display:flex; gap:10px; align-items:baseline; flex-wrap:wrap; }
+  .kv { display:grid; grid-template-columns: 110px 1fr; gap:8px 10px; font-size: 13.5px; }
+  .kv div.key { color:#93a7bd; text-align:right; }
+  .kv div.val { color:#eaf2fb; }
+  .badges { display:flex; gap:6px; flex-wrap:wrap; }
+  .badge { background:#17202c; border:1px solid var(--stroke); padding:3px 8px; border-radius:8px; font-size:12px; color:#b9c8da; }
+  .cta-bar { margin:18px 0 4px; display:flex; gap:10px; flex-wrap:wrap; }
+  .btn { display:inline-block; padding:8px 12px; background:#152232; border:1px solid var(--stroke); border-radius:10px; font-weight:600; font-size:13px; }
+  .btn.primary { background: var(--accent); color:#052016; border-color: #1aa96e; }
+  .note { color:#9fb3c8; font-size:12.5px; }
+  section { padding: 24px; }
+  h2 { margin:8px 0 12px; font-size: 22px; }
+  table.compare { width:100%; border-collapse: collapse; overflow: hidden; border-radius: 14px; border:1px solid var(--stroke); }
+  table.compare th, table.compare td { padding:10px 12px; border-bottom:1px solid var(--stroke); vertical-align: top; }
+  table.compare th { background:#0f1622; text-align:left; font-weight:700; font-size:13px; color:#aecdff; }
+  table.compare td { font-size:13px; }
+  .flag { font-size: 11px; padding:3px 7px; background:#0f1a28; border:1px solid var(--stroke); border-radius: 8px; color:#a9b9ce; }
+  footer { border-top:1px solid var(--stroke); padding:18px 24px; color:#9fb3c8; font-size:12px; }
+  .sources li { margin-bottom:6px; }
+  .studio-cover { height: 10px; border-radius: 8px; background:linear-gradient(90deg, #1c2735, #213249); }
+  .tag-miami-beach { background: #163552; color:#aad4ff; }
+  .tag-wynwood { background: #1a3b30; color:#b4f2d2; }
+  .tag-north { background: #3b2a16; color:#f4d6a1; }
+  .tag-downtown { background: #342044; color:#e6c6ff; }
+  .tag-doral { background: #38320d; color:#efe29b; }
+</style>
+</head>
+<body>
+<header class="hero">
+  <div class="container">
+    <h1>Estudios de grabación — Miami (y Miami Beach)</h1>
+    <div class="subtitle">Curado para filmar un <strong>videoclip en playback</strong>. Foco en estética, espacio, tarifas y facilidad logística. Actualizado: August 25, 2025.</div>
+    <div class="chips">
+      <span class="chip">No necesitamos grabar audio musical</span>
+      <span class="chip">Buscamos look &amp; vibe</span>
+      <span class="chip">Ideal: vistas / diseño / espacios comunes</span>
+      <span class="chip">2 días de renta (fechas abiertas)</span>
+    </div>
+  </div>
+</header>
+
+<section class="container">
+  <h2>Resumen comparativo</h2>
+  <div class="note">Precios publicados por los estudios o por marketplaces de venues; pueden cambiar según disponibilidad, sala y si incluyen ingeniero. Verifica siempre al reservar.</div>
+  <div style="overflow:auto; margin-top:10px;">
+    <table class="compare">
+      <thead>
+        <tr>
+          <th>Estudio</th>
+          <th>Ubicación</th>
+          <th>Rango de tarifa publicado</th>
+          <th>¿Video/cámaras in‑house?</th>
+          <th>Vibe / notas visuales</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Alacran Studios</strong></td>
+          <td>Miami Beach <span class="flag tag-miami-beach">Miami Beach</span></td>
+          <td>Desde ~US$180/h (Tagvenue)</td>
+          <td>Post, streaming y ADR; consultar cámaras</td>
+          <td>Diseño moderno; opción “Blue Room”; 3D Tour</td>
+        </tr>
+        <tr>
+          <td><strong>Bay Eight</strong></td>
+          <td>North Miami Beach <span class="flag tag-north">N. Miami Beach</span></td>
+          <td>US$85–135/h (según sala)</td>
+          <td>Principalmente audio; consultar cámaras</td>
+          <td>Luces LED y salas con diferentes looks; 24 ft de altura (Whisper)</td>
+        </tr>
+        <tr>
+          <td><strong>House of Hits</strong></td>
+          <td>Little River / Miami</td>
+          <td>US$80–150/h (según suite)</td>
+          <td>No listado; consultar. 3D tour</td>
+          <td>Estética “gallery / luxury” muy fotogénica</td>
+        </tr>
+        <tr>
+          <td><strong>Criteria (Hit Factory)</strong></td>
+          <td>North Miami <span class="flag tag-north">N. Miami</span></td>
+          <td>Por cotizar</td>
+          <td>No listado; consultar</td>
+          <td>Ícono histórico; grandes salas</td>
+        </tr>
+        <tr>
+          <td><strong>Circle House</strong></td>
+          <td>North Miami</td>
+          <td>Por cotizar</td>
+          <td>No listado; consultar</td>
+          <td>Patios y áreas exteriores; vibe relajado</td>
+        </tr>
+        <tr>
+          <td><strong>Noisematch</strong></td>
+          <td>Wynwood / Little Haiti <span class="flag tag-wynwood">Wynwood</span></td>
+          <td>~US$180–250/h (según sala/servicio)</td>
+          <td>Sí: producción de video in‑studio</td>
+          <td>Set “Stargate” con LED walls; opción podcast/LED</td>
+        </tr>
+        <tr>
+          <td><strong>Morplay</strong></td>
+          <td>Wynwood</td>
+          <td>Por cotizar</td>
+          <td>Venue rental; consultar cámaras</td>
+          <td>Campus creativo de 20,000 ft²; gran lobby/zonas comunes</td>
+        </tr>
+        <tr>
+          <td><strong>Rebel 11</strong></td>
+          <td>Doral <span class="flag tag-doral">Doral</span></td>
+          <td>Por cotizar</td>
+          <td>No listado; consultar</td>
+          <td>Estética “neon/LED”; consola SSL Duality (Studio B)</td>
+        </tr>
+        <tr>
+          <td><strong>Audio Vision</strong></td>
+          <td>North Miami</td>
+          <td>Desde ~US$90 (plataformas)</td>
+          <td>No listado; consultar</td>
+          <td>Salas variadas; opción 24/7</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="container">
+  <h2>Fichas por estudio</h2>
+
+  <!-- Alacran -->
+  <article class="card">
+    <div class="studio-cover"></div>
+    <h3>Alacran Studios <span class="pill">Miami Beach</span></h3>
+    <div class="badges">
+      <span class="badge">Clientes: Alicia Keys, Shakira, Bizarrap</span>
+      <span class="badge">Servicios: Recording, Video/Audio Post, Live Streaming, ADR</span>
+      <span class="badge">Tour 3D</span>
+    </div>
+    <div class="kv" style="margin-top:6px;">
+      <div class="key">Dirección</div><div class="val"><a href="https://maps.google.com/?q=555+Washington+Ave+%23220,+Miami+Beach,+FL+33139" target="_blank">555 Washington Ave #220, Miami Beach, FL 33139</a></div>
+      <div class="key">Contacto</div><div class="val"><a href="tel:+13058747980">+1 (305) 874‑7980</a> · <a href="mailto:studios@alacrangroup.com">studios@alacrangroup.com</a></div>
+      <div class="key">Web</div><div class="val"><a href="https://www.alacranstudios.com/" target="_blank">alacranstudios.com</a></div>
+      <div class="key">Tarifa</div><div class="val">Desde ~US$180/h (Tagvenue). Cotiza paquetes por día.</div>
+      <div class="key">Notas</div><div class="val">En Miami Beach; estética moderna y espacio “Blue Room”. Buenas facilidades de post y streaming si quieres behind‑the‑scenes.</div>
+    </div>
+    <div class="cta-bar">
+      <a class="btn primary" href="https://www.alacranstudios.com/contact/" target="_blank">Solicitar cotización</a>
+      <a class="btn" href="https://www.alacranstudios.com/3d-tour/" target="_blank">Ver 3D Tour</a>
+    </div>
+  </article>
+
+  <!-- Bay Eight -->
+  <article class="card">
+    <div class="studio-cover"></div>
+    <h3>Bay Eight Recording Studios <span class="pill">North Miami Beach</span></h3>
+    <div class="badges">
+      <span class="badge">Clientes: J Balvin, Ed Sheeran, Lil Wayne</span>
+      <span class="badge">Salas: SSL / Apollo / Whisper</span>
+      <span class="badge">Altura 24’ en Whisper</span>
+    </div>
+    <div class="kv" style="margin-top:6px;">
+      <div class="key">Dirección</div><div class="val"><a href="https://maps.google.com/?q=15421+W+Dixie+Hwy+Bay+8,+North+Miami+Beach,+FL+33162" target="_blank">15421 W Dixie Hwy Bay 8, North Miami Beach, FL 33162</a></div>
+      <div class="key">Contacto</div><div class="val"><a href="tel:+13057052405">+1 (305) 705‑2405</a></div>
+      <div class="key">Web</div><div class="val"><a href="https://bayeight.com/" target="_blank">bayeight.com</a></div>
+      <div class="key">Tarifa</div><div class="val">SSL: US$135/h · Apollo: US$105/h · Whisper: US$85/h.</div>
+      <div class="key">Notas</div><div class="val">Vibe cuidado con luces LED; buen set para playback. Pregunta por políticas para rodaje de video.</div>
+    </div>
+    <div class="cta-bar">
+      <a class="btn primary" href="https://bayeight.com/" target="_blank">Reservar</a>
+    </div>
+  </article>
+
+  <!-- House of Hits -->
+  <article class="card">
+    <div class="studio-cover"></div>
+    <h3>House of Hits (Mr Mix & Master) <span class="pill">Miami</span></h3>
+    <div class="badges">
+      <span class="badge">Suites con distintos looks</span>
+      <span class="badge">3D tour</span>
+      <span class="badge">Clientes: J Balvin, Bad Bunny (lista en web)</span>
+    </div>
+    <div class="kv">
+      <div class="key">Dirección</div><div class="val"><a href="https://maps.google.com/?q=300+NE+75th+St+Unit+112,+Miami,+FL+33138" target="_blank">300 NE 75th St Unit 112, Miami, FL 33138</a></div>
+      <div class="key">Contacto</div><div class="val"><a href="tel:+13059073440">+1 (305) 907‑3440</a> · <a href="mailto:houseofhitsmiami@gmail.com">houseofhitsmiami@gmail.com</a></div>
+      <div class="key">Web</div><div class="val"><a href="https://mrmixandmaster.com/miami-recording-studio/" target="_blank">mrmixandmaster.com/miami‑recording‑studio</a></div>
+      <div class="key">Tarifa</div><div class="val">Executive: US$80/h · Guest: US$90/h (con ingeniero) · Master: US$125/h · Presidential: US$150/h.</div>
+      <div class="key">Notas</div><div class="val">Estética muy fotogénica (arte/galería). Ideal para performance en playback.</div>
+    </div>
+    <div class="cta-bar">
+      <a class="btn primary" href="https://mrmixandmaster.com/miami-recording-studio/" target="_blank">Ver suites y reservar</a>
+      <a class="btn" href="https://storage.net-fs.com/hosting/4097943/10/" target="_blank">Ver 3D tour</a>
+    </div>
+  </article>
+
+  <!-- Criteria -->
+  <article class="card">
+    <div class="studio-cover"></div>
+    <h3>Criteria Studios (Hit Factory Criteria) <span class="pill">North Miami</span></h3>
+    <div class="badges">
+      <span class="badge">Histórico: Bee Gees, Clapton, Shakira, Adele, Justin Bieber</span>
+      <span class="badge">Salas grandes; Neve/SSL</span>
+    </div>
+    <div class="kv">
+      <div class="key">Dirección</div><div class="val"><a href="https://maps.google.com/?q=1755+NE+149th+St,+Miami,+FL+33181" target="_blank">1755 NE 149th St, Miami, FL 33181</a></div>
+      <div class="key">Contacto</div><div class="val"><a href="tel:+13057510001">+1 (305) 751‑0001</a> · <a href="mailto:info@criteriastudios.com">info@criteriastudios.com</a></div>
+      <div class="key">Web</div><div class="val"><a href="https://www.criteriastudios.com/contact" target="_blank">criteriastudios.com</a></div>
+      <div class="key">Tarifa</div><div class="val">No pública; cotización directa.</div>
+      <div class="key">Notas</div><div class="val">Look clásico de gran estudio; reputación mundial. Ideal si quieres “peso” histórico en cámara.</div>
+    </div>
+    <div class="cta-bar">
+      <a class="btn primary" href="https://www.criteriastudios.com/contact" target="_blank">Contactar</a>
+    </div>
+  </article>
+
+  <!-- Circle House -->
+  <article class="card">
+    <div class="studio-cover"></div>
+    <h3>Circle House Studios <span class="pill">North Miami</span></h3>
+    <div class="badges">
+      <span class="badge">“Happy” de Pharrell se grabó aquí</span>
+      <span class="badge">Áreas exteriores tipo villa</span>
+    </div>
+    <div class="kv">
+      <div class="key">Dirección</div><div class="val"><a href="https://maps.google.com/?q=13700+NW+1st+Ave,+Miami,+FL+33168" target="_blank">13700 NW 1st Ave, Miami, FL 33168</a></div>
+      <div class="key">Contacto</div><div class="val"><a href="tel:+13057699700">+1 (305) 769‑9700</a></div>
+      <div class="key">Web</div><div class="val"><a href="https://www.instagram.com/explore/locations/4559563/circle-house-studios/" target="_blank">Instagram (ubicación) · info y fotos</a></div>
+      <div class="key">Tarifa</div><div class="val">No pública; cotización directa.</div>
+      <div class="key">Notas</div><div class="val">Vibe tropical; set exterior útil para B‑roll. Pedir lineamientos para filmación.</div>
+    </div>
+  </article>
+
+  <!-- Noisematch -->
+  <article class="card">
+    <div class="studio-cover"></div>
+    <h3>Noisematch Studios <span class="pill">Wynwood / Little Haiti</span></h3>
+    <div class="badges">
+      <span class="badge">Ofrecen producción de video 4K</span>
+      <span class="badge">Sala LED/“Stargate”</span>
+      <span class="badge">Clientes: Luis Fonsi, Ricky Martin (vía sitio)</span>
+    </div>
+    <div class="kv">
+      <div class="key">Dirección</div><div class="val"><a href="https://maps.google.com/?q=4306+NW+2nd+Ave,+Miami,+FL+33127" target="_blank">4306 NW 2nd Ave, Miami, FL 33127</a></div>
+      <div class="key">Contacto</div><div class="val"><a href="https://noisematchstudios.com/" target="_blank">noisematchstudios.com</a></div>
+      <div class="key">Tarifa</div><div class="val">Stargate (LED): ~US$250/h (Tagvenue). Booking promo puntual: ~US$180/h con ingeniero (según disponibilidad).</div>
+      <div class="key">Notas</div><div class="val">Excelente si quieres capturar look con paneles LED; también podcast/sets de contenido.</div>
+    </div>
+    <div class="cta-bar">
+      <a class="btn primary" href="https://noisematch-studios.easyweek.io/" target="_blank">Ver disponibilidad</a>
+      <a class="btn" href="https://www.tagvenue.com/us/rooms/miami/78219/noisematch-studios/stargate-room" target="_blank">Stargate (Tagvenue)</a>
+    </div>
+  </article>
+
+  <!-- Morplay -->
+  <article class="card">
+    <div class="studio-cover"></div>
+    <h3>Morplay Studios <span class="pill">Wynwood</span></h3>
+    <div class="badges">
+      <span class="badge">Campus 20,000 ft²</span>
+      <span class="badge">Venue rental</span>
+      <span class="badge">Clientes: Belinda, Anitta, Bad Bunny (vía sitio)</span>
+    </div>
+    <div class="kv">
+      <div class="key">Dirección</div><div class="val"><a href="https://maps.google.com/?q=2048+NW+Miami+Ct,+Miami,+FL+33127" target="_blank">2048 NW Miami Ct, Miami, FL 33127</a></div>
+      <div class="key">Contacto</div><div class="val"><a href="tel:+17867488723">+1 (786) 748‑8723</a></div>
+      <div class="key">Web</div><div class="val"><a href="https://morplaystudios.com/" target="_blank">morplaystudios.com</a></div>
+      <div class="key">Tarifa</div><div class="val">No pública; venue/studio por cotizar.</div>
+      <div class="key">Notas</div><div class="val">Espacios amplios y zonas comunes vistosas; ideal para crew grande.</div>
+    </div>
+    <div class="cta-bar">
+      <a class="btn primary" href="https://morplaystudios.com/" target="_blank">Pedir tour/cotización</a>
+    </div>
+  </article>
+
+  <!-- Rebel 11 -->
+  <article class="card">
+    <div class="studio-cover"></div>
+    <h3>Rebel 11 Studios <span class="pill">Doral</span></h3>
+    <div class="badges">
+      <span class="badge">Studio B: SSL Duality</span>
+      <span class="badge">Open 24h</span>
+    </div>
+    <div class="kv">
+      <div class="key">Dirección</div><div class="val"><a href="https://maps.google.com/?q=1550+NW+79th+Ave,+Doral,+FL+33126" target="_blank">1550 NW 79th Ave, Doral, FL 33126</a></div>
+      <div class="key">Contacto</div><div class="val"><a href="tel:+17542129333">+1 (754) 212‑9333</a></div>
+      <div class="key">Web</div><div class="val"><a href="https://rebel11studios.com/" target="_blank">rebel11studios.com</a></div>
+      <div class="key">Tarifa</div><div class="val">No pública; cotización directa.</div>
+      <div class="key">Notas</div><div class="val">Estética de luces y set “neon”; útil para tomas cerradas y performance.</div>
+    </div>
+  </article>
+
+  <!-- Audio Vision -->
+  <article class="card">
+    <div class="studio-cover"></div>
+    <h3>Audio Vision Studios <span class="pill">North Miami</span></h3>
+    <div class="badges">
+      <span class="badge">Varias salas (Legacy/Florida/Apollo/Blessed)</span>
+      <span class="badge">24/7</span>
+    </div>
+    <div class="kv">
+      <div class="key">Dirección</div><div class="val"><a href="https://maps.google.com/?q=13385+W+Dixie+Hwy,+North+Miami,+FL+33161" target="_blank">13385 W Dixie Hwy, North Miami, FL 33161</a></div>
+      <div class="key">Contacto</div><div class="val"><a href="tel:+13058939191">+1 (305) 893‑9191</a></div>
+      <div class="key">Web</div><div class="val"><a href="https://audiovisionstudios.com/" target="_blank">audiovisionstudios.com</a></div>
+      <div class="key">Tarifa</div><div class="val">Desde ~US$90 (plataformas). Pide paquete por día.</div>
+      <div class="key">Notas</div><div class="val">Opción versátil y con buena relación costo/look.</div>
+    </div>
+  </article>
+
+  <!-- Heiga (vista ciudad) -->
+  <article class="card">
+    <div class="studio-cover"></div>
+    <h3>Heiga Studios <span class="pill">Downtown</span></h3>
+    <div class="badges">
+      <span class="badge">Vista a la ciudad (piso alto)</span>
+      <span class="badge">Dolby Atmos / Post</span>
+    </div>
+    <div class="kv">
+      <div class="key">Dirección</div><div class="val"><a href="https://maps.google.com/?q=168+SE+1st+St+%23500,+Miami,+FL+33131" target="_blank">168 SE 1st St #500, Miami, FL 33131</a></div>
+      <div class="key">Contacto</div><div class="val"><a href="https://www.heigastudios.com/" target="_blank">heigastudios.com</a></div>
+      <div class="key">Tarifa</div><div class="val">Desde ~US$140/h (marketplaces). Confirmar directo.</div>
+      <div class="key">Notas</div><div class="val">Buena opción si quieres planos con <em>skyline</em> desde ventana/interiores.</div>
+    </div>
+  </article>
+
+</section>
+
+<section class="container">
+  <h2>Recomendaciones rápidas de “vibe” para videoclip</h2>
+  <div class="grid">
+    <div class="card">
+      <strong>Look luxury / arte</strong>
+      <div class="note">House of Hits · Alacran · Morplay</div>
+    </div>
+    <div class="card">
+      <strong>LED walls / set tecnológico</strong>
+      <div class="note">Noisematch (Stargate) · Rebel 11</div>
+    </div>
+    <div class="card">
+      <strong>Gran sala / legado histórico</strong>
+      <div class="note">Criteria (Hit Factory)</div>
+    </div>
+    <div class="card">
+      <strong>Vistas de ciudad</strong>
+      <div class="note">Heiga (Downtown)</div>
+    </div>
+    <div class="card">
+      <strong>Mejor costo-beneficio</strong>
+      <div class="note">Bay Eight (Whisper/Apollo) · Audio Vision</div>
+    </div>
+  </div>
+</section>
+
+<section class="container">
+  <h2>Notas logísticas</h2>
+  <ul class="note">
+    <li>Confirma con cada estudio si el rodaje de video requiere póliza de seguro de producción y/o depósito.</li>
+    <li>Si buscas cámaras/crew in‑house, Noisematch ofrece paquetes de video; varios estudios pueden recomendar vendors.</li>
+    <li>Estacionamiento: en Wynwood y Miami Beach el estacionamiento puede ser limitado; considera cargar y luego mover unidades a estacionamientos designados.</li>
+    <li>Horarios nocturnos suelen tener recargo o personal mínimo obligatorio.</li>
+  </ul>
+</section>
+
+<section class="container">
+  <h2>Fuentes</h2>
+  <ul class="sources">
+    <li>Alacran Studios — <a href="https://www.alacranstudios.com/" target="_blank">Sitio oficial</a> · <a href="https://www.alacranstudios.com/clients/" target="_blank">Clientes</a> · <a href="https://www.tagvenue.com/us/rooms/miami/38226/alacran-studios/recording-studio" target="_blank">Tagvenue (precios)</a></li>
+    <li>Bay Eight — <a href="https://bayeight.com/" target="_blank">Sitio oficial (tarifas, clientes, dirección)</a></li>
+    <li>House of Hits — <a href="https://mrmixandmaster.com/miami-recording-studio/" target="_blank">Sitio oficial (tarifas, dirección y 3D tour)</a></li>
+    <li>Criteria Studios — <a href="https://www.criteriastudios.com/contact" target="_blank">Contacto/dirección</a> · <a href="https://en.wikipedia.org/wiki/Criteria_Studios" target="_blank">Wikipedia (historia/gear)</a></li>
+    <li>Circle House — <a href="https://www.instagram.com/explore/locations/4559563/circle-house-studios/" target="_blank">Ubicación/Contacto</a> · <a href="https://en.wikipedia.org/wiki/Happy_(Pharrell_Williams_song)" target="_blank">“Happy” grabada en Circle House</a></li>
+    <li>Noisematch — <a href="https://noisematchstudios.com/" target="_blank">Sitio oficial</a> · <a href="https://www.tagvenue.com/us/rooms/miami/78219/noisematch-studios/stargate-room" target="_blank">Tagvenue (Stargate)</a> · <a href="https://noisematch-studios.easyweek.io/" target="_blank">Booking (promo)</a></li>
+    <li>Morplay Studios — <a href="https://morplaystudios.com/" target="_blank">Sitio oficial (20,000 ft², venue)</a></li>
+    <li>Rebel 11 — <a href="https://rebel11studios.com/Miami-Finest-Recording-Experience.html" target="_blank">Sitio oficial (dirección, SSL Duality)</a></li>
+    <li>Audio Vision — <a href="https://audiovisionstudios.com/contact-us/" target="_blank">Contacto/dirección</a> · <a href="https://www.tagvenue.com/us/venues/miami/48012/audio-vision-studios" target="_blank">Tagvenue (desde ~US$90)</a></li>
+    <li>Heiga Studios — <a href="https://www.heigastudios.com/" target="_blank">Sitio oficial</a> · <a href="https://www.tagvenue.com/us/rooms/miami/41476/heiga-studios/the-music-studio" target="_blank">Tagvenue (tarifas)</a></li>
+  </ul>
+  <div class="note">Todos los logos/marcas son de sus respectivos propietarios. Las tarifas y políticas están sujetas a cambio.</div>
+</section>
+
+<footer>
+  Hecho para presentar opciones a cliente. ¿Quieres que añada disponibilidad puntual, fotos embebidas o un comparativo de costos por 2 días? Puedo actualizarlo en minutos.
+</footer>
+</body>
+</html>
