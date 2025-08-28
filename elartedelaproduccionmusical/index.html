@@ -4,64 +4,427 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>El Arte de la Producción Musical - Tu Guía Esencial</title>
-    <link rel="stylesheet" href="style.css">
+    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;700&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome for stars -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        /* Estilos Generales */
+        :root {
+            --primary-color: #007BFF; /* Azul brillante */
+            --secondary-color: #343a40; /* Gris oscuro para texto */
+            --accent-color: #28a745; /* Verde para acciones */
+            --star-color: #ffc107; /* Amarillo para estrellas */
+            --dark-bg: #1a1a1a; /* Fondo oscuro principal */
+            --light-bg: #2b2b2b; /* Fondo ligeramente más claro */
+            --text-light: #f0f0f0;
+            --text-muted: #aaaaaa;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background-color: var(--dark-bg);
+            color: var(--text-light);
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            overflow-x: hidden; /* Evita scroll horizontal */
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        h1, h2, h3 {
+            font-family: 'Roboto Mono', monospace; /* Fuente estilo código/técnico */
+            color: var(--primary-color);
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        h1 { font-size: 3em; }
+        h2 { font-size: 2.2em; }
+        h3 { font-size: 1.6em; }
+
+        p {
+            margin-bottom: 1em;
+            text-align: center;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        .btn {
+            display: inline-block;
+            background-color: var(--accent-color);
+            color: white;
+            padding: 12px 25px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            border: none;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        .btn:hover {
+            background-color: #218838; /* Tono más oscuro de verde */
+            transform: translateY(-2px);
+            text-decoration: none;
+        }
+        
+        .secondary-btn {
+            background-color: var(--primary-color);
+        }
+
+        .secondary-btn:hover {
+            background-color: #0056b3; /* Tono más oscuro de azul */
+        }
+
+        /* Header - Hero Section */
+        .hero {
+            min-height: 70vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            color: white;
+            position: relative;
+            overflow: hidden;
+            padding: 40px 20px;
+        }
+
+        /* Capa de fondo con la imagen difuminada y oscurecida */
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -10px; right: -10px; bottom: -10px; left: -10px;
+            background: url('https://raw.githubusercontent.com/jgmansur/musicknobs/921c823211fa20be985c5ffe51c849de7227bc5e/elartedelaproduccionmusical/LibroPortada.png') no-repeat center center/cover;
+            filter: blur(8px) brightness(0.2);
+            z-index: 1;
+        }
+        
+        /* Contenido del Hero (texto y portada) debe estar por encima del fondo */
+        .hero-content, .book-cover-container {
+            position: relative;
+            z-index: 2;
+        }
+
+        .hero h1 {
+            font-size: 3.5em;
+            margin-bottom: 10px;
+            line-height: 1.1;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
+            text-transform: uppercase;
+        }
+
+        .hero p {
+            font-size: 1.3em;
+            margin-bottom: 30px;
+            color: var(--text-light);
+             text-shadow: 1px 1px 2px rgba(0,0,0,0.7);
+        }
+        
+        /* Botón de Home */
+        .home-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 10;
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.2em;
+            text-decoration: none;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .home-btn:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+            transform: scale(1.1);
+            text-decoration: none;
+        }
+
+        /* Animación de portada */
+        .book-cover-container {
+            width: 250px;
+            height: 350px;
+            border-radius: 8px;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.6);
+            perspective: 1000px;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .book-cover-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -150%;
+            width: 70%;
+            height: 100%;
+            background: linear-gradient(to right, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.25) 50%, rgba(255, 255, 255, 0) 100%);
+            transform: skewX(-25deg);
+            animation: glint 8s ease-in-out infinite;
+            z-index: 2;
+        }
+
+        .book-cover-scroll {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 8px;
+            display: block;
+        }
+
+        /* Keyframes para las animaciones */
+        @keyframes float {
+            0% { transform: translateY(0px) rotateY(15deg) rotateX(5deg); }
+            50% { transform: translateY(-20px) rotateY(15deg) rotateX(5deg); }
+            100% { transform: translateY(0px) rotateY(15deg) rotateX(5deg); }
+        }
+
+        @keyframes glint {
+            0% { left: -150%; }
+            40% { left: 150%; }
+            100% { left: 150%; }
+        }
+        
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Secciones */
+        section {
+            padding: 60px 20px;
+            text-align: center;
+        }
+        
+        .about-book {
+             background-color: var(--dark-bg);
+        }
+
+        .about-book h2 {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            color: white;
+            opacity: 0;
+            animation: fadeInUp 1s ease-out 0.2s forwards;
+        }
+
+        .about-book p {
+            max-width: 800px;
+            margin: 0 auto 30px auto;
+            color: var(--text-light);
+            text-align: left;
+            line-height: 1.8;
+            opacity: 0;
+            animation: fadeInUp 1s ease-out forwards;
+        }
+        
+        .about-book p:nth-of-type(1) { animation-delay: 0.4s; }
+        .about-book p:nth-of-type(2) { animation-delay: 0.6s; }
+        .about-book p:nth-of-type(3) { animation-delay: 0.8s; }
+
+        /* Reviews Section */
+        .reviews {
+            background-color: var(--dark-bg);
+            border-top: 1px solid #333;
+        }
+        
+        .reviews h2 {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            color: var(--primary-color);
+        }
+
+        .review-card {
+            background-color: var(--light-bg);
+            max-width: 700px;
+            margin: 20px auto;
+            padding: 25px;
+            border-radius: 8px;
+            border-left: 5px solid var(--star-color);
+            text-align: left;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        .review-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+        }
+
+        .review-author {
+            font-weight: bold;
+            font-size: 1.2em;
+            color: var(--text-light);
+        }
+
+        .review-stars {
+            color: var(--star-color);
+        }
+
+        .review-body {
+            font-style: italic;
+            color: var(--text-muted);
+            margin-bottom: 15px;
+        }
+
+        .review-meta {
+            font-size: 0.85em;
+            color: #888;
+        }
+        
+        .review-meta .verified {
+            color: var(--accent-color);
+            font-weight: bold;
+        }
+
+        /* Footer */
+        .footer {
+            background-color: var(--secondary-color);
+            color: var(--text-muted);
+            text-align: center;
+            padding: 30px 20px;
+            font-size: 0.9em;
+            border-top: 1px solid #444;
+        }
+
+        .footer a {
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+
+        /* Media Queries para Responsividad */
+        @media (min-width: 768px) {
+            .hero {
+                flex-direction: row;
+                justify-content: space-around;
+                text-align: left;
+                padding: 80px 40px;
+            }
+            .hero-content { max-width: 50%; margin-bottom: 0; }
+            .hero h1 { font-size: 4.5em; text-align: left; }
+            .hero p { font-size: 1.5em; text-align: left; }
+            .book-cover-container { animation: float 6s ease-in-out infinite; }
+        }
+
+        @media (max-width: 480px) {
+            h1 { font-size: 2.5em; }
+            h2 { font-size: 1.8em; }
+            .hero h1 { font-size: 3em; }
+            .hero p { font-size: 1.1em; }
+            .btn { padding: 10px 20px; }
+            .home-btn { top: 15px; right: 15px; width: 40px; height: 40px; }
+            .book-cover-container {
+                width: 200px;
+                height: 280px;
+                transform: none;
+                animation: float-mobile 6s ease-in-out infinite;
+            }
+            @keyframes float-mobile {
+                 0% { transform: translateY(0px); }
+                 50% { transform: translateY(-15px); }
+                 100% { transform: translateY(0px); }
+            }
+            .review-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 5px;
+            }
+        }
+    </style>
 </head>
 <body>
+
+    <!-- Hero Section -->
     <header class="hero">
+        <a href="https://www.musicknobs.com" class="home-btn" aria-label="Volver al inicio" target="_blank">
+            <i class="fas fa-home"></i>
+        </a>
         <div class="hero-content">
             <h1>El Arte de la Producción Musical</h1>
             <p>Descubre los secretos para crear sonido profesional.</p>
             <a href="https://www.amazon.com.mx/dp/B0DN2Y4419" target="_blank" class="btn">Comprar en Amazon</a>
         </div>
         <div class="book-cover-container">
-            <img src="LibroPortada.png" alt="Portada del libro El Arte de la Producción Musical" class="book-cover-scroll">
+            <img src="https://raw.githubusercontent.com/jgmansur/musicknobs/921c823211fa20be985c5ffe51c849de7227bc5e/elartedelaproduccionmusical/LibroPortada.png" alt="Portada del libro El Arte de la Producción Musical" class="book-cover-scroll">
         </div>
     </header>
 
+    <!-- About the Book Section -->
     <section class="about-book">
         <div class="container">
             <h2>Transforma tu Pasión en Sonido Profesional</h2>
-            <p>Este libro es tu compañero esencial en el viaje de la producción musical. Desde los fundamentos de la acústica hasta las técnicas avanzadas de mezcla y masterización, "El Arte de la Producción Musical" te guiará paso a paso para que tus creaciones alcancen la calidad que siempre has soñado.</p>
-            <ul>
-                <li>✅  **Conceptos Claros:** Explora la teoría musical y la física del sonido de manera sencilla.</li>
-                <li>✅  **Técnicas de Estudio:** Aprende a usar DAWs, micrófonos y equipo como un profesional.</li>
-                <li>✅  **Mezcla y Masterización:** Domina el arte de pulir y dar el toque final a tus pistas.</li>
-                <li>✅  **Creatividad Ilimitada:** Desbloquea tu potencial para componer y arreglar.</li>
-            </ul>
+            <p>
+                ¿Alguna vez has sentido la frustración de tener una melodía increíble en tu cabeza, pero no saber cómo plasmarla en una producción que suene profesional? ¿Te has perdido entre la jerga técnica, los tutoriales interminables y el mar de plugins que prometen resultados mágicos sin una base sólida? "El Arte de la Producción Musical" es la brújula que necesitas en tu viaje creativo.
+            </p>
+            <p>
+                Este no es solo un manual técnico; es una hoja de ruta diseñada para llevarte desde los fundamentos del sonido hasta las técnicas avanzadas de mezcla y masterización, transformando tu pasión en habilidad y tus ideas en obras maestras sonoras. A lo largo de estas páginas, desmitificaremos conceptos complejos y te proporcionaremos un marco de trabajo claro y práctico. Aprenderás a escuchar de manera crítica, a tomar decisiones informadas y a utilizar tus herramientas con intención y propósito.
+            </p>
+            <p>
+                Este libro es para el músico que quiere autoproducirse, para el aspirante a ingeniero de sonido que busca una guía estructurada y para cualquier creativo que desee entender el lenguaje universal de la música grabada. Prepárate para desbloquear tu potencial y dar vida al sonido que siempre has imaginado.
+            </p>
             <a href="https://www.amazon.com.mx/dp/B0DN2Y4419" target="_blank" class="btn secondary-btn">Ver Detalles y Comprar</a>
         </div>
     </section>
-
-    <section class="features">
+    
+    <!-- Reviews Section -->
+    <section class="reviews">
         <div class="container">
-            <h2>¿Qué Aprenderás?</h2>
-            <div class="feature-grid">
-                <div class="feature-item">
-                    <h3>Fundamentos del Audio</h3>
-                    <p>Comprende la frecuencia, amplitud, timbre y cómo interactúan en tus producciones.</p>
+            <h2>Opiniones de los Lectores</h2>
+            <div class="review-card">
+                <div class="review-header">
+                    <div class="review-author">Inma mateu</div>
+                    <div class="review-stars">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="far fa-star"></i>
+                    </div>
                 </div>
-                <div class="feature-item">
-                    <h3>Uso de DAWs</h3>
-                    <p>Saca el máximo provecho a tu software favorito: Ableton Live, Logic Pro, FL Studio y más.</p>
-                </div>
-                <div class="feature-item">
-                    <h3>Grabación Profesional</h3>
-                    <p>Desde la elección del micrófono hasta la optimización de tu espacio de grabación.</p>
-                </div>
-                <div class="feature-item">
-                    <h3>Mezcla y Masterización</h3>
-                    <p>Ecualización, compresión, reverberación y todos los efectos para un sonido pulido.</p>
+                <p class="review-body">
+                    "Esta muy bien para principiantes y mas avanzados ..informacion e historia de los compresores delays, y un poco de la industria."
+                </p>
+                <div class="review-meta">
+                    Comentado en España el 30 de abril de 2025 | <span class="verified">Compra verificada</span>
                 </div>
             </div>
         </div>
     </section>
 
+    <!-- Footer -->
     <footer class="footer">
         <div class="container">
             <p>&copy; 2024 El Arte de la Producción Musical. Todos los derechos reservados.</p>
-            <p>Encuéntrame en <a href="https://www.amazon.com.mx/dp/B0DN2Y4419" target="_blank">Amazon</a></p>
+            <p>Encuéntralo en <a href="https://www.amazon.com.mx/dp/B0DN2Y4419" target="_blank">Amazon</a></p>
         </div>
     </footer>
+
 </body>
 </html>
