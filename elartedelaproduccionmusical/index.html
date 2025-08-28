@@ -94,7 +94,7 @@
 
         /* Header - Hero Section */
         .hero {
-            min-height: 70vh;
+            min-height: 100vh;
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -106,20 +106,31 @@
             padding: 40px 20px;
         }
 
-        /* Capa de fondo con la imagen difuminada y oscurecida */
-        .hero::before {
+        #hero-video {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            min-width: 100%;
+            min-height: 100%;
+            width: auto;
+            height: auto;
+            z-index: 1;
+            transform: translateX(-50%) translateY(-50%);
+        }
+
+        /* Capa de fondo oscurecida sobre el video */
+        .hero::after {
             content: '';
             position: absolute;
-            top: -10px; right: -10px; bottom: -10px; left: -10px;
-            background: url('https://raw.githubusercontent.com/jgmansur/musicknobs/921c823211fa20be985c5ffe51c849de7227bc5e/elartedelaproduccionmusical/LibroPortada.png') no-repeat center center/cover;
-            filter: blur(8px) brightness(0.2);
-            z-index: 1;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(0, 0, 0, 0.6);
+            z-index: 2;
         }
         
         /* Contenido del Hero (texto y portada) debe estar por encima del fondo */
-        .hero-content, .book-cover-container {
+        .hero-content, .book-cover-container, .home-btn {
             position: relative;
-            z-index: 2;
+            z-index: 3;
         }
 
         .hero h1 {
@@ -143,7 +154,6 @@
             position: absolute;
             top: 20px;
             right: 20px;
-            z-index: 10;
             background-color: rgba(255, 255, 255, 0.1);
             color: white;
             width: 45px;
@@ -363,6 +373,9 @@
 
     <!-- Hero Section -->
     <header class="hero">
+        <video autoplay muted playsinline id="hero-video">
+            <source src="https://raw.githubusercontent.com/jgmansur/musicknobs/f7a359b25093eff671b75b1c397ef1675f6a471d/elartedelaproduccionmusical/Video_Promocional_de_Libro_en_Amazon.mp4" type="video/mp4">
+        </video>
         <a href="https://www.musicknobs.com" class="home-btn" aria-label="Volver al inicio" target="_blank">
             <i class="fas fa-home"></i>
         </a>
