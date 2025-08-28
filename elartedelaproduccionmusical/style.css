@@ -100,7 +100,7 @@ a:hover {
 
 /* Header - Hero Section */
 .hero {
-    background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('Libro - El Arte de la Produccion Musical - Portada Diseño Sesión.png') no-repeat center center/cover;
+    background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('LibroPortada.png') no-repeat center center/cover;
     min-height: 70vh;
     display: flex;
     flex-direction: column; /* Cambiado a columna para mejor layout en móvil */
