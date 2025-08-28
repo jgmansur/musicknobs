@@ -128,7 +128,7 @@
         }
         
         /* Contenido del Hero (texto y portada) debe estar por encima del fondo */
-        .hero-content, .book-cover-container, .home-btn {
+        .hero-content, .book-cover-container, .home-btn, .mute-btn {
             position: relative;
             z-index: 3;
         }
@@ -149,11 +149,11 @@
              text-shadow: 1px 1px 2px rgba(0,0,0,0.7);
         }
         
-        /* Botón de Home */
-        .home-btn {
+        /* Botones de Iconos en la cabecera */
+        .icon-btn {
             position: absolute;
             top: 20px;
-            right: 20px;
+            z-index: 10;
             background-color: rgba(255, 255, 255, 0.1);
             color: white;
             width: 45px;
@@ -166,13 +166,23 @@
             text-decoration: none;
             transition: background-color 0.3s ease, transform 0.3s ease;
             border: 1px solid rgba(255, 255, 255, 0.2);
+            cursor: pointer;
+            padding: 0;
         }
-
-        .home-btn:hover {
+        .icon-btn:hover {
             background-color: rgba(255, 255, 255, 0.2);
             transform: scale(1.1);
-            text-decoration: none;
         }
+        .home-btn {
+            right: 20px;
+        }
+        .mute-btn {
+            left: 20px;
+        }
+        .home-btn:hover {
+             text-decoration: none;
+        }
+
 
         /* Animación de portada */
         .book-cover-container {
@@ -349,7 +359,9 @@
             .hero h1 { font-size: 3em; }
             .hero p { font-size: 1.1em; }
             .btn { padding: 10px 20px; }
-            .home-btn { top: 15px; right: 15px; width: 40px; height: 40px; }
+            .icon-btn { top: 15px; width: 40px; height: 40px; }
+            .home-btn { right: 15px; }
+            .mute-btn { left: 15px; }
             .book-cover-container {
                 width: 200px;
                 height: 280px;
@@ -373,12 +385,15 @@
 
     <!-- Hero Section -->
     <header class="hero">
-        <video autoplay muted playsinline id="hero-video">
+        <video autoplay playsinline id="hero-video">
             <source src="https://raw.githubusercontent.com/jgmansur/musicknobs/f7a359b25093eff671b75b1c397ef1675f6a471d/elartedelaproduccionmusical/Video_Promocional_de_Libro_en_Amazon.mp4" type="video/mp4">
         </video>
-        <a href="https://www.musicknobs.com" class="home-btn" aria-label="Volver al inicio" target="_blank">
+        <a href="https://www.musicknobs.com" class="home-btn icon-btn" aria-label="Volver al inicio" target="_blank">
             <i class="fas fa-home"></i>
         </a>
+        <button id="mute-btn" class="icon-btn" aria-label="Silenciar/Activar sonido">
+            <i class="fas fa-volume-mute"></i>
+        </button>
         <div class="hero-content">
             <h1>El Arte de la Producción Musical</h1>
             <p>Descubre los secretos para crear sonido profesional.</p>
@@ -438,6 +453,45 @@
             <p>Encuéntralo en <a href="https://www.amazon.com.mx/dp/B0DN2Y4419" target="_blank">Amazon</a></p>
         </div>
     </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const video = document.getElementById('hero-video');
+            const muteBtn = document.getElementById('mute-btn');
+            const muteIcon = muteBtn.querySelector('i');
+
+            // Intentamos reproducir con sonido.
+            video.muted = false;
+            const playPromise = video.play();
+
+            if (playPromise !== undefined) {
+                playPromise.then(_ => {
+                    // Autoplay con sonido funcionó.
+                    muteIcon.classList.remove('fa-volume-mute');
+                    muteIcon.classList.add('fa-volume-high');
+                }).catch(error => {
+                    // Autoplay con sonido fue bloqueado por el navegador.
+                    // El video ya está en autoplay, pero sin sonido.
+                    // Dejamos el icono en 'mute' y el video ya está silenciado por defecto por el navegador.
+                    console.warn("Autoplay con sonido bloqueado. El usuario debe interactuar para activar el audio.");
+                    video.muted = true;
+                    muteIcon.classList.remove('fa-volume-high');
+                    muteIcon.classList.add('fa-volume-mute');
+                });
+            }
+
+            muteBtn.addEventListener('click', () => {
+                video.muted = !video.muted;
+                if (video.muted) {
+                    muteIcon.classList.remove('fa-volume-high');
+                    muteIcon.classList.add('fa-volume-mute');
+                } else {
+                    muteIcon.classList.remove('fa-volume-mute');
+                    muteIcon.classList.add('fa-volume-high');
+                }
+            });
+        });
+    </script>
 
 </body>
 </html>
