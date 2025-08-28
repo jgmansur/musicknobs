@@ -128,7 +128,7 @@
         }
         
         /* Contenido del Hero (texto y portada) debe estar por encima del fondo */
-        .hero-content, .book-cover-container, .home-btn, .mute-btn {
+        .hero-content, .book-cover-container, .top-controls {
             position: relative;
             z-index: 3;
         }
@@ -149,11 +149,24 @@
              text-shadow: 1px 1px 2px rgba(0,0,0,0.7);
         }
         
-        /* Botones de Iconos en la cabecera */
-        .icon-btn {
+        /* Contenedor para botones superiores */
+        .top-controls {
             position: absolute;
             top: 20px;
-            z-index: 10;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 20px;
+            box-sizing: border-box;
+        }
+
+        .top-left-controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        /* Botones de Iconos en la cabecera */
+        .icon-btn {
             background-color: rgba(255, 255, 255, 0.1);
             color: white;
             width: 45px;
@@ -164,23 +177,33 @@
             align-items: center;
             font-size: 1.2em;
             text-decoration: none;
-            transition: background-color 0.3s ease, transform 0.3s ease;
+            transition: all 0.4s ease;
             border: 1px solid rgba(255, 255, 255, 0.2);
             cursor: pointer;
             padding: 0;
+            flex-shrink: 0;
         }
         .icon-btn:hover {
             background-color: rgba(255, 255, 255, 0.2);
             transform: scale(1.1);
         }
-        .home-btn {
-            right: 20px;
-        }
-        .mute-btn {
-            left: 20px;
-        }
         .home-btn:hover {
              text-decoration: none;
+        }
+        
+        #replay-btn {
+            width: 0;
+            opacity: 0;
+            padding: 0;
+            border-width: 0;
+            visibility: hidden;
+            overflow: hidden;
+        }
+        #replay-btn.visible {
+            width: 45px;
+            opacity: 1;
+            border-width: 1px;
+            visibility: visible;
         }
 
 
@@ -360,8 +383,7 @@
             .hero p { font-size: 1.1em; }
             .btn { padding: 10px 20px; }
             .icon-btn { top: 15px; width: 40px; height: 40px; }
-            .home-btn { right: 15px; }
-            .mute-btn { left: 15px; }
+            .top-controls { padding: 0 15px; }
             .book-cover-container {
                 width: 200px;
                 height: 280px;
@@ -385,15 +407,22 @@
 
     <!-- Hero Section -->
     <header class="hero">
-        <video autoplay playsinline id="hero-video">
+        <video autoplay muted playsinline id="hero-video">
             <source src="https://raw.githubusercontent.com/jgmansur/musicknobs/f7a359b25093eff671b75b1c397ef1675f6a471d/elartedelaproduccionmusical/Video_Promocional_de_Libro_en_Amazon.mp4" type="video/mp4">
         </video>
-        <a href="https://www.musicknobs.com" class="home-btn icon-btn" aria-label="Volver al inicio" target="_blank">
-            <i class="fas fa-home"></i>
-        </a>
-        <button id="mute-btn" class="icon-btn" aria-label="Silenciar/Activar sonido">
-            <i class="fas fa-volume-mute"></i>
-        </button>
+        <div class="top-controls">
+            <div class="top-left-controls">
+                <button id="mute-btn" class="icon-btn" aria-label="Silenciar/Activar sonido">
+                    <i class="fas fa-volume-mute"></i>
+                </button>
+                <button id="replay-btn" class="icon-btn" aria-label="Repetir con sonido">
+                    <i class="fas fa-redo"></i>
+                </button>
+            </div>
+            <a href="https://www.musicknobs.com" class="home-btn icon-btn" aria-label="Volver al inicio" target="_blank">
+                <i class="fas fa-home"></i>
+            </a>
+        </div>
         <div class="hero-content">
             <h1>El Arte de la Producción Musical</h1>
             <p>Descubre los secretos para crear sonido profesional.</p>
@@ -459,27 +488,33 @@
             const video = document.getElementById('hero-video');
             const muteBtn = document.getElementById('mute-btn');
             const muteIcon = muteBtn.querySelector('i');
+            const replayBtn = document.getElementById('replay-btn');
 
-            // Intentamos reproducir con sonido.
-            video.muted = false;
-            const playPromise = video.play();
+            let firstPlayEnded = false;
 
-            if (playPromise !== undefined) {
-                playPromise.then(_ => {
-                    // Autoplay con sonido funcionó.
-                    muteIcon.classList.remove('fa-volume-mute');
-                    muteIcon.classList.add('fa-volume-high');
-                }).catch(error => {
-                    // Autoplay con sonido fue bloqueado por el navegador.
-                    // El video ya está en autoplay, pero sin sonido.
-                    // Dejamos el icono en 'mute' y el video ya está silenciado por defecto por el navegador.
-                    console.warn("Autoplay con sonido bloqueado. El usuario debe interactuar para activar el audio.");
-                    video.muted = true;
-                    muteIcon.classList.remove('fa-volume-high');
-                    muteIcon.classList.add('fa-volume-mute');
-                });
-            }
+            // El video comienza silenciado por defecto para máxima compatibilidad.
+            video.play().catch(error => {
+                console.warn("La reproducción automática del video fue prevenida por el navegador.", error);
+            });
 
+            // Evento para cuando el video termina
+            video.addEventListener('ended', () => {
+                if (!firstPlayEnded) {
+                    replayBtn.classList.add('visible');
+                    firstPlayEnded = true;
+                }
+            });
+
+            // Evento para el botón de repetir con sonido
+            replayBtn.addEventListener('click', () => {
+                video.muted = false;
+                video.currentTime = 0;
+                video.play();
+                muteIcon.classList.remove('fa-volume-mute');
+                muteIcon.classList.add('fa-volume-high');
+            });
+
+            // Evento para el botón de silenciar/activar sonido
             muteBtn.addEventListener('click', () => {
                 video.muted = !video.muted;
                 if (video.muted) {
