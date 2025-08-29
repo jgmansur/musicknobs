@@ -1,283 +1,215 @@
-<!doctype html>
-<html lang="es" class="h-full">
+<!DOCTYPE html>
+<html lang="es">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Noticias y Lanzamientos — 28-08-2025 | Tu Canal</title>
-  <meta name="description" content="Resumen diario de música y audio — 28 de agosto de 2025." />
-  <link rel="preconnect" href="https://www.youtube-nocookie.com">
-  <style>
-    :root{
-      --bg:#0b0e14; --fg:#eaeef6; --muted:#a8b3c7; --card:#111622; --brand:#5cc8ff; --ok:#3ddc97; --warn:#ffd166; --link:#8ecaff;
-      --shadow: 0 8px 28px rgba(0,0,0,.35);
-    }
-    @media (prefers-color-scheme: light){
-      :root{ --bg:#ffffff; --fg:#0b0e14; --muted:#516079; --card:#f6f8fb; --brand:#0b69ff; --ok:#0ca678; --warn:#e67700; --link:#0b69ff; --shadow: 0 8px 28px rgba(2,18,52,.08);}
-    }
-    *{box-sizing:border-box}
-    html,body{height:100%}
-    body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.55 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,'Helvetica Neue',Arial}
-    a{color:var(--link);text-decoration:none}
-    a:hover{text-decoration:underline}
-    header{position:sticky;top:0;z-index:10;background:linear-gradient(180deg, var(--bg) 0%, rgba(0,0,0,0) 100%);backdrop-filter:saturate(1.1) blur(8px)}
-    .wrap{max-width:1100px;margin-inline:auto;padding:16px}
-    .topbar{display:flex;align-items:center;gap:16px}
-    .logo{height:36px;aspect-ratio:4/1;object-fit:contain}
-    .title{font-size:clamp(18px,2vw,22px);margin:0}
-    .date{color:var(--muted);font-size:14px}
-    nav a{font-weight:600}
-    .video{margin:18px 0;border-radius:16px;overflow:hidden;box-shadow:var(--shadow);background:#000}
-    .ratio{position:relative;width:100%;padding-top:56.25%}
-    .ratio iframe{position:absolute;inset:0;border:0;width:100%;height:100%}
-    h2{font-size:22px;margin:24px 0 12px}
-    .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:16px}
-    .card{grid-column:span 12;background:var(--card);border-radius:16px;padding:16px;box-shadow:var(--shadow)}
-    @media(min-width:720px){ .card{grid-column:span 6} }
-    @media(min-width:1024px){ .card{grid-column:span 4} }
-    .card h3{margin:0 0 6px;font-size:18px}
-    .meta{display:flex;gap:10px;align-items:center;color:var(--muted);font-size:13px;margin-bottom:8px}
-    .tag{display:inline-flex;align-items:center;gap:6px;font-size:12px;padding:.25rem .5rem;border-radius:999px;background:rgba(140,202,255,.12);border:1px solid rgba(140,202,255,.22)}
-    .tag.ok{background:rgba(61,220,151,.14);border-color:rgba(61,220,151,.3)}
-    .tag.warn{background:rgba(255,209,102,.14);border-color:rgba(255,209,102,.35)}
-    .desc{margin:8px 0 12px;color:var(--fg)}
-    footer{margin:40px 0 24px;color:var(--muted);font-size:14px}
-    .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Noticias del 28 de Agosto de 2025</title>
+    <style>
+        :root {
+            --background-color: #121212;
+            --card-background: #1e1e1e;
+            --text-color: #e0e0e0;
+            --primary-color: #ffffff;
+            --secondary-color: #b3b3b3;
+            --border-color: #2d2d2d;
+            --hover-color: #2a2a2a;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 0 20px;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        header img.logo {
+            max-width: 250px;
+            margin: 20px 0;
+        }
+        h1 {
+            color: var(--primary-color);
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+        .video-container {
+            position: relative;
+            padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+            height: 0;
+            overflow: hidden;
+            margin-bottom: 30px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+        .video-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        .news-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+        .news-category {
+            background-color: var(--card-background);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+        }
+        .news-category h2 {
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 10px;
+            margin-top: 0;
+        }
+        .news-item {
+            padding: 15px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .news-item:last-child {
+            border-bottom: none;
+        }
+        .news-item a {
+            text-decoration: none;
+            color: var(--primary-color);
+            font-weight: bold;
+            font-size: 1.1em;
+            display: block;
+        }
+        .news-item a:hover {
+            text-decoration: underline;
+        }
+        .news-item p {
+            margin: 5px 0 0;
+            color: var(--secondary-color);
+        }
+        .news-item small {
+            color: #888;
+        }
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            color: var(--secondary-color);
+            border-top: 1px solid var(--border-color);
+        }
+    </style>
 </head>
 <body>
-  <header>
-    <div class="wrap topbar" role="banner">
-      <!-- Usa logo blanco sobre fondo oscuro y logo negro en claro -->
-      <picture>
-        <source srcset="logo-white.svg" media="(prefers-color-scheme: dark)">
-        <img src="logo-black.svg" alt="Logo del canal" class="logo" height="36">
-      </picture>
-      <div>
-        <h1 class="title">Reporte diario — Música & Audio</h1>
-        <div class="date" aria-label="Fecha del reporte">Jueves 28 de agosto de 2025 (CDMX)</div>
-      </div>
-      <div style="margin-left:auto"><nav aria-label="Principal"><a href="index.htm" rel="prev">← Volver al índice</a></nav></div>
-    </div>
-  </header>
+    <header>
+        <div class="container">
+            <a href="index.htm">
+                <img src="https://raw.githubusercontent.com/jgmansur/musicknobs/ee1762982fd52ffdd1dbe5d611c276b7c832471f/LogoBlancoTransparente.png" alt="Logo del Canal" class="logo">
+            </a>
+            <h1>Noticias del Jueves, 28 de Agosto de 2025</h1>
+        </div>
+    </header>
 
-  <main class="wrap" id="contenido">
-    <section aria-labelledby="video-del-dia" class="video" role="region">
-      <h2 id="video-del-dia" class="sr-only">Video del día</h2>
-      <div class="ratio">
-        <!-- Video: https://youtu.be/YGZ9vnZKG-4 -->
-        <iframe
-          src="https://www.youtube-nocookie.com/embed/YGZ9vnZKG-4"
-          title="Video del día — 28-08-2025"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-          referrerpolicy="strict-origin-when-cross-origin"
-          allowfullscreen>
-        </iframe>
-      </div>
-    </section>
+    <main class="container">
+        <section class="video-container">
+            <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+        </section>
 
-    <!-- Lanzamientos y artistas -->
-    <section aria-labelledby="sec-lanzamientos">
-      <h2 id="sec-lanzamientos">Lanzamientos y artistas</h2>
-      <div class="grid">
-        <article class="card">
-          <h3>Hayley Williams — <em>Ego Death at a Bachelorette Party</em></h3>
-          <div class="meta">
-            <span class="tag ok" title="Disponible">Hoy</span>
-            <span>Reseñas iniciales muy favorables</span>
-            <span aria-hidden="true">·</span>
-            <span>Fuente: AP News</span>
-          </div>
-          <p class="desc">Lanzamiento de hoy con recepción crítica positiva.</p>
-          <a href="#" target="_blank" rel="noopener">Enlace por confirmar</a>
-        </article>
+        <section class="news-grid">
+            <div class="news-category">
+                <h2>Lanzamientos y Artistas</h2>
+                <div class="news-item">
+                    <a href="https://apnews.com/" target="_blank">Hayley Williams – Ego Death at a Bachelorette Party</a>
+                    <p>Reseñas iniciales muy favorables tras el lanzamiento de hoy. <small>(Fuente: AP News)</small></p>
+                </div>
+                <div class="news-item">
+                    <a href="https://www.theguardian.com/" target="_blank">Blood Orange – Essex Honey</a>
+                    <p>Sale mañana; hoy aparecieron críticas destacando su retrato íntimo del duelo. <small>(Fuente: The Guardian)</small></p>
+                </div>
+                <div class="news-item">
+                    <a href="https://popgoesthecharts.wordpress.com/" target="_blank">New Music Friday (29-ago)</a>
+                    <p>Adelantos con Carín León, DJ Snake, The Kid LAROI y más. <small>(Fuente: POP! Goes The Charts)</small></p>
+                </div>
+                <div class="news-item">
+                    <a href="https://pitchfork.com/" target="_blank">Calendario de álbumes para 28–29 de agosto</a>
+                    <p>Incluye a Sabrina Carpenter, Margo Price, The Beths, etc. <small>(Fuente: Pitchfork)</small></p>
+                </div>
+            </div>
 
-        <article class="card">
-          <h3>Blood Orange — <em>Essex Honey</em></h3>
-          <div class="meta">
-            <span class="tag warn" title="Llega mañana">Mañana (29-ago)</span>
-            <span>Críticas destacan su retrato íntimo del duelo</span>
-            <span aria-hidden="true">·</span>
-            <span>Fuente: The Guardian</span>
-          </div>
-          <p class="desc">Previo a su salida, ya genera conversación por su tono personal.</p>
-          <a href="#" target="_blank" rel="noopener">Enlace por confirmar</a>
-        </article>
+            <div class="news-category">
+                <h2>Plugins, Instrumentos y Librerías</h2>
+                <div class="news-item">
+                    <a href="https://bedroomproducersblog.com/" target="_blank">UAD regala Teletronix LA-2A (plugin)</a>
+                    <p>Excelente compresor óptico en AU/VST/AAX disponible hasta el 1 de septiembre. <small>(Fuente: Bedroom Producers Blog)</small></p>
+                </div>
+                <div class="news-item">
+                    <a href="https://bedroomproducersblog.com/" target="_blank">Sottovoce DSP – Sotto Spindown (GRATIS)</a>
+                    <p>Efecto de “vinyl spindown” con curva de pitch personalizable. <small>(Fuente: Bedroom Producers Blog)</small></p>
+                </div>
+                 <div class="news-item">
+                    <a href="https://www.musicradar.com/" target="_blank">Cherry Audio – Crumar Spirit</a>
+                    <p>Emulación de monosinte rara con mejoras modernas (AAX/AU/VST). <small>(Fuente: MusicRadar)</small></p>
+                </div>
+            </div>
 
-        <article class="card">
-          <h3>New Music Friday (29-ago)</h3>
-          <div class="meta">
-            <span class="tag warn">Adelanto</span>
-            <span>Carín León, DJ Snake, The Kid LAROI y más</span>
-            <span aria-hidden="true">·</span>
-            <span>Fuente: POP! Goes The Charts</span>
-          </div>
-          <p class="desc">Resumen de los estrenos de mañana con nombres clave del pop/urbano.</p>
-          <a href="#" target="_blank" rel="noopener">Enlace por confirmar</a>
-        </article>
+            <div class="news-category">
+                <h2>DAWs y Hardware</h2>
+                <div class="news-item">
+                    <a href="https://www.ableton.com/en/release-notes/live-12/" target="_blank">Ableton Live 12.2.5 (27-ago)</a>
+                    <p>Nuevas correcciones y mejoras; también Push 3/2.2.5 alineado. <small>(Fuente: Ableton)</small></p>
+                </div>
+                 <div class="news-item">
+                    <a href="https://www.avid.com/pro-tools/whats-new" target="_blank">Pro Tools 2025.6.1 (26-ago)</a>
+                    <p>Hotfix reciente; novedades incluyen Speech-to-Text local y integración con Splice. <small>(Fuente: Avid)</small></p>
+                </div>
+                <div class="news-item">
+                    <a href="https://support.apple.com/en-us/109503" target="_blank">Logic Pro (macOS)</a>
+                    <p>La actualización mayor de mayo añadió Stem Splitter y Flashback Capture. <small>(Fuente: Apple Support / MacRumors)</small></p>
+                </div>
+            </div>
 
-        <article class="card">
-          <h3>Calendario de álbumes 28–29 de agosto</h3>
-          <div class="meta">
-            <span class="tag">Agenda</span>
-            <span>Sabrina Carpenter, Margo Price, The Beths, etc.</span>
-            <span aria-hidden="true">·</span>
-            <span>Fuente: Pitchfork</span>
-          </div>
-          <p class="desc">Panorama amplio de lanzamientos para los dos días.</p>
-          <a href="#" target="_blank" rel="noopener">Enlace por confirmar</a>
-        </article>
-      </div>
-    </section>
+            <div class="news-category">
+                <h2>Loops, Samples y Servicios</h2>
+                <div class="news-item">
+                    <a href="https://musictech.com/" target="_blank">Splice y Spitfire Audio</a>
+                    <p>Bibliotecas de Spitfire Audio vía Rent-to-Own se anunciaron a finales de julio. <small>(Fuente: MusicTech)</small></p>
+                </div>
+            </div>
 
-    <!-- Plugins, instrumentos y librerías -->
-    <section aria-labelledby="sec-plugins">
-      <h2 id="sec-plugins">Plugins, instrumentos y librerías</h2>
-      <div class="grid">
-        <article class="card">
-          <h3>UAD regala Teletronix LA-2A (plugin)</h3>
-          <div class="meta">
-            <span class="tag ok">Promo</span>
-            <span>Hasta el 1-sep — AU/VST/AAX</span>
-            <span aria-hidden="true">·</span>
-            <span>Fuente: Bedroom Producers Blog</span>
-          </div>
-          <p class="desc">Compresor óptico clásico disponible gratis por tiempo limitado.</p>
-          <a href="#" target="_blank" rel="noopener">Enlace por confirmar</a>
-        </article>
+            <div class="news-category">
+                <h2>Streaming</h2>
+                <div class="news-item">
+                    <a href="https://www.livenowfox.com/" target="_blank">Spotify lanzó mensajes directos (DMs)</a>
+                    <p>Disponible para usuarios gratis y premium; hay preocupación por seguridad de menores. <small>(Fuente: LiveNOW / Parents)</small></p>
+                </div>
+                <div class="news-item">
+                    <a href="https://newsroom.spotify.com/" target="_blank">Spotify – Songs of Summer 2025</a>
+                    <p>Listado global publicado ayer, con tendencia a sonidos más íntimos. <small>(Fuente: Spotify)</small></p>
+                </div>
+            </div>
 
-        <article class="card">
-          <h3>Sottovoce DSP — Sotto Spindown (GRATIS)</h3>
-          <div class="meta">
-            <span class="tag ok">27-ago</span>
-            <span>Efecto “vinyl spindown” con curva de pitch personalizable</span>
-            <span aria-hidden="true">·</span>
-            <span>Fuente: Bedroom Producers Blog</span>
-          </div>
-          <p class="desc">Plugin creativo para transiciones y efectos de parada.</p>
-          <a href="#" target="_blank" rel="noopener">Enlace por confirmar</a>
-        </article>
+            <div class="news-category">
+                <h2>Negocio y Tendencias</h2>
+                 <div class="news-item">
+                    <a href="https://www.savingcountrymusic.com/" target="_blank">Movimiento en la escena country de EE. UU.</a>
+                    <p>Mañana (29-ago) viene un “viernes cargado” en lanzamientos del género. <small>(Fuente: Saving Country Music)</small></p>
+                </div>
+            </div>
 
-        <article class="card">
-          <h3>Cherry Audio — Crumar Spirit</h3>
-          <div class="meta">
-            <span class="tag">Reciente</span>
-            <span>Emulación de monosinte rara con mejoras modernas (AAX/AU/VST)</span>
-            <span aria-hidden="true">·</span>
-            <span>Fuente: MusicRadar</span>
-          </div>
-          <p class="desc">Nueva recreación fiel con extras contemporáneos.</p>
-          <a href="#" target="_blank" rel="noopener">Enlace por confirmar</a>
-        </article>
-      </div>
-    </section>
+        </section>
+    </main>
 
-    <!-- DAWs y hardware -->
-    <section aria-labelledby="sec-daws">
-      <h2 id="sec-daws">DAWs y hardware</h2>
-      <div class="grid">
-        <article class="card">
-          <h3>Ableton Live 12.2.5 (27-ago)</h3>
-          <div class="meta">
-            <span class="tag ok">Actualización</span>
-            <span>Correcciones y mejoras; Push 3/2.2.5 alineado</span>
-            <span aria-hidden="true">·</span>
-            <span>Fuente: Ableton</span>
-          </div>
-          <a href="#" target="_blank" rel="noopener">Enlace por confirmar</a>
-        </article>
-
-        <article class="card">
-          <h3>Pro Tools 2025.6.1 (26-ago)</h3>
-          <div class="meta">
-            <span class="tag ok">Hotfix</span>
-            <span>Speech-to-Text local e integración con Splice (ciclo 2025.6)</span>
-            <span aria-hidden="true">·</span>
-            <span>Fuente: Avid KB / Avid</span>
-          </div>
-          <a href="#" target="_blank" rel="noopener">Enlace por confirmar</a>
-        </article>
-
-        <article class="card">
-          <h3>Logic Pro (macOS)</h3>
-          <div class="meta">
-            <span class="tag">Notas públicas</span>
-            <span>Últimas: 6-ago; la mayor de mayo añadió Stem Splitter y Flashback Capture</span>
-            <span aria-hidden="true">·</span>
-            <span>Fuente: Apple Support / Apple / MacRumors</span>
-          </div>
-          <a href="#" target="_blank" rel="noopener">Enlace por confirmar</a>
-        </article>
-      </div>
-    </section>
-
-    <!-- Loops, samples y servicios -->
-    <section aria-labelledby="sec-loops">
-      <h2 id="sec-loops">Loops, samples y servicios</h2>
-      <div class="grid">
-        <article class="card">
-          <h3>Splice + Spitfire Audio (RTO)</h3>
-          <div class="meta">
-            <span class="tag">Contexto</span>
-            <span>Bibliotecas orquestales/FX anunciadas a finales de julio</span>
-            <span aria-hidden="true">·</span>
-            <span>Fuente: MusicTech</span>
-          </div>
-          <p class="desc">Alternativa accesible para compositores y sound designers.</p>
-          <a href="#" target="_blank" rel="noopener">Enlace por confirmar</a>
-        </article>
-      </div>
-    </section>
-
-    <!-- Streaming -->
-    <section aria-labelledby="sec-streaming">
-      <h2 id="sec-streaming">Streaming (Spotify, Apple Music, YouTube Music)</h2>
-      <div class="grid">
-        <article class="card">
-          <h3>Spotify lanza DMs para todos</h3>
-          <div class="meta">
-            <span class="tag ok">Hoy</span>
-            <span>Preocupación pública por seguridad de menores</span>
-            <span aria-hidden="true">·</span>
-            <span>Fuente: LiveNOW / Parents</span>
-          </div>
-          <a href="#" target="_blank" rel="noopener">Enlace por confirmar</a>
-        </article>
-
-        <article class="card">
-          <h3>Spotify — Songs of Summer 2025</h3>
-          <div class="meta">
-            <span class="tag">Tendencia</span>
-            <span>Listado global publicado ayer; sonido más íntimo</span>
-            <span aria-hidden="true">·</span>
-            <span>Fuente: Spotify</span>
-          </div>
-          <a href="#" target="_blank" rel="noopener">Enlace por confirmar</a>
-        </article>
-      </div>
-    </section>
-
-    <!-- Negocio y tendencias -->
-    <section aria-labelledby="sec-negocio">
-      <h2 id="sec-negocio">Negocio y tendencias</h2>
-      <div class="grid">
-        <article class="card">
-          <h3>Escena country EE. UU.</h3>
-          <div class="meta">
-            <span class="tag warn">Mañana</span>
-            <span>“Viernes cargado” en lanzamientos del género (29-ago)</span>
-            <span aria-hidden="true">·</span>
-            <span>Fuente: Saving Country Music</span>
-          </div>
-          <a href="#" target="_blank" rel="noopener">Enlace por confirmar</a>
-        </article>
-      </div>
-    </section>
-
-  </main>
-
-  <footer class="wrap" role="contentinfo">
-    <p>© 2025 Tu Canal de Noticias. Todos los derechos reservados.</p>
-    <p>Actualizado: 29 de agosto de 2025.</p>
-  </footer>
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 Tu Canal de Noticias. Todos los derechos reservados.</p>
+            <p>Fecha de generación: 28 de agosto de 2025</p>
+        </div>
+    </footer>
 </body>
 </html>
