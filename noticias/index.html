@@ -182,17 +182,29 @@
 
     <script>
         function searchNews() {
-            const keyword = document.getElementById('keywordSearch').value.toLowerCase();
+            const userInput = document.getElementById('keywordSearch').value.toLowerCase();
+            // Separa el texto del usuario en palabras individuales
+            const searchTerms = userInput.split(' ').filter(term => term);
+
             const date = document.getElementById('dateSearch').value;
             const newsItems = document.querySelectorAll('#newsList ul li');
+
             newsItems.forEach(item => {
-                const itemDate = item.getAttribute('data-date');
                 const itemKeywords = item.getAttribute('data-keywords').toLowerCase();
-                const keywordMatch = keyword === '' || itemKeywords.includes(keyword);
+                const itemDate = item.getAttribute('data-date');
+
+                // Revisa que CADA palabra buscada exista en las palabras clave del artículo
+                const keywordMatch = searchTerms.every(term => itemKeywords.includes(term));
                 const dateMatch = date === '' || itemDate === date;
-                item.style.display = (keywordMatch && dateMatch) ? 'block' : 'none';
+
+                if (keywordMatch && dateMatch) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
             });
         }
+
         function clearSearch() {
             document.getElementById('keywordSearch').value = '';
             document.getElementById('dateSearch').value = '';
