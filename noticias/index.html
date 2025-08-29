@@ -166,7 +166,7 @@
             <h2>Últimos Reportes</h2>
             <div id="newsList" class="news-list">
                 <ul>
-                    <li data-date="2025-08-28" data-keywords="Hayley Williams, Blood Orange, Spotify, Ableton, Pro Tools, Logic Pro">
+                    <li data-date="2025-08-28" data-keywords="Hayley Williams, Blood Orange, Spotify, Ableton, Pro Tools, Logic Pro, UAD, Teletronix, LA-2A, Sottovoce, Splice">
                         <a href="28082025.html">Noticias del Jueves, 28 de Agosto de 2025</a>
                     </li>
                 </ul>
@@ -183,17 +183,13 @@
     <script>
         function searchNews() {
             const userInput = document.getElementById('keywordSearch').value.toLowerCase();
-            // Separa el texto del usuario en palabras individuales
             const searchTerms = userInput.split(' ').filter(term => term);
-
             const date = document.getElementById('dateSearch').value;
             const newsItems = document.querySelectorAll('#newsList ul li');
 
             newsItems.forEach(item => {
                 const itemKeywords = item.getAttribute('data-keywords').toLowerCase();
                 const itemDate = item.getAttribute('data-date');
-
-                // Revisa que CADA palabra buscada exista en las palabras clave del artículo
                 const keywordMatch = searchTerms.every(term => itemKeywords.includes(term));
                 const dateMatch = date === '' || itemDate === date;
 
