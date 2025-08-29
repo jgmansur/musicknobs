@@ -13,6 +13,7 @@
             --secondary-color: #b3b3b3;
             --border-color: #2d2d2d;
             --hover-color: #2a2a2a;
+            --button-secondary-bg: #333;
         }
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -29,6 +30,8 @@
         header {
             text-align: center;
             margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
         }
         header img.logo {
             max-width: 250px;
@@ -37,30 +40,55 @@
         h1 {
             color: var(--primary-color);
         }
+        .nav-button {
+            display: inline-block;
+            padding: 10px 20px;
+            margin-top: 15px;
+            background-color: var(--primary-color);
+            color: var(--background-color);
+            text-decoration: none;
+            font-weight: bold;
+            border-radius: 5px;
+            transition: transform 0.2s;
+        }
+        .nav-button:hover {
+            transform: scale(1.05);
+        }
         .search-container {
             background-color: var(--card-background);
             padding: 20px;
             border-radius: 8px;
             margin-bottom: 30px;
             border: 1px solid var(--border-color);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
         }
-        .search-container input[type="text"], .search-container input[type="date"] {
-            width: calc(50% - 25px);
+        .search-container input {
+            flex-grow: 1;
             padding: 10px;
-            margin-right: 10px;
             border-radius: 5px;
             border: 1px solid #444;
             background-color: #333;
             color: var(--text-color);
+            min-width: 150px; /* For responsiveness */
         }
         .search-container button {
             padding: 10px 15px;
             border-radius: 5px;
             border: none;
-            background-color: var(--primary-color);
-            color: var(--background-color);
             cursor: pointer;
             font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        .search-button {
+            background-color: var(--primary-color);
+            color: var(--background-color);
+        }
+        .clear-button {
+            background-color: var(--button-secondary-bg);
+            color: var(--primary-color);
         }
         .news-list-container {
             background-color: var(--card-background);
@@ -105,8 +133,11 @@
 <body>
     <header>
         <div class="container">
-            <img src="https://raw.githubusercontent.com/jgmansur/musicknobs/ee1762982fd52ffdd1dbe5d611c276b7c832471f/LogoBlancoTransparente.png" alt="Logo del Canal" class="logo">
+            <a href="index.htm">
+                <img src="https://raw.githubusercontent.com/jgmansur/musicknobs/ee1762982fd52ffdd1dbe5d611c276b7c832471f/LogoBlancoTransparente.png" alt="Logo del Canal" class="logo">
+            </a>
             <h1>Archivo de Noticias</h1>
+            <a href="http://www.musicknobs.com" class="nav-button" target="_blank">Ir a Musicknobs.com</a>
         </div>
     </header>
 
@@ -114,17 +145,19 @@
         <section class="search-container">
             <input type="text" id="keywordSearch" placeholder="Buscar por palabra clave...">
             <input type="date" id="dateSearch">
-            <button onclick="searchNews()">Buscar</button>
+            <button onclick="searchNews()" class="search-button">Buscar</button>
+            <button onclick="clearSearch()" class="clear-button">Limpiar</button>
         </section>
 
         <section class="news-list-container">
             <h2>Últimos Reportes</h2>
             <div id="newsList" class="news-list">
                 <ul>
+                    <!-- NUEVAS ENTRADAS SE AGREGAN AQUÍ -->
                     <li data-date="2025-08-28" data-keywords="Hayley Williams, Blood Orange, Spotify, Ableton, Pro Tools, Logic Pro">
                         <a href="28082025.html">Noticias del Jueves, 28 de Agosto de 2025</a>
                     </li>
-                    </ul>
+                </ul>
             </div>
         </section>
     </main>
@@ -153,6 +186,15 @@
                 } else {
                     item.style.display = 'none';
                 }
+            });
+        }
+
+        function clearSearch() {
+            document.getElementById('keywordSearch').value = '';
+            document.getElementById('dateSearch').value = '';
+            const newsItems = document.querySelectorAll('#newsList ul li');
+            newsItems.forEach(item => {
+                item.style.display = 'block';
             });
         }
     </script>
