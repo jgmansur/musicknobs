@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="es" class="h-full">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Índice — Reportes diarios | Tu Canal</title>
+  <meta name="description" content="Índice de noticias diarias de música y audio. Busca por fecha o por palabra clave." />
+  <style>
+    :root{
+      --bg:#0b0e14; --fg:#eaeef6; --muted:#a8b3c7; --card:#111622; --brand:#5cc8ff; --link:#8ecaff; --shadow: 0 8px 28px rgba(0,0,0,.35);
+      --chip:#1b2233;
+    }
+    @media (prefers-color-scheme: light){
+      :root{ --bg:#ffffff; --fg:#0b0e14; --muted:#516079; --card:#f6f8fb; --brand:#0b69ff; --link:#0b69ff; --chip:#e8eef7; --shadow:0 8px 28px rgba(2,18,52,.08) }
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.55 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,'Helvetica Neue',Arial}
+    a{color:var(--link);text-decoration:none} a:hover{text-decoration:underline}
+    header{position:sticky;top:0;z-index:10;background:linear-gradient(180deg, var(--bg) 0%, rgba(0,0,0,0) 100%);backdrop-filter:saturate(1.1) blur(8px)}
+    .wrap{max-width:1100px;margin-inline:auto;padding:16px}
+    .topbar{display:flex;align-items:center;gap:16px}
+    .logo{height:36px;aspect-ratio:4/1;object-fit:contain}
+    h1{font-size:clamp(20px,2.4vw,28px);margin:0}
+    .controls{display:grid;gap:12px;margin:18px 0;grid-template-columns:1fr}
+    @media(min-width:720px){ .controls{grid-template-columns: 1fr 1fr auto} }
+    .ctrl{background:var(--card);border-radius:12px;padding:10px 12px;display:flex;align-items:center;gap:10px}
+    input, button{font:inherit;border:0;background:transparent;color:inherit;outline:none}
+    input[type="date"]{color:var(--fg)}
+    button{background:var(--brand);color:#fff;border-radius:10px;padding:10px 14px;font-weight:700;cursor:pointer}
+    .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:16px}
+    .card{grid-column:span 12;background:var(--card);border-radius:16px;padding:16px;box-shadow:var(--shadow)}
+    @media(min-width:720px){ .card{grid-column:span 6} }
+    @media(min-width:1024px){ .card{grid-column:span 4} }
+    .card h3{margin:0 0 6px;font-size:18px}
+    .meta{color:var(--muted);font-size:13px;margin-bottom:8px}
+    .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+    .chip{background:var(--chip);border-radius:999px;padding:.25rem .5rem;font-size:12px}
+    footer{margin:40px 0 24px;color:var(--muted);font-size:14px}
+    .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap topbar" role="banner">
+      <picture>
+        <source srcset="logo-white.svg" media="(prefers-color-scheme: dark)">
+        <img src="logo-black.svg" alt="Logo del canal" class="logo" height="36">
+      </picture>
+      <h1>Índice de reportes diarios</h1>
+    </div>
+  </header>
+
+  <main class="wrap" id="app">
+    <section aria-labelledby="busqueda">
+      <h2 id="busqueda" class="sr-only">Buscar por fecha o palabra clave</h2>
+      <div class="controls" role="search">
+        <label class="ctrl" title="Filtrar por fecha exacta">
+          <span>📅 Fecha:</span>
+          <input id="f-fecha" type="date" aria-label="Filtrar por fecha" />
+        </label>
+        <label class="ctrl" title="Buscar por palabra clave en el título o notas">
+          <span>🔎 Buscar:</span>
+          <input id="f-texto" type="search" placeholder="Ej. Spotify, Ableton, lanzamiento…" aria-label="Buscar por palabra clave" />
+        </label>
+        <button id="limpiar" type="button" title="Limpiar filtros">Limpiar filtros</button>
+      </div>
+    </section>
+
+    <section aria-labelledby="lista" class="grid">
+      <h2 id="lista" class="sr-only">Lista de días publicados</h2>
+
+      <!-- Tarjeta de 28-08-2025 -->
+      <article class="card" data-date="2025-08-28" data-tags="spotify,ableton,blood orange,hayley williams,plugins,logic,pro tools">
+        <h3><a href="28-08-2025.html">28 de agosto de 2025</a></h3>
+        <div class="meta">Video + reporte diario con lanzamientos (Hayley Williams, Blood Orange), plugins (LA-2A), DAWs (Ableton, Pro Tools, Logic), streaming y más.</div>
+        <div class="chips" aria-label="Etiquetas">
+          <span class="chip">Lanzamientos</span>
+          <span class="chip">Plugins</span>
+          <span class="chip">DAWs</span>
+          <span class="chip">Streaming</span>
+        </div>
+      </article>
+
+      <!-- (Ejemplo de cómo se verá un nuevo día; duplicar y ajustar)
+      <article class="card" data-date="2025-08-29" data-tags="country,new music friday,spotify">
+        <h3><a href="29-08-2025.html">29 de agosto de 2025</a></h3>
+        <div class="meta">Video + reporte del viernes de lanzamientos (country cargado), New Music Friday y más.</div>
+        <div class="chips">
+          <span class="chip">Lanzamientos</span><span class="chip">Country</span><span class="chip">Listas</span>
+        </div>
+      </article>
+      -->
+
+    </section>
+  </main>
+
+  <footer class="wrap" role="contentinfo">
+    <p>© 2025 Tu Canal de Noticias. Todos los derechos reservados.</p>
+    <p>Actualizado: 29 de agosto de 2025.</p>
+  </footer>
+
+  <script>
+    (function(){
+      const $fecha = document.getElementById('f-fecha');
+      const $texto = document.getElementById('f-texto');
+      const $limpiar = document.getElementById('limpiar');
+      const cards = Array.from(document.querySelectorAll('.card[data-date]'));
+
+      function normaliza(s){ return (s||'').toLowerCase().normalize('NFD').replace(/\p{Diacritic}+/gu,''); }
+
+      function aplicaFiltros(){
+        const fDate = $fecha.value;
+        const fText = normaliza($texto.value);
+        let visible = 0;
+
+        for(const card of cards){
+          const cDate = card.getAttribute('data-date');
+          const cTags = normaliza(card.getAttribute('data-tags'));
+          const cText = normaliza(card.textContent);
+
+          const matchDate = !fDate || cDate === fDate;
+          const matchText = !fText || cText.includes(fText) || cTags.includes(fText);
+
+          const show = matchDate && matchText;
+          card.style.display = show ? '' : 'none';
+          if(show) visible++;
+        }
+
+        if(!document.getElementById('vacío')){
+          const msg = document.createElement('p');
+          msg.id = 'vacío';
+          msg.style.color = 'var(--muted)';
+          msg.style.marginTop = '8px';
+          msg.textContent = 'No hay resultados con los filtros actuales.';
+          document.querySelector('#app .grid').appendChild(msg);
+        }
+        document.getElementById('vacío').style.display = visible ? 'none' : '';
+      }
+
+      $fecha.addEventListener('change', aplicaFiltros);
+      $texto.addEventListener('input', aplicaFiltros);
+      $limpiar.addEventListener('click', ()=>{
+        $fecha.value = ''; $texto.value = ''; aplicaFiltros();
+      });
+
+      aplicaFiltros();
+    })();
+  </script>
+</body>
+</html>
