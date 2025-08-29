@@ -40,6 +40,20 @@
             font-size: 2em;
             margin-bottom: 10px;
         }
+        .nav-button-back {
+            display: inline-block;
+            padding: 8px 15px;
+            margin-bottom: 20px;
+            background-color: #333;
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: bold;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        .nav-button-back:hover {
+            background-color: #444;
+        }
         .video-container {
             position: relative;
             padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
@@ -113,6 +127,7 @@
                 <img src="https://raw.githubusercontent.com/jgmansur/musicknobs/ee1762982fd52ffdd1dbe5d611c276b7c832471f/LogoBlancoTransparente.png" alt="Logo del Canal" class="logo">
             </a>
             <h1>Noticias del Jueves, 28 de Agosto de 2025</h1>
+            <a href="index.htm" class="nav-button-back">‹ Volver al Archivo</a>
         </div>
     </header>
 
@@ -122,6 +137,7 @@
         </section>
 
         <section class="news-grid">
+            <!-- El resto del contenido de noticias permanece igual -->
             <div class="news-category">
                 <h2>Lanzamientos y Artistas</h2>
                 <div class="news-item">
@@ -141,7 +157,6 @@
                     <p>Incluye a Sabrina Carpenter, Margo Price, The Beths, etc. <small>(Fuente: Pitchfork)</small></p>
                 </div>
             </div>
-
             <div class="news-category">
                 <h2>Plugins, Instrumentos y Librerías</h2>
                 <div class="news-item">
@@ -157,7 +172,6 @@
                     <p>Emulación de monosinte rara con mejoras modernas (AAX/AU/VST). <small>(Fuente: MusicRadar)</small></p>
                 </div>
             </div>
-
             <div class="news-category">
                 <h2>DAWs y Hardware</h2>
                 <div class="news-item">
@@ -173,7 +187,6 @@
                     <p>La actualización mayor de mayo añadió Stem Splitter y Flashback Capture. <small>(Fuente: Apple Support / MacRumors)</small></p>
                 </div>
             </div>
-
             <div class="news-category">
                 <h2>Loops, Samples y Servicios</h2>
                 <div class="news-item">
@@ -181,7 +194,6 @@
                     <p>Bibliotecas de Spitfire Audio vía Rent-to-Own se anunciaron a finales de julio. <small>(Fuente: MusicTech)</small></p>
                 </div>
             </div>
-
             <div class="news-category">
                 <h2>Streaming</h2>
                 <div class="news-item">
@@ -193,7 +205,6 @@
                     <p>Listado global publicado ayer, con tendencia a sonidos más íntimos. <small>(Fuente: Spotify)</small></p>
                 </div>
             </div>
-
             <div class="news-category">
                 <h2>Negocio y Tendencias</h2>
                  <div class="news-item">
@@ -201,13 +212,12 @@
                     <p>Mañana (29-ago) viene un “viernes cargado” en lanzamientos del género. <small>(Fuente: Saving Country Music)</small></p>
                 </div>
             </div>
-
         </section>
     </main>
 
     <footer>
         <div class="container">
-            <p>© 2025 Tu Canal de Noticias. Todos los derechos reservados.</p>
+            <p>&copy; 2025 Tu Canal de Noticias. Todos los derechos reservados.</p>
             <p>Fecha de generación: 28 de agosto de 2025</p>
         </div>
     </footer>
