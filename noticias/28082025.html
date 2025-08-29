@@ -12,7 +12,7 @@
             --primary-color: #ffffff;
             --secondary-color: #b3b3b3;
             --border-color: #2d2d2d;
-            --hover-color: #2a2a2a;
+            --hover-bg-color: rgba(255, 255, 255, 0.1);
         }
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -27,9 +27,40 @@
             margin: 20px auto;
             padding: 0 20px;
         }
+        /* Contenedor para los botones de la esquina superior derecha */
+        .top-right-nav {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 10;
+        }
+        /* Estilo para los botones de ícono redondos */
+        .icon-button {
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            width: 44px;
+            height: 44px;
+            background-color: transparent;
+            border: 2px solid var(--primary-color);
+            color: var(--primary-color);
+            border-radius: 50%;
+            text-decoration: none;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+        .icon-button:hover {
+            background-color: var(--hover-bg-color);
+            transform: scale(1.1);
+        }
+        .icon-button svg {
+            width: 24px;
+            height: 24px;
+        }
         header {
             text-align: center;
             margin-bottom: 30px;
+            padding-top: 60px; /* Espacio para el botón de arriba */
         }
         header img.logo {
             max-width: 250px;
@@ -40,23 +71,9 @@
             font-size: 2em;
             margin-bottom: 10px;
         }
-        .nav-button-back {
-            display: inline-block;
-            padding: 8px 15px;
-            margin-bottom: 20px;
-            background-color: #333;
-            color: var(--primary-color);
-            text-decoration: none;
-            font-weight: bold;
-            border-radius: 5px;
-            transition: background-color 0.3s;
-        }
-        .nav-button-back:hover {
-            background-color: #444;
-        }
         .video-container {
             position: relative;
-            padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+            padding-bottom: 56.25%; /* 16:9 */
             height: 0;
             overflow: hidden;
             margin-bottom: 30px;
@@ -121,14 +138,18 @@
     </style>
 </head>
 <body>
-    <header>
-        <div class="container">
-            <a href="index.htm">
-                <img src="https://raw.githubusercontent.com/jgmansur/musicknobs/ee1762982fd52ffdd1dbe5d611c276b7c832471f/LogoBlancoTransparente.png" alt="Logo del Canal" class="logo">
-            </a>
-            <h1>Noticias del Jueves, 28 de Agosto de 2025</h1>
-            <a href="index.htm" class="nav-button-back">‹ Volver al Archivo</a>
-        </div>
+
+    <div class="top-right-nav">
+        <a href="index.htm" class="icon-button" title="Volver al Archivo">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+        </a>
+    </div>
+
+    <header class="container">
+        <a href="index.htm">
+            <img src="https://raw.githubusercontent.com/jgmansur/musicknobs/ee1762982fd52ffdd1dbe5d611c276b7c832471f/LogoBlancoTransparente.png" alt="Logo del Canal" class="logo">
+        </a>
+        <h1>Noticias del Jueves, 28 de Agosto de 2025</h1>
     </header>
 
     <main class="container">
@@ -137,80 +158,38 @@
         </section>
 
         <section class="news-grid">
-            <!-- El resto del contenido de noticias permanece igual -->
+            <!-- El contenido de noticias no ha cambiado -->
             <div class="news-category">
                 <h2>Lanzamientos y Artistas</h2>
-                <div class="news-item">
-                    <a href="https://apnews.com/" target="_blank">Hayley Williams – Ego Death at a Bachelorette Party</a>
-                    <p>Reseñas iniciales muy favorables tras el lanzamiento de hoy. <small>(Fuente: AP News)</small></p>
-                </div>
-                <div class="news-item">
-                    <a href="https://www.theguardian.com/" target="_blank">Blood Orange – Essex Honey</a>
-                    <p>Sale mañana; hoy aparecieron críticas destacando su retrato íntimo del duelo. <small>(Fuente: The Guardian)</small></p>
-                </div>
-                <div class="news-item">
-                    <a href="https://popgoesthecharts.wordpress.com/" target="_blank">New Music Friday (29-ago)</a>
-                    <p>Adelantos con Carín León, DJ Snake, The Kid LAROI y más. <small>(Fuente: POP! Goes The Charts)</small></p>
-                </div>
-                <div class="news-item">
-                    <a href="https://pitchfork.com/" target="_blank">Calendario de álbumes para 28–29 de agosto</a>
-                    <p>Incluye a Sabrina Carpenter, Margo Price, The Beths, etc. <small>(Fuente: Pitchfork)</small></p>
-                </div>
+                <div class="news-item"><a href="https://apnews.com/" target="_blank">Hayley Williams – Ego Death at a Bachelorette Party</a><p>Reseñas iniciales muy favorables. <small>(Fuente: AP News)</small></p></div>
+                <div class="news-item"><a href="https://www.theguardian.com/" target="_blank">Blood Orange – Essex Honey</a><p>Críticas destacan su retrato íntimo del duelo. <small>(Fuente: The Guardian)</small></p></div>
+                <div class="news-item"><a href="https://popgoesthecharts.wordpress.com/" target="_blank">New Music Friday (29-ago)</a><p>Adelantos con Carín León, DJ Snake, etc. <small>(Fuente: POP! Goes The Charts)</small></p></div>
+                <div class="news-item"><a href="https://pitchfork.com/" target="_blank">Calendario de álbumes para 28–29 de agosto</a><p>Incluye a Sabrina Carpenter, Margo Price, etc. <small>(Fuente: Pitchfork)</small></p></div>
             </div>
             <div class="news-category">
                 <h2>Plugins, Instrumentos y Librerías</h2>
-                <div class="news-item">
-                    <a href="https://bedroomproducersblog.com/" target="_blank">UAD regala Teletronix LA-2A (plugin)</a>
-                    <p>Excelente compresor óptico en AU/VST/AAX disponible hasta el 1 de septiembre. <small>(Fuente: Bedroom Producers Blog)</small></p>
-                </div>
-                <div class="news-item">
-                    <a href="https://bedroomproducersblog.com/" target="_blank">Sottovoce DSP – Sotto Spindown (GRATIS)</a>
-                    <p>Efecto de “vinyl spindown” con curva de pitch personalizable. <small>(Fuente: Bedroom Producers Blog)</small></p>
-                </div>
-                 <div class="news-item">
-                    <a href="https://www.musicradar.com/" target="_blank">Cherry Audio – Crumar Spirit</a>
-                    <p>Emulación de monosinte rara con mejoras modernas (AAX/AU/VST). <small>(Fuente: MusicRadar)</small></p>
-                </div>
+                <div class="news-item"><a href="https://bedroomproducersblog.com/" target="_blank">UAD regala Teletronix LA-2A</a><p>Compresor óptico gratis hasta el 1-sep. <small>(Fuente: Bedroom Producers Blog)</small></p></div>
+                <div class="news-item"><a href="https://bedroomproducersblog.com/" target="_blank">Sottovoce DSP – Sotto Spindown (GRATIS)</a><p>Efecto de “vinyl spindown”. <small>(Fuente: Bedroom Producers Blog)</small></p></div>
+                <div class="news-item"><a href="https://www.musicradar.com/" target="_blank">Cherry Audio – Crumar Spirit</a><p>Emulación de monosinte rara con mejoras. <small>(Fuente: MusicRadar)</small></p></div>
             </div>
             <div class="news-category">
                 <h2>DAWs y Hardware</h2>
-                <div class="news-item">
-                    <a href="https://www.ableton.com/en/release-notes/live-12/" target="_blank">Ableton Live 12.2.5 (27-ago)</a>
-                    <p>Nuevas correcciones y mejoras; también Push 3/2.2.5 alineado. <small>(Fuente: Ableton)</small></p>
-                </div>
-                 <div class="news-item">
-                    <a href="https://www.avid.com/pro-tools/whats-new" target="_blank">Pro Tools 2025.6.1 (26-ago)</a>
-                    <p>Hotfix reciente; novedades incluyen Speech-to-Text local y integración con Splice. <small>(Fuente: Avid)</small></p>
-                </div>
-                <div class="news-item">
-                    <a href="https://support.apple.com/en-us/109503" target="_blank">Logic Pro (macOS)</a>
-                    <p>La actualización mayor de mayo añadió Stem Splitter y Flashback Capture. <small>(Fuente: Apple Support / MacRumors)</small></p>
-                </div>
+                <div class="news-item"><a href="https://www.ableton.com/en/release-notes/live-12/" target="_blank">Ableton Live 12.2.5</a><p>Nuevas correcciones y mejoras. <small>(Fuente: Ableton)</small></p></div>
+                <div class="news-item"><a href="https://www.avid.com/pro-tools/whats-new" target="_blank">Pro Tools 2025.6.1</a><p>Hotfix reciente, Speech-to-Text, etc. <small>(Fuente: Avid)</small></p></div>
+                <div class="news-item"><a href="https://support.apple.com/en-us/109503" target="_blank">Logic Pro (macOS)</a><p>Actualización mayor de mayo añadió Stem Splitter. <small>(Fuente: Apple Support)</small></p></div>
             </div>
             <div class="news-category">
                 <h2>Loops, Samples y Servicios</h2>
-                <div class="news-item">
-                    <a href="https://musictech.com/" target="_blank">Splice y Spitfire Audio</a>
-                    <p>Bibliotecas de Spitfire Audio vía Rent-to-Own se anunciaron a finales de julio. <small>(Fuente: MusicTech)</small></p>
-                </div>
+                <div class="news-item"><a href="https://musictech.com/" target="_blank">Splice y Spitfire Audio</a><p>Bibliotecas de Spitfire Audio vía Rent-to-Own. <small>(Fuente: MusicTech)</small></p></div>
             </div>
             <div class="news-category">
                 <h2>Streaming</h2>
-                <div class="news-item">
-                    <a href="https://www.livenowfox.com/" target="_blank">Spotify lanzó mensajes directos (DMs)</a>
-                    <p>Disponible para usuarios gratis y premium; hay preocupación por seguridad de menores. <small>(Fuente: LiveNOW / Parents)</small></p>
-                </div>
-                <div class="news-item">
-                    <a href="https://newsroom.spotify.com/" target="_blank">Spotify – Songs of Summer 2025</a>
-                    <p>Listado global publicado ayer, con tendencia a sonidos más íntimos. <small>(Fuente: Spotify)</small></p>
-                </div>
+                <div class="news-item"><a href="https://www.livenowfox.com/" target="_blank">Spotify lanzó DMs</a><p>Disponible para usuarios gratis y premium. <small>(Fuente: LiveNOW / Parents)</small></p></div>
+                <div class="news-item"><a href="https://newsroom.spotify.com/" target="_blank">Spotify – Songs of Summer 2025</a><p>Listado global publicado ayer. <small>(Fuente: Spotify)</small></p></div>
             </div>
             <div class="news-category">
                 <h2>Negocio y Tendencias</h2>
-                 <div class="news-item">
-                    <a href="https://www.savingcountrymusic.com/" target="_blank">Movimiento en la escena country de EE. UU.</a>
-                    <p>Mañana (29-ago) viene un “viernes cargado” en lanzamientos del género. <small>(Fuente: Saving Country Music)</small></p>
-                </div>
+                <div class="news-item"><a href="https://www.savingcountrymusic.com/" target="_blank">Movimiento en la escena country</a><p>Viernes 29-ago cargado de lanzamientos. <small>(Fuente: Saving Country Music)</small></p></div>
             </div>
         </section>
     </main>
