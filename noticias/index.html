@@ -3,197 +3,159 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Archivo de Noticias</title>
+    <title>MusicKnobs - Reportes de Noticias</title>
     <style>
-        :root {
-            --background-color: #121212;
-            --card-background: #1e1e1e;
-            --text-color: #e0e0e0;
-            --primary-color: #ffffff;
-            --secondary-color: #b3b3b3;
-            --border-color: #2d2d2d;
-            --hover-bg-color: rgba(255, 255, 255, 0.1);
-        }
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #121212;
+            color: #e0e0e0;
             margin: 0;
-            padding: 0;
-            background-color: var(--background-color);
-            color: var(--text-color);
+            padding: 20px;
         }
-        .container {
-            max-width: 900px;
-            margin: 20px auto;
-            padding: 0 20px;
-        }
-        .top-right-nav {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            z-index: 10;
-        }
-        .icon-button {
-            display: inline-flex;
-            justify-content: center;
+        .header {
+            display: flex;
+            justify-content: space-between;
             align-items: center;
+            padding: 10px 20px;
+            position: sticky;
+            top: 0;
+            background-color: rgba(18, 18, 18, 0.85);
+            backdrop-filter: blur(10px);
+            z-index: 100;
+        }
+        .logo {
+            height: 50px;
+        }
+        .nav-button {
+            background-color: transparent;
+            border: 2px solid white;
+            border-radius: 50%;
             width: 44px;
             height: 44px;
-            background-color: transparent;
-            border: 2px solid var(--primary-color);
-            color: var(--primary-color);
-            border-radius: 50%;
-            text-decoration: none;
+            display: flex;
+            justify-content: center;
+            align-items: center;
             cursor: pointer;
-            transition: background-color 0.3s, transform 0.2s;
+            transition: background-color 0.2s ease;
         }
-        .icon-button:hover {
-            background-color: var(--hover-bg-color);
-            transform: scale(1.1);
+        .nav-button:hover {
+            background-color: rgba(255, 255, 255, 0.1);
         }
-        .icon-button svg {
-            width: 22px;
-            height: 22px;
-        }
-        header {
-            text-align: center;
-            padding-top: 60px;
-            margin-bottom: 30px;
-        }
-        header img.logo {
-            max-width: 250px;
-            margin: 20px 0;
-        }
-        h1 {
-            color: var(--primary-color);
+        .nav-button svg {
+            width: 24px;
+            height: 24px;
+            fill: white;
         }
         .search-container {
-            background-color: var(--card-background);
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 30px;
-            border: 1px solid var(--border-color);
             display: flex;
             flex-wrap: wrap;
             gap: 10px;
-            align-items: center;
-        }
-        .search-container input {
-            flex-grow: 1;
-            padding: 12px;
-            border-radius: 5px;
-            border: 1px solid #444;
-            background-color: #333;
-            color: var(--text-color);
-            min-width: 150px;
-        }
-        .search-container .icon-button {
-            width: 40px;
-            height: 40px;
-            border-width: 1px;
-        }
-        .search-container .icon-button svg {
-            width: 18px;
-            height: 18px;
-        }
-        .news-list-container {
-            background-color: var(--card-background);
+            margin: 20px 0;
             padding: 20px;
+            background-color: #1e1e1e;
             border-radius: 8px;
-            border: 1px solid var(--border-color);
         }
-        .news-list-container h2 {
-            margin-top: 0;
-            border-bottom: 2px solid var(--primary-color);
-            padding-bottom: 10px;
+        .search-container input, .search-container button {
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #333;
+            background-color: #2c2c2c;
+            color: #e0e0e0;
+            font-size: 16px;
         }
-        .news-list ul {
+        .search-container input[type="text"] {
+            flex-grow: 1;
+        }
+        .search-container button {
+            background-color: #333;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 44px;
+        }
+        .search-container button:hover {
+            background-color: #444;
+        }
+        #news-list {
             list-style: none;
             padding: 0;
         }
-        .news-list li {
-            margin-bottom: 10px;
+        .news-item {
+            background-color: #1e1e1e;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            overflow: hidden;
+            transition: transform 0.2s ease;
         }
-        .news-list a {
+        .news-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+        }
+        .news-item a {
             display: block;
-            padding: 15px;
-            background-color: #252525;
-            text-decoration: none;
-            color: var(--primary-color);
-            border-radius: 5px;
-            transition: background-color 0.3s;
-            font-weight: bold;
-        }
-        .news-list a:hover {
-            background-color: #3a3a3a;
-        }
-        footer {
-            text-align: center;
-            margin-top: 40px;
             padding: 20px;
-            color: var(--secondary-color);
-            border-top: 1px solid var(--border-color);
+            text-decoration: none;
+            color: #e0e0e0;
+        }
+        .news-item .date {
+            font-size: 0.9em;
+            color: #aaa;
+            margin-bottom: 5px;
+        }
+        .news-item .title {
+            font-size: 1.2em;
+            font-weight: bold;
         }
     </style>
 </head>
 <body>
 
-    <div class="top-right-nav">
-        <a href="https://www.musicknobs.com" class="icon-button" title="Ir a Musicknobs.com" target="_blank">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+    <header class="header">
+        <img src="https://raw.githubusercontent.com/jgmansur/musicknobs/ee1762982fd52ffdd1dbe5d611c276b7c832471f/LogoBlancoTransparente.png" alt="MusicKnobs Logo" class="logo">
+        <a href="https://www.musicknobs.com" target="_blank" class="nav-button" aria-label="Home">
+            <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
         </a>
-    </div>
-
-    <header class="container">
-        <a href="index.html">
-            <img src="https://raw.githubusercontent.com/jgmansur/musicknobs/ee1762982fd52ffdd1dbe5d611c276b7c832471f/LogoBlancoTransparente.png" alt="Logo del Canal" class="logo">
-        </a>
-        <h1>Archivo de Noticias</h1>
     </header>
 
-    <main class="container">
-        <section class="search-container">
+    <main>
+        <div class="search-container">
             <input type="text" id="keywordSearch" placeholder="Buscar por palabra clave...">
             <input type="date" id="dateSearch">
-            <button onclick="searchNews()" class="icon-button" title="Buscar">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <button onclick="searchNews()" aria-label="Buscar">
+                <svg viewBox="0 0 24 24" fill="white" width="20px" height="20px"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
             </button>
-            <button onclick="clearSearch()" class="icon-button" title="Limpiar búsqueda">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            <button onclick="clearSearch()" aria-label="Limpiar búsqueda">
+                <svg viewBox="0 0 24 24" fill="white" width="20px" height="20px"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
             </button>
-        </section>
-
-        <section class="news-list-container">
-            <h2>Últimos Reportes</h2>
-            <div id="newsList" class="news-list">
-                <ul>
-                    <li data-date="2025-08-28" data-keywords="Hayley Williams, Blood Orange, Spotify, Ableton, Pro Tools, Logic Pro, UAD, Teletronix, LA-2A, Sottovoce, Splice">
-                        <a href="28082025.html">Noticias del Jueves, 28 de Agosto de 2025</a>
-                    </li>
-                </ul>
-            </div>
-        </section>
-    </main>
-
-    <footer>
-        <div class="container">
-            <p>© 2025 Tu Canal de Noticias. Todos los derechos reservados.</p>
         </div>
-    </footer>
+
+        <ul id="news-list">
+            <li class="news-item" data-date="2025-08-29" data-keywords="Universal Audio,Labor Day,LA-2A,Dream ’65 Reverb Amp,Ruby ’63,Lion ’68,Woodrow ’55,Teletronix LA-3A,EL8 Dist.,Sound City Studios,Waves Audio,XLN Audio,Eventide,Pluginpalooza,Output,We Rave You,MusicRadar,Audio Plugin Guy,Guitar Center,EastWest,Plugin Alliance,Brainworx,SPL Vitalizer Mk3-T,Softube,Volume 6,Harrison Bass Flow,Solid State Logic,SSL,UJAM,SELECT 10 Bundle,Otto Audio,Facebook,Reddit,New York Post,Rekkerd.org,PluginDiscounts.com,Gearnews.com,plugins,instrumentos,descuentos,promociones,sale">
+                <a href="29082025.html">
+                    <div class="date">29 de agosto de 2025</div>
+                    <div class="title">Reporte: Promociones y Descuentos por Labor Day</div>
+                </a>
+            </li>
+            </ul>
+    </main>
 
     <script>
         function searchNews() {
-            const userInput = document.getElementById('keywordSearch').value.toLowerCase();
-            const searchTerms = userInput.split(' ').filter(term => term);
-            const date = document.getElementById('dateSearch').value;
-            const newsItems = document.querySelectorAll('#newsList ul li');
+            const keywordInput = document.getElementById('keywordSearch').value.toLowerCase().trim();
+            const dateInput = document.getElementById('dateSearch').value;
+            const newsItems = document.querySelectorAll('#news-list .news-item');
+            const searchKeywords = keywordInput.split(' ').filter(k => k);
 
             newsItems.forEach(item => {
-                const itemKeywords = item.getAttribute('data-keywords').toLowerCase();
                 const itemDate = item.getAttribute('data-date');
-                const keywordMatch = searchTerms.every(term => itemKeywords.includes(term));
-                const dateMatch = date === '' || itemDate === date;
+                const itemKeywords = item.getAttribute('data-keywords').toLowerCase();
+                
+                const matchesDate = !dateInput || itemDate === dateInput;
+                
+                const matchesKeywords = searchKeywords.length === 0 || searchKeywords.every(keyword => itemKeywords.includes(keyword));
 
-                if (keywordMatch && dateMatch) {
+                if (matchesDate && matchesKeywords) {
                     item.style.display = 'block';
                 } else {
                     item.style.display = 'none';
@@ -204,10 +166,20 @@
         function clearSearch() {
             document.getElementById('keywordSearch').value = '';
             document.getElementById('dateSearch').value = '';
-            document.querySelectorAll('#newsList ul li').forEach(item => {
+            const newsItems = document.querySelectorAll('#news-list .news-item');
+            newsItems.forEach(item => {
                 item.style.display = 'block';
             });
         }
+        
+        // Listen for enter key on keyword search
+        document.getElementById('keywordSearch').addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                searchNews();
+            }
+        });
     </script>
+
 </body>
 </html>
