@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reporte Diario - 30 de Agosto de 2025</title>
+    <style>
+        :root {
+            --background-color: #121212;
+            --card-color: #1e1e1e;
+            --text-color: #e0e0e0;
+            --primary-color: #bb86fc;
+            --border-color: #2c2c2c;
+        }
+        body {
+            background-color: var(--background-color);
+            color: var(--text-color);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 0 15px;
+        }
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            position: relative;
+        }
+        .logo {
+            width: 150px;
+            height: auto;
+        }
+        .back-button {
+            background-color: var(--card-color);
+            border: 1px solid var(--border-color);
+            border-radius: 50%;
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            color: var(--text-color);
+            transition: background-color 0.3s;
+        }
+        .back-button:hover {
+            background-color: #333;
+        }
+        .back-button svg {
+            width: 24px;
+            height: 24px;
+        }
+        .video-container {
+            position: relative;
+            padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+            height: 0;
+            overflow: hidden;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            background-color: #000;
+        }
+        .video-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: 0;
+        }
+        .news-section {
+            background-color: var(--card-color);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 25px;
+            border: 1px solid var(--border-color);
+        }
+        .news-section h2 {
+            margin-top: 0;
+            color: var(--primary-color);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+            font-size: 1.5em;
+        }
+        .news-item {
+            margin-bottom: 20px;
+        }
+        .news-item:last-child {
+            margin-bottom: 0;
+        }
+        .news-item h3 {
+            margin: 0 0 8px 0;
+            font-size: 1.2em;
+        }
+        .news-item p {
+            margin: 0 0 10px 0;
+            line-height: 1.6;
+        }
+        .news-item a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: bold;
+            transition: color 0.3s;
+        }
+        .news-item a:hover {
+            color: #d1b3ff;
+            text-decoration: underline;
+        }
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+            color: #888;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <img src="https://raw.githubusercontent.com/jgmansur/musicknobs/ee1762982fd52ffdd1dbe5d611c276b7c832471f/LogoBlancoTransparente.png" alt="Logo" class="logo">
+            <a href="index.html" class="back-button" aria-label="Volver al inicio">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="24px" height="24px"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12l4.58-4.59z"/></svg>
+            </a>
+        </header>
+
+        <main>
+            <div class="video-container">
+                <iframe src="https://www.youtube.com/embed/dfHsF2yZGPg" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+            </div>
+
+            <section class="news-section">
+                <h2>🎛️ Plugins e Instrumentos</h2>
+                <div class="news-item">
+                    <h3>Waves InTrigger: Realce de Batería con Toque Humano</h3>
+                    <p>Waves lanzó InTrigger, un plugin para realzar o reemplazar sonidos de batería con control fino y una función "Humanize" para evitar un sonido robótico. <a href="https://www.waves.com" target="_blank">Ver en Waves.com</a>.</p>
+                </div>
+                <div class="news-item">
+                    <h3>PreSonus StudioLive Series III SE: Edición Especial</h3>
+                    <p>PreSonus presenta una edición especial de su consola StudioLive Series III SE con un acabado renovado y mejoras de firmware, también gratuitas para usuarios existentes. <a href="https://www.presonus.com" target="_blank">Ver en PreSonus</a>.</p>
+                </div>
+                <div class="news-item">
+                    <h3>Softube: Canal de EQs Clásicos en un Plugin</h3>
+                    <p>Softube lanzó un plugin modular que permite cargar emulaciones de ecualizadores legendarios como Tube-Tech y Trident, creando un canal completo en tu DAW. <a href="https://www.softube.com" target="_blank">Ver en Softube.com</a>.</p>
+                </div>
+                <div class="news-item">
+                    <h3>David Guetta y Nicky Romero lanzan FASTER MASTER</h3>
+                    <p>Los productores se unen para crear un plugin de masterización diseñado para obtener resultados rápidos y de alta calidad en minutos. <a href="https://www.musicradar.com" target="_blank">Leer en MusicRadar</a>.</p>
+                </div>
+            </section>
+
+            <section class="news-section">
+                <h2>💸 Promociones y Ofertas Especiales</h2>
+                <div class="news-item">
+                    <h3>Fuse Audio Labs Flywheel en Oferta</h3>
+                    <p>El simulador de cinta analógica Flywheel tiene un gran descuento, disponible por solo 18 dólares (normalmente $70) hasta el 31 de agosto. <a href="https://www.plugin-boutique.com/" target="_blank">Comprar en Plugin Boutique</a> | <a href="https://bedroomproducersblog.com/" target="_blank">Ver nota en BPB</a>.</p>
+                </div>
+            </section>
+
+            <section class="news-section">
+                <h2>📲 Streaming (Spotify, Apple Music y más)</h2>
+                <div class="news-item">
+                    <h3>Playboi Carti Rompe Récords en Spotify</h3>
+                    <p>Su nuevo álbum "Music" superó los 139 millones de streams en pocos días. El tema "Evil Jordan" debutó con 9.5 millones en una sola jornada. <a href="https://chartmasters.org/" target="_blank">Ver datos en Chartmasters</a> | <a href="https://www.reddit.com/" target="_blank">Nota en Reddit</a>.</p>
+                </div>
+                <div class="news-item">
+                    <h3>LISA, Doja Cat y RAYE lanzan "Born Again"</h3>
+                    <p>La colaboración alcanzó 6.2 millones de reproducciones en Spotify durante su primer día.</p>
+                </div>
+                <div class="news-item">
+                    <h3>Apple Music Facilita la Migración desde Spotify</h3>
+                    <p>Apple Music ha integrado una nueva función nativa para transferir playlists directamente desde Spotify, simplificando el cambio de plataforma. <a href="https://pitchfork.com/" target="_blank">Leer en Pitchfork</a>.</p>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>&copy; 2025 Noticias de Producción Musical. Generado el 30 de agosto de 2025.</p>
+        </footer>
+    </div>
+
+</body>
+</html>
