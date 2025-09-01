@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reporte Diario - 01 de Septiembre, 2025</title>
+    <style>
+        :root {
+            --background-color: #121212;
+            --card-color: #1e1e1e;
+            --text-color: #e0e0e0;
+            --primary-color: #bb86fc;
+            --font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            background-color: var(--background-color);
+            color: var(--text-color);
+            font-family: var(--font-family);
+            margin: 0;
+            padding: 0;
+        }
+        .header {
+            text-align: center;
+            padding: 20px 0;
+            border-bottom: 1px solid var(--card-color);
+        }
+        .header img {
+            max-width: 200px;
+            height: auto;
+        }
+        .back-button {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: var(--card-color);
+            color: var(--text-color);
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            font-size: 24px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            transition: background-color 0.3s;
+        }
+        .back-button:hover {
+            background-color: #333;
+        }
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 0 20px;
+        }
+        h1, h2 {
+            text-align: center;
+            color: var(--primary-color);
+        }
+        .video-container {
+            position: relative;
+            width: 100%;
+            overflow: hidden;
+            padding-top: 56.25%; /* 16:9 Aspect Ratio */
+            margin-bottom: 40px;
+            border-radius: 8px;
+        }
+        .video-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: 0;
+        }
+        .news-grid {
+            display: grid;
+            gap: 20px;
+        }
+        .news-card {
+            background-color: var(--card-color);
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid var(--primary-color);
+        }
+        .news-card h3 {
+            margin-top: 0;
+            font-size: 1.2em;
+        }
+        .news-card p {
+            margin-bottom: 10px;
+            line-height: 1.6;
+        }
+        .news-card a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .news-card a:hover {
+            text-decoration: underline;
+        }
+        .footer {
+            text-align: center;
+            padding: 20px;
+            margin-top: 40px;
+            font-size: 0.9em;
+            color: #888;
+            border-top: 1px solid var(--card-color);
+        }
+    </style>
+</head>
+<body>
+
+    <header class="header">
+        <a href="index.html">
+            <img src="https://raw.githubusercontent.com/jgmansur/musicknobs/ee1762982fd52ffdd1dbe5d611c276b7c832471f/LogoBlancoTransparente.png" alt="Logo">
+        </a>
+    </header>
+
+    <a href="index.html" class="back-button" aria-label="Volver al inicio">&#x2190;</a>
+
+    <div class="container">
+        <h1>Reporte del 01 de Septiembre, 2025</h1>
+
+        <h2>Video del Día</h2>
+        <div class="video-container">
+            <iframe src="https://www.youtube.com/embed/jIX5Ym3zgew" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+        </div>
+
+        <h2>Noticias del Día</h2>
+        <div class="news-grid">
+            
+            <div class="news-card">
+                <h3>Amazon Music lanza resumen mensual para usuarios</h3>
+                <p>La nueva función muestra a los usuarios un resumen con sus artistas, canciones y podcasts más reproducidos, e incluye hasta una insignia de “Top Listener” para reforzar el engagement.</p>
+                <p><em>Fuente: RouteNote</em></p>
+            </div>
+
+            <div class="news-card">
+                <h3>Instagram endurece las reglas para transmitir en vivo</h3>
+                <p>La plataforma ahora requiere tener una cuenta pública y un mínimo de 1,000 seguidores para hacer livestreaming, una medida que podría afectar a artistas emergentes.</p>
+                <p><em>Fuente: RouteNote</em></p>
+            </div>
+
+            <div class="news-card">
+                <h3>Spotify aumenta precios y expande su servicio de audiolibros</h3>
+                <p>Se confirmó un aumento en las tarifas del plan Premium en regiones como América Latina y Europa. Además, la función Audiobooks+ se amplió a países como EE. UU., Reino Unido, Australia y Canadá.</p>
+                <p><em>Fuente: RouteNote</em></p>
+            </div>
+
+            <div class="news-card">
+                <h3>TikTok y Tomorrowland 2025 rompen récord de audiencia</h3>
+                <p>El livestream del festival alcanzó la cifra de 74 millones de espectadores únicos, superando ampliamente la marca anterior de la plataforma.</p>
+                <p><em>Fuente: RouteNote</em></p>
+            </div>
+
+            <div class="news-card">
+                <h3>Se firma el primer contrato discográfico con un creador de IA en Reino Unido</h3>
+                <p>El proyecto 'imoliver', que genera música a partir de prompts de chatbot, ya acumuló 3 millones de streams y abre un nuevo debate sobre la naturaleza de la creación musical.</p>
+                <p><em>Fuente: Noticias de la Industria Musical</em></p>
+            </div>
+            
+            <div class="news-card">
+                <h3>El 90's Pop Tour se renueva en México</h3>
+                <p>Se anunció el regreso del popular concepto musical al Auditorio Nacional en CDMX, con un formato renovado que busca convertir el recinto en un "antro", fusionando concierto y fiesta.</p>
+                <p><em>Fuente: Múltiples reportes</em></p>
+            </div>
+
+            <div class="news-card">
+                <h3>David Byrne reflexiona sobre la industria musical</h3>
+                <p>El legendario líder de Talking Heads compartió un artículo de opinión en el diario El País, analizando la evolución del consumo de música desde sus inicios hasta la era del streaming.</p>
+                <p><em>Fuente: El País</em></p>
+            </div>
+
+            <div class="news-card">
+                <h3>El impacto cultural de Taylor Swift sigue en debate</h3>
+                <p>Durante el fin de semana, continuaron los análisis sobre cómo la figura y las acciones de Taylor Swift son interpretadas y reclamadas desde distintas posturas políticas y sociales.</p>
+                <p><em>Fuente: Múltiples análisis</em></p>
+            </div>
+
+        </div>
+    </div>
+
+    <footer class="footer">
+        <p>&copy; 2025 Noticias. Todos los derechos reservados.</p>
+        <p>Generado el 01 de Septiembre, 2025</p>
+    </footer>
+
+</body>
+</html>
