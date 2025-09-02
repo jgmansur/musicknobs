@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <title>Beat Matutino — 2 sep 2025 · Music Knobs</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root{
+      --bg:#ffffff; --fg:#0b1220; --muted:#5b667a; --card:#f6f7fb; --accent:#4f46e5;
+      --ok:#16a34a; --warn:#ca8a04; --danger:#dc2626; --chip:#eef2ff; --link:#1d4ed8;
+    }
+    .dark{
+      --bg:#0b0f14; --fg:#e6ecf5; --muted:#98a3b7; --card:#121824; --accent:#7c8cff;
+      --ok:#22c55e; --warn:#facc15; --danger:#f87171; --chip:#1f2433; --link:#93c5fd;
+    }
+    html,body{height:100%}
+    body{
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Inter, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";
+      background: var(--bg); color: var(--fg); margin:0; line-height:1.4;
+    }
+    header{
+      max-width:1120px; margin:24px auto 8px; padding:0 16px; display:flex; gap:16px; align-items:center; justify-content:space-between;
+    }
+    .brand{display:flex; align-items:center; gap:16px;}
+    .brand img{max-width:220px; height:auto; display:block; margin:0 0 6px 0;}
+    .meta{font-size:14px; color:var(--muted)}
+    .actions{display:flex; gap:8px;}
+    button{
+      background: var(--card); color:var(--fg); border:1px solid #0000; border-radius:999px; padding:10px 14px; cursor:pointer;
+      box-shadow: 0 1px 0 rgba(0,0,0,.04), 0 1px 12px rgba(0,0,0,.06);
+    }
+    button:hover{transform: translateY(-1px)}
+    .container{max-width:1120px; margin:10px auto 80px; padding:0 16px;}
+    .tips{font-size:14px; color:var(--muted); margin:6px 0 20px}
+    .grid{
+      display:grid; gap:16px;
+      grid-template-columns: repeat(12, 1fr);
+    }
+    .card{
+      grid-column: span 12;
+      background: var(--card); border-radius:18px; overflow:hidden; border:1px solid rgba(0,0,0,.06);
+      display:grid; grid-template-columns: 1fr; position:relative;
+    }
+    @media(min-width:860px){ .card{grid-template-columns: 44% 56%} }
+    .imgwrap{aspect-ratio:16/9; background:linear-gradient(135deg,#e9edff, #f7faff);}
+    .imgwrap svg, .imgwrap img{width:100%; height:100%; object-fit:cover; display:block;}
+    .content{padding:18px 18px 20px;}
+    .kicker{display:flex; gap:10px; align-items:center; margin-bottom:8px;}
+    .chip{background:var(--chip); color:var(--accent); font-weight:600; font-size:12px; padding:4px 10px; border-radius:999px;}
+    .viral{background:#fee2e2; color:#b91c1c}
+    .title{font-size:22px; font-weight:800; margin:4px 0 8px}
+    .desc{color:var(--fg); font-size:15px; opacity:.95; margin:0 0 10px}
+    .why{font-size:14px; color:var(--muted); margin:6px 0 12px}
+    .link{display:inline-flex; gap:8px; align-items:center; color:var(--link); text-decoration:none; font-weight:700}
+    .link:hover{text-decoration:underline}
+    .footer-note{margin-top:22px; font-size:13px; color:var(--muted)}
+    /* teleprompter mode */
+    .teleprompter body, .teleprompter{background:var(--bg)}
+    .teleprompter .container{max-width:900px}
+    .teleprompter .card{grid-template-columns:1fr}
+    .teleprompter .imgwrap{display:none}
+    .teleprompter .title{font-size:34px; line-height:1.18}
+    .teleprompter .desc{font-size:22px; line-height:1.5}
+    .teleprompter .why{font-size:20px}
+    .teleprompter .chip{font-size:16px; padding:6px 12px}
+    .teleprompter .link{font-size:20px}
+    .helpkeys{
+      position:fixed; right:10px; bottom:10px; font-size:12px; color:var(--muted); background:var(--card);
+      border:1px solid rgba(0,0,0,.05); padding:8px 10px; border-radius:12px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <img src="https://raw.githubusercontent.com/jgmansur/musicknobs/8561e883e7aa5ca07f9784a6596e6d99b0c389ce/LogoNegroFondoTransparente.png" alt="Music Knobs" />
+      <div>
+        <h1 style="margin:0;font-size:22px;">Beat Matutino — 2 sep 2025</h1>
+        <div class="meta">Ciudad de México (UTC-6) · Ventana: 24–48 h · 6 ítems</div>
+      </div>
+    </div>
+    <div class="actions">
+      <button id="toggleTheme" aria-label="Alternar modo claro/oscuro">🌓 Modo</button>
+      <button id="toggleTP" aria-label="Alternar modo teleprompter">🅣 Teleprompter (T)</button>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="tips">Atajos: <b>T</b> teleprompter · <b>↑/↓</b> desplazar fino</div>
+
+    <section class="grid">
+
+      <!-- 1) Ableton Live 12.3 beta -->
+      <article class="card">
+        <div class="imgwrap" aria-hidden="true">
+          <!-- Minimal Ableton stripes SVG -->
+          <svg viewBox="0 0 1600 900" xmlns="http://www.w3.org/2000/svg" role="img">
+            <defs>
+              <linearGradient id="g1" x1="0" x2="1" y1="0" y2="1">
+                <stop stop-color="#121826" offset="0"/>
+                <stop stop-color="#3b82f6" offset="1"/>
+              </linearGradient>
+            </defs>
+            <rect width="100%" height="100%" fill="url(#g1)"/>
+            <g fill="#ffffff">
+              <rect x="160" y="250" width="80" height="400" rx="10"/>
+              <rect x="300" y="250" width="80" height="400" rx="10"/>
+              <rect x="440" y="250" width="80" height="400" rx="10"/>
+              <rect x="580" y="250" width="80" height="400" rx="10"/>
+              <rect x="740" y="250" width="520" height="80" rx="10"/>
+              <rect x="740" y="380" width="520" height="80" rx="10"/>
+              <rect x="740" y="510" width="520" height="80" rx="10"/>
+            </g>
+          </svg>
+        </div>
+        <div class="content">
+          <div class="kicker">
+            <span class="chip">🎹 DAW</span>
+            <span class="chip viral">Viral hoy</span>
+          </div>
+          <h2 class="title">Ableton Live 12.3 (beta): Stem Separation y más</h2>
+          <p class="desc">Ableton abrió la beta con separación de stems local, integración con Splice y mejoras de dispositivos. Disponible para licencias de Live 12.</p>
+          <p class="why"><b>Por qué importa:</b> separar voces/bajos/baterías sin salir del proyecto acelera tu arreglo y remezcla.</p>
+          <a class="link" href="https://www.ableton.com/en/blog/live-12-3-is-coming/" target="_blank" rel="noopener">Fuente oficial ↗</a>
+        </div>
+      </article>
+
+      <!-- 2) Ableton Move 1.6 -->
+      <article class="card">
+        <div class="imgwrap" aria-hidden="true">
+          <!-- SVG abstract device -->
+          <svg viewBox="0 0 1600 900" xmlns="http://www.w3.org/2000/svg">
+            <defs><linearGradient id="g2" x1="0" x2="1"><stop stop-color="#111827"/><stop offset="1" stop-color="#22d3ee"/></linearGradient></defs>
+            <rect width="100%" height="100%" fill="url(#g2)"/>
+            <rect x="200" y="220" width="1200" height="460" rx="28" fill="#0ea5e9" opacity=".2" stroke="#7dd3fc" stroke-width="6"/>
+            <circle cx="420" cy="450" r="110" fill="#7dd3fc"/>
+            <rect x="600" y="320" width="680" height="80" rx="14" fill="#bae6fd"/>
+            <rect x="600" y="430" width="420" height="80" rx="14" fill="#bae6fd"/>
+            <rect x="600" y="540" width="540" height="60" rx="14" fill="#bae6fd"/>
+          </svg>
+        </div>
+        <div class="content">
+          <div class="kicker"><span class="chip">🎹 DAW/Hardware</span></div>
+          <h2 class="title">Ableton Move 1.6: Reverse, upload de Sets y loops cortados</h2>
+          <p class="desc">Reverse en Drum Racks, subida de Sets (Move/Note) desde Move Manager, nuevos Sliced Loops y control de “Refresh Rate” para vídeo sin flicker.</p>
+          <p class="why"><b>Por qué importa:</b> menos fricción entre ideas rápidas en Move y tu sesión en Live.</p>
+          <a class="link" href="https://www.ableton.com/en/release-notes/move-1/" target="_blank" rel="noopener">Fuente oficial ↗</a>
+        </div>
+      </article>
+
+      <!-- 3) FL Studio 2025.1.4 -->
+      <article class="card">
+        <div class="imgwrap" aria-hidden="true">
+          <!-- FL orange blob -->
+          <svg viewBox="0 0 1600 900" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="g3" x1="0" x2="1">
+                <stop stop-color="#0f172a"/><stop offset="1" stop-color="#fb923c"/>
+              </linearGradient>
+            </defs>
+            <rect width="100%" height="100%" fill="url(#g3)"/>
+            <ellipse cx="800" cy="480" rx="220" ry="300" fill="#f97316"/>
+            <path d="M900,230 C860,160 770,160 740,235" fill="none" stroke="#84cc16" stroke-width="30" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="content">
+          <div class="kicker"><span class="chip">🎹 DAW</span></div>
+          <h2 class="title">FL Studio 2025.1.4 ya disponible</h2>
+          <p class="desc">Nueva compilación estable (1 de septiembre). Consulta el hilo oficial para detalles y correcciones.</p>
+          <p class="why"><b>Por qué importa:</b> estabilidad extra antes de exportes/entregas.</p>
+          <a class="link" href="https://forum.image-line.com/viewforum.php?f=100" target="_blank" rel="noopener">Fuente oficial ↗</a>
+        </div>
+      </article>
+
+      <!-- 4) NI Big Partner Sale -->
+      <article class="card">
+        <div class="imgwrap" aria-hidden="true">
+          <!-- NI simple mark -->
+          <svg viewBox="0 0 1600 900" xmlns="http://www.w3.org/2000/svg">
+            <rect width="100%" height="100%" fill="#111827"/>
+            <rect x="300" y="240" width="1000" height="420" rx="22" fill="#ffffff"/>
+            <text x="800" y="480" text-anchor="middle" fill="#111827" font-size="180" font-weight="900" font-family="Inter,system-ui">NI</text>
+          </svg>
+        </div>
+        <div class="content">
+          <div class="kicker"><span class="chip">💸 Oferta</span></div>
+          <h2 class="title">The Big Partner Sale: hasta –80% (1–30 sep)</h2>
+          <p class="desc">Cientos de ofertas de +40 desarrolladores en la tienda de Native Instruments.</p>
+          <p class="why"><b>Por qué importa:</b> momento perfecto para completar tu set (sintes, FX, scoring) a buen precio.</p>
+          <a class="link" href="https://www.native-instruments.com/en/catalog/deals/the-big-partner-sale/" target="_blank" rel="noopener">Fuente oficial ↗</a>
+        </div>
+      </article>
+
+      <!-- 5) Sonnox Soften gratis -->
+      <article class="card">
+        <div class="imgwrap" aria-hidden="true">
+          <svg viewBox="0 0 1600 900" xmlns="http://www.w3.org/2000/svg">
+            <defs><linearGradient id="g5" x1="0" x2="1"><stop stop-color="#111827"/><stop offset="1" stop-color="#8b5cf6"/></linearGradient></defs>
+            <rect width="100%" height="100%" fill="url(#g5)"/>
+            <rect x="220" y="280" width="1160" height="340" rx="18" fill="#a78bfa" opacity=".25" stroke="#c4b5fd" stroke-width="6"/>
+            <text x="800" y="470" text-anchor="middle" fill="#e9d5ff" font-size="120" font-weight="800" font-family="Inter,system-ui">Soften — FREE</text>
+          </svg>
+        </div>
+        <div class="content">
+          <div class="kicker"><span class="chip">💸 Oferta</span></div>
+          <h2 class="title">Sonnox Soften gratis (Focusrite/Novation) hasta 16/09</h2>
+          <p class="desc">Plugin “one-knob” para suavizar durezas en voces y guitarras sin perder brillo. Requiere tener hardware registrado.</p>
+          <p class="why"><b>Por qué importa:</b> solución rápida para mixes ásperos sin añadir complejidad.</p>
+          <a class="link" href="https://focusrite.com/articles/get-soften-by-sonnox-for-free-now-available-in-your-account/" target="_blank" rel="noopener">Fuente oficial ↗</a>
+        </div>
+      </article>
+
+      <!-- 6) Spitfire ARO: Symphonic Woodwinds -->
+      <article class="card">
+        <div class="imgwrap" aria-hidden="true">
+          <svg viewBox="0 0 1600 900" xmlns="http://www.w3.org/2000/svg">
+            <defs><linearGradient id="g6" x1="0" x2="1"><stop stop-color="#0b1220"/><stop offset="1" stop-color="#38bdf8"/></linearGradient></defs>
+            <rect width="100%" height="100%" fill="url(#g6)"/>
+            <g fill="#e2e8f0">
+              <rect x="260" y="320" width="1080" height="40" rx="10"/>
+              <rect x="260" y="380" width="920" height="40" rx="10"/>
+              <rect x="260" y="440" width="760" height="40" rx="10"/>
+              <rect x="260" y="500" width="600" height="40" rx="10"/>
+            </g>
+            <text x="800" y="270" text-anchor="middle" fill="#ffffff" font-size="60" font-weight="800" font-family="Inter,system-ui">Abbey Road Orchestra: Symphonic Woodwinds</text>
+          </svg>
+        </div>
+        <div class="content">
+          <div class="kicker"><span class="chip">📦 Librería</span></div>
+          <h2 class="title">Spitfire ARO — Symphonic Woodwinds (OUT NOW)</h2>
+          <p class="desc">Módulo de maderas dentro de Abbey Road Orchestra. Oferta de introducción vigente hasta el 11 de septiembre.</p>
+          <p class="why"><b>Por qué importa:</b> texturas orquestales listas para cine, trailers y scoring moderno.</p>
+          <a class="link" href="https://www.spitfireaudio.com/pages/bundles" target="_blank" rel="noopener">Fuente oficial ↗</a>
+        </div>
+      </article>
+
+    </section>
+
+    <p class="footer-note">
+      Nota: Algunas ofertas fueron incluidas por su relevancia aunque el anuncio no muestre sello de publicación del día de hoy. Enlaces siempre al origen oficial.
+    </p>
+  </div>
+
+  <div class="helpkeys">T: teleprompter · ↑/↓: desplazar · 🌓: tema</div>
+
+  <script>
+    const root = document.documentElement;
+    const btnTheme = document.getElementById('toggleTheme');
+    const btnTP = document.getElementById('toggleTP');
+
+    const applyTheme = (t)=> document.body.classList.toggle('dark', t === 'dark');
+    const preferred = localStorage.getItem('mk_theme') || 'light';
+    applyTheme(preferred);
+
+    btnTheme.addEventListener('click', ()=>{
+      const now = document.body.classList.contains('dark') ? 'light' : 'dark';
+      applyTheme(now);
+      localStorage.setItem('mk_theme', now);
+    });
+
+    const toggleTP = ()=> document.body.classList.toggle('teleprompter');
+    btnTP.addEventListener('click', toggleTP);
+
+    // Keyboard
+    window.addEventListener('keydown', (e)=>{
+      if(e.key.toLowerCase() === 't'){ toggleTP(); }
+      if(e.key === 'ArrowDown'){ window.scrollBy({top: window.innerHeight * .8, behavior:'smooth'}); }
+      if(e.key === 'ArrowUp'){ window.scrollBy({top: -window.innerHeight * .8, behavior:'smooth'}); }
+    });
+  </script>
+</body>
+</html>
