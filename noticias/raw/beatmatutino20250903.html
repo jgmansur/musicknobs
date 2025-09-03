@@ -1,105 +1,336 @@
-<!-- Sugerencia de archivo: beat-matutino-boletin-2025-09-03.html -->
-<!doctype html>
+<!-- Sugerencia de archivo: beat-matutino-boletin.html -->
+<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Beat Matutino — Boletín de hoy (03 Sep 2025)</title>
-<meta name="theme-color" content="#ffffff" />
+<title>Beat Matutino — Boletín de hoy</title>
+<meta name="description" content="Noticias para productores: DAWs, plugins, librerías, IA y streaming — listo para teleprompter." />
 <style>
   :root{
-    --bg:#ffffff; --fg:#0f172a; --muted:#64748b; --card:#f8fafc; --accent:#0ea5e9; --accent-2:#22c55e; --accent-3:#f97316;
-    --chip:#e2e8f0; --chip-fg:#0f172a; --link:#0ea5e9; --ok:#16a34a; --warn:#ca8a04; --danger:#dc2626;
+    --bg:#ffffff;
+    --card:#f7f7f8;
+    --text:#111214;
+    --muted:#6b7280;
+    --brand:#111;
+    --link:#0a66c2;
+    --ok:#10b981;
+    --chip:#e5e7eb;
+    --shadow:0 10px 30px rgba(0,0,0,.08);
   }
-  .dark{
-    --bg:#0b1020; --fg:#e5e7eb; --muted:#94a3b8; --card:#0f172a; --accent:#38bdf8; --accent-2:#34d399; --accent-3:#fb923c;
-    --chip:#1f2937; --chip-fg:#e5e7eb; --link:#7dd3fc;
+  html.dark{
+    --bg:#0b0d12;
+    --card:#141822;
+    --text:#eef2ff;
+    --muted:#a4b0be;
+    --brand:#f8fafc;
+    --link:#74b2ff;
+    --ok:#10b981;
+    --chip:#1f2937;
+    --shadow:0 10px 30px rgba(0,0,0,.35);
   }
-  *{box-sizing:border-box}
-  html,body{height:100%}
-  body{
-    margin:0; background:var(--bg); color:var(--fg); font:16px/1.5 system-ui, -apple-system, Segoe UI, Roboto, Inter, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";
-    transition:background .3s,color .3s;
-  }
-  header{max-width:1100px;margin:24px auto 8px;padding:0 16px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
-  header .brand{display:flex;align-items:center;gap:16px}
-  header .brand img{max-width:220px;height:auto;display:block;filter:drop-shadow(0 4px 18px rgba(0,0,0,.08))}
-  header .meta{display:flex;flex-direction:column;gap:6px}
-  .kicker{color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.12em}
-  .date{font-size:14px;color:var(--muted)}
-  .controls{margin-left:auto;display:flex;align-items:center;gap:8px}
-  .btn{
-    background:var(--card); color:var(--fg); border:1px solid var(--chip);
-    padding:10px 12px; border-radius:999px; cursor:pointer; font-weight:600;
-    box-shadow:0 6px 20px rgba(2,6,23,.06);
-  }
-  .btn:hover{border-color:var(--accent)}
-  .badge{display:inline-flex;align-items:center;gap:6px;background:var(--chip);color:var(--chip-fg);
-    border:1px solid color-mix(in oklab, var(--chip) 80%, var(--fg) 20%);padding:4px 10px;border-radius:999px;font-size:12px;font-weight:600}
-  .legend{max-width:1100px;margin:0 auto 16px;padding:0 16px;color:var(--muted);display:flex;gap:10px;flex-wrap:wrap}
-  main{max-width:1100px;margin:0 auto;padding:8px 16px 80px}
-  .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:16px}
-  .card{
-    grid-column:span 12; background:var(--card); border:1px solid color-mix(in oklab, var(--card) 70%, var(--fg) 30%);
-    border-radius:16px; overflow:hidden; box-shadow:0 10px 28px rgba(2,6,23,.06);
-    display:grid; grid-template-columns:160px 1fr; min-height:160px;
-  }
-  @media (min-width:720px){ .card{grid-column:span 6} }
-  @media (min-width:1024px){ .card{grid-column:span 6} }
-  .card--wide{grid-column:span 12}
-  .thumb{
-    background:#0b1220; display:flex;align-items:center;justify-content:center; overflow:hidden;
-  }
-  .thumb img{width:100%;height:100%;object-fit:cover}
-  .content{padding:16px 16px 12px;display:flex;flex-direction:column;gap:10px}
-  .title{font-weight:800;font-size:20px;line-height:1.25}
-  .row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-  .chips{display:flex;gap:8px;flex-wrap:wrap}
-  .chip{background:var(--chip);color:var(--chip-fg);padding:4px 8px;border-radius:999px;font-size:12px;font-weight:600}
-  .chip--ok{background:color-mix(in oklab, var(--ok) 30%, var(--chip) 70%);border:1px solid color-mix(in oklab, var(--ok) 40%, transparent)}
-  .chip--warn{background:color-mix(in oklab, var(--warn) 24%, var(--chip) 76%);border:1px solid color-mix(in oklab, var(--warn) 40%, transparent)}
-  .chip--danger{background:color-mix(in oklab, var(--danger) 20%, var(--chip) 80%);border:1px solid color-mix(in oklab, var(--danger) 40%, transparent)}
-  .story{font-size:15px}
-  .why{background:linear-gradient(90deg, color-mix(in oklab, var(--accent) 18%, transparent), transparent); border-left:3px solid var(--accent);
-    padding:10px 12px;border-radius:12px; font-weight:600}
-  a{color:var(--link);text-decoration:none;font-weight:700}
+  html,body{background:var(--bg); color:var(--text); margin:0; font-family:system-ui, -apple-system, Segoe UI, Roboto, Inter, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji","Segoe UI Emoji"; }
+  a{color:var(--link); text-decoration:none}
   a:hover{text-decoration:underline}
-  footer{max-width:1100px;margin:28px auto;padding:0 16px 40px;color:var(--muted)}
-  .note{font-size:13px;line-height:1.45}
-  /* Teleprompter mode */
-  .tele *{cursor:none}
-  .tele main{padding:24px}
-  .tele .card{grid-column:span 12; font-size:1.35rem}
-  .tele .title{font-size:2rem}
-  .tele header, .tele .legend{opacity:.2}
-  .tele .btn{opacity:.5}
-  .tele .why{border-left-width:5px}
-  /* Helper for emoji category */
-  .cat{font-weight:800}
+  .wrap{max-width:1100px; margin:0 auto; padding:24px}
+  header{display:flex; align-items:flex-end; justify-content:space-between; gap:16px; flex-wrap:wrap}
+  header .left{display:flex; align-items:flex-end; gap:16px; flex-wrap:wrap}
+  header img.logo{max-width:220px; height:auto; display:block; filter: drop-shadow(0 4px 14px rgba(0,0,0,.08)); margin-bottom:8px}
+  .meta{font-size:14px; color:var(--muted)}
+  .actions{display:flex; gap:10px; flex-wrap:wrap}
+  .btn{background:var(--card); color:var(--text); border:1px solid rgba(0,0,0,.08); padding:10px 14px; border-radius:999px; cursor:pointer; box-shadow:var(--shadow)}
+  .btn:hover{filter:brightness(1.06)}
+  .grid{display:grid; grid-template-columns:repeat(12, 1fr); gap:18px; margin-top:22px}
+  .card{grid-column:span 12; background:var(--card); border-radius:18px; overflow:hidden; box-shadow:var(--shadow); display:grid; grid-template-columns: 240px 1fr; min-height:180px}
+  .card .media{background:#0f172a; display:grid; place-items:center}
+  .card .media img{width:100%; height:100%; object-fit:cover}
+  .card .content{padding:16px 18px}
+  .kicker{font-size:13px; color:var(--muted); display:flex; align-items:center; gap:8px}
+  .chip{display:inline-flex; align-items:center; gap:6px; background:var(--chip); color:var(--text); border-radius:999px; padding:4px 10px; font-size:12px}
+  h2{margin:6px 0 8px; font-size:22px}
+  p{margin:8px 0; line-height:1.5}
+  .why{border-left:3px solid var(--ok); padding-left:10px; margin-top:10px; font-weight:550}
+  .links{margin-top:12px; display:flex; flex-wrap:wrap; gap:10px}
+  .links a{font-weight:600}
+  footer{margin:36px 0 10px; color:var(--muted); font-size:13px; text-align:center}
+  /* responsive */
+  @media (max-width:860px){
+    .card{grid-template-columns:1fr}
+    .card .media{max-height:220px}
+  }
+  /* teleprompter mode */
+  html.teleprompter body{font-size:1.25rem}
+  .tele-hint{margin-left:8px; color:var(--muted)}
+  .floating-help{position:fixed; right:18px; bottom:18px; background:var(--card); border:1px solid rgba(0,0,0,.08); border-radius:14px; padding:10px 12px; font-size:12px; color:var(--muted); box-shadow:var(--shadow)}
 </style>
 </head>
 <body>
-<header>
-  <div class="brand">
-    <img src="https://raw.githubusercontent.com/jgmansur/musicknobs/8561e883e7aa5ca07f9784a6596e6d99b0c389ce/LogoNegroFondoTransparente.png" alt="Music Knobs" />
-  </div>
-  <div class="meta">
-    <div class="kicker">Beat Matutino — Ecosistema musical para productores</div>
-    <div class="date">Corte: <strong>03 de septiembre de 2025</strong> · Zona horaria: <strong>Ciudad de México (UTC-6)</strong></div>
-  </div>
-  <div class="controls">
-    <button class="btn" id="toggleDark">☀️/🌙 Modo</button>
-    <button class="btn" id="toggleTele">🎬 Teleprompter (T)</button>
-    <span class="badge">Atajos: <strong>T</strong> · <strong>↑/↓</strong> velocidad</span>
-  </div>
-</header>
+  <div class="wrap">
+    <header>
+      <div class="left">
+        <img class="logo" src="https://github.com/jgmansur/musicknobs/blob/8561e883e7aa5ca07f9784a6596e6d99b0c389ce/LogoNegroFondoTransparente.png?raw=1" alt="Music Knobs" />
+        <div>
+          <h1 style="margin:0 0 6px 0;">Beat Matutino — Boletín de hoy</h1>
+          <div class="meta">Fecha: <strong id="fecha"></strong> • Zona horaria: <strong>UTC</strong> • Ordenado de menor a mayor importancia</div>
+        </div>
+      </div>
+      <div class="actions">
+        <button id="darkBtn" class="btn" title="Alternar modo oscuro/claro">🌗 Modo oscuro</button>
+        <button id="tpBtn" class="btn" title="T para activar. ↑/↓ ajustan scroll">🪄 Teleprompter <span class="tele-hint">(T • ↑/↓)</span></button>
+      </div>
+    </header>
 
-<div class="legend">
-  <span class="badge">🕘 Hoy prioriza 24 h; a petición incluimos contexto fuera de 48 h (etiquetado)</span>
-  <span class="badge">🔗 Todas las notas enlazan a <strong>fuente oficial</strong> cuando existe</span>
-</div>
+    <section class="grid" id="cards">
 
-<main>
-  <section class="grid">
+      <!-- 1) Oferta — Soniccouture -->
+      <article class="card">
+        <div class="media">
+          <img src="https://www.soniccouture.com/static/img/products/polarity-tension.jpg" alt="Soniccouture Experimental Instruments Mini Sale" onerror="this.src='https://www.soniccouture.com/static/img/logo.png'">
+        </div>
+        <div class="content">
+          <div class="kicker"><span class="chip">💸 Oferta</span> <span>Válida hasta el 16 de septiembre</span></div>
+          <h2>Mini sale de instrumentos “experimentales” en Soniccouture</h2>
+          <p><strong>Story:</strong> ¿Buscas texturas raras para una intro o trailer? Hoy, varias de esas librerías “raritas” están con descuento. Es ese momento de llenar tu paleta con sonidos que normalmente dejarías “para después”.</p>
+          <p class="why">Por qué importa: descuentos de hasta 35% en packs como Flowstate, Threnody o Geosonics II — ideales para diseño sonoro y ambient.</p>
+          <div class="links">
+            <a href="https://www.soniccouture.com/en/products/" target="_blank" rel="noopener">Fuente oficial ↗</a>
+          </div>
+        </div>
+      </article>
 
-    <!-- 1) Kevin Kaa
+      <!-- 2) Oferta — Steinberg Cubase 14 -->
+      <article class="card">
+        <div class="media">
+          <img src="https://www.steinberg.net/fileadmin/_processed_/7/4/csm-cubase-14-og-image_2x_38c1cf.jpg" alt="Cubase 14 Promo Steinberg" onerror="this.src='https://www.steinberg.net/typo3conf/ext/stei_site/Resources/Public/Images/steinberg-logo.svg'">
+        </div>
+        <div class="content">
+          <div class="kicker"><span class="chip">💸 Oferta</span> <span>Promos 40% por tiempo limitado</span></div>
+          <h2>Steinberg baja Cubase 14 — upgrades y crossgrades</h2>
+          <p><strong>Story:</strong> Si llevas meses pensando en migrar de DAW, esta es la señal. Steinberg empuja Cubase 14 con rebaja agresiva para atraer a usuarios de otros ecosistemas.</p>
+          <p class="why">Por qué importa: oportunidad de actualizar tu DAW principal con ahorro notable — buen timing si planeas arrancar proyecto largo en Q4.</p>
+          <div class="links">
+            <a href="https://www.steinberg.net/deals/cubase-deals/" target="_blank" rel="noopener">Fuente oficial ↗</a>
+          </div>
+        </div>
+      </article>
+
+      <!-- 3) Plugin — UAD LA-2A gratis -->
+      <article class="card">
+        <div class="media">
+          <img src="https://media.uaudio.com/assetlibrary/t/e/teletronix-la-2a-leveling-amplifier-ua-audio-plugins-guitar-effects-hero.jpg" alt="UAD Teletronix LA-2A" onerror="this.src='https://media.uaudio.com/assetlibrary/u/a/uad-logo-square.jpg'">
+        </div>
+        <div class="content">
+          <div class="kicker"><span class="chip">🎛️ Plugin</span> <span>Gratis (UAD Native)</span></div>
+          <h2>Teletronix LA-2A gratis en UAD Native</h2>
+          <p><strong>Story:</strong> Ese compresor que has visto en mil tutoriales ahora cae gratis. Un clásico para voces y bajos; set-and-forget y a mezclar.</p>
+          <p class="why">Por qué importa: es un estándar de mezcla; añadirlo a tu arsenal sin costo te da resultados profesionales sin curva de aprendizaje dura.</p>
+          <div class="links">
+            <a href="https://www.uaudio.com/blog/la2a-free/" target="_blank" rel="noopener">Fuente oficial ↗</a>
+          </div>
+        </div>
+      </article>
+
+      <!-- 4) Industria/Streaming — Spotify x Nike -->
+      <article class="card">
+        <div class="media">
+          <img src="https://storage.googleapis.com/pr-newsroom-wp/1/2025/09/MAKE1266_NIKE_SPOTIFY_45SEC_3840x1400px_NIKEP1_DESKTOP-720p.jpg" alt="Spotify y Nike: Make Moves" onerror="this.src='https://storage.googleapis.com/pr-newsroom-wp/1/2021/02/Spotify_Logo_CMYK_Green.png'">
+        </div>
+        <div class="content">
+          <div class="kicker"><span class="chip">📡 Streaming</span></div>
+          <h2>Spotify y Nike llevan Make&nbsp;Moves a escala global</h2>
+          <p><strong>Story:</strong> Playlist + movimiento: la campaña que animó a chicas en UK a moverse “una canción al día” ahora escala a más regiones con atletas y artistas curando.</p>
+          <p class="why">Por qué importa: más playlists editoriales y visibilidad para música orientada a bienestar/fitness; oportunidad de pitching temático.</p>
+          <div class="links">
+            <a href="https://newsroom.spotify.com/2025-09-03/spotifys-and-nikes-make-moves-campaign-goes-global-to-support-teen-girls-mental-health/" target="_blank" rel="noopener">Fuente oficial ↗</a>
+          </div>
+        </div>
+      </article>
+
+      <!-- 5) NKS se abre a otros controladores -->
+      <article class="card">
+        <div class="media">
+          <img src="https://www.native-instruments.com/fileadmin/ni_media/product_images/komplete-kontrol-smk3/kk-smk3-og.jpg" alt="NKS Hardware Partner Program" onerror="this.src='https://www.native-instruments.com/typo3conf/ext/ni_site/Resources/Public/Images/ni_logo.svg'">
+        </div>
+        <div class="content">
+          <div class="kicker"><span class="chip">🎛️ Plugin / Control</span></div>
+          <h2>NKS se extiende a Akai, Korg, Novation, Nektar y M-Audio</h2>
+          <p><strong>Story:</strong> NI deja de ser “jardín amurallado”: su estándar NKS suma controladores de terceros para mapear instrumentos/efectos al vuelo.</p>
+          <p class="why">Por qué importa: menos fricción entre tu teclado favorito y Komplete/partners; los mapeos llegan a más hardware sin plantillas caseras.</p>
+          <div class="links">
+            <a href="https://community.native-instruments.com/discussion/41658/namm-2025-introducing-the-nks-hardware-partner-program/" target="_blank" rel="noopener">Fuente oficial (comunidad NI) ↗</a>
+            <a href="https://www.soundonsound.com/news/native-instruments-nks-2-comes-third-party-controllers" target="_blank" rel="noopener">Cobertura SoS ↗</a>
+          </div>
+        </div>
+      </article>
+
+      <!-- 6) DAW — Ableton Live 12.3 beta -->
+      <article class="card">
+        <div class="media">
+          <img src="https://ableton-production.imgix.net/blog/uploads/2025/09/live-12-3-hero.jpg?auto=format&fit=crop&w=1200&h=800" alt="Ableton Live 12.3 Beta" onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/6/6d/Ableton_logo.png'">
+        </div>
+        <div class="content">
+          <div class="kicker"><span class="chip">🎹 DAW</span></div>
+          <h2>Live 12.3 (beta): separación de stems y Splice integrado</h2>
+          <p><strong>Story:</strong> ¿Un sample que te encanta pero mezclado? Live ahora lo separa en voz, bajo, baterías y “otros”. Además, búsqueda por sonido y arrastrar desde Splice sin salir del DAW.</p>
+          <p class="why">Por qué importa: workflows de sampling y remixes más rápidos, y menos ventanas; menos “export/import”, más crear.</p>
+          <div class="links">
+            <a href="https://www.ableton.com/en/blog/live-12-3-is-coming/" target="_blank" rel="noopener">Fuente oficial (blog) ↗</a>
+          </div>
+        </div>
+      </article>
+
+      <!-- 7) Streaming — “Music Pro” reportado -->
+      <article class="card">
+        <div class="media">
+          <img src="https://storage.googleapis.com/pr-newsroom-wp/1/2024/04/Spotify-Logo-Premium.jpg" alt="Spotify Music Pro" onerror="this.src='https://storage.googleapis.com/pr-newsroom-wp/1/2021/02/Spotify_Logo_CMYK_Green.png'">
+        </div>
+        <div class="content">
+          <div class="kicker"><span class="chip">📡 Streaming</span> <span class="chip">⚠️ Reporte</span></div>
+          <h2>Spotify “Music Pro”: plan premium hi-res con perks (reportado)</h2>
+          <p><strong>Story:</strong> Medios financieros adelantan un nuevo tier (~US$18) con audio de alta resolución, preventas de entradas y modo DJ con licencias.</p>
+          <p class="why">Por qué importa: si se confirma, podría cambiar el estándar de calidad y beneficios en suscripción musical. Spotify informó <em>276&nbsp;M</em> de Premium en Q2’25.</p>
+          <div class="links">
+            <a href="https://www.ft.com/content/6bdb1d41-540d-4a2e-8c4a-4d3258a9b5ff" target="_blank" rel="noopener">Reporte FT ↗</a>
+            <a href="https://www.musicbusinessworldwide.com/spotify-set-to-launch-a-new-18-a-month-music-pro-subscription-with-hi-res-audio-and-ticket-presales-report/" target="_blank" rel="noopener">Cobertura MBW ↗</a>
+            <a href="https://newsroom.spotify.com/company-info/" target="_blank" rel="noopener">Datos oficiales suscriptores ↗</a>
+          </div>
+        </div>
+      </article>
+
+      <!-- 8) Industria/Artistas — Taylor Swift (ALTO IMPACTO / viral) -->
+      <article class="card">
+        <div class="media">
+          <img src="https://store.taylorswift.com/cdn/shop/files/1_HeroFrontWithDisc.png?v=1755125616&width=1200" alt="Taylor Swift — The Life of a Showgirl (vinilo)" />
+        </div>
+        <div class="content">
+          <div class="kicker"><span class="chip">🎤 Industria</span> <span class="chip">🔥 Viral</span></div>
+          <h2>Taylor Swift anuncia “The Life of a Showgirl” (3 de octubre, 2025)</h2>
+          <p><strong>Story:</strong> La presentó con estética glam durante una aparición vinculada al regreso de <em>New Heights</em>. Merch oficial y ediciones físicas ya listadas.</p>
+          <p class="why">Por qué importa: impacto en playlists, tendencias de sonido y calendario de lanzamientos Q4. Ojo a colaboraciones y “tempos” que arrastrará al pop.</p>
+          <div class="links">
+            <a href="https://store.taylorswift.com/products/the-life-of-a-showgirl-vinyl" target="_blank" rel="noopener">Fuente oficial (tienda) ↗</a>
+            <a href="https://people.com/taylor-swift-announces-the-life-of-a-showgirl-album-2025-8765671" target="_blank" rel="noopener">Cobertura People ↗</a>
+          </div>
+        </div>
+      </article>
+
+      <!-- 9) Lanzamientos 2025 (resumen multiartista) -->
+      <article class="card">
+        <div class="media">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/9/9d/Hurry_Up_Tomorrow.png" alt="Álbumes 2025: The Weeknd / Miley / Bad Bunny / Kevin Kaarl" onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/4/4f/Audio_Circle_Icon.png'">
+        </div>
+        <div class="content">
+          <div class="kicker"><span class="chip">🎤 Industria</span></div>
+          <h2>Nuevos Discos y Artistas destacados (2025)</h2>
+          <p><strong>Story:</strong> 
+            <b>The Weeknd</b> cerró su trilogía con <em>Hurry Up Tomorrow</em> (31/ene, #1 global). 
+            <b>Miley Cyrus</b> lanzó el álbum visual <em>Something Beautiful</em> (30/may). 
+            <b>Bad Bunny</b> abrió 2025 con <em>DeBÍ TiRAR MáS FOToS</em> (5/ene). 
+            <b>Kevin Kaarl</b> consolidó con <em>ULTRA SODADE</em> (14/feb), destacado por Rolling Stone en Español. 
+            <b>Rosalía</b> confirmó que su cuarto disco llega en 2025.
+          </p>
+          <p class="why">Por qué importa: cambia el “reference sound” del año — de sintes ochenteros y estética cinematográfica (Weeknd/Miley) a caribe y raíz (Bad Bunny) y folk alternativo (Kevin).</p>
+          <div class="links">
+            <a href="https://open.spotify.com/album/3OxfaVgvTxUTy7276t7SPU" target="_blank" rel="noopener">The Weeknd — Fuente oficial (Spotify) ↗</a>
+            <a href="https://www.sonymusic.ca/press_release/miley-cyrus-announces-new-visual-album-something-beautiful-out-may-30-2025" target="_blank" rel="noopener">Miley — Prensa Sony ↗</a>
+            <a href="https://debitirarmasfotos.com/" target="_blank" rel="noopener">Bad Bunny — Sitio oficial ↗</a>
+            <a href="https://music.apple.com/us/album/ultra-sodade/1794032244" target="_blank" rel="noopener">Kevin Kaarl — Apple Music ↗</a>
+            <a href="https://www.movistararena.es/noticia?cat=Actualidad&id=1868&tit=Rosal%C3%ADa-confirma-nuevo-disco-para-2025" target="_blank" rel="noopener">Rosalía — Nota (confirmación) ↗</a>
+            <a href="https://es.rollingstone.com/los-mejores-albumes-de-2025-hasta-ahora/" target="_blank" rel="noopener">RS en Español — Lista destacada (Kevin) ↗</a>
+          </div>
+        </div>
+      </article>
+
+      <!-- 10) IA en la música (tendencia) -->
+      <article class="card">
+        <div class="media">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/12/Music_AI_Icon.png/640px-Music_AI_Icon.png" alt="IA en música" onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/6/65/No-Image-Placeholder.svg'">
+        </div>
+        <div class="content">
+          <div class="kicker"><span class="chip">🧠 IA</span></div>
+          <h2>IA: de crear tracks a impulsar marketing. ¿Primer hit 100% IA en 2025?</h2>
+          <p><strong>Story:</strong> Herramientas como Udio/Suno ya permiten escribir canciones “de texto a música”. Medios y analistas discuten si 2025 verá el primer éxito mainstream de un “artista” totalmente generado por IA.</p>
+          <p class="why">Por qué importa: nuevas rutas de prototipado, promos automatizadas y dilemas de licencias. Útil para demos y contenido social, con cautela legal.</p>
+          <div class="links">
+            <a href="https://www.ft.com/content/e60a8b52-9ed5-4dd6-b1ce-9936ba4168a3" target="_blank" rel="noopener">FT Tech Tonic — AI Music ↗</a>
+            <a href="https://www.midiaresearch.com/reports/beyond-the-hype-ai-music-creation-in-2025" target="_blank" rel="noopener">MIDiA — Informe 2025 ↗</a>
+            <a href="https://www.ifpi.org/wp-content/uploads/2024/03/GMR2025_SOTI.pdf" target="_blank" rel="noopener">IFPI — Global Music Report 2025 ↗</a>
+          </div>
+        </div>
+      </article>
+
+      <!-- 11) NOTA AL FINAL — Live Suite: separación de tallos local -->
+      <article class="card" id="ableton-stems">
+        <div class="media">
+          <img src="https://ableton-production.imgix.net/blog/uploads/2025/09/live-12-3-stems-ui.jpg?auto=format&fit=crop&w=1200&h=800" alt="Live 12 — Separación de stems integrada" onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/6/6d/Ableton_logo.png'">
+        </div>
+        <div class="content">
+          <div class="kicker"><span class="chip">🎹 DAW</span> <span class="chip">🔚 Nota final</span></div>
+          <h2>Live Suite ahora separa stems localmente (Voz, Batería, Bajo, Otros)</h2>
+          <p><strong>Cómo funciona:</strong> desde el navegador o cualquier clip (Sesión/Arreglo) clic derecho ➜ <em>Separar los tallos en nuevas pistas de audio</em>. Cada tallo se coloca en su propia pista dentro de un grupo, copiando los efectos de la pista original. El clip fuente queda silenciado.</p>
+          <p><strong>Calidad:</strong> para activar el modo de alta calidad añade <code>-_Feature.StemSeparation.HighQuality=True</code> a tu <em>Options.txt</em>. En equipos Windows antiguos puede ser lento.</p>
+          <p class="why">Por qué importa: sampling sin fricción, acapellas al vuelo, recrear grooves y bajos sin plugins extra. Todo en local.</p>
+          <div class="links">
+            <a href="https://www.ableton.com/en/release-notes/live-12-beta/" target="_blank" rel="noopener">Fuente oficial — Release notes ↗</a>
+            <a href="https://www.ableton.com/en/blog/live-12-3-is-coming/" target="_blank" rel="noopener">Más detalles (blog) ↗</a>
+          </div>
+        </div>
+      </article>
+
+    </section>
+
+    <footer>
+      Beat Matutino · Music Knobs · Hecho para productores. Atajos: <b>T</b> (Teleprompter), <b>↑/↓</b> (velocidad), click en “Modo oscuro” para alternar tema.
+    </footer>
+  </div>
+
+  <div class="floating-help">Modo teleprompter: <b>T</b> • Scroll auto: <b>↑/↓</b></div>
+
+<script>
+  // Fecha (UTC) visible
+  const f = new Date();
+  const fmt = new Intl.DateTimeFormat('es-ES', { weekday:'short', day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit', timeZone:'UTC' }).format(f);
+  document.getElementById('fecha').textContent = fmt.replace('.', '');
+
+  // Dark mode toggle (default claro)
+  const darkBtn = document.getElementById('darkBtn');
+  darkBtn.addEventListener('click', ()=>{
+    document.documentElement.classList.toggle('dark');
+    darkBtn.textContent = document.documentElement.classList.contains('dark') ? '🌞 Modo claro' : '🌗 Modo oscuro';
+  });
+
+  // Teleprompter simple: auto scroll + ↑/↓ velocidad
+  let tpOn = false, speed = 0; // px/frame
+  let rafId = null;
+  const tpBtn = document.getElementById('tpBtn');
+
+  function loop(){
+    if(!tpOn){ cancelAnimationFrame(rafId); return; }
+    window.scrollBy(0, speed);
+    rafId = requestAnimationFrame(loop);
+  }
+  function startTP(){
+    tpOn = true; document.documentElement.classList.add('teleprompter'); speed = 0.6; loop();
+    tpBtn.textContent = '⏸️ Pausar teleprompter (T)';
+  }
+  function stopTP(){
+    tpOn = false; document.documentElement.classList.remove('teleprompter'); speed = 0;
+    tpBtn.textContent = '🪄 Teleprompter (T • ↑/↓)';
+  }
+  tpBtn.addEventListener('click', ()=> tpOn ? stopTP() : startTP());
+  document.addEventListener('keydown', (e)=>{
+    if(e.key.toLowerCase()==='t'){ tpOn ? stopTP() : startTP(); }
+    if(!tpOn) return;
+    if(e.key==='ArrowUp'){ speed = Math.max(0, speed-0.2); }
+    if(e.key==='ArrowDown'){ speed = Math.min(5, speed+0.2); }
+  });
+
+  // Si el usuario baja mucho, pausar teleprompter al llegar al final
+  window.addEventListener('scroll', ()=>{
+    if(tpOn && (window.innerHeight + window.scrollY) >= document.body.offsetHeight - 2){
+      stopTP();
+    }
+  });
+</script>
+</body>
+</html>
