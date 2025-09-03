@@ -1,134 +1,105 @@
+<!-- Sugerencia de archivo: beat-matutino-boletin-2025-09-03.html -->
 <!doctype html>
-<html lang="es-MX">
+<html lang="es">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Noticias de hoy — 3 de septiembre de 2025</title>
-  <style>
-    :root {
-      --bg: #0b0b0c;
-      --fg: #f3f4f6;
-      --muted: #a1a1aa;
-      --accent: #7dd3fc;
-      --card: #141416;
-      --border: #232326;
-    }
-    html, body { margin:0; padding:0; background:var(--bg); color:var(--fg); font-family: system-ui, -apple-system, Segoe UI, Roboto, Inter, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"; }
-    .wrap { max-width: 900px; margin: 0 auto; padding: 32px 20px 80px; }
-    header { margin-bottom: 28px; }
-    h1 { font-size: clamp(28px, 4vw, 40px); line-height: 1.1; margin: 0 0 8px; }
-    .date { color: var(--muted); font-size: 14px; letter-spacing: .2px; }
-    .notice { background: #0e7490; color: #e6faff; padding: 10px 14px; border-radius: 10px; font-size: 14px; margin: 16px 0 0; display: inline-block; }
-    section { margin: 28px 0; }
-    .card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 20px;
-      margin: 18px 0;
-      box-shadow: 0 6px 24px rgba(0,0,0,.25);
-    }
-    h2 { font-size: clamp(22px, 3vw, 28px); margin: 0 0 10px; }
-    h3 { font-size: clamp(18px, 2.4vw, 22px); margin: 0 0 8px; }
-    p, li { font-size: 18px; line-height: 1.6; color: var(--fg); }
-    p + p { margin-top: 12px; }
-    ul { padding-left: 22px; margin: 10px 0; }
-    a { color: var(--accent); text-decoration: none; }
-    a:hover { text-decoration: underline; }
-    code, pre { background: #0f172a; color: #e2e8f0; border: 1px solid #1f2937; border-radius: 10px; }
-    code { padding: 2px 6px; font-size: 15px; }
-    pre { padding: 14px; overflow: auto; font-size: 15px; }
-    .foot { color: var(--muted); font-size: 14px; margin-top: 24px; }
-    /* Teleprompter-friendly */
-    .read { font-size: 19px; word-spacing: 1px; }
-    .cue { color: var(--muted); font-style: italic; margin: 8px 0 0; }
-    .divider { height: 1px; background: var(--border); margin: 26px 0; }
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Beat Matutino — Boletín de hoy (03 Sep 2025)</title>
+<meta name="theme-color" content="#ffffff" />
+<style>
+  :root{
+    --bg:#ffffff; --fg:#0f172a; --muted:#64748b; --card:#f8fafc; --accent:#0ea5e9; --accent-2:#22c55e; --accent-3:#f97316;
+    --chip:#e2e8f0; --chip-fg:#0f172a; --link:#0ea5e9; --ok:#16a34a; --warn:#ca8a04; --danger:#dc2626;
+  }
+  .dark{
+    --bg:#0b1020; --fg:#e5e7eb; --muted:#94a3b8; --card:#0f172a; --accent:#38bdf8; --accent-2:#34d399; --accent-3:#fb923c;
+    --chip:#1f2937; --chip-fg:#e5e7eb; --link:#7dd3fc;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0; background:var(--bg); color:var(--fg); font:16px/1.5 system-ui, -apple-system, Segoe UI, Roboto, Inter, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";
+    transition:background .3s,color .3s;
+  }
+  header{max-width:1100px;margin:24px auto 8px;padding:0 16px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+  header .brand{display:flex;align-items:center;gap:16px}
+  header .brand img{max-width:220px;height:auto;display:block;filter:drop-shadow(0 4px 18px rgba(0,0,0,.08))}
+  header .meta{display:flex;flex-direction:column;gap:6px}
+  .kicker{color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.12em}
+  .date{font-size:14px;color:var(--muted)}
+  .controls{margin-left:auto;display:flex;align-items:center;gap:8px}
+  .btn{
+    background:var(--card); color:var(--fg); border:1px solid var(--chip);
+    padding:10px 12px; border-radius:999px; cursor:pointer; font-weight:600;
+    box-shadow:0 6px 20px rgba(2,6,23,.06);
+  }
+  .btn:hover{border-color:var(--accent)}
+  .badge{display:inline-flex;align-items:center;gap:6px;background:var(--chip);color:var(--chip-fg);
+    border:1px solid color-mix(in oklab, var(--chip) 80%, var(--fg) 20%);padding:4px 10px;border-radius:999px;font-size:12px;font-weight:600}
+  .legend{max-width:1100px;margin:0 auto 16px;padding:0 16px;color:var(--muted);display:flex;gap:10px;flex-wrap:wrap}
+  main{max-width:1100px;margin:0 auto;padding:8px 16px 80px}
+  .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:16px}
+  .card{
+    grid-column:span 12; background:var(--card); border:1px solid color-mix(in oklab, var(--card) 70%, var(--fg) 30%);
+    border-radius:16px; overflow:hidden; box-shadow:0 10px 28px rgba(2,6,23,.06);
+    display:grid; grid-template-columns:160px 1fr; min-height:160px;
+  }
+  @media (min-width:720px){ .card{grid-column:span 6} }
+  @media (min-width:1024px){ .card{grid-column:span 6} }
+  .card--wide{grid-column:span 12}
+  .thumb{
+    background:#0b1220; display:flex;align-items:center;justify-content:center; overflow:hidden;
+  }
+  .thumb img{width:100%;height:100%;object-fit:cover}
+  .content{padding:16px 16px 12px;display:flex;flex-direction:column;gap:10px}
+  .title{font-weight:800;font-size:20px;line-height:1.25}
+  .row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .chips{display:flex;gap:8px;flex-wrap:wrap}
+  .chip{background:var(--chip);color:var(--chip-fg);padding:4px 8px;border-radius:999px;font-size:12px;font-weight:600}
+  .chip--ok{background:color-mix(in oklab, var(--ok) 30%, var(--chip) 70%);border:1px solid color-mix(in oklab, var(--ok) 40%, transparent)}
+  .chip--warn{background:color-mix(in oklab, var(--warn) 24%, var(--chip) 76%);border:1px solid color-mix(in oklab, var(--warn) 40%, transparent)}
+  .chip--danger{background:color-mix(in oklab, var(--danger) 20%, var(--chip) 80%);border:1px solid color-mix(in oklab, var(--danger) 40%, transparent)}
+  .story{font-size:15px}
+  .why{background:linear-gradient(90deg, color-mix(in oklab, var(--accent) 18%, transparent), transparent); border-left:3px solid var(--accent);
+    padding:10px 12px;border-radius:12px; font-weight:600}
+  a{color:var(--link);text-decoration:none;font-weight:700}
+  a:hover{text-decoration:underline}
+  footer{max-width:1100px;margin:28px auto;padding:0 16px 40px;color:var(--muted)}
+  .note{font-size:13px;line-height:1.45}
+  /* Teleprompter mode */
+  .tele *{cursor:none}
+  .tele main{padding:24px}
+  .tele .card{grid-column:span 12; font-size:1.35rem}
+  .tele .title{font-size:2rem}
+  .tele header, .tele .legend{opacity:.2}
+  .tele .btn{opacity:.5}
+  .tele .why{border-left-width:5px}
+  /* Helper for emoji category */
+  .cat{font-weight:800}
+</style>
 </head>
 <body>
-  <div class="wrap">
-    <header>
-      <h1>Noticias de hoy</h1>
-      <div class="date">Miércoles, 3 de septiembre de 2025</div>
-      <div class="notice">Guion listo para lectura en video</div>
-    </header>
-
-    <!-- ======================= -->
-    <!--  NOTICIAS DEL DÍA       -->
-    <!--  Pega tus noticias aquí -->
-    <!-- ======================= -->
-    <section aria-label="Noticias del día">
-      <!--
-        TIP: Duplica el bloque .card por cada noticia.
-        Estructura sugerida: Título breve (h2), contexto (p), puntos clave (ul), cierre con fuente (p > a).
-      -->
-
-      <!-- EJEMPLO DE NOTICIA (borra o reemplaza) -->
-      <article class="card read">
-        <h2>Título de la Noticia #1</h2>
-        <p>Resumen en 1–2 líneas para lectura fluida. Mantén frases cortas, sin tecnicismos innecesarios.</p>
-        <ul>
-          <li>Punto clave 1</li>
-          <li>Punto clave 2</li>
-          <li>Punto clave 3</li>
-        </ul>
-        <p class="foot">Fuente: <a href="#" rel="noopener">enlace</a></p>
-      </article>
-
-      <!-- EJEMPLO DE NOTICIA -->
-      <article class="card read">
-        <h2>Título de la Noticia #2</h2>
-        <p>Resumen claro y directo para narrar en cámara.</p>
-        <ul>
-          <li>Dato 1</li>
-          <li>Dato 2</li>
-        </ul>
-        <p class="foot">Fuente: <a href="#" rel="noopener">enlace</a></p>
-      </article>
-
-      <div class="divider"></div>
-    </section>
-
-    <!-- ===================================================== -->
-    <!--  NOTA ADICIONAL (DEBE IR AL FINAL): ABLETON LIVE 12   -->
-    <!-- ===================================================== -->
-    <section aria-label="Nota adicional de Ableton" id="nota-ableton">
-      <article class="card read">
-        <h2>Nota adicional: Separación de stems en Ableton Live Suite</h2>
-
-        <p>
-          Live Suite ahora cuenta con <strong>separación de stems incorporada que se ejecuta localmente</strong>.
-          Una canción se puede separar en cuatro stems: <strong>Voz</strong>, <strong>Batería</strong>,
-          <strong>Bajo</strong> y <strong>Otros</strong>. <em>Otros</em> incluye todas las partes de la canción
-          que no se reconocen como voces, batería o bajo.
-        </p>
-
-        <h3>Cómo usarlo</h3>
-        <p>
-          Puedes separar canciones desde el navegador o separar clips de la vista de Sesión o Arreglo.
-          Haz clic derecho en una muestra del navegador o en un clip y selecciona
-          <strong>“Separar los stems en nuevas pistas de audio”</strong>.
-        </p>
-        <p>
-          Cada stem se representa en su propia pista dentro de una nueva <strong>pista de grupo</strong>.
-          Cualquier efecto de audio de la pista de origen también se agrega a esa pista de grupo.
-          El clip utilizado para la separación queda <strong>silenciado</strong>.
-        </p>
-
-        <h3>Modo de alta calidad</h3>
-        <p>
-          Para habilitar una opción de alta calidad para la separación de stems, agrega la siguiente línea al archivo
-          <code>Options.txt</code> y reinicia Live:
-        </p>
-        <pre>-_Feature.StemSeparation.HighQuality=True</pre>
-        <p class="cue">Nota: este modo puede funcionar muy lentamente en sistemas Windows más antiguos.</p>
-
-        <p class="foot">
-          Link a la noticia: <a href="https://www.ableton.com/en/release-notes/live-12-beta/?utm_source=chatgpt.com" rel="noopener">
-          Notas de la beta de Live 12</a>
-        </p>
-      </article>
-    </section>
+<header>
+  <div class="brand">
+    <img src="https://raw.githubusercontent.com/jgmansur/musicknobs/8561e883e7aa5ca07f9784a6596e6d99b0c389ce/LogoNegroFondoTransparente.png" alt="Music Knobs" />
   </div>
-</body>
-</html>
+  <div class="meta">
+    <div class="kicker">Beat Matutino — Ecosistema musical para productores</div>
+    <div class="date">Corte: <strong>03 de septiembre de 2025</strong> · Zona horaria: <strong>Ciudad de México (UTC-6)</strong></div>
+  </div>
+  <div class="controls">
+    <button class="btn" id="toggleDark">☀️/🌙 Modo</button>
+    <button class="btn" id="toggleTele">🎬 Teleprompter (T)</button>
+    <span class="badge">Atajos: <strong>T</strong> · <strong>↑/↓</strong> velocidad</span>
+  </div>
+</header>
+
+<div class="legend">
+  <span class="badge">🕘 Hoy prioriza 24 h; a petición incluimos contexto fuera de 48 h (etiquetado)</span>
+  <span class="badge">🔗 Todas las notas enlazan a <strong>fuente oficial</strong> cuando existe</span>
+</div>
+
+<main>
+  <section class="grid">
+
+    <!-- 1) Kevin Kaa
