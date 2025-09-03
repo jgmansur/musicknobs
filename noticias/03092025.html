@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reporte del 3 de Septiembre de 2025 - Music Knobs</title>
+    <style>
+        :root {
+            --bg-color: #121212;
+            --card-color: #1e1e1e;
+            --text-color: #e0e0e0;
+            --muted-color: #888888;
+            --link-color: #74b2ff;
+            --border-color: #2d2d2d;
+        }
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .logo {
+            max-width: 200px;
+        }
+        .back-button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 44px;
+            height: 44px;
+            background-color: var(--card-color);
+            border-radius: 50%;
+            text-decoration: none;
+            color: var(--text-color);
+            font-size: 24px;
+            transition: background-color 0.2s ease;
+        }
+        .back-button:hover {
+            background-color: #333;
+        }
+        .video-container {
+            position: relative;
+            width: 100%;
+            padding-bottom: 56.25%; /* 16:9 aspect ratio */
+            height: 0;
+            overflow: hidden;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            background-color: #000;
+        }
+        .video-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: 0;
+        }
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        .news-grid {
+            display: grid;
+            gap: 20px;
+        }
+        .news-card {
+            background-color: var(--card-color);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid var(--border-color);
+        }
+        .news-card h2 {
+            margin-top: 0;
+            font-size: 1.5em;
+        }
+        .news-card p {
+            color: var(--muted-color);
+            margin-bottom: 15px;
+        }
+        .news-card a {
+            color: var(--link-color);
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .news-card a:hover {
+            text-decoration: underline;
+        }
+        .links a {
+            margin-right: 15px;
+        }
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+            color: var(--muted-color);
+            font-size: 0.9em;
+        }
+        @media (max-width: 600px) {
+            body { padding: 15px; }
+            header { flex-direction: column; gap: 20px; }
+            h1 { font-size: 2em; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <img src="https://raw.githubusercontent.com/jgmansur/musicknobs/ee1762982fd52ffdd1dbe5d611c276b7c832471f/LogoBlancoTransparente.png" alt="Music Knobs Logo" class="logo">
+            <a href="../index.html" class="back-button" title="Volver al inicio">&#8592;</a>
+        </header>
+
+        <main>
+            <h1>Reporte del 3 de Septiembre, 2025</h1>
+            
+            <div class="video-container">
+                <iframe src="https://www.youtube.com/embed/SnW2UBA4fVg" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+            </div>
+
+            <div class="news-grid">
+
+                <article class="news-card">
+                    <h2>Taylor Swift anuncia “The Life of a Showgirl” (3 de octubre, 2025)</h2>
+                    <p>Por qué importa: impacto en playlists, tendencias de sonido y calendario de lanzamientos Q4. Ojo a colaboraciones y “tempos” que arrastrará al pop.</p>
+                    <div class="links"><a href="https://store.taylorswift.com/products/the-life-of-a-showgirl-vinyl" target="_blank" rel="noopener">Fuente Oficial ↗</a> <a href="https://people.com/taylor-swift-announces-the-life-of-a-showgirl-album-2025-8765671" target="_blank" rel="noopener">Cobertura People ↗</a></div>
+                </article>
+
+                <article class="news-card">
+                    <h2>Live 12.3 (beta): separación de stems y Splice integrado</h2>
+                    <p>Por qué importa: workflows de sampling y remixes más rápidos, y menos ventanas; menos “export/import”, más crear. La separación local en Suite es un cambio mayor.</p>
+                    <div class="links"><a href="https://www.ableton.com/en/blog/live-12-3-is-coming/" target="_blank" rel="noopener">Fuente Oficial ↗</a> <a href="https://www.ableton.com/en/release-notes/live-12-beta/" target="_blank" rel="noopener">Release Notes ↗</a></div>
+                </article>
+
+                <article class="news-card">
+                    <h2>Spotify “Music Pro”: plan premium hi-res con perks (reportado)</h2>
+                    <p>Por qué importa: si se confirma, podría cambiar el estándar de calidad y beneficios en suscripción musical. Spotify informó 276 M de Premium en Q2’25.</p>
+                    <div class="links"><a href="https://www.ft.com/content/6bdb1d41-540d-4a2e-8c4a-4d3258a9b5ff" target="_blank" rel="noopener">Reporte FT ↗</a> <a href="https://www.musicbusinessworldwide.com/spotify-set-to-launch-a-new-18-a-month-music-pro-subscription-with-hi-res-audio-and-ticket-presales-report/" target="_blank" rel="noopener">Cobertura MBW ↗</a></div>
+                </article>
+
+                <article class="news-card">
+                    <h2>NKS se extiende a Akai, Korg, Novation, Nektar y M-Audio</h2>
+                    <p>Por qué importa: menos fricción entre tu teclado favorito y Komplete/partners; los mapeos llegan a más hardware sin plantillas caseras.</p>
+                    <div class="links"><a href="https://community.native-instruments.com/discussion/41658/namm-2025-introducing-the-nks-hardware-partner-program/" target="_blank" rel="noopener">Fuente Oficial ↗</a> <a href="https://www.soundonsound.com/news/native-instruments-nks-2-comes-third-party-controllers" target="_blank" rel="noopener">Cobertura SoS ↗</a></div>
+                </article>
+                
+                <article class="news-card">
+                    <h2>Teletronix LA-2A gratis en UAD Native</h2>
+                    <p>Por qué importa: es un estándar de mezcla; añadirlo a tu arsenal sin costo te da resultados profesionales sin curva de aprendizaje dura.</p>
+                    <div class="links"><a href="https://www.uaudio.com/blog/la2a-free/" target="_blank" rel="noopener">Fuente Oficial ↗</a></div>
+                </article>
+
+                <article class="news-card">
+                    <h2>Steinberg baja Cubase 14 — upgrades y crossgrades al 40%</h2>
+                    <p>Por qué importa: oportunidad de actualizar tu DAW principal con ahorro notable — buen timing si planeas arrancar proyecto largo en Q4.</p>
+                    <div class="links"><a href="https://www.steinberg.net/deals/cubase-deals/" target="_blank" rel="noopener">Fuente Oficial ↗</a></div>
+                </article>
+
+                <article class="news-card">
+                    <h2>Spotify y Nike llevan Make Moves a escala global</h2>
+                    <p>Por qué importa: más playlists editoriales y visibilidad para música orientada a bienestar/fitness; oportunidad de pitching temático.</p>
+                    <div class="links"><a href="https://newsroom.spotify.com/2025-09-03/spotifys-and-nikes-make-moves-campaign-goes-global-to-support-teen-girls-mental-health/" target="_blank" rel="noopener">Fuente Oficial ↗</a></div>
+                </article>
+
+                <article class="news-card">
+                    <h2>Mini sale de instrumentos “experimentales” en Soniccouture</h2>
+                    <p>Por qué importa: descuentos de hasta 35% en packs como Flowstate, Threnody o Geosonics II — ideales para diseño sonoro y ambient.</p>
+                    <div class="links"><a href="https://www.soniccouture.com/en/products/" target="_blank" rel="noopener">Fuente Oficial ↗</a></div>
+                </article>
+                
+            </div>
+        </main>
+
+        <footer>
+            &copy; 2025 Music Knobs. Reporte generado el 3 de Septiembre de 2025.
+        </footer>
+    </div>
+
+</body>
+</html>
