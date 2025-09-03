@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="es-MX">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Noticias de hoy — 3 de septiembre de 2025</title>
+  <style>
+    :root {
+      --bg: #0b0b0c;
+      --fg: #f3f4f6;
+      --muted: #a1a1aa;
+      --accent: #7dd3fc;
+      --card: #141416;
+      --border: #232326;
+    }
+    html, body { margin:0; padding:0; background:var(--bg); color:var(--fg); font-family: system-ui, -apple-system, Segoe UI, Roboto, Inter, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"; }
+    .wrap { max-width: 900px; margin: 0 auto; padding: 32px 20px 80px; }
+    header { margin-bottom: 28px; }
+    h1 { font-size: clamp(28px, 4vw, 40px); line-height: 1.1; margin: 0 0 8px; }
+    .date { color: var(--muted); font-size: 14px; letter-spacing: .2px; }
+    .notice { background: #0e7490; color: #e6faff; padding: 10px 14px; border-radius: 10px; font-size: 14px; margin: 16px 0 0; display: inline-block; }
+    section { margin: 28px 0; }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px;
+      margin: 18px 0;
+      box-shadow: 0 6px 24px rgba(0,0,0,.25);
+    }
+    h2 { font-size: clamp(22px, 3vw, 28px); margin: 0 0 10px; }
+    h3 { font-size: clamp(18px, 2.4vw, 22px); margin: 0 0 8px; }
+    p, li { font-size: 18px; line-height: 1.6; color: var(--fg); }
+    p + p { margin-top: 12px; }
+    ul { padding-left: 22px; margin: 10px 0; }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code, pre { background: #0f172a; color: #e2e8f0; border: 1px solid #1f2937; border-radius: 10px; }
+    code { padding: 2px 6px; font-size: 15px; }
+    pre { padding: 14px; overflow: auto; font-size: 15px; }
+    .foot { color: var(--muted); font-size: 14px; margin-top: 24px; }
+    /* Teleprompter-friendly */
+    .read { font-size: 19px; word-spacing: 1px; }
+    .cue { color: var(--muted); font-style: italic; margin: 8px 0 0; }
+    .divider { height: 1px; background: var(--border); margin: 26px 0; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>Noticias de hoy</h1>
+      <div class="date">Miércoles, 3 de septiembre de 2025</div>
+      <div class="notice">Guion listo para lectura en video</div>
+    </header>
+
+    <!-- ======================= -->
+    <!--  NOTICIAS DEL DÍA       -->
+    <!--  Pega tus noticias aquí -->
+    <!-- ======================= -->
+    <section aria-label="Noticias del día">
+      <!--
+        TIP: Duplica el bloque .card por cada noticia.
+        Estructura sugerida: Título breve (h2), contexto (p), puntos clave (ul), cierre con fuente (p > a).
+      -->
+
+      <!-- EJEMPLO DE NOTICIA (borra o reemplaza) -->
+      <article class="card read">
+        <h2>Título de la Noticia #1</h2>
+        <p>Resumen en 1–2 líneas para lectura fluida. Mantén frases cortas, sin tecnicismos innecesarios.</p>
+        <ul>
+          <li>Punto clave 1</li>
+          <li>Punto clave 2</li>
+          <li>Punto clave 3</li>
+        </ul>
+        <p class="foot">Fuente: <a href="#" rel="noopener">enlace</a></p>
+      </article>
+
+      <!-- EJEMPLO DE NOTICIA -->
+      <article class="card read">
+        <h2>Título de la Noticia #2</h2>
+        <p>Resumen claro y directo para narrar en cámara.</p>
+        <ul>
+          <li>Dato 1</li>
+          <li>Dato 2</li>
+        </ul>
+        <p class="foot">Fuente: <a href="#" rel="noopener">enlace</a></p>
+      </article>
+
+      <div class="divider"></div>
+    </section>
+
+    <!-- ===================================================== -->
+    <!--  NOTA ADICIONAL (DEBE IR AL FINAL): ABLETON LIVE 12   -->
+    <!-- ===================================================== -->
+    <section aria-label="Nota adicional de Ableton" id="nota-ableton">
+      <article class="card read">
+        <h2>Nota adicional: Separación de stems en Ableton Live Suite</h2>
+
+        <p>
+          Live Suite ahora cuenta con <strong>separación de stems incorporada que se ejecuta localmente</strong>.
+          Una canción se puede separar en cuatro stems: <strong>Voz</strong>, <strong>Batería</strong>,
+          <strong>Bajo</strong> y <strong>Otros</strong>. <em>Otros</em> incluye todas las partes de la canción
+          que no se reconocen como voces, batería o bajo.
+        </p>
+
+        <h3>Cómo usarlo</h3>
+        <p>
+          Puedes separar canciones desde el navegador o separar clips de la vista de Sesión o Arreglo.
+          Haz clic derecho en una muestra del navegador o en un clip y selecciona
+          <strong>“Separar los stems en nuevas pistas de audio”</strong>.
+        </p>
+        <p>
+          Cada stem se representa en su propia pista dentro de una nueva <strong>pista de grupo</strong>.
+          Cualquier efecto de audio de la pista de origen también se agrega a esa pista de grupo.
+          El clip utilizado para la separación queda <strong>silenciado</strong>.
+        </p>
+
+        <h3>Modo de alta calidad</h3>
+        <p>
+          Para habilitar una opción de alta calidad para la separación de stems, agrega la siguiente línea al archivo
+          <code>Options.txt</code> y reinicia Live:
+        </p>
+        <pre>-_Feature.StemSeparation.HighQuality=True</pre>
+        <p class="cue">Nota: este modo puede funcionar muy lentamente en sistemas Windows más antiguos.</p>
+
+        <p class="foot">
+          Link a la noticia: <a href="https://www.ableton.com/en/release-notes/live-12-beta/?utm_source=chatgpt.com" rel="noopener">
+          Notas de la beta de Live 12</a>
+        </p>
+      </article>
+    </section>
+  </div>
+</body>
+</html>
