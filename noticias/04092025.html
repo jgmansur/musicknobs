@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Music Knobs - Reporte del 4 de Septiembre de 2025</title>
+    <style>
+        :root {
+            --background-color: #121212;
+            --card-color: #1e1e1e;
+            --text-color: #e0e0e0;
+            --muted-text-color: #888;
+            --accent-color: #60a5fa;
+            --border-color: #333;
+        }
+        body {
+            background-color: var(--background-color);
+            color: var(--text-color);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .logo {
+            max-height: 40px;
+        }
+        .back-button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 44px;
+            height: 44px;
+            background-color: var(--card-color);
+            border: 1px solid var(--border-color);
+            border-radius: 50%;
+            color: var(--text-color);
+            text-decoration: none;
+            font-size: 24px;
+            transition: background-color 0.2s;
+        }
+        .back-button:hover {
+            background-color: #2a2a2a;
+        }
+        h1 {
+            text-align: center;
+            font-size: 2em;
+            margin: 30px 0;
+        }
+        .video-container {
+            position: relative;
+            padding-bottom: 56.25%; /* 16:9 aspect ratio */
+            height: 0;
+            overflow: hidden;
+            max-width: 100%;
+            background: #000;
+            border-radius: 8px;
+            margin-bottom: 40px;
+        }
+        .video-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        .news-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+        .news-card {
+            background-color: var(--card-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+        .news-card h2 {
+            font-size: 1.5em;
+            margin-top: 0;
+            margin-bottom: 10px;
+        }
+        .news-card p {
+            margin: 0 0 15px 0;
+            flex-grow: 1;
+        }
+        .news-card a {
+            color: var(--accent-color);
+            text-decoration: none;
+            font-weight: bold;
+            align-self: flex-start;
+        }
+        .news-card a:hover {
+            text-decoration: underline;
+        }
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+            color: var(--muted-text-color);
+            font-size: 0.9em;
+        }
+        @media (min-width: 768px) {
+            .news-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <a href="https://www.musicknobs.com" target="_blank">
+                <img src="https://raw.githubusercontent.com/jgmansur/musicknobs/ee1762982fd52ffdd1dbe5d611c276b7c832471f/LogoBlancoTransparente.png" alt="Music Knobs Logo" class="logo">
+            </a>
+            <a href="../noticias/index.html" class="back-button" aria-label="Volver al inicio">&#8592;</a>
+        </header>
+
+        <main>
+            <h1>Reporte Diario: 4 de Septiembre de 2025</h1>
+
+            <div class="video-container">
+                <iframe src="https://www.youtube.com/embed/gw2bPTlWFeQ" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+            </div>
+
+            <div class="news-grid">
+                <div class="news-card">
+                    <h2>iZotope Ozone 12: Stem EQ y más</h2>
+                    <p>La nueva versión permite retocar por stems desde el master, recuperar dinámica con Unlimiter y usar un modo IRC5 actualizado. Más control real en el "two-bus" sin pedir recalls.</p>
+                    <a href="https://www.izotope.com/en/products/ozone" target="_blank" rel="noopener">Ver fuente &rarr;</a>
+                </div>
+
+                <div class="news-card">
+                    <h2>VSL “Synchron Prime Sections”</h2>
+                    <p>VSL fracciona su Prime Orchestra en seis secciones (metales, cuerdas, etc.) para comprar por partes, ofreciendo flexibilidad de presupuesto y descarga para compositores.</p>
+                    <a href="https://www.vsl.co.at" target="_blank" rel="noopener">Ver fuente &rarr;</a>
+                </div>
+
+                <div class="news-card">
+                    <h2>Waldorf PPG Wave 3.V v2.0</h2>
+                    <p>El clásico timbre ochentero se actualiza con UI escalable, editor de wavetables y un "Mutator" al estilo Microwave para generar presets creativos sin salir del plugin.</p>
+                    <a href="https://waldorfmusic.com/ppg-wave/" target="_blank" rel="noopener">Ver fuente &rarr;</a>
+                </div>
+
+                <div class="news-card">
+                    <h2>Audiority Big Swarma</h2>
+                    <p>Un multiplicador de 16 voces de unison que puede aplicarse a cualquier fuente. Incluye feedback, filtros estilo MS-20 y modulación para "asalvajar" cualquier señal.</p>
+                    <a href="https://www.audiority.com/shop/big-swarma/" target="_blank" rel="noopener">Ver fuente &rarr;</a>
+                </div>
+
+                <div class="news-card">
+                    <h2>Oferta: Apogee Duet 3 a 495 USD</h2>
+                    <p>Por su 40º aniversario, Apogee baja temporalmente el precio de su interfaz portátil premium a su costo histórico, ideal para creadores móviles que buscan calidad de conversión y DSP.</p>
+                    <a href="https://apogeedigital.com/" target="_blank" rel="noopener">Ver fuente &rarr;</a>
+                </div>
+
+                <div class="news-card">
+                    <h2>Oferta: IK T-RackS Stealth Limiter a $10</h2>
+                    <p>AudioDeluxe ofrece un descuento masivo en uno de los limitadores más transparentes de IK Multimedia. Una opción de bajo costo para elevar LUFS sin destruir transitorios.</p>
+                    <a href="https://audiodeluxe.com/products/ik-multimedia-stealth-limiter" target="_blank" rel="noopener">Ver fuente &rarr;</a>
+                </div>
+                
+                <div class="news-card">
+                    <h2>Softube Flow Mixing Suite</h2>
+                    <p>Nueva suite de mezcla por suscripción "subscribe-to-own" que incluye cadenas de efectos, macros y más de 50 plugins Softube, acelerando flujos de trabajo con un camino a licencias perpetuas.</p>
+                    <a href="https://www.softube.com/us/flow-mixing-suite" target="_blank" rel="noopener">Ver fuente &rarr;</a>
+                </div>
+
+            </div>
+        </main>
+
+        <footer>
+            <p>&copy; 2025 Music Knobs. Reporte generado el 4 de Septiembre de 2025.</p>
+        </footer>
+    </div>
+
+</body>
+</html>
