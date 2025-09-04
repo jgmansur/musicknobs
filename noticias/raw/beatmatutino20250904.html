@@ -1,0 +1,184 @@
+<!-- Sugerencia de archivo: beat-matutino-boletin.html -->
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Beat Matutino — Music Knobs — 4 sep 2025 (CDMX)</title>
+<style>
+  :root{
+    --bg:#ffffff; --fg:#0f172a; --muted:#475569; --card:#f8fafc; --accent:#2563eb;
+    --ok:#16a34a; --warn:#eab308; --soft:#e2e8f0;
+  }
+  .dark{
+    --bg:#0b1020; --fg:#e6edf6; --muted:#9fb0c6; --card:#121a33; --accent:#60a5fa; --soft:#1f2a44;
+  }
+  html,body{height:100%}
+  body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.55 system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";}
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+  header{position:sticky;top:0;background:var(--bg);border-bottom:1px solid var(--soft);z-index:10}
+  .wrap{max-width:1100px;margin:0 auto;padding:16px}
+  .brand{display:flex;align-items:center;gap:12px}
+  .brand h1{font-size:22px;margin:0}
+  .meta{color:var(--muted);font-size:14px}
+  .controls{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+  .btn{border:1px solid var(--soft);background:transparent;color:var(--fg);padding:8px 12px;border-radius:12px;cursor:pointer}
+  .btn:hover{background:var(--card)}
+  .grid{display:grid;grid-template-columns:1fr;gap:14px;margin-top:16px}
+  @media(min-width:820px){ .grid{grid-template-columns:1fr 1fr} }
+  article{background:var(--card);border:1px solid var(--soft);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:8px}
+  .tag{font-size:13px;color:var(--muted)}
+  .title{font-size:18px;font-weight:700}
+  .story{font-size:15px}
+  .why{border-left:3px solid var(--ok);padding-left:10px;margin-top:4px}
+  .viral{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:#b91c1c;background:#fee2e2;border:1px solid #fecaca;border-radius:999px;padding:2px 8px}
+  .foot{margin-top:4px;display:flex;gap:10px;align-items:center}
+  .range{display:inline-block;background:var(--soft);color:var(--muted);border-radius:999px;padding:2px 10px;font-size:12px}
+  .sep{height:1px;background:var(--soft);margin:18px 0}
+  /* Teleprompter */
+  .tp body, .tp .wrap{max-width:none}
+  .tp .grid{grid-template-columns:1fr}
+  .tp article{font-size:1.35rem;line-height:1.75;border:none;border-radius:0;background:transparent;border-bottom:1px dashed var(--soft)}
+  .kb{font-size:12px;color:var(--muted)}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <div class="brand">
+      <h1>Beat Matutino — Music Knobs</h1>
+    </div>
+    <div class="meta">
+      4 de septiembre de 2025 — Zona horaria: Ciudad de México (UTC−6)
+      <span class="range">Rango base: 24 h · +48 h: Softube Flow & Ozone 12</span>
+    </div>
+    <div class="controls">
+      <button id="mode" class="btn" aria-pressed="false">🌓 Modo oscuro</button>
+      <button id="tp" class="btn" aria-pressed="false">🎬 Teleprompter (T)</button>
+      <span class="kb">Atajos: T · ↑/↓ velocidad</span>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="grid">
+
+    <!-- 1 -->
+    <article>
+      <div class="tag">📦 Librería · Hoy</div>
+      <div class="title">VSL “Synchron Prime Sections”: divide y reinarás</div>
+      <div class="story">
+        ¿Solo necesitas metales o cuerdas pequeñas? VSL fracciona su Prime Orchestra en seis secciones para comprar por partes según tu proyecto.
+      </div>
+      <div class="why"><strong>Por qué importa:</strong> Flexibilidad de presupuesto y descarga; ideal para compositores con necesidades específicas.</div>
+      <div class="foot"><a href="https://www.vsl.co.at" target="_blank" rel="noopener">Fuente oficial ↗</a></div>
+    </article>
+
+    <!-- 2 -->
+    <article>
+      <div class="tag">🎹 Instrumento virtual · Hoy</div>
+      <div class="title">Waldorf PPG Wave 3.V v2.0: editor de wavetables + “Mutator”</div>
+      <div class="story">
+        Ese timbre ochentero que amas ahora trae UI escalable, editor de wavetables y un randomizador al estilo Microwave para chispear presets.
+      </div>
+      <div class="why"><strong>Por qué importa:</strong> Más diseño sonoro sin salir del plugin, manteniendo el carácter PPG/WT.</div>
+      <div class="foot"><a href="https://waldorfmusic.com/ppg-wave/" target="_blank" rel="noopener">Fuente oficial ↗</a></div>
+    </article>
+
+    <!-- 3 -->
+    <article>
+      <div class="tag">🎛️ Plugin · Hoy</div>
+      <div class="title">Audiority Big Swarma: 16 voces de “unison” a cualquier fuente</div>
+      <div class="story">
+        Cuando tu lead pide músculo, este multiplicador de voces con feedback “asalvaja” cualquier señal; trae filtros estilo MS-20 y modulación.
+      </div>
+      <div class="why"><strong>Por qué importa:</strong> Unison para todo: desde pads chorreados hasta drones con auto-oscilación, con precio de intro.</div>
+      <div class="foot"><a href="https://www.audiority.com/shop/big-swarma/" target="_blank" rel="noopener">Fuente oficial ↗</a></div>
+    </article>
+
+    <!-- 4 -->
+    <article>
+      <div class="tag">💸 Oferta · Hoy · Hardware</div>
+      <div class="title">Apogee Duet 3: “rollback” a 495 USD por 40.º aniversario</div>
+      <div class="story">
+        Si buscabas interfaz portátil “premium”, Duet 3 baja temporalmente a su precio histórico para tentar a creadores móviles.
+      </div>
+      <div class="why"><strong>Por qué importa:</strong> Conversión y DSP de marca a precio más accesible durante septiembre.</div>
+      <div class="foot"><a href="https://apogeedigital.com/" target="_blank" rel="noopener">Fuente oficial ↗</a></div>
+    </article>
+
+    <!-- 5 -->
+    <article>
+      <div class="tag">💸 Oferta · Hoy</div>
+      <div class="title">IK T-RackS Stealth Limiter a 10 USD (AudioDeluxe)</div>
+      <div class="story">
+        Para cerrar masters con transparencia: descuento del 90+% en uno de los limitadores “ninja” de IK, por tiempo limitado.
+      </div>
+      <div class="why"><strong>Por qué importa:</strong> Opción low-cost para elevar LUFS sin destruir transitorios en proyectos independientes.</div>
+      <div class="foot"><a href="https://audiodeluxe.com/products/ik-multimedia-stealth-limiter" target="_blank" rel="noopener">Fuente oficial ↗</a></div>
+    </article>
+
+    <!-- 6 -->
+    <article>
+      <div class="tag">🎛️ Plugins/Plataforma · Ayer (48 h)</div>
+      <div class="title">Softube Flow Mixing Suite: suscripción “subscribe-to-own”</div>
+      <div class="story">
+        Imagina cadenas listas para voces/buses con macros y 50+ plugins Softube incluidos, más créditos mensuales para quedarte con los que uses.
+      </div>
+      <div class="why"><strong>Por qué importa:</strong> Acelera mezcla con flujos curados y un camino claro a licencias perpetuas.</div>
+      <div class="foot"><a href="https://www.softube.com/us/flow-mixing-suite" target="_blank" rel="noopener">Fuente oficial ↗</a></div>
+    </article>
+
+    <!-- 7 -->
+    <article>
+      <div class="tag">🎛️ Plugin (Mastering) · Ayer (48 h) <span class="viral">🔥 Muy viral</span></div>
+      <div class="title">iZotope Ozone 12: Stem EQ, Unlimiter y nuevo IRC5</div>
+      <div class="story">
+        Tienes la mezcla estéreo y el bajo pelea con el kick: ahora puedes retocar <em>por stems</em> desde el master, recuperar dinámica con Unlimiter y limitar con un modo IRC actualizado.
+      </div>
+      <div class="why"><strong>Por qué importa:</strong> Más control real en “two-bus” sin pedir recalls; flujos asistidos por IA mejor integrados.</div>
+      <div class="foot"><a href="https://www.izotope.com/en/products/ozone" target="_blank" rel="noopener">Fuente oficial ↗</a></div>
+    </article>
+
+  </div>
+
+  <div class="sep"></div>
+  <p class="meta">Este archivo está optimizado para leer a cámara. Activa Teleprompter (T) y ajusta la velocidad con ↑/↓. Modo claro por defecto.</p>
+</main>
+
+<script>
+  const $mode=document.getElementById('mode');
+  const $tp=document.getElementById('tp');
+  let dark=false, tp=false, speed=0; // px/step for teleprompter
+  let raf=null;
+
+  function loop(){
+    if(speed!==0){
+      window.scrollBy(0, speed);
+    }
+    raf=requestAnimationFrame(loop);
+  }
+  raf=requestAnimationFrame(loop);
+
+  function toggleDark(){
+    dark=!dark;
+    document.documentElement.classList.toggle('dark', dark);
+    $mode.setAttribute('aria-pressed', String(dark));
+  }
+  function toggleTP(){
+    tp=!tp;
+    document.documentElement.classList.toggle('tp', tp);
+    $tp.setAttribute('aria-pressed', String(tp));
+  }
+  $mode.addEventListener('click', toggleDark);
+  $tp.addEventListener('click', toggleTP);
+
+  window.addEventListener('keydown', (e)=>{
+    if(e.key==='t' || e.key==='T'){ toggleTP(); }
+    if(e.key==='ArrowUp'){ speed=Math.min(speed+1, 12); }
+    if(e.key==='ArrowDown'){ speed=Math.max(speed-1, -12); }
+  });
+</script>
+</body>
+</html>
