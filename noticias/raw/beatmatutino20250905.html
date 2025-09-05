@@ -1,116 +1,205 @@
-<!-- Nombre sugerido: beat-matutino-boletin.html -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Beat Matutino – Boletín de Hoy</title>
   <style>
-    body { font-family: sans-serif; background: #f0f0f0; color: #222; padding: 2em; }
-    .header { text-align: center; margin-bottom: 1em; }
-    .logo { max-width: 220px; margin-bottom: 1em; }
-    .card { background: #fff; padding: 1em; margin-bottom: 1em; border-radius: 8px; }
-    .title { font-size: 1.2em; font-weight: bold; }
-    .story { margin: 0.5em 0; }
-    .why { font-style: italic; }
-    .category { font-size: 0.9em; color: #555; }
-    .link { font-size: 0.9em; }
-    .dark-mode { background: #181818; color: #ddd; }
-    .card.dark { background: #282828; }
-    .toggle { position: fixed; top: 10px; right: 10px; cursor: pointer; }
+    :root {
+      --bg: #f6f6f7;
+      --fg: #1f2328;
+      --card: #ffffff;
+      --muted: #5a5f66;
+      --shadow: 0 6px 20px rgba(0,0,0,.08);
+    }
+    body.dark-mode {
+      --bg: #0f1115;
+      --fg: #e6e6e6;
+      --card: #1a1e24;
+      --muted: #a5acb8;
+      --shadow: 0 6px 20px rgba(0,0,0,.35);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Inter, sans-serif;
+      background: var(--bg);
+      color: var(--fg);
+      line-height: 1.45;
+    }
+    .page {
+      padding: clamp(16px, 2.5vw, 32px);
+      display: grid;
+      place-items: start center;
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 18px;
+      width: 100%;
+    }
+    .logo {
+      max-width: 220px;
+      width: 100%;
+      height: auto;
+      display: block;
+      margin: 0 auto 12px auto;
+    }
+    .toggle {
+      position: fixed;
+      top: 10px; right: 10px;
+      background: var(--card);
+      color: var(--fg);
+      border: 1px solid rgba(0,0,0,.08);
+      padding: 8px 10px;
+      border-radius: 10px;
+      cursor: pointer;
+      box-shadow: var(--shadow);
+      user-select: none;
+      font-size: 14px;
+    }
+    .container {
+      width: min(860px, 100%);
+      margin: 0 auto;
+      display: grid;
+      gap: 14px;
+    }
+    .card {
+      background: var(--card);
+      border-radius: 14px;
+      box-shadow: var(--shadow);
+      padding: 16px 18px;
+    }
+    .title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      margin: 0 0 6px 0;
+    }
+    .story { margin: 6px 0 6px; }
+    .why { margin: 8px 0 6px; font-style: italic; }
+    .category { color: var(--muted); font-size: .95rem; margin-bottom: 6px; }
+    .link a { color: inherit; text-underline-offset: 2px; }
+    .foot {
+      text-align: center; color: var(--muted); font-size: .9rem; margin-top: 10px;
+    }
+    @media (prefers-reduced-motion: no-preference) {
+      .card { transition: transform .2s ease; }
+      .card:hover { transform: translateY(-2px); }
+    }
   </style>
 </head>
 <body>
-  <div class="header">
-    <img src="https://github.com/jgmansur/musicknobs/blob/1ba7df767b7466c6f388ccbba569bd181ddb9f6f/LogoBlancoTransparente.png" alt="Music Knobs" class="logo">
-    <div class="toggle">Toggle Dark Mode (T)</div>
-  </div>
+  <div class="toggle" id="toggle">Modo oscuro (T)</div>
 
-  <div class="card">
-    <div class="title">WAVS lanza AI Sample Finder</div>
-    <div class="story">Arrastras tu audio sobre el plugin y automáticamente encuentras sonidos similares. ¡Tu búsqueda de samples nunca fue tan fluida!</div>
-    <div class="why">Porque agiliza la creatividad y mantiene el flujo productivo.</div>
-    <div class="category">📦 Librería / 🧠 IA</div>
-    <div class="link"><a href="https://www.musicradar.com/music-tech/wavs-launches-first-of-its-kind-ai-powered-sample-discovery-tool">Fuente oficial ↗</a></div>
-  </div>
+  <div class="page">
+    <header class="header">
+      <!-- LOGO: usando el raw de GitHub para que cargue correctamente -->
+      <img
+        class="logo"
+        alt="Music Knobs"
+        src="https://raw.githubusercontent.com/jgmansur/musicknobs/8561e883e7aa5ca07f9784a6596e6d99b0c389ce/LogoNegroFondoTransparente.png"
+      />
+    </header>
 
-  <div class="card">
-    <div class="title">Revival de software vintage</div>
-    <div class="story">Programas de los 90–00 resucitan como herramientas innovadoras en manos de creativos actuales.</div>
-    <div class="why">Originalidad sonora impulsada por limitaciones y nostalgia creativa.</div>
-    <div class="category">🎤 Industria / 📦 Librería</div>
-    <div class="link"><a href="https://www.musicradar.com/music-tech/some-of-this-stuff-is-harder-to-get-hold-of-than-rare-analogue-synths-why-were-in-the-midst-of-a-vintage-software-revival">Fuente oficial ↗</a></div>
-  </div>
+    <!-- CONTENIDO CENTRADO -->
+    <main class="container">
+      <div class="card">
+        <div class="title">WAVS lanza AI Sample Finder</div>
+        <div class="story">Arrastras tu audio sobre el plugin y automáticamente encuentras sonidos similares. ¡Tu búsqueda de samples nunca fue tan fluida!</div>
+        <div class="why">Porque agiliza la creatividad y mantiene el flujo productivo.</div>
+        <div class="category">📦 Librería / 🧠 IA</div>
+        <div class="link"><a href="https://www.musicradar.com/music-tech/wavs-launches-first-of-its-kind-ai-powered-sample-discovery-tool" target="_blank" rel="noopener noreferrer">Fuente oficial ↗</a></div>
+      </div>
 
-  <div class="card">
-    <div class="title">FL Studio 2025 presenta Gopher IA</div>
-    <div class="story">Un asistente tipo ChatGPT dentro del DAW para ayudarte en teoría, mezcla, songwriting y mucho más.</div>
-    <div class="why">Responde tus dudas sin interrumpir tu flujo creativo.</div>
-    <div class="category">🎹 DAW / 🧠 IA</div>
-    <div class="link"><a href="https://www.musicradar.com/music-tech/fl-studio-2025-introduces-chatgpt-style-ai-assistant-that-offers-music-production-advice-and-helps-you-use-the-daw">Fuente oficial ↗</a></div>
-  </div>
+      <div class="card">
+        <div class="title">Revival de software vintage</div>
+        <div class="story">Programas de los 90–00 resucitan como herramientas innovadoras en manos de creativos actuales.</div>
+        <div class="why">Originalidad sonora impulsada por limitaciones y nostalgia creativa.</div>
+        <div class="category">🎤 Industria / 📦 Librería</div>
+        <div class="link"><a href="https://www.musicradar.com/music-tech/some-of-this-stuff-is-harder-to-get-hold-of-than-rare-analogue-synths-why-were-in-the-midst-of-a-vintage-software-revival" target="_blank" rel="noopener noreferrer">Fuente oficial ↗</a></div>
+      </div>
 
-  <div class="card">
-    <div class="title">Output Re-imagine evita flags en samples</div>
-    <div class="story">Convierte cualquier sample en un sonido nuevo y original con IA.</div>
-    <div class="why">Sobrevive algoritmos y añade personalidad instantánea.</div>
-    <div class="category">🎛️ Plugin / 🧠 IA</div>
-    <div class="link"><a href="https://www.musicradar.com/music-tech/gear-gadgets/infinite-unique-new-original-audio-based-on-the-characteristics-of-any-sample-outputs-new-re-imagine-feature-in-co-producer-can-rework-samples-to-avoid-copyright-takedowns">Fuente oficial ↗</a></div>
-  </div>
+      <div class="card">
+        <div class="title">FL Studio 2025 presenta Gopher IA</div>
+        <div class="story">Un asistente tipo ChatGPT dentro del DAW para ayudarte en teoría, mezcla, songwriting y mucho más.</div>
+        <div class="why">Resuelve dudas sin interrumpir tu flujo creativo.</div>
+        <div class="category">🎹 DAW / 🧠 IA</div>
+        <div class="link"><a href="https://www.musicradar.com/music-tech/fl-studio-2025-introduces-chatgpt-style-ai-assistant-that-offers-music-production-advice-and-helps-you-use-the-daw" target="_blank" rel="noopener noreferrer">Fuente oficial ↗</a></div>
+      </div>
 
-  <div class="card">
-    <div class="title">GPUs al servicio de la música</div>
-    <div class="story">Plugins que usan procesamiento gráfico para simular audio realista en tiempo real.</div>
-    <div class="why">Desbloquea nuevas posibilidades técnicas incluso en hardware modesto.</div>
-    <div class="category">🎤 Industria / 🔬 Investigación</div>
-    <div class="link"><a href="https://www.musicradar.com/music-tech/software-apps/what-the-gpu-offers-for-audio-is-an-almost-unbound-level-of-processing-we-investigate-the-claim-that-harnessing-gpu-can-unlock-limitless-music-production-potential">Fuente oficial ↗</a></div>
-  </div>
+      <div class="card">
+        <div class="title">Output Re-imagine evita flags en samples</div>
+        <div class="story">Convierte cualquier sample en un sonido nuevo y original con IA.</div>
+        <div class="why">Sobrevive algoritmos y añade personalidad instantánea.</div>
+        <div class="category">🎛️ Plugin / 🧠 IA</div>
+        <div class="link"><a href="https://www.musicradar.com/music-tech/gear-gadgets/infinite-unique-new-original-audio-based-on-the-characteristics-of-any-sample-outputs-new-re-imagine-feature-in-co-producer-can-rework-samples-to-avoid-copyright-takedowns" target="_blank" rel="noopener noreferrer">Fuente oficial ↗</a></div>
+      </div>
 
-  <div class="card">
-    <div class="title">Justin Bieber lanza su nuevo álbum Swag II</div>
-    <div class="story">Tras un retraso inesperado, el canadiense liberó un disco con 23 canciones disponible en todas las plataformas.</div>
-    <div class="why">Un lanzamiento de alto perfil que impactará en playlists globales y en la producción pop.</div>
-    <div class="category">🎤 Industria / 📡 Streaming</div>
-    <div class="link"><a href="https://open.spotify.com">Fuente oficial ↗</a></div>
-  </div>
+      <div class="card">
+        <div class="title">GPUs al servicio de la música</div>
+        <div class="story">Plugins que usan procesamiento gráfico para simular audio realista en tiempo real.</div>
+        <div class="why">Desbloquea nuevas posibilidades técnicas incluso en hardware modesto.</div>
+        <div class="category">🎤 Industria / 🔬 Investigación</div>
+        <div class="link"><a href="https://www.musicradar.com/music-tech/software-apps/what-the-gpu-offers-for-audio-is-an-almost-unbound-level-of-processing-we-investigate-the-claim-that-harnessing-gpu-can-unlock-limitless-music-production-potential" target="_blank" rel="noopener noreferrer">Fuente oficial ↗</a></div>
+      </div>
 
-  <div class="card">
-    <div class="title">TAL lanza TAL-EQ</div>
-    <div class="story">Una alternativa accesible al FabFilter Pro-Q: con procesamiento dinámico, sidechain y asignación por banda.</div>
-    <div class="why">Democratiza herramientas de mezcla avanzada sin romper el bolsillo.</div>
-    <div class="category">🎛️ Plugin</div>
-    <div class="link"><a href="https://tal-software.com">Fuente oficial ↗</a></div>
-  </div>
+      <div class="card">
+        <div class="title">Justin Bieber lanza su nuevo álbum Swag II</div>
+        <div class="story">Tras un retraso inesperado, el canadiense liberó un disco con 23 canciones disponible en todas las plataformas.</div>
+        <div class="why">Un lanzamiento de alto perfil que impactará en playlists globales y en la producción pop.</div>
+        <div class="category">🎤 Industria / 📡 Streaming</div>
+        <div class="link"><a href="https://open.spotify.com" target="_blank" rel="noopener noreferrer">Fuente oficial ↗</a></div>
+      </div>
 
-  <div class="card">
-    <div class="title">Ableton Live 12.3 en beta pública</div>
-    <div class="story">Separa stems con IA, integra Splice con búsqueda por sonido, y mejora Push 3 con nuevas funciones.</div>
-    <div class="why">Remixes más fáciles, búsqueda sonora avanzada y hardware más versátil.</div>
-    <div class="category">🎹 DAW / 🧠 IA / 📦 Librería</div>
-    <div class="link"><a href="https://www.musicradar.com/music-tech/stem-separation-splice-integration-ableton-is-playing-catch-up-with-live-12-3-but-its-best-new-features-are-the-ones-hidden-beyond-the-headlines">Fuente oficial ↗</a></div>
-  </div>
+      <div class="card">
+        <div class="title">TAL lanza TAL-EQ</div>
+        <div class="story">Una alternativa accesible al FabFilter Pro-Q: con procesamiento dinámico, sidechain y asignación por banda.</div>
+        <div class="why">Democratiza herramientas de mezcla avanzada sin romper el bolsillo.</div>
+        <div class="category">🎛️ Plugin</div>
+        <div class="link"><a href="https://tal-software.com" target="_blank" rel="noopener noreferrer">Fuente oficial ↗</a></div>
+      </div>
 
-  <div class="card">
-    <div class="title">Bitwig Studio 6 entra en beta pública</div>
-    <div class="story">Incluye Automation Clips, Clip Aliases, soporte para 23 escalas, interfaz refinada y nuevas herramientas creativas.</div>
-    <div class="why">Una alternativa potente a Ableton con flujo de trabajo renovado.</div>
-    <div class="category">🎹 DAW</div>
-    <div class="link"><a href="https://www.musicradar.com">Fuente oficial ↗</a></div>
-  </div>
+      <div class="card">
+        <div class="title">Ableton Live 12.3 en beta pública</div>
+        <div class="story">Separa stems con IA, integra Splice con búsqueda por sonido y añade mejoras para Push 3 (class-compliant, modo XY, secuenciación táctil y generador de ritmo).</div>
+        <div class="why">Remixes más fáciles, búsqueda sonora avanzada y hardware más versátil.</div>
+        <div class="category">🎹 DAW / 🧠 IA / 📦 Librería</div>
+        <div class="link"><a href="https://www.musicradar.com/music-tech/stem-separation-splice-integration-ableton-is-playing-catch-up-with-live-12-3-but-its-best-new-features-are-the-ones-hidden-beyond-the-headlines" target="_blank" rel="noopener noreferrer">Fuente oficial ↗</a></div>
+      </div>
 
-  <div class="card">
-    <div class="title">Spotify rompe récords y el futuro se encarece</div>
-    <div class="story">Alcanza 696 millones de usuarios activos; Goldman Sachs proyecta ingresos globales de USD 200 mil millones.</div>
-    <div class="why">Los creadores podrían ganar más, pero los fans pagarán precios crecientes.</div>
-    <div class="category">📡 Streaming / 🎤 Industria</div>
-    <div class="link"><a href="https://www.musicradar.com">Fuente oficial ↗</a></div>
+      <div class="card">
+        <div class="title">Bitwig Studio 6 entra en beta pública</div>
+        <div class="story">Incluye Automation Clips, Clip Aliases, soporte para 23 escalas, interfaz refinada y nuevas herramientas creativas.</div>
+        <div class="why">Una alternativa potente a Ableton con flujo de trabajo renovado.</div>
+        <div class="category">🎹 DAW</div>
+        <div class="link"><a href="https://www.musicradar.com" target="_blank" rel="noopener noreferrer">Fuente oficial ↗</a></div>
+      </div>
+
+      <div class="card">
+        <div class="title">Spotify rompe récords y el futuro se encarece</div>
+        <div class="story">Alcanza 696 millones de usuarios activos; Goldman Sachs proyecta ingresos globales de USD 200 mil millones.</div>
+        <div class="why">Los creadores podrían ganar más, pero los fans pagarán precios crecientes.</div>
+        <div class="category">📡 Streaming / 🎤 Industria</div>
+        <div class="link"><a href="https://www.musicradar.com" target="_blank" rel="noopener noreferrer">Fuente oficial ↗</a></div>
+      </div>
+    </main>
+
+    <footer class="foot">
+      Publicado el 5 de septiembre de 2025 (UTC-5).
+      Atajos: <strong>T</strong> para teleprompter/dark mode, <strong>↑/↓</strong> para desplazarte.
+    </footer>
   </div>
 
   <script>
-    document.body.addEventListener('keydown', (e) => {
-      if (e.key === 'T' || e.key === 't') {
-        document.body.classList.toggle('dark-mode');
-        document.querySelectorAll('.card').forEach(c => c.classList.toggle('dark'));
-      }
+    // Modo oscuro con tecla T
+    const toggle = document.getElementById('toggle');
+    function flipTheme() {
+      document.body.classList.toggle('dark-mode');
+    }
+    toggle.addEventListener('click', flipTheme);
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 't' || e.key === 'T') flipTheme();
+      if (e.key === 'ArrowUp') window.scrollBy({ top: -120, behavior: 'smooth' });
+      if (e.key === 'ArrowDown') window.scrollBy({ top: 120, behavior: 'smooth' });
     });
   </script>
 </body>
