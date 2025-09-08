@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Beat Matutino — 8 Sep 2025</title>
+    <style>
+        :root {
+            --background-color: #121212;
+            --card-color: #1e1e1e;
+            --text-color: #e0e0e0;
+            --link-color: #bb86fc;
+            --border-color: #333;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            position: relative;
+        }
+        .logo {
+            width: 150px;
+            height: auto;
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        .back-button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 44px;
+            height: 44px;
+            background-color: var(--card-color);
+            color: var(--text-color);
+            border-radius: 50%;
+            text-decoration: none;
+            font-size: 24px;
+            border: 1px solid var(--border-color);
+            transition: background-color 0.3s;
+            margin-left: auto; /* Push to the right */
+        }
+        .back-button:hover {
+            background-color: #333;
+        }
+        h1 {
+            text-align: center;
+            margin-top: 70px; /* Space for logo */
+            margin-bottom: 30px;
+        }
+        .video-container {
+            position: relative;
+            padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+            height: 0;
+            overflow: hidden;
+            max-width: 100%;
+            background: #000;
+            margin-bottom: 30px;
+            border-radius: 8px;
+        }
+        .video-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        .news-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+        .news-card {
+            background-color: var(--card-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+        .news-card h3 {
+            margin: 0 0 10px 0;
+            font-size: 1.2em;
+        }
+        .news-card .category {
+            font-weight: bold;
+            margin-bottom: 15px;
+            opacity: 0.8;
+        }
+        .news-card p {
+            margin: 0 0 15px 0;
+            line-height: 1.6;
+        }
+        .news-card .source-links a {
+            color: var(--link-color);
+            text-decoration: none;
+            margin-right: 15px;
+            transition: color 0.3s;
+        }
+        .news-card .source-links a:hover {
+            color: #fff;
+            text-decoration: underline;
+        }
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            font-size: 0.9em;
+            color: #888;
+        }
+        @media (max-width: 600px) {
+            body {
+                padding: 15px;
+            }
+            .logo {
+                width: 120px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <img src="https://raw.githubusercontent.com/jgmansur/musicknobs/ee1762982fd52ffdd1dbe5d611c276b7c832471f/LogoBlancoTransparente.png" alt="Logo" class="logo">
+            <a href="../noticias/index.html" class="back-button" aria-label="Volver al inicio">&#x2190;</a>
+        </header>
+
+        <h1>Beat Matutino — 8 Sep 2025</h1>
+
+        <div class="video-container">
+            <iframe src="https://www.youtube.com/embed/qqvF9-ZX3P4" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+        </div>
+
+        <div class="news-grid">
+            
+            <div class="news-card">
+                <div class="category">🎛️ Plugin</div>
+                <h3>Waves Central 16.1: update de mantenimiento</h3>
+                <p>Nueva versión con mejoras en auto-updates, instalación de samples y centro de notificaciones.</p>
+                <div class="source-links">
+                    <a href="https://www.waves.com/downloads/release-notes" target="_blank">Fuente oficial: waves.com</a>
+                </div>
+            </div>
+
+            <div class="news-card">
+                <div class="category">💸 Oferta</div>
+                <h3>Sonarworks Autumn Sale + otras ofertas</h3>
+                <p>Hasta 40% en SoundID Reference y más, activo del 8 al 21 de septiembre.</p>
+                <div class="source-links">
+                    <a href="https://www.sonarworks.com/autumn-sale" target="_blank">Fuente oficial: Sonarworks</a>
+                </div>
+            </div>
+
+            <div class="news-card">
+                <div class="category">💸 Oferta</div>
+                <h3>Native Instruments “The Big Partner Sale”</h3>
+                <p>Más de 40 developers aliados de NI con hasta 80% off durante septiembre.</p>
+                <div class="source-links">
+                    <a href="https://www.native-instruments.com/en/catalog/deals/the-big-partner-sale/" target="_blank">Fuente oficial: Native Instruments</a>
+                </div>
+            </div>
+
+            <div class="news-card">
+                <div class="category">🎹 DAW</div>
+                <h3>LUNA 1.9.1 con comandos de voz</h3>
+                <p>Se añaden atajos hablados para markers, count-in, pre/post-roll y click.</p>
+                <div class="source-links">
+                    <a href="https://help.uaudio.com/hc/en-us/articles/360041532452-LUNA-Release-Notes" target="_blank">Fuente oficial: Universal Audio Support</a>
+                </div>
+            </div>
+
+            <div class="news-card">
+                <div class="category">📡 Streaming</div>
+                <h3>Spotify: más control de escucha</h3>
+                <p>Smart Filters, opción de ocultar canciones, Snooze de 30 días y Discover Weekly por géneros.</p>
+                <div class="source-links">
+                    <a href="https://newsroom.spotify.com/2025-09-05/new-user-controls-personalize-listening/ Spotify" target="_blank">Newsroom: Spotify</a>
+                </div>
+            </div>
+
+            <div class="news-card">
+                <div class="category">🎹 DAW</div>
+                <h3>Ableton Note & Move: Drift completo</h3>
+                <p>Ahora puedes editar todos los parámetros de Drift en Note 1.5 (iOS, IAP) y en Move 1.7 (beta).</p>
+                <div class="source-links">
+                    <a href="https://www.ableton.com/en/release-notes/note/" target="_blank">Note (release notes)</a>
+                    <a href="https://www.ableton.com/en/release-notes/move-1-beta/" target="_blank">Move 1.7 (beta notes)</a>
+                    <a href="https://www.ableton.com/en/blog/live-12-3-is-coming/" target="_blank">Blog de Ableton</a>
+                </div>
+            </div>
+
+            <div class="news-card">
+                <div class="category">🎛️ Plugin</div>
+                <h3>UAD 11.8.1: nuevos plugins</h3>
+                <p>Incluye Shadow Hills Mastering Compressor Class A y Maag EQ4 MS, además de promos activas.</p>
+                <div class="source-links">
+                    <a href="https://help.uaudio.com/hc/en-us/articles/215270403-UAD-Version-History-Release-Notes" target="_blank">Release notes: Universal Audio</a>
+                    <a href="https://www.uaudio.com/blogs/press/now-available-uad-shadow-hills-mastering-compressor-class-a-and-maag-eq4-ms-plug-ins" target="_blank">Press: Universal Audio</a>
+                </div>
+            </div>
+            
+            <div class="news-card">
+                <div class="category">📡 Streaming</div>
+                <h3>Lizzo expresa frustración con algoritmos</h3>
+                <p>La artista afirmó que "el modelo algorítmico ha fragmentado a los fans y destruido el fenómeno cultural del ‘Song of the Summer’", afectando cómo su música llega a los fans.</p>
+                <div class="source-links">
+                     <a href="https://www.femalefirst.co.uk/music/musicnews/lizzo-stressing-streaming-algorithms-1429149.html" target="_blank">Fuente: Female First</a>
+                     <a href="https://www.hits96.com/i/lizzo-blames-algorithms-for-putting-the-music-industry-in-shambles/" target="_blank">Fuente: Hits 96 | WDOD-FM</a>
+                </div>
+            </div>
+
+            <div class="news-card">
+                <div class="category">🧠 IA / 🎤 Industria</div>
+                <h3>ICMP acusa a big tech de usar música para entrenar IA</h3>
+                <p>Evidencia compartida con Billboard señala a Google, Microsoft, Meta, X y OpenAI de extraer millones de canciones con copyright sin permiso para entrenar sus modelos de IA.</p>
+                <div class="source-links">
+                    <a href="https://www.musicradar.com/music-industry/the-largest-intellectual-property-theft-in-human-history-big-tech-companies-accused-of-scraping-millions-of-copyrighted-songs-to-train-ai-models" target="_blank">Fuente: MusicRadar</a>
+                </div>
+            </div>
+
+            <div class="news-card">
+                <div class="category">📡 Streaming</div>
+                <h3>YouTube rompe récord de concurrencia con NFL</h3>
+                <p>El partido exclusivo Chiefs vs Chargers alcanzó la mayor audiencia simultánea en la historia de la plataforma.</p>
+                <div class="source-links">
+                    <a href="https://blog.youtube/news-and-events/chiefs-vs-chargers-recap/" target="_blank">Blog oficial: blog.youtube</a>
+                </div>
+            </div>
+
+        </div>
+
+        <footer>
+            <p>&copy; 2025 Tu Nombre de Noticias. Todos los derechos reservados.</p>
+            <p>Generado el 8 de septiembre de 2025.</p>
+        </footer>
+    </div>
+</body>
+</html>
