@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reporte de Noticias - 9 de Septiembre de 2025</title>
+    <style>
+        :root {
+            --background-color: #121212;
+            --card-color: #1e1e1e;
+            --text-color: #e0e0e0;
+            --primary-color: #bb86fc;
+            --border-color: #2c2c2c;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .logo {
+            width: 150px;
+            height: auto;
+        }
+        .nav-button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 44px;
+            height: 44px;
+            background-color: var(--card-color);
+            border-radius: 50%;
+            text-decoration: none;
+            color: var(--text-color);
+            font-size: 24px;
+            border: 1px solid var(--border-color);
+            transition: background-color 0.3s ease;
+        }
+        .nav-button:hover {
+            background-color: #333;
+        }
+        .video-container {
+            position: relative;
+            padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+            height: 0;
+            overflow: hidden;
+            max-width: 100%;
+            background: #000;
+            margin-bottom: 30px;
+            border-radius: 8px;
+        }
+        .video-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        .news-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+        .news-card {
+            background-color: var(--card-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+        }
+        .news-card h2 {
+            font-size: 1.4em;
+            margin-top: 0;
+            color: var(--primary-color);
+        }
+        .news-card p {
+            margin: 10px 0;
+        }
+        .news-card .importance {
+            font-style: italic;
+            opacity: 0.9;
+            border-left: 3px solid var(--primary-color);
+            padding-left: 10px;
+        }
+        .news-card .category {
+            font-size: 0.9em;
+            opacity: 0.7;
+            margin-bottom: 15px;
+        }
+        .news-card .source-link {
+            display: inline-block;
+            margin-top: 10px;
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .news-card .source-link:hover {
+            text-decoration: underline;
+        }
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+            font-size: 0.9em;
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <img src="https://raw.githubusercontent.com/jgmansur/musicknobs/ee1762982fd52ffdd1dbe5d611c276b7c832471f/LogoBlancoTransparente.png" alt="Logo" class="logo">
+            <a href="index.html" class="nav-button" aria-label="Volver al inicio">&#8592;</a>
+        </header>
+
+        <main>
+            <section class="video-container">
+                <iframe src="https://youtu.be/689WkM8yLi8" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+            </section>
+
+            <section class="news-grid">
+                
+                <article class="news-card">
+                    <h2>Roland Cloud: TR-909 a 66 % de descuento</h2>
+                    <p class="category">🎛️ Plugin / 💸 Oferta</p>
+                    <p>Promoción especial por el 909 Day: plugin TR-909 Software Rhythm Composer a 49 USD (antes 149 USD), válido hasta el 9 de octubre de 2025.</p>
+                    <p class="importance"><strong>Por qué importa:</strong> Oportunidad para añadir el sonido clásico de la 909 a bajo costo.</p>
+                    <a href="#" class="source-link" target="_blank" rel="noopener noreferrer">Fuente oficial ↗ The Guardian</a>
+                </article>
+
+                <article class="news-card">
+                    <h2>Roland Cloud: prueba gratuita de TR-909 y patches</h2>
+                    <p class="category">🎛️ Plugin / 📦 Librería</p>
+                    <p>Del 9 al 30 de septiembre, prueba gratis el plugin TR-909 y colecciones de patches iniciando sesión en Roland Cloud.</p>
+                    <p class="importance"><strong>Por qué importa:</strong> Acceso temporal sin costo para explorar el sonido 909.</p>
+                    <a href="#" class="source-link" target="_blank" rel="noopener noreferrer">Fuente oficial ↈ The Guardian</a>
+                </article>
+
+                <article class="news-card">
+                    <h2>Soundtoys: últimas horas de upgrades y Back-to-School</h2>
+                    <p class="category">🎛️ Plugin / 💸 Oferta</p>
+                    <p>Hasta hoy 9/9: 50 % OFF en upgrades a Soundtoys 5.5 (incluye SpaceBlender y UIs redimensionables) más descuentos educativos.</p>
+                    <p class="importance"><strong>Por qué importa:</strong> Oportunidad para completar tu ecosistema de efectos de referencia a buen precio.</p>
+                    <a href="#" class="source-link" target="_blank" rel="noopener noreferrer">Fuente oficial ↈ (Soundtoys Home y Soundtoys 5.5)</a>
+                </article>
+
+                <article class="news-card">
+                    <h2>Anthropic acuerda pagar $1.5 B por uso de libros pirata en entrenamiento de IA</h2>
+                    <p class="category">🧠 IA / 🎤 Industria</p>
+                    <p>La empresa Anthropic ha pactado un acuerdo por 1.500 millones de dólares con autores que demandaron por usar copias piratas de unos 500.000 libros para entrenar su IA, Claude. El juez ha impuesto condiciones adicionales para garantizar transparencia sobre los libros afectados.</p>
+                    <p class="importance"><strong>Por qué importa:</strong> Establece un precedente histórico para cómo las empresas de IA deben manejar datos protegidos por derechos de autor.</p>
+                    <a href="#" class="https://youtu.be/R7DaIweh4sU?si=prld3GM0yDe2lq0d&t=1043" target="_blank" rel="noopener noreferrer">Fuente no especificada</a>
+                </article>
+
+            </section>
+        </main>
+
+        <footer>
+            <p>&copy; 2025 Noticias HTML. Generado el 09/09/2025.</p>
+        </footer>
+    </div>
+</body>
+</html>
