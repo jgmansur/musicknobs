@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plan de Estudios Interactivo: Producción en Reaper</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Chosen Palette: Warm Neutrals (Stone/Amber/Emerald) for a calm, focused learning environment -->
+    <style>
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+        .nav-item.active {
+            background-color: #fcd34d; /* amber-300 */
+            color: #78350f; /* amber-900 */
+            font-weight: 600;
+            border-left: 4px solid #d97706; /* amber-600 */
+        }
+        /* Custom scrollbar for sidebar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f5f5f4; }
+        ::-webkit-scrollbar-thumb { background: #d6d3d1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #a8a29e; }
+    </style>
+</head>
+<body class="bg-stone-50 text-stone-800 font-sans antialiased overflow-x-hidden">
+
+    <!-- Application Structure Plan: Dashboard style layout. Added LocalStorage integration to save student progress persistently in their browser without requiring login. -->
+
+    <div class="flex flex-col md:flex-row min-h-screen">
+        
+        <aside class="w-full md:w-1/4 lg:w-1/5 bg-stone-100 border-r border-stone-200 shadow-sm flex flex-col z-10 sticky top-0 md:h-screen">
+            <div class="p-6 border-b border-stone-200 bg-white">
+                <h1 class="text-2xl font-bold text-stone-900 flex items-center gap-2">
+                    <span>🎛️</span> Reaper Master
+                </h1>
+                <p class="text-xs text-stone-500 mt-1 uppercase tracking-wider font-semibold">Workflow, EQ & Compresión</p>
+                
+                <div class="mt-4 bg-stone-100 rounded-full h-3 overflow-hidden border border-stone-200 relative">
+                    <div id="progress-bar" class="bg-emerald-500 h-full transition-all duration-500" style="width: 0%;"></div>
+                </div>
+                <p id="progress-text" class="text-xs text-right mt-1 text-stone-600 font-medium">0% Completado</p>
+                <!-- Indicador de guardado local -->
+                <p class="text-[10px] text-stone-400 mt-2 text-center">Progreso guardado localmente 💾</p>
+            </div>
+            
+            <nav id="sidebar-nav" class="flex-1 overflow-y-auto py-4">
+            </nav>
+            
+            <div class="p-4 border-t border-stone-200 bg-stone-50 text-xs text-stone-400 text-center">
+                6 Clases Estructuradas
+            </div>
+        </aside>
+
+        <main class="flex-1 p-6 md:p-10 overflow-y-auto">
+            
+            <div class="max-w-4xl mx-auto">
+                <div id="intro-section" class="mb-8 p-6 bg-white rounded-xl shadow-sm border border-stone-200 border-l-4 border-l-amber-500">
+                    <h2 class="text-xl font-bold mb-2" id="section-title">Cargando...</h2>
+                    <p class="text-stone-600 leading-relaxed" id="section-intro">
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="lg:col-span-2 space-y-6">
+                        
+                        <div class="bg-white p-6 rounded-xl shadow-sm border border-stone-200">
+                            <h3 class="text-lg font-bold text-stone-800 mb-4 flex items-center gap-2">
+                                <span>📚</span> Temario y Conceptos
+                            </h3>
+                            <div id="topics-container" class="space-y-4">
+                            </div>
+                        </div>
+
+                        <div id="visualizer-card" class="bg-white p-6 rounded-xl shadow-sm border border-stone-200 hidden">
+                            <h3 id="visualizer-title" class="text-lg font-bold text-stone-800 mb-2 flex items-center gap-2">
+                                <span>👁️</span> Visualizador Interactivo
+                            </h3>
+                            <p id="visualizer-desc" class="text-sm text-stone-600 mb-4"></p>
+                            
+                            <div id="visualizer-controls" class="flex flex-wrap gap-2 mb-4">
+                            </div>
+
+                            <div class="bg-stone-50 p-4 rounded-lg border border-stone-100">
+                                <div class="chart-container">
+                                    <canvas id="conceptChart"></canvas>
+                                </div>
+                            </div>
+                            <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+                        </div>
+                    </div>
+
+                    <div class="space-y-6">
+                        <div class="bg-emerald-50 p-6 rounded-xl shadow-sm border border-emerald-100">
+                            <h3 class="text-lg font-bold text-emerald-900 mb-3 flex items-center gap-2">
+                                <span>🛠️</span> Práctica en Vivo
+                            </h3>
+                            <p id="practice-content" class="text-emerald-800 text-sm leading-relaxed"></p>
+                        </div>
+
+                        <div class="bg-amber-50 p-6 rounded-xl shadow-sm border border-amber-100">
+                            <h3 class="text-lg font-bold text-amber-900 mb-3 flex items-center gap-2">
+                                <span>🎯</span> Tarea / Reto
+                            </h3>
+                            <p id="homework-content" class="text-amber-800 text-sm leading-relaxed mb-4"></p>
+                            <div id="homework-links" class="flex flex-col gap-2">
+                            </div>
+                        </div>
+                        
+                        <div class="bg-stone-800 p-6 rounded-xl shadow-sm text-white">
+                            <h3 class="text-lg font-bold mb-3 flex items-center gap-2">
+                                <span>⌨️</span> Shortcuts Clave
+                            </h3>
+                            <ul id="shortcuts-list" class="space-y-3 text-sm text-stone-300">
+                            </ul>
+                        </div>
+
+                        <button id="mark-complete-btn" class="w-full py-3 bg-stone-200 hover:bg-emerald-500 hover:text-white text-stone-700 font-bold rounded-lg transition-colors flex justify-center items-center gap-2">
+                            <span>✅</span> Marcar Clase como Completada
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const courseData = [
+            {
+                id: 1,
+                icon: "🎹",
+                title: "Clase 1: Conquistando el Entorno (Lo Básico)",
+                objective: "Que el alumno pierda el miedo a la interfaz de Reaper, sepa configurar su equipo y pueda preparar una sesión de forma ordenada.",
+                intro: "En esta primera sección, estableceremos los cimientos. Aprenderás a configurar Reaper para evitar latencia, entenderás la anatomía de la interfaz y descubrirás cómo organizar tu sesión rápidamente mediante atajos visuales y de teclado. Una sesión ordenada es el primer paso para una mezcla exitosa.",
+                topics: [
+                    "<b>Configuración de Audio:</b> Preferencias (Ctrl+P / Cmd+P), elegir la interfaz de audio (ASIO/CoreAudio), entender el Buffer Size (latencia vs. CPU).",
+                    "<b>Anatomía y Navegación:</b> Track Control Panel (TCP), Mixer Control Panel (MCP), y la línea de tiempo. Uso del panel Docker inferior.",
+                    "<b>Organización Vital:</b> Flujo de trabajo para crear, nombrar, colorear y agrupar pistas en carpetas."
+                ],
+                practice: "Importar 4 o 5 pistas (stems) de una canción (ej. Batería, Bajo, Guitarra, Voz). Nombrarlas, colorearlas (ej. baterías rojas, bajo azul) y agruparlas.",
+                homework: "Descargar un multipista gratuito de una canción que te guste, importarlo a Reaper, organizarlo por colores/carpetas y guardar el proyecto correctamente (marcando 'Copy all media into project directory').",
+                links: [
+                    { text: "Descargar Stems (Cambridge-MT)", url: "https://cambridge-mt.com/ms/mtk/" }
+                ],
+                shortcuts: [
+                    "<b>Mostrar Mixer (MCP):</b> Ctrl+M (Cmd+M)",
+                    "<b>Mostrar Docker:</b> Alt+D (Opt+Cmd+D)",
+                    "<b>Navegar línea de tiempo:</b> Rueda central (Pan) o Alt + Rueda",
+                    "<b>Crear pista:</b> Doble clic en panel izq. o Ctrl+T",
+                    "<b>Instrumento virtual:</b> Insert o Ctrl+I",
+                    "<b>Nombrado rápido:</b> Tab (para saltar a la siguiente pista)",
+                    "<b>Agrupar (Drag&Drop):</b> Arrastrar pistas debajo del Bus",
+                    "<b>Lista de Acciones:</b> Tecla ?"
+                ],
+                hasVisualizer: true,
+                visualizerType: "workflow",
+                visualizerTitle: "Estructura de Carpetas en Reaper",
+                visualizerDesc: "Visualización de cómo funciona el ruteo básico de carpetas (Folders). La señal fluye de las pistas hijas hacia el Bus principal."
+            },
+            {
+                id: 2,
+                icon: "✂️",
+                title: "Clase 2: Edición, Fades y Estructura de Ganancia",
+                objective: "Aprender a limpiar los audios antes de mezclar y entender que el volumen de entrada a los plugins es crucial.",
+                intro: "Esta sección se enfoca en la preparación del audio ('Gain Staging'). Exploraremos cómo editar, limpiar ruidos y manejar el volumen *antes* de que el sonido llegue a los efectos. Entender la diferencia entre el Clip Gain y el Fader del mezclador cambiará por completo tu forma de producir.",
+                topics: [
+                    "<b>Herramientas de edición:</b> Seleccionar, cortar, mover y hacer zoom de forma eficiente.",
+                    "<b>Limpieza:</b> Fades de entrada/salida y Crossfades automáticos. Silenciar partes sin información útil.",
+                    "<b>Flujo de Señal (Gain Staging):</b> El Clip Gain afecta el volumen del audio <i>antes</i> de que pase por los plugins (FX), nivelando la señal. El fader afecta <i>después</i> de los plugins. Puedes ajustarlo desde la línea superior del clip o pulsando F2."
+                ],
+                practice: "Tomar una pista de voz con variaciones bruscas y usar el Clip Gain (línea superior del clip en Reaper) para dejarla visualmente y auditivamente pareja.",
+                homework: "Tomar el proyecto anterior, limpiar silencios de voces/guitarras, aplicar fades en cortes y hacer un balance de volumen rápido solo con faders.",
+                links: [
+                    { text: "Video: Técnicas de Edición", url: "https://www.youtube.com/watch?v=UmcjqQPIm3E" },
+                    { text: "Búsqueda: Fades y Limpieza", url: "https://www.google.com/search?q=https://www.youtube.com/watch%3Fv%3DbpHWsD8HBRg%26list%3DPLR51BK8zUaKDxeJ6uo--ca8WSECDj84l7%26index%3D1" }
+                ],
+                shortcuts: [
+                    "<b>Cortar (Split):</b> Tecla S",
+                    "<b>Zoom Horizontal:</b> Rueda del ratón",
+                    "<b>Zoom Vertical:</b> Ctrl + Rueda del ratón",
+                    "<b>Borrar selección:</b> Suprimir (Delete)",
+                    "<b>Propiedades del Clip (Volumen preciso):</b> F2"
+                ],
+                hasVisualizer: true,
+                visualizerType: "bar",
+                visualizerTitle: "Impacto del Clip Gain (Gain Staging)",
+                visualizerDesc: "Simulación de niveles de volumen antes y después de aplicar Clip Gain para emparejar la señal."
+            },
+            {
+                id: 3,
+                icon: "🎚️",
+                title: "Clase 3: La Magia de la Ecualización",
+                objective: "Entender el espectro de frecuencias y aprender a usar la ecualización sustractiva para limpiar sonidos.",
+                intro: "Aquí nos sumergimos en el espectro de frecuencias. Aprenderás qué son los graves, medios y agudos, y cómo utilizar ReaEQ. Nos enfocaremos en la ecualización sustractiva: la técnica de 'barrido' para encontrar y eliminar frecuencias molestas antes de intentar mejorar el sonido.",
+                topics: [
+                    "<b>El espectro audible:</b> 20 Hz a 20 kHz. Graves (poder/lodo), medios (claridad/nasalidad), agudos (brillo/aire).",
+                    "<b>Tipos de bandas (ReaEQ):</b> High-Pass, Low-Pass, Shelves y Campanas. Concepto de 'Q' (ancho de banda).",
+                    "<b>Técnica de Barrido:</b> Subir ganancia, Q estrecha, buscar resonancia, y atenuar."
+                ],
+                practice: "Poner ReaEQ en guitarra o caja. Escuchar High-Pass agresivo vs sutil. Hacer barrido para eliminar resonancia.",
+                homework: "Aplicar High-Pass Filter (HPF) a todas las pistas (excepto bajo/bombo) para limpiar el lodo (rumble) de graves de la mezcla.",
+                links: [],
+                shortcuts: [
+                    "<b>Cerrar los ojos:</b> Escucha, no mires las curvas.",
+                    "<b>Bypass de FX:</b> Úsalo constantemente."
+                ],
+                hasVisualizer: true,
+                visualizerType: "eq",
+                visualizerTitle: "Curvas de Ecualización",
+                visualizerDesc: "Interactúa con los botones para visualizar cómo afectan los diferentes tipos de filtros (High-Pass, Bell) al espectro de frecuencias."
+            },
+            {
+                id: 4,
+                icon: "🧩",
+                title: "Clase 4: Ecualización en Contexto",
+                objective: "Aprender que los instrumentos compiten por el espacio. Usar el EQ para que todos convivan (Enmascaramiento).",
+                intro: "Profundizamos en el concepto de 'Enmascaramiento'. Un sonido puede estar perfectamente ecualizado por sí solo, pero desaparecer al sonar con otros. Aprenderás a asignar espacios frecuenciales a cada instrumento usando ecualización complementaria y aditiva.",
+                topics: [
+                    "<b>Enmascaramiento:</b> Por qué la voz choca con guitarras, o el bajo desaparece con el bombo.",
+                    "<b>EQ Complementaria:</b> Si das 60Hz al bombo, corta 60Hz al bajo.",
+                    "<b>EQ Aditiva:</b> Dar brillo/presencia (sube el volumen percibido, ¡cuidado!)."
+                ],
+                practice: "Bombo vs. Bajo. Decidir líder de sub-graves y líder de graves-medios, y ecualizar en ReaEQ para que no choquen.",
+                homework: "Hacer que la voz principal resalte usando EQ, atenuando las frecuencias (1kHz-3kHz) del instrumento que choca con ella.",
+                links: [],
+                shortcuts: [],
+                hasVisualizer: true,
+                visualizerType: "masking",
+                visualizerTitle: "Enmascaramiento Bombo vs Bajo",
+                visualizerDesc: "Visualiza cómo dos instrumentos pelean por las frecuencias graves y cómo la EQ complementaria resuelve el conflicto."
+            },
+            {
+                id: 5,
+                icon: "🗜️",
+                title: "Clase 5: Domando la Dinámica",
+                objective: "Desmitificar el compresor. Entender sus parámetros fundamentales y por qué es necesario.",
+                intro: "El tema más temido: la Compresión. Entenderemos el compresor como un control de volumen automático. Aprenderás a dominar los 4 parámetros clave de ReaComp para controlar la dinámica sin aplastar la vida de tu música.",
+                topics: [
+                    "<b>Concepto:</b> Un 'dedo invisible' que baja el volumen cuando la señal suena muy fuerte.",
+                    "<b>Threshold (Umbral):</b> La línea que el audio debe cruzar para que actúe.",
+                    "<b>Ratio (Proporción):</b> Qué tan fuerte actúa (2:1 suave, 8:1 agresivo).",
+                    "<b>Attack & Release:</b> Cuánto tarda en aplastar el sonido; cuánto tarda en soltarlo."
+                ],
+                practice: "Poner ReaComp en la voz. Usar ajustes exagerados para escuchar asfixia. Luego ajustar a valores musicales.",
+                homework: "Insertar ReaComp en el bajo. Lograr que las notas suaves suenen casi al mismo volumen que las fuertes.",
+                links: [],
+                shortcuts: [],
+                hasVisualizer: true,
+                visualizerType: "comp",
+                visualizerTitle: "Curva de Transferencia de Compresión",
+                visualizerDesc: "Observa cómo el Umbral (Threshold) y el Ratio afectan la señal de salida en relación a la señal de entrada."
+            },
+            {
+                id: 6,
+                icon: "🚀",
+                title: "Clase 6: Compresión Creativa",
+                objective: "Consolidar lo aprendido combinando EQ y Compresión, estableciendo buenos hábitos.",
+                intro: "En la recta final, usaremos la compresión de forma creativa para dar 'pegada' o 'punch'. Hablaremos del orden de los plugins y la regla de oro del Make-up Gain para no engañar a nuestros oídos. Finalmente, pondrás todo a prueba en un proyecto de mezcla.",
+                topics: [
+                    "<b>Dar Pegada (Punch):</b> Ataque lento para dejar pasar la transitoria inicial del tambor.",
+                    "<b>Regla del Volumen Percibido:</b> Compensar ganancia (Make-up) y hacer bypass.",
+                    "<b>Orden de plugins:</b> ¿EQ antes o después del compresor?"
+                ],
+                practice: "Tomar un bus de baterías. Aplicar EQ general y un compresor pegajoso para unir todo (Glue compression).",
+                homework: "Mezclar canción (4-6 pistas) aplicando: limpieza, balance, EQ para espacio y compresión. Exportar .wav final.",
+                links: [],
+                shortcuts: [],
+                hasVisualizer: false
+            },
+            {
+                id: 7,
+                icon: "💡",
+                title: "Reglas de Oro del Productor",
+                objective: "Mentalidad y consejos invaluables para proteger tus mezclas y tu audición.",
+                intro: "No todo son botones y perillas. Esta sección resume los tres mandamientos fundamentales que te salvarán de cometer los errores más comunes de los principiantes.",
+                topics: [
+                    "<b>1. El Botón de Bypass es tu mejor amigo:</b> Úsalo constantemente para ser honesto contigo mismo.",
+                    "<b>2. Usa Tracks de Referencia:</b> Carga una canción comercial, bájale unos -6dB, y compárala con tu mezcla.",
+                    "<b>3. Mezcla con los oídos, no con los ojos:</b> Reaper es visual, pero la música se escucha. Cierra los ojos al mover EQs."
+                ],
+                practice: "Analizar una pista de referencia en tu próxima sesión.",
+                homework: "Aplicar la regla de 10 minutos de descanso cada hora para evitar fatiga auditiva.",
+                links: [],
+                shortcuts: [],
+                hasVisualizer: false
+            }
+        ];
+
+        let state = {
+            currentClassId: 1,
+            completedClasses: [],
+            chartInstance: null
+        };
+
+        const DOM = {
+            nav: document.getElementById('sidebar-nav'),
+            title: document.getElementById('section-title'),
+            intro: document.getElementById('section-intro'),
+            topics: document.getElementById('topics-container'),
+            practice: document.getElementById('practice-content'),
+            homework: document.getElementById('homework-content'),
+            links: document.getElementById('homework-links'),
+            shortcuts: document.getElementById('shortcuts-list'),
+            completeBtn: document.getElementById('mark-complete-btn'),
+            progressBar: document.getElementById('progress-bar'),
+            progressText: document.getElementById('progress-text'),
+            visualizerCard: document.getElementById('visualizer-card'),
+            visualizerTitle: document.getElementById('visualizer-title'),
+            visualizerDesc: document.getElementById('visualizer-desc'),
+            visualizerControls: document.getElementById('visualizer-controls'),
+            canvas: document.getElementById('conceptChart')
+        };
+
+        function init() {
+            loadProgress(); // Cargar progreso guardado al iniciar
+            renderNavigation();
+            loadClass(state.currentClassId);
+            setupEventListeners();
+        }
+
+        // --- Almacenamiento Local (Local Storage) ---
+        function loadProgress() {
+            const savedProgress = localStorage.getItem('reaperCourseProgress');
+            if (savedProgress) {
+                try {
+                    state.completedClasses = JSON.parse(savedProgress);
+                } catch (e) {
+                    console.error("Error al leer el progreso", e);
+                }
+            }
+        }
+
+        function saveProgress() {
+            localStorage.setItem('reaperCourseProgress', JSON.stringify(state.completedClasses));
+        }
+        // --------------------------------------------
+
+        function renderNavigation() {
+            DOM.nav.innerHTML = '';
+            courseData.forEach(item => {
+                const isCompleted = state.completedClasses.includes(item.id);
+                const isActive = state.currentClassId === item.id;
+                
+                const btn = document.createElement('button');
+                btn.className = `w-full text-left px-6 py-3 border-b border-stone-200 transition-colors flex items-center gap-3 ${isActive ? 'active' : 'hover:bg-stone-200 text-stone-700'}`;
+                
+                let checkMark = isCompleted ? '<span class="text-emerald-500 font-bold ml-auto">✓</span>' : '';
+                
+                let shortTitle = item.title.split(':')[0];
+                if(item.id === 7) shortTitle = "Reglas de Oro";
+
+                btn.innerHTML = `<span class="text-xl">${item.icon}</span> <span>${shortTitle}</span> ${checkMark}`;
+                btn.onclick = () => loadClass(item.id);
+                DOM.nav.appendChild(btn);
+            });
+            updateProgressUI();
+        }
+
+        function loadClass(id) {
+            state.currentClassId = id;
+            const data = courseData.find(c => c.id === id);
+            
+            DOM.title.innerHTML = `${data.icon} ${data.title}`;
+            DOM.intro.innerHTML = `<strong>Objetivo:</strong> ${data.objective}<br><br>${data.intro}`;
+            
+            DOM.topics.innerHTML = data.topics.map(t => 
+                `<div class="flex items-start gap-2"><span class="text-amber-500 mt-1">▸</span><p class="text-stone-700 text-sm">${t}</p></div>`
+            ).join('');
+
+            DOM.practice.innerHTML = data.practice;
+            DOM.homework.innerHTML = data.homework;
+
+            DOM.links.innerHTML = '';
+            if (data.links && data.links.length > 0) {
+                data.links.forEach(link => {
+                    DOM.links.innerHTML += `<a href="${link.url}" target="_blank" class="text-amber-700 hover:text-amber-900 font-medium text-xs flex items-center gap-1">🔗 ${link.text}</a>`;
+                });
+            }
+
+            DOM.shortcuts.innerHTML = '';
+            if (data.shortcuts && data.shortcuts.length > 0) {
+                DOM.shortcuts.parentElement.classList.remove('hidden');
+                data.shortcuts.forEach(sc => {
+                    DOM.shortcuts.innerHTML += `<li class="flex items-start gap-2"><span>▪</span> <span>${sc}</span></li>`;
+                });
+            } else {
+                DOM.shortcuts.parentElement.classList.add('hidden');
+            }
+
+            if (state.completedClasses.includes(id)) {
+                DOM.completeBtn.innerHTML = '<span>✅</span> Completada (Guardado)';
+                DOM.completeBtn.classList.remove('bg-stone-200', 'text-stone-700');
+                DOM.completeBtn.classList.add('bg-emerald-500', 'text-white');
+            } else {
+                DOM.completeBtn.innerHTML = '<span>✅</span> Marcar como Completada';
+                DOM.completeBtn.classList.add('bg-stone-200', 'text-stone-700');
+                DOM.completeBtn.classList.remove('bg-emerald-500', 'text-white');
+            }
+
+            renderVisualizer(data);
+            renderNavigation(); 
+            
+            if(window.innerWidth < 768) {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+
+        function setupEventListeners() {
+            DOM.completeBtn.addEventListener('click', () => {
+                if (!state.completedClasses.includes(state.currentClassId)) {
+                    state.completedClasses.push(state.currentClassId);
+                } else {
+                    state.completedClasses = state.completedClasses.filter(id => id !== state.currentClassId);
+                }
+                saveProgress(); // Guardar cada vez que hacen click
+                loadClass(state.currentClassId);
+            });
+        }
+
+        function updateProgressUI() {
+            const total = 6; 
+            const completed = state.completedClasses.filter(id => id <= 6).length;
+            const percentage = Math.round((completed / total) * 100);
+            DOM.progressBar.style.width = `${percentage}%`;
+            DOM.progressText.innerText = `${percentage}% Completado`;
+        }
+
+        // --- Visualizer Logic ---
+        function renderVisualizer(data) {
+            if (state.chartInstance) {
+                state.chartInstance.destroy();
+                state.chartInstance = null;
+            }
+
+            DOM.visualizerControls.innerHTML = '';
+            
+            if (!data.hasVisualizer) {
+                DOM.visualizerCard.classList.add('hidden');
+                return;
+            }
+
+            DOM.visualizerCard.classList.remove('hidden');
+            DOM.visualizerTitle.innerHTML = `<span>👁️</span> ${data.visualizerTitle}`;
+            DOM.visualizerDesc.innerText = data.visualizerDesc;
+
+            const ctx = DOM.canvas.getContext('2d');
+
+            if (data.visualizerType === 'eq') setupEQChart(ctx);
+            else if (data.visualizerType === 'comp') setupCompChart(ctx);
+            else if (data.visualizerType === 'bar') setupGainStagingChart(ctx);
+            else if (data.visualizerType === 'workflow') setupWorkflowChart(ctx);
+            else if (data.visualizerType === 'masking') setupMaskingChart(ctx);
+        }
+
+        function createBtn(text, active, onClick) {
+            const btn = document.createElement('button');
+            btn.className = `px-3 py-1 text-sm rounded-md border transition-colors ${active ? 'bg-stone-800 text-white border-stone-800' : 'bg-white text-stone-700 border-stone-300 hover:bg-stone-100'}`;
+            btn.innerText = text;
+            btn.onclick = (e) => {
+                Array.from(btn.parentNode.children).forEach(c => {
+                    c.classList.remove('bg-stone-800', 'text-white', 'border-stone-800');
+                    c.classList.add('bg-white', 'text-stone-700', 'border-stone-300');
+                });
+                btn.classList.remove('bg-white', 'text-stone-700', 'border-stone-300');
+                btn.classList.add('bg-stone-800', 'text-white', 'border-stone-800');
+                onClick();
+            };
+            return btn;
+        }
+
+        function setupEQChart(ctx) {
+            const freqLabels = [20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000];
+            const flatData = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+            const hpfData = [-24, -12, -3, 0, 0, 0, 0, 0, 0, 0];
+            const bellData = [0, 0, 0, 0, 6, 0, 0, 0, 0, 0]; 
+            const bellCutData = [0, 0, 0, 0, 0, -8, 0, 0, 0, 0]; 
+
+            state.chartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: freqLabels,
+                    datasets: [{
+                        label: 'Ganancia (dB)',
+                        data: flatData,
+                        borderColor: '#d97706',
+                        backgroundColor: 'rgba(217, 119, 6, 0.1)',
+                        borderWidth: 3,
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    responsive: true,
+                    scales: {
+                        x: { type: 'category', title: { display: true, text: 'Frecuencia (Hz)' } },
+                        y: { min: -24, max: 12, title: { display: true, text: 'dB' } }
+                    },
+                    plugins: { legend: { display: false } }
+                }
+            });
+
+            DOM.visualizerControls.appendChild(createBtn('Plano', true, () => updateChartData(state.chartInstance, flatData)));
+            DOM.visualizerControls.appendChild(createBtn('High-Pass (HPF)', false, () => updateChartData(state.chartInstance, hpfData)));
+            DOM.visualizerControls.appendChild(createBtn('Barrido (Campana +)', false, () => updateChartData(state.chartInstance, bellData)));
+            DOM.visualizerControls.appendChild(createBtn('Corte Resonancia (-)', false, () => updateChartData(state.chartInstance, bellCutData)));
+        }
+
+        function setupCompChart(ctx) {
+            const inputLabels = [-30, -25, -20, -15, -10, -5, 0];
+            const noComp = [-30, -25, -20, -15, -10, -5, 0];
+            const threshold = -15;
+            
+            const calcComp = (ratio) => inputLabels.map(val => {
+                if (val <= threshold) return val;
+                return threshold + ((val - threshold) / ratio);
+            });
+
+            const ratio2 = calcComp(2);
+            const ratio8 = calcComp(8);
+
+            state.chartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: inputLabels,
+                    datasets: [
+                        { label: 'Salida vs Entrada', data: noComp, borderColor: '#059669', borderWidth: 3, tension: 0 },
+                        { label: 'Umbral (Threshold)', data: inputLabels.map(() => threshold), borderColor: '#a8a29e', borderDash: [5, 5], borderWidth: 1, pointRadius: 0 }
+                    ]
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    responsive: true,
+                    scales: {
+                        x: { title: { display: true, text: 'Entrada (dB)' } },
+                        y: { min: -30, max: 0, title: { display: true, text: 'Salida (dB)' } }
+                    },
+                    plugins: { legend: { display: true } }
+                }
+            });
+
+            DOM.visualizerControls.appendChild(createBtn('Sin Compresión (1:1)', true, () => { state.chartInstance.data.datasets[0].data = noComp; state.chartInstance.update(); }));
+            DOM.visualizerControls.appendChild(createBtn('Ratio Suave (2:1)', false, () => { state.chartInstance.data.datasets[0].data = ratio2; state.chartInstance.update(); }));
+            DOM.visualizerControls.appendChild(createBtn('Ratio Agresivo (8:1)', false, () => { state.chartInstance.data.datasets[0].data = ratio8; state.chartInstance.update(); }));
+        }
+
+        function setupGainStagingChart(ctx) {
+            const takes = ['Toma 1', 'Toma 2', 'Coro', 'Puente'];
+            const rawAudio = [ -18, -6, -2, -12 ]; 
+            const clipGainedAudio = [ -10, -9, -10, -10 ]; 
+
+            state.chartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: takes,
+                    datasets: [{ label: 'Nivel Pico (dB)', data: rawAudio, backgroundColor: '#d97706' }]
+                },
+                options: { maintainAspectRatio: false, responsive: true, scales: { y: { min: -24, max: 0, title: { display: true, text: 'dB' } } } }
+            });
+
+            DOM.visualizerControls.appendChild(createBtn('Audio Crudo', true, () => { state.chartInstance.data.datasets[0].data = rawAudio; state.chartInstance.data.datasets[0].backgroundColor = '#d97706'; state.chartInstance.update(); }));
+            DOM.visualizerControls.appendChild(createBtn('Después de Clip Gain', false, () => { state.chartInstance.data.datasets[0].data = clipGainedAudio; state.chartInstance.data.datasets[0].backgroundColor = '#059669'; state.chartInstance.update(); }));
+        }
+
+        function setupMaskingChart(ctx) {
+             const freqLabels = [20, 40, 60, 80, 100, 150, 200, 300];
+             const kick = [0, 6, 10, 4, 0, 0, 0, 0];
+             const bass = [0, 4, 8, 8, 6, 2, 0, 0];
+             const bassEQ = [0, 2, 3, 8, 6, 2, 0, 0]; 
+
+             state.chartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: freqLabels,
+                    datasets: [
+                        { label: 'Bombo', data: kick, borderColor: '#d97706', backgroundColor: 'rgba(217, 119, 6, 0.3)', fill: true, tension: 0.4 },
+                        { label: 'Bajo', data: bass, borderColor: '#059669', backgroundColor: 'rgba(5, 150, 105, 0.3)', fill: true, tension: 0.4 }
+                    ]
+                },
+                options: { maintainAspectRatio: false, responsive: true, scales: { y: { min: 0, max: 12, title: { display: true, text: 'Energía' } } } }
+            });
+
+            DOM.visualizerControls.appendChild(createBtn('Choque (Enmascaramiento)', true, () => { state.chartInstance.data.datasets[1].data = bass; state.chartInstance.update(); }));
+            DOM.visualizerControls.appendChild(createBtn('EQ Complementaria', false, () => { state.chartInstance.data.datasets[1].data = bassEQ; state.chartInstance.update(); }));
+        }
+
+        function setupWorkflowChart(ctx) {
+            state.chartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['📁 Drum Bus (Carpeta)', '↳ Bombo (Hija)', '↳ Caja (Hija)', '↳ HiHat (Hija)'],
+                    datasets: [{ label: 'Flujo de Audio', data: [100, 30, 40, 30], backgroundColor: ['#292524', '#d97706', '#d97706', '#d97706'] }]
+                },
+                options: { indexAxis: 'y', maintainAspectRatio: false, responsive: true, scales: { x: { display: false } }, plugins: { tooltip: { enabled: false }, legend: { display: false } } }
+            });
+        }
+
+        function updateChartData(chart, dataArr) {
+            chart.data.datasets[0].data = dataArr;
+            chart.update();
+        }
+
+        window.onload = init;
+
+    </script>
+</body>
+</html>
