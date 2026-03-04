@@ -178,7 +178,7 @@
                 objective: "Que el alumno pierda el miedo a la interfaz.",
                 intro: "En esta primera sección, estableceremos los cimientos. Aprenderás a configurar Reaper para evitar latencia, entenderás la anatomía de la interfaz y descubrirás cómo organizar tu sesión rápidamente mediante atajos visuales y de teclado.",
                 topics: [
-                    "<b>Configuración de Audio:</b> Preferencias, interfaz ASIO/CoreAudio, Buffer Size (latencia vs CPU).",
+                    "<b>Configuración de Audio:</b> Preferencias (Ctrl+P / Cmd+P), interfaz ASIO/CoreAudio, Buffer Size (latencia vs CPU).",
                     "<b>Anatomía y Navegación:</b> TCP (Pistas), MCP (Mezclador), Línea de tiempo y Docker.",
                     "<b>Organización Vital:</b> Flujo para crear, nombrar, colorear y agrupar pistas en carpetas."
                 ],
@@ -186,11 +186,13 @@
                 homework: "Descargar un multipista gratuito, organizarlo y guardar el proyecto marcando 'Copy all media into project directory'.",
                 links: [{ text: "Descargar Stems (Cambridge-MT)", url: "https://cambridge-mt.com/ms/mtk/" }],
                 shortcuts: [
-                    "<b>Mostrar Mixer:</b> Ctrl+M (Cmd+M)",
+                    "<b>Mostrar Mixer (MCP):</b> Ctrl+M (Cmd+M)",
                     "<b>Mostrar Docker:</b> Alt+D (Opt+Cmd+D)",
-                    "<b>Panorámica de vista:</b> Rueda central",
-                    "<b>Crear pista:</b> Ctrl+T",
-                    "<b>Salto al nombrar:</b> Tab",
+                    "<b>Navegar línea de tiempo:</b> Rueda central (Pan) o Alt + Rueda",
+                    "<b>Crear pista:</b> Doble clic en panel izq. o Ctrl+T",
+                    "<b>Instrumento virtual:</b> Insert o Ctrl+I",
+                    "<b>Nombrado rápido:</b> Tab (para saltar a la siguiente pista)",
+                    "<b>Agrupar (Drag&Drop):</b> Arrastrar pistas debajo del Bus",
                     "<b>Lista de Acciones:</b> Tecla ?"
                 ],
                 instructorNotes: `
@@ -228,7 +230,7 @@
                     "<b>Zoom Horizontal:</b> Rueda del ratón",
                     "<b>Zoom Vertical:</b> Ctrl + Rueda del ratón",
                     "<b>Borrar selección:</b> Suprimir (Delete)",
-                    "<b>Propiedades (Volumen):</b> F2"
+                    "<b>Propiedades del Clip (Volumen preciso):</b> F2"
                 ],
                 instructorNotes: `
                     <p><strong>Meta Docente:</strong> Que entiendan el "Flujo de Señal". Muchos alumnos mezclan subiendo el Fader al máximo porque la onda de audio original es muy pequeña.</p>
@@ -258,8 +260,8 @@
                 homework: "Aplicar High-Pass Filter (HPF) a todas las pistas (excepto bajo/bombo) para limpiar el lodo (rumble).",
                 links: [],
                 shortcuts: [
-                    "<b>Cerrar los ojos:</b> Escucha, no mires",
-                    "<b>Bypass de FX:</b> Úsalo constantemente"
+                    "<b>Cerrar los ojos:</b> Escucha, no mires las curvas.",
+                    "<b>Bypass de FX:</b> Úsalo constantemente."
                 ],
                 instructorNotes: `
                     <p><strong>Meta Docente:</strong> Entrenar su oído para detectar el "Lodo" (graves inútiles) y las resonancias nasales o metálicas.</p>
