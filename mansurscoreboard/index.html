@@ -21,18 +21,26 @@
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
-        body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { 
+            font-family: 'Inter', sans-serif; 
+            -webkit-tap-highlight-color: transparent; 
+            overscroll-behavior-y: contain; /* Previene el refresh al deslizar en iPhone */
+        }
         .custom-scrollbar::-webkit-scrollbar { width: 4px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
         .btn-press:active { transform: scale(0.95); transition: 0.1s; }
+        .modal-overlay { background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(8px); }
+        
+        /* Ajuste para evitar que el teclado mueva demasiado la UI en iOS */
+        input:focus { font-size: 16px !important; } 
     </style>
 </head>
 <body class="bg-slate-50">
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState, useEffect, useMemo } = React;
+        const { useState, useEffect, useMemo, useRef } = React;
 
         // --- CONFIGURACIÓN DE IDENTIDAD ---
         const CONFIG = {
@@ -40,7 +48,6 @@
             JAY_EMAIL: "jgmansur2@gmail.com"        
         };
 
-        // --- CONFIGURACIÓN DE FIREBASE ACTUALIZADA ---
         const firebaseConfig = {
             apiKey: "AIzaSyDzvIYtTwOmxN35qBLQG8JimAXhDghK5ys",
             authDomain: "parentingscoreboard.firebaseapp.com",
@@ -51,20 +58,15 @@
         };
 
         // Inicialización segura de Firebase
-        let auth, db, provider;
-        const isConfigured = firebaseConfig.apiKey && firebaseConfig.apiKey !== "TU_API_KEY";
-
-        if (isConfigured) {
-            if (!firebase.apps.length) {
-                firebase.initializeApp(firebaseConfig);
-            }
-            auth = firebase.auth();
-            db = firebase.firestore();
-            provider = new firebase.auth.GoogleAuthProvider();
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
         }
-
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+        const provider = new firebase.auth.GoogleAuthProvider();
         const appId = 'parenting-scoreboard-pro';
 
+        // Componente de Icono
         const Icon = ({ name, className }) => {
             useEffect(() => {
                 if (window.lucide) window.lucide.createIcons();
@@ -72,68 +74,69 @@
             return <i data-lucide={name} className={className}></i>;
         };
 
-        const TASK_TYPES = [
-            { id: 'cenar_fuera', label: 'Cenar/Comer fuera (Familia)', points: 30, icon: 'utensils', joint: true },
-            { id: 'vacaciones', label: 'Llevarlos de Vacaciones', points: 30, icon: 'plane', joint: true },
-            { id: 'camping', label: 'Llevarlos de Camping', points: 30, icon: 'tent', joint: true },
-            { id: 'alberca', label: 'Llevarlos a la Alberca', points: 30, icon: 'waves', joint: true },
-            { id: 'entretener', label: 'Sacar niños a entretenerse', points: 20, icon: 'heart' },
-            { id: 'dentista', label: 'Llevarlos al Dentista', points: 20, icon: 'stethoscope' },
-            { id: 'medico', label: 'Cita Médica / Especialista', points: 20, icon: 'stethoscope' },
-            { id: 'perros_bañar', label: 'Bañar a los perros', points: 17, icon: 'dog' },
-            { id: 'decidir_comida', label: 'Decidir qué se va a comer', points: 15, icon: 'clipboard-list' },
-            { id: 'super', label: 'Ir al Super', points: 15, icon: 'shopping-cart' },
-            { id: 'deporte', label: 'Deporte / Entreno (Quedarse)', points: 15, icon: 'timer' },
-            { id: 'tarea', label: 'Ayudar con Tareas Escolares', points: 15, icon: 'book-open' },
-            { id: 'cena', label: 'Preparar Cena', points: 12, icon: 'utensils-crosses' },
-            { id: 'desayuno', label: 'Preparar Desayuno', points: 12, icon: 'coffee' },
-            { id: 'lunch', label: 'Preparar Lunch', points: 12, icon: 'briefcase' },
-            { id: 'medicinas', label: 'Dar medicinas', points: 10, icon: 'pill' },
-            { id: 'terapia', label: 'Llevarlos a terapia', points: 10, icon: 'brain' },
-            { id: 'baño_noche', label: 'Baño/Pijama/Dientes', points: 10, icon: 'baby' },
-            { id: 'perros_comida', label: 'Comprar comida perros', points: 10, icon: 'bone' },
+        const DEFAULT_TASKS = [
+            { label: 'Cenar/Comer fuera (Familia)', points: 30, icon: 'utensils' },
+            { label: 'Llevarlos de Vacaciones', points: 30, icon: 'plane' },
+            { label: 'Llevarlos de Camping', points: 30, icon: 'tent' },
+            { label: 'Llevarlos a la Alberca', points: 30, icon: 'waves' },
+            { label: 'Sacar niños a entretenerse', points: 20, icon: 'heart' },
+            { label: 'Llevarlos al Dentista', points: 20, icon: 'stethoscope' },
+            { label: 'Cita Médica / Especialista', points: 20, icon: 'stethoscope' },
+            { label: 'Bañar a los perros', points: 17, icon: 'dog' },
+            { label: 'Decidir qué se va a comer', points: 15, icon: 'clipboard-list' },
+            { label: 'Ir al Super', points: 15, icon: 'shopping-cart' },
+            { label: 'Deporte / Entreno (Quedarse)', points: 15, icon: 'timer' },
+            { label: 'Ayudar con Tareas Escolares', points: 15, icon: 'book-open' },
+            { label: 'Llevar/Recoger Escuela', points: 15, icon: 'car' },
+            { label: 'Preparar Cena', points: 12, icon: 'utensils-crosses' },
+            { label: 'Preparar Desayuno', points: 12, icon: 'coffee' },
+            { label: 'Preparar Lunch', points: 12, icon: 'briefcase' },
+            { label: 'Dar medicinas', points: 10, icon: 'pill' },
+            { label: 'Llevarlos a terapia', points: 10, icon: 'brain' },
+            { label: 'Baño/Pijama/Dientes', points: 10, icon: 'baby' },
+            { label: 'Comprar comida perros', points: 10, icon: 'bone' },
         ];
 
         function App() {
             const [user, setUser] = useState(null);
             const [profileName, setProfileName] = useState("");
             const [logs, setLogs] = useState([]);
-            const [isAdding, setIsAdding] = useState(false);
+            const [availableTasks, setAvailableTasks] = useState([]);
+            const [isAddingLog, setIsAddingLog] = useState(false);
+            const [isManagingTasks, setIsManagingTasks] = useState(false);
+            const [isEditingTask, setIsEditingTask] = useState(null);
             const [loading, setLoading] = useState(true);
             const [jointTask, setJointTask] = useState(false);
+            const [searchTerm, setSearchTerm] = useState(""); // Estado para el buscador
+            
+            const searchInputRef = useRef(null);
 
-            if (!isConfigured) {
-                return (
-                    <div className="min-h-screen flex items-center justify-center p-10 bg-red-50 text-center">
-                        <div className="max-w-xs">
-                            <Icon name="alert-triangle" className="w-12 h-12 text-red-500 mx-auto mb-4" />
-                            <h1 className="text-xl font-bold text-red-900 mb-2">Error de Configuración</h1>
-                            <p className="text-red-700 text-sm font-medium">No se detectaron las llaves de Firebase. Por favor revisa el código.</p>
-                        </div>
-                    </div>
-                );
-            }
-
+            // 1. Auth Listener con Persistencia (Firebase maneja esto automáticamente)
             useEffect(() => {
                 const unsubscribe = auth.onAuthStateChanged((currentUser) => {
-                    setUser(currentUser);
                     if (currentUser) {
                         const email = currentUser.email.toLowerCase();
                         if (email === CONFIG.MARIEL_EMAIL.toLowerCase()) setProfileName("Mariel");
                         else if (email === CONFIG.JAY_EMAIL.toLowerCase()) setProfileName("Jay");
                         else setProfileName(currentUser.displayName?.split(' ')[0] || "Invitado");
+                        setUser(currentUser);
+                    } else {
+                        setUser(null);
                     }
                     setLoading(false);
                 });
                 return () => unsubscribe();
             }, []);
 
+            // 2. Data Listeners
             useEffect(() => {
                 if (!user) return;
-                // Ruta estricta de Firestore para el entorno
-                const logsRef = db.collection('artifacts').doc(appId).collection('public').doc('data').collection('parent_logs');
                 
-                const unsubscribe = logsRef.onSnapshot((snapshot) => {
+                const rootRef = db.collection('artifacts').doc(appId).collection('public').doc('data');
+                const logsRef = rootRef.collection('parent_logs');
+                const tasksRef = rootRef.collection('task_definitions');
+
+                const unsubLogs = logsRef.onSnapshot((snapshot) => {
                     const data = snapshot.docs.map(doc => ({
                         id: doc.id,
                         ...doc.data(),
@@ -148,9 +151,32 @@
                         .sort((a, b) => b.date - a.date);
                     setLogs(filtered);
                     setTimeout(() => window.lucide && window.lucide.createIcons(), 100);
-                }, (err) => console.error("Error Firestore:", err));
-                return () => unsubscribe();
+                });
+
+                const unsubTasks = tasksRef.onSnapshot((snapshot) => {
+                    if (snapshot.empty) {
+                        DEFAULT_TASKS.forEach(t => tasksRef.add(t));
+                    } else {
+                        const tasks = snapshot.docs.map(doc => ({
+                            id: doc.id,
+                            ...doc.data()
+                        })).sort((a, b) => b.points - a.points);
+                        setAvailableTasks(tasks);
+                    }
+                    setTimeout(() => window.lucide && window.lucide.createIcons(), 100);
+                });
+
+                return () => { unsubLogs(); unsubTasks(); };
             }, [user]);
+
+            // Focus en el buscador cuando se abre el modal
+            useEffect(() => {
+                if (isAddingLog && searchInputRef.current) {
+                    setTimeout(() => searchInputRef.current.focus(), 300);
+                } else {
+                    setSearchTerm("");
+                }
+            }, [isAddingLog]);
 
             const login = async () => {
                 try { await auth.signInWithPopup(provider); } 
@@ -168,21 +194,28 @@
                 return totals;
             }, [logs]);
 
+            // Filtrado dinámico de tareas basado en el buscador
+            const filteredTasks = useMemo(() => {
+                return availableTasks.filter(task => 
+                    task.label.toLowerCase().includes(searchTerm.toLowerCase())
+                );
+            }, [availableTasks, searchTerm]);
+
             const totalPoints = scores.Mariel + scores.Jay;
             const marielPct = totalPoints === 0 ? 50 : (scores.Mariel / totalPoints) * 100;
             const jayPct = totalPoints === 0 ? 50 : (scores.Jay / totalPoints) * 100;
 
-            const handleAddLog = async (taskType) => {
+            const handleAddLog = async (task) => {
                 if (!user) return;
                 const logsRef = db.collection('artifacts').doc(appId).collection('public').doc('data').collection('parent_logs');
                 try {
                     if (jointTask) {
-                        const halfPoints = taskType.points / 2;
+                        const halfPoints = task.points / 2;
                         for (const pName of ["Mariel", "Jay"]) {
                             await logsRef.add({
                                 userName: pName,
                                 userId: user.uid,
-                                taskLabel: `${taskType.label} (Juntos)`,
+                                taskLabel: `${task.label} (Juntos)`,
                                 points: halfPoints,
                                 timestamp: firebase.firestore.FieldValue.serverTimestamp(),
                             });
@@ -191,40 +224,57 @@
                         await logsRef.add({
                             userName: profileName,
                             userId: user.uid,
-                            taskLabel: taskType.label,
-                            points: taskType.points,
+                            taskLabel: task.label,
+                            points: task.points,
                             timestamp: firebase.firestore.FieldValue.serverTimestamp(),
                         });
                     }
-                    setIsAdding(false);
+                    setIsAddingLog(false);
                     setJointTask(false);
-                } catch (err) { console.error("Error guardando:", err); }
+                    setSearchTerm("");
+                } catch (err) { console.error("Error guardando log:", err); }
             };
 
             const handleDeleteLog = async (logId, logUserId) => {
                 if (user.uid !== logUserId) return;
                 try { await db.collection('artifacts').doc(appId).collection('public').doc('data').collection('parent_logs').doc(logId).delete(); } 
-                catch (err) { console.error("Error borrando:", err); }
+                catch (err) { console.error("Error borrando log:", err); }
+            };
+
+            const saveTaskDefinition = async (e) => {
+                e.preventDefault();
+                const formData = new FormData(e.target);
+                const taskData = {
+                    label: formData.get('label'),
+                    points: parseInt(formData.get('points')),
+                    icon: formData.get('icon') || 'check-circle'
+                };
+                const tasksRef = db.collection('artifacts').doc(appId).collection('public').doc('data').collection('task_definitions');
+                try {
+                    if (isEditingTask?.id) await tasksRef.doc(isEditingTask.id).update(taskData);
+                    else await tasksRef.add(taskData);
+                    setIsEditingTask(null);
+                } catch (err) { console.error("Error guardando tarea:", err); }
             };
 
             if (loading) return (
                 <div className="flex flex-col items-center justify-center h-screen bg-white">
                     <div className="w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
-                    <p className="mt-4 text-slate-400 font-bold uppercase tracking-widest text-[10px]">Cargando...</p>
+                    <p className="mt-4 text-slate-400 font-bold uppercase tracking-widest text-[10px]">Verificando sesión...</p>
                 </div>
             );
 
             if (!user) return (
                 <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-6">
-                    <div className="bg-white p-8 rounded-[2.5rem] shadow-2xl border border-slate-100 flex flex-col items-center w-full max-w-sm">
+                    <div className="bg-white p-10 rounded-[3rem] shadow-2xl border border-slate-100 flex flex-col items-center w-full max-w-sm animate-in fade-in zoom-in duration-500">
                         <div className="w-20 h-20 bg-indigo-50 rounded-3xl flex items-center justify-center mb-6">
                             <Icon name="shield-check" className="w-10 h-10 text-indigo-600" />
                         </div>
                         <h1 className="text-3xl font-black text-slate-800 text-center mb-2 leading-none">Scoreboard</h1>
-                        <p className="text-slate-400 text-center mb-10 text-sm leading-relaxed">Registra el esfuerzo de Mariel y Jay con los niños.</p>
-                        <button onClick={login} className="w-full bg-white border-2 border-slate-200 text-slate-700 font-bold py-4 rounded-2xl flex items-center justify-center gap-3 btn-press shadow-sm">
-                            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" className="w-6 h-6" alt="Google" />
-                            Entrar con Google
+                        <p className="text-slate-400 text-center mb-10 text-sm leading-relaxed">Tu sesión se mantendrá activa automáticamente.</p>
+                        <button onClick={login} className="w-full bg-indigo-600 text-white font-bold py-5 rounded-3xl flex items-center justify-center gap-3 btn-press shadow-xl shadow-indigo-100">
+                            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" className="w-6 h-6 brightness-0 invert" alt="Google" />
+                            Iniciar con Google
                         </button>
                     </div>
                 </div>
@@ -232,34 +282,38 @@
 
             return (
                 <div className="min-h-screen bg-slate-50 flex flex-col items-center">
-                    <div className="w-full max-w-md bg-slate-50 min-h-screen relative pb-32 shadow-2xl shadow-slate-200">
-                        {/* Marcador Superior */}
+                    <div className="w-full max-w-md bg-slate-50 min-h-screen relative pb-32">
+                        
+                        {/* Header con Marcador */}
                         <div className="sticky top-0 bg-white/95 backdrop-blur-md z-10 px-6 pt-12 pb-6 rounded-b-[3rem] shadow-sm border-b border-slate-100">
                             <div className="flex justify-between items-center mb-6">
                                 <div className="flex items-center gap-2">
                                     <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-bold italic">S</div>
                                     <span className="font-black text-slate-800 text-lg tracking-tight">Parenting Score</span>
                                 </div>
-                                <button onClick={logout} className="p-2 text-slate-300 hover:text-red-500 transition-colors">
-                                    <Icon name="log-out" className="w-5 h-5" />
-                                </button>
+                                <div className="flex items-center gap-1">
+                                    <button onClick={() => setIsManagingTasks(true)} className="p-2 text-slate-400 hover:text-indigo-600"><Icon name="settings" className="w-5 h-5" /></button>
+                                    <button onClick={logout} className="p-2 text-slate-300 hover:text-red-500"><Icon name="log-out" className="w-5 h-5" /></button>
+                                </div>
                             </div>
+                            
                             <div className="flex justify-between items-end mb-6">
                                 <div className="flex-1 text-center">
-                                    <p className="text-[10px] font-black uppercase text-pink-500 mb-1">Mariel</p>
+                                    <p className="text-[10px] font-black uppercase text-pink-500 mb-1 tracking-tighter">Mariel</p>
                                     <p className="text-4xl font-black text-slate-800 leading-none">{scores.Mariel}</p>
                                 </div>
                                 <div className="px-4 text-center">
                                     <Icon name="trophy" className="w-6 h-6 text-yellow-500 mx-auto" />
                                 </div>
                                 <div className="flex-1 text-center">
-                                    <p className="text-[10px] font-black uppercase text-blue-500 mb-1">Jay</p>
+                                    <p className="text-[10px] font-black uppercase text-blue-500 mb-1 tracking-tighter">Jay</p>
                                     <p className="text-4xl font-black text-slate-800 leading-none">{scores.Jay}</p>
                                 </div>
                             </div>
+                            
                             <div className="relative w-full h-7 bg-slate-100 rounded-full overflow-hidden flex border-2 border-white shadow-inner">
-                                <div className="h-full bg-gradient-to-r from-pink-400 to-pink-500 transition-all duration-1000" style={{ width: `${marielPct}%` }} />
-                                <div className="h-full bg-blue-500 transition-all duration-1000" style={{ width: `${jayPct}%` }} />
+                                <div className="h-full bg-gradient-to-r from-pink-400 to-pink-500 transition-all duration-1000 ease-in-out" style={{ width: `${marielPct}%` }} />
+                                <div className="h-full bg-gradient-to-l from-blue-400 to-blue-500 transition-all duration-1000 ease-in-out" style={{ width: `${jayPct}%` }} />
                             </div>
                             <div className="flex justify-between mt-2 px-1 text-[9px] font-bold text-slate-400 uppercase tracking-widest">
                                 <span className="text-pink-500">{marielPct.toFixed(0)}%</span>
@@ -268,19 +322,20 @@
                             </div>
                         </div>
 
-                        {/* Logs */}
+                        {/* Logs Recientes */}
                         <div className="p-6">
-                            <h2 className="text-xl font-black text-slate-800 mb-6 flex items-center gap-2">Actividad Reciente</h2>
+                            <h2 className="text-xl font-black text-slate-800 mb-6 flex items-center gap-2 tracking-tight">Actividad Reciente</h2>
                             {logs.length === 0 ? (
                                 <div className="bg-white rounded-[2.5rem] p-12 text-center border-2 border-dashed border-slate-100">
-                                    <p className="text-slate-400 font-bold italic text-sm">Sin registros todavía este mes.</p>
+                                    <Icon name="smile" className="w-12 h-12 mx-auto mb-4 text-slate-100" />
+                                    <p className="text-slate-400 font-bold italic text-sm">Nada por aquí aún.</p>
                                 </div>
                             ) : (
                                 <div className="space-y-4">
                                     {logs.map(log => (
                                         <div key={log.id} className={`bg-white p-5 rounded-3xl shadow-sm border border-slate-100 flex items-center gap-4 border-l-4 ${log.userName === 'Mariel' ? 'border-l-pink-400' : 'border-l-blue-400'}`}>
                                             <div className={`w-11 h-11 rounded-2xl flex items-center justify-center ${log.userName === 'Mariel' ? 'bg-pink-50 text-pink-500' : 'bg-blue-50 text-blue-500'}`}>
-                                                <Icon name={TASK_TYPES.find(t => t.label === log.taskLabel.replace(' (Juntos)', ''))?.icon || 'users'} className="w-5 h-5" />
+                                                <Icon name={availableTasks.find(t => t.label === log.taskLabel.replace(' (Juntos)', ''))?.icon || 'check-circle'} className="w-5 h-5" />
                                             </div>
                                             <div className="flex-1 min-w-0">
                                                 <div className="flex justify-between items-start">
@@ -303,30 +358,53 @@
                         </div>
 
                         {/* FAB */}
-                        {!isAdding && (
-                            <button onClick={() => setIsAdding(true)} className="fixed bottom-10 left-1/2 -translate-x-1/2 w-16 h-16 bg-indigo-600 text-white rounded-[1.75rem] shadow-2xl flex items-center justify-center btn-press border-b-4 border-indigo-800 z-20">
+                        {!isAddingLog && !isManagingTasks && (
+                            <button onClick={() => setIsAddingLog(true)} className="fixed bottom-10 left-1/2 -translate-x-1/2 w-16 h-16 bg-indigo-600 text-white rounded-3xl shadow-2xl flex items-center justify-center btn-press border-b-4 border-indigo-800 z-20">
                                 <Icon name="plus" className="w-9 h-9" />
                             </button>
                         )}
 
-                        {/* Modal */}
-                        {isAdding && (
-                            <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-50 flex items-end justify-center">
-                                <div className="bg-white w-full max-w-md rounded-t-[3.5rem] p-8 pb-12 shadow-2xl animate-in slide-in-from-bottom duration-300 flex flex-col">
-                                    <div className="flex justify-between items-center mb-6">
+                        {/* MODAL: REGISTRAR ACCIÓN (CON BUSCADOR) */}
+                        {isAddingLog && (
+                            <div className="fixed inset-0 modal-overlay z-50 flex items-end justify-center p-0">
+                                <div className="bg-white w-full max-w-md rounded-t-[3.5rem] p-8 pb-12 shadow-2xl animate-in slide-in-from-bottom duration-300 flex flex-col max-h-[92vh]">
+                                    <div className="flex justify-between items-start mb-6">
                                         <div>
-                                            <h2 className="text-2xl font-black text-slate-800">Registrar</h2>
-                                            <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mt-1">Sesión: {profileName}</p>
+                                            <h2 className="text-2xl font-black text-slate-800 tracking-tight">Registrar</h2>
+                                            <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mt-1">Usuario: {profileName}</p>
                                         </div>
-                                        <button onClick={() => {setIsAdding(false); setJointTask(false);}} className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center text-slate-400 font-bold">&times;</button>
+                                        <button onClick={() => setIsAddingLog(false)} className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center text-slate-400 font-bold">&times;</button>
+                                    </div>
+
+                                    {/* BUSCADOR DINÁMICO */}
+                                    <div className="mb-4 relative">
+                                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
+                                            <Icon name="search" className="w-4 h-4" />
+                                        </div>
+                                        <input 
+                                            ref={searchInputRef}
+                                            type="text"
+                                            placeholder="Buscar tarea (ej: escuela, cena...)"
+                                            className="w-full bg-slate-100 border-none p-4 pl-12 rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none font-medium text-slate-700"
+                                            value={searchTerm}
+                                            onChange={(e) => setSearchTerm(e.target.value)}
+                                        />
+                                        {searchTerm && (
+                                            <button 
+                                                onClick={() => setSearchTerm("")}
+                                                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-300"
+                                            >
+                                                <Icon name="x-circle" className="w-5 h-5" />
+                                            </button>
+                                        )}
                                     </div>
 
                                     <div className="mb-6 p-5 bg-indigo-50 rounded-[2rem] flex items-center justify-between border border-indigo-100 shadow-sm">
-                                        <div className="flex items-center gap-3">
+                                        <div className="flex items-center gap-3 text-left">
                                             <div className="p-2 bg-white rounded-xl shadow-sm"><Icon name="users" className="text-indigo-600 w-5 h-5" /></div>
                                             <div>
-                                                <span className="text-sm font-black text-indigo-900 leading-none block">¿Lo hicimos juntos?</span>
-                                                <span className="text-[10px] text-indigo-400 font-bold uppercase tracking-tighter">División 50/50</span>
+                                                <span className="text-sm font-black text-indigo-900 block leading-tight">¿Lo hicimos juntos?</span>
+                                                <span className="text-[10px] text-indigo-400 font-bold uppercase tracking-tighter">Puntos 50/50</span>
                                             </div>
                                         </div>
                                         <button onClick={() => setJointTask(!jointTask)} className={`w-14 h-8 rounded-full transition-all relative flex items-center px-1 shadow-inner ${jointTask ? 'bg-indigo-600' : 'bg-slate-300'}`}>
@@ -334,8 +412,8 @@
                                         </button>
                                     </div>
 
-                                    <div className="grid grid-cols-1 gap-3 max-h-[45vh] overflow-y-auto pr-2 custom-scrollbar pb-6">
-                                        {TASK_TYPES.map(task => (
+                                    <div className="grid grid-cols-1 gap-3 overflow-y-auto pr-2 custom-scrollbar pb-6 flex-1">
+                                        {filteredTasks.length > 0 ? filteredTasks.map(task => (
                                             <button key={task.id} onClick={() => handleAddLog(task)} className="flex items-center gap-4 p-5 bg-slate-50 border border-slate-100 rounded-[2rem] hover:bg-indigo-50 transition-all text-left btn-press group">
                                                 <div className="text-indigo-600 bg-white p-3 rounded-2xl shadow-sm group-active:scale-90 transition-transform">
                                                     <Icon name={task.icon} className="w-5 h-5" />
@@ -347,11 +425,80 @@
                                                     </p>
                                                 </div>
                                             </button>
+                                        )) : (
+                                            <div className="py-10 text-center text-slate-400 italic text-sm">
+                                                No se encontró "{searchTerm}"
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* MODAL: CONFIGURACIÓN DE TAREAS */}
+                        {isManagingTasks && (
+                            <div className="fixed inset-0 modal-overlay z-50 flex items-center justify-center p-4">
+                                <div className="bg-white w-full max-w-md rounded-[3rem] p-8 shadow-2xl flex flex-col max-h-[85vh] animate-in zoom-in duration-300">
+                                    <div className="flex justify-between items-center mb-6">
+                                        <h2 className="text-2xl font-black text-slate-800 tracking-tight">Gestionar Acciones</h2>
+                                        <button onClick={() => setIsManagingTasks(false)} className="text-slate-400 p-2 text-2xl">&times;</button>
+                                    </div>
+                                    
+                                    <button 
+                                        onClick={() => setIsEditingTask({ label: '', points: 10, icon: 'check-circle' })}
+                                        className="w-full mb-6 p-5 bg-indigo-600 text-white font-bold rounded-3xl shadow-lg btn-press flex items-center justify-center gap-2"
+                                    >
+                                        <Icon name="plus-circle" className="w-5 h-5" /> Nueva Acción
+                                    </button>
+
+                                    <div className="overflow-y-auto custom-scrollbar flex-1 pr-1">
+                                        {availableTasks.map(task => (
+                                            <div key={task.id} className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl mb-3 border border-slate-100">
+                                                <div className="flex items-center gap-3">
+                                                    <Icon name={task.icon} className="w-4 h-4 text-slate-400" />
+                                                    <div className="min-w-0">
+                                                        <p className="font-bold text-slate-800 text-sm truncate">{task.label}</p>
+                                                        <p className="text-[10px] font-bold text-indigo-500 uppercase">{task.points} pts</p>
+                                                    </div>
+                                                </div>
+                                                <div className="flex gap-1">
+                                                    <button onClick={() => setIsEditingTask(task)} className="p-2 text-indigo-400 hover:bg-white rounded-lg transition-colors"><Icon name="edit-2" className="w-4 h-4" /></button>
+                                                    <button onClick={() => { if(confirm('¿Borrar esta acción?')) deleteTaskDefinition(task.id) }} className="p-2 text-red-300 hover:bg-white rounded-lg transition-colors"><Icon name="trash-2" className="w-4 h-4" /></button>
+                                                </div>
+                                            </div>
                                         ))}
                                     </div>
                                 </div>
                             </div>
                         )}
+
+                        {/* MODAL: EDITAR/AÑADIR DEFINICIÓN */}
+                        {isEditingTask && (
+                            <div className="fixed inset-0 modal-overlay z-[60] flex items-center justify-center p-6">
+                                <div className="bg-white w-full max-w-sm rounded-[3rem] p-8 shadow-2xl animate-in zoom-in-95 duration-200">
+                                    <h3 className="text-xl font-black text-slate-800 mb-6">{isEditingTask.id ? 'Editar' : 'Nueva'} Acción</h3>
+                                    <form onSubmit={saveTaskDefinition} className="space-y-4">
+                                        <div>
+                                            <label className="text-[10px] font-black uppercase text-slate-400 mb-1 block tracking-widest">Nombre</label>
+                                            <input name="label" defaultValue={isEditingTask.label} required className="w-full bg-slate-50 border-2 border-slate-100 p-4 rounded-2xl focus:border-indigo-500 outline-none font-bold text-slate-700 shadow-inner" placeholder="Ej: Llevar a música" />
+                                        </div>
+                                        <div>
+                                            <label className="text-[10px] font-black uppercase text-slate-400 mb-1 block tracking-widest">Puntos</label>
+                                            <input name="points" type="number" defaultValue={isEditingTask.points} required className="w-full bg-slate-50 border-2 border-slate-100 p-4 rounded-2xl focus:border-indigo-500 outline-none font-bold text-slate-700 shadow-inner" />
+                                        </div>
+                                        <div>
+                                            <label className="text-[10px] font-black uppercase text-slate-400 mb-1 block tracking-widest">Icono (Nombre Lucide)</label>
+                                            <input name="icon" defaultValue={isEditingTask.icon} className="w-full bg-slate-50 border-2 border-slate-100 p-4 rounded-2xl focus:border-indigo-500 outline-none font-bold text-slate-700 shadow-inner" placeholder="Ej: car, dog, heart" />
+                                        </div>
+                                        <div className="flex gap-3 pt-6">
+                                            <button type="button" onClick={() => setIsEditingTask(null)} className="flex-1 p-4 text-slate-400 font-bold hover:text-slate-600 transition-colors">Cancelar</button>
+                                            <button type="submit" className="flex-1 p-4 bg-indigo-600 text-white font-bold rounded-2xl btn-press shadow-lg shadow-indigo-100">Guardar</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        )}
+
                     </div>
                 </div>
             );
