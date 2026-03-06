@@ -160,25 +160,28 @@
     <!-- 🔥 LÓGICA DE FIREBASE Y LA APP -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-analytics.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
         import { getFirestore, collection, getDocs, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
 
         // ============================================================================
-        // ⚠️ INSTRUCCIONES PARA EL PROFESOR: REEMPLAZA ESTO CON TUS DATOS DE FIREBASE
+        // ⚠️ CONFIGURACIÓN DE FIREBASE ACTUALIZADA
         // ============================================================================
         const myFirebaseConfig = {
-            apiKey: "TU_API_KEY",
-            authDomain: "tu-proyecto.firebaseapp.com",
-            projectId: "tu-proyecto",
-            storageBucket: "tu-proyecto.appspot.com",
-            messagingSenderId: "123456",
-            appId: "1:1234:web:abcd"
+            apiKey: "AIzaSyDWDAOPEe65_oTpDuVAoGZEFag_z1ZqIPA",
+            authDomain: "curso-reaper.firebaseapp.com",
+            projectId: "curso-reaper",
+            storageBucket: "curso-reaper.firebasestorage.app",
+            messagingSenderId: "1081744309694",
+            appId: "1:1081744309694:web:5b197958672a1e4f4ccdef",
+            measurementId: "G-K4S586KNQV"
         };
         // ============================================================================
 
         // Soporte para despliegue en GitHub o vista previa
         const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : myFirebaseConfig;
         const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
         const auth = getAuth(app);
         const db = getFirestore(app);
         let currentUser = null;
