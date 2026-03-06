@@ -24,15 +24,13 @@
         body { 
             font-family: 'Inter', sans-serif; 
             -webkit-tap-highlight-color: transparent; 
-            overscroll-behavior-y: contain; /* Previene el refresh al deslizar en iPhone */
+            overscroll-behavior-y: contain;
         }
         .custom-scrollbar::-webkit-scrollbar { width: 4px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
         .btn-press:active { transform: scale(0.95); transition: 0.1s; }
         .modal-overlay { background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(8px); }
-        
-        /* Ajuste para evitar que el teclado mueva demasiado la UI en iOS */
         input:focus { font-size: 16px !important; } 
     </style>
 </head>
@@ -42,7 +40,7 @@
     <script type="text/babel">
         const { useState, useEffect, useMemo, useRef } = React;
 
-        // --- CONFIGURACIÓN DE IDENTIDAD ---
+        // --- CONFIGURACIÓN ---
         const CONFIG = {
             MARIEL_EMAIL: "marieldelarosaguajardo@gmail.com", 
             JAY_EMAIL: "jgmansur2@gmail.com"        
@@ -57,21 +55,29 @@
             appId: "1:1097939648812:web:0565072a1c55ed8ae3ac89"
         };
 
-        // Inicialización segura de Firebase
-        if (!firebase.apps.length) {
-            firebase.initializeApp(firebaseConfig);
+        // Inicialización segura
+        let auth, db, provider;
+        try {
+            if (!firebase.apps.length) {
+                firebase.initializeApp(firebaseConfig);
+            }
+            auth = firebase.auth();
+            db = firebase.firestore();
+            provider = new firebase.auth.GoogleAuthProvider();
+        } catch (e) {
+            console.error("Firebase init error:", e);
         }
-        const auth = firebase.auth();
-        const db = firebase.firestore();
-        const provider = new firebase.auth.GoogleAuthProvider();
+
         const appId = 'parenting-scoreboard-pro';
 
-        // Componente de Icono
-        const Icon = ({ name, className }) => {
+        const Icon = ({ name, className = "w-5 h-5" }) => {
+            const iconRef = useRef(null);
             useEffect(() => {
-                if (window.lucide) window.lucide.createIcons();
+                if (window.lucide && iconRef.current) {
+                    window.lucide.createIcons();
+                }
             }, [name]);
-            return <i data-lucide={name} className={className}></i>;
+            return <i ref={iconRef} data-lucide={name} className={className}></i>;
         };
 
         const DEFAULT_TASKS = [
@@ -107,21 +113,27 @@
             const [isEditingTask, setIsEditingTask] = useState(null);
             const [loading, setLoading] = useState(true);
             const [jointTask, setJointTask] = useState(false);
-            const [searchTerm, setSearchTerm] = useState(""); // Estado para el buscador
+            const [searchTerm, setSearchTerm] = useState("");
+            const [error, setError] = useState(null);
             
             const searchInputRef = useRef(null);
 
-            // 1. Auth Listener con Persistencia (Firebase maneja esto automáticamente)
+            // 1. Auth Listener
             useEffect(() => {
+                if (!auth) return;
                 const unsubscribe = auth.onAuthStateChanged((currentUser) => {
-                    if (currentUser) {
-                        const email = currentUser.email.toLowerCase();
-                        if (email === CONFIG.MARIEL_EMAIL.toLowerCase()) setProfileName("Mariel");
-                        else if (email === CONFIG.JAY_EMAIL.toLowerCase()) setProfileName("Jay");
-                        else setProfileName(currentUser.displayName?.split(' ')[0] || "Invitado");
-                        setUser(currentUser);
-                    } else {
-                        setUser(null);
+                    try {
+                        if (currentUser) {
+                            const email = currentUser.email.toLowerCase();
+                            if (email === CONFIG.MARIEL_EMAIL.toLowerCase()) setProfileName("Mariel");
+                            else if (email === CONFIG.JAY_EMAIL.toLowerCase()) setProfileName("Jay");
+                            else setProfileName(currentUser.displayName?.split(' ')[0] || "Invitado");
+                            setUser(currentUser);
+                        } else {
+                            setUser(null);
+                        }
+                    } catch (err) {
+                        setError("Error en sesión: " + err.message);
                     }
                     setLoading(false);
                 });
@@ -130,7 +142,7 @@
 
             // 2. Data Listeners
             useEffect(() => {
-                if (!user) return;
+                if (!user || !db) return;
                 
                 const rootRef = db.collection('artifacts').doc(appId).collection('public').doc('data');
                 const logsRef = rootRef.collection('parent_logs');
@@ -150,8 +162,7 @@
                         })
                         .sort((a, b) => b.date - a.date);
                     setLogs(filtered);
-                    setTimeout(() => window.lucide && window.lucide.createIcons(), 100);
-                });
+                }, (err) => setError("Error cargando actividad: " + err.message));
 
                 const unsubTasks = tasksRef.onSnapshot((snapshot) => {
                     if (snapshot.empty) {
@@ -163,13 +174,11 @@
                         })).sort((a, b) => b.points - a.points);
                         setAvailableTasks(tasks);
                     }
-                    setTimeout(() => window.lucide && window.lucide.createIcons(), 100);
-                });
+                }, (err) => setError("Error cargando acciones: " + err.message));
 
                 return () => { unsubLogs(); unsubTasks(); };
             }, [user]);
 
-            // Focus en el buscador cuando se abre el modal
             useEffect(() => {
                 if (isAddingLog && searchInputRef.current) {
                     setTimeout(() => searchInputRef.current.focus(), 300);
@@ -180,7 +189,7 @@
 
             const login = async () => {
                 try { await auth.signInWithPopup(provider); } 
-                catch (error) { console.error("Login fallido", error); }
+                catch (error) { setError("Error al entrar con Google."); }
             };
 
             const logout = () => auth.signOut();
@@ -194,7 +203,6 @@
                 return totals;
             }, [logs]);
 
-            // Filtrado dinámico de tareas basado en el buscador
             const filteredTasks = useMemo(() => {
                 return availableTasks.filter(task => 
                     task.label.toLowerCase().includes(searchTerm.toLowerCase())
@@ -231,14 +239,13 @@
                     }
                     setIsAddingLog(false);
                     setJointTask(false);
-                    setSearchTerm("");
-                } catch (err) { console.error("Error guardando log:", err); }
+                } catch (err) { console.error(err); }
             };
 
             const handleDeleteLog = async (logId, logUserId) => {
                 if (user.uid !== logUserId) return;
                 try { await db.collection('artifacts').doc(appId).collection('public').doc('data').collection('parent_logs').doc(logId).delete(); } 
-                catch (err) { console.error("Error borrando log:", err); }
+                catch (err) { console.error(err); }
             };
 
             const saveTaskDefinition = async (e) => {
@@ -254,27 +261,43 @@
                     if (isEditingTask?.id) await tasksRef.doc(isEditingTask.id).update(taskData);
                     else await tasksRef.add(taskData);
                     setIsEditingTask(null);
-                } catch (err) { console.error("Error guardando tarea:", err); }
+                } catch (err) { console.error(err); }
             };
+
+            const deleteTaskDefinition = async (id) => {
+                try { await db.collection('artifacts').doc(appId).collection('public').doc('data').collection('task_definitions').doc(id).delete(); } 
+                catch (err) { console.error(err); }
+            };
+
+            if (error) return (
+                <div className="min-h-screen flex items-center justify-center p-8 bg-red-50">
+                    <div className="bg-white p-6 rounded-3xl shadow-xl border border-red-100 text-center">
+                        <Icon name="alert-circle" className="w-12 h-12 text-red-500 mx-auto mb-4" />
+                        <h2 className="text-xl font-bold text-red-900 mb-2">Algo salió mal</h2>
+                        <p className="text-red-700 text-sm mb-6">{error}</p>
+                        <button onClick={() => window.location.reload()} className="bg-red-600 text-white px-6 py-3 rounded-2xl font-bold">Reintentar</button>
+                    </div>
+                </div>
+            );
 
             if (loading) return (
                 <div className="flex flex-col items-center justify-center h-screen bg-white">
                     <div className="w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
-                    <p className="mt-4 text-slate-400 font-bold uppercase tracking-widest text-[10px]">Verificando sesión...</p>
+                    <p className="mt-4 text-slate-400 font-bold uppercase tracking-widest text-[10px]">Sincronizando...</p>
                 </div>
             );
 
             if (!user) return (
                 <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-6">
-                    <div className="bg-white p-10 rounded-[3rem] shadow-2xl border border-slate-100 flex flex-col items-center w-full max-w-sm animate-in fade-in zoom-in duration-500">
+                    <div className="bg-white p-10 rounded-[3rem] shadow-2xl border border-slate-100 flex flex-col items-center w-full max-w-sm">
                         <div className="w-20 h-20 bg-indigo-50 rounded-3xl flex items-center justify-center mb-6">
                             <Icon name="shield-check" className="w-10 h-10 text-indigo-600" />
                         </div>
                         <h1 className="text-3xl font-black text-slate-800 text-center mb-2 leading-none">Scoreboard</h1>
-                        <p className="text-slate-400 text-center mb-10 text-sm leading-relaxed">Tu sesión se mantendrá activa automáticamente.</p>
+                        <p className="text-slate-400 text-center mb-10 text-sm leading-relaxed">Tu sesión se mantendrá activa.</p>
                         <button onClick={login} className="w-full bg-indigo-600 text-white font-bold py-5 rounded-3xl flex items-center justify-center gap-3 btn-press shadow-xl shadow-indigo-100">
                             <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" className="w-6 h-6 brightness-0 invert" alt="Google" />
-                            Iniciar con Google
+                            Iniciar sesión
                         </button>
                     </div>
                 </div>
@@ -283,8 +306,7 @@
             return (
                 <div className="min-h-screen bg-slate-50 flex flex-col items-center">
                     <div className="w-full max-w-md bg-slate-50 min-h-screen relative pb-32">
-                        
-                        {/* Header con Marcador */}
+                        {/* Header Fixed */}
                         <div className="sticky top-0 bg-white/95 backdrop-blur-md z-10 px-6 pt-12 pb-6 rounded-b-[3rem] shadow-sm border-b border-slate-100">
                             <div className="flex justify-between items-center mb-6">
                                 <div className="flex items-center gap-2">
@@ -296,39 +318,29 @@
                                     <button onClick={logout} className="p-2 text-slate-300 hover:text-red-500"><Icon name="log-out" className="w-5 h-5" /></button>
                                 </div>
                             </div>
-                            
                             <div className="flex justify-between items-end mb-6">
                                 <div className="flex-1 text-center">
-                                    <p className="text-[10px] font-black uppercase text-pink-500 mb-1 tracking-tighter">Mariel</p>
+                                    <p className="text-[10px] font-black uppercase text-pink-500 mb-1">Mariel</p>
                                     <p className="text-4xl font-black text-slate-800 leading-none">{scores.Mariel}</p>
                                 </div>
-                                <div className="px-4 text-center">
-                                    <Icon name="trophy" className="w-6 h-6 text-yellow-500 mx-auto" />
-                                </div>
+                                <div className="px-4 text-center"><Icon name="trophy" className="w-6 h-6 text-yellow-500 mx-auto" /></div>
                                 <div className="flex-1 text-center">
-                                    <p className="text-[10px] font-black uppercase text-blue-500 mb-1 tracking-tighter">Jay</p>
+                                    <p className="text-[10px] font-black uppercase text-blue-400 mb-1">Jay</p>
                                     <p className="text-4xl font-black text-slate-800 leading-none">{scores.Jay}</p>
                                 </div>
                             </div>
-                            
                             <div className="relative w-full h-7 bg-slate-100 rounded-full overflow-hidden flex border-2 border-white shadow-inner">
-                                <div className="h-full bg-gradient-to-r from-pink-400 to-pink-500 transition-all duration-1000 ease-in-out" style={{ width: `${marielPct}%` }} />
-                                <div className="h-full bg-gradient-to-l from-blue-400 to-blue-500 transition-all duration-1000 ease-in-out" style={{ width: `${jayPct}%` }} />
-                            </div>
-                            <div className="flex justify-between mt-2 px-1 text-[9px] font-bold text-slate-400 uppercase tracking-widest">
-                                <span className="text-pink-500">{marielPct.toFixed(0)}%</span>
-                                <span>Balance Mensual</span>
-                                <span className="text-blue-500">{jayPct.toFixed(0)}%</span>
+                                <div className="h-full bg-pink-500 transition-all duration-1000" style={{ width: `${marielPct}%` }} />
+                                <div className="h-full bg-blue-500 transition-all duration-1000" style={{ width: `${jayPct}%` }} />
                             </div>
                         </div>
 
-                        {/* Logs Recientes */}
+                        {/* Logs */}
                         <div className="p-6">
-                            <h2 className="text-xl font-black text-slate-800 mb-6 flex items-center gap-2 tracking-tight">Actividad Reciente</h2>
+                            <h2 className="text-xl font-black text-slate-800 mb-6">Actividad Reciente</h2>
                             {logs.length === 0 ? (
                                 <div className="bg-white rounded-[2.5rem] p-12 text-center border-2 border-dashed border-slate-100">
-                                    <Icon name="smile" className="w-12 h-12 mx-auto mb-4 text-slate-100" />
-                                    <p className="text-slate-400 font-bold italic text-sm">Nada por aquí aún.</p>
+                                    <p className="text-slate-400 font-bold italic text-sm">Sin registros.</p>
                                 </div>
                             ) : (
                                 <div className="space-y-4">
@@ -339,15 +351,15 @@
                                             </div>
                                             <div className="flex-1 min-w-0">
                                                 <div className="flex justify-between items-start">
-                                                    <h3 className="font-bold text-slate-800 text-[13px] leading-tight truncate mr-2">{log.taskLabel}</h3>
+                                                    <h3 className="font-bold text-slate-800 text-[13px] truncate">{log.taskLabel}</h3>
                                                     <span className={`text-xs font-black ${log.userName === 'Mariel' ? 'text-pink-600' : 'text-blue-600'}`}>+{log.points}</span>
                                                 </div>
                                                 <div className="flex justify-between items-center mt-1">
-                                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">
+                                                    <p className="text-[10px] text-slate-400 uppercase font-bold">
                                                         {log.userName} • {log.date.toLocaleDateString('es-ES', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
                                                     </p>
                                                     {log.userId === user?.uid && (
-                                                        <button onClick={() => handleDeleteLog(log.id, log.userId)} className="text-slate-200 hover:text-red-500 transition-colors p-1"><Icon name="trash-2" className="w-4 h-4" /></button>
+                                                        <button onClick={() => handleDeleteLog(log.id, log.userId)} className="text-slate-200"><Icon name="trash-2" className="w-4 h-4" /></button>
                                                     )}
                                                 </div>
                                             </div>
@@ -357,113 +369,77 @@
                             )}
                         </div>
 
-                        {/* FAB */}
+                        {/* Botón Flotante */}
                         {!isAddingLog && !isManagingTasks && (
                             <button onClick={() => setIsAddingLog(true)} className="fixed bottom-10 left-1/2 -translate-x-1/2 w-16 h-16 bg-indigo-600 text-white rounded-3xl shadow-2xl flex items-center justify-center btn-press border-b-4 border-indigo-800 z-20">
                                 <Icon name="plus" className="w-9 h-9" />
                             </button>
                         )}
 
-                        {/* MODAL: REGISTRAR ACCIÓN (CON BUSCADOR) */}
+                        {/* MODAL REGISTRO */}
                         {isAddingLog && (
-                            <div className="fixed inset-0 modal-overlay z-50 flex items-end justify-center p-0">
-                                <div className="bg-white w-full max-w-md rounded-t-[3.5rem] p-8 pb-12 shadow-2xl animate-in slide-in-from-bottom duration-300 flex flex-col max-h-[92vh]">
+                            <div className="fixed inset-0 modal-overlay z-50 flex items-end justify-center">
+                                <div className="bg-white w-full max-w-md rounded-t-[3.5rem] p-8 pb-12 animate-in slide-in-from-bottom duration-300 flex flex-col max-h-[92vh]">
                                     <div className="flex justify-between items-start mb-6">
-                                        <div>
-                                            <h2 className="text-2xl font-black text-slate-800 tracking-tight">Registrar</h2>
-                                            <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mt-1">Usuario: {profileName}</p>
-                                        </div>
-                                        <button onClick={() => setIsAddingLog(false)} className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center text-slate-400 font-bold">&times;</button>
+                                        <h2 className="text-2xl font-black text-slate-800 leading-none">Registrar</h2>
+                                        <button onClick={() => setIsAddingLog(false)} className="text-slate-400 p-2">&times;</button>
                                     </div>
-
-                                    {/* BUSCADOR DINÁMICO */}
                                     <div className="mb-4 relative">
-                                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
-                                            <Icon name="search" className="w-4 h-4" />
-                                        </div>
+                                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"><Icon name="search" className="w-4 h-4" /></div>
                                         <input 
                                             ref={searchInputRef}
                                             type="text"
-                                            placeholder="Buscar tarea (ej: escuela, cena...)"
-                                            className="w-full bg-slate-100 border-none p-4 pl-12 rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none font-medium text-slate-700"
+                                            placeholder="Buscar tarea..."
+                                            className="w-full bg-slate-100 p-4 pl-12 rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none font-medium"
                                             value={searchTerm}
                                             onChange={(e) => setSearchTerm(e.target.value)}
                                         />
-                                        {searchTerm && (
-                                            <button 
-                                                onClick={() => setSearchTerm("")}
-                                                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-300"
-                                            >
-                                                <Icon name="x-circle" className="w-5 h-5" />
-                                            </button>
-                                        )}
                                     </div>
-
-                                    <div className="mb-6 p-5 bg-indigo-50 rounded-[2rem] flex items-center justify-between border border-indigo-100 shadow-sm">
-                                        <div className="flex items-center gap-3 text-left">
-                                            <div className="p-2 bg-white rounded-xl shadow-sm"><Icon name="users" className="text-indigo-600 w-5 h-5" /></div>
-                                            <div>
-                                                <span className="text-sm font-black text-indigo-900 block leading-tight">¿Lo hicimos juntos?</span>
-                                                <span className="text-[10px] text-indigo-400 font-bold uppercase tracking-tighter">Puntos 50/50</span>
-                                            </div>
+                                    <div className="mb-6 p-5 bg-indigo-50 rounded-[2rem] flex items-center justify-between border border-indigo-100">
+                                        <div className="flex items-center gap-3">
+                                            <Icon name="users" className="text-indigo-600" />
+                                            <span className="text-sm font-black text-indigo-900">¿Lo hicimos juntos?</span>
                                         </div>
-                                        <button onClick={() => setJointTask(!jointTask)} className={`w-14 h-8 rounded-full transition-all relative flex items-center px-1 shadow-inner ${jointTask ? 'bg-indigo-600' : 'bg-slate-300'}`}>
-                                            <div className={`w-6 h-6 bg-white rounded-full shadow-md transition-transform duration-200 ${jointTask ? 'translate-x-6' : 'translate-x-0'}`} />
+                                        <button onClick={() => setJointTask(!jointTask)} className={`w-14 h-8 rounded-full relative flex items-center px-1 ${jointTask ? 'bg-indigo-600' : 'bg-slate-300'}`}>
+                                            <div className={`w-6 h-6 bg-white rounded-full transition-all ${jointTask ? 'translate-x-6' : ''}`} />
                                         </button>
                                     </div>
-
-                                    <div className="grid grid-cols-1 gap-3 overflow-y-auto pr-2 custom-scrollbar pb-6 flex-1">
-                                        {filteredTasks.length > 0 ? filteredTasks.map(task => (
-                                            <button key={task.id} onClick={() => handleAddLog(task)} className="flex items-center gap-4 p-5 bg-slate-50 border border-slate-100 rounded-[2rem] hover:bg-indigo-50 transition-all text-left btn-press group">
-                                                <div className="text-indigo-600 bg-white p-3 rounded-2xl shadow-sm group-active:scale-90 transition-transform">
-                                                    <Icon name={task.icon} className="w-5 h-5" />
-                                                </div>
-                                                <div className="flex-1 min-w-0">
-                                                    <p className="font-bold text-slate-800 text-sm leading-tight">{task.label}</p>
-                                                    <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mt-1">
-                                                        {jointTask ? `${task.points/2} + ${task.points/2}` : task.points} PUNTOS
-                                                    </p>
+                                    <div className="overflow-y-auto flex-1 custom-scrollbar pb-6 space-y-2">
+                                        {filteredTasks.map(task => (
+                                            <button key={task.id} onClick={() => handleAddLog(task)} className="w-full flex items-center gap-4 p-5 bg-slate-50 border border-slate-100 rounded-[2rem] btn-press text-left">
+                                                <div className="text-indigo-600 bg-white p-3 rounded-2xl"><Icon name={task.icon} /></div>
+                                                <div className="flex-1">
+                                                    <p className="font-bold text-slate-800 text-sm">{task.label}</p>
+                                                    <p className="text-[10px] font-black text-indigo-400 uppercase">{jointTask ? task.points/2 : task.points} PUNTOS</p>
                                                 </div>
                                             </button>
-                                        )) : (
-                                            <div className="py-10 text-center text-slate-400 italic text-sm">
-                                                No se encontró "{searchTerm}"
-                                            </div>
-                                        )}
+                                        ))}
                                     </div>
                                 </div>
                             </div>
                         )}
 
-                        {/* MODAL: CONFIGURACIÓN DE TAREAS */}
+                        {/* MODAL CONFIGURACIÓN */}
                         {isManagingTasks && (
                             <div className="fixed inset-0 modal-overlay z-50 flex items-center justify-center p-4">
-                                <div className="bg-white w-full max-w-md rounded-[3rem] p-8 shadow-2xl flex flex-col max-h-[85vh] animate-in zoom-in duration-300">
+                                <div className="bg-white w-full max-w-md rounded-[3rem] p-8 shadow-2xl flex flex-col max-h-[85vh]">
                                     <div className="flex justify-between items-center mb-6">
-                                        <h2 className="text-2xl font-black text-slate-800 tracking-tight">Gestionar Acciones</h2>
-                                        <button onClick={() => setIsManagingTasks(false)} className="text-slate-400 p-2 text-2xl">&times;</button>
+                                        <h2 className="text-2xl font-black text-slate-800 tracking-tight">Acciones</h2>
+                                        <button onClick={() => setIsManagingTasks(false)} className="text-slate-400 p-2">&times;</button>
                                     </div>
-                                    
-                                    <button 
-                                        onClick={() => setIsEditingTask({ label: '', points: 10, icon: 'check-circle' })}
-                                        className="w-full mb-6 p-5 bg-indigo-600 text-white font-bold rounded-3xl shadow-lg btn-press flex items-center justify-center gap-2"
-                                    >
-                                        <Icon name="plus-circle" className="w-5 h-5" /> Nueva Acción
+                                    <button onClick={() => setIsEditingTask({ label: '', points: 10, icon: 'check-circle' })} className="w-full mb-6 p-5 bg-indigo-600 text-white font-bold rounded-3xl btn-press flex items-center justify-center gap-2">
+                                        <Icon name="plus-circle" /> Nueva Acción
                                     </button>
-
-                                    <div className="overflow-y-auto custom-scrollbar flex-1 pr-1">
+                                    <div className="overflow-y-auto custom-scrollbar flex-1 space-y-2">
                                         {availableTasks.map(task => (
-                                            <div key={task.id} className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl mb-3 border border-slate-100">
+                                            <div key={task.id} className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100">
                                                 <div className="flex items-center gap-3">
-                                                    <Icon name={task.icon} className="w-4 h-4 text-slate-400" />
-                                                    <div className="min-w-0">
-                                                        <p className="font-bold text-slate-800 text-sm truncate">{task.label}</p>
-                                                        <p className="text-[10px] font-bold text-indigo-500 uppercase">{task.points} pts</p>
-                                                    </div>
+                                                    <Icon name={task.icon} className="text-slate-400 w-4 h-4" />
+                                                    <span className="font-bold text-slate-800 text-sm">{task.label} ({task.points}p)</span>
                                                 </div>
-                                                <div className="flex gap-1">
-                                                    <button onClick={() => setIsEditingTask(task)} className="p-2 text-indigo-400 hover:bg-white rounded-lg transition-colors"><Icon name="edit-2" className="w-4 h-4" /></button>
-                                                    <button onClick={() => { if(confirm('¿Borrar esta acción?')) deleteTaskDefinition(task.id) }} className="p-2 text-red-300 hover:bg-white rounded-lg transition-colors"><Icon name="trash-2" className="w-4 h-4" /></button>
+                                                <div className="flex gap-2">
+                                                    <button onClick={() => setIsEditingTask(task)} className="p-2 text-indigo-400"><Icon name="edit-2" className="w-4 h-4" /></button>
+                                                    <button onClick={() => deleteTaskDefinition(task.id)} className="p-2 text-red-300"><Icon name="trash-2" className="w-4 h-4" /></button>
                                                 </div>
                                             </div>
                                         ))}
@@ -472,33 +448,23 @@
                             </div>
                         )}
 
-                        {/* MODAL: EDITAR/AÑADIR DEFINICIÓN */}
+                        {/* MODAL EDITAR TAREA */}
                         {isEditingTask && (
                             <div className="fixed inset-0 modal-overlay z-[60] flex items-center justify-center p-6">
-                                <div className="bg-white w-full max-w-sm rounded-[3rem] p-8 shadow-2xl animate-in zoom-in-95 duration-200">
+                                <div className="bg-white w-full max-w-sm rounded-[3rem] p-8 shadow-2xl">
                                     <h3 className="text-xl font-black text-slate-800 mb-6">{isEditingTask.id ? 'Editar' : 'Nueva'} Acción</h3>
                                     <form onSubmit={saveTaskDefinition} className="space-y-4">
-                                        <div>
-                                            <label className="text-[10px] font-black uppercase text-slate-400 mb-1 block tracking-widest">Nombre</label>
-                                            <input name="label" defaultValue={isEditingTask.label} required className="w-full bg-slate-50 border-2 border-slate-100 p-4 rounded-2xl focus:border-indigo-500 outline-none font-bold text-slate-700 shadow-inner" placeholder="Ej: Llevar a música" />
-                                        </div>
-                                        <div>
-                                            <label className="text-[10px] font-black uppercase text-slate-400 mb-1 block tracking-widest">Puntos</label>
-                                            <input name="points" type="number" defaultValue={isEditingTask.points} required className="w-full bg-slate-50 border-2 border-slate-100 p-4 rounded-2xl focus:border-indigo-500 outline-none font-bold text-slate-700 shadow-inner" />
-                                        </div>
-                                        <div>
-                                            <label className="text-[10px] font-black uppercase text-slate-400 mb-1 block tracking-widest">Icono (Nombre Lucide)</label>
-                                            <input name="icon" defaultValue={isEditingTask.icon} className="w-full bg-slate-50 border-2 border-slate-100 p-4 rounded-2xl focus:border-indigo-500 outline-none font-bold text-slate-700 shadow-inner" placeholder="Ej: car, dog, heart" />
-                                        </div>
-                                        <div className="flex gap-3 pt-6">
-                                            <button type="button" onClick={() => setIsEditingTask(null)} className="flex-1 p-4 text-slate-400 font-bold hover:text-slate-600 transition-colors">Cancelar</button>
-                                            <button type="submit" className="flex-1 p-4 bg-indigo-600 text-white font-bold rounded-2xl btn-press shadow-lg shadow-indigo-100">Guardar</button>
+                                        <input name="label" defaultValue={isEditingTask.label} required className="w-full bg-slate-50 p-4 rounded-2xl outline-none font-bold" placeholder="Nombre" />
+                                        <input name="points" type="number" defaultValue={isEditingTask.points} required className="w-full bg-slate-50 p-4 rounded-2xl outline-none font-bold" placeholder="Puntos" />
+                                        <input name="icon" defaultValue={isEditingTask.icon} className="w-full bg-slate-50 p-4 rounded-2xl outline-none font-bold" placeholder="Icono (car, dog, etc)" />
+                                        <div className="flex gap-3 pt-4">
+                                            <button type="button" onClick={() => setIsEditingTask(null)} className="flex-1 font-bold text-slate-400">Cerrar</button>
+                                            <button type="submit" className="flex-1 p-4 bg-indigo-600 text-white font-bold rounded-2xl btn-press">Guardar</button>
                                         </div>
                                     </form>
                                 </div>
                             </div>
                         )}
-
                     </div>
                 </div>
             );
