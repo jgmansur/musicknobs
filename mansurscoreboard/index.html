@@ -1,357 +1,333 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { initializeApp } from 'firebase/app';
-import { 
-  getAuth, 
-  signInWithPopup, 
-  GoogleAuthProvider, 
-  onAuthStateChanged,
-  signOut 
-} from 'firebase/auth';
-import { 
-  getFirestore, 
-  collection, 
-  addDoc, 
-  onSnapshot, 
-  query, 
-  doc, 
-  deleteDoc,
-  serverTimestamp 
-} from 'firebase/firestore';
-import { 
-  Trophy, Clock, Baby, Utensils, Stethoscope, ChevronRight, 
-  Trash2, Plus, LogOut, ShieldCheck, Dog, ShoppingCart, 
-  Sparkles, Tent, Heart, Pill, School, Users
-} from 'lucide-react';
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Parenting Scoreboard</title>
+    <!-- Tailwind CSS para los estilos -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- React y ReactDOM desde CDN -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <!-- Babel para procesar JSX en el navegador -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+        body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+    </style>
+</head>
+<body class="bg-slate-50">
+    <div id="root"></div>
 
-/**
- * CONFIGURACIÓN DE IDENTIDAD
- * Estos son tus correos oficiales para la detección automática.
- */
-const CONFIG = {
-  MARIEL_EMAIL: "marieldelarosaguajardo@gmail.com", 
-  JAY_EMAIL: "jgmansur2@gmail.com"        
-};
-
-// Configuración de Firebase (se inyecta o se pega aquí)
-const firebaseConfig = typeof __firebase_config !== 'undefined' 
-  ? JSON.parse(__firebase_config) 
-  : { 
-      apiKey: "", 
-      authDomain: "", 
-      projectId: "", 
-      storageBucket: "", 
-      messagingSenderId: "", 
-      appId: "" 
-    };
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-const provider = new GoogleAuthProvider();
-const appId = typeof __app_id !== 'undefined' ? __app_id : 'parenting-scoreboard-pro';
-
-// Lista de tareas con puntajes específicos solicitados
-const TASK_TYPES = [
-  { id: 'cenar_fuera', label: 'Cenar/Comer fuera (Familia)', points: 30, icon: <Utensils className="w-5 h-5" />, joint: true },
-  { id: 'vacaciones', label: 'Llevarlos de Vacaciones', points: 30, icon: <Tent className="w-5 h-5" />, joint: true },
-  { id: 'camping', label: 'Llevarlos de Camping', points: 30, icon: <Tent className="w-5 h-5" />, joint: true },
-  { id: 'alberca', label: 'Llevarlos a la Alberca', points: 30, icon: <Sparkles className="w-5 h-5" />, joint: true },
-  { id: 'entretener', label: 'Sacar niños a entretenerse', points: 20, icon: <Heart className="w-5 h-5" /> },
-  { id: 'dentista', label: 'Llevarlos al Dentista', points: 20, icon: <Stethoscope className="w-5 h-5" /> },
-  { id: 'medico', label: 'Cita Médica / Especialista', points: 20, icon: <Stethoscope className="w-5 h-5" /> },
-  { id: 'perros_bañar', label: 'Bañar a los perros', points: 17, icon: <Dog className="w-5 h-5" /> },
-  { id: 'decidir_comida', label: 'Decidir qué se va a comer', points: 15, icon: <Utensils className="w-5 h-5" /> },
-  { id: 'super', label: 'Ir al Super', points: 15, icon: <ShoppingCart className="w-5 h-5" /> },
-  { id: 'deporte', label: 'Deporte / Entreno (Quedarse)', points: 15, icon: <Clock className="w-5 h-5" /> },
-  { id: 'tarea', label: 'Ayudar con Tareas Escolares', points: 15, icon: <School className="w-5 h-5" /> },
-  { id: 'cena', label: 'Preparar Cena', points: 12, icon: <Utensils className="w-5 h-5" /> },
-  { id: 'desayuno', label: 'Preparar Desayuno', points: 12, icon: <Utensils className="w-5 h-5" /> },
-  { id: 'lunch', label: 'Preparar Lunch', points: 12, icon: <Utensils className="w-5 h-5" /> },
-  { id: 'medicinas', label: 'Dar medicinas', points: 10, icon: <Pill className="w-5 h-5" /> },
-  { id: 'terapia', label: 'Llevarlos a terapia', points: 10, icon: <Heart className="w-5 h-5" /> },
-  { id: 'baño_noche', label: 'Baño/Pijama/Dientes', points: 10, icon: <Baby className="w-5 h-5" /> },
-  { id: 'perros_comida', label: 'Comprar comida perros', points: 10, icon: <Dog className="w-5 h-5" /> },
-];
-
-export default function App() {
-  const [user, setUser] = useState(null);
-  const [profileName, setProfileName] = useState("");
-  const [logs, setLogs] = useState([]);
-  const [isAdding, setIsAdding] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [jointTask, setJointTask] = useState(false);
-
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-      if (currentUser) {
-        if (currentUser.email === CONFIG.MARIEL_EMAIL) setProfileName("Mariel");
-        else if (currentUser.email === CONFIG.JAY_EMAIL) setProfileName("Jay");
-        else setProfileName(currentUser.displayName?.split(' ')[0] || "Invitado");
-      }
-      setLoading(false);
-    });
-    return () => unsubscribe();
-  }, []);
-
-  useEffect(() => {
-    if (!user) return;
-    const logsRef = collection(db, 'artifacts', appId, 'public', 'data', 'parent_logs');
-    const unsubscribe = onSnapshot(query(logsRef), (snapshot) => {
-      const data = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-        date: doc.data().timestamp?.toDate() || new Date()
-      }));
-      const now = new Date();
-      const filtered = data
-        .filter(log => {
-          const logDate = new Date(log.date);
-          return logDate.getMonth() === now.getMonth() && logDate.getFullYear() === now.getFullYear();
-        })
-        .sort((a, b) => b.date - a.date);
-      setLogs(filtered);
-    }, (err) => console.error("Error Firestore:", err));
-    return () => unsubscribe();
-  }, [user]);
-
-  const login = async () => {
-    try { await signInWithPopup(auth, provider); } 
-    catch (error) { console.error("Login fallido", error); }
-  };
-
-  const logout = () => signOut(auth);
-
-  const scores = useMemo(() => {
-    const totals = { Mariel: 0, Jay: 0 };
-    logs.forEach(log => {
-      if (log.userName === 'Mariel') totals.Mariel += log.points;
-      else if (log.userName === 'Jay') totals.Jay += log.points;
-    });
-    return totals;
-  }, [logs]);
-
-  const totalPoints = scores.Mariel + scores.Jay;
-  const marielPct = totalPoints === 0 ? 50 : (scores.Mariel / totalPoints) * 100;
-  const jayPct = totalPoints === 0 ? 50 : (scores.Jay / totalPoints) * 100;
-
-  const handleAddLog = async (taskType) => {
-    if (!user) return;
-    const logsRef = collection(db, 'artifacts', appId, 'public', 'data', 'parent_logs');
-    
-    try {
-      if (jointTask) {
-        const halfPoints = taskType.points / 2;
-        const parents = ["Mariel", "Jay"];
-        for (const pName of parents) {
-          await addDoc(logsRef, {
-            userName: pName,
-            userId: user.uid,
-            taskLabel: `${taskType.label} (Juntos)`,
-            points: halfPoints,
-            timestamp: serverTimestamp(),
-            isJoint: true
-          });
-        }
-      } else {
-        await addDoc(logsRef, {
-          userName: profileName,
-          userId: user.uid,
-          taskLabel: taskType.label,
-          points: taskType.points,
-          timestamp: serverTimestamp(),
-          isJoint: false
-        });
-      }
-      setIsAdding(false);
-      setJointTask(false);
-    } catch (err) {
-      console.error("Error guardando:", err);
-    }
-  };
-
-  const handleDeleteLog = async (logId, logUserId) => {
-    if (user.uid !== logUserId) return;
-    try {
-      await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'parent_logs', logId));
-    } catch (err) {
-      console.error("Error borrando:", err);
-    }
-  };
-
-  if (loading) return (
-    <div className="flex items-center justify-center h-screen bg-white">
-      <div className="w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
-    </div>
-  );
-
-  if (!user) {
-    return (
-      <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-6">
-        <div className="bg-white p-8 rounded-[2.5rem] shadow-2xl border border-slate-100 flex flex-col items-center w-full max-w-sm">
-          <div className="w-20 h-20 bg-indigo-50 rounded-3xl flex items-center justify-center mb-6">
-            <ShieldCheck className="w-10 h-10 text-indigo-600" />
-          </div>
-          <h1 className="text-3xl font-black text-slate-800 text-center mb-2 leading-none">Scoreboard</h1>
-          <p className="text-slate-400 text-center mb-10 text-sm">
-            Inicia sesión para registrar el esfuerzo compartido.
-          </p>
-          <button 
-            onClick={login}
-            className="w-full bg-white border-2 border-slate-200 text-slate-700 font-bold py-4 rounded-2xl flex items-center justify-center gap-3 active:scale-95 transition-all shadow-sm"
-          >
-            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" className="w-6 h-6" alt="Google" />
-            Entrar con Google
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="min-h-screen bg-slate-50 flex flex-col items-center">
-      <div className="w-full max-w-md bg-slate-50 min-h-screen relative pb-32">
+    <script type="text/babel">
+        const { useState, useEffect, useMemo } = React;
         
-        {/* Marcador Superior */}
-        <div className="sticky top-0 bg-white/90 backdrop-blur-md z-10 px-6 pt-12 pb-6 rounded-b-[3rem] shadow-sm border-b border-slate-100">
-          <div className="flex justify-between items-center mb-6">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-bold italic">S</div>
-              <span className="font-black text-slate-800 text-lg tracking-tight">Parenting Score</span>
-            </div>
-            <button onClick={logout} className="p-2 text-slate-300 hover:text-red-500 transition-colors">
-              <LogOut className="w-5 h-5" />
-            </button>
-          </div>
+        // Importación de Firebase desde CDN (Modular)
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, doc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-          <div className="flex justify-between items-end mb-6">
-            <div className="flex-1 text-center">
-              <p className="text-[10px] font-black uppercase text-pink-400 mb-1">Mariel</p>
-              <p className="text-4xl font-black text-slate-800 leading-none">{scores.Mariel}</p>
-            </div>
-            <div className="px-4 text-center">
-              <Trophy className="w-6 h-6 text-yellow-500 mx-auto" />
-            </div>
-            <div className="flex-1 text-center">
-              <p className="text-[10px] font-black uppercase text-blue-400 mb-1">Jay</p>
-              <p className="text-4xl font-black text-slate-800 leading-none">{scores.Jay}</p>
-            </div>
-          </div>
-          
-          <div className="relative w-full h-7 bg-slate-100 rounded-full overflow-hidden flex border-2 border-white shadow-inner">
-            <div className="h-full bg-gradient-to-r from-pink-400 to-pink-500 transition-all duration-1000" style={{ width: `${marielPct}%` }} />
-            <div className="h-full bg-gradient-to-l from-blue-400 to-blue-500 transition-all duration-1000" style={{ width: `${jayPct}%` }} />
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <div className="w-0.5 h-full bg-white/40"></div>
-            </div>
-          </div>
-          <div className="flex justify-between mt-2 px-1 text-[9px] font-bold text-slate-400 uppercase tracking-widest">
-            <span className="text-pink-500">{marielPct.toFixed(0)}%</span>
-            <span>Balance del Mes</span>
-            <span className="text-blue-500">{jayPct.toFixed(0)}%</span>
-          </div>
-        </div>
+        // --- CONFIGURACIÓN ---
+        const CONFIG = {
+            MARIEL_EMAIL: "marieldelarosaguajardo@gmail.com", 
+            JAY_EMAIL: "jgmansur2@gmail.com"        
+        };
 
-        {/* Historial de Actividad */}
-        <div className="p-6">
-          <h2 className="text-xl font-black text-slate-800 mb-6 flex items-center gap-2">
-            Actividad Reciente
-          </h2>
-          
-          {logs.length === 0 ? (
-            <div className="bg-white rounded-[2.5rem] p-12 text-center border-2 border-dashed border-slate-100">
-              <Baby className="w-12 h-12 mx-auto mb-4 text-slate-200" />
-              <p className="text-slate-400 font-bold">¡Empieza hoy!</p>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {logs.map(log => (
-                <div key={log.id} className={`bg-white p-5 rounded-3xl shadow-sm border border-slate-100 flex items-center gap-4 transition-all ${log.userName === 'Mariel' ? 'border-l-4 border-l-pink-400' : 'border-l-4 border-l-blue-400'}`}>
-                  <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${log.userName === 'Mariel' ? 'bg-pink-50 text-pink-500' : 'bg-blue-50 text-blue-500'}`}>
-                    {TASK_TYPES.find(t => t.label === log.taskLabel.replace(' (Juntos)', ''))?.icon || <Users className="w-5 h-5" />}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex justify-between items-start">
-                      <h3 className="font-bold text-slate-800 text-[13px] leading-tight">{log.taskLabel}</h3>
-                      <span className={`text-xs font-black ${log.userName === 'Mariel' ? 'text-pink-600' : 'text-blue-600'}`}>+{log.points}</span>
-                    </div>
-                    <div className="flex justify-between items-center mt-1">
-                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">
-                        {log.userName} • {log.date.toLocaleDateString('es-ES', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
-                      </p>
-                      {log.userId === user?.uid && (
-                        <button onClick={() => handleDeleteLog(log.id, log.userId)} className="text-slate-200 hover:text-red-500 active:scale-75 transition-transform"><Trash2 className="w-4 h-4" /></button>
-                      )}
-                    </div>
-                  </div>
+        const firebaseConfig = typeof __firebase_config !== 'undefined' 
+            ? JSON.parse(__firebase_config) 
+            : { apiKey: "", authDomain: "", projectId: "", storageBucket: "", messagingSenderId: "", appId: "" };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const provider = new GoogleAuthProvider();
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'parenting-scoreboard-pro';
+
+        // Componente de Icono para usar con Lucide
+        const Icon = ({ name, className }) => {
+            const [svg, setSvg] = useState('');
+            useEffect(() => {
+                if (window.lucide) {
+                    const iconSvg = window.lucide.createIcons();
+                }
+            }, [name]);
+            return <i data-lucide={name} className={className}></i>;
+        };
+
+        const TASK_TYPES = [
+            { id: 'cenar_fuera', label: 'Cenar/Comer fuera (Familia)', points: 30, icon: 'utensils', joint: true },
+            { id: 'vacaciones', label: 'Llevarlos de Vacaciones', points: 30, icon: 'tent', joint: true },
+            { id: 'camping', label: 'Llevarlos de Camping', points: 30, icon: 'tent', joint: true },
+            { id: 'alberca', label: 'Llevarlos a la Alberca', points: 30, icon: 'sparkles', joint: true },
+            { id: 'entretener', label: 'Sacar niños a entretenerse', points: 20, icon: 'heart' },
+            { id: 'dentista', label: 'Llevarlos al Dentista', points: 20, icon: 'stethoscope' },
+            { id: 'medico', label: 'Cita Médica / Especialista', points: 20, icon: 'stethoscope' },
+            { id: 'perros_bañar', label: 'Bañar a los perros', points: 17, icon: 'dog' },
+            { id: 'decidir_comida', label: 'Decidir qué se va a comer', points: 15, icon: 'utensils' },
+            { id: 'super', label: 'Ir al Super', points: 15, icon: 'shopping-cart' },
+            { id: 'deporte', label: 'Deporte / Entreno (Quedarse)', points: 15, icon: 'clock' },
+            { id: 'tarea', label: 'Ayudar con Tareas Escolares', points: 15, icon: 'book-open' },
+            { id: 'cena', label: 'Preparar Cena', points: 12, icon: 'utensils' },
+            { id: 'desayuno', label: 'Preparar Desayuno', points: 12, icon: 'utensils' },
+            { id: 'lunch', label: 'Preparar Lunch', points: 12, icon: 'utensils' },
+            { id: 'medicinas', label: 'Dar medicinas', points: 10, icon: 'pill' },
+            { id: 'terapia', label: 'Llevarlos a terapia', points: 10, icon: 'heart' },
+            { id: 'baño_noche', label: 'Baño/Pijama/Dientes', points: 10, icon: 'baby' },
+            { id: 'perros_comida', label: 'Comprar comida perros', points: 10, icon: 'dog' },
+        ];
+
+        function App() {
+            const [user, setUser] = useState(null);
+            const [profileName, setProfileName] = useState("");
+            const [logs, setLogs] = useState([]);
+            const [isAdding, setIsAdding] = useState(false);
+            const [loading, setLoading] = useState(true);
+            const [jointTask, setJointTask] = useState(false);
+
+            useEffect(() => {
+                const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+                    setUser(currentUser);
+                    if (currentUser) {
+                        if (currentUser.email === CONFIG.MARIEL_EMAIL) setProfileName("Mariel");
+                        else if (currentUser.email === CONFIG.JAY_EMAIL) setProfileName("Jay");
+                        else setProfileName(currentUser.displayName?.split(' ')[0] || "Invitado");
+                    }
+                    setLoading(false);
+                });
+                return () => unsubscribe();
+            }, []);
+
+            useEffect(() => {
+                if (!user) return;
+                const logsRef = collection(db, 'artifacts', appId, 'public', 'data', 'parent_logs');
+                const unsubscribe = onSnapshot(query(logsRef), (snapshot) => {
+                    const data = snapshot.docs.map(doc => ({
+                        id: doc.id,
+                        ...doc.data(),
+                        date: doc.data().timestamp?.toDate() || new Date()
+                    }));
+                    const now = new Date();
+                    const filtered = data
+                        .filter(log => {
+                            const logDate = new Date(log.date);
+                            return logDate.getMonth() === now.getMonth() && logDate.getFullYear() === now.getFullYear();
+                        })
+                        .sort((a, b) => b.date - a.date);
+                    setLogs(filtered);
+                    setTimeout(() => window.lucide && window.lucide.createIcons(), 100);
+                }, (err) => console.error("Error Firestore:", err));
+                return () => unsubscribe();
+            }, [user]);
+
+            const login = async () => {
+                try { await signInWithPopup(auth, provider); } 
+                catch (error) { console.error("Login fallido", error); }
+            };
+
+            const logout = () => signOut(auth);
+
+            const scores = useMemo(() => {
+                const totals = { Mariel: 0, Jay: 0 };
+                logs.forEach(log => {
+                    if (log.userName === 'Mariel') totals.Mariel += log.points;
+                    else if (log.userName === 'Jay') totals.Jay += log.points;
+                });
+                return totals;
+            }, [logs]);
+
+            const totalPoints = scores.Mariel + scores.Jay;
+            const marielPct = totalPoints === 0 ? 50 : (scores.Mariel / totalPoints) * 100;
+            const jayPct = totalPoints === 0 ? 50 : (scores.Jay / totalPoints) * 100;
+
+            const handleAddLog = async (taskType) => {
+                if (!user) return;
+                const logsRef = collection(db, 'artifacts', appId, 'public', 'data', 'parent_logs');
+                try {
+                    if (jointTask) {
+                        const halfPoints = taskType.points / 2;
+                        for (const pName of ["Mariel", "Jay"]) {
+                            await addDoc(logsRef, {
+                                userName: pName,
+                                userId: user.uid,
+                                taskLabel: `${taskType.label} (Juntos)`,
+                                points: halfPoints,
+                                timestamp: serverTimestamp(),
+                                isJoint: true
+                            });
+                        }
+                    } else {
+                        await addDoc(logsRef, {
+                            userName: profileName,
+                            userId: user.uid,
+                            taskLabel: taskType.label,
+                            points: taskType.points,
+                            timestamp: serverTimestamp(),
+                            isJoint: false
+                        });
+                    }
+                    setIsAdding(false);
+                    setJointTask(false);
+                } catch (err) { console.error("Error guardando:", err); }
+            };
+
+            const handleDeleteLog = async (logId, logUserId) => {
+                if (user.uid !== logUserId) return;
+                try { await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'parent_logs', logId)); } 
+                catch (err) { console.error("Error borrando:", err); }
+            };
+
+            if (loading) return (
+                <div className="flex items-center justify-center h-screen bg-white">
+                    <div className="w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
                 </div>
-              ))}
-            </div>
-          )}
-        </div>
+            );
 
-        {/* Botón Flotante de Acción */}
-        {!isAdding && (
-          <button 
-            onClick={() => setIsAdding(true)}
-            className="fixed bottom-10 left-1/2 -translate-x-1/2 w-16 h-16 bg-indigo-600 text-white rounded-[1.75rem] shadow-2xl flex items-center justify-center active:scale-90 transition-all border-b-4 border-indigo-800 z-20"
-          >
-            <Plus className="w-9 h-9" />
-          </button>
-        )}
-
-        {/* Modal de Registro de Tarea */}
-        {isAdding && (
-          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-50 flex items-end justify-center">
-            <div className="bg-white w-full max-w-md rounded-t-[3.5rem] p-8 pb-12 shadow-2xl animate-in slide-in-from-bottom duration-300">
-              <div className="flex justify-between items-center mb-6">
-                <div>
-                  <h2 className="text-2xl font-black text-slate-800">Registrar Tarea</h2>
-                  <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mt-1">Usuario: {profileName}</p>
-                </div>
-                <button onClick={() => {setIsAdding(false); setJointTask(false);}} className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center text-slate-400 font-bold active:scale-90 transition-transform">&times;</button>
-              </div>
-
-              {/* Selector "Juntos" */}
-              <div className="mb-6 p-5 bg-indigo-50 rounded-[2rem] flex items-center justify-between border border-indigo-100">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-white rounded-xl shadow-sm"><Users className="text-indigo-600 w-5 h-5" /></div>
-                  <div>
-                    <span className="text-sm font-black text-indigo-900 leading-none block">¿Lo hicimos juntos?</span>
-                    <span className="text-[10px] text-indigo-400 font-bold uppercase">Los puntos se dividen al 50%</span>
-                  </div>
-                </div>
-                <button 
-                  onClick={() => setJointTask(!jointTask)}
-                  className={`w-14 h-8 rounded-full transition-all relative flex items-center px-1 shadow-inner ${jointTask ? 'bg-indigo-600' : 'bg-slate-300'}`}
-                >
-                  <div className={`w-6 h-6 bg-white rounded-full shadow-md transition-transform duration-200 ${jointTask ? 'translate-x-6' : 'translate-x-0'}`} />
-                </button>
-              </div>
-
-              <div className="grid grid-cols-1 gap-3 max-h-[50vh] overflow-y-auto pr-2 custom-scrollbar pb-6">
-                {TASK_TYPES.map(task => (
-                  <button
-                    key={task.id}
-                    onClick={() => handleAddLog(task)}
-                    className="flex items-center gap-4 p-5 bg-slate-50 border border-slate-100 rounded-[2rem] hover:bg-indigo-50 hover:border-indigo-200 transition-all text-left active:scale-[0.98] group"
-                  >
-                    <div className="text-indigo-600 bg-white p-3 rounded-2xl shadow-sm group-active:scale-90 transition-transform">
-                      {task.icon}
+            if (!user) return (
+                <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-6">
+                    <div className="bg-white p-8 rounded-[2.5rem] shadow-2xl border border-slate-100 flex flex-col items-center w-full max-w-sm">
+                        <div className="w-20 h-20 bg-indigo-50 rounded-3xl flex items-center justify-center mb-6">
+                            <Icon name="shield-check" className="w-10 h-10 text-indigo-600" />
+                        </div>
+                        <h1 className="text-3xl font-black text-slate-800 text-center mb-2 leading-none">Scoreboard</h1>
+                        <p className="text-slate-400 text-center mb-10 text-sm">Registra el esfuerzo compartido.</p>
+                        <button onClick={login} className="w-full bg-white border-2 border-slate-200 text-slate-700 font-bold py-4 rounded-2xl flex items-center justify-center gap-3 active:scale-95 transition-all shadow-sm">
+                            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" className="w-6 h-6" alt="Google" />
+                            Entrar con Google
+                        </button>
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-bold text-slate-800 text-sm leading-tight">{task.label}</p>
-                      <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mt-1">
-                        {jointTask ? `${task.points/2} + ${task.points/2}` : task.points} PUNTOS
-                      </p>
+                </div>
+            );
+
+            return (
+                <div className="min-h-screen bg-slate-50 flex flex-col items-center">
+                    <div className="w-full max-w-md bg-slate-50 min-h-screen relative pb-32">
+                        {/* Marcador Superior */}
+                        <div className="sticky top-0 bg-white/90 backdrop-blur-md z-10 px-6 pt-12 pb-6 rounded-b-[3rem] shadow-sm border-b border-slate-100">
+                            <div className="flex justify-between items-center mb-6">
+                                <div className="flex items-center gap-2">
+                                    <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-bold italic">S</div>
+                                    <span className="font-black text-slate-800 text-lg tracking-tight">Parenting Score</span>
+                                </div>
+                                <button onClick={logout} className="p-2 text-slate-300"><Icon name="log-out" className="w-5 h-5" /></button>
+                            </div>
+                            <div className="flex justify-between items-end mb-6">
+                                <div className="flex-1 text-center">
+                                    <p className="text-[10px] font-black uppercase text-pink-400 mb-1">Mariel</p>
+                                    <p className="text-4xl font-black text-slate-800 leading-none">{scores.Mariel}</p>
+                                </div>
+                                <div className="px-4 text-center"><Icon name="trophy" className="w-6 h-6 text-yellow-500 mx-auto" /></div>
+                                <div className="flex-1 text-center">
+                                    <p className="text-[10px] font-black uppercase text-blue-400 mb-1">Jay</p>
+                                    <p className="text-4xl font-black text-slate-800 leading-none">{scores.Jay}</p>
+                                </div>
+                            </div>
+                            <div className="relative w-full h-7 bg-slate-100 rounded-full overflow-hidden flex border-2 border-white shadow-inner">
+                                <div className="h-full bg-gradient-to-r from-pink-400 to-pink-500 transition-all duration-1000" style={{ width: `${marielPct}%` }} />
+                                <div className="h-full bg-gradient-to-l from-blue-400 to-blue-500 transition-all duration-1000" style={{ width: `${jayPct}%` }} />
+                            </div>
+                            <div className="flex justify-between mt-2 px-1 text-[9px] font-bold text-slate-400 uppercase tracking-widest">
+                                <span className="text-pink-500">{marielPct.toFixed(0)}%</span>
+                                <span>Balance del Mes</span>
+                                <span className="text-blue-500">{jayPct.toFixed(0)}%</span>
+                            </div>
+                        </div>
+
+                        {/* Historial */}
+                        <div className="p-6">
+                            <h2 className="text-xl font-black text-slate-800 mb-6 flex items-center gap-2">Actividad Reciente</h2>
+                            {logs.length === 0 ? (
+                                <div className="bg-white rounded-[2.5rem] p-12 text-center border-2 border-dashed border-slate-100">
+                                    <p className="text-slate-400 font-bold">¡Empieza hoy!</p>
+                                </div>
+                            ) : (
+                                <div className="space-y-4">
+                                    {logs.map(log => (
+                                        <div key={log.id} className={`bg-white p-5 rounded-3xl shadow-sm border border-slate-100 flex items-center gap-4 transition-all ${log.userName === 'Mariel' ? 'border-l-4 border-l-pink-400' : 'border-l-4 border-l-blue-400'}`}>
+                                            <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${log.userName === 'Mariel' ? 'bg-pink-50 text-pink-500' : 'bg-blue-50 text-blue-500'}`}>
+                                                <Icon name={TASK_TYPES.find(t => t.label === log.taskLabel.replace(' (Juntos)', ''))?.icon || 'users'} className="w-5 h-5" />
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <div className="flex justify-between items-start">
+                                                    <h3 className="font-bold text-slate-800 text-[13px] leading-tight">{log.taskLabel}</h3>
+                                                    <span className={`text-xs font-black ${log.userName === 'Mariel' ? 'text-pink-600' : 'text-blue-600'}`}>+{log.points}</span>
+                                                </div>
+                                                <div className="flex justify-between items-center mt-1">
+                                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">
+                                                        {log.userName} • {log.date.toLocaleDateString('es-ES', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                                                    </p>
+                                                    {log.userId === user?.uid && (
+                                                        <button onClick={() => handleDeleteLog(log.id, log.userId)} className="text-slate-200 hover:text-red-500"><Icon name="trash-2" className="w-4 h-4" /></button>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Botón Flotante */}
+                        {!isAdding && (
+                            <button onClick={() => setIsAdding(true)} className="fixed bottom-10 left-1/2 -translate-x-1/2 w-16 h-16 bg-indigo-600 text-white rounded-[1.75rem] shadow-2xl flex items-center justify-center active:scale-90 transition-all border-b-4 border-indigo-800 z-20">
+                                <Icon name="plus" className="w-9 h-9" />
+                            </button>
+                        )}
+
+                        {/* Modal */}
+                        {isAdding && (
+                            <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-50 flex items-end justify-center">
+                                <div className="bg-white w-full max-w-md rounded-t-[3.5rem] p-8 pb-12 shadow-2xl animate-in slide-in-from-bottom duration-300 overflow-hidden flex flex-col">
+                                    <div className="flex justify-between items-center mb-6">
+                                        <div>
+                                            <h2 className="text-2xl font-black text-slate-800 leading-tight">Registrar Tarea</h2>
+                                            <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mt-1">Usuario: {profileName}</p>
+                                        </div>
+                                        <button onClick={() => {setIsAdding(false); setJointTask(false);}} className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center text-slate-400 font-bold active:scale-90 transition-transform">&times;</button>
+                                    </div>
+
+                                    <div className="mb-6 p-5 bg-indigo-50 rounded-[2rem] flex items-center justify-between border border-indigo-100">
+                                        <div className="flex items-center gap-3">
+                                            <div className="p-2 bg-white rounded-xl shadow-sm"><Icon name="users" className="text-indigo-600 w-5 h-5" /></div>
+                                            <div>
+                                                <span className="text-sm font-black text-indigo-900 leading-none block">¿Lo hicimos juntos?</span>
+                                                <span className="text-[10px] text-indigo-400 font-bold uppercase">División 50/50</span>
+                                            </div>
+                                        </div>
+                                        <button onClick={() => setJointTask(!jointTask)} className={`w-14 h-8 rounded-full transition-all relative flex items-center px-1 ${jointTask ? 'bg-indigo-600' : 'bg-slate-300'}`}>
+                                            <div className={`w-6 h-6 bg-white rounded-full shadow-md transition-transform duration-200 ${jointTask ? 'translate-x-6' : 'translate-x-0'}`} />
+                                        </button>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 gap-3 max-h-[40vh] overflow-y-auto pr-2 custom-scrollbar pb-6">
+                                        {TASK_TYPES.map(task => (
+                                            <button key={task.id} onClick={() => handleAddLog(task)} className="flex items-center gap-4 p-5 bg-slate-50 border border-slate-100 rounded-[2rem] hover:bg-indigo-50 hover:border-indigo-200 transition-all text-left active:scale-[0.98] group">
+                                                <div className="text-indigo-600 bg-white p-3 rounded-2xl shadow-sm group-active:scale-90 transition-transform">
+                                                    <Icon name={task.icon} className="w-5 h-5" />
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <p className="font-bold text-slate-800 text-sm leading-tight">{task.label}</p>
+                                                    <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mt-1">
+                                                        {jointTask ? `${task.points/2} + ${task.points/2}` : task.points} PUNTOS
+                                                    </p>
+                                                </div>
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                     </div>
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
