@@ -1,1 +1,342 @@
+import React, { useState, useEffect, useMemo } from 'react';
+import { initializeApp } from 'firebase/app';
+import { 
+  getAuth, 
+  signInWithPopup, 
+  GoogleAuthProvider, 
+  onAuthStateChanged,
+  signOut 
+} from 'firebase/auth';
+import { 
+  getFirestore, 
+  collection, 
+  addDoc, 
+  onSnapshot, 
+  query, 
+  doc, 
+  deleteDoc,
+  serverTimestamp 
+} from 'firebase/firestore';
+import { 
+  Trophy, Clock, Baby, Utensils, Stethoscope, ChevronRight, 
+  Trash2, Plus, LogOut, ShieldCheck, Dog, ShoppingCart, 
+  Sparkles, Tent, Heart, Pill, School, Users
+} from 'lucide-react';
 
+/**
+ * CONFIGURACIÓN DE IDENTIDAD
+ * IMPORTANTE: Pon aquí los correos exactos de tus cuentas de Google
+ */
+const CONFIG = {
+  MARIEL_EMAIL: "marieldelarosaguajardo@gmail.com", 
+  JAY_EMAIL: "jgmansur2@gmail.com"        
+};
+
+const firebaseConfig = typeof __firebase_config !== 'undefined' 
+  ? JSON.parse(__firebase_config) 
+  : { apiKey: "", authDomain: "", projectId: "", storageBucket: "", messagingSenderId: "", appId: "" };
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+const provider = new GoogleAuthProvider();
+const appId = typeof __app_id !== 'undefined' ? __app_id : 'parenting-scoreboard-pro';
+
+// Lista de tareas actualizada con tus nuevos puntajes
+const TASK_TYPES = [
+  { id: 'cenar_fuera', label: 'Cenar/Comer fuera (Familia)', points: 30, icon: <Utensils className="w-5 h-5" />, joint: true },
+  { id: 'vacaciones', label: 'Llevarlos de Vacaciones', points: 30, icon: <Tent className="w-5 h-5" />, joint: true },
+  { id: 'camping', label: 'Llevarlos de Camping', points: 30, icon: <Tent className="w-5 h-5" />, joint: true },
+  { id: 'alberca', label: 'Llevarlos a la Alberca', points: 30, icon: <Sparkles className="w-5 h-5" />, joint: true },
+  { id: 'entretener', label: 'Sacar niños a entretenerse', points: 20, icon: <Heart className="w-5 h-5" /> },
+  { id: 'dentista', label: 'Llevarlos al Dentista', points: 20, icon: <Stethoscope className="w-5 h-5" /> },
+  { id: 'medico', label: 'Cita Médica / Especialista', points: 20, icon: <Stethoscope className="w-5 h-5" /> },
+  { id: 'perros_bañar', label: 'Bañar a los perros', points: 17, icon: <Dog className="w-5 h-5" /> },
+  { id: 'decidir_comida', label: 'Decidir qué se va a comer', points: 15, icon: <Utensils className="w-5 h-5" /> },
+  { id: 'super', label: 'Ir al Super', points: 15, icon: <ShoppingCart className="w-5 h-5" /> },
+  { id: 'deporte', label: 'Deporte / Entreno (Quedarse)', points: 15, icon: <Clock className="w-5 h-5" /> },
+  { id: 'tarea', label: 'Ayudar con Tareas Escolares', points: 15, icon: <School className="w-5 h-5" /> },
+  { id: 'cena', label: 'Preparar Cena', points: 12, icon: <Utensils className="w-5 h-5" /> },
+  { id: 'desayuno', label: 'Preparar Desayuno', points: 12, icon: <Utensils className="w-5 h-5" /> },
+  { id: 'lunch', label: 'Preparar Lunch', points: 12, icon: <Utensils className="w-5 h-5" /> },
+  { id: 'medicinas', label: 'Dar medicinas', points: 10, icon: <Pill className="w-5 h-5" /> },
+  { id: 'terapia', label: 'Llevarlos a terapia', points: 10, icon: <Heart className="w-5 h-5" /> },
+  { id: 'baño_noche', label: 'Baño/Pijama/Dientes', points: 10, icon: <Baby className="w-5 h-5" /> },
+  { id: 'perros_comida', label: 'Comprar comida perros', points: 10, icon: <Dog className="w-5 h-5" /> },
+];
+
+export default function App() {
+  const [user, setUser] = useState(null);
+  const [profileName, setProfileName] = useState("");
+  const [logs, setLogs] = useState([]);
+  const [isAdding, setIsAdding] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [jointTask, setJointTask] = useState(false); // Toggle para tareas compartidas
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+      if (currentUser) {
+        if (currentUser.email === CONFIG.MARIEL_EMAIL) setProfileName("Mariel");
+        else if (currentUser.email === CONFIG.JAY_EMAIL) setProfileName("Jay");
+        else setProfileName(currentUser.displayName?.split(' ')[0] || "Usuario");
+      }
+      setLoading(false);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    if (!user) return;
+    const logsRef = collection(db, 'artifacts', appId, 'public', 'data', 'parent_logs');
+    const unsubscribe = onSnapshot(query(logsRef), (snapshot) => {
+      const data = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+        date: doc.data().timestamp?.toDate() || new Date()
+      }));
+      const now = new Date();
+      const filtered = data
+        .filter(log => {
+          const logDate = new Date(log.date);
+          return logDate.getMonth() === now.getMonth() && logDate.getFullYear() === now.getFullYear();
+        })
+        .sort((a, b) => b.date - a.date);
+      setLogs(filtered);
+    }, (err) => console.error("Error Firestore:", err));
+    return () => unsubscribe();
+  }, [user]);
+
+  const login = async () => {
+    try { await signInWithPopup(auth, provider); } 
+    catch (error) { console.error("Login failed", error); }
+  };
+
+  const logout = () => signOut(auth);
+
+  const scores = useMemo(() => {
+    const totals = { Mariel: 0, Jay: 0 };
+    logs.forEach(log => {
+      if (log.userName === 'Mariel') totals.Mariel += log.points;
+      else if (log.userName === 'Jay') totals.Jay += log.points;
+    });
+    return totals;
+  }, [logs]);
+
+  const totalPoints = scores.Mariel + scores.Jay;
+  const marielPct = totalPoints === 0 ? 50 : (scores.Mariel / totalPoints) * 100;
+  const jayPct = totalPoints === 0 ? 50 : (scores.Jay / totalPoints) * 100;
+
+  const handleAddLog = async (taskType) => {
+    if (!user) return;
+    const logsRef = collection(db, 'artifacts', appId, 'public', 'data', 'parent_logs');
+    
+    try {
+      if (jointTask) {
+        // Lógica de puntos divididos (15 y 15 si es de 30)
+        const halfPoints = taskType.points / 2;
+        const tasks = [
+          { name: "Mariel", id: "mariel_placeholder" },
+          { name: "Jay", id: "jay_placeholder" }
+        ];
+
+        for (const t of tasks) {
+          await addDoc(logsRef, {
+            userName: t.name,
+            userId: user.uid, // Ambos se guardan bajo el UID de quien lo sube pero con nombre distinto
+            taskLabel: `${taskType.label} (Juntos)`,
+            points: halfPoints,
+            timestamp: serverTimestamp(),
+            isJoint: true
+          });
+        }
+      } else {
+        // Tarea individual normal
+        await addDoc(logsRef, {
+          userName: profileName,
+          userId: user.uid,
+          taskLabel: taskType.label,
+          points: taskType.points,
+          timestamp: serverTimestamp(),
+          isJoint: false
+        });
+      }
+      setIsAdding(false);
+      setJointTask(false);
+    } catch (err) {
+      console.error("Error guardando:", err);
+    }
+  };
+
+  const handleDeleteLog = async (logId, logUserId) => {
+    if (user.uid !== logUserId) return;
+    try {
+      await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'parent_logs', logId));
+    } catch (err) {
+      console.error("Error borrando:", err);
+    }
+  };
+
+  if (loading) return (
+    <div className="flex items-center justify-center h-screen bg-white">
+      <div className="w-10 h-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+    </div>
+  );
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-8">
+        <div className="bg-white p-10 rounded-[3rem] shadow-xl border border-slate-100 flex flex-col items-center w-full max-w-md">
+          <div className="w-20 h-20 bg-indigo-100 rounded-3xl flex items-center justify-center mb-6">
+            <ShieldCheck className="w-10 h-10 text-indigo-600" />
+          </div>
+          <h1 className="text-3xl font-black text-slate-800 text-center mb-2">Parenting App</h1>
+          <p className="text-slate-400 text-center mb-10 leading-relaxed px-4">
+            Inicia sesión para ver el marcador de esfuerzo con Mariel.
+          </p>
+          <button 
+            onClick={login}
+            className="w-full bg-white border-2 border-slate-200 text-slate-700 font-bold py-4 px-6 rounded-2xl flex items-center justify-center gap-3 active:scale-95 transition-all"
+          >
+            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" className="w-6 h-6" alt="Google" />
+            Entrar con Google
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-slate-50 pb-36 font-sans">
+      {/* Marcador Principal */}
+      <div className="sticky top-0 bg-white/90 backdrop-blur-xl z-10 px-6 pt-12 pb-6 rounded-b-[2.5rem] shadow-sm border-b border-slate-100">
+        <div className="flex justify-between items-center mb-6">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-bold italic">S</div>
+            <span className="font-black text-slate-800 text-lg">Scoreboard</span>
+          </div>
+          <button onClick={logout} className="p-2 text-slate-400"><LogOut className="w-5 h-5" /></button>
+        </div>
+
+        <div className="flex justify-between items-end mb-6">
+          <div className="flex-1 text-center">
+            <p className="text-[10px] font-black uppercase text-pink-500 mb-1">Mariel</p>
+            <p className="text-4xl font-black text-slate-800 leading-none">{scores.Mariel}</p>
+          </div>
+          <div className="px-4 text-center">
+            <Trophy className="w-6 h-6 text-yellow-500 mx-auto" />
+          </div>
+          <div className="flex-1 text-center">
+            <p className="text-[10px] font-black uppercase text-blue-500 mb-1">Jay</p>
+            <p className="text-4xl font-black text-slate-800 leading-none">{scores.Jay}</p>
+          </div>
+        </div>
+        
+        <div className="relative w-full h-7 bg-slate-100 rounded-2xl overflow-hidden flex border-2 border-white shadow-inner">
+          <div className="h-full bg-pink-500 transition-all duration-1000" style={{ width: `${marielPct}%` }} />
+          <div className="h-full bg-blue-500 transition-all duration-1000" style={{ width: `${jayPct}%` }} />
+          <div className="absolute inset-0 flex items-center justify-center"><div className="w-0.5 h-full bg-white/50"></div></div>
+        </div>
+        <div className="flex justify-between mt-2 px-1 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+          <span className="text-pink-500">{marielPct.toFixed(0)}%</span>
+          <span>Balance Mensual</span>
+          <span className="text-blue-500">{jayPct.toFixed(0)}%</span>
+        </div>
+      </div>
+
+      {/* Historial */}
+      <div className="p-6 max-w-md mx-auto">
+        <h2 className="text-xl font-black text-slate-800 mb-6">Actividad Reciente</h2>
+        
+        {logs.length === 0 ? (
+          <div className="bg-white rounded-[2rem] p-12 text-center border-2 border-dashed border-slate-200">
+            <p className="text-slate-400 font-bold">Sin actividad todavía.</p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {logs.map(log => (
+              <div key={log.id} className={`bg-white p-5 rounded-3xl shadow-sm border border-slate-100 flex items-center gap-4 border-l-4 ${log.userName === 'Mariel' ? 'border-l-pink-400' : 'border-l-blue-400'}`}>
+                <div className={`w-11 h-11 rounded-2xl flex items-center justify-center ${log.userName === 'Mariel' ? 'bg-pink-50 text-pink-500' : 'bg-blue-50 text-blue-500'}`}>
+                  {TASK_TYPES.find(t => t.label === log.taskLabel.replace(' (Juntos)', ''))?.icon || <Users className="w-5 h-5" />}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex justify-between items-start">
+                    <h3 className="font-bold text-slate-800 text-sm truncate">{log.taskLabel}</h3>
+                    <span className={`text-xs font-black ${log.userName === 'Mariel' ? 'text-pink-600' : 'text-blue-600'}`}>+{log.points}</span>
+                  </div>
+                  <div className="flex justify-between items-center mt-1">
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">
+                      {log.userName} • {log.date.toLocaleDateString('es-ES', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                    </p>
+                    {log.userId === user?.uid && (
+                      <button onClick={() => handleDeleteLog(log.id, log.userId)} className="text-slate-200 hover:text-red-500"><Trash2 className="w-4 h-4" /></button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Botón Flotante */}
+      {!isAdding && (
+        <button 
+          onClick={() => setIsAdding(true)}
+          className="fixed bottom-10 right-8 w-16 h-16 bg-indigo-600 text-white rounded-3xl shadow-2xl flex items-center justify-center active:scale-90 transition-all border-b-4 border-indigo-900"
+        >
+          <Plus className="w-9 h-9" />
+        </button>
+      )}
+
+      {/* Modal de Tareas */}
+      {isAdding && (
+        <div className="fixed inset-0 bg-slate-900/70 backdrop-blur-md z-50 flex items-end justify-center">
+          <div className="bg-white w-full max-w-md rounded-t-[3.5rem] p-8 pb-12 animate-in slide-in-from-bottom duration-300">
+            <div className="flex justify-between items-center mb-6">
+              <div>
+                <h2 className="text-2xl font-black text-slate-800">Registrar Tarea</h2>
+                <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mt-1">Sesión de {profileName}</p>
+              </div>
+              <button onClick={() => {setIsAdding(false); setJointTask(false);}} className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center text-slate-400 font-bold">&times;</button>
+            </div>
+
+            {/* Toggle Tarea Conjunta */}
+            <div className="mb-6 p-4 bg-indigo-50 rounded-3xl flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Users className="text-indigo-600 w-5 h-5" />
+                <span className="text-sm font-bold text-indigo-900">¿Lo hicimos juntos?</span>
+              </div>
+              <button 
+                onClick={() => setJointTask(!jointTask)}
+                className={`w-14 h-8 rounded-full transition-colors relative flex items-center px-1 ${jointTask ? 'bg-indigo-600' : 'bg-slate-300'}`}
+              >
+                <div className={`w-6 h-6 bg-white rounded-full shadow-md transition-transform ${jointTask ? 'translate-x-6' : 'translate-x-0'}`} />
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 gap-3 max-h-[50vh] overflow-y-auto pr-2 custom-scrollbar pb-4">
+              {TASK_TYPES.map(task => (
+                <button
+                  key={task.id}
+                  onClick={() => handleAddLog(task)}
+                  className="flex items-center gap-4 p-5 bg-slate-50 border border-slate-100 rounded-3xl hover:bg-indigo-50 hover:border-indigo-200 transition-all text-left active:scale-95 group"
+                >
+                  <div className="text-indigo-600 bg-white p-2.5 rounded-2xl shadow-sm group-active:scale-90 transition-transform">
+                    {task.icon}
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-bold text-slate-800 text-sm leading-tight">{task.label}</p>
+                    <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mt-1">
+                      {jointTask ? `${task.points/2} + ${task.points/2}` : task.points} PUNTOS
+                    </p>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
