@@ -34,9 +34,15 @@
         input:focus { font-size: 16px !important; } 
         .tab-active { border-bottom: 3px solid #4f46e5; color: #4f46e5; }
         
+        /* Asegurar que el contenedor del icono tenga tamaño real */
+        .icon-box {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 0;
+        }
         svg {
             display: block;
-            vertical-align: middle;
         }
     </style>
 </head>
@@ -70,7 +76,6 @@
         const provider = new firebase.auth.GoogleAuthProvider();
         const appId = 'parenting-scoreboard-pro';
 
-        // Helper para la lógica de las 5 AM
         const getAdjustedDateStr = (date) => {
             const d = new Date(date);
             if (isNaN(d.getTime())) return "Fecha desconocida";
@@ -81,14 +86,15 @@
         };
 
         /**
-         * COMPONENTE DE ICONO REESTRUCTURADO
-         * Usa dangerouslySetInnerHTML para renderizar el SVG de Lucide directamente
-         * sin peleas entre el motor de Lucide y el virtual DOM de React.
+         * COMPONENTE DE ICONO REESTRUCTURADO (VERSIÓN DEFINITIVA)
+         * Inyecta el SVG directamente de la librería Lucide para evitar conflictos de renderizado.
          */
         const Icon = ({ name, className = "w-5 h-5", color = "currentColor" }) => {
-            const svgContent = useMemo(() => {
+            const [svgHtml, setSvgHtml] = useState('');
+
+            useEffect(() => {
                 if (window.lucide && window.lucide.icons[name]) {
-                    return window.lucide.icons[name].toSvg({
+                    const svg = window.lucide.icons[name].toSvg({
                         class: className,
                         stroke: color,
                         'stroke-width': 2,
@@ -96,16 +102,14 @@
                         'stroke-linejoin': 'round',
                         fill: 'none'
                     });
+                    setSvgHtml(svg);
+                } else if (name === 'plus') {
+                    // Fallback manual para el icono de suma si lucide no carga a tiempo
+                    setSvgHtml(`<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="${className}"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>`);
                 }
-                return '';
             }, [name, className, color]);
 
-            if (!svgContent) return <span className={className}></span>;
-
-            return <span 
-                className="inline-flex items-center justify-center"
-                dangerouslySetInnerHTML={{ __html: svgContent }} 
-            />;
+            return <span className="icon-box" dangerouslySetInnerHTML={{ __html: svgHtml }} />;
         };
 
         const DEFAULT_TASKS = [
@@ -146,7 +150,6 @@
             
             const searchInputRef = useRef(null);
 
-            // 1. Auth Listener
             useEffect(() => {
                 const unsubscribe = auth.onAuthStateChanged((currentUser) => {
                     if (currentUser) {
@@ -163,10 +166,8 @@
                 return () => unsubscribe();
             }, []);
 
-            // 2. Data Listeners
             useEffect(() => {
                 if (!user) return;
-                
                 const rootRef = db.collection('artifacts').doc(appId).collection('public').doc('data');
                 const logsRef = rootRef.collection('parent_logs');
                 const tasksRef = rootRef.collection('task_definitions');
@@ -211,7 +212,6 @@
 
             const logout = () => auth.signOut();
 
-            // Filtrado de registros
             const filteredLogs = useMemo(() => {
                 try {
                     const now = new Date();
@@ -223,7 +223,6 @@
                         if (!log.date) return false;
                         const logDate = new Date(log.date);
                         if (isNaN(logDate.getTime())) return false;
-
                         if (viewTab === "hoy") return getAdjustedDateStr(logDate) === todayStr;
                         if (viewTab === "semana") return logDate >= weekAgo;
                         if (viewTab === "mes") return logDate.getMonth() === now.getMonth() && logDate.getFullYear() === now.getFullYear();
@@ -242,44 +241,33 @@
                 return totals;
             }, [filteredLogs]);
 
-            // Ganadores del periodo anterior para las coronas 👑
             const lastPeriodWinners = useMemo(() => {
                 const now = new Date();
-                
-                // Rango Ayer (Desde 24h antes del último corte de 5 AM hasta ese corte)
                 const todayCutoff = new Date(now);
                 if (todayCutoff.getHours() < 5) todayCutoff.setDate(todayCutoff.getDate() - 1);
                 todayCutoff.setHours(5, 0, 0, 0);
-                
                 const yesterdayCutoff = new Date(todayCutoff);
                 yesterdayCutoff.setDate(yesterdayCutoff.getDate() - 1);
 
-                // Rango Semana Pasada (Hace 7 a 14 días)
                 const endLW = new Date(); endLW.setDate(endLW.getDate() - 7);
                 const startLW = new Date(); startLW.setDate(startLW.getDate() - 14);
-                
-                // Rango Mes Pasado (Mes calendario anterior)
                 const startLM = new Date(now.getFullYear(), now.getMonth() - 1, 1);
                 const endLM = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59);
 
-                const totalsLD = { Mariel: 0, Jay: 0 }; // Last Day
-                const totalsLW = { Mariel: 0, Jay: 0 }; // Last Week
-                const totalsLM = { Mariel: 0, Jay: 0 }; // Last Month
+                const totalsLD = { Mariel: 0, Jay: 0 };
+                const totalsLW = { Mariel: 0, Jay: 0 };
+                const totalsLM = { Mariel: 0, Jay: 0 };
 
                 logs.forEach(log => {
                     const d = new Date(log.date);
                     if (isNaN(d.getTime())) return;
                     const pts = parseFloat(log.points) || 0;
-
-                    // Acumular Ayer
                     if (d >= yesterdayCutoff && d < todayCutoff) {
                         if (totalsLD.hasOwnProperty(log.userName)) totalsLD[log.userName] += pts;
                     }
-                    // Acumular semana pasada
                     if (d >= startLW && d < endLW) {
                         if (totalsLW.hasOwnProperty(log.userName)) totalsLW[log.userName] += pts;
                     }
-                    // Acumular mes pasado
                     if (d >= startLM && d <= endLM) {
                         if (totalsLM.hasOwnProperty(log.userName)) totalsLM[log.userName] += pts;
                     }
@@ -391,7 +379,7 @@
                 <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-6 text-center">
                     <div className="bg-white p-10 rounded-[3rem] shadow-2xl w-full max-w-sm">
                         <div className="w-20 h-20 bg-indigo-50 rounded-3xl flex items-center justify-center mb-6 mx-auto">
-                            <Icon name="shield-check" className="w-10 h-10 text-indigo-600" />
+                            <Icon name="shield-check" className="w-10 h-10" color="#4f46e5" />
                         </div>
                         <h1 className="text-3xl font-black text-slate-800 mb-2 leading-none">Scoreboard</h1>
                         <p className="text-slate-400 mb-10 text-sm leading-relaxed">Entra con tu cuenta familiar para registrar el esfuerzo de hoy.</p>
@@ -417,13 +405,13 @@
                                 <div className="flex items-center gap-3">
                                     <button 
                                         onClick={() => setIsManagingTasks(true)} 
-                                        className="p-2 bg-slate-100 text-slate-700 hover:text-indigo-600 active:bg-slate-200 rounded-xl transition-all shadow-sm flex items-center justify-center"
+                                        className="p-2 bg-slate-100 text-slate-800 hover:text-indigo-600 active:bg-slate-200 rounded-xl transition-all shadow-sm flex items-center justify-center"
                                     >
                                         <Icon name="settings" className="w-5 h-5" />
                                     </button>
                                     <button 
                                         onClick={logout} 
-                                        className="p-2 bg-slate-100 text-slate-700 hover:text-red-500 active:bg-slate-200 rounded-xl transition-all shadow-sm flex items-center justify-center"
+                                        className="p-2 bg-slate-100 text-slate-800 hover:text-red-500 active:bg-slate-200 rounded-xl transition-all shadow-sm flex items-center justify-center"
                                     >
                                         <Icon name="log-out" className="w-5 h-5" />
                                     </button>
@@ -447,16 +435,16 @@
                                     <div className="flex justify-between items-end mb-6">
                                         <div className="flex-1 text-center">
                                             <p className="text-[10px] font-black uppercase text-pink-500 mb-1 tracking-tighter">
-                                                Mariel {((viewTab === 'hoy' && lastPeriodWinners.day === 'Mariel') || (viewTab === 'semana' && lastPeriodWinners.week === 'Mariel') || (viewTab === 'mes' && lastPeriodWinners.month === 'Mariel')) ? '👑' : ''}
+                                                {((viewTab === 'hoy' && lastPeriodWinners.day === 'Mariel') || (viewTab === 'semana' && lastPeriodWinners.week === 'Mariel') || (viewTab === 'mes' && lastPeriodWinners.month === 'Mariel')) ? '👑 ' : ''}Mariel
                                             </p>
                                             <p className="text-4xl font-black text-slate-800 leading-none">{scores.Mariel}</p>
                                         </div>
                                         <div className="px-4 text-center">
-                                            <Icon name="trophy" className="w-6 h-6 text-yellow-500 mx-auto" />
+                                            <Icon name="trophy" className="w-6 h-6" color="#eab308" />
                                         </div>
                                         <div className="flex-1 text-center">
                                             <p className="text-[10px] font-black uppercase text-blue-500 mb-1 tracking-tighter">
-                                                Jay {((viewTab === 'hoy' && lastPeriodWinners.day === 'Jay') || (viewTab === 'semana' && lastPeriodWinners.week === 'Jay') || (viewTab === 'mes' && lastPeriodWinners.month === 'Jay')) ? '👑' : ''}
+                                                {((viewTab === 'hoy' && lastPeriodWinners.day === 'Jay') || (viewTab === 'semana' && lastPeriodWinners.week === 'Jay') || (viewTab === 'mes' && lastPeriodWinners.month === 'Jay')) ? '👑 ' : ''}Jay
                                             </p>
                                             <p className="text-4xl font-black text-slate-800 leading-none">{scores.Jay}</p>
                                         </div>
@@ -522,7 +510,7 @@
                                                                 {log.userName} • {log.date.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
                                                             </p>
                                                             {log.userId === user?.uid && (
-                                                                <button onClick={() => handleDeleteLog(log.id, log.userId)} className="p-1 text-slate-300 hover:text-red-500 transition-colors flex items-center justify-center"><Icon name="trash-2" className="w-4 h-4" /></button>
+                                                                <button onClick={() => handleDeleteLog(log.id, log.userId)} className="p-1 text-slate-400 hover:text-red-500 transition-colors flex items-center justify-center"><Icon name="trash-2" className="w-4 h-4" /></button>
                                                             )}
                                                         </div>
                                                     </div>
@@ -553,7 +541,7 @@
                                         <button onClick={() => {setIsAddingLog(false); setJointTask(false);}} className="p-2 text-slate-400 text-2xl leading-none">&times;</button>
                                     </div>
                                     
-                                    <div className="mb-4 relative">
+                                    <div className="mb-4 relative text-center">
                                         <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 flex items-center justify-center"><Icon name="search" className="w-4 h-4" /></div>
                                         <input 
                                             ref={searchInputRef}
@@ -567,7 +555,7 @@
 
                                     <div className="mb-6 p-5 bg-indigo-50 rounded-[2rem] flex items-center justify-between border border-indigo-100">
                                         <div className="flex items-center gap-3">
-                                            <Icon name="users" className="text-indigo-600 w-5 h-5" />
+                                            <Icon name="users" className="text-indigo-600" />
                                             <span className="text-sm font-black text-indigo-900 leading-none">¿Lo hicimos juntos?</span>
                                         </div>
                                         <button onClick={() => setJointTask(!jointTask)} className={`w-14 h-8 rounded-full transition-all relative flex items-center px-1 ${jointTask ? 'bg-indigo-600' : 'bg-slate-300'}`}>
