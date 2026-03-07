@@ -33,6 +33,8 @@
         .modal-overlay { background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(12px); }
         input:focus { font-size: 16px !important; } 
         .tab-active { border-bottom: 3px solid #4f46e5; color: #4f46e5; }
+        /* Asegurar que los iconos tengan tamaño si Lucide falla un segundo */
+        [data-lucide] { display: inline-block; min-width: 1em; min-height: 1em; }
     </style>
 </head>
 <body class="bg-slate-50">
@@ -75,26 +77,27 @@
             return d.toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' });
         };
 
-        // Componente de Icono ultra-estable
-        const Icon = ({ name, className = "w-5 h-5" }) => {
+        // Componente de Icono robusto con re-intento
+        const Icon = ({ name, className = "w-5 h-5", color }) => {
             const iconRef = useRef(null);
+            
             useEffect(() => {
-                let timeout;
-                if (window.lucide && iconRef.current) {
-                    timeout = setTimeout(() => {
-                        try {
-                            window.lucide.createIcons({
-                                attrs: { class: className },
-                                nameAttr: 'data-lucide',
-                                icons: [name]
-                            });
-                        } catch (e) { /* Error silencioso para evitar pantalla blanca */ }
-                    }, 10);
-                }
-                return () => clearTimeout(timeout);
+                const renderIcon = () => {
+                    if (window.lucide && iconRef.current) {
+                        window.lucide.createIcons({
+                            attrs: { class: className },
+                            nameAttr: 'data-lucide',
+                            icons: [name]
+                        });
+                    }
+                };
+                renderIcon();
+                // Re-renderizar un poco después por si el DOM no estaba listo
+                const t = setTimeout(renderIcon, 50);
+                return () => clearTimeout(t);
             }, [name, className]);
 
-            return <i ref={iconRef} data-lucide={name} className={className}></i>;
+            return <i ref={iconRef} data-lucide={name} className={className} style={{ color }}></i>;
         };
 
         const DEFAULT_TASKS = [
@@ -102,9 +105,9 @@
             { label: 'Llevarlos de Vacaciones', points: 30, icon: 'plane' },
             { label: 'Llevarlos de Camping', points: 30, icon: 'tent' },
             { label: 'Llevarlos a la Alberca', points: 30, icon: 'waves' },
-            { label: 'Sacar niños a entretenerse', points: 20, icon: 'heart' },
+            { label: 'Sacar niños a entretenerse', points: 20, icon: 'smile' },
             { label: 'Llevarlos al Dentista', points: 20, icon: 'stethoscope' },
-            { label: 'Cita Médica / Especialista', points: 20, icon: 'stethoscope' },
+            { label: 'Cita Médica / Especialista', points: 20, icon: 'heart-pulse' },
             { label: 'Bañar a los perros', points: 17, icon: 'dog' },
             { label: 'Decidir qué se va a comer', points: 15, icon: 'clipboard-list' },
             { label: 'Ir al Super', points: 15, icon: 'shopping-cart' },
@@ -139,7 +142,7 @@
             useEffect(() => {
                 const unsubscribe = auth.onAuthStateChanged((currentUser) => {
                     if (currentUser) {
-                        const email = currentUser.email.toLowerCase();
+                        const email = (currentUser.email || "").toLowerCase();
                         if (email === CONFIG.MARIEL_EMAIL.toLowerCase()) setProfileName("Mariel");
                         else if (email === CONFIG.JAY_EMAIL.toLowerCase()) setProfileName("Jay");
                         else setProfileName(currentUser.displayName?.split(' ')[0] || "Invitado");
@@ -200,7 +203,7 @@
 
             const logout = () => auth.signOut();
 
-            // --- Lógica de filtrado protegida ---
+            // Filtrado de registros
             const filteredLogs = useMemo(() => {
                 try {
                     const now = new Date();
@@ -218,9 +221,7 @@
                         if (viewTab === "mes") return logDate.getMonth() === now.getMonth() && logDate.getFullYear() === now.getFullYear();
                         return true; 
                     });
-                } catch (e) {
-                    return [];
-                }
+                } catch (e) { return []; }
             }, [logs, viewTab]);
 
             const scores = useMemo(() => {
@@ -232,6 +233,39 @@
                 });
                 return totals;
             }, [filteredLogs]);
+
+            // Ganadores del periodo anterior para las coronas 👑
+            const lastPeriodWinners = useMemo(() => {
+                const now = new Date();
+                const endLW = new Date(); endLW.setDate(endLW.getDate() - 7);
+                const startLW = new Date(); startLW.setDate(startLW.getDate() - 14);
+                const startLM = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+                const endLM = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59);
+
+                const totalsLW = { Mariel: 0, Jay: 0 };
+                const totalsLM = { Mariel: 0, Jay: 0 };
+
+                logs.forEach(log => {
+                    const d = new Date(log.date);
+                    if (isNaN(d.getTime())) return;
+                    const pts = parseFloat(log.points) || 0;
+                    if (d >= startLW && d < endLW) {
+                        if (totalsLW.hasOwnProperty(log.userName)) totalsLW[log.userName] += pts;
+                    }
+                    if (d >= startLM && d <= endLM) {
+                        if (totalsLM.hasOwnProperty(log.userName)) totalsLM[log.userName] += pts;
+                    }
+                });
+
+                const getWinner = (totals) => {
+                    if (totals.Mariel === 0 && totals.Jay === 0) return null;
+                    if (totals.Mariel > totals.Jay) return 'Mariel';
+                    if (totals.Jay > totals.Mariel) return 'Jay';
+                    return null;
+                };
+
+                return { week: getWinner(totalsLW), month: getWinner(totalsLM) };
+            }, [logs]);
 
             const groupedHistory = useMemo(() => {
                 const groups = {};
@@ -315,9 +349,9 @@
             };
 
             if (loading) return (
-                <div className="flex flex-col items-center justify-center h-screen bg-white">
-                    <div className="w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
-                    <p className="mt-4 text-slate-400 font-bold uppercase tracking-widest text-[10px]">Cargando...</p>
+                <div className="flex flex-col items-center justify-center h-screen bg-white text-center">
+                    <div className="w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mx-auto"></div>
+                    <p className="mt-4 text-slate-400 font-bold uppercase tracking-widest text-[10px]">Cargando Scoreboard...</p>
                 </div>
             );
 
@@ -328,7 +362,7 @@
                             <Icon name="shield-check" className="w-10 h-10 text-indigo-600" />
                         </div>
                         <h1 className="text-3xl font-black text-slate-800 mb-2 leading-none">Scoreboard</h1>
-                        <p className="text-slate-400 mb-10 text-sm">Monitorea el esfuerzo de Mariel y Jay.</p>
+                        <p className="text-slate-400 mb-10 text-sm leading-relaxed">Entra para registrar el esfuerzo de hoy.</p>
                         <button onClick={login} className="w-full bg-indigo-600 text-white font-bold py-5 rounded-3xl flex items-center justify-center gap-3 btn-press shadow-xl">
                             <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" className="w-6 h-6 brightness-0 invert" alt="Google" />
                             Entrar con Google
@@ -348,9 +382,22 @@
                                     <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-bold">S</div>
                                     <span className="font-black text-slate-800 text-lg tracking-tight">Parenting Score</span>
                                 </div>
-                                <div className="flex items-center gap-1">
-                                    <button onClick={() => setIsManagingTasks(true)} className="p-2 text-slate-400"><Icon name="settings" className="w-5 h-5" /></button>
-                                    <button onClick={logout} className="p-2 text-slate-300"><Icon name="log-out" className="w-5 h-5" /></button>
+                                {/* BOTONES CON ALTO CONTRASTE */}
+                                <div className="flex items-center gap-2">
+                                    <button 
+                                        onClick={() => setIsManagingTasks(true)} 
+                                        className="p-2 bg-slate-100 text-slate-700 hover:text-indigo-600 active:bg-slate-200 rounded-xl transition-all flex items-center justify-center"
+                                        title="Ajustes"
+                                    >
+                                        <Icon name="settings" className="w-6 h-6" />
+                                    </button>
+                                    <button 
+                                        onClick={logout} 
+                                        className="p-2 bg-slate-100 text-slate-700 hover:text-red-500 active:bg-slate-200 rounded-xl transition-all flex items-center justify-center"
+                                        title="Salir"
+                                    >
+                                        <Icon name="log-out" className="w-6 h-6" />
+                                    </button>
                                 </div>
                             </div>
 
@@ -367,23 +414,27 @@
                             </div>
 
                             {viewTab !== "historial" && (
-                                <div className="animate-in fade-in duration-300">
+                                <div className="animate-in fade-in duration-300 px-1">
                                     <div className="flex justify-between items-end mb-6">
                                         <div className="flex-1 text-center">
-                                            <p className="text-[10px] font-black uppercase text-pink-500 mb-1 tracking-tighter">Mariel</p>
+                                            <p className="text-[10px] font-black uppercase text-pink-500 mb-1 tracking-tighter">
+                                                Mariel {((viewTab === 'semana' && lastPeriodWinners.week === 'Mariel') || (viewTab === 'mes' && lastPeriodWinners.month === 'Mariel')) ? '👑' : ''}
+                                            </p>
                                             <p className="text-4xl font-black text-slate-800 leading-none">{scores.Mariel}</p>
                                         </div>
                                         <div className="px-4 text-center">
                                             <Icon name="trophy" className="w-6 h-6 text-yellow-500 mx-auto" />
                                         </div>
                                         <div className="flex-1 text-center">
-                                            <p className="text-[10px] font-black uppercase text-blue-500 mb-1 tracking-tighter">Jay</p>
+                                            <p className="text-[10px] font-black uppercase text-blue-500 mb-1 tracking-tighter">
+                                                Jay {((viewTab === 'semana' && lastPeriodWinners.week === 'Jay') || (viewTab === 'mes' && lastPeriodWinners.month === 'Jay')) ? '👑' : ''}
+                                            </p>
                                             <p className="text-4xl font-black text-slate-800 leading-none">{scores.Jay}</p>
                                         </div>
                                     </div>
                                     <div className="relative w-full h-7 bg-slate-100 rounded-full overflow-hidden flex border-2 border-white shadow-inner mb-4">
-                                        <div className="h-full bg-pink-500 transition-all duration-700 ease-out" style={{ width: `${marielPct}%` }} />
-                                        <div className="h-full bg-blue-500 transition-all duration-700 ease-out" style={{ width: `${jayPct}%` }} />
+                                        <div className="h-full bg-pink-500 transition-all duration-1000 ease-out" style={{ width: `${marielPct}%` }} />
+                                        <div className="h-full bg-blue-500 transition-all duration-1000 ease-out" style={{ width: `${jayPct}%` }} />
                                     </div>
                                 </div>
                             )}
@@ -393,11 +444,13 @@
                         <div className="p-6">
                             {viewTab === "historial" ? (
                                 <div className="space-y-6 animate-in slide-in-from-bottom-4 duration-500">
-                                    <h2 className="text-xl font-black text-slate-800 tracking-tight">Días Pasados</h2>
+                                    <h2 className="text-xl font-black text-slate-800 tracking-tight flex items-center gap-2">
+                                        Historial Días <Icon name="calendar" className="w-5 h-5 text-slate-300" />
+                                    </h2>
                                     {groupedHistory.map(([date, data]) => (
                                         <div key={date} className="bg-white rounded-[2rem] p-6 shadow-sm border border-slate-100">
                                             <div className="flex justify-between items-center mb-4 border-b border-slate-50 pb-4">
-                                                <h3 className="font-black text-slate-800 uppercase text-xs tracking-widest">{date}</h3>
+                                                <h3 className="font-black text-slate-800 uppercase text-[10px] tracking-widest">{date}</h3>
                                                 <div className="flex gap-4 text-[11px] font-bold">
                                                     <span className="text-pink-500 font-black">M: {data.mariel}</span>
                                                     <span className="text-blue-500 font-black">J: {data.jay}</span>
@@ -410,18 +463,18 @@
                                                         <span className={t.userName === 'Mariel' ? 'text-pink-300' : 'text-blue-300'}>{t.userName} (+{t.points})</span>
                                                     </div>
                                                 ))}
-                                                {data.tasks.length > 3 && <p className="text-[9px] text-slate-300 italic pt-1">... y {data.tasks.length - 3} tareas más</p>}
+                                                {data.tasks.length > 3 && <p className="text-[9px] text-slate-300 italic pt-1">... y {data.tasks.length - 3} más</p>}
                                             </div>
                                         </div>
                                     ))}
                                 </div>
                             ) : (
                                 <div className="animate-in slide-in-from-bottom-4 duration-500">
-                                    <h2 className="text-xl font-black text-slate-800 mb-6 tracking-tight capitalize">Actividad de {viewTab}</h2>
+                                    <h2 className="text-xl font-black text-slate-800 mb-6 tracking-tight capitalize">Actividad {viewTab}</h2>
                                     {filteredLogs.length === 0 ? (
                                         <div className="bg-white rounded-[2.5rem] p-12 text-center border-2 border-dashed border-slate-100">
                                             <Icon name="coffee" className="w-12 h-12 mx-auto mb-4 text-slate-200" />
-                                            <p className="text-slate-400 font-bold italic text-sm">Nada registrado aún.</p>
+                                            <p className="text-slate-400 font-bold italic text-sm">Sin registros.</p>
                                         </div>
                                     ) : (
                                         <div className="space-y-4">
@@ -440,7 +493,7 @@
                                                                 {log.userName} • {log.date.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
                                                             </p>
                                                             {log.userId === user?.uid && (
-                                                                <button onClick={() => handleDeleteLog(log.id, log.userId)} className="text-slate-300 hover:text-red-500 transition-colors"><Icon name="trash-2" className="w-4 h-4" /></button>
+                                                                <button onClick={() => handleDeleteLog(log.id, log.userId)} className="p-1 text-slate-300 hover:text-red-500 transition-colors"><Icon name="trash-2" className="w-4 h-4" /></button>
                                                             )}
                                                         </div>
                                                     </div>
@@ -452,20 +505,23 @@
                             )}
                         </div>
 
-                        {/* BOTÓN REGISTRO */}
+                        {/* BOTÓN REGISTRO CON SÍMBOLO MÁS FORZADO */}
                         {!isAddingLog && !isManagingTasks && (
-                            <button onClick={() => setIsAddingLog(true)} className="fixed bottom-10 left-1/2 -translate-x-1/2 w-16 h-16 bg-indigo-600 text-white rounded-[1.75rem] shadow-2xl flex items-center justify-center btn-press border-b-4 border-indigo-800 z-40">
-                                <Icon name="plus" className="w-9 h-9" />
+                            <button 
+                                onClick={() => setIsAddingLog(true)} 
+                                className="fixed bottom-10 left-1/2 -translate-x-1/2 w-16 h-16 bg-indigo-600 text-white rounded-[1.75rem] shadow-2xl flex items-center justify-center btn-press border-b-4 border-indigo-800 z-40 transition-transform active:scale-90"
+                            >
+                                <Icon name="plus" className="w-9 h-9" color="white" />
                             </button>
                         )}
 
                         {/* MODAL REGISTRO */}
                         {isAddingLog && (
                             <div className="fixed inset-0 modal-overlay z-50 flex items-end justify-center">
-                                <div className="bg-white w-full max-w-md rounded-t-[3.5rem] p-8 pb-12 animate-in slide-in-from-bottom duration-300 flex flex-col max-h-[92vh]">
+                                <div className="bg-white w-full max-w-md rounded-t-[3.5rem] p-8 pb-12 shadow-2xl animate-in slide-in-from-bottom duration-300 flex flex-col max-h-[92vh]">
                                     <div className="flex justify-between items-start mb-6">
                                         <h2 className="text-2xl font-black text-slate-800 tracking-tight leading-none">Registrar</h2>
-                                        <button onClick={() => {setIsAddingLog(false); setJointTask(false);}} className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center text-slate-400 font-bold">&times;</button>
+                                        <button onClick={() => {setIsAddingLog(false); setJointTask(false);}} className="p-2 text-slate-400 text-2xl">&times;</button>
                                     </div>
                                     
                                     <div className="mb-4 relative">
@@ -474,7 +530,7 @@
                                             ref={searchInputRef}
                                             type="text"
                                             placeholder="Buscar tarea..."
-                                            className="w-full bg-slate-100 p-4 pl-12 rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none font-bold text-slate-700"
+                                            className="w-full bg-slate-100 p-4 pl-12 rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none font-bold text-slate-700 shadow-inner"
                                             value={searchTerm}
                                             onChange={(e) => setSearchTerm(e.target.value)}
                                         />
@@ -493,11 +549,11 @@
                                     <div className="overflow-y-auto flex-1 custom-scrollbar pb-6 space-y-2">
                                         {searchFilteredTasks.map(task => (
                                             <button key={task.id} onClick={() => handleAddLog(task)} className="w-full flex items-center gap-4 p-5 bg-slate-50 border border-slate-100 rounded-[2rem] btn-press text-left group">
-                                                <div className="text-indigo-600 bg-white p-3 rounded-2xl group-active:scale-90 transition-transform"><Icon name={task.icon || 'check-circle'} /></div>
+                                                <div className="text-indigo-600 bg-white p-3 rounded-2xl group-active:scale-90 transition-transform shadow-sm"><Icon name={task.icon || 'check-circle'} /></div>
                                                 <div className="flex-1">
                                                     <p className="font-bold text-slate-800 text-sm leading-tight">{task.label}</p>
                                                     <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mt-1">
-                                                        {jointTask ? task.points/2 : task.points} PUNTOS
+                                                        {jointTask ? (parseFloat(task.points)/2) : task.points} PUNTOS
                                                     </p>
                                                 </div>
                                             </button>
@@ -512,11 +568,11 @@
                             <div className="fixed inset-0 modal-overlay z-50 flex items-center justify-center p-4">
                                 <div className="bg-white w-full max-w-md rounded-[3rem] p-8 shadow-2xl flex flex-col max-h-[85vh] animate-in zoom-in duration-300">
                                     <div className="flex justify-between items-center mb-6">
-                                        <h2 className="text-2xl font-black text-slate-800 tracking-tight leading-none">Acciones</h2>
-                                        <button onClick={() => setIsManagingTasks(false)} className="text-slate-400 p-2 text-2xl">&times;</button>
+                                        <h2 className="text-2xl font-black text-slate-800 tracking-tight leading-none">Configuración</h2>
+                                        <button onClick={() => setIsManagingTasks(false)} className="text-slate-400 text-2xl">&times;</button>
                                     </div>
                                     <button onClick={() => setIsEditingTask({ label: '', points: 10, icon: 'check-circle' })} className="w-full mb-6 p-5 bg-indigo-600 text-white font-bold rounded-3xl btn-press flex items-center justify-center gap-2 shadow-lg shadow-indigo-100">
-                                        <Icon name="plus-circle" /> Nueva Acción
+                                        <Icon name="plus-circle" color="white" /> Nueva Acción
                                     </button>
                                     <div className="overflow-y-auto custom-scrollbar flex-1 space-y-2 pr-1">
                                         {availableTasks.map(task => (
@@ -526,8 +582,8 @@
                                                     <span className="font-bold text-slate-800 text-sm truncate">{task.label} ({task.points}p)</span>
                                                 </div>
                                                 <div className="flex gap-1">
-                                                    <button onClick={() => setIsEditingTask(task)} className="p-2 text-indigo-400 hover:bg-white rounded-lg transition-colors"><Icon name="edit-2" className="w-4 h-4" /></button>
-                                                    <button onClick={() => { if(confirm('¿Borrar?')) db.collection('artifacts').doc(appId).collection('public').doc('data').collection('task_definitions').doc(task.id).delete(); }} className="p-2 text-red-300 hover:bg-white rounded-lg transition-colors"><Icon name="trash-2" className="w-4 h-4" /></button>
+                                                    <button onClick={() => setIsEditingTask(task)} className="p-2 text-indigo-400 hover:bg-white rounded-lg transition-colors flex items-center justify-center"><Icon name="edit-2" className="w-4 h-4" /></button>
+                                                    <button onClick={() => { if(confirm('¿Borrar?')) db.collection('artifacts').doc(appId).collection('public').doc('data').collection('task_definitions').doc(task.id).delete(); }} className="p-2 text-red-300 hover:bg-white rounded-lg transition-colors flex items-center justify-center"><Icon name="trash-2" className="w-4 h-4" /></button>
                                                 </div>
                                             </div>
                                         ))}
@@ -539,15 +595,24 @@
                         {/* MODAL EDICIÓN DEFINICIÓN */}
                         {isEditingTask && (
                             <div className="fixed inset-0 modal-overlay z-[60] flex items-center justify-center p-6">
-                                <div className="bg-white w-full max-w-sm rounded-[3rem] p-8 shadow-2xl">
+                                <div className="bg-white w-full max-w-sm rounded-[3rem] p-8 shadow-2xl animate-in zoom-in-95 duration-200">
                                     <h3 className="text-xl font-black text-slate-800 mb-6 tracking-tight">{isEditingTask.id ? 'Editar' : 'Nueva'} Acción</h3>
                                     <form onSubmit={saveTaskDefinition} className="space-y-4">
-                                        <input name="label" defaultValue={isEditingTask.label} required className="w-full bg-slate-50 p-4 rounded-2xl outline-none font-bold text-slate-700 shadow-inner" placeholder="Nombre" />
-                                        <input name="points" type="number" step="0.5" defaultValue={isEditingTask.points} required className="w-full bg-slate-50 p-4 rounded-2xl outline-none font-bold text-slate-700 shadow-inner" placeholder="Puntos" />
-                                        <input name="icon" defaultValue={isEditingTask.icon} className="w-full bg-slate-50 p-4 rounded-2xl outline-none font-bold text-slate-700 shadow-inner" placeholder="Icono (utensils, plane, car...)" />
+                                        <div className="space-y-1">
+                                            <label className="text-[10px] uppercase font-bold text-slate-400 ml-1">Nombre Acción</label>
+                                            <input name="label" defaultValue={isEditingTask.label} required className="w-full bg-slate-50 p-4 rounded-2xl outline-none font-bold text-slate-700 shadow-inner border border-slate-100" />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <label className="text-[10px] uppercase font-bold text-slate-400 ml-1">Puntos Esfuerzo</label>
+                                            <input name="points" type="number" step="0.5" defaultValue={isEditingTask.points} required className="w-full bg-slate-50 p-4 rounded-2xl outline-none font-bold text-slate-700 shadow-inner border border-slate-100" />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <label className="text-[10px] uppercase font-bold text-slate-400 ml-1">Icono (utensils, car...)</label>
+                                            <input name="icon" defaultValue={isEditingTask.icon} className="w-full bg-slate-50 p-4 rounded-2xl outline-none font-bold text-slate-700 shadow-inner border border-slate-100" />
+                                        </div>
                                         <div className="flex gap-3 pt-6">
                                             <button type="button" onClick={() => setIsEditingTask(null)} className="flex-1 font-bold text-slate-400">Cerrar</button>
-                                            <button type="submit" className="flex-1 p-4 bg-indigo-600 text-white font-bold rounded-2xl btn-press shadow-lg shadow-indigo-100">Guardar</button>
+                                            <button type="submit" className="flex-1 p-4 bg-indigo-600 text-white font-bold rounded-2xl btn-press">Guardar</button>
                                         </div>
                                     </form>
                                 </div>
