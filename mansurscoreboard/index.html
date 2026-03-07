@@ -33,8 +33,12 @@
         .modal-overlay { background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(12px); }
         input:focus { font-size: 16px !important; } 
         .tab-active { border-bottom: 3px solid #4f46e5; color: #4f46e5; }
-        /* Asegurar que los iconos tengan tamaño si Lucide falla un segundo */
-        [data-lucide] { display: inline-block; min-width: 1em; min-height: 1em; }
+        
+        /* Fix para contenedores de iconos */
+        .icon-container svg {
+            width: 100%;
+            height: 100%;
+        }
     </style>
 </head>
 <body class="bg-slate-50">
@@ -77,27 +81,44 @@
             return d.toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' });
         };
 
-        // Componente de Icono robusto con re-intento
+        /**
+         * COMPONENTE DE ICONO REFORZADO
+         * Inserta el SVG directamente para evitar que Lucide y React se peleen por el DOM.
+         */
         const Icon = ({ name, className = "w-5 h-5", color }) => {
-            const iconRef = useRef(null);
-            
+            const containerRef = useRef(null);
+
             useEffect(() => {
-                const renderIcon = () => {
-                    if (window.lucide && iconRef.current) {
-                        window.lucide.createIcons({
-                            attrs: { class: className },
-                            nameAttr: 'data-lucide',
-                            icons: [name]
-                        });
+                const updateIcon = () => {
+                    if (window.lucide && containerRef.current) {
+                        const iconData = window.lucide.icons[name];
+                        if (iconData) {
+                            // Convertimos el icono a string SVG y lo inyectamos
+                            const svgString = window.lucide.createIcons({
+                                icons: { [name]: iconData },
+                                attrs: { 
+                                    class: className,
+                                    style: color ? `color: ${color}` : ''
+                                }
+                            });
+                            // Opción más segura: usar el motor interno de lucide para generar el nodo
+                            containerRef.current.innerHTML = '';
+                            const svgNode = iconData.toSvg({
+                                class: className,
+                                stroke: color || 'currentColor'
+                            });
+                            containerRef.current.innerHTML = svgNode;
+                        }
                     }
                 };
-                renderIcon();
-                // Re-renderizar un poco después por si el DOM no estaba listo
-                const t = setTimeout(renderIcon, 50);
-                return () => clearTimeout(t);
-            }, [name, className]);
 
-            return <i ref={iconRef} data-lucide={name} className={className} style={{ color }}></i>;
+                updateIcon();
+                // Pequeño delay por si la librería tarda en cargar en el primer render
+                const timeout = setTimeout(updateIcon, 50);
+                return () => clearTimeout(timeout);
+            }, [name, className, color]);
+
+            return <span ref={containerRef} className={`inline-flex items-center justify-center icon-container ${className}`}></span>;
         };
 
         const DEFAULT_TASKS = [
@@ -382,21 +403,21 @@
                                     <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-bold">S</div>
                                     <span className="font-black text-slate-800 text-lg tracking-tight">Parenting Score</span>
                                 </div>
-                                {/* BOTONES CON ALTO CONTRASTE */}
+                                {/* BOTONES CON ALTO CONTRASTE Y RECTIFICADOS */}
                                 <div className="flex items-center gap-2">
                                     <button 
                                         onClick={() => setIsManagingTasks(true)} 
-                                        className="p-2 bg-slate-100 text-slate-700 hover:text-indigo-600 active:bg-slate-200 rounded-xl transition-all flex items-center justify-center"
+                                        className="w-10 h-10 bg-slate-100 text-slate-700 hover:text-indigo-600 active:bg-slate-200 rounded-xl transition-all flex items-center justify-center shadow-sm"
                                         title="Ajustes"
                                     >
-                                        <Icon name="settings" className="w-6 h-6" />
+                                        <Icon name="settings" className="w-5 h-5" />
                                     </button>
                                     <button 
                                         onClick={logout} 
-                                        className="p-2 bg-slate-100 text-slate-700 hover:text-red-500 active:bg-slate-200 rounded-xl transition-all flex items-center justify-center"
+                                        className="w-10 h-10 bg-slate-100 text-slate-700 hover:text-red-500 active:bg-slate-200 rounded-xl transition-all flex items-center justify-center shadow-sm"
                                         title="Salir"
                                     >
-                                        <Icon name="log-out" className="w-6 h-6" />
+                                        <Icon name="log-out" className="w-5 h-5" />
                                     </button>
                                 </div>
                             </div>
@@ -433,8 +454,8 @@
                                         </div>
                                     </div>
                                     <div className="relative w-full h-7 bg-slate-100 rounded-full overflow-hidden flex border-2 border-white shadow-inner mb-4">
-                                        <div className="h-full bg-pink-500 transition-all duration-1000 ease-out" style={{ width: `${marielPct}%` }} />
-                                        <div className="h-full bg-blue-500 transition-all duration-1000 ease-out" style={{ width: `${jayPct}%` }} />
+                                        <div className="h-full bg-pink-500 transition-all duration-1000 ease-out shadow-[inset_-1px_0_2px_rgba(0,0,0,0.1)]" style={{ width: `${marielPct}%` }} />
+                                        <div className="h-full bg-blue-500 transition-all duration-1000 ease-out shadow-[inset_1px_0_2px_rgba(0,0,0,0.1)]" style={{ width: `${jayPct}%` }} />
                                     </div>
                                 </div>
                             )}
@@ -493,7 +514,7 @@
                                                                 {log.userName} • {log.date.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
                                                             </p>
                                                             {log.userId === user?.uid && (
-                                                                <button onClick={() => handleDeleteLog(log.id, log.userId)} className="p-1 text-slate-300 hover:text-red-500 transition-colors"><Icon name="trash-2" className="w-4 h-4" /></button>
+                                                                <button onClick={() => handleDeleteLog(log.id, log.userId)} className="p-1 text-slate-300 hover:text-red-500 transition-colors flex items-center justify-center"><Icon name="trash-2" className="w-4 h-4" /></button>
                                                             )}
                                                         </div>
                                                     </div>
@@ -505,13 +526,13 @@
                             )}
                         </div>
 
-                        {/* BOTÓN REGISTRO CON SÍMBOLO MÁS FORZADO */}
+                        {/* BOTÓN REGISTRO RECTIFICADO */}
                         {!isAddingLog && !isManagingTasks && (
                             <button 
                                 onClick={() => setIsAddingLog(true)} 
                                 className="fixed bottom-10 left-1/2 -translate-x-1/2 w-16 h-16 bg-indigo-600 text-white rounded-[1.75rem] shadow-2xl flex items-center justify-center btn-press border-b-4 border-indigo-800 z-40 transition-transform active:scale-90"
                             >
-                                <Icon name="plus" className="w-9 h-9" color="white" />
+                                <Icon name="plus" className="w-8 h-8" color="white" />
                             </button>
                         )}
 
@@ -521,11 +542,11 @@
                                 <div className="bg-white w-full max-w-md rounded-t-[3.5rem] p-8 pb-12 shadow-2xl animate-in slide-in-from-bottom duration-300 flex flex-col max-h-[92vh]">
                                     <div className="flex justify-between items-start mb-6">
                                         <h2 className="text-2xl font-black text-slate-800 tracking-tight leading-none">Registrar</h2>
-                                        <button onClick={() => {setIsAddingLog(false); setJointTask(false);}} className="p-2 text-slate-400 text-2xl">&times;</button>
+                                        <button onClick={() => {setIsAddingLog(false); setJointTask(false);}} className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center text-slate-400 font-bold">&times;</button>
                                     </div>
                                     
                                     <div className="mb-4 relative">
-                                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"><Icon name="search" className="w-4 h-4" /></div>
+                                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 flex items-center justify-center"><Icon name="search" className="w-4 h-4" /></div>
                                         <input 
                                             ref={searchInputRef}
                                             type="text"
@@ -538,7 +559,7 @@
 
                                     <div className="mb-6 p-5 bg-indigo-50 rounded-[2rem] flex items-center justify-between border border-indigo-100">
                                         <div className="flex items-center gap-3">
-                                            <Icon name="users" className="text-indigo-600" />
+                                            <Icon name="users" className="text-indigo-600 w-5 h-5" />
                                             <span className="text-sm font-black text-indigo-900 leading-none">¿Lo hicimos juntos?</span>
                                         </div>
                                         <button onClick={() => setJointTask(!jointTask)} className={`w-14 h-8 rounded-full transition-all relative flex items-center px-1 ${jointTask ? 'bg-indigo-600' : 'bg-slate-300'}`}>
@@ -549,7 +570,7 @@
                                     <div className="overflow-y-auto flex-1 custom-scrollbar pb-6 space-y-2">
                                         {searchFilteredTasks.map(task => (
                                             <button key={task.id} onClick={() => handleAddLog(task)} className="w-full flex items-center gap-4 p-5 bg-slate-50 border border-slate-100 rounded-[2rem] btn-press text-left group">
-                                                <div className="text-indigo-600 bg-white p-3 rounded-2xl group-active:scale-90 transition-transform shadow-sm"><Icon name={task.icon || 'check-circle'} /></div>
+                                                <div className="text-indigo-600 bg-white p-3 rounded-2xl group-active:scale-90 transition-transform shadow-sm flex items-center justify-center"><Icon name={task.icon || 'check-circle'} className="w-5 h-5" /></div>
                                                 <div className="flex-1">
                                                     <p className="font-bold text-slate-800 text-sm leading-tight">{task.label}</p>
                                                     <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mt-1">
@@ -569,10 +590,10 @@
                                 <div className="bg-white w-full max-w-md rounded-[3rem] p-8 shadow-2xl flex flex-col max-h-[85vh] animate-in zoom-in duration-300">
                                     <div className="flex justify-between items-center mb-6">
                                         <h2 className="text-2xl font-black text-slate-800 tracking-tight leading-none">Configuración</h2>
-                                        <button onClick={() => setIsManagingTasks(false)} className="text-slate-400 text-2xl">&times;</button>
+                                        <button onClick={() => setIsManagingTasks(false)} className="text-slate-400 text-2xl font-light">&times;</button>
                                     </div>
                                     <button onClick={() => setIsEditingTask({ label: '', points: 10, icon: 'check-circle' })} className="w-full mb-6 p-5 bg-indigo-600 text-white font-bold rounded-3xl btn-press flex items-center justify-center gap-2 shadow-lg shadow-indigo-100">
-                                        <Icon name="plus-circle" color="white" /> Nueva Acción
+                                        <Icon name="plus-circle" className="w-5 h-5" color="white" /> Nueva Acción
                                     </button>
                                     <div className="overflow-y-auto custom-scrollbar flex-1 space-y-2 pr-1">
                                         {availableTasks.map(task => (
@@ -607,12 +628,12 @@
                                             <input name="points" type="number" step="0.5" defaultValue={isEditingTask.points} required className="w-full bg-slate-50 p-4 rounded-2xl outline-none font-bold text-slate-700 shadow-inner border border-slate-100" />
                                         </div>
                                         <div className="space-y-1">
-                                            <label className="text-[10px] uppercase font-bold text-slate-400 ml-1">Icono (utensils, car...)</label>
+                                            <label className="text-[10px] uppercase font-bold text-slate-400 ml-1">Icono Lucide</label>
                                             <input name="icon" defaultValue={isEditingTask.icon} className="w-full bg-slate-50 p-4 rounded-2xl outline-none font-bold text-slate-700 shadow-inner border border-slate-100" />
                                         </div>
                                         <div className="flex gap-3 pt-6">
-                                            <button type="button" onClick={() => setIsEditingTask(null)} className="flex-1 font-bold text-slate-400">Cerrar</button>
-                                            <button type="submit" className="flex-1 p-4 bg-indigo-600 text-white font-bold rounded-2xl btn-press">Guardar</button>
+                                            <button type="button" onClick={() => setIsEditingTask(null)} className="flex-1 font-bold text-slate-400 flex items-center justify-center">Cerrar</button>
+                                            <button type="submit" className="flex-1 p-4 bg-indigo-600 text-white font-bold rounded-2xl btn-press flex items-center justify-center">Guardar</button>
                                         </div>
                                     </form>
                                 </div>
