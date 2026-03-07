@@ -68,21 +68,32 @@
         // Helper para la lógica de las 5 AM
         const getAdjustedDateStr = (date) => {
             const d = new Date(date);
-            if (isNaN(d.getTime())) return "Fecha inválida";
+            if (isNaN(d.getTime())) return "Fecha desconocida";
             if (d.getHours() < 5) {
                 d.setDate(d.getDate() - 1);
             }
             return d.toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' });
         };
 
-        // Componente de Icono optimizado para evitar crasheos de React
+        // Componente de Icono ultra-estable
         const Icon = ({ name, className = "w-5 h-5" }) => {
             const iconRef = useRef(null);
             useEffect(() => {
+                let timeout;
                 if (window.lucide && iconRef.current) {
-                    window.lucide.createIcons();
+                    timeout = setTimeout(() => {
+                        try {
+                            window.lucide.createIcons({
+                                attrs: { class: className },
+                                nameAttr: 'data-lucide',
+                                icons: [name]
+                            });
+                        } catch (e) { /* Error silencioso para evitar pantalla blanca */ }
+                    }, 10);
                 }
-            }, [name]);
+                return () => clearTimeout(timeout);
+            }, [name, className]);
+
             return <i ref={iconRef} data-lucide={name} className={className}></i>;
         };
 
@@ -150,13 +161,16 @@
                 const tasksRef = rootRef.collection('task_definitions');
 
                 const unsubLogs = logsRef.onSnapshot((snapshot) => {
-                    const data = snapshot.docs.map(doc => ({
-                        id: doc.id,
-                        ...doc.data(),
-                        date: doc.data().timestamp?.toDate() || new Date()
-                    }));
+                    const data = snapshot.docs.map(doc => {
+                        const d = doc.data();
+                        return {
+                            id: doc.id,
+                            ...d,
+                            date: d.timestamp ? d.timestamp.toDate() : new Date()
+                        };
+                    });
                     setLogs(data.sort((a, b) => b.date - a.date));
-                });
+                }, (err) => console.error("Error logs:", err));
 
                 const unsubTasks = tasksRef.onSnapshot((snapshot) => {
                     if (snapshot.empty) {
@@ -165,10 +179,10 @@
                         const tasks = snapshot.docs.map(doc => ({
                             id: doc.id,
                             ...doc.data()
-                        })).sort((a, b) => b.points - a.points);
+                        })).sort((a, b) => (b.points || 0) - (a.points || 0));
                         setAvailableTasks(tasks);
                     }
-                });
+                }, (err) => console.error("Error tasks:", err));
 
                 return () => { unsubLogs(); unsubTasks(); };
             }, [user]);
@@ -188,26 +202,31 @@
 
             // --- Lógica de filtrado protegida ---
             const filteredLogs = useMemo(() => {
-                const now = new Date();
-                const todayStr = getAdjustedDateStr(now);
-                const weekAgo = new Date();
-                weekAgo.setDate(weekAgo.getDate() - 7);
+                try {
+                    const now = new Date();
+                    const todayStr = getAdjustedDateStr(now);
+                    const weekAgo = new Date();
+                    weekAgo.setDate(weekAgo.getDate() - 7);
 
-                return logs.filter(log => {
-                    const logDate = new Date(log.date);
-                    if (isNaN(logDate.getTime())) return false;
+                    return logs.filter(log => {
+                        if (!log.date) return false;
+                        const logDate = new Date(log.date);
+                        if (isNaN(logDate.getTime())) return false;
 
-                    if (viewTab === "hoy") return getAdjustedDateStr(logDate) === todayStr;
-                    if (viewTab === "semana") return logDate >= weekAgo;
-                    if (viewTab === "mes") return logDate.getMonth() === now.getMonth() && logDate.getFullYear() === now.getFullYear();
-                    return true; 
-                });
+                        if (viewTab === "hoy") return getAdjustedDateStr(logDate) === todayStr;
+                        if (viewTab === "semana") return logDate >= weekAgo;
+                        if (viewTab === "mes") return logDate.getMonth() === now.getMonth() && logDate.getFullYear() === now.getFullYear();
+                        return true; 
+                    });
+                } catch (e) {
+                    return [];
+                }
             }, [logs, viewTab]);
 
             const scores = useMemo(() => {
                 const totals = { Mariel: 0, Jay: 0 };
                 filteredLogs.forEach(log => {
-                    const pts = Number(log.points) || 0;
+                    const pts = parseFloat(log.points) || 0;
                     if (log.userName === 'Mariel') totals.Mariel += pts;
                     else if (log.userName === 'Jay') totals.Jay += pts;
                 });
@@ -218,26 +237,24 @@
                 const groups = {};
                 logs.forEach(log => {
                     const dateStr = getAdjustedDateStr(log.date);
-                    if (!groups[dateStr]) groups[dateStr] = { mariel: 0, jay: 0, tasks: [] };
-                    const pts = Number(log.points) || 0;
+                    if (!groups[dateStr]) groups[dateStr] = { mariel: 0, jay: 0, tasks: [], rawDate: log.date };
+                    const pts = parseFloat(log.points) || 0;
                     if (log.userName === 'Mariel') groups[dateStr].mariel += pts;
                     if (log.userName === 'Jay') groups[dateStr].jay += pts;
                     groups[dateStr].tasks.push(log);
                 });
-                // Ordenar por fecha (asumiendo formato DD mes YYYY)
-                return Object.entries(groups).sort((a, b) => new Date(b[1].tasks[0].date) - new Date(a[1].tasks[0].date));
+                return Object.entries(groups).sort((a, b) => b[1].rawDate - a[1].rawDate);
             }, [logs]);
 
             const searchFilteredTasks = useMemo(() => {
                 return availableTasks.filter(task => 
-                    task.label.toLowerCase().includes(searchTerm.toLowerCase())
+                    (task.label || "").toLowerCase().includes((searchTerm || "").toLowerCase())
                 );
             }, [availableTasks, searchTerm]);
 
-            // Cálculo seguro de porcentajes
             const { marielPct, jayPct } = useMemo(() => {
                 const total = scores.Mariel + scores.Jay;
-                if (total === 0) return { marielPct: 50, jayPct: 50 };
+                if (total <= 0) return { marielPct: 50, jayPct: 50 };
                 return {
                     marielPct: (scores.Mariel / total) * 100,
                     jayPct: (scores.Jay / total) * 100
@@ -248,8 +265,9 @@
                 if (!user) return;
                 const logsRef = db.collection('artifacts').doc(appId).collection('public').doc('data').collection('parent_logs');
                 try {
+                    const pts = parseFloat(task.points) || 0;
                     if (jointTask) {
-                        const halfPoints = task.points / 2;
+                        const halfPoints = pts / 2;
                         for (const pName of ["Mariel", "Jay"]) {
                             await logsRef.add({
                                 userName: pName,
@@ -264,7 +282,7 @@
                             userName: profileName,
                             userId: user.uid,
                             taskLabel: task.label,
-                            points: task.points,
+                            points: pts,
                             timestamp: firebase.firestore.FieldValue.serverTimestamp(),
                         });
                     }
@@ -285,7 +303,7 @@
                 const formData = new FormData(e.target);
                 const taskData = {
                     label: formData.get('label'),
-                    points: parseInt(formData.get('points')) || 0,
+                    points: parseFloat(formData.get('points')) || 0,
                     icon: formData.get('icon') || 'check-circle'
                 };
                 const tasksRef = db.collection('artifacts').doc(appId).collection('public').doc('data').collection('task_definitions');
@@ -309,8 +327,8 @@
                         <div className="w-20 h-20 bg-indigo-50 rounded-3xl flex items-center justify-center mb-6 mx-auto">
                             <Icon name="shield-check" className="w-10 h-10 text-indigo-600" />
                         </div>
-                        <h1 className="text-3xl font-black text-slate-800 mb-2">Scoreboard</h1>
-                        <p className="text-slate-400 mb-10 text-sm">Monitorea el esfuerzo diario de Mariel y Jay.</p>
+                        <h1 className="text-3xl font-black text-slate-800 mb-2 leading-none">Scoreboard</h1>
+                        <p className="text-slate-400 mb-10 text-sm">Monitorea el esfuerzo de Mariel y Jay.</p>
                         <button onClick={login} className="w-full bg-indigo-600 text-white font-bold py-5 rounded-3xl flex items-center justify-center gap-3 btn-press shadow-xl">
                             <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" className="w-6 h-6 brightness-0 invert" alt="Google" />
                             Entrar con Google
@@ -321,22 +339,21 @@
 
             return (
                 <div className="min-h-screen bg-slate-50 flex flex-col items-center pb-32">
-                    <div className="w-full max-w-md bg-slate-50 min-h-screen relative">
+                    <div className="w-full max-w-md bg-slate-50 min-h-screen relative shadow-sm">
                         
                         {/* HEADER PRINCIPAL */}
                         <div className="bg-white/95 backdrop-blur-md sticky top-0 z-30 px-6 pt-12 pb-2 rounded-b-[2.5rem] shadow-sm">
                             <div className="flex justify-between items-center mb-6">
                                 <div className="flex items-center gap-2">
                                     <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-bold">S</div>
-                                    <span className="font-black text-slate-800 text-lg">Parenting Score</span>
+                                    <span className="font-black text-slate-800 text-lg tracking-tight">Parenting Score</span>
                                 </div>
-                                <div className="flex items-center gap-2">
+                                <div className="flex items-center gap-1">
                                     <button onClick={() => setIsManagingTasks(true)} className="p-2 text-slate-400"><Icon name="settings" className="w-5 h-5" /></button>
                                     <button onClick={logout} className="p-2 text-slate-300"><Icon name="log-out" className="w-5 h-5" /></button>
                                 </div>
                             </div>
 
-                            {/* PESTAÑAS DE TIEMPO */}
                             <div className="flex justify-between border-b border-slate-100 mb-6">
                                 {["hoy", "semana", "mes", "historial"].map(tab => (
                                     <button 
@@ -349,40 +366,41 @@
                                 ))}
                             </div>
 
-                            {/* MARCADOR VISUAL (No se muestra en historial) */}
                             {viewTab !== "historial" && (
-                                <div className="animate-in fade-in duration-500">
+                                <div className="animate-in fade-in duration-300">
                                     <div className="flex justify-between items-end mb-6">
                                         <div className="flex-1 text-center">
-                                            <p className="text-[10px] font-black uppercase text-pink-500 mb-1">Mariel</p>
-                                            <p className="text-4xl font-black text-slate-800">{scores.Mariel}</p>
+                                            <p className="text-[10px] font-black uppercase text-pink-500 mb-1 tracking-tighter">Mariel</p>
+                                            <p className="text-4xl font-black text-slate-800 leading-none">{scores.Mariel}</p>
                                         </div>
-                                        <div className="px-4 text-center"><Icon name="trophy" className="w-6 h-6 text-yellow-500 mx-auto" /></div>
+                                        <div className="px-4 text-center">
+                                            <Icon name="trophy" className="w-6 h-6 text-yellow-500 mx-auto" />
+                                        </div>
                                         <div className="flex-1 text-center">
-                                            <p className="text-[10px] font-black uppercase text-blue-500 mb-1">Jay</p>
-                                            <p className="text-4xl font-black text-slate-800">{scores.Jay}</p>
+                                            <p className="text-[10px] font-black uppercase text-blue-500 mb-1 tracking-tighter">Jay</p>
+                                            <p className="text-4xl font-black text-slate-800 leading-none">{scores.Jay}</p>
                                         </div>
                                     </div>
                                     <div className="relative w-full h-7 bg-slate-100 rounded-full overflow-hidden flex border-2 border-white shadow-inner mb-4">
-                                        <div className="h-full bg-pink-500 transition-all duration-1000" style={{ width: `${marielPct}%` }} />
-                                        <div className="h-full bg-blue-500 transition-all duration-1000" style={{ width: `${jayPct}%` }} />
+                                        <div className="h-full bg-pink-500 transition-all duration-700 ease-out" style={{ width: `${marielPct}%` }} />
+                                        <div className="h-full bg-blue-500 transition-all duration-700 ease-out" style={{ width: `${jayPct}%` }} />
                                     </div>
                                 </div>
                             )}
                         </div>
 
-                        {/* CONTENIDO SEGÚN PESTAÑA */}
+                        {/* CONTENIDO PRINCIPAL */}
                         <div className="p-6">
                             {viewTab === "historial" ? (
-                                <div className="space-y-8 animate-in slide-in-from-bottom duration-500">
-                                    <h2 className="text-xl font-black text-slate-800">Días Pasados</h2>
+                                <div className="space-y-6 animate-in slide-in-from-bottom-4 duration-500">
+                                    <h2 className="text-xl font-black text-slate-800 tracking-tight">Días Pasados</h2>
                                     {groupedHistory.map(([date, data]) => (
                                         <div key={date} className="bg-white rounded-[2rem] p-6 shadow-sm border border-slate-100">
                                             <div className="flex justify-between items-center mb-4 border-b border-slate-50 pb-4">
                                                 <h3 className="font-black text-slate-800 uppercase text-xs tracking-widest">{date}</h3>
                                                 <div className="flex gap-4 text-[11px] font-bold">
-                                                    <span className="text-pink-500">M: {data.mariel}</span>
-                                                    <span className="text-blue-500">J: {data.jay}</span>
+                                                    <span className="text-pink-500 font-black">M: {data.mariel}</span>
+                                                    <span className="text-blue-500 font-black">J: {data.jay}</span>
                                                 </div>
                                             </div>
                                             <div className="space-y-2">
@@ -392,25 +410,25 @@
                                                         <span className={t.userName === 'Mariel' ? 'text-pink-300' : 'text-blue-300'}>{t.userName} (+{t.points})</span>
                                                     </div>
                                                 ))}
-                                                {data.tasks.length > 3 && <p className="text-[9px] text-slate-300 italic">... y {data.tasks.length - 3} tareas más</p>}
+                                                {data.tasks.length > 3 && <p className="text-[9px] text-slate-300 italic pt-1">... y {data.tasks.length - 3} tareas más</p>}
                                             </div>
                                         </div>
                                     ))}
                                 </div>
                             ) : (
-                                <div className="animate-in slide-in-from-bottom duration-500">
-                                    <h2 className="text-xl font-black text-slate-800 mb-6 tracking-tight">Actividad de {viewTab}</h2>
+                                <div className="animate-in slide-in-from-bottom-4 duration-500">
+                                    <h2 className="text-xl font-black text-slate-800 mb-6 tracking-tight capitalize">Actividad de {viewTab}</h2>
                                     {filteredLogs.length === 0 ? (
                                         <div className="bg-white rounded-[2.5rem] p-12 text-center border-2 border-dashed border-slate-100">
-                                            <Icon name="coffee" className="w-12 h-12 mx-auto mb-4 text-slate-100" />
-                                            <p className="text-slate-400 font-bold italic text-sm">Nada registrado.</p>
+                                            <Icon name="coffee" className="w-12 h-12 mx-auto mb-4 text-slate-200" />
+                                            <p className="text-slate-400 font-bold italic text-sm">Nada registrado aún.</p>
                                         </div>
                                     ) : (
                                         <div className="space-y-4">
                                             {filteredLogs.map(log => (
                                                 <div key={log.id} className={`bg-white p-5 rounded-3xl shadow-sm border border-slate-100 flex items-center gap-4 border-l-4 ${log.userName === 'Mariel' ? 'border-l-pink-400' : 'border-l-blue-400'}`}>
                                                     <div className={`w-11 h-11 rounded-2xl flex items-center justify-center ${log.userName === 'Mariel' ? 'bg-pink-50 text-pink-500' : 'bg-blue-50 text-blue-500'}`}>
-                                                        <Icon name={availableTasks.find(t => t.label === log.taskLabel.replace(' (Juntos)', ''))?.icon || 'check-circle'} className="w-5 h-5" />
+                                                        <Icon name={availableTasks.find(t => t.label === (log.taskLabel || "").replace(' (Juntos)', ''))?.icon || 'check-circle'} className="w-5 h-5" />
                                                     </div>
                                                     <div className="flex-1 min-w-0">
                                                         <div className="flex justify-between items-start">
@@ -422,7 +440,7 @@
                                                                 {log.userName} • {log.date.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
                                                             </p>
                                                             {log.userId === user?.uid && (
-                                                                <button onClick={() => handleDeleteLog(log.id, log.userId)} className="text-slate-200 hover:text-red-500 transition-colors"><Icon name="trash-2" className="w-4 h-4" /></button>
+                                                                <button onClick={() => handleDeleteLog(log.id, log.userId)} className="text-slate-300 hover:text-red-500 transition-colors"><Icon name="trash-2" className="w-4 h-4" /></button>
                                                             )}
                                                         </div>
                                                     </div>
@@ -434,9 +452,9 @@
                             )}
                         </div>
 
-                        {/* BOTÓN FLOTANTE REGISTRO */}
+                        {/* BOTÓN REGISTRO */}
                         {!isAddingLog && !isManagingTasks && (
-                            <button onClick={() => setIsAddingLog(true)} className="fixed bottom-10 left-1/2 -translate-x-1/2 w-16 h-16 bg-indigo-600 text-white rounded-3xl shadow-2xl flex items-center justify-center btn-press border-b-4 border-indigo-800 z-40">
+                            <button onClick={() => setIsAddingLog(true)} className="fixed bottom-10 left-1/2 -translate-x-1/2 w-16 h-16 bg-indigo-600 text-white rounded-[1.75rem] shadow-2xl flex items-center justify-center btn-press border-b-4 border-indigo-800 z-40">
                                 <Icon name="plus" className="w-9 h-9" />
                             </button>
                         )}
@@ -444,10 +462,10 @@
                         {/* MODAL REGISTRO */}
                         {isAddingLog && (
                             <div className="fixed inset-0 modal-overlay z-50 flex items-end justify-center">
-                                <div className="bg-white w-full max-w-md rounded-t-[3.5rem] p-8 pb-12 shadow-2xl animate-in slide-in-from-bottom duration-300 flex flex-col max-h-[92vh]">
+                                <div className="bg-white w-full max-w-md rounded-t-[3.5rem] p-8 pb-12 animate-in slide-in-from-bottom duration-300 flex flex-col max-h-[92vh]">
                                     <div className="flex justify-between items-start mb-6">
-                                        <h2 className="text-2xl font-black text-slate-800 leading-none tracking-tight">Registrar</h2>
-                                        <button onClick={() => setIsAddingLog(false)} className="text-slate-400 p-2">&times;</button>
+                                        <h2 className="text-2xl font-black text-slate-800 tracking-tight leading-none">Registrar</h2>
+                                        <button onClick={() => {setIsAddingLog(false); setJointTask(false);}} className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center text-slate-400 font-bold">&times;</button>
                                     </div>
                                     
                                     <div className="mb-4 relative">
@@ -456,29 +474,26 @@
                                             ref={searchInputRef}
                                             type="text"
                                             placeholder="Buscar tarea..."
-                                            className="w-full bg-slate-100 p-4 pl-12 rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none font-medium"
+                                            className="w-full bg-slate-100 p-4 pl-12 rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none font-bold text-slate-700"
                                             value={searchTerm}
                                             onChange={(e) => setSearchTerm(e.target.value)}
                                         />
                                     </div>
 
                                     <div className="mb-6 p-5 bg-indigo-50 rounded-[2rem] flex items-center justify-between border border-indigo-100">
-                                        <div className="flex items-center gap-3 text-left">
+                                        <div className="flex items-center gap-3">
                                             <Icon name="users" className="text-indigo-600" />
-                                            <div>
-                                                <span className="text-sm font-black text-indigo-900 leading-none block">¿Lo hicimos juntos?</span>
-                                                <span className="text-[10px] text-indigo-400 font-bold uppercase tracking-tighter">Puntos 50/50</span>
-                                            </div>
+                                            <span className="text-sm font-black text-indigo-900 leading-none">¿Lo hicimos juntos?</span>
                                         </div>
                                         <button onClick={() => setJointTask(!jointTask)} className={`w-14 h-8 rounded-full transition-all relative flex items-center px-1 ${jointTask ? 'bg-indigo-600' : 'bg-slate-300'}`}>
-                                            <div className={`w-6 h-6 bg-white rounded-full shadow-md transition-transform ${jointTask ? 'translate-x-6' : ''}`} />
+                                            <div className={`w-6 h-6 bg-white rounded-full shadow-sm transition-transform duration-200 ${jointTask ? 'translate-x-6' : ''}`} />
                                         </button>
                                     </div>
 
                                     <div className="overflow-y-auto flex-1 custom-scrollbar pb-6 space-y-2">
                                         {searchFilteredTasks.map(task => (
                                             <button key={task.id} onClick={() => handleAddLog(task)} className="w-full flex items-center gap-4 p-5 bg-slate-50 border border-slate-100 rounded-[2rem] btn-press text-left group">
-                                                <div className="text-indigo-600 bg-white p-3 rounded-2xl group-hover:scale-110 transition-transform"><Icon name={task.icon} /></div>
+                                                <div className="text-indigo-600 bg-white p-3 rounded-2xl group-active:scale-90 transition-transform"><Icon name={task.icon || 'check-circle'} /></div>
                                                 <div className="flex-1">
                                                     <p className="font-bold text-slate-800 text-sm leading-tight">{task.label}</p>
                                                     <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mt-1">
@@ -492,27 +507,27 @@
                             </div>
                         )}
 
-                        {/* MODAL CONFIGURACIÓN TAREAS */}
+                        {/* MODAL AJUSTES */}
                         {isManagingTasks && (
                             <div className="fixed inset-0 modal-overlay z-50 flex items-center justify-center p-4">
                                 <div className="bg-white w-full max-w-md rounded-[3rem] p-8 shadow-2xl flex flex-col max-h-[85vh] animate-in zoom-in duration-300">
                                     <div className="flex justify-between items-center mb-6">
-                                        <h2 className="text-2xl font-black text-slate-800 tracking-tight">Acciones</h2>
+                                        <h2 className="text-2xl font-black text-slate-800 tracking-tight leading-none">Acciones</h2>
                                         <button onClick={() => setIsManagingTasks(false)} className="text-slate-400 p-2 text-2xl">&times;</button>
                                     </div>
                                     <button onClick={() => setIsEditingTask({ label: '', points: 10, icon: 'check-circle' })} className="w-full mb-6 p-5 bg-indigo-600 text-white font-bold rounded-3xl btn-press flex items-center justify-center gap-2 shadow-lg shadow-indigo-100">
                                         <Icon name="plus-circle" /> Nueva Acción
                                     </button>
-                                    <div className="overflow-y-auto custom-scrollbar flex-1 space-y-2">
+                                    <div className="overflow-y-auto custom-scrollbar flex-1 space-y-2 pr-1">
                                         {availableTasks.map(task => (
                                             <div key={task.id} className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100">
                                                 <div className="flex items-center gap-3">
-                                                    <Icon name={task.icon} className="text-slate-400 w-4 h-4" />
+                                                    <Icon name={task.icon || 'check-circle'} className="text-slate-400 w-4 h-4" />
                                                     <span className="font-bold text-slate-800 text-sm truncate">{task.label} ({task.points}p)</span>
                                                 </div>
-                                                <div className="flex gap-2">
-                                                    <button onClick={() => setIsEditingTask(task)} className="p-2 text-indigo-400"><Icon name="edit-2" className="w-4 h-4" /></button>
-                                                    <button onClick={() => { if(confirm('¿Borrar?')) db.collection('artifacts').doc(appId).collection('public').doc('data').collection('task_definitions').doc(task.id).delete(); }} className="p-2 text-red-300"><Icon name="trash-2" className="w-4 h-4" /></button>
+                                                <div className="flex gap-1">
+                                                    <button onClick={() => setIsEditingTask(task)} className="p-2 text-indigo-400 hover:bg-white rounded-lg transition-colors"><Icon name="edit-2" className="w-4 h-4" /></button>
+                                                    <button onClick={() => { if(confirm('¿Borrar?')) db.collection('artifacts').doc(appId).collection('public').doc('data').collection('task_definitions').doc(task.id).delete(); }} className="p-2 text-red-300 hover:bg-white rounded-lg transition-colors"><Icon name="trash-2" className="w-4 h-4" /></button>
                                                 </div>
                                             </div>
                                         ))}
@@ -521,18 +536,18 @@
                             </div>
                         )}
 
-                        {/* MODAL EDITAR TAREA */}
+                        {/* MODAL EDICIÓN DEFINICIÓN */}
                         {isEditingTask && (
                             <div className="fixed inset-0 modal-overlay z-[60] flex items-center justify-center p-6">
                                 <div className="bg-white w-full max-w-sm rounded-[3rem] p-8 shadow-2xl">
                                     <h3 className="text-xl font-black text-slate-800 mb-6 tracking-tight">{isEditingTask.id ? 'Editar' : 'Nueva'} Acción</h3>
                                     <form onSubmit={saveTaskDefinition} className="space-y-4">
-                                        <input name="label" defaultValue={isEditingTask.label} required className="w-full bg-slate-50 p-4 rounded-2xl outline-none font-bold shadow-inner" placeholder="Nombre" />
-                                        <input name="points" type="number" defaultValue={isEditingTask.points} required className="w-full bg-slate-50 p-4 rounded-2xl outline-none font-bold shadow-inner" placeholder="Puntos" />
-                                        <input name="icon" defaultValue={isEditingTask.icon} className="w-full bg-slate-50 p-4 rounded-2xl outline-none font-bold shadow-inner" placeholder="Icono (car, dog, utensils...)" />
-                                        <div className="flex gap-3 pt-4">
+                                        <input name="label" defaultValue={isEditingTask.label} required className="w-full bg-slate-50 p-4 rounded-2xl outline-none font-bold text-slate-700 shadow-inner" placeholder="Nombre" />
+                                        <input name="points" type="number" step="0.5" defaultValue={isEditingTask.points} required className="w-full bg-slate-50 p-4 rounded-2xl outline-none font-bold text-slate-700 shadow-inner" placeholder="Puntos" />
+                                        <input name="icon" defaultValue={isEditingTask.icon} className="w-full bg-slate-50 p-4 rounded-2xl outline-none font-bold text-slate-700 shadow-inner" placeholder="Icono (utensils, plane, car...)" />
+                                        <div className="flex gap-3 pt-6">
                                             <button type="button" onClick={() => setIsEditingTask(null)} className="flex-1 font-bold text-slate-400">Cerrar</button>
-                                            <button type="submit" className="flex-1 p-4 bg-indigo-600 text-white font-bold rounded-2xl btn-press">Guardar</button>
+                                            <button type="submit" className="flex-1 p-4 bg-indigo-600 text-white font-bold rounded-2xl btn-press shadow-lg shadow-indigo-100">Guardar</button>
                                         </div>
                                     </form>
                                 </div>
