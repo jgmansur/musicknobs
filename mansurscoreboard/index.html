@@ -4,15 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Parenting Scoreboard</title>
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- React y ReactDOM -->
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <!-- Babel para procesar JSX -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
     
     <!-- Firebase Compat -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
@@ -34,15 +29,10 @@
         input:focus { font-size: 16px !important; } 
         .tab-active { border-bottom: 3px solid #4f46e5; color: #4f46e5; }
         
-        /* Asegurar que el contenedor del icono tenga tamaño real */
-        .icon-box {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            line-height: 0;
-        }
-        svg {
-            display: block;
+        .icon-svg {
+            display: inline-block;
+            vertical-align: middle;
+            flex-shrink: 0;
         }
     </style>
 </head>
@@ -86,30 +76,61 @@
         };
 
         /**
-         * COMPONENTE DE ICONO REESTRUCTURADO (VERSIÓN DEFINITIVA)
-         * Inyecta el SVG directamente de la librería Lucide para evitar conflictos de renderizado.
+         * COMPONENTE DE ICONO (VERSIÓN SVG INLINE TOTAL)
+         * Se eliminó Lucide para evitar errores de Script y asegurar visibilidad.
          */
         const Icon = ({ name, className = "w-5 h-5", color = "currentColor" }) => {
-            const [svgHtml, setSvgHtml] = useState('');
+            const icons = {
+                plus: <path d="M12 5v14M5 12h14" />,
+                settings: <path d="M12.22 2h-.44a2 2 0 0 0-2 2a2 2 0 0 1-2 2a2 2 0 0 0-2 2a2 2 0 0 1-2 2a2 2 0 0 0-2 2v.44a2 2 0 0 0 2 2a2 2 0 0 1 2 2a2 2 0 0 0 2 2a2 2 0 0 1 2 2a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2a2 2 0 0 1 2-2a2 2 0 0 0 2-2a2 2 0 0 1 2-2a2 2 0 0 0 2-2v-.44a2 2 0 0 0-2-2a2 2 0 0 1-2-2a2 2 0 0 0-2-2a2 2 0 0 1-2-2a2 2 0 0 0-2-2ZM12 15a3 3 0 1 0 0-6a3 3 0 0 0 0 6Z" />,
+                'log-out': <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5l-5-5M21 12H9" />,
+                trophy: <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6M18 9h1.5a2.5 2.5 0 0 0 0-5H18M4 22h16M10 14.66V17c0 .55.47.98.97 1.21C11.47 18.44 12 19 12 19s.53-.56 1.03-.79c.5-.23.97-.66.97-1.21v-2.34M12 9V14.66" />,
+                'trash-2': <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M10 11v6M14 11v6" />,
+                calendar: <path d="M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z" />,
+                search: <React.Fragment><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></React.Fragment>,
+                'shield-check': <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10zM9 12l2 2 4-4" />,
+                users: <React.Fragment><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></React.Fragment>,
+                utensils: <path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2M7 2v20M21 15V2v0a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Z" />,
+                plane: <path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.3c.4-.2.6-.7.5-1.2z" />,
+                tent: <path d="M19 20 10 4 1 20M5 20v-5h10v5M10 12l-5 8M10 12l5 8" />,
+                waves: <path d="M2 6c.6.5 1.2 1 2.5 1C5.8 7 6.5 6 8 6c1.5 0 2.2 1 3.5 1 1.3 0 2-1 3.5-1s2.2 1 3.5 1c1.3 0 1.9-.5 2.5-1M2 12c.6.5 1.2 1 2.5 1 1.3 0 2-1 3.5-1s2.2 1 3.5 1c1.3 0 2-1 3.5-1s2.2 1 3.5 1c1.3 0 1.9-.5 2.5-1M2 18c.6.5 1.2 1 2.5 1 1.3 0 2-1 3.5-1s2.2 1 3.5 1c1.3 0 2-1 3.5-1s2.2 1 3.5 1c1.3 0 1.9-.5 2.5-1" />,
+                smile: <React.Fragment><circle cx="12" cy="12" r="10"></circle><path d="M8 14s1.5 2 4 2 4-2 4-2M9 9h.01M15 9h.01"></path></React.Fragment>,
+                stethoscope: <path d="M4.8 2.3A.3.3 0 1 0 5 2h0a2 2 0 0 0-2 2v12a6 6 0 0 0 6 6 6 6 0 0 0 6-6V4a2 2 0 0 0-2-2h0a.3.3 0 1 0 .2.3M9 22v-4M15 8h4a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2h-4" />,
+                'heart-pulse': <React.Fragment><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" /><path d="M3.22 12H9.5l.5-1l2 4.5l2-7l1.5 3.5h5.27" /></React.Fragment>,
+                dog: <path d="M10 5.172C10 3.782 8.423 2.679 6.5 3c-1.923.321-3.5 1.424-3.5 2.814 0 1.39 1.577 2.493 3.5 2.172 1.923-.321 3.5-1.424 3.5-2.814ZM21 5.172c0-1.39-1.577-2.493-3.5-2.172-1.923.321-3.5 1.424-3.5 2.814 0 1.39 1.577 2.493 3.5 2.172 1.923-.321 3.5 1.424 3.5 2.814ZM12 18v4M4.4 17.6c.1.3.4.5.8.5h13.6c.4 0 .7-.2.8-.5l1.4-3.6c.1-.3 0-.7-.2-.9l-1.3-1.4a1 1 0 0 0-.7-.3h-1.4c-.4 0-.8.2-1 .5l-1.4 1.4c-.2.2-.5.3-.8.3H9.8c-.3 0-.6-.1-.8-.3L7.6 12.4a1.4 1.4 0 0 0-1-.5H5.2c-.3 0-.6.1-.7.3L3.2 13.6c-.2.2-.3.6-.2.9l1.4 3.1Z" />,
+                'clipboard-list': <React.Fragment><rect width="8" height="4" x="8" y="2" rx="1" ry="1"></rect><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1-2-2h2M12 11h4M12 16h4M8 11h.01M8 16h.01" /></React.Fragment>,
+                'shopping-cart': <React.Fragment><circle cx="8" cy="21" r="1"></circle><circle cx="19" cy="21" r="1"></circle><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.56-6.43h-15.1"></path></React.Fragment>,
+                timer: <React.Fragment><line x1="10" y1="2" x2="14" y2="2"></line><line x1="12" y1="14" x2="15" y2="11"></line><circle cx="12" cy="14" r="8"></circle></React.Fragment>,
+                'book-open': <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2zM22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />,
+                car: <React.Fragment><rect width="16" height="10" x="4" y="9" rx="2"></rect><path d="M9 22v-4M15 22v-4M2 13h20M12 2v2M7 2v2M17 2v2" /></React.Fragment>,
+                coffee: <React.Fragment><path d="M17 8h1a4 4 0 1 1 0 8h-1M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"></path><line x1="6" y1="2" x2="6" y2="4"></line><line x1="10" y1="2" x2="10" y2="4"></line><line x1="14" y1="2" x2="14" y2="4"></line></React.Fragment>,
+                pill: <path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7ZM8.5 8.5l7 7" />,
+                brain: <path d="M9.5 2a5 5 0 0 1 0 10a5 5 0 0 1 0-10ZM14.5 2a5 5 0 0 1 0 10a5 5 0 0 1 0-10ZM12 12v10" />,
+                baby: <path d="M9 12h.01M15 12h.01M10 16c.5.3 1.2.5 2 .5s1.5-.2 2-.5M19 6.3a9 9 0 0 1 1.8 3.9 2 2 0 0 1 0 3.6 9 9 0 0 1-17.6 0 2 2 0 0 1 0-3.6A9 9 0 0 1 5 6.3M12 2v4"></path>,
+                bone: <path d="M18 6.5a2.5 2.5 0 1 1 0-5 2.5 2.5 0 1 1 0 5ZM6 6.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 1 0 0 5ZM18 22.5a2.5 2.5 0 1 1 0-5 2.5 2.5 0 1 1 0 5ZM6 22.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 1 0 0 5ZM18 5.5v13M6 5.5v13"></path>,
+                'check-circle': <React.Fragment><circle cx="12" cy="12" r="10"></circle><path d="m9 12 2 2 4-4"></path></React.Fragment>,
+                'plus-circle': <React.Fragment><circle cx="12" cy="12" r="10"></circle><path d="M12 8v8M8 12h8"></path></React.Fragment>,
+                'edit-2': <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>,
+                'x-circle': <React.Fragment><circle cx="12" cy="12" r="10"></circle><path d="m15 9-6 6M9 9l6 6"></path></React.Fragment>,
+                'alert-circle': <React.Fragment><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></React.Fragment>,
+                history: <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8m0 0V3m0 5h5" />,
+                heart: <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
+            };
 
-            useEffect(() => {
-                if (window.lucide && window.lucide.icons[name]) {
-                    const svg = window.lucide.icons[name].toSvg({
-                        class: className,
-                        stroke: color,
-                        'stroke-width': 2,
-                        'stroke-linecap': 'round',
-                        'stroke-linejoin': 'round',
-                        fill: 'none'
-                    });
-                    setSvgHtml(svg);
-                } else if (name === 'plus') {
-                    // Fallback manual para el icono de suma si lucide no carga a tiempo
-                    setSvgHtml(`<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="${className}"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>`);
-                }
-            }, [name, className, color]);
-
-            return <span className="icon-box" dangerouslySetInnerHTML={{ __html: svgHtml }} />;
+            return (
+                <svg 
+                    xmlns="http://www.w3.org/2000/svg" 
+                    viewBox="0 0 24 24" 
+                    fill="none" 
+                    stroke={color} 
+                    strokeWidth="2.5" 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round" 
+                    className={`icon-svg ${className}`}
+                >
+                    {icons[name] || icons['check-circle']}
+                </svg>
+            );
         };
 
         const DEFAULT_TASKS = [
@@ -147,6 +168,7 @@
             const [jointTask, setJointTask] = useState(false);
             const [searchTerm, setSearchTerm] = useState("");
             const [viewTab, setViewTab] = useState("hoy"); 
+            const [deletePendingId, setDeletePendingId] = useState(null); // Para confirmación personalizada
             
             const searchInputRef = useRef(null);
 
@@ -169,60 +191,33 @@
             useEffect(() => {
                 if (!user) return;
                 const rootRef = db.collection('artifacts').doc(appId).collection('public').doc('data');
-                const logsRef = rootRef.collection('parent_logs');
-                const tasksRef = rootRef.collection('task_definitions');
-
-                const unsubLogs = logsRef.onSnapshot((snapshot) => {
+                const unsubLogs = rootRef.collection('parent_logs').onSnapshot((snapshot) => {
                     const data = snapshot.docs.map(doc => {
                         const d = doc.data();
-                        return {
-                            id: doc.id,
-                            ...d,
-                            date: d.timestamp ? d.timestamp.toDate() : new Date()
-                        };
+                        return { id: doc.id, ...d, date: d.timestamp ? d.timestamp.toDate() : new Date() };
                     });
                     setLogs(data.sort((a, b) => b.date - a.date));
-                }, (err) => console.error("Error logs:", err));
+                });
 
-                const unsubTasks = tasksRef.onSnapshot((snapshot) => {
-                    if (snapshot.empty) {
-                        DEFAULT_TASKS.forEach(t => tasksRef.add(t));
-                    } else {
-                        const tasks = snapshot.docs.map(doc => ({
-                            id: doc.id,
-                            ...doc.data()
-                        })).sort((a, b) => (b.points || 0) - (a.points || 0));
-                        setAvailableTasks(tasks);
-                    }
-                }, (err) => console.error("Error tasks:", err));
+                const unsubTasks = rootRef.collection('task_definitions').onSnapshot((snapshot) => {
+                    if (snapshot.empty) DEFAULT_TASKS.forEach(t => rootRef.collection('task_definitions').add(t));
+                    else setAvailableTasks(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort((a, b) => (b.points || 0) - (a.points || 0)));
+                });
 
                 return () => { unsubLogs(); unsubTasks(); };
             }, [user]);
 
-            useEffect(() => {
-                if (isAddingLog && searchInputRef.current) {
-                    setTimeout(() => searchInputRef.current.focus(), 300);
-                }
-            }, [isAddingLog]);
-
-            const login = async () => {
-                try { await auth.signInWithPopup(provider); } 
-                catch (error) { console.error("Login fallido", error); }
-            };
-
+            const login = async () => { try { await auth.signInWithPopup(provider); } catch (e) {} };
             const logout = () => auth.signOut();
 
             const filteredLogs = useMemo(() => {
                 try {
                     const now = new Date();
                     const todayStr = getAdjustedDateStr(now);
-                    const weekAgo = new Date();
-                    weekAgo.setDate(weekAgo.getDate() - 7);
-
+                    const weekAgo = new Date(); weekAgo.setDate(weekAgo.getDate() - 7);
                     return logs.filter(log => {
                         if (!log.date) return false;
                         const logDate = new Date(log.date);
-                        if (isNaN(logDate.getTime())) return false;
                         if (viewTab === "hoy") return getAdjustedDateStr(logDate) === todayStr;
                         if (viewTab === "semana") return logDate >= weekAgo;
                         if (viewTab === "mes") return logDate.getMonth() === now.getMonth() && logDate.getFullYear() === now.getFullYear();
@@ -243,48 +238,26 @@
 
             const lastPeriodWinners = useMemo(() => {
                 const now = new Date();
-                const todayCutoff = new Date(now);
-                if (todayCutoff.getHours() < 5) todayCutoff.setDate(todayCutoff.getDate() - 1);
+                const todayCutoff = new Date(now); if (todayCutoff.getHours() < 5) todayCutoff.setDate(todayCutoff.getDate() - 1);
                 todayCutoff.setHours(5, 0, 0, 0);
-                const yesterdayCutoff = new Date(todayCutoff);
-                yesterdayCutoff.setDate(yesterdayCutoff.getDate() - 1);
-
+                const yesterdayCutoff = new Date(todayCutoff); yesterdayCutoff.setDate(yesterdayCutoff.getDate() - 1);
                 const endLW = new Date(); endLW.setDate(endLW.getDate() - 7);
                 const startLW = new Date(); startLW.setDate(startLW.getDate() - 14);
                 const startLM = new Date(now.getFullYear(), now.getMonth() - 1, 1);
                 const endLM = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59);
 
-                const totalsLD = { Mariel: 0, Jay: 0 };
-                const totalsLW = { Mariel: 0, Jay: 0 };
-                const totalsLM = { Mariel: 0, Jay: 0 };
+                const totalsLD = { Mariel: 0, Jay: 0 }, totalsLW = { Mariel: 0, Jay: 0 }, totalsLM = { Mariel: 0, Jay: 0 };
 
                 logs.forEach(log => {
-                    const d = new Date(log.date);
-                    if (isNaN(d.getTime())) return;
+                    const d = new Date(log.date); if (isNaN(d.getTime())) return;
                     const pts = parseFloat(log.points) || 0;
-                    if (d >= yesterdayCutoff && d < todayCutoff) {
-                        if (totalsLD.hasOwnProperty(log.userName)) totalsLD[log.userName] += pts;
-                    }
-                    if (d >= startLW && d < endLW) {
-                        if (totalsLW.hasOwnProperty(log.userName)) totalsLW[log.userName] += pts;
-                    }
-                    if (d >= startLM && d <= endLM) {
-                        if (totalsLM.hasOwnProperty(log.userName)) totalsLM[log.userName] += pts;
-                    }
+                    if (d >= yesterdayCutoff && d < todayCutoff) totalsLD[log.userName] += pts;
+                    if (d >= startLW && d < endLW) totalsLW[log.userName] += pts;
+                    if (d >= startLM && d <= endLM) totalsLM[log.userName] += pts;
                 });
 
-                const getWinner = (totals) => {
-                    if (totals.Mariel === 0 && totals.Jay === 0) return null;
-                    if (totals.Mariel > totals.Jay) return 'Mariel';
-                    if (totals.Jay > totals.Mariel) return 'Jay';
-                    return null;
-                };
-
-                return { 
-                    day: getWinner(totalsLD),
-                    week: getWinner(totalsLW), 
-                    month: getWinner(totalsLM) 
-                };
+                const getW = (t) => (t.Mariel === 0 && t.Jay === 0) ? null : (t.Mariel > t.Jay ? 'Mariel' : (t.Jay > t.Mariel ? 'Jay' : null));
+                return { day: getW(totalsLD), week: getW(totalsLW), month: getW(totalsLM) };
             }, [logs]);
 
             const groupedHistory = useMemo(() => {
@@ -300,19 +273,10 @@
                 return Object.entries(groups).sort((a, b) => b[1].rawDate - a[1].rawDate);
             }, [logs]);
 
-            const searchFilteredTasks = useMemo(() => {
-                return availableTasks.filter(task => 
-                    (task.label || "").toLowerCase().includes((searchTerm || "").toLowerCase())
-                );
-            }, [availableTasks, searchTerm]);
-
+            const searchFilteredTasks = useMemo(() => availableTasks.filter(task => (task.label || "").toLowerCase().includes(searchTerm.toLowerCase())), [availableTasks, searchTerm]);
             const { marielPct, jayPct } = useMemo(() => {
                 const total = scores.Mariel + scores.Jay;
-                if (total <= 0) return { marielPct: 50, jayPct: 50 };
-                return {
-                    marielPct: (scores.Mariel / total) * 100,
-                    jayPct: (scores.Jay / total) * 100
-                };
+                return total <= 0 ? { marielPct: 50, jayPct: 50 } : { marielPct: (scores.Mariel / total) * 100, jayPct: (scores.Jay / total) * 100 };
             }, [scores]);
 
             const handleAddLog = async (task) => {
@@ -321,70 +285,40 @@
                 try {
                     const pts = parseFloat(task.points) || 0;
                     if (jointTask) {
-                        const halfPoints = pts / 2;
-                        for (const pName of ["Mariel", "Jay"]) {
-                            await logsRef.add({
-                                userName: pName,
-                                userId: user.uid,
-                                taskLabel: `${task.label} (Juntos)`,
-                                points: halfPoints,
-                                timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-                            });
-                        }
-                    } else {
-                        await logsRef.add({
-                            userName: profileName,
-                            userId: user.uid,
-                            taskLabel: task.label,
-                            points: pts,
-                            timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-                        });
-                    }
-                    setIsAddingLog(false);
-                    setJointTask(false);
-                    setSearchTerm("");
-                } catch (err) { console.error(err); }
+                        for (const p of ["Mariel", "Jay"]) await logsRef.add({ userName: p, userId: user.uid, taskLabel: `${task.label} (Juntos)`, points: pts / 2, timestamp: firebase.firestore.FieldValue.serverTimestamp() });
+                    } else await logsRef.add({ userName: profileName, userId: user.uid, taskLabel: task.label, points: pts, timestamp: firebase.firestore.FieldValue.serverTimestamp() });
+                    setIsAddingLog(false); setJointTask(false); setSearchTerm("");
+                } catch (e) {}
             };
 
-            const handleDeleteLog = async (id, uid) => {
-                if (user.uid !== uid) return;
-                try { await db.collection('artifacts').doc(appId).collection('public').doc('data').collection('parent_logs').doc(id).delete(); }
-                catch (err) { console.error(err); }
+            const confirmDeleteLog = async (id) => {
+                if (deletePendingId === id) {
+                    await db.collection('artifacts').doc(appId).collection('public').doc('data').collection('parent_logs').doc(id).delete();
+                    setDeletePendingId(null);
+                } else {
+                    setDeletePendingId(id);
+                    setTimeout(() => setDeletePendingId(null), 3000); // 3 segundos para confirmar
+                }
             };
 
             const saveTaskDefinition = async (e) => {
                 e.preventDefault();
-                const formData = new FormData(e.target);
-                const taskData = {
-                    label: formData.get('label'),
-                    points: parseFloat(formData.get('points')) || 0,
-                    icon: formData.get('icon') || 'check-circle'
-                };
-                const tasksRef = db.collection('artifacts').doc(appId).collection('public').doc('data').collection('task_definitions');
-                try {
-                    if (isEditingTask?.id) await tasksRef.doc(isEditingTask.id).update(taskData);
-                    else await tasksRef.add(taskData);
-                    setIsEditingTask(null);
-                } catch (err) { console.error(err); }
+                const f = new FormData(e.target);
+                const data = { label: f.get('label'), points: parseFloat(f.get('points')) || 0, icon: f.get('icon') || 'check-circle' };
+                const ref = db.collection('artifacts').doc(appId).collection('public').doc('data').collection('task_definitions');
+                if (isEditingTask?.id) await ref.doc(isEditingTask.id).update(data); else await ref.add(data);
+                setIsEditingTask(null);
             };
 
-            if (loading) return (
-                <div className="flex flex-col items-center justify-center h-screen bg-white text-center">
-                    <div className="w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mx-auto"></div>
-                    <p className="mt-4 text-slate-400 font-bold uppercase tracking-widest text-[10px]">Iniciando Scoreboard...</p>
-                </div>
-            );
+            if (loading) return <div className="flex flex-col items-center justify-center h-screen bg-white"><div className="w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div></div>;
 
             if (!user) return (
                 <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-6 text-center">
                     <div className="bg-white p-10 rounded-[3rem] shadow-2xl w-full max-w-sm">
-                        <div className="w-20 h-20 bg-indigo-50 rounded-3xl flex items-center justify-center mb-6 mx-auto">
-                            <Icon name="shield-check" className="w-10 h-10" color="#4f46e5" />
-                        </div>
-                        <h1 className="text-3xl font-black text-slate-800 mb-2 leading-none">Scoreboard</h1>
-                        <p className="text-slate-400 mb-10 text-sm leading-relaxed">Entra con tu cuenta familiar para registrar el esfuerzo de hoy.</p>
+                        <Icon name="shield-check" className="w-12 h-12 mb-6 mx-auto" color="#4f46e5" />
+                        <h1 className="text-3xl font-black text-slate-800 mb-2">Scoreboard</h1>
+                        <p className="text-slate-400 mb-10 text-sm tracking-tight">Entra para registrar el esfuerzo familiar.</p>
                         <button onClick={login} className="w-full bg-indigo-600 text-white font-bold py-5 rounded-3xl flex items-center justify-center gap-3 btn-press shadow-xl">
-                            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" className="w-6 h-6 brightness-0 invert" alt="Google" />
                             Entrar con Google
                         </button>
                     </div>
@@ -405,28 +339,22 @@
                                 <div className="flex items-center gap-3">
                                     <button 
                                         onClick={() => setIsManagingTasks(true)} 
-                                        className="p-2 bg-slate-100 text-slate-800 hover:text-indigo-600 active:bg-slate-200 rounded-xl transition-all shadow-sm flex items-center justify-center"
+                                        className="w-10 h-10 bg-slate-100 text-slate-800 hover:text-indigo-600 active:bg-slate-200 rounded-xl transition-all shadow-sm flex items-center justify-center"
                                     >
-                                        <Icon name="settings" className="w-5 h-5" />
+                                        <Icon name="settings" className="w-5 h-5" color="#1e293b" />
                                     </button>
                                     <button 
                                         onClick={logout} 
-                                        className="p-2 bg-slate-100 text-slate-800 hover:text-red-500 active:bg-slate-200 rounded-xl transition-all shadow-sm flex items-center justify-center"
+                                        className="w-10 h-10 bg-slate-100 text-slate-800 hover:text-red-500 active:bg-slate-200 rounded-xl transition-all shadow-sm flex items-center justify-center"
                                     >
-                                        <Icon name="log-out" className="w-5 h-5" />
+                                        <Icon name="log-out" className="w-5 h-5" color="#1e293b" />
                                     </button>
                                 </div>
                             </div>
 
                             <div className="flex justify-between border-b border-slate-100 mb-6">
                                 {["hoy", "semana", "mes", "historial"].map(tab => (
-                                    <button 
-                                        key={tab}
-                                        onClick={() => setViewTab(tab)}
-                                        className={`pb-2 px-2 text-[10px] font-black uppercase tracking-widest transition-all ${viewTab === tab ? 'tab-active' : 'text-slate-300'}`}
-                                    >
-                                        {tab}
-                                    </button>
+                                    <button key={tab} onClick={() => setViewTab(tab)} className={`pb-2 px-2 text-[10px] font-black uppercase tracking-widest transition-all ${viewTab === tab ? 'tab-active' : 'text-slate-300'}`}>{tab}</button>
                                 ))}
                             </div>
 
@@ -490,8 +418,7 @@
                                     <h2 className="text-xl font-black text-slate-800 mb-6 tracking-tight capitalize">Actividad {viewTab}</h2>
                                     {filteredLogs.length === 0 ? (
                                         <div className="bg-white rounded-[2.5rem] p-12 text-center border-2 border-dashed border-slate-100">
-                                            <Icon name="coffee" className="w-12 h-12 mx-auto mb-4 text-slate-200" />
-                                            <p className="text-slate-400 font-bold italic text-sm">Sin registros.</p>
+                                            <p className="text-slate-400 font-bold italic text-sm">Sin registros aún.</p>
                                         </div>
                                     ) : (
                                         <div className="space-y-4">
@@ -509,8 +436,15 @@
                                                             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">
                                                                 {log.userName} • {log.date.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
                                                             </p>
-                                                            {log.userId === user?.uid && (
-                                                                <button onClick={() => handleDeleteLog(log.id, log.userId)} className="p-1 text-slate-400 hover:text-red-500 transition-colors flex items-center justify-center"><Icon name="trash-2" className="w-4 h-4" /></button>
+                                                            {/* SEGURIDAD RESTAURADA: Solo el creador puede borrar */}
+                                                            {log.userId === user.uid && (
+                                                                <button 
+                                                                    onClick={() => confirmDeleteLog(log.id)} 
+                                                                    className={`p-2 rounded-lg transition-all flex items-center justify-center ${deletePendingId === log.id ? 'bg-red-500 text-white' : 'text-slate-300 hover:text-red-500'}`}
+                                                                >
+                                                                    <Icon name={deletePendingId === log.id ? 'alert-circle' : 'trash-2'} className="w-4 h-4" />
+                                                                    {deletePendingId === log.id && <span className="ml-1 text-[8px] font-bold uppercase">Confirmar</span>}
+                                                                </button>
                                                             )}
                                                         </div>
                                                     </div>
@@ -528,7 +462,7 @@
                                 onClick={() => setIsAddingLog(true)} 
                                 className="fixed bottom-10 left-1/2 -translate-x-1/2 w-16 h-16 bg-indigo-600 text-white rounded-[1.75rem] shadow-2xl flex items-center justify-center btn-press border-b-4 border-indigo-800 z-40 transition-transform active:scale-90"
                             >
-                                <Icon name="plus" className="w-8 h-8" color="white" />
+                                <Icon name="plus" className="w-8 h-8" color="#ffffff" />
                             </button>
                         )}
 
@@ -541,7 +475,7 @@
                                         <button onClick={() => {setIsAddingLog(false); setJointTask(false);}} className="p-2 text-slate-400 text-2xl leading-none">&times;</button>
                                     </div>
                                     
-                                    <div className="mb-4 relative text-center">
+                                    <div className="mb-4 relative">
                                         <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 flex items-center justify-center"><Icon name="search" className="w-4 h-4" /></div>
                                         <input 
                                             ref={searchInputRef}
@@ -555,18 +489,20 @@
 
                                     <div className="mb-6 p-5 bg-indigo-50 rounded-[2rem] flex items-center justify-between border border-indigo-100">
                                         <div className="flex items-center gap-3">
-                                            <Icon name="users" className="text-indigo-600" />
+                                            <Icon name="users" className="text-indigo-600 w-5 h-5" color="#4f46e5" />
                                             <span className="text-sm font-black text-indigo-900 leading-none">¿Lo hicimos juntos?</span>
                                         </div>
                                         <button onClick={() => setJointTask(!jointTask)} className={`w-14 h-8 rounded-full transition-all relative flex items-center px-1 ${jointTask ? 'bg-indigo-600' : 'bg-slate-300'}`}>
-                                            <div className={`w-6 h-6 bg-white rounded-full shadow-sm transition-transform duration-200 ${jointTask ? 'translate-x-6' : ''}`} />
+                                            <div className={`w-6 h-6 bg-white rounded-full shadow-md transition-transform duration-200 ${jointTask ? 'translate-x-6' : ''}`} />
                                         </button>
                                     </div>
 
                                     <div className="overflow-y-auto flex-1 custom-scrollbar pb-6 space-y-2">
                                         {searchFilteredTasks.map(task => (
                                             <button key={task.id} onClick={() => handleAddLog(task)} className="w-full flex items-center gap-4 p-5 bg-slate-50 border border-slate-100 rounded-[2rem] btn-press text-left group">
-                                                <div className="text-indigo-600 bg-white p-3 rounded-2xl group-active:scale-90 transition-transform shadow-sm flex items-center justify-center"><Icon name={task.icon || 'check-circle'} className="w-5 h-5" /></div>
+                                                <div className="text-indigo-600 bg-white p-3 rounded-2xl group-active:scale-90 transition-transform shadow-sm flex items-center justify-center">
+                                                    <Icon name={task.icon || 'check-circle'} className="w-5 h-5" color="#4f46e5" />
+                                                </div>
                                                 <div className="flex-1">
                                                     <p className="font-bold text-slate-800 text-sm leading-tight">{task.label}</p>
                                                     <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mt-1">
@@ -585,11 +521,11 @@
                             <div className="fixed inset-0 modal-overlay z-50 flex items-center justify-center p-4">
                                 <div className="bg-white w-full max-w-md rounded-[3rem] p-8 shadow-2xl flex flex-col max-h-[85vh] animate-in zoom-in duration-300">
                                     <div className="flex justify-between items-center mb-6">
-                                        <h2 className="text-2xl font-black text-slate-800 tracking-tight leading-none">Configuración</h2>
+                                        <h2 className="text-2xl font-black text-slate-800 tracking-tight leading-none">Acciones</h2>
                                         <button onClick={() => setIsManagingTasks(false)} className="text-slate-400 text-2xl font-light leading-none">&times;</button>
                                     </div>
                                     <button onClick={() => setIsEditingTask({ label: '', points: 10, icon: 'check-circle' })} className="w-full mb-6 p-5 bg-indigo-600 text-white font-bold rounded-3xl btn-press flex items-center justify-center gap-2 shadow-lg shadow-indigo-100">
-                                        <Icon name="plus-circle" className="w-5 h-5" color="white" /> Nueva Acción
+                                        <Icon name="plus-circle" className="w-5 h-5" color="#ffffff" /> Nueva Acción
                                     </button>
                                     <div className="overflow-y-auto custom-scrollbar flex-1 space-y-2 pr-1">
                                         {availableTasks.map(task => (
@@ -598,9 +534,13 @@
                                                     <Icon name={task.icon || 'check-circle'} className="text-slate-400 w-4 h-4" />
                                                     <span className="font-bold text-slate-800 text-sm truncate">{task.label} ({task.points}p)</span>
                                                 </div>
-                                                <div className="flex gap-2">
-                                                    <button onClick={() => setIsEditingTask(task)} className="p-2 text-indigo-400 hover:bg-white rounded-lg transition-colors flex items-center justify-center"><Icon name="edit-2" className="w-4 h-4" /></button>
-                                                    <button onClick={() => { if(confirm('¿Borrar?')) db.collection('artifacts').doc(appId).collection('public').doc('data').collection('task_definitions').doc(task.id).delete(); }} className="p-2 text-red-300 hover:bg-white rounded-lg transition-colors flex items-center justify-center"><Icon name="trash-2" className="w-4 h-4" /></button>
+                                                <div className="flex gap-1">
+                                                    <button onClick={() => setIsEditingTask(task)} className="p-2 text-indigo-400 hover:bg-white rounded-lg transition-colors flex items-center justify-center">
+                                                        <Icon name="edit-2" className="w-4 h-4" color="#4f46e5" />
+                                                    </button>
+                                                    <button onClick={() => { if(confirm('¿Borrar definición de tarea?')) db.collection('artifacts').doc(appId).collection('public').doc('data').collection('task_definitions').doc(task.id).delete(); }} className="p-2 text-red-300 hover:bg-white rounded-lg transition-colors flex items-center justify-center">
+                                                        <Icon name="trash-2" className="w-4 h-4" color="#ef4444" />
+                                                    </button>
                                                 </div>
                                             </div>
                                         ))}
@@ -615,18 +555,9 @@
                                 <div className="bg-white w-full max-w-sm rounded-[3rem] p-8 shadow-2xl animate-in zoom-in-95 duration-200">
                                     <h3 className="text-xl font-black text-slate-800 mb-6 tracking-tight">{isEditingTask.id ? 'Editar' : 'Nueva'} Acción</h3>
                                     <form onSubmit={saveTaskDefinition} className="space-y-4">
-                                        <div className="space-y-1">
-                                            <label className="text-[10px] uppercase font-bold text-slate-400 ml-1">Nombre Acción</label>
-                                            <input name="label" defaultValue={isEditingTask.label} required className="w-full bg-slate-50 p-4 rounded-2xl outline-none font-bold text-slate-700 shadow-inner border border-slate-100" />
-                                        </div>
-                                        <div className="space-y-1">
-                                            <label className="text-[10px] uppercase font-bold text-slate-400 ml-1">Puntos Esfuerzo</label>
-                                            <input name="points" type="number" step="0.5" defaultValue={isEditingTask.points} required className="w-full bg-slate-50 p-4 rounded-2xl outline-none font-bold text-slate-700 shadow-inner border border-slate-100" />
-                                        </div>
-                                        <div className="space-y-1">
-                                            <label className="text-[10px] uppercase font-bold text-slate-400 ml-1">Icono Lucide</label>
-                                            <input name="icon" defaultValue={isEditingTask.icon} className="w-full bg-slate-50 p-4 rounded-2xl outline-none font-bold text-slate-700 shadow-inner border border-slate-100" />
-                                        </div>
+                                        <div className="space-y-1"><label className="text-[10px] uppercase font-bold text-slate-400 ml-1">Nombre</label><input name="label" defaultValue={isEditingTask.label} required className="w-full bg-slate-50 p-4 rounded-2xl outline-none font-bold text-slate-700 shadow-inner border border-slate-100" /></div>
+                                        <div className="space-y-1"><label className="text-[10px] uppercase font-bold text-slate-400 ml-1">Puntos</label><input name="points" type="number" step="0.5" defaultValue={isEditingTask.points} required className="w-full bg-slate-50 p-4 rounded-2xl outline-none font-bold text-slate-700 shadow-inner border border-slate-100" /></div>
+                                        <div className="space-y-1"><label className="text-[10px] uppercase font-bold text-slate-400 ml-1">Icono (utensils, car...)</label><input name="icon" defaultValue={isEditingTask.icon} className="w-full bg-slate-50 p-4 rounded-2xl outline-none font-bold text-slate-700 shadow-inner border border-slate-100" /></div>
                                         <div className="flex gap-3 pt-6">
                                             <button type="button" onClick={() => setIsEditingTask(null)} className="flex-1 font-bold text-slate-400 flex items-center justify-center">Cerrar</button>
                                             <button type="submit" className="flex-1 p-4 bg-indigo-600 text-white font-bold rounded-2xl btn-press flex items-center justify-center">Guardar</button>
