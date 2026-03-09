@@ -54,20 +54,37 @@
                 </div>
 
                 <div class="form-group">
+                    <label for="posicion"
+                        title="Cambia el lado donde aparecerás y hacia dónde se alinea el texto">Posición del
+                        Sujeto</label>
+                    <select id="posicion">
+                        <option value="right">A la Derecha (Recomendado)</option>
+                        <option value="left">A la Izquierda</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
                     <label for="sujeto">Expresión del Sujeto</label>
                     <select id="sujeto">
                         <option value="intense, analytical expression">Analítica / Intensa</option>
                         <option value="shocked, surprised expression">Sorprendido / Shock</option>
                         <option value="concerned, deep analysis expression">Preocupado / Serio (Crisis)</option>
-                        <option value="excited, pointing expression">Emocionado / Señalando</option>
+                        <option value="happy, engaging expression, gesturing">Emocionado / Explicando</option>
                         <option value="no subject">Sin Sujeto Humano</option>
                     </select>
                 </div>
 
                 <div class="form-group">
                     <label for="entorno">Entorno / Background</label>
-                    <input type="text" id="entorno" value="dark high-end recording studio"
+                    <input type="text" id="entorno" list="entorno-presets" value="dark high-end recording studio"
                         placeholder="Ej: inside Pro Tools, dark studio...">
+                    <datalist id="entorno-presets">
+                        <option value="dark high-end recording studio"></option>
+                        <option value="podcast microphone setup with neon lights"></option>
+                        <option value="analog mastering studio with glowing rack gear"></option>
+                        <option value="modern minimalist studio desk with monitors"></option>
+                        <option value="live concert stage with lighting rig"></option>
+                    </datalist>
                 </div>
 
                 <div class="form-group">
