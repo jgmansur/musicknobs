@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>House Cover Labs | MusicKnobs</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Allerta+Stencil&family=Anton&family=Black+Ops+One&family=Courier+Prime:ital,wght@0,400;0,700;1,400;1,700&family=Montserrat:wght@400;700;900&family=Permanent+Marker&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Poppins:wght@400;700;900&family=Outfit:wght@400;600;800&family=Inter:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../style.css"> <!-- Base styles -->
+    <link rel="stylesheet" href="style.css"> <!-- Specific app styles -->
+</head>
+
+<body>
+    <!-- Background Elements -->
+    <div class="glow glow-1"></div>
+    <div class="glow glow-2"></div>
+
+    <header class="header">
+        <div class="container header-container">
+            <a href="../" class="logo-link">
+                <!-- Fallback to parent text if logo fails locally -->
+                <span
+                    style="font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 1.5rem; color: white;">MusicKnobs
+                    <span style="color: var(--primary-color);">Labs</span></span>
+            </a>
+            <div class="app-title">
+                <i class="fa-solid fa-compact-disc"></i> House Cover Generator
+            </div>
+        </div>
+    </header>
+
+    <main class="app-container">
+        <!-- LEFT PANEL: IA PROMPT BUILDER -->
+        <section class="panel prompt-panel glass-panel">
+            <h2><i class="fa-solid fa-robot"></i> 1. Motor Semiótico (Prompt IA)</h2>
+            <p class="panel-desc">Arma el prompt conceptual para Midjourney/DALL-E basado en los códigos tribales del
+                House.</p>
+
+            <form id="prompt-form" class="controls-form">
+                <div class="form-group">
+                    <label for="ruta-diseno">Ruta de Diseño</label>
+                    <select id="ruta-diseno">
+                        <option value="neo-artefacto">A. El Neo-Artefacto (Físico / Desgastado)</option>
+                        <option value="minimalismo-acido">B. Minimalismo Ácido (Cromo / Neón 3D)</option>
+                        <option value="collage-narrativo">C. Collage Narrativo (Misterio Noir / Textura)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="paleta-cromatica">Paleta Cromática (Identidad)</label>
+                    <select id="paleta-cromatica">
+                        <option value="deep red, pitch black, acid yellow, neon green">Chicago / Acid (Rojo, Negro,
+                            Amarillo Ácido)</option>
+                        <option value="mahogany, pitch black, faded gold, deep purple">Deep House / Detroit (Caoba,
+                            Negro, Oro, Púrpura)</option>
+                        <option value="sky blue, liquid chrome, silver, holographic rainbow">French Touch (Azul Cielo,
+                            Cromo, Plata)</option>
+                        <option value="concrete grey, pure white, pitch black">Tech House / Minimal (Gris Concreto,
+                            Blanco, Negro)</option>
+                        <option value="hyper-saturated primary colors, high contrast red and yellow">Electro / Ed Banger
+                            (Colores Primarios Saturados)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="concepto-visual">Concepto Visual Central</label>
+                    <select id="concepto-visual">
+                        <option value="abstract geometric shapes and constructivist repeating patterns">Patrón
+                            Geométrico / Constructivista</option>
+                        <option value="a tactile physical object, embroidered patch or worn vinyl record">Objeto Físico
+                            Táctil (Parche/Vinilo)</option>
+                        <option value="abstract noir photography of a silhouette in deep shadow">Fotografía Abstracta
+                            Noir / Silueta</option>
+                        <option value="warped and liquefied acid smiley face iconography">Iconografía Ácida Derretida /
+                            Smiley</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="textura-acabado">Textura y Acabado</label>
+                    <select id="textura-acabado">
+                        <option value="lo-fi printing errors, worn cardboard texture, distressed edges">Impresión Lo-Fi
+                            / Cartón Desgastado</option>
+                        <option value="polished 3D render, crystal clear, glossy and glossy liquid surface">Render 3D
+                            Pulido / Cromo Líquido</option>
+                        <option value="high-grain film photography, deep chiaroscuro lighting">Grano Cinematográfico /
+                            Iluminación Chiaroscuro</option>
+                    </select>
+                </div>
+            </form>
+
+            <div class="prompt-result-container">
+                <label>Prompt Generado (Cópialo en tu IA):</label>
+                <textarea id="generated-prompt" readonly rows="7"></textarea>
+                <button id="copy-prompt-btn" class="btn-secondary"><i class="fa-regular fa-copy"></i> Copiar
+                    Prompt</button>
+            </div>
+        </section>
+
+        <!-- RIGHT PANEL: TEXT OVERLAY & CANVAS -->
+        <section class="panel canvas-panel glass-panel">
+            <h2><i class="fa-solid fa-layer-group"></i> 2. Tipografía y Acabados (1:1)</h2>
+            <p class="panel-desc">Sube la imagen generada, agrega los textos curados y estampas clásicas.</p>
+
+            <div class="canvas-controls">
+                <div class="upload-area" id="upload-area">
+                    <input type="file" id="image-upload" accept="image/png, image/jpeg, image/webp" hidden>
+                    <label for="image-upload" class="upload-label">
+                        <i class="fa-solid fa-cloud-arrow-up"></i>
+                        <span>Sube tu fondo generado por IA (1000x1000)</span>
+                    </label>
+                </div>
+
+                <div class="text-tools" id="text-tools" style="display: none;">
+                    <div class="form-inline">
+                        <input type="text" id="cover-artist" placeholder="Artista" maxlength="30" value="MUSIC KNOBS">
+                        <input type="color" id="color-artist" value="#FFFFFF">
+                        <input type="range" id="size-artist" min="20" max="250" value="80" title="Tamaño Artista"
+                            style="width: 70px;">
+                    </div>
+                    <div class="form-inline">
+                        <input type="text" id="cover-title" placeholder="Título del Track" maxlength="30"
+                            value="RETINAL RHYTHMS">
+                        <input type="color" id="color-title" value="#FFFFFF">
+                        <input type="range" id="size-title" min="20" max="300" value="120" title="Tamaño Título"
+                            style="width: 70px;">
+                    </div>
+                    <div class="form-inline">
+                        <input type="text" id="cover-label" placeholder="Catálogo (ej. TRAX-001)" maxlength="20"
+                            value="MKL-001">
+                        <input type="color" id="color-label" value="#FFFFFF">
+                        <input type="range" id="size-label" min="10" max="100" value="40" title="Tamaño Sello"
+                            style="width: 70px;">
+                    </div>
+
+                    <div class="style-controls">
+                        <select id="font-family">
+                            <optgroup label="Geométrica (Tech/Minimal)">
+                                <option value="Poppins">Poppins</option>
+                                <option value="Montserrat">Montserrat</option>
+                            </optgroup>
+                            <optgroup label="Industrial/Stencil (Chicago)">
+                                <option value="Black Ops One">Black Ops One</option>
+                                <option value="Allerta Stencil">Allerta Stencil</option>
+                            </optgroup>
+                            <optgroup label="Typewriter/Serif (Deep House)">
+                                <option value="Courier Prime">Courier Prime</option>
+                                <option value="Playfair Display">Playfair Display</option>
+                            </optgroup>
+                            <optgroup label="Hand-Drawn (French/Funky)">
+                                <option value="Permanent Marker">Permanent Marker</option>
+                            </optgroup>
+                            <optgroup label="Heavy Metal (Electro)">
+                                <option value="Anton">Anton</option>
+                            </optgroup>
+                        </select>
+                        <div class="badges-controls" style="display: flex; gap: 0.5rem;">
+                            <button id="toggle-parental-btn" class="btn-micro"
+                                title="Activar/Desactivar Parental Advisory">Parental</button>
+                            <button id="toggle-vinyl-btn" class="btn-micro"
+                                title="Activar/Desactivar Desgaste de Vinilo">Vinilo Ring</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="canvas-wrapper cover-wrapper">
+                <!-- 1:1 format -->
+                <canvas id="cover-canvas" width="1000" height="1000"></canvas>
+            </div>
+
+            <div class="export-controls">
+                <button id="download-btn" class="btn-primary" disabled><i class="fa-solid fa-download"></i> Descargar
+                    Portada (1000x1000)</button>
+            </div>
+        </section>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
