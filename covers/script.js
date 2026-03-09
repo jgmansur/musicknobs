@@ -94,6 +94,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const toggleParentalBtn = document.getElementById('toggle-parental-btn');
     const toggleVinylBtn = document.getElementById('toggle-vinyl-btn');
 
+    // Advanced Text Controls
+    const alignLeftBtn = document.getElementById('align-left');
+    const alignCenterBtn = document.getElementById('align-center');
+    const alignRightBtn = document.getElementById('align-right');
+    const letterSpacingSlider = document.getElementById('letter-spacing');
+    const toggleShadow = document.getElementById('toggle-shadow');
+    const toggleStroke = document.getElementById('toggle-stroke');
+
+    let globalTextAlign = 'left';
+
     document.fonts.ready.then(() => renderCanvas());
 
     imageUpload.addEventListener('change', handleImageUpload);
@@ -137,6 +147,25 @@ document.addEventListener('DOMContentLoaded', () => {
     [titleInput, colorTitle, sizeTitle].forEach(el => el.addEventListener('input', () => { texts.title.text = titleInput.value; renderCanvas(); }));
     [labelInput, colorLabel, sizeLabel].forEach(el => el.addEventListener('input', () => { texts.label.text = labelInput.value; renderCanvas(); }));
     fontSelect.addEventListener('change', renderCanvas);
+    letterSpacingSlider.addEventListener('input', renderCanvas);
+    toggleShadow.addEventListener('change', renderCanvas);
+    toggleStroke.addEventListener('change', renderCanvas);
+
+    [alignLeftBtn, alignCenterBtn, alignRightBtn].forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.preventDefault(); // prevent form submit if inside form
+            alignLeftBtn.classList.remove('active');
+            alignCenterBtn.classList.remove('active');
+            alignRightBtn.classList.remove('active');
+            btn.classList.add('active');
+
+            if (btn.id === 'align-left') globalTextAlign = 'left';
+            if (btn.id === 'align-center') globalTextAlign = 'center';
+            if (btn.id === 'align-right') globalTextAlign = 'right';
+
+            renderCanvas();
+        });
+    });
 
     toggleParentalBtn.addEventListener('click', () => {
         showParental = !showParental;
@@ -171,9 +200,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // 3. Draw Texts
-        drawTextObj(texts.artist, sizeArtist.value, colorArtist.value, fontSelect.value, texts.artist.align || 'left');
-        drawTextObj(texts.title, sizeTitle.value, colorTitle.value, fontSelect.value, texts.title.align || 'left');
-        drawTextObj(texts.label, sizeLabel.value, colorLabel.value, fontSelect.value, texts.label.align || 'left');
+        drawTextObj(texts.artist, sizeArtist.value, colorArtist.value, fontSelect.value, globalTextAlign);
+        drawTextObj(texts.title, sizeTitle.value, colorTitle.value, fontSelect.value, globalTextAlign);
+        drawTextObj(texts.label, sizeLabel.value, colorLabel.value, fontSelect.value, globalTextAlign);
 
         // 4. Draw Parental Advisory Badges
         if (showParental) {
@@ -189,20 +218,60 @@ document.addEventListener('DOMContentLoaded', () => {
         ctx.textAlign = align;
         ctx.textBaseline = "top";
 
-        ctx.shadowColor = "rgba(0,0,0,0.6)";
-        ctx.shadowBlur = 10;
-        ctx.shadowOffsetX = 3;
-        ctx.shadowOffsetY = 3;
+        // Apply Tracking (Letter Spacing) if supported
+        if ('letterSpacing' in ctx) {
+            ctx.letterSpacing = `${letterSpacingSlider.value}px`;
+        }
+
+        // Apply Shadow conditionally
+        if (toggleShadow.checked) {
+            ctx.shadowColor = "rgba(0,0,0,0.8)";
+            ctx.shadowBlur = 15;
+            ctx.shadowOffsetX = 5;
+            ctx.shadowOffsetY = 5;
+        } else {
+            ctx.shadowColor = "transparent";
+            ctx.shadowBlur = 0;
+            ctx.shadowOffsetX = 0;
+            ctx.shadowOffsetY = 0;
+        }
 
         ctx.fillText(item.text, item.x, item.y);
+
+        // Apply Stroke (Outline) conditionally
+        if (toggleStroke.checked) {
+            ctx.save();
+            ctx.shadowColor = "transparent"; // don't double shadow the stroke
+            ctx.strokeStyle = "rgba(0,0,0,0.9)";
+            ctx.lineWidth = Math.max(2, size * 0.05); // dynamic width based on font size
+            // Re-apply letter spacing for stroke just in case
+            if ('letterSpacing' in ctx) {
+                ctx.letterSpacing = `${letterSpacingSlider.value}px`;
+            }
+            ctx.strokeText(item.text, item.x, item.y);
+            ctx.restore();
+        }
+
+        // Reset so we don't bleed into other drawings
         ctx.shadowColor = "transparent";
         ctx.shadowBlur = 0;
+        if ('letterSpacing' in ctx) {
+            ctx.letterSpacing = "0px";
+        }
 
         const metrics = ctx.measureText(item.text);
         item.width = metrics.width;
+
+        // Calculate hitX based on alignment and the (potentially tracked) text width
+        if (align === 'center') {
+            item.hitX = item.x - (item.width / 2);
+        } else if (align === 'right') {
+            item.hitX = item.x - item.width;
+        } else {
+            item.hitX = item.x;
+        }
+
         item.height = parseInt(size, 10);
-        // Correct hit box if right-aligned
-        item.hitX = align === 'right' ? item.x - item.width : item.x;
     }
 
     function drawVinylRing() {

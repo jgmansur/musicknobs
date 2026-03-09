@@ -167,12 +167,37 @@
                                 <option value="Anton">Anton</option>
                             </optgroup>
                         </select>
-                        <div class="badges-controls" style="display: flex; gap: 0.5rem;">
-                            <button id="toggle-parental-btn" class="btn-micro"
-                                title="Activar/Desactivar Parental Advisory">Parental</button>
-                            <button id="toggle-vinyl-btn" class="btn-micro"
-                                title="Activar/Desactivar Desgaste de Vinilo">Vinilo Ring</button>
+                        <div class="align-controls"
+                            style="display: flex; gap: 0.2rem; background: rgba(255,255,255,0.05); padding: 0.2rem; border-radius: 4px;">
+                            <button id="align-left" class="btn-micro active" title="Alinear Izquierda"><i
+                                    class="fa-solid fa-align-left"></i></button>
+                            <button id="align-center" class="btn-micro" title="Centrar"><i
+                                    class="fa-solid fa-align-center"></i></button>
+                            <button id="align-right" class="btn-micro" title="Alinear Derecha"><i
+                                    class="fa-solid fa-align-right"></i></button>
                         </div>
+                    </div>
+
+                    <div class="style-controls-advanced"
+                        style="display: flex; gap: 1rem; align-items: center; justify-content: space-between; border-top: 1px solid var(--panel-border); border-bottom: 1px solid var(--panel-border); padding: 0.8rem 0; margin-bottom: 0.5rem; font-size: 0.85rem; color: var(--text-muted);">
+                        <label style="display: flex; flex-direction: column; gap: 0.3rem;">Tracking (Espacio): <input
+                                type="range" id="letter-spacing" min="-5" max="30" value="0"
+                                style="width: 80px;"></label>
+                        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                            <label style="display: flex; align-items: center; gap: 0.3rem; cursor: pointer;"><input
+                                    type="checkbox" id="toggle-shadow" checked> Sombras</label>
+                            <label style="display: flex; align-items: center; gap: 0.3rem; cursor: pointer;"><input
+                                    type="checkbox" id="toggle-stroke"> Delineado</label>
+                        </div>
+                    </div>
+
+                    <div class="badges-controls" style="display: flex; gap: 0.5rem; justify-content: flex-end;">
+                        <span style="font-size: 0.85rem; color: var(--text-muted); line-height: 2;">Añadir
+                            Estampas:</span>
+                        <button id="toggle-parental-btn" class="btn-micro"
+                            title="Activar/Desactivar Parental Advisory">Parental</button>
+                        <button id="toggle-vinyl-btn" class="btn-micro"
+                            title="Activar/Desactivar Desgaste de Vinilo">Vinilo Ring</button>
                     </div>
                 </div>
             </div>
