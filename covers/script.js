@@ -6,6 +6,7 @@ document.addEventListener('DOMContentLoaded', () => {
         conceptoVisual: document.getElementById('concepto-visual'),
         texturaAcabado: document.getElementById('textura-acabado')
     };
+    const titleInput = document.getElementById('cover-title'); // moved up for prompt access
     const generatedPromptEl = document.getElementById('generated-prompt');
     const copyBtn = document.getElementById('copy-prompt-btn');
 
@@ -13,9 +14,15 @@ document.addEventListener('DOMContentLoaded', () => {
         const palette = formOptions.paletaCromatica.value;
         const concept = formOptions.conceptoVisual.value;
         const texture = formOptions.texturaAcabado.value;
+        const trackName = titleInput.value.trim();
 
         // Construct high-quality Midjourney/DALL-E prompt
         let prompt = `An iconic underground House Music album cover art, featuring ${concept}. `;
+
+        if (trackName && trackName !== "Título del Track") {
+            prompt += `The visual atmosphere and details should be thematically inspired by the concept and mood of the word(s) "${trackName}". `;
+        }
+
         prompt += `Color palette strongly relying on ${palette}. `;
         prompt += `The image finish has ${texture}, creating a highly artistic and professional music design. `;
         prompt += `Minimalist, no text, typography-free art, masterpiece, photorealistic, 8k, --ar 1:1`;
@@ -26,6 +33,8 @@ document.addEventListener('DOMContentLoaded', () => {
     Object.values(formOptions).forEach(el => {
         if (el) el.addEventListener('change', generatePrompt);
     });
+    // Re-generate prompt when the track title changes
+    titleInput.addEventListener('input', generatePrompt);
 
     generatePrompt();
 
@@ -48,7 +57,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Inputs
     const artistInput = document.getElementById('cover-artist');
-    const titleInput = document.getElementById('cover-title');
     const labelInput = document.getElementById('cover-label');
 
     const colorArtist = document.getElementById('color-artist');
