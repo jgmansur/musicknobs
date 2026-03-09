@@ -15,7 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const entorno = formOptions.entorno.value || 'dark high-end recording studio';
         const luces = formOptions.iluminacion.value;
 
-        let basePrompt = `Based on the 7 reference images in my google drive 'Jay Looks 1.jpg' through 'Jay Looks 7.jpg', generate a highly consistent and realistic professional music producer`;
+        let basePrompt = `Based on the reference image in my google drive 'Jay Looks 1.jpg', generate a highly realistic professional music producer`;
 
         if (sujetoExp === 'no subject') {
             basePrompt = `Generate a highly realistic`;
