@@ -1,54 +1,128 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Plan de Estudios Interactivo: Producción en Reaper</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
+
     <style>
-        .chart-container { position: relative; width: 100%; max-width: 600px; margin-left: auto; margin-right: auto; height: 300px; max-height: 400px; }
-        @media (min-width: 768px) { .chart-container { height: 350px; } }
-        .nav-item.active { background-color: #fcd34d; color: #78350f; font-weight: 600; border-left: 4px solid #d97706; }
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #f5f5f4; }
-        ::-webkit-scrollbar-thumb { background: #d6d3d1; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #a8a29e; }
-        .toggle-checkbox:checked { right: 0; border-color: #3b82f6; }
-        .toggle-checkbox:checked + .toggle-label { background-color: #3b82f6; }
-        
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+
+        .nav-item.active {
+            background-color: #fcd34d;
+            color: #78350f;
+            font-weight: 600;
+            border-left: 4px solid #d97706;
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f5f5f4;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #d6d3d1;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #a8a29e;
+        }
+
+        .toggle-checkbox:checked {
+            right: 0;
+            border-color: #3b82f6;
+        }
+
+        .toggle-checkbox:checked+.toggle-label {
+            background-color: #3b82f6;
+        }
+
         /* Spinner */
-        .loader { border: 3px solid #f3f3f3; border-top: 3px solid #d97706; border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .loader {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #d97706;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
     </style>
 </head>
+
 <body class="bg-stone-50 text-stone-800 font-sans antialiased overflow-x-hidden">
 
     <!-- 1. PANTALLA DE LOGIN -->
-    <div id="login-overlay" class="fixed inset-0 bg-stone-900 flex flex-col items-center justify-center z-50 transition-opacity duration-300">
+    <div id="login-overlay"
+        class="fixed inset-0 bg-stone-900 flex flex-col items-center justify-center z-50 transition-opacity duration-300">
         <div class="bg-white p-10 rounded-2xl shadow-2xl max-w-md w-full mx-4 text-center">
             <div class="text-6xl mb-4">🎛️</div>
             <h1 class="text-3xl font-bold text-stone-900 mb-2">Reaper Master</h1>
             <p class="text-stone-500 mb-8">Inicia sesión para acceder al curso privado.</p>
-            
-            <button id="btn-login" class="w-full flex items-center justify-center gap-3 bg-white border border-stone-300 text-stone-700 hover:bg-stone-50 font-semibold py-3 px-4 rounded-lg shadow-sm transition-all">
-                <svg class="w-5 h-5" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/><path fill="none" d="M1 1h22v22H1z"/></svg>
+
+            <button id="btn-login"
+                class="w-full flex items-center justify-center gap-3 bg-white border border-stone-300 text-stone-700 hover:bg-stone-50 font-semibold py-3 px-4 rounded-lg shadow-sm transition-all">
+                <svg class="w-5 h-5" viewBox="0 0 24 24">
+                    <path fill="#4285F4"
+                        d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                    <path fill="#34A853"
+                        d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                    <path fill="#FBBC05"
+                        d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+                    <path fill="#EA4335"
+                        d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+                    <path fill="none" d="M1 1h22v22H1z" />
+                </svg>
                 Continuar con Google
             </button>
-            <div id="login-loader" class="hidden flex justify-center mt-6"><div class="loader"></div></div>
+            <div id="login-loader" class="hidden flex justify-center mt-6">
+                <div class="loader"></div>
+            </div>
             <p id="login-error" class="text-red-500 text-sm mt-4 hidden"></p>
         </div>
     </div>
 
     <!-- 2. PANTALLA DE ACCESO DENEGADO -->
-    <div id="unauthorized-overlay" class="fixed inset-0 bg-red-900 flex flex-col items-center justify-center z-50 hidden transition-opacity duration-300">
+    <div id="unauthorized-overlay"
+        class="fixed inset-0 bg-red-900 flex flex-col items-center justify-center z-50 hidden transition-opacity duration-300">
         <div class="bg-white p-10 rounded-2xl shadow-2xl max-w-md w-full mx-4 text-center">
             <div class="text-5xl mb-4">⛔</div>
             <h1 class="text-2xl font-bold text-stone-900 mb-2">Acceso Restringido</h1>
             <p class="text-stone-600 mb-6" id="unauthorized-email-text"></p>
-            <p class="text-stone-500 text-sm mb-8">Pídele a tu profesor que autorice tu correo en Firebase para poder entrar.</p>
-            <button id="btn-logout-denied" class="bg-stone-200 text-stone-800 hover:bg-stone-300 font-semibold py-2 px-6 rounded-lg transition-colors">
+            <p class="text-stone-500 text-sm mb-8">Pídele a tu profesor que autorice tu correo en Firebase para poder
+                entrar.</p>
+            <button id="btn-logout-denied"
+                class="bg-stone-200 text-stone-800 hover:bg-stone-300 font-semibold py-2 px-6 rounded-lg transition-colors">
                 Cerrar Sesión
             </button>
         </div>
@@ -56,10 +130,11 @@
 
     <!-- 3. APLICACIÓN PRINCIPAL -->
     <div id="app-container" class="flex flex-col md:flex-row min-h-screen hidden">
-        
+
         <!-- SIDEBAR (Ajustado para Móvil) -->
-        <aside class="w-full md:w-1/4 lg:w-1/5 bg-stone-100 border-r border-stone-200 shadow-sm flex flex-col z-40 sticky top-0 md:h-screen">
-            
+        <aside
+            class="w-full md:w-1/4 lg:w-1/5 bg-stone-100 border-r border-stone-200 shadow-sm flex flex-col z-40 sticky top-0 md:h-screen">
+
             <!-- Cabecera del Sidebar (Siempre visible) -->
             <div class="p-4 md:p-6 border-b border-stone-200 bg-white relative z-50">
                 <div class="flex justify-between items-center">
@@ -67,24 +142,30 @@
                         <span>🎛️</span> Reaper Master
                     </h1>
                     <!-- Botón Hamburguesa para Móvil -->
-                    <button id="mobile-menu-btn" class="md:hidden p-2 text-stone-600 hover:bg-stone-100 rounded-lg transition-colors focus:outline-none">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                    <button id="mobile-menu-btn"
+                        class="md:hidden p-2 text-stone-600 hover:bg-stone-100 rounded-lg transition-colors focus:outline-none">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M4 6h16M4 12h16M4 18h16"></path>
+                        </svg>
                     </button>
                 </div>
-                
+
                 <div class="mt-4 bg-stone-100 rounded-full h-3 overflow-hidden border border-stone-200 relative">
-                    <div id="progress-bar" class="bg-emerald-500 h-full transition-all duration-500" style="width: 0%;"></div>
+                    <div id="progress-bar" class="bg-emerald-500 h-full transition-all duration-500" style="width: 0%;">
+                    </div>
                 </div>
                 <div class="flex justify-between items-center mt-1">
                     <p class="text-[10px] text-emerald-600 flex items-center gap-1">☁️ Guardado en nube</p>
                     <p id="progress-text" class="text-xs text-stone-600 font-medium">0%</p>
                 </div>
             </div>
-            
+
             <!-- Contenido del Sidebar (Menú desplegable en Móvil) -->
-            <div id="sidebar-content" class="hidden md:flex flex-col flex-1 absolute md:static top-full left-0 w-full md:w-auto bg-stone-100 h-[calc(100vh-100px)] md:h-auto shadow-2xl md:shadow-none z-40 border-b border-stone-300 md:border-none transition-all">
+            <div id="sidebar-content"
+                class="hidden md:flex flex-col flex-1 absolute md:static top-full left-0 w-full md:w-auto bg-stone-100 h-[calc(100vh-100px)] md:h-auto shadow-2xl md:shadow-none z-40 border-b border-stone-300 md:border-none transition-all">
                 <nav id="sidebar-nav" class="flex-1 overflow-y-auto py-2 md:py-4"></nav>
-                
+
                 <!-- Panel de Usuario -->
                 <div class="p-4 border-t border-stone-200 bg-white mt-auto">
                     <div class="flex items-center gap-2 mb-3 overflow-hidden">
@@ -94,7 +175,8 @@
                             <p id="user-email" class="text-[10px] text-stone-500 truncate"></p>
                         </div>
                     </div>
-                    <button id="btn-logout" class="w-full text-xs text-red-600 border border-red-200 hover:bg-red-50 py-1.5 rounded transition-colors">
+                    <button id="btn-logout"
+                        class="w-full text-xs text-red-600 border border-red-200 hover:bg-red-50 py-1.5 rounded transition-colors">
                         Cerrar Sesión
                     </button>
                 </div>
@@ -107,44 +189,58 @@
                 <!-- Header with Instructor Toggle -->
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
                     <h2 class="text-2xl font-bold text-stone-900" id="section-title">Cargando...</h2>
-                    
-                    <div class="flex items-center gap-3 bg-white px-4 py-2 rounded-full shadow-sm border border-stone-200">
+
+                    <div
+                        class="flex items-center gap-3 bg-white px-4 py-2 rounded-full shadow-sm border border-stone-200">
                         <span class="text-sm font-bold text-blue-800">👨‍🏫 Modo Docente</span>
-                        <div class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
-                            <input type="checkbox" name="toggle" id="instructor-toggle" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 border-stone-300 appearance-none cursor-pointer transition-all duration-300 z-10 top-0 left-0"/>
-                            <label for="instructor-toggle" class="toggle-label block overflow-hidden h-6 rounded-full bg-stone-300 cursor-pointer transition-colors duration-300"></label>
+                        <div
+                            class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
+                            <input type="checkbox" name="toggle" id="instructor-toggle"
+                                class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 border-stone-300 appearance-none cursor-pointer transition-all duration-300 z-10 top-0 left-0" />
+                            <label for="instructor-toggle"
+                                class="toggle-label block overflow-hidden h-6 rounded-full bg-stone-300 cursor-pointer transition-colors duration-300"></label>
                         </div>
                     </div>
                 </div>
 
                 <!-- Instructor Panel -->
-                <div id="instructor-panel" class="mb-8 p-6 bg-blue-50 rounded-xl shadow-sm border border-blue-200 border-l-4 border-l-blue-600 hidden transition-all duration-300">
-                    <h3 class="text-lg font-bold text-blue-900 mb-3 flex items-center gap-2"><span>📝</span> Guía para el Instructor</h3>
+                <div id="instructor-panel"
+                    class="mb-8 p-6 bg-blue-50 rounded-xl shadow-sm border border-blue-200 border-l-4 border-l-blue-600 hidden transition-all duration-300">
+                    <h3 class="text-lg font-bold text-blue-900 mb-3 flex items-center gap-2"><span>📝</span> Guía para
+                        el Instructor</h3>
                     <div id="instructor-content" class="text-blue-800 text-sm leading-relaxed space-y-3"></div>
                 </div>
 
                 <!-- Video Section (Aparece si la clase tiene video) -->
                 <div id="video-section" class="mb-8 hidden">
-                    <div class="relative w-full max-w-3xl mx-auto rounded-xl overflow-hidden shadow-md border border-stone-200" style="padding-bottom: 56.25%;">
-                        <iframe id="class-video" src="" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen class="absolute top-0 left-0 w-full h-full"></iframe>
+                    <div class="relative w-full max-w-3xl mx-auto rounded-xl overflow-hidden shadow-md border border-stone-200"
+                        style="padding-bottom: 56.25%;">
+                        <iframe id="class-video" src="" frameborder="0"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowfullscreen class="absolute top-0 left-0 w-full h-full"></iframe>
                     </div>
                 </div>
 
                 <!-- Student Intro -->
-                <div id="intro-section" class="mb-8 p-6 bg-white rounded-xl shadow-sm border border-stone-200 border-l-4 border-l-amber-500">
+                <div id="intro-section"
+                    class="mb-8 p-6 bg-white rounded-xl shadow-sm border border-stone-200 border-l-4 border-l-amber-500">
                     <p class="text-stone-600 leading-relaxed" id="section-intro"></p>
                 </div>
 
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <div class="lg:col-span-2 space-y-6">
                         <div class="bg-white p-6 rounded-xl shadow-sm border border-stone-200">
-                            <h3 class="text-lg font-bold text-stone-800 mb-4 flex items-center gap-2"><span>📚</span> Temario y Conceptos</h3>
+                            <h3 class="text-lg font-bold text-stone-800 mb-4 flex items-center gap-2"><span>📚</span>
+                                Temario y Conceptos</h3>
                             <div id="topics-container" class="space-y-4"></div>
                         </div>
 
                         <!-- Visualizer -->
-                        <div id="visualizer-card" class="bg-white p-6 rounded-xl shadow-sm border border-stone-200 hidden">
-                            <h3 id="visualizer-title" class="text-lg font-bold text-stone-800 mb-2 flex items-center gap-2"><span>👁️</span> Visualizador Interactivo</h3>
+                        <div id="visualizer-card"
+                            class="bg-white p-6 rounded-xl shadow-sm border border-stone-200 hidden">
+                            <h3 id="visualizer-title"
+                                class="text-lg font-bold text-stone-800 mb-2 flex items-center gap-2"><span>👁️</span>
+                                Visualizador Interactivo</h3>
                             <p id="visualizer-desc" class="text-sm text-stone-600 mb-4"></p>
                             <div id="visualizer-controls" class="flex flex-wrap gap-2 mb-4"></div>
                             <div class="bg-stone-50 p-4 rounded-lg border border-stone-100">
@@ -155,22 +251,26 @@
 
                     <div class="space-y-6">
                         <div class="bg-emerald-50 p-6 rounded-xl shadow-sm border border-emerald-100">
-                            <h3 class="text-lg font-bold text-emerald-900 mb-3 flex items-center gap-2"><span>🛠️</span> Práctica en Vivo</h3>
+                            <h3 class="text-lg font-bold text-emerald-900 mb-3 flex items-center gap-2"><span>🛠️</span>
+                                Práctica en Vivo</h3>
                             <p id="practice-content" class="text-emerald-800 text-sm leading-relaxed"></p>
                         </div>
 
                         <div class="bg-amber-50 p-6 rounded-xl shadow-sm border border-amber-100">
-                            <h3 class="text-lg font-bold text-amber-900 mb-3 flex items-center gap-2"><span>🎯</span> Tarea / Reto</h3>
+                            <h3 class="text-lg font-bold text-amber-900 mb-3 flex items-center gap-2"><span>🎯</span>
+                                Tarea / Reto</h3>
                             <p id="homework-content" class="text-amber-800 text-sm leading-relaxed mb-4"></p>
                             <div id="homework-links" class="flex flex-col gap-2"></div>
                         </div>
-                        
+
                         <div class="bg-stone-800 p-6 rounded-xl shadow-sm text-white">
-                            <h3 class="text-lg font-bold mb-3 flex items-center gap-2"><span>⌨️</span> Shortcuts Clave</h3>
+                            <h3 class="text-lg font-bold mb-3 flex items-center gap-2"><span>⌨️</span> Shortcuts Clave
+                            </h3>
                             <ul id="shortcuts-list" class="space-y-3 text-sm text-stone-300"></ul>
                         </div>
 
-                        <button id="mark-complete-btn" class="w-full py-3 bg-stone-200 hover:bg-emerald-500 hover:text-white text-stone-700 font-bold rounded-lg transition-colors flex justify-center items-center gap-2">
+                        <button id="mark-complete-btn"
+                            class="w-full py-3 bg-stone-200 hover:bg-emerald-500 hover:text-white text-stone-700 font-bold rounded-lg transition-colors flex justify-center items-center gap-2">
                             <span>✅</span> Marcar Clase como Completada
                         </button>
                     </div>
@@ -246,7 +346,7 @@
                 topics: ["<b>El espectro audible:</b> 20 Hz a 20 kHz.", "<b>Tipos de bandas (ReaEQ):</b> High-Pass, Low-Pass, Shelves y Campanas.", "<b>Técnica de Barrido:</b> Subir ganancia, Q estrecha, buscar y atenuar."],
                 practice: "Escuchar HPF y hacer barrido para eliminar resonancias en guitarra.",
                 homework: "Aplicar High-Pass Filter a todas las pistas (excepto bajo/bombo).",
-                links: [],
+                links: [{ text: "Simulador de Ecualización (EQ)", url: "https://jgmansur.github.io/musicknobs/EQ/" }],
                 shortcuts: ["<b>Cerrar los ojos:</b> Escucha, no mires.", "<b>Bypass:</b> Úsalo siempre."],
                 instructorNotes: "<p><strong>Meta Docente:</strong> Detectar el Lodo y resonancias.</p><ul class='list-disc pl-5'><li><strong>El engaño visual:</strong> Obliga al alumno a cerrar los ojos mientras mueves la frecuencia.</li><li><strong>Cuidado con HPF:</strong> No cortar demasiado para no perder cuerpo.</li></ul>",
                 hasVisualizer: true, visualizerType: "eq", visualizerTitle: "Tipos de Filtros (EQ)", visualizerDesc: "Simulación de curvas en el espectro."
@@ -367,7 +467,7 @@
             if (user) {
                 DOM.loginBtn.classList.add('hidden');
                 DOM.loginLoader.classList.remove('hidden');
-                
+
                 try {
                     const hasAccess = await checkAuthorization(user.email);
                     if (hasAccess) {
@@ -375,13 +475,13 @@
                         DOM.userAvatar.src = user.photoURL || '';
                         DOM.userName.innerText = user.displayName || 'Estudiante';
                         DOM.userEmail.innerText = user.email;
-                        
+
                         await loadProgressFromCloud();
-                        
+
                         DOM.loginOverlay.classList.add('hidden');
                         DOM.unauthOverlay.classList.add('hidden');
                         DOM.appContainer.classList.remove('hidden');
-                        
+
                         renderNavigation();
                         DOM.instructorToggle.checked = state.isInstructorMode;
                         loadClass(state.currentClassId);
@@ -417,7 +517,7 @@
                     isAllowed = true;
                 }
             });
-            if (!isAllowed && qSnap.empty && typeof __app_id !== 'undefined') return true; 
+            if (!isAllowed && qSnap.empty && typeof __app_id !== 'undefined') return true;
             return isAllowed;
         }
 
@@ -426,7 +526,7 @@
             try {
                 const ref = doc(db, getProgressPath(currentUser.uid));
                 await setDoc(ref, { completedClasses: state.completedClasses, isInstructorMode: state.isInstructorMode }, { merge: true });
-            } catch(e) { console.error("Error saving", e); }
+            } catch (e) { console.error("Error saving", e); }
         }
 
         async function loadProgressFromCloud() {
@@ -439,7 +539,7 @@
                     state.completedClasses = data.completedClasses || [];
                     state.isInstructorMode = data.isInstructorMode || false;
                 }
-            } catch(e) { console.error("Error loading", e); }
+            } catch (e) { console.error("Error loading", e); }
         }
 
         // --- RENDERIZADO DE LA APP ---
@@ -448,12 +548,12 @@
             courseData.forEach(item => {
                 const isCompleted = state.completedClasses.includes(item.id);
                 const isActive = state.currentClassId === item.id;
-                
+
                 const btn = document.createElement('button');
                 btn.className = `w-full text-left px-6 py-3 border-b border-stone-200 transition-colors flex items-center gap-3 ${isActive ? 'active' : 'hover:bg-stone-200 text-stone-700'}`;
                 let checkMark = isCompleted ? '<span class="text-emerald-500 font-bold ml-auto">✓</span>' : '';
                 let shortTitle = item.title.split(':')[0];
-                if(item.id === 7) shortTitle = "Reglas de Oro";
+                if (item.id === 7) shortTitle = "Reglas de Oro";
 
                 btn.innerHTML = `<span class="text-xl">${item.icon}</span> <span>${shortTitle}</span> ${checkMark}`;
                 btn.onclick = () => loadClass(item.id);
@@ -465,10 +565,10 @@
         function loadClass(id) {
             state.currentClassId = id;
             const data = courseData.find(c => c.id === id);
-            
+
             DOM.title.innerHTML = `${data.icon} ${data.title}`;
             DOM.intro.innerHTML = `<strong>Objetivo:</strong> ${data.objective}<br><br>${data.intro}`;
-            
+
             // Lógica de Video
             if (data.videoUrl) {
                 DOM.videoSection.classList.remove('hidden');
@@ -513,10 +613,10 @@
             }
 
             renderVisualizer(data);
-            renderNavigation(); 
-            
+            renderNavigation();
+
             // Lógica para cerrar el menú en móviles automáticamente al seleccionar una clase
-            if(window.innerWidth < 768) {
+            if (window.innerWidth < 768) {
                 DOM.sidebarContent.classList.add('hidden');
                 DOM.sidebarContent.classList.remove('flex');
                 window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -546,7 +646,7 @@
         });
 
         function updateProgressUI() {
-            const total = 6; 
+            const total = 6;
             const completed = state.completedClasses.filter(id => id <= 6).length;
             const percentage = Math.round((completed / total) * 100);
             DOM.progressBar.style.width = `${percentage}%`;
@@ -591,8 +691,8 @@
             const freqLabels = [20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000];
             const flatData = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
             const hpfData = [-24, -12, -3, 0, 0, 0, 0, 0, 0, 0];
-            const bellData = [0, 0, 0, 0, 6, 0, 0, 0, 0, 0]; 
-            const bellCutData = [0, 0, 0, 0, 0, -8, 0, 0, 0, 0]; 
+            const bellData = [0, 0, 0, 0, 6, 0, 0, 0, 0, 0];
+            const bellCutData = [0, 0, 0, 0, 0, -8, 0, 0, 0, 0];
 
             state.chartInstance = new Chart(ctx, {
                 type: 'line', data: { labels: freqLabels, datasets: [{ label: 'Ganancia (dB)', data: flatData, borderColor: '#d97706', backgroundColor: 'rgba(217, 119, 6, 0.1)', borderWidth: 3, tension: 0.4, fill: true }] },
@@ -611,7 +711,7 @@
             const calcComp = (ratio) => inputLabels.map(val => { if (val <= threshold) return val; return threshold + ((val - threshold) / ratio); });
 
             state.chartInstance = new Chart(ctx, {
-                type: 'line', data: { labels: inputLabels, datasets: [ { label: 'Salida', data: noComp, borderColor: '#059669', borderWidth: 3, tension: 0 }, { label: 'Umbral', data: inputLabels.map(() => threshold), borderColor: '#a8a29e', borderDash: [5, 5], borderWidth: 1, pointRadius: 0 } ] },
+                type: 'line', data: { labels: inputLabels, datasets: [{ label: 'Salida', data: noComp, borderColor: '#059669', borderWidth: 3, tension: 0 }, { label: 'Umbral', data: inputLabels.map(() => threshold), borderColor: '#a8a29e', borderDash: [5, 5], borderWidth: 1, pointRadius: 0 }] },
                 options: { maintainAspectRatio: false, responsive: true, scales: { x: { title: { display: true, text: 'Entrada (dB)' } }, y: { min: -30, max: 0, title: { display: true, text: 'Salida (dB)' } } } }
             });
             DOM.visualizerControls.appendChild(createBtn('1:1', true, () => { state.chartInstance.data.datasets[0].data = noComp; state.chartInstance.update(); }));
@@ -620,20 +720,20 @@
         }
 
         function setupGainStagingChart(ctx) {
-            const rawAudio = [ -18, -6, -2, -12 ]; 
+            const rawAudio = [-18, -6, -2, -12];
             state.chartInstance = new Chart(ctx, {
                 type: 'bar', data: { labels: ['Toma 1', 'Toma 2', 'Coro', 'Puente'], datasets: [{ label: 'Nivel Pico (dB)', data: rawAudio, backgroundColor: '#d97706' }] },
                 options: { maintainAspectRatio: false, responsive: true, scales: { y: { min: -24, max: 0 } } }
             });
             DOM.visualizerControls.appendChild(createBtn('Crudo', true, () => { state.chartInstance.data.datasets[0].data = rawAudio; state.chartInstance.data.datasets[0].backgroundColor = '#d97706'; state.chartInstance.update(); }));
-            DOM.visualizerControls.appendChild(createBtn('Clip Gain', false, () => { state.chartInstance.data.datasets[0].data = [ -10, -9, -10, -10 ]; state.chartInstance.data.datasets[0].backgroundColor = '#059669'; state.chartInstance.update(); }));
+            DOM.visualizerControls.appendChild(createBtn('Clip Gain', false, () => { state.chartInstance.data.datasets[0].data = [-10, -9, -10, -10]; state.chartInstance.data.datasets[0].backgroundColor = '#059669'; state.chartInstance.update(); }));
         }
 
         function setupMaskingChart(ctx) {
-             const freqLabels = [20, 40, 60, 80, 100, 150, 200, 300];
-             const bass = [0, 4, 8, 8, 6, 2, 0, 0];
-             state.chartInstance = new Chart(ctx, {
-                type: 'line', data: { labels: freqLabels, datasets: [ { label: 'Bombo', data: [0, 6, 10, 4, 0, 0, 0, 0], borderColor: '#d97706', backgroundColor: 'rgba(217, 119, 6, 0.3)', fill: true, tension: 0.4 }, { label: 'Bajo', data: bass, borderColor: '#059669', backgroundColor: 'rgba(5, 150, 105, 0.3)', fill: true, tension: 0.4 } ] },
+            const freqLabels = [20, 40, 60, 80, 100, 150, 200, 300];
+            const bass = [0, 4, 8, 8, 6, 2, 0, 0];
+            state.chartInstance = new Chart(ctx, {
+                type: 'line', data: { labels: freqLabels, datasets: [{ label: 'Bombo', data: [0, 6, 10, 4, 0, 0, 0, 0], borderColor: '#d97706', backgroundColor: 'rgba(217, 119, 6, 0.3)', fill: true, tension: 0.4 }, { label: 'Bajo', data: bass, borderColor: '#059669', backgroundColor: 'rgba(5, 150, 105, 0.3)', fill: true, tension: 0.4 }] },
                 options: { maintainAspectRatio: false, responsive: true, scales: { y: { min: 0, max: 12 } } }
             });
             DOM.visualizerControls.appendChild(createBtn('Choque', true, () => { state.chartInstance.data.datasets[1].data = bass; state.chartInstance.update(); }));
@@ -648,4 +748,5 @@
         }
     </script>
 </body>
+
 </html>
