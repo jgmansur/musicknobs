@@ -1,4 +1,10 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // --- STATE VARIABLES ---
+    let currentBgImage = null;
+    let showParental = false;
+    let showVinylRing = false;
+    let startX, startY;
+
     // --- 1. PROMPT GENERATOR LOGIC ---
     const formOptions = {
         rutaDiseno: document.getElementById('ruta-diseno'),
@@ -87,12 +93,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const toggleParentalBtn = document.getElementById('toggle-parental-btn');
     const toggleVinylBtn = document.getElementById('toggle-vinyl-btn');
-
-    let currentBgImage = null;
-    let showParental = false;
-    let showVinylRing = false;
-
-    let startX, startY;
 
     document.fonts.ready.then(() => renderCanvas());
 
