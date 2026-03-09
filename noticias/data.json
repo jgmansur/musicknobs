@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-03-08T12:00:00Z",
+  "lastUpdated": "2026-03-09T15:47:06.392Z",
   "es": {
     "title": "Noticias Diarias: Copyright e Inteligencia Artificial",
     "subtitle": "Lo último en leyes de derechos de autor para músicos, compositores y productores.",
@@ -7,17 +7,17 @@
       {
         "id": "cambios-ley",
         "title": "Cambios Recientes en la Ley de Copyright",
-        "content": "Hoy, la oficina de Copyright ha emitido nuevas directrices sobre el uso de la IA en la composición musical. Se establece que las obras creadas íntegramente por IA no están sujetas a derechos de autor. Sin embargo, hay un debate activo sobre el muestreo de voces generadas por IA."
+        "content": "La Oficina de Derechos de Autor de los Estados Unidos ha emitido directrices sobre la protección de derechos de autor para obras creadas con inteligencia artificial. Según estas directrices, las obras generadas únicamente por máquinas no son elegibles para la protección de derechos de autor, ya que carecen de un elemento humano. Sin embargo, si un ser humano ha intervenido significativamente en la creación de la obra, puede ser considerada para la protección de derechos de autor."
       },
       {
         "id": "que-registrar",
         "title": "¿Qué se puede y qué no se puede registrar?",
-        "content": "<strong>Se puede registrar:</strong> Melodías y letras escritas por humanos, incluso si fueron arregladas por IA. <br><br> <strong>No se puede registrar:</strong> Prompts de texto utilizados para generar música, instrumentales compuestos 100% por algoritmos sin intervención humana sustancial."
+        "content": "Los músicos pueden registrar sus obras si han contribuido de manera significativa a la creación de la música, como la composición, la letra o la interpretación. Sin embargo, si la música ha sido generada únicamente por una inteligencia artificial sin intervención humana, no puede ser registrada. Es importante destacar que la Oficina de Derechos de Autor de los Estados Unidos requiere que los solicitantes declaren si su obra ha sido creada con la ayuda de una inteligencia artificial."
       },
       {
         "id": "intervencion-humana",
         "title": "Productores: Edición vs Intervención Humana",
-        "content": "La duda común es: ¿Si genero una pista con IA y luego le agrego guitarras reales y edito la mezcla, es mía? La respuesta actual es <strong>sí</strong>, pero solo puedes reclamar copyright sobre la <em>aportación humana</em> (la guitarra y la mezcla), no sobre la parte generada por IA. La autoría se considera compartida o parcial en estos casos limitados."
+        "content": "Si se agregan instrumentos reales o se edita una pista generada por una inteligencia artificial, es posible registrar la obra si se puede demostrar que ha habido una intervención humana significativa. La clave es determinar si la contribución humana es lo suficientemente sustancial como para considerar que la obra es una creación original. La Oficina de Derechos de Autor de los Estados Unidos considerará factores como la selección de los parámetros de la inteligencia artificial, la edición y la mezcla de la pista, y la adición de elementos originales como la letra o la melodía."
       }
     ]
   },
@@ -28,17 +28,17 @@
       {
         "id": "cambios-ley",
         "title": "Recent Changes in Copyright Law",
-        "content": "Today, the Copyright Office has issued new guidelines regarding the use of AI in musical composition. It establishes that works created entirely by AI are not subject to copyright. However, there is an active debate on sampling AI-generated voices."
+        "content": "The United States Copyright Office has issued guidelines on copyright protection for works created with artificial intelligence. According to these guidelines, works generated solely by machines are not eligible for copyright protection, as they lack a human element. However, if a human has significantly contributed to the creation of the work, it may be considered for copyright protection."
       },
       {
         "id": "que-registrar",
-        "title": "What can and cannot be registered?",
-        "content": "<strong>Can be registered:</strong> Melodies and lyrics written by humans, even if arranged by AI. <br><br> <strong>Cannot be registered:</strong> Text prompts used to generate music, instrumentals composed 100% by algorithms without substantial human intervention."
+        "title": "What Can and Cannot Be Registered",
+        "content": "Musicians can register their works if they have made significant contributions to the creation of the music, such as composition, lyrics, or performance. However, if the music has been generated solely by an artificial intelligence without human intervention, it cannot be registered. It is worth noting that the United States Copyright Office requires applicants to declare if their work has been created with the help of an artificial intelligence."
       },
       {
         "id": "intervencion-humana",
         "title": "Producers: Editing vs Human Intervention",
-        "content": "The common question is: If I generate a track with AI and then add real guitars and edit the mix, is it mine? The current answer is <strong>yes</strong>, but you can only claim copyright on the <em>human contribution</em> (the guitar and the mix), not on the AI-generated part. Authorship is considered shared or partial in these limited cases."
+        "content": "If real instruments are added or an AI-generated track is edited, it is possible to register the work if significant human intervention can be demonstrated. The key is to determine if the human contribution is substantial enough to consider the work an original creation. The United States Copyright Office will consider factors such as the selection of AI parameters, editing and mixing of the track, and the addition of original elements like lyrics or melody."
       }
     ]
   }
