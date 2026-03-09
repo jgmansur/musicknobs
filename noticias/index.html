@@ -1,274 +1,116 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Archivo de Noticias</title>
-    <style>
-        :root {
-            --background-color: #121212;
-            --card-background: #1e1e1e;
-            --text-color: #e0e0e0;
-            --primary-color: #ffffff;
-            --secondary-color: #b3b3b3;
-            --border-color: #2d2d2d;
-            --hover-bg-color: rgba(255, 255, 255, 0.1);
-        }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: var(--background-color);
-            color: var(--text-color);
-        }
-        .container {
-            max-width: 900px;
-            margin: 20px auto;
-            padding: 0 20px;
-        }
-        .top-right-nav {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            z-index: 10;
-        }
-        .icon-button {
-            display: inline-flex;
-            justify-content: center;
-            align-items: center;
-            width: 44px;
-            height: 44px;
-            background-color: transparent;
-            border: 2px solid var(--primary-color);
-            color: var(--primary-color);
-            border-radius: 50%;
-            text-decoration: none;
-            cursor: pointer;
-            transition: background-color 0.3s, transform 0.2s;
-        }
-        .icon-button:hover {
-            background-color: var(--hover-bg-color);
-            transform: scale(1.1);
-        }
-        .icon-button svg {
-            width: 22px;
-            height: 22px;
-        }
-        header {
-            text-align: center;
-            padding-top: 60px;
-            margin-bottom: 30px;
-        }
-        header img.logo {
-            max-width: 250px;
-            margin: 20px 0;
-        }
-        h1 {
-            color: var(--primary-color);
-        }
-        .search-container {
-            background-color: var(--card-background);
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 30px;
-            border: 1px solid var(--border-color);
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            align-items: center;
-        }
-        .search-container input {
-            flex-grow: 1;
-            padding: 12px;
-            border-radius: 5px;
-            border: 1px solid #444;
-            background-color: #333;
-            color: var(--text-color);
-            min-width: 150px;
-        }
-        .search-container .icon-button {
-            width: 40px;
-            height: 40px;
-            border-width: 1px;
-        }
-        .search-container .icon-button svg {
-            width: 18px;
-            height: 18px;
-        }
-        .news-list-container {
-            background-color: var(--card-background);
-            padding: 20px;
-            border-radius: 8px;
-            border: 1px solid var(--border-color);
-        }
-        .news-list-container h2 {
-            margin-top: 0;
-            border-bottom: 2px solid var(--primary-color);
-            padding-bottom: 10px;
-        }
-        .news-list ul {
-            list-style: none;
-            padding: 0;
-        }
-        .news-list li {
-            margin-bottom: 10px;
-        }
-        .news-list a {
-            display: block;
-            padding: 15px;
-            background-color: #252525;
-            text-decoration: none;
-            color: var(--primary-color);
-            border-radius: 5px;
-            transition: background-color 0.3s;
-            font-weight: bold;
-        }
-        .news-list a:hover {
-            background-color: #3a3a3a;
-        }
-        footer {
-            text-align: center;
-            margin-top: 40px;
-            padding: 20px;
-            color: var(--secondary-color);
-            border-top: 1px solid var(--border-color);
-        }
-    </style>
+    <title>Copyright Diarió AI | MusicKnobs</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
+
 <body>
+    <!-- Background Elements -->
+    <div class="glow glow-1"></div>
+    <div class="glow glow-2"></div>
 
-    <div class="top-right-nav">
-        <a href="https://www.musicknobs.com" class="icon-button" title="Ir a Musicknobs.com" target="_blank">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-        </a>
-    </div>
-
-    <header class="container">
-        <a href="index.html">
-            <img src="https://raw.githubusercontent.com/jgmansur/musicknobs/ee1762982fd52ffdd1dbe5d611c276b7c832471f/LogoBlancoTransparente.png" alt="Logo del Canal" class="logo">
-        </a>
-        <h1>Archivo de Noticias</h1>
+    <header class="header">
+        <div class="container header-container">
+            <a href="../" class="logo-link">
+                <img src="../LogoBlancoTransparente.png" alt="MusicKnobs Logo" class="logo">
+            </a>
+            <div class="language-toggle">
+                <button id="lang-es" class="lang-btn active">ES</button>
+                <button id="lang-en" class="lang-btn">EN</button>
+            </div>
+        </div>
     </header>
 
     <main class="container">
-        <section class="search-container">
-            <input type="text" id="keywordSearch" placeholder="Buscar por palabra clave...">
-            <input type="date" id="dateSearch">
-            <button onclick="searchNews()" class="icon-button" title="Buscar">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-            </button>
-            <button onclick="clearSearch()" class="icon-button" title="Limpiar búsqueda">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-            </button>
+        <section class="hero-section">
+            <div class="badge">
+                <i class="fa-solid fa-bolt"></i> <span id="ui-live-updates">Actualizaciones Diarias</span>
+            </div>
+            <h1 id="page-title" class="gradient-text">Cargando...</h1>
+            <p id="page-subtitle" class="subtitle">Obteniendo la información más reciente...</p>
+            <div class="last-updated">
+                <i class="fa-regular fa-clock"></i> <span id="ui-updated-text">Actualizado:</span> <strong
+                    id="date-display">...</strong>
+            </div>
         </section>
 
-        <section class="news-list-container">
-            <h2>Últimos Reportes</h2>
-            <div id="newsList" class="news-list">
-                <ul>
+        <section id="news-container" class="news-grid">
+            <!-- News cards will be injected here by JS -->
+            <div class="skeleton-card"></div>
+            <div class="skeleton-card"></div>
+            <div class="skeleton-card"></div>
+        </section>
 
-
-
-
-
-                    <li data-date="2025-09-17" data-keywords="Latin Grammy, Pitchfork, Bad Bunny, Debí Tirar Más Fotos, Baile Inolvidable, DTMF, Karol G, Shakira, Gloria Estefan, Natalia Lafourcade, Rauw Alejandro, Edgar Barrera, Kali Uchis, Ravyn Lenae, Cry About It!, Sincerely (Deluxe), IA, inteligencia artificial, Deezer, MusicRadar, Spotify, YouTube Music, streaming, Epidemic Sound, Adapt, Billboard, Viva Latino, Xania Monet">
-                        <a href="17092025.html">17 de Septiembre, 2025</a>
-                    </li>
-
-                    <li data-date="2025-09-10" data-keywords="Apple, Apple Event, 2025, iPhone, iPhone 17, Concepto">
-                        <a href="10092025.html">Reporte Diario: 10 de Septiembre de 2025</a>
-                    </li>
-
-                    <li data-date="2025-09-09" data-keywords="Roland,Roland Cloud,TR-909,909,909 Day,Software Rhythm Composer,Plugin,Oferta,Descuento,Patches,Librería,Soundtoys,Soundtoys 5.5,SpaceBlender,Upgrades,Back-to-School,Efectos,Anthropic,IA,AI,Claude,Libros,Pirata,Copyright,Derechos de autor,Industria,The Guardian">
-                        <a href="09092025.html">Reporte del 9 de Septiembre de 2025</a>
-                    </li>
-
-                    <li data-date="2025-09-08" data-keywords="Waves,Waves Central,plugin,Sonarworks,SoundID Reference,oferta,sale,Native Instruments,NI,The Big Partner Sale,LUNA,DAW,Universal Audio,comandos de voz,Spotify,streaming,Smart Filters,Snooze,Discover Weekly,Ableton,Ableton Note,Ableton Move,Drift,iOS,UAD,Shadow Hills,Mastering Compressor Class A,Maag,EQ4 MS,Apple Music,YouTube Music,Amazon Music,Lizzo,algoritmos,ICMP,IA,inteligencia artificial,copyright,Google,Microsoft,Meta,X,OpenAI,MusicRadar,industria,YouTube,NFL,Chiefs,Chargers">
-                        <a href="08092025.html">
-                            <div class="report-date">8 Sep 2025</div>
-                            <div class="report-title">Waves Central 16.1, Sales de Sonarworks y NI, LUNA con comandos de voz, UAD 11.8.1 y más</div>
-                        </a>
-                    </li>
-
-                    <li data-date="2025-09-05" data-keywords="WAVS, AI Sample Finder, IA, Inteligencia Artificial, samples, libreria, FL Studio, Gopher, ChatGPT, DAW, Output, Re-imagine, Co-Producer, plugin, copyright, GPU, audio, tarjeta grafica, Justin Bieber, Swag II, pop, streaming, album, TAL-Software, TAL-EQ, FabFilter, Pro-Q, EQ, ecualizador, sidechain, Ableton, Ableton Live, Live 12.3, beta, stems, Splice, Auto Pan, tremolo, Patterns, Sting, Push 3, Spotify, Goldman Sachs, industria">
-                    <a href="05092025.html">
-                    <strong>05 de septiembre de 2025</strong>
-                    <span>IA en DAWs, el regreso de Bieber, plugins y más</span>
+        <!-- YouTube Section -->
+        <section class="youtube-section">
+            <div class="youtube-container">
+                <div class="youtube-info">
+                    <div class="youtube-icon">
+                        <i class="fa-brands fa-youtube"></i>
+                    </div>
+                    <h3 id="ui-yt-title">¿Te sirvió esta información?</h3>
+                    <p id="ui-yt-desc" class="youtube-desc">La mejor forma de agradecer y apoyar la creación de esta
+                        herramienta gratuita es suscribiéndote al canal de YouTube. ¡Aprende más sobre producción
+                        musical!</p>
+                    <a href="https://www.youtube.com/@MusicKnobs?sub_confirmation=1" target="_blank"
+                        rel="noopener noreferrer" class="yt-subscribe-btn">
+                        <i class="fa-brands fa-youtube"></i> <span id="ui-yt-btn">Suscribirme al Canal</span>
                     </a>
-                    </li>                    
+                </div>
+                <!-- YouTube latest video embed -->
+                <div class="youtube-video-wrapper">
+                    <iframe class="youtube-iframe" width="100%" height="100%"
+                        src="https://www.youtube.com/embed?listType=user_uploads&list=MusicKnobs"
+                        title="Último video de MusicKnobs" frameborder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                        referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+                </div>
+            </div>
+        </section>
 
-                    <li data-date="2025-09-04" data-keywords="VSL,Vienna Symphonic Library,Synchron Prime Sections,Prime Orchestra,librería,orquestal,Waldorf,PPG Wave 3.V,wavetables,Mutator,Microwave,sintetizador,instrumento virtual,Audiority,Big Swarma,unison,chorus,filtro,MS-20,plugin,efecto,Apogee,Duet 3,interfaz de audio,hardware,oferta,IK Multimedia,T-RackS,Stealth Limiter,AudioDeluxe,limitador,mastering,Softube,Flow,Flow Mixing Suite,suscripción,mezcla,iZotope,Ozone 12,Stem EQ,Unlimiter,IRC5,stems,IA,AI">
-                    <a href="04092025.html">
-                    <div class="date">04 SEP 2025</div>
-                    <div class="title">iZotope Ozone 12 con Stem EQ, VSL por secciones y Waldorf actualiza el PPG Wave.</div>
-                    </a>
-                    </li>        
-                    
-                    <li data-date="2025-09-03" data-keywords="Ableton,Live 12.3,DAW,stems,separacion de tallos,Splice,sampling,Taylor Swift,The Life of a Showgirl,album,pop,vinilo,New Heights,Native Instruments,NKS,Komplete,Akai,Korg,Novation,Nektar,M-Audio,controlador,MIDI,Spotify,Music Pro,hi-res,lossless,Nike,Make Moves,UAD,Universal Audio,Teletronix,LA-2A,plugin,compresor,gratis,freebie,Steinberg,Cubase 14,Soniccouture,Flowstate,Threnody,Geosonics II,Kontakt,The Weeknd,Hurry Up Tomorrow,Miley Cyrus,Something Beautiful,Bad Bunny,DeBÍ TiRAR MáS FOToS,Kevin Kaarl,ULTRA SODADE,Rosalía,IA,AI,inteligencia artificial,Udio,Suno,text-to-music,MIDiA,IFPI">
-                    <a href="03092025.html">
-                    <span class="fecha">Noticias del Miercoles, 03 Sep 2025</span>
+        <section class="newsletter-section glass-panel">
+            <div class="newsletter-content">
+                <div class="newsletter-icon">
+                    <i class="fa-solid fa-envelope-open-text"></i>
+                </div>
+                <h2 id="ui-newsletter-title">No te pierdas de nada</h2>
+                <p id="ui-newsletter-desc">Únete a nuestra lista para recibir alertas exclusivas sobre grandes cambios
+                    en copyright para músicos y creadores usando IA.</p>
 
-                    <li data-date="2025-09-02" data-keywords="ableton live 12.3,beta,stem separation,splice,daw,ableton move 1.6,reverse,drum racks,sliced loops,fl studio 2025.1.4,image-line,native instruments,ni,the big partner sale,oferta,sintes,fx,scoring,sonnox soften,focusrite,novation,plugin,gratis,spitfire audio,abbey road orchestra,aro,symphonic woodwinds,libreria,cine,trailers"><a href="/musicknobs/noticias/02092025.html">Beat Matutino: 2 de septiembre, 2025</a></li>
-                    
-                    <li data-date="2025-09-01" data-keywords="Streaming,tecnologia,politicas,Amazon Music,Top Listener,engagement,RouteNote,Instagram,livestreaming,Spotify,Premium,America Latina,Europa,Audiobooks+,EEUU,Reino Unido,Australia,Canada,TikTok,Tomorrowland 2025,IA,inteligencia artificial,imoliver,chatbot,prompts,90s Pop Tour,Mexico,Auditorio Nacional,Ciudad de Mexico,David Byrne,Talking Heads,El Pais,Taylor Swift">
-                        <a href="01092025.html">Reporte del 01 de Septiembre, 2025: Streaming, tecnología y políticas</a>
-                    </li>
-
-                    
-                    <li data-date="2025-08-30" data-keywords="Waves,InTrigger,Humanize,PreSonus,StudioLive Series III SE,Softube,Tube-Tech,Trident,David Guetta,Nicky Romero,FASTER MASTER,Fuse Audio Labs,Flywheel,Plugin Boutique,Bedroom Producers Blog,Playboi Carti,Music,Evil Jordan,Spotify,Chartmasters,Reddit,LISA,Doja Cat,RAYE,Born Again,Apple Music,Pitchfork,plugins,instrumentos,bateria,consola,firmware,ecualizadores,EQ,DAW,masterizar,cinta analogica,streaming,playlists">
-                            <a href="30082025.html">
-                                <div class="report-card">
-                                <h3>Reporte Diario</h3>
-                                <p>Plugins de Waves, PreSonus, Softube y David Guetta. Oferta en Fuse Audio Labs y récords de Playboi Carti en Spotify.</p>
-                                 <span class="report-date">30 de agosto de 2025</span>
-                                    </div>
-                                    </a>
-                    </li>
-                    <li data-date="2025-08-29" data-keywords="Universal Audio,Labor Day,LA-2A,Dream ’65 Reverb Amp,Ruby ’63,Lion ’68,Woodrow ’55,Teletronix LA-3A,EL8 Dist.,Sound City Studios,Waves Audio,XLN Audio,Eventide,Pluginpalooza,Output,We Rave You,MusicRadar,Audio Plugin Guy,Guitar Center,EastWest,Plugin Alliance,Brainworx,SPL Vitalizer Mk3-T,Softube,Volume 6,Harrison Bass Flow,Solid State Logic,SSL,UJAM,SELECT 10 Bundle,Otto Audio,plugins,instrumentos,descuentos,promociones,sale">
-                            <a href="29082025.html">Noticias del Viernes, 29 de Agosto de 2025</a>
-                        </li>
-                    <li data-date="2025-08-28" data-keywords="Hayley Williams, Blood Orange, Spotify, Ableton, Pro Tools, Logic Pro, UAD, Teletronix, LA-2A, Sottovoce, Splice">
-                        <a href="28082025.html">Noticias del Jueves, 28 de Agosto de 2025</a>
-                    </li>
-                </ul>
+                <!-- Demo Formspree action url -->
+                <form action="https://formspree.io/f/mqkenrzx" method="POST" class="subscribe-form" id="subscribe-form">
+                    <input type="email" name="email" id="email-input" placeholder="Tu correo electrónico" required
+                        class="email-input">
+                    <button type="submit" class="submit-btn" id="ui-newsletter-btn">Suscribirse</button>
+                </form>
+                <p class="form-disclaimer" id="ui-newsletter-disclaimer">No enviamos spam. Date de baja cuando quieras.
+                </p>
             </div>
         </section>
     </main>
 
-    <footer>
+    <footer class="footer">
         <div class="container">
-            <p>© 2025 Tu Canal de Noticias. Todos los derechos reservados.</p>
+            <p>&copy; 2026 MusicKnobs Labs. Todos los derechos reservados.</p>
+            <p class="footer-links">
+                <a href="../">Volver al Inicio</a>
+            </p>
         </div>
     </footer>
 
-    <script>
-        function searchNews() {
-            const userInput = document.getElementById('keywordSearch').value.toLowerCase();
-            const searchTerms = userInput.split(' ').filter(term => term);
-            const date = document.getElementById('dateSearch').value;
-            const newsItems = document.querySelectorAll('#newsList ul li');
-
-            newsItems.forEach(item => {
-                const itemKeywords = item.getAttribute('data-keywords').toLowerCase();
-                const itemDate = item.getAttribute('data-date');
-                const keywordMatch = searchTerms.every(term => itemKeywords.includes(term));
-                const dateMatch = date === '' || itemDate === date;
-
-                if (keywordMatch && dateMatch) {
-                    item.style.display = 'block';
-                } else {
-                    item.style.display = 'none';
-                }
-            });
-        }
-
-        function clearSearch() {
-            document.getElementById('keywordSearch').value = '';
-            document.getElementById('dateSearch').value = '';
-            document.querySelectorAll('#newsList ul li').forEach(item => {
-                item.style.display = 'block';
-            });
-        }
-    </script>
+    <script src="script.js"></script>
 </body>
+
 </html>

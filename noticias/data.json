@@ -1,0 +1,45 @@
+{
+  "lastUpdated": "2026-03-08T12:00:00Z",
+  "es": {
+    "title": "Noticias Diarias: Copyright e Inteligencia Artificial",
+    "subtitle": "Lo último en leyes de derechos de autor para músicos, compositores y productores.",
+    "sections": [
+      {
+        "id": "cambios-ley",
+        "title": "Cambios Recientes en la Ley de Copyright",
+        "content": "Hoy, la oficina de Copyright ha emitido nuevas directrices sobre el uso de la IA en la composición musical. Se establece que las obras creadas íntegramente por IA no están sujetas a derechos de autor. Sin embargo, hay un debate activo sobre el muestreo de voces generadas por IA."
+      },
+      {
+        "id": "que-registrar",
+        "title": "¿Qué se puede y qué no se puede registrar?",
+        "content": "<strong>Se puede registrar:</strong> Melodías y letras escritas por humanos, incluso si fueron arregladas por IA. <br><br> <strong>No se puede registrar:</strong> Prompts de texto utilizados para generar música, instrumentales compuestos 100% por algoritmos sin intervención humana sustancial."
+      },
+      {
+        "id": "intervencion-humana",
+        "title": "Productores: Edición vs Intervención Humana",
+        "content": "La duda común es: ¿Si genero una pista con IA y luego le agrego guitarras reales y edito la mezcla, es mía? La respuesta actual es <strong>sí</strong>, pero solo puedes reclamar copyright sobre la <em>aportación humana</em> (la guitarra y la mezcla), no sobre la parte generada por IA. La autoría se considera compartida o parcial en estos casos limitados."
+      }
+    ]
+  },
+  "en": {
+    "title": "Daily News: Copyright & Artificial Intelligence",
+    "subtitle": "The latest in copyright law for musicians, composers, and producers.",
+    "sections": [
+      {
+        "id": "cambios-ley",
+        "title": "Recent Changes in Copyright Law",
+        "content": "Today, the Copyright Office has issued new guidelines regarding the use of AI in musical composition. It establishes that works created entirely by AI are not subject to copyright. However, there is an active debate on sampling AI-generated voices."
+      },
+      {
+        "id": "que-registrar",
+        "title": "What can and cannot be registered?",
+        "content": "<strong>Can be registered:</strong> Melodies and lyrics written by humans, even if arranged by AI. <br><br> <strong>Cannot be registered:</strong> Text prompts used to generate music, instrumentals composed 100% by algorithms without substantial human intervention."
+      },
+      {
+        "id": "intervencion-humana",
+        "title": "Producers: Editing vs Human Intervention",
+        "content": "The common question is: If I generate a track with AI and then add real guitars and edit the mix, is it mine? The current answer is <strong>yes</strong>, but you can only claim copyright on the <em>human contribution</em> (the guitar and the mix), not on the AI-generated part. Authorship is considered shared or partial in these limited cases."
+      }
+    ]
+  }
+}
