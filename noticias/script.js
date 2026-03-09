@@ -135,6 +135,45 @@ document.addEventListener('DOMContentLoaded', () => {
     langEsBtn.addEventListener('click', () => switchLanguage('es'));
     langEnBtn.addEventListener('click', () => switchLanguage('en'));
 
+    // Fetch YouTube latest video dynamically parsing XML through a public CORS proxy
+    async function fetchLatestYouTubeVideo() {
+        const iframe = document.getElementById('dynamic-yt-iframe');
+        if (!iframe) return;
+
+        try {
+            const channelId = 'UCSFp5u2vDqG-BwH_wQhC9wQ'; // From @MusicKnobs
+            // We use a public proxy to bypass CORS and fetch the raw XML directly from YouTube, this has NO CACHE.
+            const proxyUrl = 'https://api.allorigins.win/raw?url=';
+            const ytUrl = encodeURIComponent(`https://www.youtube.com/feeds/videos.xml?channel_id=${channelId}`);
+
+            const response = await fetch(proxyUrl + ytUrl, { cache: "no-store" });
+            if (!response.ok) throw new Error('Proxy or Network Error');
+
+            const textData = await response.text();
+
+            // Parse XML manually since it's just a raw text string now
+            const parser = new DOMParser();
+            const xmlDoc = parser.parseFromString(textData, "text/xml");
+
+            // The first <entry> contains the latest video
+            const entry = xmlDoc.getElementsByTagName('entry')[0];
+            if (entry) {
+                const videoIdTag = entry.getElementsByTagName('yt:videoId')[0];
+                if (videoIdTag) {
+                    const videoId = videoIdTag.textContent;
+                    iframe.src = `https://www.youtube.com/embed/${videoId}`;
+                    return;
+                }
+            }
+        } catch (error) {
+            console.error("Couldn't fetch raw XML from YouTube:", error);
+        }
+
+        // Fallback to a recognized popular video on the channel if dynamic fetch fails
+        iframe.src = "https://www.youtube.com/embed/nUmsS5V-EVE"; // Fallback public video
+    }
+
     // Initialize
     fetchNewsData();
+    fetchLatestYouTubeVideo();
 });

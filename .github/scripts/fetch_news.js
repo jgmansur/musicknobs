@@ -40,7 +40,6 @@ async function fetchNews() {
     ]
   },
   "en": {
-    // Exact same structure and content as "es", but translated to English.
     "title": "Daily News: Copyright & Artificial Intelligence",
     "subtitle": "The latest in copyright law for musicians, composers, and producers.",
     "sections": [ ... ]
@@ -51,7 +50,7 @@ Important: Use real, up-to-date facts as of 2024-2025 regarding the US Copyright
 
     const completion = await groq.chat.completions.create({
       messages: [{ role: "user", content: prompt }],
-      model: "llama-3.3-70b-versatile", // You can switch this to another model if preferred
+      model: "llama-3.3-70b-versatile",
       temperature: 0.2, // Low temperature for factual consistency
     });
 
