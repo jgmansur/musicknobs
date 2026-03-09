@@ -6,7 +6,8 @@ document.addEventListener('DOMContentLoaded', () => {
         conceptoVisual: document.getElementById('concepto-visual'),
         texturaAcabado: document.getElementById('textura-acabado')
     };
-    const titleInput = document.getElementById('cover-title'); // moved up for prompt access
+    const trackConceptInput = document.getElementById('track-concept');
+    const titleInput = document.getElementById('cover-title'); // For canvas layer
     const generatedPromptEl = document.getElementById('generated-prompt');
     const copyBtn = document.getElementById('copy-prompt-btn');
 
@@ -14,12 +15,20 @@ document.addEventListener('DOMContentLoaded', () => {
         const palette = formOptions.paletaCromatica.value;
         const concept = formOptions.conceptoVisual.value;
         const texture = formOptions.texturaAcabado.value;
-        const trackName = titleInput.value.trim();
+        const trackName = trackConceptInput.value.trim();
+
+        // Sync the canvas title input with the concept input automatically
+        titleInput.value = trackName;
+        if (typeof texts !== 'undefined' && texts.title) {
+            texts.title.text = trackName;
+            // only render if image is loaded (handled internally by renderCanvas)
+            if (typeof renderCanvas === 'function') renderCanvas();
+        }
 
         // Construct high-quality Midjourney/DALL-E prompt
         let prompt = `An iconic underground House Music album cover art, featuring ${concept}. `;
 
-        if (trackName && trackName !== "Título del Track") {
+        if (trackName) {
             prompt += `The visual atmosphere and details should be thematically inspired by the concept and mood of the word(s) "${trackName}". `;
         }
 
@@ -33,8 +42,8 @@ document.addEventListener('DOMContentLoaded', () => {
     Object.values(formOptions).forEach(el => {
         if (el) el.addEventListener('change', generatePrompt);
     });
-    // Re-generate prompt when the track title changes
-    titleInput.addEventListener('input', generatePrompt);
+    // Re-generate prompt when the track title concept changes
+    trackConceptInput.addEventListener('input', generatePrompt);
 
     generatePrompt();
 
