@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,7 +11,7 @@
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             line-height: 1.6;
@@ -18,7 +19,7 @@
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
         }
-        
+
         .container {
             max-width: 1400px;
             margin: 0 auto;
@@ -30,7 +31,7 @@
             margin-top: 20px;
             margin-bottom: 20px;
         }
-        
+
         h1 {
             text-align: center;
             color: #2c3e50;
@@ -38,14 +39,14 @@
             font-size: 2.5em;
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
         }
-        
+
         .subtitle {
             text-align: center;
             color: #7f8c8d;
             margin-bottom: 30px;
             font-size: 1.1em;
         }
-        
+
         .section {
             margin-bottom: 40px;
             background: white;
@@ -54,7 +55,7 @@
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
             border: 1px solid #e1e8ed;
         }
-        
+
         .section-title {
             color: #2c3e50;
             border-bottom: 3px solid #3498db;
@@ -64,17 +65,17 @@
             display: flex;
             align-items: center;
         }
-        
+
         .section-title::before {
             content: "🎤";
             margin-right: 10px;
             font-size: 1.2em;
         }
-        
+
         .dynamic-title::before {
             content: "🎙️";
         }
-        
+
         table {
             width: 100%;
             border-collapse: collapse;
@@ -84,7 +85,7 @@
             overflow: hidden;
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
         }
-        
+
         th {
             background: linear-gradient(135deg, #3498db, #2980b9);
             color: white;
@@ -94,64 +95,64 @@
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
-        
+
         td {
             padding: 15px;
             border-bottom: 1px solid #ecf0f1;
             vertical-align: top;
         }
-        
+
         tr:hover {
             background-color: #f8f9fa;
             transform: scale(1.001);
             transition: all 0.3s ease;
         }
-        
+
         .price {
             font-weight: bold;
             color: #27ae60;
             font-size: 1.1em;
         }
-        
+
         .vintage {
             color: #d35400;
             font-style: italic;
         }
-        
+
         .mic-name {
             font-weight: bold;
             color: #2c3e50;
             font-size: 1.1em;
         }
-        
+
         .description {
             max-width: 500px;
             text-align: justify;
         }
-        
+
         .preamp-section {
             background: #f8f9fa;
             padding: 10px;
             border-radius: 8px;
             margin: 5px 0;
         }
-        
+
         .preamp-name {
             font-weight: bold;
             color: #8e44ad;
         }
-        
+
         .link {
             color: #3498db;
             text-decoration: none;
             font-weight: 500;
         }
-        
+
         .link:hover {
             color: #2980b9;
             text-decoration: underline;
         }
-        
+
         .intro {
             background: linear-gradient(135deg, #74b9ff, #0984e3);
             color: white;
@@ -160,7 +161,7 @@
             margin-bottom: 30px;
             text-align: center;
         }
-        
+
         .category-info {
             background: #e8f4f8;
             padding: 15px;
@@ -168,59 +169,74 @@
             margin-bottom: 20px;
             border-left: 4px solid #3498db;
         }
-        
+
         @media (max-width: 768px) {
             .container {
                 margin: 10px;
                 padding: 15px;
             }
-            
+
             table {
                 font-size: 0.9em;
             }
-            
-            th, td {
+
+            th,
+            td {
                 padding: 10px;
             }
-            
+
             h1 {
                 font-size: 2em;
             }
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <!-- HEADER CON LOGO -->
         <header style="text-align: center; margin-bottom: 30px;">
             <div style="display: flex; align-items: center; justify-content: center; margin-bottom: 20px;">
                 <a href="http://www.musicknobs.com" target="_blank" style="text-decoration: none;">
-                    <div id="header-logo" style="width: 80px; height: 80px; margin-right: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 30px rgba(0,0,0,0.2); overflow: hidden; cursor: pointer;">
+                    <div id="header-logo"
+                        style="width: 80px; height: 80px; margin-right: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 30px rgba(0,0,0,0.2); overflow: hidden; cursor: pointer;">
                         <!-- Logo Music Knobs -->
-                        <img src="LogoNegroTransparente.png" alt="Music Knobs Logo" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+                        <img src="LogoNegroTransparente.png" alt="Music Knobs Logo"
+                            style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
                     </div>
                 </a>
                 <div>
-                    <h1 style="margin: 0; color: #2c3e50; font-size: 2.5em; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);">Guía de Micrófonos de Estudio</h1>
+                    <h1
+                        style="margin: 0; color: #2c3e50; font-size: 2.5em; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);">
+                        Guía de Micrófonos de Estudio</h1>
                     <p style="color: #8e44ad; font-size: 1.2em; font-weight: 500; margin-top: 5px;">by Music Knobs</p>
                 </div>
             </div>
             <p class="subtitle">Alta y Media Gama para Voz - Condensador y Dinámico</p>
         </header>
-        
+
         <div class="intro">
-            <h3>📖 Información General</h3>
-            <p>Esta guía presenta micrófonos de condensador y dinámicos de gama media y alta, utilizados comúnmente en estudios de grabación para voces. Cada micrófono incluye su precio aproximado en dólares, descripción detallada y tres preamplificadores típicos recomendados.</p>
-            <p><strong>Nota:</strong> Solo se incluyen modelos actualmente en producción, con un modelo vintage destacado al final de cada categoría.</p>
+            <h3>🎛️ La Búsqueda del Tono Perfecto</h3>
+            <p>Bienvenidos a la selección definitiva de micrófonos de <strong>gama media y alta</strong> para estudios
+                de grabación. Aquí desglosamos las joyas de la corona —tanto de condensador como dinámicos— diseñadas
+                para llevar cualquier producción vocal al siguiente nivel.</p>
+            <p>Para cada micrófono descubrirás no solo sus características sónicas y su precio de referencia, sino
+                también <strong>el maridaje perfecto:</strong> tres opciones de preamplificadores legendarios que hacen
+                sinergia absoluta con su cápsula.</p>
+            <p><em>Nota del editor: Nos enfocamos en modelos actuales que puedes adquirir hoy mismo, coronando cada
+                    sección con un "Santo Grial" vintage para los puristas del audio.</em></p>
         </div>
 
         <!-- MICRÓFONOS DE CONDENSADOR -->
         <div class="section">
             <h2 class="section-title">Micrófonos de Condensador</h2>
             <div class="category-info">
-                <p><strong>🔍 Características:</strong> Los micrófonos de condensador son ideales para capturar detalles finos de la voz, ofrecen alta sensibilidad y excelente respuesta en frecuencias altas. Requieren alimentación phantom (+48V).</p>
+                <p>✨ <strong>El microscopio del sonido:</strong> La elección definitiva para capturar cada suspiro,
+                    textura y matiz vocal. Su altísima sensibilidad y respuesta cristalina en agudos los convierten en
+                    los reyes del pop, R&B y las baladas introspectivas. <em>(Requieren alimentación Phantom +48V).</em>
+                </p>
             </div>
-            
+
             <table>
                 <thead>
                     <tr>
@@ -234,7 +250,10 @@
                     <tr>
                         <td class="mic-name">Neumann U87 Ai</td>
                         <td class="price">$3,600</td>
-                        <td class="description">Micrófono condensador de gran diafragma multipatrón (cardioide, omni, figura-8). Considerado un estándar de la industria desde 1967. Ofrece sonido equilibrado, cálido y detallado, adecuado para prácticamente cualquier voz. Es el micrófono de estudio más utilizado en el mundo.</td>
+                        <td class="description"><strong>El Rey Indiscutible.</strong> Un estándar de la industria
+                            ininterrumpido desde 1967. Famoso por sus medios "lujosos" que asientan la voz perfectamente
+                            al frente de cualquier mezcla sin esfuerzo. Si solo pudieras tener un micrófono para el
+                            resto de tu vida profesional, probablemente sería este.</td>
                         <td>
                             <div class="preamp-section">
                                 <span class="preamp-name">Neve 1073</span> - $2,500<br>
@@ -253,7 +272,9 @@
                     <tr>
                         <td class="mic-name">Neumann U67 (Reissue)</td>
                         <td class="price">$7,900</td>
-                        <td class="description">Reedición moderna del mítico U67 de 1960. Micrófono condensador de válvula multipatrón con carácter cálido y suave, agudos aterciopelados, ideal para vocales vintage. Fue el estándar en los 60s.</td>
+                        <td class="description">Reedición moderna del mítico U67 de 1960. Micrófono condensador de
+                            válvula multipatrón con carácter cálido y suave, agudos aterciopelados, ideal para vocales
+                            vintage. Fue el estándar en los 60s.</td>
                         <td>
                             <div class="preamp-section">
                                 <span class="preamp-name">Chandler Limited REDD.47</span> - $2,450<br>
@@ -272,7 +293,9 @@
                     <tr>
                         <td class="mic-name">Telefunken ELA M 251E</td>
                         <td class="price">$12,000</td>
-                        <td class="description">Reconstrucción del legendario ELA M 251 de los 60s. Condensador de válvula con sonido "hi-fi" y sedoso, especial para voces femeninas y baladas. Cápsula CK12 y electrónica vintage con agudos suaves y tono aireado.</td>
+                        <td class="description">Reconstrucción del legendario ELA M 251 de los 60s. Condensador de
+                            válvula con sonido "hi-fi" y sedoso, especial para voces femeninas y baladas. Cápsula CK12 y
+                            electrónica vintage con agudos suaves y tono aireado.</td>
                         <td>
                             <div class="preamp-section">
                                 <span class="preamp-name">Telefunken V76 (vintage)</span> - Variable<br>
@@ -291,7 +314,9 @@
                     <tr>
                         <td class="mic-name">AKG C414 XLII</td>
                         <td class="price">$1,100</td>
-                        <td class="description">Condensador de gran diafragma multipatrón (9 patrones). Versión "XLII" optimizada para voz con realce de presencia en agudos. Micrófono versátil usado en voces, pianos, baterías, con sonido claro y detallado.</td>
+                        <td class="description">Condensador de gran diafragma multipatrón (9 patrones). Versión "XLII"
+                            optimizada para voz con realce de presencia en agudos. Micrófono versátil usado en voces,
+                            pianos, baterías, con sonido claro y detallado.</td>
                         <td>
                             <div class="preamp-section">
                                 <span class="preamp-name">Grace Design m101</span> - $800<br>
@@ -310,7 +335,9 @@
                     <tr>
                         <td class="mic-name">Neumann TLM 103</td>
                         <td class="price">$1,200</td>
-                        <td class="description">Condensador cardioide derivado del U87 pero más simple (sin pad ni patrones múltiples). Bajo ruido propio y alta sensibilidad con brillo pronunciado en gama alta. "Sonido Neumann" accesible para estudios domésticos.</td>
+                        <td class="description">Condensador cardioide derivado del U87 pero más simple (sin pad ni
+                            patrones múltiples). Bajo ruido propio y alta sensibilidad con brillo pronunciado en gama
+                            alta. "Sonido Neumann" accesible para estudios domésticos.</td>
                         <td>
                             <div class="preamp-section">
                                 <span class="preamp-name">Avalon VT-737sp</span> - $3,800<br>
@@ -329,7 +356,10 @@
                     <tr>
                         <td class="mic-name">Sony C-800G</td>
                         <td class="price">$10,000-15,000</td>
-                        <td class="description">Micrófono condensador de válvula ultra-alta gama con radiador de calor trasero. Sonido extremadamente detallado y presente con agudos nítidos. Usado por Dr. Dre, Eminem, Mariah Carey. Especial para destacar voces en mezclas densas de hip-hop y R&B.</td>
+                        <td class="description"><strong>El Santo Grial del Pop y R&B Moderno.</strong> Extremadamente
+                            detallado, con unos agudos hiper-nítidos y "larger-than-life" que cortan a través de las
+                            mezclas más densas como mantequilla. El arma secreta detrás de las icónicas texturas vocales
+                            de Mariah Carey, Eminem y Dr. Dre.</td>
                         <td>
                             <div class="preamp-section">
                                 <span class="preamp-name">Avalon VT-737sp</span> - $3,800<br>
@@ -348,7 +378,10 @@
                     <tr class="vintage">
                         <td class="mic-name">🏛️ Neumann U47 (Vintage)</td>
                         <td class="price vintage">$12,000+</td>
-                        <td class="description">"Santo grial" de los micrófonos de estudio. Presentado en 1947 con válvula VF14. Usado por Frank Sinatra, The Beatles. Tono grande, cálido en graves-medios y brillante suave en agudos. Descontinuado en 1965, unidades originales son piezas de colección.</td>
+                        <td class="description"><strong>La Leyenda Viviente.</strong> El micrófono predilecto de Frank
+                            Sinatra y The Beatles. Posee una autoridad magnética en los graves-medios y una dulzura
+                            natural en los agudos que el equipo digital moderno lucha por replicar. Hoy en día es una
+                            codiciada pieza de museo sonoro que sigue facturando hits.</td>
                         <td>
                             <div class="preamp-section">
                                 <span class="preamp-name">Telefunken/Siemens V72 (vintage)</span> - $1,800+<br>
@@ -372,9 +405,12 @@
         <div class="section">
             <h2 class="section-title dynamic-title">Micrófonos Dinámicos</h2>
             <div class="category-info">
-                <p><strong>🔍 Características:</strong> Los micrófonos dinámicos son más robustos, no requieren alimentación phantom, manejan mejor niveles altos de SPL y son ideales para voces potentes y ambientes con ruido.</p>
+                <p>💥 <strong>Auténticos tanques de guerra:</strong> Robustos, contundentes y listos para la batalla.
+                    Brillan al manejar niveles extremos de presión sonora (SPL) y son expertos en rechazar la acústica
+                    de salas no tratadas. El arma secreta absoluta tras las voces explosivas del rock, metal y el
+                    podcasting de primer nivel.</p>
             </div>
-            
+
             <table>
                 <thead>
                     <tr>
@@ -388,7 +424,10 @@
                     <tr>
                         <td class="mic-name">Shure SM7B</td>
                         <td class="price">$399</td>
-                        <td class="description">Micrófono dinámico cardioide de diafragma grande. Famoso por su uso en radio/podcast y música. Sonido suave en agudos y pleno en graves con excelente rechazo de ruidos. Usado en "Thriller" de Michael Jackson. Estándar en estudios para rock, metal, rap y locución.</td>
+                        <td class="description"><strong>El Ícono Incombustible.</strong> Desde capturar la furia de
+                            Metallica y la magia de Michael Jackson hasta dominar el 90% de los videopodcasts de élite
+                            hoy en día. Ofrece unos graves inmensos, doma las sibilancias y perdona acústicas terribles.
+                            Exige muchísima ganancia limpia para revelar su verdadera magia.</td>
                         <td>
                             <div class="preamp-section">
                                 <span class="preamp-name">Grace Design m101</span> - $800<br>
@@ -407,7 +446,10 @@
                     <tr>
                         <td class="mic-name">Electro-Voice RE20</td>
                         <td class="price">$449</td>
-                        <td class="description">Micrófono dinámico cardioide clásico de radiodifusión. Tecnología Variable-D minimiza efecto proximidad manteniendo tono consistente. Usado desde 1968 en radio, podcasts y estudios musicales. Sonido robusto en bajas frecuencias y limpio en medios.</td>
+                        <td class="description">Micrófono dinámico cardioide clásico de radiodifusión. Tecnología
+                            Variable-D minimiza efecto proximidad manteniendo tono consistente. Usado desde 1968 en
+                            radio, podcasts y estudios musicales. Sonido robusto en bajas frecuencias y limpio en
+                            medios.</td>
                         <td>
                             <div class="preamp-section">
                                 <span class="preamp-name">Focusrite ISA One</span> - $500<br>
@@ -426,7 +468,10 @@
                     <tr>
                         <td class="mic-name">Sennheiser MD 421-II</td>
                         <td class="price">$429</td>
-                        <td class="description">Micrófono dinámico cardioide versátil de los años 60. Sonido equilibrado y robusto con conmutador de corte de graves de 5 posiciones. Célebre en instrumentos pero también usado en voces para tono "radiofónico". Pleno en graves con énfasis en presencia.</td>
+                        <td class="description">Micrófono dinámico cardioide versátil de los años 60. Sonido equilibrado
+                            y robusto con conmutador de corte de graves de 5 posiciones. Célebre en instrumentos pero
+                            también usado en voces para tono "radiofónico". Pleno en graves con énfasis en presencia.
+                        </td>
                         <td>
                             <div class="preamp-section">
                                 <span class="preamp-name">API 512c</span> - $800<br>
@@ -445,7 +490,9 @@
                     <tr>
                         <td class="mic-name">Sennheiser MD 441-U</td>
                         <td class="price">$1,199</td>
-                        <td class="description">"El condensador de los dinámicos". Micrófono dinámico supercardioide de alta fidelidad con respuesta prácticamente plana (30 Hz–20 kHz). Sonido limpio, balanceado y detallado. Usado por David Bowie. Común en emisoras de alta gama.</td>
+                        <td class="description">"El condensador de los dinámicos". Micrófono dinámico supercardioide de
+                            alta fidelidad con respuesta prácticamente plana (30 Hz–20 kHz). Sonido limpio, balanceado y
+                            detallado. Usado por David Bowie. Común en emisoras de alta gama.</td>
                         <td>
                             <div class="preamp-section">
                                 <span class="preamp-name">Avalon M5</span> - $1,500<br>
@@ -464,7 +511,9 @@
                     <tr>
                         <td class="mic-name">Beyerdynamic M88 TG</td>
                         <td class="price">$450</td>
-                        <td class="description">Micrófono dinámico hipercardioide alemán de los 60s. Respuesta extendida para un dinámico (30 Hz–20 kHz). Sonido cálido pero definido con proximidad pronunciada. Usado por Phil Collins en vivo. Excelente para graves potentes sin perder claridad.</td>
+                        <td class="description">Micrófono dinámico hipercardioide alemán de los 60s. Respuesta extendida
+                            para un dinámico (30 Hz–20 kHz). Sonido cálido pero definido con proximidad pronunciada.
+                            Usado por Phil Collins en vivo. Excelente para graves potentes sin perder claridad.</td>
                         <td>
                             <div class="preamp-section">
                                 <span class="preamp-name">Chandler Limited Germanium</span> - $1,300<br>
@@ -483,7 +532,10 @@
                     <tr>
                         <td class="mic-name">Heil Sound PR40</td>
                         <td class="price">$349</td>
-                        <td class="description">Micrófono dinámico cardioide diseñado para voces habladas y retransmisión. Popular entre podcasters y streamers. Respuesta amplia (28 Hz–18 kHz) con sonido rico en graves y medios, agudos suaves sin sibilancia. Considerado "el nuevo estándar de oro" en podcast.</td>
+                        <td class="description">Micrófono dinámico cardioide diseñado para voces habladas y
+                            retransmisión. Popular entre podcasters y streamers. Respuesta amplia (28 Hz–18 kHz) con
+                            sonido rico en graves y medios, agudos suaves sin sibilancia. Considerado "el nuevo estándar
+                            de oro" en podcast.</td>
                         <td>
                             <div class="preamp-section">
                                 <span class="preamp-name">Grace Design m101</span> - $800<br>
@@ -502,7 +554,11 @@
                     <tr class="vintage">
                         <td class="mic-name">🏛️ RCA 77-DX (Ribbon, 1940s)</td>
                         <td class="price vintage">$2,000+</td>
-                        <td class="description">Micrófono de cinta bi-direccional legendario de los 1940s. Símbolo de la "época dorada" de radio y estudios. Usado por Frank Sinatra y Ella Fitzgerald. Sonido muy cálido y suave con medios sedosos y atenuación natural de agudos. Carcasa "ojival" distintiva.</td>
+                        <td class="description"><strong>La Máquina del Tiempo.</strong> El símbolo definitivo de la
+                            "Época Dorada" de la radio y la televisión. De imponente e inolvidable aspecto clásico, el
+                            listón (ribbon) de su interior entrega una suavidad hipnótica, aterciopelada e
+                            incomparablemente cálida. Perfecto para redondear fuentes estridentes y bañar la voz en pura
+                            nostalgia.</td>
                         <td>
                             <div class="preamp-section">
                                 <span class="preamp-name">AEA TRP2</span> - $900<br>
@@ -530,7 +586,8 @@
                     <h4>🔗 Fabricantes Principales:</h4>
                     <p>
                         <a href="https://en.neumann.com" class="link" target="_blank">Neumann</a> |
-                        <a href="https://www.telefunken-elektroakustik.com" class="link" target="_blank">Telefunken</a> |
+                        <a href="https://www.telefunken-elektroakustik.com" class="link" target="_blank">Telefunken</a>
+                        |
                         <a href="https://www.shure.com" class="link" target="_blank">Shure</a> |
                         <a href="https://www.uaudio.com" class="link" target="_blank">Universal Audio</a>
                     </p>
@@ -553,17 +610,23 @@
                 </div>
             </div>
             <div class="category-info" style="margin-top: 20px;">
-                <p><strong>💡 Nota sobre precios:</strong> Los precios indicados son aproximados y pueden variar según el distribuidor y la disponibilidad. Se incluyen solo modelos actualmente en producción. Las referencias citadas respaldan las afirmaciones sobre reputación y características técnicas de cada equipo.</p>
+                <p><strong>💡 Nota sobre precios:</strong> Los precios indicados son aproximados y pueden variar según
+                    el distribuidor y la disponibilidad. Se incluyen solo modelos actualmente en producción. Las
+                    referencias citadas respaldan las afirmaciones sobre reputación y características técnicas de cada
+                    equipo.</p>
             </div>
         </div>
-        
+
         <!-- PIE DE PÁGINA -->
-        <footer style="background: linear-gradient(135deg, #2c3e50, #34495e); color: white; text-align: center; padding: 30px; border-radius: 15px; margin-top: 40px;">
+        <footer
+            style="background: linear-gradient(135deg, #2c3e50, #34495e); color: white; text-align: center; padding: 30px; border-radius: 15px; margin-top: 40px;">
             <div style="display: flex; align-items: center; justify-content: center; margin-bottom: 15px;">
                 <a href="http://www.musicknobs.com" target="_blank" style="text-decoration: none;">
-                    <div id="music-knobs-logo" style="width: 60px; height: 60px; margin-right: 15px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 5px 15px rgba(0,0,0,0.3); overflow: hidden; cursor: pointer;">
+                    <div id="music-knobs-logo"
+                        style="width: 60px; height: 60px; margin-right: 15px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 5px 15px rgba(0,0,0,0.3); overflow: hidden; cursor: pointer;">
                         <!-- Logo Music Knobs Footer -->
-                        <img src="LogoBlancoTransparente.png" alt="Music Knobs Logo" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+                        <img src="LogoBlancoTransparente.png" alt="Music Knobs Logo"
+                            style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
                     </div>
                 </a>
                 <div>
@@ -573,46 +636,48 @@
             </div>
             <div style="border-top: 1px solid rgba(255,255,255,0.3); padding-top: 15px;">
                 <p style="font-size: 0.9em; opacity: 0.8;">© 2025 Music Knobs. Todos los derechos reservados.</p>
-                <p style="font-size: 0.8em; opacity: 0.7; margin-top: 5px;">Guía técnica de micrófonos y preamplificadores para estudios de grabación profesional</p>
+                <p style="font-size: 0.8em; opacity: 0.7; margin-top: 5px;">Guía técnica de micrófonos y
+                    preamplificadores para estudios de grabación profesional</p>
             </div>
         </footer>
     </div>
 
     <script>
         // Efecto de hover en las filas de la tabla
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             const rows = document.querySelectorAll('tr');
             rows.forEach(row => {
-                row.addEventListener('mouseenter', function() {
+                row.addEventListener('mouseenter', function () {
                     this.style.transform = 'scale(1.02)';
                     this.style.boxShadow = '0 5px 15px rgba(0,0,0,0.1)';
                 });
-                row.addEventListener('mouseleave', function() {
+                row.addEventListener('mouseleave', function () {
                     this.style.transform = 'scale(1)';
                     this.style.boxShadow = 'none';
                 });
             });
-            
+
             // Animación del logo en header
             const headerLogo = document.getElementById('header-logo');
-            headerLogo.addEventListener('mouseenter', function() {
+            headerLogo.addEventListener('mouseenter', function () {
                 this.style.transform = 'rotate(15deg) scale(1.1)';
                 this.style.transition = 'transform 0.3s ease';
             });
-            headerLogo.addEventListener('mouseleave', function() {
+            headerLogo.addEventListener('mouseleave', function () {
                 this.style.transform = 'rotate(0deg) scale(1)';
             });
-            
+
             // Animación del logo en footer
             const logo = document.getElementById('music-knobs-logo');
-            logo.addEventListener('mouseenter', function() {
+            logo.addEventListener('mouseenter', function () {
                 this.style.transform = 'rotate(15deg) scale(1.1)';
                 this.style.transition = 'transform 0.3s ease';
             });
-            logo.addEventListener('mouseleave', function() {
+            logo.addEventListener('mouseleave', function () {
                 this.style.transform = 'rotate(0deg) scale(1)';
             });
         });
     </script>
 </body>
+
 </html>
