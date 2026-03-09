@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thumbnail Labs | MusicKnobs</title>
+    <!-- Fonts: Inter, Outfit, Montserrat, Bebas Neue, Archivo Black -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Bebas+Neue&family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@700;800;900&family=Outfit:wght@400;600;800&display=swap"
+        rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../style.css"> <!-- Base styles -->
+    <link rel="stylesheet" href="style.css"> <!-- Specific app styles -->
+</head>
+
+<body>
+    <!-- Background Elements -->
+    <div class="glow glow-1"></div>
+    <div class="glow glow-2"></div>
+
+    <header class="header">
+        <div class="container header-container">
+            <a href="../" class="logo-link">
+                <!-- Fallback to parent text if logo fails locally -->
+                <span
+                    style="font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 1.5rem; color: white;">MusicKnobs
+                    <span style="color: var(--primary-color);">Labs</span></span>
+            </a>
+            <div class="app-title">
+                <i class="fa-solid fa-wand-magic-sparkles"></i> Thumbnail Generator
+            </div>
+        </div>
+    </header>
+
+    <main class="app-container">
+        <!-- LEFT PANEL: IA PROMPT BUILDER -->
+        <section class="panel prompt-panel glass-panel">
+            <h2><i class="fa-solid fa-robot"></i> 1. Generador de Fondo (IA)</h2>
+            <p class="panel-desc">Crea el prompt perfecto para Midjourney/DALL-E basado en tu manual de estrategia.</p>
+
+            <form id="prompt-form" class="controls-form">
+                <div class="form-group">
+                    <label for="arquetipo">Arquetipo Visual</label>
+                    <select id="arquetipo">
+                        <option value="comparativa">A. Cara a Cara (Comparativa VS)</option>
+                        <option value="tutorial">B. Deep Dive (Tutorial Técnico)</option>
+                        <option value="noticias">C. Análisis de Crisis (Noticias)</option>
+                        <option value="general">D. Sujeto General (Vlog/Review)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="sujeto">Expresión del Sujeto</label>
+                    <select id="sujeto">
+                        <option value="intense, analytical expression">Analítica / Intensa</option>
+                        <option value="shocked, surprised expression">Sorprendido / Shock</option>
+                        <option value="concerned, deep analysis expression">Preocupado / Serio (Crisis)</option>
+                        <option value="excited, pointing expression">Emocionado / Señalando</option>
+                        <option value="no subject">Sin Sujeto Humano</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="entorno">Entorno / Background</label>
+                    <input type="text" id="entorno" value="dark high-end recording studio"
+                        placeholder="Ej: inside Pro Tools, dark studio...">
+                </div>
+
+                <div class="form-group">
+                    <label for="iluminacion">Acentos de Color (Luces LED)</label>
+                    <select id="iluminacion">
+                        <option value="Neon Cyberpunk accents (Cyan and Magenta)">Cyan y Magenta (Tech/Moderno)</option>
+                        <option value="Warm Analog glow (Amber and Rust orange)">Ámbar y Naranja (Analógico/Cálido)
+                        </option>
+                        <option value="Harsh Red and Dark accents">Rojo y Oscuro (Crisis/Peligro)</option>
+                    </select>
+                </div>
+            </form>
+
+            <div class="prompt-result-container">
+                <label>Prompt Generado (Cópialo en tu IA):</label>
+                <textarea id="generated-prompt" readonly rows="7"></textarea>
+                <button id="copy-prompt-btn" class="btn-secondary"><i class="fa-regular fa-copy"></i> Copiar
+                    Prompt</button>
+            </div>
+        </section>
+
+        <!-- RIGHT PANEL: TEXT OVERLAY & CANVAS -->
+        <section class="panel canvas-panel glass-panel">
+            <h2><i class="fa-solid fa-text-height"></i> 2. Texto y Ensamblaje</h2>
+            <p class="panel-desc">Sube la imagen que te dio la IA y agrégale los textos ganadores. Arrastra el texto en
+                el lienzo para acomodarlo.</p>
+
+            <div class="canvas-controls">
+                <div class="upload-area" id="upload-area">
+                    <input type="file" id="image-upload" accept="image/png, image/jpeg, image/webp" hidden>
+                    <label for="image-upload" class="upload-label">
+                        <i class="fa-solid fa-cloud-arrow-up"></i>
+                        <span>Sube tu fondo generado por IA (1280x720)</span>
+                    </label>
+                </div>
+
+                <div class="text-tools" id="text-tools" style="display: none;">
+                    <div class="form-inline">
+                        <input type="text" id="thumb-text-1" placeholder="Ej: THE ALGORITHM" maxlength="15">
+                        <input type="color" id="color-1" value="#FFFFFF">
+                    </div>
+                    <div class="form-inline">
+                        <input type="text" id="thumb-text-2" placeholder="Ej: IS DEAD" maxlength="15">
+                        <input type="color" id="color-2" value="#FF3366">
+                    </div>
+
+                    <div class="style-controls">
+                        <select id="font-family">
+                            <option value="Montserrat">Montserrat (Moderno)</option>
+                            <option value="Bebas Neue">Bebas Neue (Alto/Impacto)</option>
+                            <option value="Archivo Black">Archivo Black (Pesado)</option>
+                        </select>
+                        <button id="add-vs-btn" class="btn-micro" title="Añade gráfico VS al centro">Añadir
+                            "VS"</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- The actual creative boundary -->
+            <div class="canvas-wrapper">
+                <canvas id="thumbnail-canvas" width="1280" height="720"></canvas>
+            </div>
+
+            <div class="export-controls">
+                <button id="download-btn" class="btn-primary" disabled><i class="fa-solid fa-download"></i> Descargar
+                    Thumbnail (HD)</button>
+            </div>
+        </section>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
