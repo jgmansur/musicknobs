@@ -11,6 +11,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const generatedPromptEl = document.getElementById('generated-prompt');
     const copyBtn = document.getElementById('copy-prompt-btn');
 
+    // Default positioning for 1000x1000
+    const texts = {
+        artist: { text: '', x: 50, y: 700, isDragging: false },
+        title: { text: '', x: 50, y: 800, isDragging: false },
+        label: { text: '', x: 950, y: 50, isDragging: false, align: 'right' }
+    };
+
     function generatePrompt() {
         const palette = formOptions.paletaCromatica.value;
         const concept = formOptions.conceptoVisual.value;
@@ -19,7 +26,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Sync the canvas title input with the concept input automatically
         titleInput.value = trackName;
-        if (typeof texts !== 'undefined' && texts.title) {
+        if (texts && texts.title) {
             texts.title.text = trackName;
             // only render if image is loaded (handled internally by renderCanvas)
             if (typeof renderCanvas === 'function') renderCanvas();
@@ -84,13 +91,6 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentBgImage = null;
     let showParental = false;
     let showVinylRing = false;
-
-    // Default positioning for 1000x1000
-    const texts = {
-        artist: { text: '', x: 50, y: 700, isDragging: false },
-        title: { text: '', x: 50, y: 800, isDragging: false },
-        label: { text: '', x: 950, y: 50, isDragging: false, align: 'right' }
-    };
 
     let startX, startY;
 
