@@ -263,6 +263,13 @@
                             <div id="homework-links" class="flex flex-col gap-2"></div>
                         </div>
 
+                        <div id="resources-section"
+                            class="bg-indigo-50 p-6 rounded-xl shadow-sm border border-indigo-100 hidden">
+                            <h3 class="text-lg font-bold text-indigo-900 mb-3 flex items-center gap-2"><span>📖</span>
+                                Recursos de Estudio</h3>
+                            <div id="resources-links" class="flex flex-col gap-2"></div>
+                        </div>
+
                         <div class="bg-stone-800 p-6 rounded-xl shadow-sm text-white">
                             <h3 class="text-lg font-bold mb-3 flex items-center gap-2"><span>⌨️</span> Shortcuts Clave
                             </h3>
@@ -346,7 +353,8 @@
                 topics: ["<b>El espectro audible:</b> 20 Hz a 20 kHz.", "<b>Tipos de bandas (ReaEQ):</b> High-Pass, Low-Pass, Shelves y Campanas.", "<b>Técnica de Barrido:</b> Subir ganancia, Q estrecha, buscar y atenuar."],
                 practice: "Escuchar HPF y hacer barrido para eliminar resonancias en guitarra.",
                 homework: "Aplicar High-Pass Filter a todas las pistas (excepto bajo/bombo).",
-                links: [{ text: "Simulador de Ecualización (EQ)", url: "https://jgmansur.github.io/musicknobs/EQ/" }],
+                links: [],
+                resources: [{ text: "Aprende más sobre ecualización", url: "https://jgmansur.github.io/musicknobs/EQ/" }],
                 shortcuts: ["<b>Cerrar los ojos:</b> Escucha, no mires.", "<b>Bypass:</b> Úsalo siempre."],
                 instructorNotes: "<p><strong>Meta Docente:</strong> Detectar el Lodo y resonancias.</p><ul class='list-disc pl-5'><li><strong>El engaño visual:</strong> Obliga al alumno a cerrar los ojos mientras mueves la frecuencia.</li><li><strong>Cuidado con HPF:</strong> No cortar demasiado para no perder cuerpo.</li></ul>",
                 hasVisualizer: true, visualizerType: "eq", visualizerTitle: "Tipos de Filtros (EQ)", visualizerDesc: "Simulación de curvas en el espectro."
@@ -419,6 +427,8 @@
             practice: document.getElementById('practice-content'),
             homework: document.getElementById('homework-content'),
             links: document.getElementById('homework-links'),
+            resourcesSection: document.getElementById('resources-section'),
+            resourcesLinks: document.getElementById('resources-links'),
             shortcuts: document.getElementById('shortcuts-list'),
             completeBtn: document.getElementById('mark-complete-btn'),
             progressBar: document.getElementById('progress-bar'),
@@ -594,6 +604,16 @@
                 data.links.forEach(link => {
                     DOM.links.innerHTML += `<a href="${link.url}" target="_blank" class="text-amber-700 hover:text-amber-900 font-medium text-xs flex items-center gap-1">🔗 ${link.text}</a>`;
                 });
+            }
+
+            DOM.resourcesLinks.innerHTML = '';
+            if (data.resources && data.resources.length > 0) {
+                DOM.resourcesSection.classList.remove('hidden');
+                data.resources.forEach(link => {
+                    DOM.resourcesLinks.innerHTML += `<a href="${link.url}" target="_blank" class="text-indigo-700 hover:text-indigo-900 font-medium text-xs flex items-center gap-1">🔗 ${link.text}</a>`;
+                });
+            } else {
+                DOM.resourcesSection.classList.add('hidden');
             }
 
             DOM.shortcuts.innerHTML = '';
