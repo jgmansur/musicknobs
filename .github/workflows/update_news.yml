@@ -23,12 +23,14 @@ jobs:
           node-version: '20'
 
       - name: Install Dependencies
+        working-directory: .github/scripts
         run: npm init -y && npm install groq-sdk node-fetch
 
       - name: Fetch and Update News (via AI)
+        working-directory: .github/scripts
         env:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
-        run: node .github/scripts/fetch_news.js
+        run: node fetch_news.js
 
       - name: Commit and Push Changes
         run: |
