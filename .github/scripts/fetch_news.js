@@ -51,7 +51,7 @@ Important: Use real, up-to-date facts as of 2024-2025 regarding the US Copyright
 
     const completion = await groq.chat.completions.create({
       messages: [{ role: "user", content: prompt }],
-      model: "llama3-70b-8192", // You can switch this to another model if preferred
+      model: "llama-3.3-70b-versatile", // You can switch this to another model if preferred
       temperature: 0.2, // Low temperature for factual consistency
     });
 
