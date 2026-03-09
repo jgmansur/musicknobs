@@ -189,7 +189,10 @@ document.addEventListener('DOMContentLoaded', () => {
             // Support modern Canvas letterSpacing
             ctx.letterSpacing = letterSpacingInput.value + "px";
 
-            // Add strong drop shadow based on manual (high contrast)
+            // Fix sharp outline spikes piercing through thick fonts like Anton
+            ctx.lineJoin = "round";
+
+            // Add strong drop shadow based on manual
             if (toggleShadowInput.checked) {
                 ctx.shadowColor = "rgba(0,0,0,0.9)";
                 ctx.shadowBlur = 15;
@@ -201,15 +204,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Draw outline for extra pop (Youtube style)
             if (toggleStrokeInput.checked) {
-                ctx.lineWidth = 4;
+                ctx.lineWidth = 10;
                 ctx.strokeStyle = '#000000';
+                // Stroke text casts the shadow.
                 ctx.strokeText(item.text.toUpperCase(), item.x, item.y);
+
+                // Turn off shadow before filling text so we don't double-shadow and cause the 3D-bending bug
+                ctx.shadowColor = "transparent";
+                ctx.fillText(item.text.toUpperCase(), item.x, item.y);
+            } else {
+                // No stroke, just fill text (this casts the shadow)
+                ctx.fillText(item.text.toUpperCase(), item.x, item.y);
             }
 
-            // Draw Main Text
-            ctx.fillText(item.text.toUpperCase(), item.x, item.y);
-
-            // Reset shadow and effects
+            // Reset effects for other operations
             ctx.shadowColor = "transparent";
             ctx.shadowBlur = 0;
             ctx.shadowOffsetX = 0;
