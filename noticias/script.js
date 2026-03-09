@@ -135,42 +135,6 @@ document.addEventListener('DOMContentLoaded', () => {
     langEsBtn.addEventListener('click', () => switchLanguage('es'));
     langEnBtn.addEventListener('click', () => switchLanguage('en'));
 
-    // Fetch YouTube latest video
-    async function fetchLatestYouTubeVideo() {
-        const iframe = document.getElementById('dynamic-yt-iframe');
-        if (!iframe) return;
-
-        try {
-            // Using a public RSS to JSON converter built for YouTube channels
-            // Note: If you have a custom URL it might differ, using standard channel ID
-            const channelId = 'UCSFp5u2vDqG-BwH_wQhC9wQ'; // From @MusicKnobs
-            const rssUrl = encodeURIComponent(`https://www.youtube.com/feeds/videos.xml?channel_id=${channelId}`);
-            const apiUrl = `https://api.rss2json.com/v1/api.json?rss_url=${rssUrl}`;
-
-            const response = await fetch(apiUrl);
-            if (!response.ok) throw new Error('API Error');
-
-            const data = await response.json();
-
-            if (data && data.items && data.items.length > 0) {
-                // Get the latest video ID from the link (e.g., https://www.youtube.com/watch?v=VIDEO_ID)
-                const latestVideoLink = data.items[0].link;
-                const videoId = latestVideoLink.split('v=')[1];
-
-                if (videoId) {
-                    iframe.src = `https://www.youtube.com/embed/${videoId}`;
-                    return;
-                }
-            }
-        } catch (error) {
-            console.error("Couldn't fetch latest YouTube video directly:", error);
-        }
-
-        // Fallback to a recognized popular video on the channel if dynamic fetch fails
-        iframe.src = "https://www.youtube.com/embed/nUmsS5V-EVE"; // Un video reciente que sepas que es público
-    }
-
     // Initialize
     fetchNewsData();
-    fetchLatestYouTubeVideo();
 });
