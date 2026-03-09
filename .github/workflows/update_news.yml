@@ -37,3 +37,12 @@ jobs:
           git add noticias/data.json
           # Only commit if there are changes
           git diff --quiet && git diff --staged --quiet || (git commit -m "docs: Automated daily copyright news update" && git push)
+
+  # Call the deployment workflow explicitly since the GITHUB_TOKEN push won't trigger it
+  deploy:
+    needs: update-news
+    uses: ./.github/workflows/deploy_pages.yml
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
