@@ -54,16 +54,6 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="posicion"
-                        title="Cambia el lado donde aparecerás y hacia dónde se alinea el texto">Posición del
-                        Sujeto</label>
-                    <select id="posicion">
-                        <option value="right">A la Derecha (Recomendado)</option>
-                        <option value="left">A la Izquierda</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
                     <label for="sujeto">Expresión del Sujeto</label>
                     <select id="sujeto">
                         <option value="intense, analytical expression">Analítica / Intensa</option>
@@ -80,10 +70,12 @@
                         placeholder="Ej: inside Pro Tools, dark studio...">
                     <datalist id="entorno-presets">
                         <option value="dark high-end recording studio"></option>
-                        <option value="podcast microphone setup with neon lights"></option>
-                        <option value="analog mastering studio with glowing rack gear"></option>
-                        <option value="modern minimalist studio desk with monitors"></option>
-                        <option value="live concert stage with lighting rig"></option>
+                        <option value="vintage analog mixing console with glowing VU meters"></option>
+                        <option value="modern minimalist producer desk with massive studio monitors"></option>
+                        <option value="neon lit cyberpunk beatmaking station"></option>
+                        <option value="acoustic treated vocal booth with vintage condenser microphone"></option>
+                        <option value="live concert stage with cinematic lighting rig"></option>
+                        <option value="lo-fi beatmaker bedroom studio with warm sunlight"></option>
                     </datalist>
                 </div>
 
@@ -140,6 +132,17 @@
                         </select>
                         <button id="add-vs-btn" class="btn-micro" title="Añade gráfico VS al centro">Añadir
                             "VS"</button>
+                    </div>
+
+                    <div class="style-controls-advanced"
+                        style="display: flex; gap: 1rem; align-items: center; justify-content: space-between; border-top: 1px solid var(--panel-border); padding-top: 1rem; font-size: 0.85rem; color: var(--text-muted);">
+                        <label style="display: flex; flex-direction: column; gap: 0.3rem;">Separación: <input
+                                type="range" id="letter-spacing" min="-5" max="30" value="0"
+                                style="width: 80px;"></label>
+                        <label style="display: flex; align-items: center; gap: 0.3rem; cursor: pointer;"><input
+                                type="checkbox" id="toggle-shadow" checked> Sombra</label>
+                        <label style="display: flex; align-items: center; gap: 0.3rem; cursor: pointer;"><input
+                                type="checkbox" id="toggle-stroke" checked> Delineado</label>
                     </div>
                 </div>
             </div>

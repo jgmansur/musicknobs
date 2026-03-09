@@ -2,7 +2,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- 1. PROMPT GENERATOR LOGIC ---
     const formOptions = {
         arquetipo: document.getElementById('arquetipo'),
-        posicion: document.getElementById('posicion'),
         sujeto: document.getElementById('sujeto'),
         entorno: document.getElementById('entorno'),
         iluminacion: document.getElementById('iluminacion')
@@ -16,9 +15,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const entorno = formOptions.entorno.value || 'dark high-end recording studio';
         const luces = formOptions.iluminacion.value;
 
-        const posicion = formOptions.posicion ? formOptions.posicion.value : 'right';
-        let emptySpace = posicion === 'right' ? 'left' : 'right';
-
         let basePrompt = `Based on the reference image in my google drive 'Mi foto de Perfil.jpg', generate a realistic professional music producer`;
 
         if (sujetoExp === 'no subject') {
@@ -27,11 +23,11 @@ document.addEventListener('DOMContentLoaded', () => {
             basePrompt += ` with a ${sujetoExp},`;
         }
 
-        let framing = `subject on the ${posicion}, empty space on the ${emptySpace} for text placement`;
+        let framing = "subject on the right, empty space on the left for text placement";
         if (arquetipo === 'comparativa') {
-            framing = `split composition, subject on the ${posicion}, complementary opposing colors on the ${emptySpace} side`;
+            framing = "split composition, subject on the right, complementary opposing colors on the left side";
         } else if (arquetipo === 'tutorial') {
-            framing = `Shallow Depth of Field (f/1.8 lens), focused heavily on the foreground, background blurred, subject on the ${posicion}`;
+            framing = "Shallow Depth of Field (f/1.8 lens), focused heavily on the foreground, background blurred, subject on the right";
         }
 
         const fullPrompt = `${basePrompt} in a ${entorno}, Cinematic Lighting, ${luces}, professional studio photography, ${framing}, 8k resolution, photorealistic, --ar 16:9`;
@@ -43,24 +39,6 @@ document.addEventListener('DOMContentLoaded', () => {
     Object.values(formOptions).forEach(el => {
         if (el) el.addEventListener('input', generatePrompt);
     });
-
-    // Feature to flip text overlay when switching side
-    if (formOptions.posicion) {
-        formOptions.posicion.addEventListener('change', (e) => {
-            const isLeft = e.target.value === 'left';
-            if (canvas && texts) {
-                // move text to the other side
-                texts.forEach(item => {
-                    if (isLeft && item.x < canvas.width / 2) {
-                        item.x += canvas.width * 0.45;
-                    } else if (!isLeft && item.x > canvas.width / 2) {
-                        item.x -= canvas.width * 0.45;
-                    }
-                });
-                renderCanvas();
-            }
-        });
-    }
 
     // Initial generation
     generatePrompt();
@@ -89,6 +67,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const color2Input = document.getElementById('color-2');
     const fontSelect = document.getElementById('font-family');
     const addVsBtn = document.getElementById('add-vs-btn');
+
+    // Advanced Config
+    const letterSpacingInput = document.getElementById('letter-spacing');
+    const toggleShadowInput = document.getElementById('toggle-shadow');
+    const toggleStrokeInput = document.getElementById('toggle-stroke');
 
     let currentBgImage = null;
     let showVsBadge = false;
@@ -157,6 +140,9 @@ document.addEventListener('DOMContentLoaded', () => {
     color1Input.addEventListener('input', (e) => { texts[0].color = e.target.value; renderCanvas(); });
     color2Input.addEventListener('input', (e) => { texts[1].color = e.target.value; renderCanvas(); });
     fontSelect.addEventListener('change', renderCanvas);
+    letterSpacingInput.addEventListener('input', renderCanvas);
+    toggleShadowInput.addEventListener('change', renderCanvas);
+    toggleStrokeInput.addEventListener('change', renderCanvas);
 
     addVsBtn.addEventListener('click', () => {
         showVsBadge = !showVsBadge;
@@ -182,12 +168,8 @@ document.addEventListener('DOMContentLoaded', () => {
         ctx.drawImage(currentBgImage, 0, 0, currentBgImage.width, currentBgImage.height,
             centerShiftX, centerShiftY, currentBgImage.width * ratio, currentBgImage.height * ratio);
 
-        // 2. Add Vignette / Left or Right Dark Gradient (for text readability)
-        const isLeft = document.getElementById('posicion').value === 'left';
-        // If subject is left, text is right. So vignette goes from Right to Center.
-        const gradient = isLeft
-            ? ctx.createLinearGradient(canvas.width, 0, canvas.width * 0.4, 0)
-            : ctx.createLinearGradient(0, 0, canvas.width * 0.6, 0);
+        // 2. Add Vignette / Left Dark Gradient (for text readability)
+        const gradient = ctx.createLinearGradient(0, 0, canvas.width * 0.6, 0);
         gradient.addColorStop(0, "rgba(0,0,0,0.8)");
         gradient.addColorStop(1, "rgba(0,0,0,0)");
         ctx.fillStyle = gradient;
@@ -204,25 +186,35 @@ document.addEventListener('DOMContentLoaded', () => {
             ctx.textAlign = "left";
             ctx.textBaseline = "top";
 
+            // Support modern Canvas letterSpacing
+            ctx.letterSpacing = letterSpacingInput.value + "px";
+
             // Add strong drop shadow based on manual (high contrast)
-            ctx.shadowColor = "rgba(0,0,0,0.9)";
-            ctx.shadowBlur = 15;
-            ctx.shadowOffsetX = 8;
-            ctx.shadowOffsetY = 8;
+            if (toggleShadowInput.checked) {
+                ctx.shadowColor = "rgba(0,0,0,0.9)";
+                ctx.shadowBlur = 15;
+                ctx.shadowOffsetX = 8;
+                ctx.shadowOffsetY = 8;
+            } else {
+                ctx.shadowColor = "transparent";
+            }
 
             // Draw outline for extra pop (Youtube style)
-            ctx.lineWidth = 4;
-            ctx.strokeStyle = '#000000';
-            ctx.strokeText(item.text.toUpperCase(), item.x, item.y);
+            if (toggleStrokeInput.checked) {
+                ctx.lineWidth = 4;
+                ctx.strokeStyle = '#000000';
+                ctx.strokeText(item.text.toUpperCase(), item.x, item.y);
+            }
 
             // Draw Main Text
             ctx.fillText(item.text.toUpperCase(), item.x, item.y);
 
-            // Reset shadow to not affect other things
+            // Reset shadow and effects
             ctx.shadowColor = "transparent";
             ctx.shadowBlur = 0;
             ctx.shadowOffsetX = 0;
             ctx.shadowOffsetY = 0;
+            ctx.letterSpacing = "0px";
 
             // Calculate width and height for hit detection (dragging)
             const metrics = ctx.measureText(item.text.toUpperCase());
