@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
-        href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo+Black&family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@700;800;900&family=Oswald:wght@700&family=Outfit:wght@400;600;800&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo+Black&family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@700;800;900&family=Oswald:wght@700&family=Outfit:wght@400;600;800&family=Poppins:wght@700;800;900&family=Roboto:wght@700;900&family=Teko:wght@600;700&family=Rubik:wght@700;900&display=swap"
         rel="stylesheet">
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -66,17 +66,30 @@
 
                 <div class="form-group">
                     <label for="entorno">Entorno / Background</label>
-                    <input type="text" id="entorno" list="entorno-presets" value="dark high-end recording studio"
-                        placeholder="Ej: inside Pro Tools, dark studio...">
-                    <datalist id="entorno-presets">
-                        <option value="dark high-end recording studio"></option>
-                        <option value="vintage analog mixing console with glowing VU meters"></option>
-                        <option value="modern minimalist producer desk with massive studio monitors"></option>
-                        <option value="neon lit cyberpunk beatmaking station"></option>
-                        <option value="acoustic treated vocal booth with vintage condenser microphone"></option>
-                        <option value="live concert stage with cinematic lighting rig"></option>
-                        <option value="lo-fi beatmaker bedroom studio with warm sunlight"></option>
-                    </datalist>
+                    <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                        <select id="entorno">
+                            <option value="dark high-end recording studio">Dark high-end recording studio</option>
+                            <option value="vintage analog mixing console with glowing VU meters">Vintage analog mixing
+                                console</option>
+                            <option value="modern minimalist producer desk with massive studio monitors">Modern
+                                minimalist producer desk</option>
+                            <option value="neon lit cyberpunk beatmaking station">Neon lit cyberpunk beatmaking station
+                            </option>
+                            <option value="acoustic treated vocal booth with vintage condenser microphone">Acoustic
+                                treated vocal booth</option>
+                            <option value="live concert stage with cinematic lighting rig">Live concert stage</option>
+                            <option value="lo-fi beatmaker bedroom studio with warm sunlight">Lo-fi beatmaker bedroom
+                            </option>
+                            <option value="stadium EDM festival stage from DJ perspective">Stadium EDM festival stage
+                            </option>
+                            <option value="orchestral scoring stage with grand piano">Orchestral scoring stage</option>
+                            <option value="home studio setup with RGB lighting and synthesizers">Home studio setup
+                            </option>
+                            <option value="custom">-- Escribir uno propio --</option>
+                        </select>
+                        <input type="text" id="entorno-custom" style="display: none;"
+                            placeholder="Escribe tu propio entorno aquí...">
+                    </div>
                 </div>
 
                 <div class="form-group">
@@ -117,18 +130,24 @@
                     <div class="form-inline">
                         <input type="text" id="thumb-text-1" placeholder="Ej: THE ALGORITHM" maxlength="15">
                         <input type="color" id="color-1" value="#FFFFFF">
+                        <input type="range" id="size-1" min="50" max="250" value="130" title="Tamaño de texto 1"
+                            style="width: 70px;">
                     </div>
                     <div class="form-inline">
                         <input type="text" id="thumb-text-2" placeholder="Ej: IS DEAD" maxlength="15">
                         <input type="color" id="color-2" value="#FF3366">
+                        <input type="range" id="size-2" min="50" max="250" value="130" title="Tamaño de texto 2"
+                            style="width: 70px;">
                     </div>
 
                     <div class="style-controls">
                         <select id="font-family">
                             <option value="Montserrat">Montserrat (Moderno)</option>
-                            <option value="Anton">Anton (Ultra Grueso / Impacto)</option>
-                            <option value="Archivo Black">Archivo Black (Pesado)</option>
                             <option value="Oswald">Oswald (Alto y Elegante)</option>
+                            <option value="Poppins">Poppins (Redondo / Amigable)</option>
+                            <option value="Roboto">Roboto (Clásico / Limpio)</option>
+                            <option value="Teko">Teko (Cuadrado / Impactante)</option>
+                            <option value="Rubik">Rubik (Grueso / Suave)</option>
                         </select>
                         <button id="add-vs-btn" class="btn-micro" title="Añade gráfico VS al centro">Añadir
                             "VS"</button>

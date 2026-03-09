@@ -12,7 +12,12 @@ document.addEventListener('DOMContentLoaded', () => {
     function generatePrompt() {
         const arquetipo = formOptions.arquetipo.value;
         const sujetoExp = formOptions.sujeto.value;
-        const entorno = formOptions.entorno.value || 'dark high-end recording studio';
+        let entorno = formOptions.entorno.value;
+        if (entorno === 'custom') {
+            entorno = document.getElementById('entorno-custom').value || 'dark high-end recording studio';
+        } else if (!entorno) {
+            entorno = 'dark high-end recording studio';
+        }
         const luces = formOptions.iluminacion.value;
 
         let basePrompt = `Based on the reference image in my google drive 'Jay Looks 1.jpg', generate a highly realistic professional music producer`;
@@ -40,6 +45,13 @@ document.addEventListener('DOMContentLoaded', () => {
         if (el) el.addEventListener('input', generatePrompt);
     });
 
+    // Custom Entorno UI Toggle
+    formOptions.entorno.addEventListener('change', (e) => {
+        document.getElementById('entorno-custom').style.display = e.target.value === 'custom' ? 'block' : 'none';
+        generatePrompt();
+    });
+    document.getElementById('entorno-custom').addEventListener('input', generatePrompt);
+
     // Initial generation
     generatePrompt();
 
@@ -65,6 +77,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const text2Input = document.getElementById('thumb-text-2');
     const color1Input = document.getElementById('color-1');
     const color2Input = document.getElementById('color-2');
+    const size1Input = document.getElementById('size-1');
+    const size2Input = document.getElementById('size-2');
     const fontSelect = document.getElementById('font-family');
     const addVsBtn = document.getElementById('add-vs-btn');
 
@@ -139,6 +153,8 @@ document.addEventListener('DOMContentLoaded', () => {
     text2Input.addEventListener('input', (e) => { texts[1].text = e.target.value; renderCanvas(); });
     color1Input.addEventListener('input', (e) => { texts[0].color = e.target.value; renderCanvas(); });
     color2Input.addEventListener('input', (e) => { texts[1].color = e.target.value; renderCanvas(); });
+    size1Input.addEventListener('input', renderCanvas);
+    size2Input.addEventListener('input', renderCanvas);
     fontSelect.addEventListener('change', renderCanvas);
     letterSpacingInput.addEventListener('input', renderCanvas);
     toggleShadowInput.addEventListener('change', renderCanvas);
@@ -176,12 +192,14 @@ document.addEventListener('DOMContentLoaded', () => {
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
         // 3. Draw Texts (Bottom Layer)
-        texts.forEach(item => {
+        texts.forEach((item, index) => {
             if (!item.text.trim()) return;
 
             const fontName = fontSelect.value;
-            // Guide size: Thick, massive letters
-            ctx.font = `900 130px "${fontName}"`;
+            const fontSize = index === 0 ? size1Input.value : size2Input.value;
+
+            // Apply dynamic font size
+            ctx.font = `900 ${fontSize}px "${fontName}"`;
             ctx.fillStyle = item.color;
             ctx.textAlign = "left";
             ctx.textBaseline = "top";
@@ -227,7 +245,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Calculate width and height for hit detection (dragging)
             const metrics = ctx.measureText(item.text.toUpperCase());
             item.width = metrics.width;
-            item.height = 130; // approx height based on font size
+            item.height = parseInt(fontSize, 10); // approx height based on font size
         });
 
         // 4. Draw VS Badge if active (Top Layer)
