@@ -1,109 +1,52 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>El Arte de la Producción Musical - Tu Guía Esencial</title>
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;700&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;700&family=Roboto+Mono:wght@400;700&display=swap"
+        rel="stylesheet">
     <!-- Font Awesome for stars -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
-        /* Estilos Generales */
         :root {
-            --primary-color: #007BFF; /* Azul brillante */
-            --secondary-color: #343a40; /* Gris oscuro para texto */
-            --accent-color: #28a745; /* Verde para acciones */
-            --star-color: #ffc107; /* Amarillo para estrellas */
-            --dark-bg: #1a1a1a; /* Fondo oscuro principal */
-            --light-bg: #2b2b2b; /* Fondo ligeramente más claro */
-            --text-light: #f0f0f0;
-            --text-muted: #aaaaaa;
+            --primary: #0088ff;
+            --primary-glow: rgba(0, 136, 255, 0.5);
+            --gold: #ffd700;
+            --gold-glow: rgba(255, 215, 0, 0.3);
+            --bg-dark: #050505;
+            --text-main: #ffffff;
+            --text-muted: #b0b0b0;
+            --font-main: 'Inter', 'Montserrat', sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
 
         body {
-            font-family: 'Montserrat', sans-serif;
+            font-family: var(--font-main);
+            background-color: var(--bg-dark);
+            color: var(--text-main);
             line-height: 1.6;
-            margin: 0;
-            padding: 0;
-            background-color: var(--dark-bg);
-            color: var(--text-light);
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-            overflow-x: hidden; /* Evita scroll horizontal */
+            overflow-x: hidden;
         }
 
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-
-        h1, h2, h3 {
-            font-family: 'Roboto Mono', monospace; /* Fuente estilo código/técnico */
-            color: var(--primary-color);
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        h1 { font-size: 3em; }
-        h2 { font-size: 2.2em; }
-        h3 { font-size: 1.6em; }
-
-        p {
-            margin-bottom: 1em;
-            text-align: center;
-        }
-
-        a {
-            color: var(--primary-color);
-            text-decoration: none;
-        }
-
-        a:hover {
-            text-decoration: underline;
-        }
-
-        .btn {
-            display: inline-block;
-            background-color: var(--accent-color);
-            color: white;
-            padding: 12px 25px;
-            border-radius: 5px;
-            text-decoration: none;
-            font-weight: bold;
-            transition: background-color 0.3s ease, transform 0.2s ease;
-            border: none;
-            cursor: pointer;
-            margin-top: 20px;
-        }
-
-        .btn:hover {
-            background-color: #218838; /* Tono más oscuro de verde */
-            transform: translateY(-2px);
-            text-decoration: none;
-        }
-        
-        .secondary-btn {
-            background-color: var(--primary-color);
-        }
-
-        .secondary-btn:hover {
-            background-color: #0056b3; /* Tono más oscuro de azul */
-        }
-
-        /* Header - Hero Section */
+        /* --- HERO SECTION --- */
         .hero {
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            color: white;
+            height: 100vh;
+            width: 100%;
             position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             overflow: hidden;
-            padding: 40px 20px;
+            padding: 2rem;
         }
 
         #hero-video {
@@ -114,372 +57,406 @@
             min-height: 100%;
             width: auto;
             height: auto;
-            z-index: 1;
-            transform: translateX(-50%) translateY(-50%);
+            transform: translate(-50%, -50%);
+            z-index: 0;
+            opacity: 0.6;
+            filter: brightness(0.7) contrast(1.1);
         }
 
-        /* Capa de fondo oscurecida sobre el video */
         .hero::after {
             content: '';
             position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background-color: rgba(0, 0, 0, 0.6);
-            z-index: 2;
+            inset: 0;
+            background: radial-gradient(circle at center, transparent 0%, rgba(0, 0, 0, 0.4) 50%, rgba(0, 0, 0, 0.9) 100%);
+            z-index: 1;
         }
-        
-        /* Contenido del Hero (texto y portada) debe estar por encima del fondo */
-        .hero-content, .book-cover-container, .top-controls {
+
+        .hero-layout {
             position: relative;
-            z-index: 3;
-        }
-
-        .hero h1 {
-            font-size: 3.5em;
-            margin-bottom: 10px;
-            line-height: 1.1;
-            color: white;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
-            text-transform: uppercase;
-        }
-
-        .hero p {
-            font-size: 1.3em;
-            margin-bottom: 30px;
-            color: var(--text-light);
-             text-shadow: 1px 1px 2px rgba(0,0,0,0.7);
-        }
-        
-        /* Contenedor para botones superiores */
-        .top-controls {
-            position: absolute;
-            top: 20px;
+            z-index: 10;
+            max-width: 1300px;
             width: 100%;
-            display: flex;
-            justify-content: space-between;
-            padding: 0 20px;
-            box-sizing: border-box;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
         }
 
-        .top-left-controls {
-            display: flex;
-            gap: 10px;
+        /* --- LEFT CONTENT --- */
+        .hero-text {
+            animation: fadeInRight 1s ease-out both;
         }
 
-        /* Botones de Iconos en la cabecera */
-        .icon-btn {
-            background-color: rgba(255, 255, 255, 0.1);
-            color: white;
-            width: 45px;
-            height: 45px;
-            border-radius: 50%;
+        .hero-text h1 {
+            font-size: 5rem;
+            font-weight: 900;
+            line-height: 0.9;
+            margin-bottom: 1.5rem;
+            text-transform: uppercase;
+            letter-spacing: -2px;
+            background: linear-gradient(to bottom, #fff 0%, #aaa 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.2));
+        }
+
+        .hero-text h1 span {
+            display: block;
+            color: var(--primary);
+            -webkit-text-fill-color: var(--primary);
+            font-size: 0.8em;
+        }
+
+        .hero-text p {
+            font-size: 1.4rem;
+            color: var(--text-muted);
+            margin-bottom: 3rem;
+            max-width: 500px;
+        }
+
+        .cta-group {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn {
+            padding: 1rem 2.5rem;
+            border-radius: 50px;
+            font-weight: 700;
+            text-decoration: none;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.9rem;
+        }
+
+        .btn-amazon {
+            background: var(--gold);
+            color: #000;
+            box-shadow: 0 0 30px var(--gold-glow);
+        }
+
+        .btn-amazon:hover {
+            transform: scale(1.05) translateY(-5px);
+            box-shadow: 0 10px 40px var(--gold-glow);
+        }
+
+        /* --- RIGHT CONTENT: THE BOOK --- */
+        .hero-visual {
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 1.2em;
-            text-decoration: none;
-            transition: all 0.4s ease;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            cursor: pointer;
-            padding: 0;
-            flex-shrink: 0;
-        }
-        .icon-btn:hover {
-            background-color: rgba(255, 255, 255, 0.2);
-            transform: scale(1.1);
-        }
-        .home-btn:hover {
-             text-decoration: none;
-        }
-        
-        #replay-btn {
-            width: 0;
-            opacity: 0;
-            padding: 0;
-            border-width: 0;
-            visibility: hidden;
-            overflow: hidden;
-        }
-        #replay-btn.visible {
-            width: 45px;
-            opacity: 1;
-            border-width: 1px;
-            visibility: visible;
+            perspective: 2000px;
+            animation: fadeInLeft 1s ease-out both 0.2s;
         }
 
-
-        /* Animación de portada */
-        .book-cover-container {
-            width: 250px;
-            height: 350px;
-            border-radius: 8px;
-            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.6);
-            perspective: 1000px;
-            animation: float 6s ease-in-out infinite;
+        .book-3d {
+            width: 380px;
+            /* Larger book */
+            height: 520px;
+            position: relative;
+            transform: rotateY(-25deg) rotateX(10deg);
+            transition: transform 0.6s ease;
+            box-shadow: -20px 20px 50px rgba(0, 0, 0, 0.8);
+            border-radius: 4px;
+            animation: floatingBook 6s ease-in-out infinite;
         }
 
-        .book-cover-container::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -150%;
-            width: 70%;
-            height: 100%;
-            background: linear-gradient(to right, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.25) 50%, rgba(255, 255, 255, 0) 100%);
-            transform: skewX(-25deg);
-            animation: glint 8s ease-in-out infinite;
-            z-index: 2;
-        }
-
-        .book-cover-scroll {
+        .book-3d img {
             width: 100%;
             height: 100%;
             object-fit: cover;
-            border-radius: 8px;
-            display: block;
+            border-radius: 4px;
         }
 
-        /* Keyframes para las animaciones */
-        @keyframes float {
-            0% { transform: translateY(0px) rotateY(15deg) rotateX(5deg); }
-            50% { transform: translateY(-20px) rotateY(15deg) rotateX(5deg); }
-            100% { transform: translateY(0px) rotateY(15deg) rotateX(5deg); }
+        .book-3d::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(90deg, rgba(255, 255, 255, 0.2) 0%, transparent 10%, transparent 90%, rgba(0, 0, 0, 0.3) 100%);
+            pointer-events: none;
         }
 
-        @keyframes glint {
-            0% { left: -150%; }
-            40% { left: 150%; }
-            100% { left: 150%; }
-        }
-        
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
+        /* Shine effect */
+        .book-shine {
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 50%;
+            height: 100%;
+            background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transform: skewX(-20deg);
+            animation: shine 10s infinite;
         }
 
-        /* Secciones */
-        section {
-            padding: 60px 20px;
+        /* --- CONTROLS --- */
+        .controls {
+            position: absolute;
+            top: 2rem;
+            right: 2rem;
+            z-index: 100;
+            display: flex;
+            gap: 1rem;
+        }
+
+        .icon-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .icon-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        /* --- SECTIONS --- */
+        section.info-section {
+            padding: 10rem 2rem;
+            max-width: 900px;
+            margin: 0 auto;
             text-align: center;
         }
-        
-        .about-book {
-             background-color: var(--dark-bg);
+
+        .info-section h2 {
+            font-size: 3.5rem;
+            margin-bottom: 3rem;
+            background: linear-gradient(45deg, #fff, var(--primary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
 
-        .about-book h2 {
-            font-family: 'Montserrat', sans-serif;
-            font-weight: 700;
-            letter-spacing: 0.5px;
-            color: white;
-            opacity: 0;
-            animation: fadeInUp 1s ease-out 0.2s forwards;
+        .info-section p {
+            font-size: 1.2rem;
+            color: var(--text-muted);
+            margin-bottom: 2rem;
+            text-align: justify;
         }
 
-        .about-book p {
-            max-width: 800px;
-            margin: 0 auto 30px auto;
-            color: var(--text-light);
-            text-align: left;
-            line-height: 1.8;
-            opacity: 0;
-            animation: fadeInUp 1s ease-out forwards;
-        }
-        
-        .about-book p:nth-of-type(1) { animation-delay: 0.4s; }
-        .about-book p:nth-of-type(2) { animation-delay: 0.6s; }
-        .about-book p:nth-of-type(3) { animation-delay: 0.8s; }
-
-        /* Reviews Section */
+        /* --- REVIEWS --- */
         .reviews {
-            background-color: var(--dark-bg);
-            border-top: 1px solid #333;
-        }
-        
-        .reviews h2 {
-            font-family: 'Montserrat', sans-serif;
-            font-weight: 700;
-            letter-spacing: 0.5px;
-            color: var(--primary-color);
+            background: #0a0a0a;
+            padding: 8rem 2rem;
         }
 
         .review-card {
-            background-color: var(--light-bg);
-            max-width: 700px;
-            margin: 20px auto;
-            padding: 25px;
-            border-radius: 8px;
-            border-left: 5px solid var(--star-color);
-            text-align: left;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+            background: #111;
+            padding: 3rem;
+            border-radius: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+            border: 1px solid rgba(255, 215, 0, 0.2);
+            position: relative;
         }
 
-        .review-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-            flex-wrap: wrap;
+        .stars {
+            color: var(--gold);
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
         }
 
-        .review-author {
-            font-weight: bold;
-            font-size: 1.2em;
-            color: var(--text-light);
+        /* --- ANIMATIONS --- */
+        @keyframes floatingBook {
+
+            0%,
+            100% {
+                transform: rotateY(-25deg) rotateX(10deg) translateY(0);
+            }
+
+            50% {
+                transform: rotateY(-20deg) rotateX(15deg) translateY(-30px);
+            }
         }
 
-        .review-stars {
-            color: var(--star-color);
+        @keyframes shine {
+            0% {
+                left: -100%;
+            }
+
+            10% {
+                left: 200%;
+            }
+
+            100% {
+                left: 200%;
+            }
         }
 
-        .review-body {
-            font-style: italic;
-            color: var(--text-muted);
-            margin-bottom: 15px;
+        @keyframes fadeInRight {
+            from {
+                opacity: 0;
+                transform: translateX(-50px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
         }
 
-        .review-meta {
-            font-size: 0.85em;
-            color: #888;
-        }
-        
-        .review-meta .verified {
-            color: var(--accent-color);
-            font-weight: bold;
+        @keyframes fadeInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(50px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
         }
 
-        /* Footer */
-        .footer {
-            background-color: var(--secondary-color);
-            color: var(--text-muted);
-            text-align: center;
-            padding: 30px 20px;
-            font-size: 0.9em;
-            border-top: 1px solid #444;
-        }
+        /* --- MOBILE --- */
+        @media (max-width: 992px) {
+            .hero-layout {
+                grid-template-columns: 1fr;
+                text-align: center;
+                gap: 2rem;
+            }
 
-        .footer a {
-            color: var(--primary-color);
-            font-weight: bold;
-        }
+            .hero-text h1 {
+                font-size: 3.5rem;
+            }
 
-        /* Media Queries para Responsividad */
-        @media (min-width: 768px) {
+            .hero-text p {
+                margin-inline: auto;
+            }
+
+            .cta-group {
+                justify-content: center;
+            }
+
+            .book-3d {
+                width: 280px;
+                height: 380px;
+            }
+
             .hero {
-                flex-direction: row;
-                justify-content: space-around;
-                text-align: left;
-                padding: 80px 40px;
-            }
-            .hero-content { max-width: 50%; margin-bottom: 0; }
-            .hero h1 { font-size: 4.5em; text-align: left; }
-            .hero p { font-size: 1.5em; text-align: left; }
-            .book-cover-container { animation: float 6s ease-in-out infinite; }
-        }
-
-        @media (max-width: 480px) {
-            h1 { font-size: 2.5em; }
-            h2 { font-size: 1.8em; }
-            .hero h1 { font-size: 3em; }
-            .hero p { font-size: 1.1em; }
-            .btn { padding: 10px 20px; }
-            .icon-btn { top: 15px; width: 40px; height: 40px; }
-            .top-controls { padding: 0 15px; }
-            .book-cover-container {
-                width: 200px;
-                height: 280px;
-                transform: none;
-                animation: float-mobile 6s ease-in-out infinite;
-            }
-            @keyframes float-mobile {
-                 0% { transform: translateY(0px); }
-                 50% { transform: translateY(-15px); }
-                 100% { transform: translateY(0px); }
-            }
-            .review-header {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 5px;
+                height: auto;
+                padding-top: 8rem;
             }
         }
     </style>
 </head>
+
 <body>
 
-    <!-- Hero Section -->
     <header class="hero">
-        <video autoplay muted playsinline id="hero-video">
-            <source src="https://raw.githubusercontent.com/jgmansur/musicknobs/f7a359b25093eff671b75b1c397ef1675f6a471d/elartedelaproduccionmusical/Video_Promocional_de_Libro_en_Amazon.mp4" type="video/mp4">
+        <video autoplay muted playsinline loop id="hero-video">
+            <source
+                src="https://raw.githubusercontent.com/jgmansur/musicknobs/f7a359b25093eff671b75b1c397ef1675f6a471d/elartedelaproduccionmusical/Video_Promocional_de_Libro_en_Amazon.mp4"
+                type="video/mp4">
         </video>
-        <div class="top-controls">
-            <div class="top-left-controls">
-                <button id="mute-btn" class="icon-btn" aria-label="Silenciar/Activar sonido">
-                    <i class="fas fa-volume-mute"></i>
-                </button>
-                <button id="replay-btn" class="icon-btn" aria-label="Repetir con sonido">
-                    <i class="fas fa-redo"></i>
-                </button>
-            </div>
-            <a href="https://www.musicknobs.com" class="home-btn icon-btn" aria-label="Volver al inicio" target="_blank">
+
+        <div class="controls">
+            <button id="mute-btn" class="icon-btn" title="Activar/Silenciar Audio">
+                <i class="fas fa-volume-mute"></i>
+            </button>
+            <a href="https://www.musicknobs.com" class="icon-btn" title="Volver al Inicio">
                 <i class="fas fa-home"></i>
             </a>
         </div>
-        <div class="hero-content">
-            <h1>El Arte de la Producción Musical</h1>
-            <p>Descubre los secretos para crear sonido profesional.</p>
-            <a href="https://www.amazon.com.mx/dp/B0DN2Y4419" target="_blank" class="btn">Comprar en Amazon</a>
-        </div>
-        <div class="book-cover-container">
-            <img src="https://raw.githubusercontent.com/jgmansur/musicknobs/921c823211fa20be985c5ffe51c849de7227bc5e/elartedelaproduccionmusical/LibroPortada.png" alt="Portada del libro El Arte de la Producción Musical" class="book-cover-scroll">
+
+        <div class="hero-layout">
+            <div class="hero-text">
+                <h1>El Arte De La <span>Producción Musical</span></h1>
+                <p>La guía definitiva para transformar tu sonido y dominar la industria desde tu propio estudio.</p>
+                <div class="cta-group">
+                    <a href="https://www.amazon.com.mx/dp/B0DN2Y4419" target="_blank" class="btn btn-amazon">
+                        <i class="fab fa-amazon"></i> Comprar en Amazon
+                    </a>
+                </div>
+            </div>
+
+            <div class="hero-visual">
+                <div class="book-3d">
+                    <div class="book-shine"></div>
+                    <img src="https://raw.githubusercontent.com/jgmansur/musicknobs/921c823211fa20be985c5ffe51c849de7227bc5e/elartedelaproduccionmusical/LibroPortada.png"
+                        alt="El Arte de la Producción Musical">
+                </div>
+            </div>
         </div>
     </header>
 
     <!-- About the Book Section -->
-    <section class="about-book">
+    <section class="info-section">
         <div class="container">
             <h2>Transforma tu Pasión en Sonido Profesional</h2>
             <p>
-                ¿Alguna vez has sentido la frustración de tener una melodía increíble en tu cabeza, pero no saber cómo plasmarla en una producción que suene profesional? ¿Te has perdido entre la jerga técnica, los tutoriales interminables y el mar de plugins que prometen resultados mágicos sin una base sólida? "El Arte de la Producción Musical" es la brújula que necesitas en tu viaje creativo.
+                ¿Alguna vez has sentido la frustración de tener una melodía increíble en tu cabeza, pero no saber cómo
+                plasmarla en una producción que suene profesional? ¿Te has perdido entre la jerga técnica, los
+                tutoriales interminables y el mar de plugins que prometen resultados mágicos sin una base sólida?
+                <strong>"El Arte de la Producción Musical"</strong> es la brújula que necesitas en tu viaje creativo.
             </p>
             <p>
-                Este no es solo un manual técnico; es una hoja de ruta diseñada para llevarte desde los fundamentos del sonido hasta las técnicas avanzadas de mezcla y masterización, transformando tu pasión en habilidad y tus ideas en obras maestras sonoras. A lo largo de estas páginas, desmitificaremos conceptos complejos y te proporcionaremos un marco de trabajo claro y práctico. Aprenderás a escuchar de manera crítica, a tomar decisiones informadas y a utilizar tus herramientas con intención y propósito.
+                Este no es solo un manual técnico; es una hoja de ruta diseñada para llevarte desde los fundamentos del
+                sonido hasta las técnicas avanzadas de mezcla y masterización, transformando tu pasión en habilidad y
+                tus ideas en obras maestras sonoras.
             </p>
             <p>
-                Este libro es para el músico que quiere autoproducirse, para el aspirante a ingeniero de sonido que busca una guía estructurada y para cualquier creativo que desee entender el lenguaje universal de la música grabada. Prepárate para desbloquear tu potencial y dar vida al sonido que siempre has imaginado.
+                Aprenderás a escuchar de manera crítica, a tomar decisiones informadas y a utilizar tus herramientas con
+                intención y propósito. Este libro es para el músico que quiere autoproducirse, para el aspirante a
+                ingeniero de sonido y para cualquier creativo que desee entender el lenguaje universal de la música
+                grabada.
             </p>
-            <a href="https://www.amazon.com.mx/dp/B0DN2Y4419" target="_blank" class="btn secondary-btn">Ver Detalles y Comprar</a>
+            <div style="margin-top: 4rem;">
+                <a href="https://www.amazon.com.mx/dp/B0DN2Y4419" target="_blank" class="btn btn-amazon">Ver Detalles en
+                    Amazon</a>
+            </div>
         </div>
     </section>
-    
+
     <!-- Reviews Section -->
     <section class="reviews">
         <div class="container">
-            <h2>Opiniones de los Lectores</h2>
+            <h2 style="text-align: center; font-size: 2.5rem; margin-bottom: 4rem; color: #fff;">Opiniones de Lectores
+            </h2>
             <div class="review-card">
-                <div class="review-header">
-                    <div class="review-author">Inma mateu</div>
-                    <div class="review-stars">
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                        <i class="far fa-star"></i>
-                    </div>
+                <div class="stars">
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star-half-alt"></i>
                 </div>
-                <p class="review-body">
-                    "Esta muy bien para principiantes y mas avanzados ..informacion e historia de los compresores delays, y un poco de la industria."
+                <p style="font-size: 1.3rem; font-style: italic; color: #ddd; margin-bottom: 2rem;">
+                    "Está muy bien para principiantes y más avanzados... información e historia de los compresores,
+                    delays, y un poco de la industria."
                 </p>
-                <div class="review-meta">
-                    Comentado en España el 30 de abril de 2025 | <span class="verified">Compra verificada</span>
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <div
+                        style="width: 50px; height: 50px; background: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; color: #000;">
+                        IM</div>
+                    <div>
+                        <div style="font-weight: 700; color: #fff;">Inma Mateu</div>
+                        <div style="font-size: 0.8rem; color: var(--accent-color);">Lectora Verificada</div>
+                    </div>
                 </div>
             </div>
         </div>
     </section>
 
     <!-- Footer -->
-    <footer class="footer">
+    <footer style="padding: 5rem 2rem; background: #000; text-align: center; border-top: 1px solid #111;">
         <div class="container">
-            <p>&copy; 2024 El Arte de la Producción Musical. Todos los derechos reservados.</p>
-            <p>Encuéntralo en <a href="https://www.amazon.com.mx/dp/B0DN2Y4419" target="_blank">Amazon</a></p>
+            <p style="color: #666; margin-bottom: 2rem;">&copy; 2026 El Arte de la Producción Musical. Todos los
+                derechos reservados.</p>
+            <div style="display: flex; justify-content: center; gap: 2rem;">
+                <a href="https://www.musicknobs.com" style="color: #666; text-decoration: none;">Inicio</a>
+                <a href="https://www.amazon.com.mx/dp/B0DN2Y4419" style="color: #666; text-decoration: none;">Amazon</a>
+            </div>
         </div>
     </footer>
 
@@ -488,30 +465,10 @@
             const video = document.getElementById('hero-video');
             const muteBtn = document.getElementById('mute-btn');
             const muteIcon = muteBtn.querySelector('i');
-            const replayBtn = document.getElementById('replay-btn');
-
-            let firstPlayEnded = false;
 
             // El video comienza silenciado por defecto para máxima compatibilidad.
             video.play().catch(error => {
                 console.warn("La reproducción automática del video fue prevenida por el navegador.", error);
-            });
-
-            // Evento para cuando el video termina
-            video.addEventListener('ended', () => {
-                if (!firstPlayEnded) {
-                    replayBtn.classList.add('visible');
-                    firstPlayEnded = true;
-                }
-            });
-
-            // Evento para el botón de repetir con sonido
-            replayBtn.addEventListener('click', () => {
-                video.muted = false;
-                video.currentTime = 0;
-                video.play();
-                muteIcon.classList.remove('fa-volume-mute');
-                muteIcon.classList.add('fa-volume-high');
             });
 
             // Evento para el botón de silenciar/activar sonido
@@ -529,4 +486,5 @@
     </script>
 
 </body>
+
 </html>
