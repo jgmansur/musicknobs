@@ -159,9 +159,18 @@ document.addEventListener('DOMContentLoaded', () => {
             alignRightBtn.classList.remove('active');
             btn.classList.add('active');
 
-            if (btn.id === 'align-left') globalTextAlign = 'left';
-            if (btn.id === 'align-center') globalTextAlign = 'center';
-            if (btn.id === 'align-right') globalTextAlign = 'right';
+            if (btn.id === 'align-left') {
+                globalTextAlign = 'left';
+                texts.artist.x = 50; texts.title.x = 50; texts.label.x = 50;
+            }
+            if (btn.id === 'align-center') {
+                globalTextAlign = 'center';
+                texts.artist.x = 500; texts.title.x = 500; texts.label.x = 500;
+            }
+            if (btn.id === 'align-right') {
+                globalTextAlign = 'right';
+                texts.artist.x = 950; texts.title.x = 950; texts.label.x = 950;
+            }
 
             renderCanvas();
         });
