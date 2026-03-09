@@ -2,6 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- 1. PROMPT GENERATOR LOGIC ---
     const formOptions = {
         arquetipo: document.getElementById('arquetipo'),
+        posicion: document.getElementById('posicion'),
         sujeto: document.getElementById('sujeto'),
         entorno: document.getElementById('entorno'),
         iluminacion: document.getElementById('iluminacion')
@@ -15,19 +16,22 @@ document.addEventListener('DOMContentLoaded', () => {
         const entorno = formOptions.entorno.value || 'dark high-end recording studio';
         const luces = formOptions.iluminacion.value;
 
+        const posicion = formOptions.posicion ? formOptions.posicion.value : 'right';
+        let emptySpace = posicion === 'right' ? 'left' : 'right';
+
         let basePrompt = `Based on the reference image in my google drive 'Mi foto de Perfil.jpg', generate a realistic professional music producer`;
 
         if (sujetoExp === 'no subject') {
             basePrompt = `Generate a highly realistic`;
         } else {
-            basePrompt += ` with an ${sujetoExp},`;
+            basePrompt += ` with a ${sujetoExp},`;
         }
 
-        let framing = "subject on the right, empty space on the left for text placement";
+        let framing = `subject on the ${posicion}, empty space on the ${emptySpace} for text placement`;
         if (arquetipo === 'comparativa') {
-            framing = "split composition, subject on the right, complementary opposing colors on the left side";
+            framing = `split composition, subject on the ${posicion}, complementary opposing colors on the ${emptySpace} side`;
         } else if (arquetipo === 'tutorial') {
-            framing = "Shallow Depth of Field (f/1.8 lens), focused heavily on the foreground, background blurred, subject on the right";
+            framing = `Shallow Depth of Field (f/1.8 lens), focused heavily on the foreground, background blurred, subject on the ${posicion}`;
         }
 
         const fullPrompt = `${basePrompt} in a ${entorno}, Cinematic Lighting, ${luces}, professional studio photography, ${framing}, 8k resolution, photorealistic, --ar 16:9`;
@@ -37,8 +41,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Attach listeners to update prompt instantly
     Object.values(formOptions).forEach(el => {
-        el.addEventListener('input', generatePrompt);
+        if (el) el.addEventListener('input', generatePrompt);
     });
+
+    // Feature to flip text overlay when switching side
+    if (formOptions.posicion) {
+        formOptions.posicion.addEventListener('change', (e) => {
+            const isLeft = e.target.value === 'left';
+            if (canvas && texts) {
+                // move text to the other side
+                texts.forEach(item => {
+                    if (isLeft && item.x < canvas.width / 2) {
+                        item.x += canvas.width * 0.45;
+                    } else if (!isLeft && item.x > canvas.width / 2) {
+                        item.x -= canvas.width * 0.45;
+                    }
+                });
+                renderCanvas();
+            }
+        });
+    }
 
     // Initial generation
     generatePrompt();
@@ -160,19 +182,18 @@ document.addEventListener('DOMContentLoaded', () => {
         ctx.drawImage(currentBgImage, 0, 0, currentBgImage.width, currentBgImage.height,
             centerShiftX, centerShiftY, currentBgImage.width * ratio, currentBgImage.height * ratio);
 
-        // 2. Add Vignette / Left Dark Gradient (for text readability)
-        const gradient = ctx.createLinearGradient(0, 0, canvas.width * 0.6, 0);
+        // 2. Add Vignette / Left or Right Dark Gradient (for text readability)
+        const isLeft = document.getElementById('posicion').value === 'left';
+        // If subject is left, text is right. So vignette goes from Right to Center.
+        const gradient = isLeft
+            ? ctx.createLinearGradient(canvas.width, 0, canvas.width * 0.4, 0)
+            : ctx.createLinearGradient(0, 0, canvas.width * 0.6, 0);
         gradient.addColorStop(0, "rgba(0,0,0,0.8)");
         gradient.addColorStop(1, "rgba(0,0,0,0)");
         ctx.fillStyle = gradient;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        // 3. Draw VS Badge if active
-        if (showVsBadge) {
-            drawVSBadge();
-        }
-
-        // 4. Draw Texts
+        // 3. Draw Texts (Bottom Layer)
         texts.forEach(item => {
             if (!item.text.trim()) return;
 
@@ -208,6 +229,11 @@ document.addEventListener('DOMContentLoaded', () => {
             item.width = metrics.width;
             item.height = 130; // approx height based on font size
         });
+
+        // 4. Draw VS Badge if active (Top Layer)
+        if (showVsBadge) {
+            drawVSBadge();
+        }
     }
 
     function drawVSBadge() {
