@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-03-10T12:35:28.912Z",
+  "lastUpdated": "2026-03-10T14:45:00.000Z",
   "es": {
     "title": "Noticias Diarias: Copyright e Inteligencia Artificial",
     "subtitle": "Lo último en leyes de derechos de autor para músicos, compositores y productores.",
@@ -7,17 +7,17 @@
       {
         "id": "cambios-ley",
         "title": "Cambios Recientes en la Ley de Copyright",
-        "content": "Recientemente, la Oficina de Derechos de Autor de los Estados Unidos ha establecido que las obras creadas únicamente por inteligencia artificial no son elegibles para la protección de derechos de autor. Sin embargo, si un ser humano ha contribuido de manera significativa al proceso creativo, la obra puede ser registrada. Esto ha generado un debate sobre el papel de la inteligencia artificial en la creación musical y los derechos de autor."
+        "content": "A marzo de 2026, el panorama legal se ha consolidado. La Corte Suprema de EE.UU. ha declinado revisar fallos anteriores, reafirmando que las obras generadas íntegramente por IA sin una autoría humana sustancial no son protegibles por copyright. Sin embargo, surge una tendencia global hacia el 'Copyright Clearinghouse Act', que busca mayor transparencia en la procedencia de los datos de entrenamiento."
       },
       {
         "id": "que-registrar",
         "title": "¿Qué se puede y qué no se puede registrar?",
-        "content": "Los músicos pueden registrar sus obras si han contribuido de manera significativa al proceso creativo, incluso si han utilizado inteligencia artificial como herramienta. Sin embargo, no se pueden registrar obras que hayan sido creadas únicamente por inteligencia artificial sin intervención humana. Es importante destacar que la Oficina de Derechos de Autor de los Estados Unidos requiere que los solicitantes declaren si su obra ha sido creada con la ayuda de inteligencia artificial."
+        "content": "A diferencia de 2025, la Oficina de Copyright ahora exige una divulgación explícita mediante estándares técnicos (como C2PA). Puedes registrar composiciones donde la IA haya sido una herramienta de asistencia creativa, siempre que el 'núcleo expresivo' sea humano. Las pistas 100% generadas por prompts básicos siguen siendo rechazadas sistemáticamente para el registro de derechos de autor."
       },
       {
         "id": "intervencion-humana",
         "title": "Productores: Edición vs Intervención Humana",
-        "content": "Si se agregan instrumentos reales o se edita una pista creada por inteligencia artificial, es posible registrar la obra si se puede demostrar que ha habido una intervención humana significativa. La cantidad de intervención humana necesaria para registrar una obra es un tema de debate, pero en general, se requiere que el ser humano haya contribuido de manera creativa y no solo haya realizado tareas administrativas o técnicas. La Oficina de Derechos de Autor de los Estados Unidos considera que la intervención humana debe ser lo suficientemente significativa como para considerar que la obra es una creación original."
+        "content": "La clave este año es la 'intervención humana discernible'. Si editas, remezclas o añades grabaciones reales a un flujo de trabajo de IA, la obra es registrable. Un hito reciente es la implementación de sistemas de detección forense en plataformas como Spotify y Apple Music, que ahora aplican un sistema de pago de regalías diferenciado para proteger a los artistas humanos frente a las granjas de contenido generado por IA."
       }
     ]
   },
@@ -28,17 +28,17 @@
       {
         "id": "recent-changes",
         "title": "Recent Changes in Copyright Law",
-        "content": "Recently, the US Copyright Office has established that works created solely by artificial intelligence are not eligible for copyright protection. However, if a human has contributed significantly to the creative process, the work may be registered. This has sparked debate about the role of artificial intelligence in music creation and copyright."
+        "content": "As of March 2026, the legal landscape has solidified. The U.S. Supreme Court has declined to review lower court rulings, reaffirming that works generated entirely by AI without substantial human authorship are not eligible for copyright. Globally, there is a push for the 'Copyright Clearinghouse Act' to mandate transparency in AI training data sources."
       },
       {
         "id": "what-to-register",
         "title": "What Can and Cannot Be Registered",
-        "content": "Musicians can register their works if they have contributed significantly to the creative process, even if they have used artificial intelligence as a tool. However, works that have been created solely by artificial intelligence without human intervention cannot be registered. It's worth noting that the US Copyright Office requires applicants to declare if their work was created with the help of artificial intelligence."
+        "content": "Unlike 2025, the Copyright Office now mandates explicit disclosure through technical standards like C2PA. You can register compositions where AI was a creative assistant, provided the 'expressive core' is human. Tracks 100% generated from basic prompts continue to be systematically rejected for copyright registration."
       },
       {
         "id": "human-intervention",
         "title": "Producers: Editing vs Human Intervention",
-        "content": "If real instruments are added or an AI-created track is edited, it is possible to register the work if it can be demonstrated that there has been significant human intervention. The amount of human intervention required to register a work is a topic of debate, but in general, it is required that the human has contributed creatively and not just performed administrative or technical tasks. The US Copyright Office considers that human intervention must be significant enough to consider the work an original creation."
+        "content": "The keyword this year is 'discernible human intervention.' If you edit, remix, or add real recordings to an AI workflow, the work is registrable. A major recent development is the rollout of forensic detection systems on Spotify and Apple Music, which now apply tiered royalty structures to protect human artists from mass-produced AI content farms."
       }
     ]
   }
