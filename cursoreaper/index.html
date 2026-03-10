@@ -395,7 +395,19 @@
                 hasVisualizer: false
             },
             {
-                id: 7, icon: "💡", title: "Reglas de Oro del Productor",
+                id: 7, icon: "🧱", title: "Clase 7: El Arte de Limitar",
+                objective: "Conseguir volumen comercial sin destruir la canción.",
+                intro: "El limitador es el último eslabón de la cadena de producción. Actúa como un muro de ladrillos ('Brickwall') que impide que el audio sature (clipping) mientras eleva el volumen general del track.",
+                topics: ["<b>El Techo (Ceiling):</b> El límite absoluto (ej. -1.0 dBFS o -0.1 dBFS).", "<b>El Umbral (Threshold):</b> Cuánto volumen empujas contra el muro.", "<b>Loudness War:</b> Más volumen no siempre es mejor; cuidado con aplastar la dinámica (LUFS)."],
+                practice: "Colocar ReaLimit en el Master Track. Ajustar el Ceiling a -1.0dB y bajar el Threshold hasta alcanzar niveles comerciales.",
+                homework: "Compara el volumen de tu mezcla con un track de referencia comercial usando el medidor de tu limitador.",
+                links: [{ text: "Video: Cómo Usar un Limitador", url: "https://www.youtube.com/watch?v=A2dY2J_H7tA" }],
+                shortcuts: [],
+                instructorNotes: "<p><strong>Meta Docente:</strong> Enseñar la diferencia entre Clipping y Limitación.</p><ul class='list-disc pl-5'><li><strong>El Muro:</strong> Usa la analogía de un techo físico. Si empujas a alguien contra el techo, se aplasta. Eso le pasa al audio.</li><li><strong>LUFS:</strong> Explica brevemente qué son los LUFS y por qué Spotify penaliza el exceso de volumen.</li></ul>",
+                hasVisualizer: true, visualizerType: "comp", visualizerTitle: "Comportamiento del Limitador", visualizerDesc: "El ratio al infinito (Muro de ladrillos)."
+            },
+            {
+                id: 8, icon: "💡", title: "Reglas de Oro del Productor",
                 objective: "Mentalidad y cuidado auditivo.",
                 intro: "Mandamientos fundamentales que te salvarán de cometer errores.",
                 topics: ["<b>1. Botón de Bypass.</b>", "<b>2. Tracks de Referencia.</b>", "<b>3. Fatiga auditiva (Descansos).</b>"],
@@ -668,8 +680,8 @@
         });
 
         function updateProgressUI() {
-            const total = 6;
-            const completed = state.completedClasses.filter(id => id <= 6).length;
+            const total = 7;
+            const completed = state.completedClasses.filter(id => id <= 7).length;
             const percentage = Math.round((completed / total) * 100);
             DOM.progressBar.style.width = `${percentage}%`;
             DOM.progressText.innerText = `${percentage}% Completado`;
