@@ -594,7 +594,7 @@
                 btn.className = `w-full text-left px-6 py-3 border-b border-stone-200 transition-colors flex items-center gap-3 ${isActive ? 'active' : 'hover:bg-stone-200 text-stone-700'}`;
                 let checkMark = isCompleted ? '<span class="text-emerald-500 font-bold ml-auto">✓</span>' : '';
                 let shortTitle = item.title.split(':')[0];
-                if (item.id === 7) shortTitle = "Reglas de Oro";
+                if (item.id === 9) shortTitle = "Reglas de Oro";
 
                 btn.innerHTML = `<span class="text-xl">${item.icon}</span> <span>${shortTitle}</span> ${checkMark}`;
                 btn.onclick = () => loadClass(item.id);
@@ -768,6 +768,8 @@
             DOM.visualizerControls.appendChild(createBtn('1:1', true, () => { state.chartInstance.data.datasets[0].data = noComp; state.chartInstance.update(); }));
             DOM.visualizerControls.appendChild(createBtn('2:1', false, () => { state.chartInstance.data.datasets[0].data = calcComp(2); state.chartInstance.update(); }));
             DOM.visualizerControls.appendChild(createBtn('8:1', false, () => { state.chartInstance.data.datasets[0].data = calcComp(8); state.chartInstance.update(); }));
+            DOM.visualizerControls.appendChild(createBtn('20:1', false, () => { state.chartInstance.data.datasets[0].data = calcComp(20); state.chartInstance.update(); }));
+            DOM.visualizerControls.appendChild(createBtn('100:1', false, () => { state.chartInstance.data.datasets[0].data = calcComp(100); state.chartInstance.update(); }));
         }
 
         function setupGainStagingChart(ctx) {
