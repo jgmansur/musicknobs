@@ -395,7 +395,24 @@
                 hasVisualizer: false
             },
             {
-                id: 7, icon: "🧱", title: "Clase 7: El Arte de Limitar",
+                id: 7, icon: "🎛️", title: "Clase 7: Fundamentos de Mezcla",
+                objective: "Construir una mezcla sólida desde cero y entender el Master Bus.",
+                intro: "La mezcla empieza con el equilibrio de volumen y el Paneado (Static Mix) antes de tocar cualquier plugin. Además, procesar el Master Bus le dará ese 'pegamento' final a tu canción.",
+                topics: [
+                    "<b>Gain Staging:</b> Entrar con niveles sanos (ej. -18dBFS) para evitar saturación digital.",
+                    "<b>Balance Inicial (Static Mix):</b> Lograr que la canción suene bien solo usando faders (volumen) y paneos.",
+                    "<b>Filosofía de Plugins:</b> Solucionar problemas en el track individual, no intentar arreglarlos en el Master Bus.",
+                    "<b>Master Bus Processing:</b> Compresión ligera (1-2dB de reducción) para 'pegamento' y EQ sutil para balance tonal."
+                ],
+                practice: "Haz un 'Static Mix' de una sesión: pon todos los faders a menos infinito y ve subiendo de a uno, empezando por tu elemento más importante.",
+                homework: "Inserta un EQ y un Compresor en tu Master Bus con ajustes extremadamente sutiles y compara el antes y el después.",
+                links: [{ text: "Video: Cómo empezar a mezclar (Balance Inicial)", url: "https://www.youtube.com/watch?v=Jm9n2bL3JpA" }],
+                shortcuts: [],
+                instructorNotes: "<p><strong>Meta Docente:</strong> Enseñar que menos es más y la importancia del balance.</p><ul class='list-disc pl-5'><li><strong>El error común:</strong> Los alumnos suelen meter plugins antes de equilibrar volúmenes. Corrige eso.</li><li><strong>Faders a cero:</strong> Oblígalos a mezclar en mono primero para resolver choques de frecuencias con puro volumen.</li></ul>",
+                hasVisualizer: false
+            },
+            {
+                id: 8, icon: "🧱", title: "Clase 8: El Arte de Limitar",
                 objective: "Conseguir volumen comercial sin destruir la canción.",
                 intro: "El limitador es el último eslabón de la cadena de producción. Actúa como un muro de ladrillos ('Brickwall') que impide que el audio sature (clipping) mientras eleva el volumen general del track.",
                 topics: ["<b>El Techo (Ceiling):</b> El límite absoluto (ej. -1.0 dBFS o -0.1 dBFS).", "<b>El Umbral (Threshold):</b> Cuánto volumen empujas contra el muro.", "<b>Loudness War:</b> Más volumen no siempre es mejor; cuidado con aplastar la dinámica (LUFS)."],
@@ -407,7 +424,7 @@
                 hasVisualizer: true, visualizerType: "comp", visualizerTitle: "Comportamiento del Limitador", visualizerDesc: "El ratio al infinito (Muro de ladrillos)."
             },
             {
-                id: 8, icon: "💡", title: "Reglas de Oro del Productor",
+                id: 9, icon: "💡", title: "Reglas de Oro del Productor",
                 objective: "Mentalidad y cuidado auditivo.",
                 intro: "Mandamientos fundamentales que te salvarán de cometer errores.",
                 topics: ["<b>1. Botón de Bypass.</b>", "<b>2. Tracks de Referencia.</b>", "<b>3. Fatiga auditiva (Descansos).</b>"],
@@ -680,8 +697,8 @@
         });
 
         function updateProgressUI() {
-            const total = 7;
-            const completed = state.completedClasses.filter(id => id <= 7).length;
+            const total = 8;
+            const completed = state.completedClasses.filter(id => id <= 8).length;
             const percentage = Math.round((completed / total) * 100);
             DOM.progressBar.style.width = `${percentage}%`;
             DOM.progressText.innerText = `${percentage}% Completado`;
