@@ -42,7 +42,23 @@ async function fetchNews() {
   "en": {
     "title": "Daily News: Copyright & Artificial Intelligence",
     "subtitle": "The latest in copyright law for musicians, composers, and producers.",
-    "sections": [ ... ]
+    "sections": [
+      {
+        "id": "law-changes",
+        "title": "Recent Changes in Copyright Law",
+        "content": "Summarize the latest major news about AI music copyright here in English."
+      },
+      {
+        "id": "what-can-be-registered",
+        "title": "What Can and Cannot Be Registered?",
+        "content": "Explain clearly what musicians can and cannot register if they use AI, in English."
+      },
+      {
+        "id": "human-intervention",
+        "title": "Producers: Editing vs. Human Intervention",
+        "content": "Answer the question: if I add real instruments or edit an AI track, can I register it? Focus on the amount of human intervention needed, in English."
+      }
+    ]
   }
 }
 
@@ -57,10 +73,17 @@ Important: Use real, up-to-date facts as of 2024-2025 regarding the US Copyright
     const jsonString = completion.choices[0].message.content.trim();
 
     // Sometimes the AI still outputs markdown despite prompt, sanitize it:
-    const cleanJson = jsonString.replace(/^```json\n?/, '').replace(/\n?```$/, '');
+    const cleanJson = jsonString.replace(/^\s*```(?:json)?\s*\n?/, '').replace(/\n?\s*```\s*$/, '').trim();
 
     // Parse it to ensure it's valid before saving
     const parsedData = JSON.parse(cleanJson);
+
+    // Validate parsed data structure
+    const requiredKeys = ['lastUpdated', 'es', 'en'];
+    const missingKeys = requiredKeys.filter(key => !(key in parsedData));
+    if (missingKeys.length > 0) {
+      throw new Error(`Parsed JSON is missing required keys: ${missingKeys.join(', ')}`);
+    }
 
     // Write to file
     fs.writeFileSync(DATA_FILE_PATH, JSON.stringify(parsedData, null, 2), 'utf8');
