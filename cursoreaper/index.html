@@ -363,7 +363,7 @@
                     "<b>Markers:</b> M (Crear) | Shift+M (Crear con nombre) | 1-9 (Saltar a marcador)"
                 ],
                 instructorNotes: "<p><strong>Meta Docente:</strong> Eficiencia máxima.</p><ul class='list-disc pl-5'><li><strong>Zero Crossing:</strong> Menciona que Reaper puede cortar en 'paso por cero' para evitar ruidos (Action: Split at next zero crossing).</li><li><strong>Nudge Settings:</strong> Muestra cómo cambiar de 'Milisegundos' a 'Beats' en la ventana de Nudge (N) para mover cosas musicalmente.</li><li><strong>Marquee vs Razor:</strong> El Marquee selecciona items completos; el Razor selecciona partes de items.</li></ul>",
-                hasVisualizer: true, visualizerType: "bar", visualizerTitle: "Impacto del Clip Gain", visualizerDesc: "Emparejando la señal antes de los plugins."
+                hasVisualizer: true, visualizerType: "clipgain", visualizerTitle: "Impacto del Clip Gain", visualizerDesc: "Ajusta la ganancia del ítem para ver cómo cambia la forma de onda antes de entrar a los efectos."
             },
             {
                 id: 3, icon: "🎚️", title: "Clase 3: Magia de la Ecualización",
@@ -736,7 +736,7 @@
 
             if (data.visualizerType === 'eq') setupEQChart(ctx);
             else if (data.visualizerType === 'comp') setupCompChart(ctx);
-            else if (data.visualizerType === 'bar') setupGainStagingChart(ctx);
+            else if (data.visualizerType === 'clipgain') setupClipGainVisualizer(ctx);
             else if (data.visualizerType === 'workflow') setupWorkflowChart(ctx);
             else if (data.visualizerType === 'masking') setupMaskingChart(ctx);
         }
@@ -789,6 +789,99 @@
             DOM.visualizerControls.appendChild(createBtn('8:1', false, () => { state.chartInstance.data.datasets[0].data = calcComp(8); state.chartInstance.update(); }));
             DOM.visualizerControls.appendChild(createBtn('20:1', false, () => { state.chartInstance.data.datasets[0].data = calcComp(20); state.chartInstance.update(); }));
             DOM.visualizerControls.appendChild(createBtn('100:1', false, () => { state.chartInstance.data.datasets[0].data = calcComp(100); state.chartInstance.update(); }));
+        }
+
+        function setupClipGainVisualizer(ctx) {
+            const points = 80;
+            const waveform = [];
+            for (let i = 0; i < points; i++) {
+                // Generar una forma de onda pseudo-aleatoria pero suave
+                waveform.push(Math.sin(i * 0.2) * 0.3 + (Math.random() * 0.5));
+            }
+
+            const draw = (gain) => {
+                const w = ctx.canvas.width = DOM.canvas.parentElement.clientWidth;
+                const h = ctx.canvas.height = 200;
+                ctx.clearRect(0, 0, w, h);
+                
+                const centerY = h / 2;
+                const step = (w - 40) / points;
+
+                // Contenedor del ítem
+                ctx.fillStyle = '#f3f4f6';
+                ctx.fillRect(10, 20, w - 20, h - 40);
+                ctx.strokeStyle = '#d1d5db';
+                ctx.lineWidth = 1;
+                ctx.strokeRect(10, 20, w - 20, h - 40);
+
+                // Dibujar forma de onda
+                ctx.beginPath();
+                // Color cambia si hay clipping (ganancia alta)
+                ctx.strokeStyle = gain > 1.6 ? '#ef4444' : '#d97706';
+                ctx.lineWidth = 2;
+                ctx.lineCap = 'round';
+
+                for (let i = 0; i < points; i++) {
+                    const x = 20 + i * step;
+                    const amp = waveform[i] * (h / 2) * 0.7 * gain;
+                    // Limitar visualmente al contenedor pero mostrar "clipping"
+                    const visualAmp = Math.min(amp, h / 2 - 25);
+                    
+                    ctx.moveTo(x, centerY - visualAmp);
+                    ctx.lineTo(x, centerY + visualAmp);
+                }
+                ctx.stroke();
+
+                // Línea de Cero
+                ctx.beginPath();
+                ctx.setLineDash([4, 4]);
+                ctx.strokeStyle = '#9ca3af';
+                ctx.moveTo(10, centerY);
+                ctx.lineTo(w - 10, centerY);
+                ctx.stroke();
+                ctx.setLineDash([]);
+
+                // Etiquetas de nivel
+                ctx.fillStyle = '#6b7280';
+                ctx.font = '10px Inter';
+                ctx.fillText('0 dB (Techo)', 15, 35);
+                if (gain > 1.6) {
+                    ctx.fillStyle = '#ef4444';
+                    ctx.font = 'bold 12px Inter';
+                    ctx.fillText('¡CLIPPING!', w / 2 - 30, 15);
+                }
+            };
+
+            // Controles
+            const container = document.createElement('div');
+            container.className = 'w-full space-y-2';
+            
+            const label = document.createElement('div');
+            label.className = 'flex justify-between items-center';
+            label.innerHTML = `<span class="text-xs font-bold text-stone-700">Ajustar Clip Gain</span><span id="gain-val" class="text-xs font-mono bg-stone-100 px-2 py-0.5 rounded">0.0 dB</span>`;
+            
+            const slider = document.createElement('input');
+            slider.type = 'range';
+            slider.min = '0.2';
+            slider.max = '2.5';
+            slider.step = '0.05';
+            slider.value = '1.0';
+            slider.className = 'w-full h-1.5 bg-stone-200 rounded-lg appearance-none cursor-pointer accent-amber-600';
+
+            slider.oninput = (e) => {
+                const val = parseFloat(e.target.value);
+                const db = (20 * Math.log10(val)).toFixed(1);
+                document.getElementById('gain-val').innerText = `${db > 0 ? '+' : ''}${db} dB`;
+                draw(val);
+            };
+
+            container.appendChild(label);
+            container.appendChild(slider);
+            DOM.visualizerControls.appendChild(container);
+            
+            // Redibujar si cambia el tamaño
+            window.addEventListener('resize', () => draw(parseFloat(slider.value)));
+            draw(1.0);
         }
 
         function setupGainStagingChart(ctx) {
