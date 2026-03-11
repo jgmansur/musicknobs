@@ -70,13 +70,20 @@ Important: Use real, up-to-date facts as of 2024-2025 regarding the US Copyright
       temperature: 0.2, // Low temperature for factual consistency
     });
 
-    const jsonString = completion.choices[0].message.content.trim();
+    const content = completion.choices[0].message.content.trim();
 
-    // Sometimes the AI still outputs markdown despite prompt, sanitize it:
-    const cleanJson = jsonString.replace(/^\s*```(?:json)?\s*\n?/, '').replace(/\n?\s*```\s*$/, '').trim();
+    // Enhanced JSON extraction: Find the first '{' and the last '}'
+    const startIdx = content.indexOf('{');
+    const endIdx = content.lastIndexOf('}');
+
+    if (startIdx === -1 || endIdx === -1) {
+      throw new Error("AI output did not contain a valid JSON object.");
+    }
+
+    const jsonString = content.substring(startIdx, endIdx + 1);
 
     // Parse it to ensure it's valid before saving
-    const parsedData = JSON.parse(cleanJson);
+    const parsedData = JSON.parse(jsonString);
 
     // Validate parsed data structure
     const requiredKeys = ['lastUpdated', 'es', 'en'];

@@ -2,8 +2,8 @@ name: Daily Copyright News Update
 
 on:
   schedule:
-    # Runs at 12:00 UTC (around 6-8 AM in the Americas) every day
-    - cron: '0 12 * * *'
+    # Runs at 00:00 and 12:00 UTC every day
+    - cron: '0 0,12 * * *'
   workflow_dispatch: # Allows manual trigger from GitHub UI
 
 jobs:

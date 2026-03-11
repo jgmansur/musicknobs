@@ -336,14 +336,33 @@
             },
             {
                 id: 2, icon: "✂️", title: "Clase 2: Edición y Ganancia",
-                objective: "Limpieza de audios y preparación de niveles.",
-                intro: "Esta sección se enfoca en la preparación del audio ('Gain Staging'). Exploraremos cómo editar, limpiar ruidos y manejar el volumen *antes* de que el sonido llegue a los efectos.",
-                topics: ["<b>Herramientas de edición:</b> Seleccionar, cortar (S), mover y zoom.", "<b>Limpieza:</b> Fades y Crossfades automáticos.", "<b>Gain Staging:</b> El Clip Gain afecta ANTES de los plugins. El fader afecta DESPUÉS."],
-                practice: "Usar el Clip Gain para emparejar visual y auditivamente una pista con variaciones.",
-                homework: "Limpia silencios, aplica fades y haz un balance rápido usando solo faders.",
-                links: [{ text: "Video: Técnicas de Edición", url: "https://www.youtube.com/watch?v=UmcjqQPIm3E" }],
-                shortcuts: ["<b>Cortar:</b> S", "<b>Zoom H:</b> Rueda", "<b>Zoom V:</b> Ctrl + Rueda", "<b>Borrar:</b> Suprimir", "<b>Propiedades (Volumen):</b> F2"],
-                instructorNotes: "<p><strong>Meta Docente:</strong> Entender el Flujo de Señal.</p><ul class='list-disc pl-5'><li><strong>Clip Gain vs Fader:</strong> Muéstrales cómo la forma de onda engorda al subir el Clip Gain.</li><li><strong>F2:</strong> Normalizar múltiples ítems a la vez.</li></ul>",
+                objective: "Dominar las herramientas de edición, Razor Editing y control de ganancia.",
+                intro: "La edición es el arte de limpiar y preparar el audio. Veremos cómo manipular items con precisión quirúrgica usando Fades, Razor Editing y cómo gestionar el tempo con el Grid y Metrónomo.",
+                topics: [
+                    "<b>Fades y Crossfades:</b> Reaper crea crossfades automáticos al solapar items. Puedes ajustar la curva con <i>Alt+Arrastrar</i> sobre el fade.",
+                    "<b>Splitting atcursor:</b> Equivale al Cmd+E de Pro Tools. En Reaper es la tecla <b>S</b>. Puedes remapear Cmd+E en la <i>Action List (?)</i>.",
+                    "<b>Razor Editing:</b> Selección de área (tiempo + pistas). Vital para mover bloques enteros de la sesión.",
+                    "<b>Grid y Metrónomo:</b> Activa/Desactiva para mantener el ritmo. Configura el snapping para que tus clips 'peguen' en el tiempo.",
+                    "<b>Nudge (Empuje):</b> Desplazamiento preciso por milisegundos, frames o beats.",
+                    "<b>Marquee Selection:</b> Selección múltiple tipo 'lazo' para ítems o puntos de automatización.",
+                    "<b>Markers:</b> Puntos de referencia esenciales para la estructura (Intro, Verso, Estribillo)."
+                ],
+                practice: "Realizar cortes precisos, aplicar fades en los inicios/finales de cada clip para evitar 'pops' y crear la estructura de un tema con Marcadores.",
+                homework: "Configurar el Nudge para mover ítems 10ms hacia adelante/atrás y limpiar una pista de voz usando Razor Editing.",
+                links: [],
+                shortcuts: [
+                    "<b>Split Item:</b> S (Remapeable a Cmd+E para usuarios de Pro Tools)",
+                    "<b>Fades manuales:</b> Arrastrar esquina superior del ítem",
+                    "<b>Auto-Crossfade:</b> Alt+X (Opt+X) para activar/desactivar",
+                    "<b>Razor Edit:</b> Alt + Click Derecho (Opt + Click Der.) para seleccionar área",
+                    "<b>Grid Toggle:</b> Alt+G (Opt+G) | <b>Grid Settings:</b> Alt+L (Opt+L)",
+                    "<b>Metrónomo Toggle:</b> Sin default (se recomienda asignar uno en Action List) o Click en icono",
+                    "<b>Nudge Dialog:</b> N (Aquí cambias unidades: ms, beats, frames)",
+                    "<b>Nudge Backward/Forward:</b> , y . (Coma y Punto para items/tiempo)",
+                    "<b>Marquee:</b> Click derecho + Arrastrar | <b>Add to Marquee:</b> Shift + Click Der.",
+                    "<b>Markers:</b> M (Crear) | Shift+M (Crear con nombre) | 1-9 (Saltar a marcador)"
+                ],
+                instructorNotes: "<p><strong>Meta Docente:</strong> Eficiencia máxima.</p><ul class='list-disc pl-5'><li><strong>Zero Crossing:</strong> Menciona que Reaper puede cortar en 'paso por cero' para evitar ruidos (Action: Split at next zero crossing).</li><li><strong>Nudge Settings:</strong> Muestra cómo cambiar de 'Milisegundos' a 'Beats' en la ventana de Nudge (N) para mover cosas musicalmente.</li><li><strong>Marquee vs Razor:</strong> El Marquee selecciona items completos; el Razor selecciona partes de items.</li></ul>",
                 hasVisualizer: true, visualizerType: "bar", visualizerTitle: "Impacto del Clip Gain", visualizerDesc: "Emparejando la señal antes de los plugins."
             },
             {
