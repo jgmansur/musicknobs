@@ -1,4 +1,46 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // --- 0. COMMON DOM ELEMENTS (Define first to avoid ReferenceError) ---
+    const canvas = document.getElementById('thumbnail-canvas');
+    const ctx = canvas.getContext('2d');
+    const imageUpload = document.getElementById('image-upload');
+    const uploadArea = document.getElementById('upload-area');
+    const textTools = document.getElementById('text-tools');
+    const canvasWrapper = document.querySelector('.canvas-wrapper');
+    const downloadBtn = document.getElementById('download-btn');
+
+    // Inputs
+    const text0Input = document.getElementById('thumb-text-0');
+    const text1Input = document.getElementById('thumb-text-1');
+    const text2Input = document.getElementById('thumb-text-2');
+    const color0Input = document.getElementById('color-0');
+    const color1Input = document.getElementById('color-1');
+    const color2Input = document.getElementById('color-2');
+    const size0Input = document.getElementById('size-0');
+    const size1Input = document.getElementById('size-1');
+    const size2Input = document.getElementById('size-2');
+    const rotate0Input = document.getElementById('rotate-0');
+    const rotate1Input = document.getElementById('rotate-1');
+    const rotate2Input = document.getElementById('rotate-2');
+    
+    const fontSelect = document.getElementById('font-family');
+    const addVsBtn = document.getElementById('add-vs-btn');
+
+    // Advanced Config
+    const letterSpacingInput = document.getElementById('letter-spacing');
+    const toggleShadowInput = document.getElementById('toggle-shadow');
+    const toggleStrokeInput = document.getElementById('toggle-stroke');
+
+    // Text objects to handle dragging
+    const texts = [
+        { id: 0, text: '', x: 100, y: 150, color: '#FFFFFF', rotation: 0, isDragging: false },
+        { id: 1, text: '', x: 100, y: 300, color: '#FFFFFF', rotation: 0, isDragging: false },
+        { id: 2, text: '', x: 100, y: 450, color: '#FF3366', rotation: 0, isDragging: false }
+    ];
+
+    let currentBgImage = null;
+    let showVsBadge = false;
+    let startX, startY;
+
     // --- 1. PROMPT GENERATOR LOGIC ---
     const formOptions = {
         concept: document.getElementById('video-concept'),
@@ -23,7 +65,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         const luces = formOptions.iluminacion.value;
 
-        // Sync Concept with Canvas Texts (Initial or if user hasn't typed anything else)
+        // Sync Concept with Canvas Texts
         syncConceptToText(concept);
 
         let basePrompt = `Based on the reference image in my google drive 'Jay Looks 1.jpg', generate a highly realistic professional music producer`;
@@ -50,24 +92,39 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!text) return;
         
         const words = text.toUpperCase().split(' ');
-        if (words.length >= 2) {
-            const mid = Math.ceil(words.length / 2);
-            const part1 = words.slice(0, mid).join(' ');
-            const part2 = words.slice(mid).join(' ');
+        
+        // Logical splitting for 3 lines
+        if (words.length >= 3) {
+            const partSize = Math.ceil(words.length / 3);
+            const part0 = words.slice(0, partSize).join(' ');
+            const part1 = words.slice(partSize, partSize * 2).join(' ');
+            const part2 = words.slice(partSize * 2).join(' ');
             
-            // Only update if inputs are empty or haven't been manually set by currentBgImage load defaults
+            if (!text0Input.value || text0Input.value === "DESCUBRE EL") {
+                text0Input.value = part0;
+                texts[0].text = part0;
+            }
             if (!text1Input.value || text1Input.value === "NUEVO SECRETO") {
                 text1Input.value = part1;
-                texts[0].text = part1;
+                texts[1].text = part1;
             }
             if (!text2Input.value || text2Input.value === "DE MEZCLA") {
                 text2Input.value = part2;
-                texts[1].text = part2;
+                texts[2].text = part2;
+            }
+        } else if (words.length === 2) {
+            if (!text1Input.value || text1Input.value === "NUEVO SECRETO") {
+                text1Input.value = words[0];
+                texts[1].text = words[0];
+            }
+            if (!text2Input.value || text2Input.value === "DE MEZCLA") {
+                text2Input.value = words[1];
+                texts[2].text = words[1];
             }
         } else {
             if (!text1Input.value || text1Input.value === "NUEVO SECRETO") {
                 text1Input.value = text.toUpperCase();
-                texts[0].text = text.toUpperCase();
+                texts[1].text = text.toUpperCase();
             }
         }
         renderCanvas();
@@ -97,40 +154,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // --- 2. CANVAS & TEXT EDITOR LOGIC ---
-    const canvas = document.getElementById('thumbnail-canvas');
-    const ctx = canvas.getContext('2d');
-    const imageUpload = document.getElementById('image-upload');
-    const uploadArea = document.getElementById('upload-area');
-    const textTools = document.getElementById('text-tools');
-    const canvasWrapper = document.querySelector('.canvas-wrapper');
-    const downloadBtn = document.getElementById('download-btn');
-
-    // Inputs
-    const text1Input = document.getElementById('thumb-text-1');
-    const text2Input = document.getElementById('thumb-text-2');
-    const color1Input = document.getElementById('color-1');
-    const color2Input = document.getElementById('color-2');
-    const size1Input = document.getElementById('size-1');
-    const size2Input = document.getElementById('size-2');
-    const fontSelect = document.getElementById('font-family');
-    const addVsBtn = document.getElementById('add-vs-btn');
-
-    // Advanced Config
-    const letterSpacingInput = document.getElementById('letter-spacing');
-    const toggleShadowInput = document.getElementById('toggle-shadow');
-    const toggleStrokeInput = document.getElementById('toggle-stroke');
-
-    let currentBgImage = null;
-    let showVsBadge = false;
-
-    // Text objects to handle dragging
-    const texts = [
-        { id: 1, text: '', x: 100, y: 300, color: '#FFFFFF', rotation: 0, isDragging: false },
-        { id: 2, text: '', x: 100, y: 450, color: '#FF3366', rotation: 0, isDragging: false }
-    ];
-
-    let startX, startY;
-
     // Load custom fonts to ensure they render on canvas immediately
     document.fonts.ready.then(() => {
         renderCanvas();
@@ -168,11 +191,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 canvasWrapper.style.display = 'block';
                 downloadBtn.disabled = false;
 
-                // Set default texts to show the user how it works
+                // Set default texts if empty
+                if (!text0Input.value) text0Input.value = "DESCUBRE EL";
                 if (!text1Input.value) text1Input.value = "NUEVO SECRETO";
                 if (!text2Input.value) text2Input.value = "DE MEZCLA";
-                texts[0].text = text1Input.value;
-                texts[1].text = text2Input.value;
+                texts[0].text = text0Input.value;
+                texts[1].text = text1Input.value;
+                texts[2].text = text2Input.value;
 
                 renderCanvas();
             };
@@ -182,15 +207,21 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Connect text inputs to canvas rendering
-    text1Input.addEventListener('input', (e) => { texts[0].text = e.target.value; renderCanvas(); });
-    text2Input.addEventListener('input', (e) => { texts[1].text = e.target.value; renderCanvas(); });
-    color1Input.addEventListener('input', (e) => { texts[0].color = e.target.value; renderCanvas(); });
-    color2Input.addEventListener('input', (e) => { texts[1].color = e.target.value; renderCanvas(); });
+    text0Input.addEventListener('input', (e) => { texts[0].text = e.target.value; renderCanvas(); });
+    text1Input.addEventListener('input', (e) => { texts[1].text = e.target.value; renderCanvas(); });
+    text2Input.addEventListener('input', (e) => { texts[2].text = e.target.value; renderCanvas(); });
+    
+    color0Input.addEventListener('input', (e) => { texts[0].color = e.target.value; renderCanvas(); });
+    color1Input.addEventListener('input', (e) => { texts[1].color = e.target.value; renderCanvas(); });
+    color2Input.addEventListener('input', (e) => { texts[2].color = e.target.value; renderCanvas(); });
+    
+    size0Input.addEventListener('input', renderCanvas);
     size1Input.addEventListener('input', renderCanvas);
     size2Input.addEventListener('input', renderCanvas);
     
-    document.getElementById('rotate-1').addEventListener('input', (e) => { texts[0].rotation = parseInt(e.target.value); renderCanvas(); });
-    document.getElementById('rotate-2').addEventListener('input', (e) => { texts[1].rotation = parseInt(e.target.value); renderCanvas(); });
+    rotate0Input.addEventListener('input', (e) => { texts[0].rotation = parseInt(e.target.value); renderCanvas(); });
+    rotate1Input.addEventListener('input', (e) => { texts[1].rotation = parseInt(e.target.value); renderCanvas(); });
+    rotate2Input.addEventListener('input', (e) => { texts[2].rotation = parseInt(e.target.value); renderCanvas(); });
 
     fontSelect.addEventListener('change', renderCanvas);
     letterSpacingInput.addEventListener('input', renderCanvas);
@@ -210,7 +241,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Clear canvas
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        // 1. Draw Background Image (Cover/Fill)
+        // 1. Draw Background Image
         const hRatio = canvas.width / currentBgImage.width;
         const vRatio = canvas.height / currentBgImage.height;
         const ratio = Math.max(hRatio, vRatio);
@@ -220,7 +251,7 @@ document.addEventListener('DOMContentLoaded', () => {
         ctx.drawImage(currentBgImage, 0, 0, currentBgImage.width, currentBgImage.height,
             centerShiftX, centerShiftY, currentBgImage.width * ratio, currentBgImage.height * ratio);
 
-        // 2. Add Vignette / Left Dark Gradient
+        // 2. Add Vignette
         const gradient = ctx.createLinearGradient(0, 0, canvas.width * 0.6, 0);
         gradient.addColorStop(0, "rgba(0,0,0,0.8)");
         gradient.addColorStop(1, "rgba(0,0,0,0)");
@@ -232,11 +263,12 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!item.text.trim()) return;
 
             const fontName = fontSelect.value;
-            const fontSize = index === 0 ? size1Input.value : size2Input.value;
+            let fontSize;
+            if (index === 0) fontSize = size0Input.value;
+            else if (index === 1) fontSize = size1Input.value;
+            else fontSize = size2Input.value;
 
             ctx.save();
-            
-            // Move to item center for rotation
             ctx.translate(item.x, item.y);
             ctx.rotate(item.rotation * Math.PI / 180);
 
@@ -264,7 +296,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 ctx.fillText(item.text.toUpperCase(), 0, 0);
             }
 
-            // Calculate width and height for hit detection
             const metrics = ctx.measureText(item.text.toUpperCase());
             item.width = metrics.width;
             item.height = parseInt(fontSize, 10);
@@ -272,20 +303,15 @@ document.addEventListener('DOMContentLoaded', () => {
             ctx.restore();
         });
 
-        // 4. Draw VS Badge if active
-        if (showVsBadge) {
-            drawVSBadge();
-        }
+        if (showVsBadge) drawVSBadge();
     }
 
     function drawVSBadge() {
         const centerX = canvas.width / 2;
         const centerY = canvas.height / 2;
         const radius = 80;
-
         ctx.shadowColor = "rgba(0,0,0,0.8)";
         ctx.shadowBlur = 20;
-
         ctx.beginPath();
         ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI, false);
         ctx.fillStyle = '#1e1e1e';
@@ -293,9 +319,7 @@ document.addEventListener('DOMContentLoaded', () => {
         ctx.lineWidth = 10;
         ctx.strokeStyle = '#FF3366';
         ctx.stroke();
-
         ctx.shadowColor = "transparent";
-
         ctx.font = `900 80px "Montserrat"`;
         ctx.fillStyle = "white";
         ctx.textAlign = "center";
@@ -317,13 +341,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const pos = getMousePos(e);
         startX = pos.x;
         startY = pos.y;
-
         for (let i = texts.length - 1; i >= 0; i--) {
             const item = texts[i];
             if (!item.text) continue;
-
-            // Simplified hit detection for rotated text (using bounding box logic for simplicity)
-            // A perfect hit detection would require rotating the mouse point back, but for thumbnails this box is usually fine.
             if (pos.x >= item.x - 20 && pos.x <= item.x + item.width + 20 &&
                 pos.y >= item.y - 20 && pos.y <= item.y + item.height + 20) {
                 item.isDragging = true;
@@ -336,7 +356,6 @@ document.addEventListener('DOMContentLoaded', () => {
     canvas.addEventListener('mousemove', (e) => {
         const pos = getMousePos(e);
         let dragging = false;
-
         texts.forEach(item => {
             if (item.isDragging) {
                 dragging = true;
@@ -346,7 +365,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 item.y += dy;
             }
         });
-
         if (dragging) {
             startX = pos.x;
             startY = pos.y;
@@ -373,7 +391,6 @@ document.addEventListener('DOMContentLoaded', () => {
         texts.forEach(t => t.isDragging = false); 
     });
 
-    // --- DOWNLOAD ---
     downloadBtn.addEventListener('click', () => {
         if (!currentBgImage) return;
         const dataURL = canvas.toDataURL('image/jpeg', 0.9);
@@ -385,3 +402,4 @@ document.addEventListener('DOMContentLoaded', () => {
         document.body.removeChild(link);
     });
 });
+
