@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-03-12T02:40:30.489Z",
+  "lastUpdated": "2026-03-12T13:16:05.145Z",
   "es": {
     "title": "Noticias Diarias: Copyright e Inteligencia Artificial",
     "subtitle": "Lo último en leyes de derechos de autor para músicos, compositores y productores.",
@@ -7,17 +7,17 @@
       {
         "id": "cambios-ley",
         "title": "Cambios Recientes en la Ley de Copyright",
-        "content": "La Oficina de Derechos de Autor de los Estados Unidos ha establecido que las obras creadas únicamente por inteligencia artificial no pueden ser registradas, ya que carecen de autoría humana. Sin embargo, si un ser humano ha intervenido significativamente en la creación de la obra, puede ser elegible para el registro. Esto se debe a que la ley de derechos de autor requiere que la obra sea creada por un ser humano para ser considerada elegible para la protección."
+        "content": "La Oficina de Derechos de Autor de los Estados Unidos ha establecido que las obras creadas únicamente por inteligencia artificial no son elegibles para la protección de derechos de autor. Sin embargo, si un ser humano ha intervenido significativamente en la creación de la obra, puede ser considerada para la protección. Esto se debe a que la ley de derechos de autor requiere una creación original de un ser humano para ser protegida."
       },
       {
         "id": "que-registrar",
         "title": "¿Qué se puede y qué no se puede registrar?",
-        "content": "Los músicos pueden registrar sus obras si han utilizado inteligencia artificial como herramienta, siempre y cuando hayan intervenido significativamente en la creación de la obra. Por ejemplo, si un productor utiliza un software de inteligencia artificial para generar un ritmo, pero luego edita y personaliza el ritmo, puede registrar la obra. Sin embargo, si el software de inteligencia artificial crea la obra sin intervención humana, no puede ser registrada."
+        "content": "Los músicos pueden registrar sus obras si han sido creadas con la ayuda de inteligencia artificial, siempre y cuando el ser humano haya tenido un papel significativo en la creación. Por ejemplo, si un productor utiliza un software de inteligencia artificial para generar un ritmo, pero luego edita y modifica la pista para agregar sus propias ideas y creación original, puede registrar la obra. Sin embargo, si la obra es creada únicamente por la inteligencia artificial sin intervención humana, no es elegible para la protección de derechos de autor."
       },
       {
         "id": "intervencion-humana",
         "title": "Productores: Edición vs Intervención Humana",
-        "content": "Si un productor agrega instrumentos reales o edita una pista generada por inteligencia artificial, puede registrar la obra si la intervención humana es significativa. La clave es determinar si la intervención humana ha agregado un elemento creativo y original a la obra. Si la intervención humana se limita a ajustar parámetros o hacer ediciones menores, es posible que no sea suficiente para considerar la obra como una creación humana original."
+        "content": "La cantidad de intervención humana necesaria para registrar una obra creada con inteligencia artificial es un tema de debate. Sin embargo, en general, se considera que la intervención humana debe ser significativa y no simplemente cosmética. Por ejemplo, si un productor agrega instrumentos reales a una pista generada por inteligencia artificial, pero no cambia la estructura o la melodía de la canción, es posible que no sea suficiente para considerarla una creación original. Sin embargo, si el productor edita y modifica la pista para agregar sus propias ideas y creación original, puede ser considerada para la protección de derechos de autor."
       }
     ]
   },
@@ -28,17 +28,17 @@
       {
         "id": "law-changes",
         "title": "Recent Changes in Copyright Law",
-        "content": "The United States Copyright Office has established that works created solely by artificial intelligence cannot be registered, as they lack human authorship. However, if a human has significantly contributed to the creation of the work, it may be eligible for registration. This is because copyright law requires that the work be created by a human to be considered eligible for protection. The US Copyright Office has recently clarified that it will not register works produced by artificial intelligence without human intervention, citing the need for human authorship."
+        "content": "The United States Copyright Office has established that works created solely by artificial intelligence are not eligible for copyright protection. However, if a human has significantly contributed to the creation of the work, it may be considered for protection. This is because copyright law requires an original creation by a human to be protected. Recently, the US Copyright Office has been grappling with the issue of AI-generated works, and in 2022, it issued a policy statement that made it clear that it would not register works produced by artificial intelligence without human authorship."
       },
       {
         "id": "what-can-be-registered",
         "title": "What Can and Cannot Be Registered?",
-        "content": "Musicians can register their works if they have used artificial intelligence as a tool, as long as they have significantly contributed to the creation of the work. For example, if a producer uses artificial intelligence software to generate a beat, but then edits and customizes the beat, they can register the work. However, if the artificial intelligence software creates the work without human intervention, it cannot be registered. The key is to determine whether the human contribution has added a creative and original element to the work."
+        "content": "Musicians can register their works if they have been created with the help of artificial intelligence, as long as a human has played a significant role in the creation. For example, if a producer uses AI software to generate a beat, but then edits and modifies the track to add their own ideas and original creation, they can register the work. However, if the work is created solely by the artificial intelligence without human intervention, it is not eligible for copyright protection. The key factor is whether the human contribution is sufficient to be considered an original work of authorship."
       },
       {
         "id": "human-intervention",
         "title": "Producers: Editing vs. Human Intervention",
-        "content": "If a producer adds real instruments or edits an artificial intelligence-generated track, they can register the work if the human intervention is significant. The crucial factor is determining whether the human intervention has added a creative and original element to the work. If the human intervention is limited to adjusting parameters or making minor edits, it may not be sufficient to consider the work as an original human creation. The US Copyright Office has emphasized that the level of human intervention required for registration will depend on the specific circumstances of each case."
+        "content": "The amount of human intervention required to register a work created with artificial intelligence is a topic of debate. However, in general, it is considered that human intervention must be significant and not just cosmetic. For example, if a producer adds real instruments to an AI-generated track, but does not change the structure or melody of the song, it may not be enough to consider it an original creation. However, if the producer edits and modifies the track to add their own ideas and original creation, it may be considered for copyright protection. The US Copyright Office has stated that it will consider the level of human creativity and originality in determining whether a work is eligible for registration."
       }
     ]
   }
