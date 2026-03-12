@@ -1,6 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     // --- 1. PROMPT GENERATOR LOGIC ---
     const formOptions = {
+        concept: document.getElementById('video-concept'),
         arquetipo: document.getElementById('arquetipo'),
         sujeto: document.getElementById('sujeto'),
         entorno: document.getElementById('entorno'),
@@ -10,9 +11,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const copyBtn = document.getElementById('copy-prompt-btn');
 
     function generatePrompt() {
+        const concept = formOptions.concept.value || "a professional music topic";
         const arquetipo = formOptions.arquetipo.value;
         const sujetoExp = formOptions.sujeto.value;
         let entorno = formOptions.entorno.value;
+        
         if (entorno === 'custom') {
             entorno = document.getElementById('entorno-custom').value || 'dark high-end recording studio';
         } else if (!entorno) {
@@ -20,12 +23,15 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         const luces = formOptions.iluminacion.value;
 
+        // Sync Concept with Canvas Texts (Initial or if user hasn't typed anything else)
+        syncConceptToText(concept);
+
         let basePrompt = `Based on the reference image in my google drive 'Jay Looks 1.jpg', generate a highly realistic professional music producer`;
 
         if (sujetoExp === 'no subject') {
-            basePrompt = `Generate a highly realistic`;
+            basePrompt = `Generate a highly realistic scene about "${concept}"`;
         } else {
-            basePrompt += ` with a ${sujetoExp},`;
+            basePrompt += ` with a ${sujetoExp}, focused on "${concept}",`;
         }
 
         let framing = "subject on the right, empty space on the left for text placement";
@@ -38,6 +44,33 @@ document.addEventListener('DOMContentLoaded', () => {
         const fullPrompt = `${basePrompt} in a ${entorno}, Cinematic Lighting, ${luces}, professional studio photography, ${framing}, 8k resolution, photorealistic, --ar 16:9`;
 
         generatedPromptEl.value = fullPrompt;
+    }
+
+    function syncConceptToText(text) {
+        if (!text) return;
+        
+        const words = text.toUpperCase().split(' ');
+        if (words.length >= 2) {
+            const mid = Math.ceil(words.length / 2);
+            const part1 = words.slice(0, mid).join(' ');
+            const part2 = words.slice(mid).join(' ');
+            
+            // Only update if inputs are empty or haven't been manually set by currentBgImage load defaults
+            if (!text1Input.value || text1Input.value === "NUEVO SECRETO") {
+                text1Input.value = part1;
+                texts[0].text = part1;
+            }
+            if (!text2Input.value || text2Input.value === "DE MEZCLA") {
+                text2Input.value = part2;
+                texts[1].text = part2;
+            }
+        } else {
+            if (!text1Input.value || text1Input.value === "NUEVO SECRETO") {
+                text1Input.value = text.toUpperCase();
+                texts[0].text = text.toUpperCase();
+            }
+        }
+        renderCanvas();
     }
 
     // Attach listeners to update prompt instantly
