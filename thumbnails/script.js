@@ -207,6 +207,29 @@ document.addEventListener('DOMContentLoaded', () => {
         reader.readAsDataURL(file);
     }
 
+    // --- 3. SLIDER POLISH HELPER (Snapping & Reset) ---
+    function applySliderPolish(input, defaultValue, snapRange = 10) {
+        if (!input) return;
+
+        // Snapping logic
+        input.addEventListener('input', (e) => {
+            const val = parseInt(e.target.value);
+            if (Math.abs(val - defaultValue) < snapRange && val !== defaultValue) {
+                e.target.value = defaultValue;
+            }
+            renderCanvas();
+        });
+
+        // Reset shortcut: Cmd/Ctrl + Click
+        input.addEventListener('mousedown', (e) => {
+            if (e.metaKey || e.ctrlKey) {
+                e.preventDefault();
+                input.value = defaultValue;
+                renderCanvas();
+            }
+        });
+    }
+
     // Connect text inputs to canvas rendering
     text0Input.addEventListener('input', (e) => { texts[0].text = e.target.value; renderCanvas(); });
     text1Input.addEventListener('input', (e) => { texts[1].text = e.target.value; renderCanvas(); });
@@ -216,36 +239,22 @@ document.addEventListener('DOMContentLoaded', () => {
     color1Input.addEventListener('input', (e) => { texts[1].color = e.target.value; renderCanvas(); });
     color2Input.addEventListener('input', (e) => { texts[2].color = e.target.value; renderCanvas(); });
     
-    size0Input.addEventListener('input', renderCanvas);
-    size1Input.addEventListener('input', renderCanvas);
-    size2Input.addEventListener('input', renderCanvas);
-    
-    rotate0Input.addEventListener('input', (e) => { texts[0].rotation = parseInt(e.target.value); renderCanvas(); });
-    rotate1Input.addEventListener('input', (e) => { texts[1].rotation = parseInt(e.target.value); renderCanvas(); });
     rotate2Input.addEventListener('input', (e) => { texts[2].rotation = parseInt(e.target.value); renderCanvas(); });
 
-    fontSelect.addEventListener('change', renderCanvas);
-    letterSpacingInput.addEventListener('input', renderCanvas);
     toggleShadowInput.addEventListener('change', renderCanvas);
     toggleStrokeInput.addEventListener('change', renderCanvas);
     
-    // Snapping logic for background offset
-    bgYOffsetInput.addEventListener('input', (e) => {
-        const val = parseInt(e.target.value);
-        if (Math.abs(val) < 10 && val !== 0) {
-            e.target.value = 0;
-        }
-        renderCanvas();
-    });
+    // Apply Global Slider Polish
+    applySliderPolish(bgYOffsetInput, 0);
+    applySliderPolish(letterSpacingInput, 0);
+    applySliderPolish(rotate0Input, 0);
+    applySliderPolish(rotate1Input, 0);
+    applySliderPolish(rotate2Input, 0);
+    applySliderPolish(size0Input, 100);
+    applySliderPolish(size1Input, 130);
+    applySliderPolish(size2Input, 130);
 
-    // Reset shortcut: Cmd/Ctrl + Click
-    bgYOffsetInput.addEventListener('mousedown', (e) => {
-        if (e.metaKey || e.ctrlKey) {
-            e.preventDefault();
-            bgYOffsetInput.value = 0;
-            renderCanvas();
-        }
-    });
+    fontSelect.addEventListener('change', renderCanvas);
 
     addVsBtn.addEventListener('click', () => {
         showVsBadge = !showVsBadge;
