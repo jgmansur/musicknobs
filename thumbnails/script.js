@@ -224,6 +224,8 @@ document.addEventListener('DOMContentLoaded', () => {
     rotate1Input.addEventListener('input', (e) => { texts[1].rotation = parseInt(e.target.value); renderCanvas(); });
     rotate2Input.addEventListener('input', (e) => { texts[2].rotation = parseInt(e.target.value); renderCanvas(); });
 
+    fontSelect.addEventListener('change', renderCanvas);
+    letterSpacingInput.addEventListener('input', renderCanvas);
     toggleShadowInput.addEventListener('change', renderCanvas);
     toggleStrokeInput.addEventListener('change', renderCanvas);
     
