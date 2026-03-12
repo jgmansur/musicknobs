@@ -29,6 +29,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const letterSpacingInput = document.getElementById('letter-spacing');
     const toggleShadowInput = document.getElementById('toggle-shadow');
     const toggleStrokeInput = document.getElementById('toggle-stroke');
+    const bgYOffsetInput = document.getElementById('bg-y-offset');
 
     // Text objects to handle dragging
     const texts = [
@@ -40,6 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentBgImage = null;
     let showVsBadge = false;
     let startX, startY;
+    let bgYOffset = 0;
 
     // --- 1. PROMPT GENERATOR LOGIC ---
     const formOptions = {
@@ -227,6 +229,10 @@ document.addEventListener('DOMContentLoaded', () => {
     letterSpacingInput.addEventListener('input', renderCanvas);
     toggleShadowInput.addEventListener('change', renderCanvas);
     toggleStrokeInput.addEventListener('change', renderCanvas);
+    bgYOffsetInput.addEventListener('input', (e) => { 
+        bgYOffset = parseInt(e.target.value); 
+        renderCanvas(); 
+    });
 
     addVsBtn.addEventListener('click', () => {
         showVsBadge = !showVsBadge;
@@ -246,7 +252,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const vRatio = canvas.height / currentBgImage.height;
         const ratio = Math.max(hRatio, vRatio);
         const centerShiftX = (canvas.width - currentBgImage.width * ratio) / 2;
-        const centerShiftY = (canvas.height - currentBgImage.height * ratio) / 2;
+        const centerShiftY = ((canvas.height - currentBgImage.height * ratio) / 2) + bgYOffset;
 
         ctx.drawImage(currentBgImage, 0, 0, currentBgImage.width, currentBgImage.height,
             centerShiftX, centerShiftY, currentBgImage.width * ratio, currentBgImage.height * ratio);
