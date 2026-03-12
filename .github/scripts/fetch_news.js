@@ -23,19 +23,19 @@ async function fetchNews() {
     "subtitle": "Lo último en leyes de derechos de autor para músicos, compositores y productores.",
     "sections": [
       {
-        "id": "cambios-ley",
-        "title": "Cambios Recientes en la Ley de Copyright",
-        "content": "Summarize the latest major news about AI music copyright here in Spanish."
+        "id": "noticia-reciente-1",
+        "title": "Título de noticia específica de la última semana",
+        "content": "Resumen detallado con nombres de empresas, artistas o cortes (en español)."
       },
       {
-        "id": "que-registrar",
-        "title": "¿Qué se puede y qué no se puede registrar?",
-        "content": "Explain clearly what musicians can and cannot register if they use AI, in Spanish."
+        "id": "noticia-reciente-2",
+        "title": "Título de otra noticia de impacto reciente",
+        "content": "Explicación de las implicaciones legales para productores (en español)."
       },
       {
-        "id": "intervencion-humana",
-        "title": "Productores: Edición vs Intervención Humana",
-        "content": "Answer the question: if I add real instruments or edit an AI track, can I register it? Focus on the amount of human intervention needed, in Spanish."
+        "id": "guia-practica",
+        "title": "Guía del día: Proceso de Registro",
+        "content": "Un consejo práctico actualizado sobre cómo proteger obras con IA hoy (en español)."
       }
     ]
   },
@@ -44,25 +44,25 @@ async function fetchNews() {
     "subtitle": "The latest in copyright law for musicians, composers, and producers.",
     "sections": [
       {
-        "id": "law-changes",
-        "title": "Recent Changes in Copyright Law",
-        "content": "Summarize the latest major news about AI music copyright here in English."
+        "id": "recent-news-1",
+        "title": "Specific news title from the last week",
+        "content": "Detailed summary with names of companies, artists, or courts (in English)."
       },
       {
-        "id": "what-can-be-registered",
-        "title": "What Can and Cannot Be Registered?",
-        "content": "Explain clearly what musicians can and cannot register if they use AI, in English."
+        "id": "recent-news-2",
+        "title": "Another impactful recent news title",
+        "content": "Explanation of legal implications for producers (in English)."
       },
       {
-        "id": "human-intervention",
-        "title": "Producers: Editing vs. Human Intervention",
-        "content": "Answer the question: if I add real instruments or edit an AI track, can I register it? Focus on the amount of human intervention needed, in English."
+        "id": "practical-guide",
+        "title": "Today's Guide: Registration Process",
+        "content": "Updated practical tip on how to protect AI-assisted works today (in English)."
       }
     ]
   }
 }
 
-Important: Use real, up-to-date facts as of 2024-2025 regarding the US Copyright Office and global trends. Translate the content smoothly.`;
+Important: Use real, up-to-date facts from the LAST 7 DAYS. Avoid repeating same generic content about AI not being registrable unless there is a NEW ruling. Focus on current lawsuits (Google, Suno, Udio, GEMA), legislative changes, or licensing deals.`;
 
     const completion = await groq.chat.completions.create({
       messages: [{ role: "user", content: prompt }],
