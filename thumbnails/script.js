@@ -301,7 +301,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
             ctx.save();
             ctx.translate(item.x, item.y);
-            ctx.rotate(item.rotation * Math.PI / 180);
+            
+            let rotation;
+            if (index === 0) rotation = parseInt(rotate0Input.value) || 0;
+            else if (index === 1) rotation = parseInt(rotate1Input.value) || 0;
+            else rotation = parseInt(rotate2Input.value) || 0;
+            
+            ctx.rotate(rotation * Math.PI / 180);
 
             ctx.font = `900 ${fontSize}px "${fontName}"`;
             ctx.fillStyle = item.color;
