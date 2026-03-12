@@ -224,11 +224,26 @@ document.addEventListener('DOMContentLoaded', () => {
     rotate1Input.addEventListener('input', (e) => { texts[1].rotation = parseInt(e.target.value); renderCanvas(); });
     rotate2Input.addEventListener('input', (e) => { texts[2].rotation = parseInt(e.target.value); renderCanvas(); });
 
-    fontSelect.addEventListener('change', renderCanvas);
-    letterSpacingInput.addEventListener('input', renderCanvas);
     toggleShadowInput.addEventListener('change', renderCanvas);
     toggleStrokeInput.addEventListener('change', renderCanvas);
-    bgYOffsetInput.addEventListener('input', renderCanvas);
+    
+    // Snapping logic for background offset
+    bgYOffsetInput.addEventListener('input', (e) => {
+        const val = parseInt(e.target.value);
+        if (Math.abs(val) < 10 && val !== 0) {
+            e.target.value = 0;
+        }
+        renderCanvas();
+    });
+
+    // Reset shortcut: Cmd/Ctrl + Click
+    bgYOffsetInput.addEventListener('mousedown', (e) => {
+        if (e.metaKey || e.ctrlKey) {
+            e.preventDefault();
+            bgYOffsetInput.value = 0;
+            renderCanvas();
+        }
+    });
 
     addVsBtn.addEventListener('click', () => {
         showVsBadge = !showVsBadge;
