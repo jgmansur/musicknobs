@@ -245,14 +245,14 @@ document.addEventListener('DOMContentLoaded', () => {
     toggleStrokeInput.addEventListener('change', renderCanvas);
     
     // Apply Global Slider Polish
-    applySliderPolish(bgYOffsetInput, 0);
-    applySliderPolish(letterSpacingInput, 0);
-    applySliderPolish(rotate0Input, 0);
-    applySliderPolish(rotate1Input, 0);
-    applySliderPolish(rotate2Input, 0);
-    applySliderPolish(size0Input, 100);
-    applySliderPolish(size1Input, 130);
-    applySliderPolish(size2Input, 130);
+    applySliderPolish(bgYOffsetInput, 0, 10);
+    applySliderPolish(letterSpacingInput, 0, 2); // Reduced range for fine movement
+    applySliderPolish(rotate0Input, 0, 5);      // Balanced range for rotation
+    applySliderPolish(rotate1Input, 0, 5);
+    applySliderPolish(rotate2Input, 0, 5);
+    applySliderPolish(size0Input, 100, 10);
+    applySliderPolish(size1Input, 130, 10);
+    applySliderPolish(size2Input, 130, 10);
 
     fontSelect.addEventListener('change', renderCanvas);
 
