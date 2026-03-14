@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-03-13T13:14:05.836Z",
+  "lastUpdated": "2026-03-14T02:36:40.386Z",
   "es": {
     "title": "Noticias Diarias: Copyright e Inteligencia Artificial",
     "subtitle": "Lo último en leyes de derechos de autor para músicos, compositores y productores.",
@@ -7,17 +7,17 @@
       {
         "id": "noticia-reciente-1",
         "title": "Google enfrenta demanda por infracción de derechos de autor en su modelo de IA de música",
-        "content": "Una reciente demanda presentada en un tribunal de Estados Unidos acusa a Google de infringir derechos de autor al utilizar muestras de música sin permiso en su modelo de IA de música. La demanda, presentada por varios compositores y productores, alega que Google no obtuvo los permisos necesarios para utilizar las muestras de música en su modelo de IA."
+        "content": "La empresa de tecnología Google está siendo demandada por una corte en Estados Unidos por presunta infracción de derechos de autor en su modelo de IA de música, que genera composiciones musicales originales. La demanda alega que el modelo de IA de Google utiliza obras musicales protegidas por derechos de autor sin permiso."
       },
       {
         "id": "noticia-reciente-2",
-        "title": "La sociedad de gestión de derechos de autor alemana GEMA anuncia un acuerdo de licencia con la plataforma de música Suno",
-        "content": "GEMA, la sociedad de gestión de derechos de autor alemana, ha anunciado un acuerdo de licencia con la plataforma de música Suno, que permite a los usuarios de la plataforma acceder a una amplia biblioteca de música con derechos de autor. El acuerdo es visto como un paso importante hacia la protección de los derechos de autor en la era de la IA."
+        "title": "Suno y Udio anuncian acuerdo de licencia para uso de IA en la creación de música",
+        "content": "Las empresas de música Suno y Udio han anunciado un acuerdo de licencia que permitirá a los productores utilizar tecnologías de IA para crear música. El acuerdo establece los términos y condiciones para el uso de la IA en la creación de música y proporciona una solución para los productores que desean utilizar estas tecnologías de manera legal."
       },
       {
         "id": "guia-practica",
         "title": "Guía del día: Cómo registrar tus obras musicales creadas con IA",
-        "content": "Para proteger tus obras musicales creadas con IA, es importante registrarlas en la oficina de derechos de autor correspondiente. En Estados Unidos, por ejemplo, puedes registrar tus obras en la Oficina de Derechos de Autor de los Estados Unidos. Asegúrate de proporcionar toda la información necesaria, incluyendo la descripción de la obra, el nombre del autor y la fecha de creación."
+        "content": "Para registrar tus obras musicales creadas con IA, es importante que sigas los pasos establecidos por la oficina de derechos de autor de tu país. En Estados Unidos, por ejemplo, la Oficina de Derechos de Autor del Gobierno Federal (USCO) proporciona orientación sobre cómo registrar obras musicales creadas con IA. Asegúrate de documentar el proceso de creación de tu obra y de proporcionar la información necesaria para el registro."
       }
     ]
   },
@@ -27,18 +27,18 @@
     "sections": [
       {
         "id": "recent-news-1",
-        "title": "Google Faces Lawsuit Over Copyright Infringement in its AI Music Model",
-        "content": "A recent lawsuit filed in a US court accuses Google of copyright infringement for using music samples without permission in its AI music model. The lawsuit, filed by several composers and producers, alleges that Google did not obtain the necessary permissions to use the music samples in its AI model."
+        "title": "Google faces lawsuit over copyright infringement in its AI music model",
+        "content": "Technology company Google is being sued in a US court for alleged copyright infringement in its AI music model, which generates original musical compositions. The lawsuit claims that Google's AI model uses copyrighted musical works without permission."
       },
       {
         "id": "recent-news-2",
-        "title": "German Copyright Society GEMA Announces Licensing Agreement with Music Platform Suno",
-        "content": "GEMA, the German copyright society, has announced a licensing agreement with music platform Suno, allowing users to access a vast library of copyrighted music. The agreement is seen as a significant step towards protecting copyright in the AI era."
+        "title": "Suno and Udio announce licensing agreement for AI use in music creation",
+        "content": "Music companies Suno and Udio have announced a licensing agreement that will allow producers to use AI technologies to create music. The agreement sets out the terms and conditions for the use of AI in music creation and provides a solution for producers who want to use these technologies legally."
       },
       {
         "id": "practical-guide",
-        "title": "Today's Guide: Registering Your AI-Created Musical Works",
-        "content": "To protect your AI-created musical works, it's essential to register them with the relevant copyright office. In the US, for example, you can register your works with the US Copyright Office. Make sure to provide all necessary information, including a description of the work, the author's name, and the date of creation."
+        "title": "Today's Guide: Registering your AI-created musical works",
+        "content": "To register your AI-created musical works, it's essential to follow the steps set out by the copyright office in your country. In the US, for example, the US Copyright Office (USCO) provides guidance on how to register musical works created with AI. Make sure to document the creation process of your work and provide the necessary information for registration."
       }
     ]
   }
