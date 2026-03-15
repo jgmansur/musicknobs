@@ -1,23 +1,23 @@
 {
-  "lastUpdated": "2026-03-15T02:57:05.057Z",
+  "lastUpdated": "2026-03-15T13:06:40.307Z",
   "es": {
     "title": "Noticias Diarias: Copyright e Inteligencia Artificial",
     "subtitle": "Lo último en leyes de derechos de autor para músicos, compositores y productores.",
     "sections": [
       {
         "id": "noticia-reciente-1",
-        "title": "Google enfrenta demanda por infracción de derechos de autor en música generada por IA",
-        "content": "La empresa de tecnología Google está siendo demandada por infracción de derechos de autor en relación con la música generada por su tecnología de inteligencia artificial. La demanda, presentada por un grupo de compositores y productores, alega que Google no obtuvo los permisos necesarios para utilizar sus obras en la creación de música generada por IA."
+        "title": "Google enfrenta demanda por infracción de derechos de autor con su modelo de IA de música",
+        "content": "La empresa de tecnología Google está siendo demandada por varios compositores y productores musicales por la supuesta infracción de derechos de autor en su modelo de IA de música, que genera composiciones musicales originales. La demanda alega que el modelo de IA de Google utiliza obras musicales protegidas por derechos de autor sin permiso ni compensación."
       },
       {
         "id": "noticia-reciente-2",
-        "title": "Suno y Udio anuncian acuerdo de licencia para música generada por IA",
-        "content": "Las empresas de música Suno y Udio han anunciado un acuerdo de licencia que permitirá a los productores utilizar música generada por IA en sus proyectos. El acuerdo establece los términos y condiciones para el uso de la música generada por IA, incluyendo los pagos de regalías y los derechos de autor."
+        "title": "Suno y Udio anuncian acuerdo de licencia para uso de IA en la música",
+        "content": "Las empresas de música Suno y Udio han anunciado un acuerdo de licencia que permitirá a los productores musicales utilizar tecnologías de IA para generar música. El acuerdo establece los términos y condiciones para el uso de la IA en la creación de música, incluyendo la compensación a los compositores y productores originales."
       },
       {
         "id": "guia-practica",
-        "title": "Guía del día: Cómo registrar tus obras con IA",
-        "content": "Para proteger tus obras con IA, es importante registrarlas en la oficina de derechos de autor correspondiente. Asegúrate de proporcionar toda la información necesaria, incluyendo la descripción de la obra, el nombre del autor y la fecha de creación. También es recomendable consultar con un abogado especializado en derechos de autor para asegurarte de que estás cumpliendo con todos los requisitos legales."
+        "title": "Guía del día: Cómo registrar tus obras musicales creadas con IA",
+        "content": "Para proteger tus obras musicales creadas con IA, es importante registrarlas en la oficina de derechos de autor correspondiente. Asegúrate de proporcionar toda la información necesaria, incluyendo la descripción de la obra, el nombre del autor y la fecha de creación. También es recomendable consultar con un abogado especializado en derechos de autor para asegurarte de que estás cumpliendo con todos los requisitos legales."
       }
     ]
   },
@@ -27,18 +27,18 @@
     "sections": [
       {
         "id": "recent-news-1",
-        "title": "Google Faces Lawsuit Over AI-Generated Music Copyright Infringement",
-        "content": "Technology giant Google is being sued for copyright infringement related to its AI-generated music. The lawsuit, filed by a group of composers and producers, alleges that Google did not obtain the necessary permissions to use their works in the creation of AI-generated music."
+        "title": "Google faces lawsuit over copyright infringement with its AI music model",
+        "content": "Technology company Google is being sued by several music composers and producers for alleged copyright infringement in its AI music model, which generates original music compositions. The lawsuit claims that Google's AI music model uses copyrighted musical works without permission or compensation."
       },
       {
         "id": "recent-news-2",
-        "title": "Suno and Udio Announce Licensing Agreement for AI-Generated Music",
-        "content": "Music companies Suno and Udio have announced a licensing agreement that will allow producers to use AI-generated music in their projects. The agreement sets out the terms and conditions for the use of AI-generated music, including royalty payments and copyright rights."
+        "title": "Suno and Udio announce licensing agreement for AI use in music",
+        "content": "Music companies Suno and Udio have announced a licensing agreement that will allow music producers to use AI technologies to generate music. The agreement sets out the terms and conditions for the use of AI in music creation, including compensation for original composers and producers."
       },
       {
         "id": "practical-guide",
-        "title": "Today's Guide: Registering Your AI-Assisted Works",
-        "content": "To protect your AI-assisted works, it's essential to register them with the relevant copyright office. Make sure to provide all necessary information, including a description of the work, the author's name, and the date of creation. It's also recommended to consult with a copyright law specialist to ensure you're meeting all legal requirements."
+        "title": "Today's Guide: Registering your AI-created musical works",
+        "content": "To protect your AI-created musical works, it's essential to register them with the relevant copyright office. Make sure to provide all necessary information, including a description of the work, the author's name, and the date of creation. It's also recommended to consult with a copyright law specialist to ensure you're meeting all legal requirements."
       }
     ]
   }
