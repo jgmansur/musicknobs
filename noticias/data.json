@@ -1,23 +1,23 @@
 {
-  "lastUpdated": "2026-03-16T02:57:24.691Z",
+  "lastUpdated": "2026-03-16T13:27:47.263Z",
   "es": {
     "title": "Noticias Diarias: Copyright e Inteligencia Artificial",
     "subtitle": "Lo último en leyes de derechos de autor para músicos, compositores y productores.",
     "sections": [
       {
         "id": "noticia-reciente-1",
-        "title": "Google enfrenta demanda por violación de derechos de autor con su modelo de IA",
-        "content": "Una reciente demanda presentada en un tribunal de Estados Unidos acusa a Google de violar los derechos de autor de varios artistas y compositores al utilizar su modelo de inteligencia artificial para generar música sin permiso. La demanda alega que el modelo de Google utiliza fragmentos de canciones protegidas por derechos de autor sin obtener la debida autorización."
+        "title": "Google enfrenta demanda por infracción de derechos de autor en su modelo de IA de música",
+        "content": "La empresa de tecnología Google está siendo demandada por una corte en Estados Unidos por presunta infracción de derechos de autor en su modelo de inteligencia artificial de música, según informes de la semana pasada. La demanda alega que el modelo de IA de Google utiliza muestras de música sin permiso de los titulares de los derechos de autor."
       },
       {
         "id": "noticia-reciente-2",
-        "title": "Suno y Udio anuncian acuerdo de licencia para uso de IA en la música",
-        "content": "Las empresas de música Suno y Udio han anunciado un acuerdo de licencia que permitirá a los productores utilizar inteligencia artificial para generar música utilizando los catálogos de ambas empresas. El acuerdo establece los términos y condiciones para el uso de la IA en la creación de música y proporciona una solución para los productores que desean utilizar esta tecnología de manera legal."
+        "title": "Suno y Udio anuncian acuerdo de licencia para uso de IA en la creación de música",
+        "content": "Las empresas de música Suno y Udio han anunciado un acuerdo de licencia que permitirá a los productores utilizar inteligencia artificial en la creación de música, mientras se garantiza el pago de regalías a los titulares de los derechos de autor. Este acuerdo es visto como un paso importante hacia la regulación del uso de IA en la industria musical."
       },
       {
         "id": "guia-practica",
-        "title": "Guía del día: Cómo registrar tus obras con IA",
-        "content": "Para proteger tus obras creadas con inteligencia artificial, es importante registrarlas en la oficina de derechos de autor correspondiente. Asegúrate de proporcionar toda la información necesaria, incluyendo la descripción de la obra, el nombre del autor y la fecha de creación. También es recomendable consultar con un abogado especializado en derechos de autor para asegurarte de que estás cumpliendo con todos los requisitos legales."
+        "title": "Guía del día: Cómo registrar tus obras con IA en la oficina de derechos de autor",
+        "content": "Es importante que los creadores de música que utilizan inteligencia artificial en su proceso de creación registren sus obras en la oficina de derechos de autor correspondiente. Esto puede hacerse a través de la presentación de una solicitud de registro, que debe incluir información sobre la obra, el autor y el uso de IA en su creación. Es recomendable consultar con un experto en derechos de autor para asegurarse de que el proceso se realice correctamente."
       }
     ]
   },
@@ -27,18 +27,18 @@
     "sections": [
       {
         "id": "recent-news-1",
-        "title": "Google Faces Lawsuit Over AI-Generated Music Copyright Infringement",
-        "content": "A recent lawsuit filed in a US court accuses Google of copyright infringement for using its AI model to generate music without permission. The lawsuit claims that Google's model uses fragments of copyrighted songs without obtaining the necessary authorization."
+        "title": "Google Faces Lawsuit Over AI Music Copyright Infringement",
+        "content": "Technology giant Google is being sued in a US court over alleged copyright infringement in its AI music model, according to reports from last week. The lawsuit claims that Google's AI model uses music samples without permission from copyright holders."
       },
       {
         "id": "recent-news-2",
-        "title": "Suno and Udio Announce Licensing Agreement for AI-Generated Music",
-        "content": "Music companies Suno and Udio have announced a licensing agreement that will allow producers to use AI to generate music using their catalogs. The agreement sets out the terms and conditions for the use of AI in music creation and provides a solution for producers who want to use this technology legally."
+        "title": "Suno and Udio Announce Licensing Deal for AI-Generated Music",
+        "content": "Music companies Suno and Udio have announced a licensing deal that will allow producers to use artificial intelligence in music creation while ensuring royalty payments to copyright holders. This deal is seen as a significant step towards regulating the use of AI in the music industry."
       },
       {
         "id": "practical-guide",
-        "title": "Today's Guide: Registering Your AI-Generated Works",
-        "content": "To protect your AI-generated works, it's essential to register them with the relevant copyright office. Make sure to provide all necessary information, including a description of the work, the author's name, and the date of creation. It's also recommended to consult with a copyright law specialist to ensure you're meeting all legal requirements."
+        "title": "Today's Guide: Registering Your AI-Assisted Works",
+        "content": "It is crucial for music creators who use artificial intelligence in their creative process to register their works with the relevant copyright office. This can be done by submitting a registration application, which must include information about the work, the author, and the use of AI in its creation. It is recommended to consult with a copyright expert to ensure the process is carried out correctly."
       }
     ]
   }
