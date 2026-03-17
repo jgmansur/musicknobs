@@ -25,20 +25,17 @@ async function fetchNews() {
       {
         "id": "noticia-reciente-1",
         "title": "Título de noticia específica de la última semana",
-        "content": "Resumen detallado con nombres de empresas, artistas o cortes (en español).",
-        "sourceUrl": "URL real de la fuente de la noticia"
+        "content": "Resumen detallado con nombres de empresas, artistas o cortes (en español)."
       },
       {
         "id": "noticia-reciente-2",
         "title": "Título de otra noticia de impacto reciente",
-        "content": "Explicación de las implicaciones legales para productores (en español).",
-        "sourceUrl": "URL real de la fuente de la noticia"
+        "content": "Explicación de las implicaciones legales para productores (en español)."
       },
       {
         "id": "guia-practica",
         "title": "Guía del día: Proceso de Registro",
-        "content": "Un consejo práctico actualizado sobre cómo proteger obras con IA hoy (en español).",
-        "sourceUrl": "URL de referencia o tutorial relevante"
+        "content": "Un consejo práctico actualizado sobre cómo proteger obras con IA hoy (en español)."
       }
     ]
   },
@@ -49,26 +46,23 @@ async function fetchNews() {
       {
         "id": "recent-news-1",
         "title": "Specific news title from the last week",
-        "content": "Detailed summary with names of companies, artists, or courts (in English).",
-        "sourceUrl": "Real URL of the news source"
+        "content": "Detailed summary with names of companies, artists, or courts (in English)."
       },
       {
         "id": "recent-news-2",
         "title": "Another impactful recent news title",
-        "content": "Explanation of legal implications for producers (in English).",
-        "sourceUrl": "Real URL of the news source"
+        "content": "Explanation of legal implications for producers (in English)."
       },
       {
         "id": "practical-guide",
         "title": "Today's Guide: Registration Process",
-        "content": "Updated practical tip on how to protect AI-assisted works today (in English).",
-        "sourceUrl": "Relevant reference or tutorial URL"
+        "content": "Updated practical tip on how to protect AI-assisted works today (in English)."
       }
     ]
   }
 }
 
-Important: Use real, up-to-date facts from the LAST 7 DAYS. For each section, include a VALID and WORKING sourceUrl from a reputable news site (The Verge, Reuters, Billboard, Music Business Worldwide, etc.). Avoid placeholder URLs.`;
+Important: Use real, up-to-date facts from the LAST 7 DAYS. Focus on current lawsuits, legislative changes, or licensing deals.`;
 
     const completion = await groq.chat.completions.create({
       messages: [{ role: "user", content: prompt }],

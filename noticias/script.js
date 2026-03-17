@@ -99,7 +99,10 @@ document.addEventListener('DOMContentLoaded', () => {
         subtitleEl.textContent = langData.subtitle;
         dateDisplayEl.textContent = formatDate(newsData.lastUpdated, currentLang);
 
-        const readMoreText = currentLang === 'es' ? 'Leer más' : 'Read more';
+        // Update dynamic content
+        titleEl.textContent = langData.title;
+        subtitleEl.textContent = langData.subtitle;
+        dateDisplayEl.textContent = formatDate(newsData.lastUpdated, currentLang);
 
         // Render articles
         newsContainerEl.innerHTML = '';
@@ -109,21 +112,9 @@ document.addEventListener('DOMContentLoaded', () => {
             // Slight delay in animation based on index
             article.style.animationDelay = `${index * 0.1}s`;
 
-            let sourceHtml = '';
-            if (section.sourceUrl) {
-                sourceHtml = `
-                    <div class="card-footer">
-                        <a href="${section.sourceUrl}" target="_blank" rel="noopener noreferrer" class="read-more">
-                            ${readMoreText} <i class="fa-solid fa-arrow-up-right-from-square"></i>
-                        </a>
-                    </div>
-                `;
-            }
-
             article.innerHTML = `
                 <h3 class="card-title">${section.title}</h3>
                 <div class="card-content">${section.content}</div>
-                ${sourceHtml}
             `;
             newsContainerEl.appendChild(article);
         });
