@@ -235,6 +235,38 @@ body {
     color: var(--text-muted);
     font-size: 1rem;
     line-height: 1.7;
+    margin-bottom: 24px;
+}
+
+.card-footer {
+    margin-top: auto;
+    padding-top: 16px;
+    border-top: 1px solid var(--glass-border);
+}
+
+.read-more {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--secondary);
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 600;
+    font-family: 'Outfit', sans-serif;
+    transition: all 0.3s ease;
+}
+
+.read-more i {
+    font-size: 0.75rem;
+    transition: transform 0.3s ease;
+}
+
+.read-more:hover {
+    color: white;
+}
+
+.read-more:hover i {
+    transform: translate(2px, -2px);
 }
 
 .card-content strong {
