@@ -94,12 +94,26 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const words = text.toUpperCase().split(' ');
         
-        // Logical splitting for 3 lines
+        // Logical splitting for 3 lines - Optimized for common word counts
         if (words.length >= 3) {
-            const partSize = Math.ceil(words.length / 3);
-            const part0 = words.slice(0, partSize).join(' ');
-            const part1 = words.slice(partSize, partSize * 2).join(' ');
-            const part2 = words.slice(partSize * 2).join(' ');
+            let part0, part1, part2;
+            
+            if (words.length === 3) {
+                part0 = words[0];
+                part1 = words[1];
+                part2 = words[2];
+            } else if (words.length === 4) {
+                // Better distribution for 4 words: 2-1-1 (Classic Impact style)
+                part0 = words.slice(0, 2).join(' ');
+                part1 = words[2];
+                part2 = words[3];
+            } else {
+                // Dynamic distribution for 5+ words
+                const partSize = Math.ceil(words.length / 3);
+                part0 = words.slice(0, partSize).join(' ');
+                part1 = words.slice(partSize, partSize * 2).join(' ');
+                part2 = words.slice(partSize * 2).join(' ');
+            }
             
             if (!text0Input.value || text0Input.value === "DESCUBRE EL") {
                 text0Input.value = part0;
