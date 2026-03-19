@@ -102,7 +102,7 @@ function requestToken() {
             },
         });
     }
-    tokenClient.requestAccessToken({ prompt: 'consent' });
+    tokenClient.requestAccessToken();
 }
 
 // --- MODAL ---
@@ -141,13 +141,21 @@ async function fetchAndProcess() {
         statusLabel.style.color = 'var(--accent-green)';
     } catch (error) {
         console.error('Fetch Error:', error);
-        statusLabel.innerText = 'Sesión Expirada';
-        statusLabel.style.color = 'var(--accent-orange)';
         
-        // Token expired or invalid — clear and re-login
-        localStorage.removeItem(TOKEN_KEY);
-        accessToken = null;
-        showLoginModal();
+        // Only force re-login on authentication errors (401, 403)
+        if (error.status === 401 || error.status === 403) {
+            statusLabel.innerText = 'Sesión expirada — inicia sesión de nuevo';
+            statusLabel.style.color = 'var(--accent-orange)';
+            localStorage.removeItem(TOKEN_KEY);
+            accessToken = null;
+            showLoginModal();
+        } else {
+            // For other errors (network, API not enabled, etc), show error without kicking user out
+            const msg = error.message ? JSON.parse(error.message)?.error?.message : null;
+            statusLabel.innerText = `Error: ${msg || 'No se pudo cargar. Intenta de nuevo.'}`;
+            statusLabel.style.color = 'var(--accent-orange)';
+            console.error('Non-auth error details:', error.message);
+        }
     }
 }
 
