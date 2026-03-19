@@ -7,66 +7,121 @@ const SCOPES = 'https://www.googleapis.com/auth/spreadsheets.readonly';
 const SPREADSHEET_LOG_ID = '1pn1bsxj2LaoySXAVUvqfEJY1VR4R_T8NsTOqQnVW5Xw';
 const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA';
 
-const APP_VERSION = 'v2.0.4';
+const APP_VERSION = 'v2.0.5';
 const TOKEN_KEY = 'google_access_token_v2';
-let accessToken = localStorage.getItem(TOKEN_KEY);
-if (accessToken === 'undefined' || accessToken === 'null') accessToken = null;
-let tokenClient;
 
-// --- INICIALIZACIÓN ---
+let accessToken = localStorage.getItem(TOKEN_KEY);
+if (!accessToken || accessToken === 'undefined' || accessToken === 'null') {
+    accessToken = null;
+    // Force-clear any stale keys from previous versions
+    localStorage.removeItem('google_access_token');
+    localStorage.removeItem('google_access_token_v2');
+}
+
+let tokenClient = null;
+
+// --- INICIALIZACIÓN INMEDIATA DEL DOM ---
 document.addEventListener('DOMContentLoaded', () => {
-    initIcons();
-    initAuth();
-    setupEventListeners();
-    
-    // UI Version Tag
-    document.querySelector('.subtitle').innerText += ` | ${APP_VERSION}`;
-    
-    console.log('Auth initialized. Token present:', !!accessToken);
-    
+    // Render icons
+    createIcons({ icons: { RefreshCw, AlertTriangle, CalendarCheck, TrendingUp } });
+
+    // Show version
+    const subtitle = document.querySelector('.subtitle');
+    if (subtitle) subtitle.innerText = `Music Knobs | ${APP_VERSION}`;
+
+    // Event: refresh button
+    document.getElementById('refresh-btn').addEventListener('click', () => {
+        if (accessToken) {
+            fetchAndProcess();
+        } else {
+            showLoginModal();
+        }
+    });
+
+    // Event: login button — inicia Google OAuth solo cuando el usuario hace click
+    document.getElementById('login-google-btn').addEventListener('click', () => {
+        startGoogleLogin();
+    });
+
+    // DECISIÓN PRINCIPAL: mostrar modal o datos
     if (accessToken) {
+        hideLoginModal();
         fetchAndProcess();
     } else {
-        console.log('No token found, showing login modal');
         showLoginModal();
     }
+
+    console.log(`[${APP_VERSION}] App loaded. Token: ${accessToken ? 'present' : 'none'}`);
 });
 
-function initIcons() {
-    createIcons({
-        icons: { RefreshCw, AlertTriangle, CalendarCheck, TrendingUp }
-    });
-}
-
-function initAuth() {
-    // Inicializar el cliente de Identity Services
-    tokenClient = google.accounts.oauth2.initTokenClient({
-        client_id: CLIENT_ID,
-        scope: SCOPES,
-        callback: (tokenResponse) => {
-            if (tokenResponse && tokenResponse.access_token) {
-                accessToken = tokenResponse.access_token;
-                localStorage.setItem(TOKEN_KEY, accessToken);
-                hideLoginModal();
-                fetchAndProcess();
+// --- GOOGLE OAUTH ---
+function startGoogleLogin() {
+    // Si Google GIS ya está cargado, usar directamente
+    if (window.google && window.google.accounts && window.google.accounts.oauth2) {
+        requestToken();
+    } else {
+        // Esperar a que cargue el script de Google
+        const btn = document.getElementById('login-google-btn');
+        btn.innerText = 'Cargando...';
+        btn.disabled = true;
+        
+        const checkInterval = setInterval(() => {
+            if (window.google && window.google.accounts && window.google.accounts.oauth2) {
+                clearInterval(checkInterval);
+                btn.innerText = 'Iniciar Sesión con Google';
+                btn.disabled = false;
+                requestToken();
             }
-        },
-    });
+        }, 200);
+
+        // Timeout después de 10 segundos
+        setTimeout(() => {
+            clearInterval(checkInterval);
+            btn.innerText = 'Error: reintenta';
+            btn.disabled = false;
+            console.error('Google GIS script did not load in time.');
+        }, 10000);
+    }
 }
 
-function setupEventListeners() {
-    document.getElementById('refresh-btn').addEventListener('click', fetchAndProcess);
-    document.getElementById('login-google-btn').addEventListener('click', () => {
-        tokenClient.requestAccessToken();
-    });
+function requestToken() {
+    if (!tokenClient) {
+        tokenClient = google.accounts.oauth2.initTokenClient({
+            client_id: CLIENT_ID,
+            scope: SCOPES,
+            callback: (tokenResponse) => {
+                if (tokenResponse && tokenResponse.access_token) {
+                    accessToken = tokenResponse.access_token;
+                    localStorage.setItem(TOKEN_KEY, accessToken);
+                    hideLoginModal();
+                    fetchAndProcess();
+                } else {
+                    console.error('Token error:', tokenResponse);
+                    showLoginModal();
+                }
+            },
+        });
+    }
+    tokenClient.requestAccessToken({ prompt: 'consent' });
 }
 
+// --- MODAL ---
 function showLoginModal() {
-    document.getElementById('modal-api').style.display = 'block';
+    const modal = document.getElementById('modal-api');
+    if (modal) {
+        modal.style.display = 'flex';
+        modal.style.alignItems = 'center';
+        modal.style.justifyContent = 'center';
+    }
+    const backdrop = document.getElementById('modal-backdrop');
+    if (backdrop) backdrop.style.display = 'block';
 }
 
 function hideLoginModal() {
-    document.getElementById('modal-api').style.display = 'none';
+    const modal = document.getElementById('modal-api');
+    if (modal) modal.style.display = 'none';
+    const backdrop = document.getElementById('modal-backdrop');
+    if (backdrop) backdrop.style.display = 'none';
 }
 
 // --- LÓGICA DE DATOS ---
@@ -82,31 +137,29 @@ async function fetchAndProcess() {
         ]);
 
         processAndRender(logData, fixedData);
-        statusLabel.innerText = 'Sincronizado';
+        statusLabel.innerText = 'Sincronizado ✓';
         statusLabel.style.color = 'var(--accent-green)';
     } catch (error) {
         console.error('Fetch Error:', error);
         statusLabel.innerText = 'Sesión Expirada';
         statusLabel.style.color = 'var(--accent-orange)';
         
-        if (error.status === 401 || error.status === 403) {
-            localStorage.removeItem(TOKEN_KEY);
-            accessToken = null;
-            showLoginModal();
-        }
+        // Token expired or invalid — clear and re-login
+        localStorage.removeItem(TOKEN_KEY);
+        accessToken = null;
+        showLoginModal();
     }
 }
 
 async function fetchSheetData(spreadsheetId, range) {
     const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${range}`;
     const response = await fetch(url, {
-        headers: {
-            'Authorization': `Bearer ${accessToken}`
-        }
+        headers: { 'Authorization': `Bearer ${accessToken}` }
     });
 
     if (!response.ok) {
-        throw { status: response.status, message: await response.text() };
+        const errText = await response.text();
+        throw { status: response.status, message: errText };
     }
 
     const data = await response.json();
@@ -123,8 +176,6 @@ function processAndRender(logRows, fixedRows) {
     let hormigaTotal = 0;
     let hormoneChartData = [];
 
-    // Procesar Gasto Hormiga (Sheets LOG)
-    // Asumimos: A=Fecha, B=Firma, C=Concepto, D=Monto, E=Tipo, F=Categoría
     logRows.forEach(row => {
         const concepto = (row[2] || '').toLowerCase();
         const categoria = (row[1] || '').toLowerCase();
@@ -139,15 +190,12 @@ function processAndRender(logRows, fixedRows) {
         }
     });
 
-    // Procesar Gastos Fijos (Sheets FIXED)
-    // Asumimos: A=Certeza, B=Concepto, C=Monto, D=Descripción, E=Día
     const fixedExpenses = fixedRows.map(row => {
-        const concepto = row[1];
+        const concepto = row[1] || '';
         const monto = parseFloat(row[2]) || 0;
         
-        // Verificar si existe un pago en el Log para este concepto este mes
         const isPaid = logRows.some(logRow => 
-            logRow[2].toLowerCase().includes(concepto.toLowerCase()) && 
+            (logRow[2] || '').toLowerCase().includes(concepto.toLowerCase()) && 
             parseFloat(logRow[3]) > 0
         );
 
@@ -168,6 +216,10 @@ function processAndRender(logRows, fixedRows) {
 
 function renderFixedTable(expenses) {
     const tbody = document.getElementById('fixed-expenses-body');
+    if (!expenses.length) {
+        tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;color:var(--text-muted)">Sin datos</td></tr>';
+        return;
+    }
     tbody.innerHTML = expenses.map(e => `
         <tr>
             <td>${e.concepto}</td>
@@ -182,7 +234,6 @@ function renderFixedTable(expenses) {
 }
 
 function renderChart(data) {
-    // Agrupar por fecha
     const grouped = data.reduce((acc, curr) => {
         acc[curr.x] = (acc[curr.x] || 0) + curr.y;
         return acc;
