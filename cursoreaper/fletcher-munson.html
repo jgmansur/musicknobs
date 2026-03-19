@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contornos de Igual Sonoridad: Curvas de Fletcher-Munson</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap');
+        body { font-family: 'Outfit', sans-serif; }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+    </style>
+</head>
+<body class="bg-stone-50 text-stone-800 antialiased selection:bg-amber-100">
+    <div class="max-w-3xl mx-auto px-6 py-12 md:py-20">
+        
+        <!-- Header -->
+        <header class="mb-12">
+            <a href="index.html" class="inline-flex items-center text-stone-500 hover:text-stone-900 transition-colors mb-8 group">
+                <svg class="w-5 h-5 mr-2 transition-transform group-hover:-translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                </svg>
+                Regresar al Curso
+            </a>
+            <h1 class="text-4xl md:text-5xl font-bold text-stone-900 leading-tight mb-4">
+                Contornos de Igual Sonoridad: <span class="text-amber-600 italic">Las Curvas de Fletcher-Munson</span>
+            </h1>
+            <p class="text-xl text-stone-500 font-light">Entiende cómo el volumen afecta radicalmente tu percepción de los bajos y agudos.</p>
+        </header>
+
+        <!-- Content -->
+        <article class="space-y-10 text-lg leading-relaxed text-stone-700">
+            
+            <section class="glass-card p-8 rounded-2xl shadow-sm border-l-4 border-l-amber-500">
+                <h2 class="text-2xl font-bold text-stone-900 mb-4 flex items-center gap-2">
+                    <span>🧠</span> ¿Qué son exactamente?
+                </h2>
+                <p>
+                    Investigadas originalmente por **Harvey Fletcher** y **Wilden Munson** en los laboratorios Bell en 1933, estas curvas son representaciones gráficas de cómo el oído humano percibe diferentes frecuencias a distintos niveles de volumen.
+                </p>
+                <p class="mt-4">
+                    La gran revelación fue que nuestra audición **no es lineal**. No escuchamos todas las frecuencias con la misma intensidad, y nuestra sensibilidad cambia dependiendo de qué tan fuerte esté sonando la música.
+                </p>
+            </section>
+
+            <section class="space-y-6">
+                <h2 class="text-2xl font-bold text-stone-900 mb-2">¿Cómo afectan nuestra audición?</h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-white p-6 rounded-xl border border-stone-200">
+                        <h3 class="text-amber-700 font-bold mb-2">🔈 A Volúmenes Bajos</h3>
+                        <p class="text-sm">Somos mucho menos sensibles a los **graves** y **agudos**. El oído se enfoca en los medios (voz humana). Por eso, a bajo volumen, una mezcla puede sonar "flaca" o sin brillo.</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-xl border border-stone-200">
+                        <h3 class="text-emerald-700 font-bold mb-2">🔊 A Volúmenes Altos</h3>
+                        <p class="text-sm">La respuesta del oído tiende a "aplanarse". Empezamos a percibir los bajos y agudos con mayor claridad. Es por esto que la música nos resulta más "emocionante" cuando subimos el volumen.</p>
+                    </div>
+                </div>
+            </section>
+
+            <section class="bg-stone-900 text-stone-300 p-8 rounded-2xl shadow-xl">
+                <h2 class="text-2xl font-bold text-white mb-6 flex items-center gap-2">
+                    <span>🛠️</span> Consejos para Productores
+                </h2>
+                <ul class="space-y-4">
+                    <li class="flex items-start gap-3">
+                        <span class="text-amber-500 mt-1">▸</span>
+                        <div>
+                            <strong class="text-white">El "Punto Dulce" (80-85 dB SPL):</strong> Este es el nivel ideal para mezclar. A este volumen, la respuesta de tu oído es lo más equilibrada posible, permitiéndote tomar decisiones de EQ precisas.
+                        </div>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <span class="text-amber-500 mt-1">▸</span>
+                        <div>
+                            <strong class="text-white">Cuidado con la "Sobre-compensación":</strong> Si mezclas a volumen muy bajo, instintivamente querrás subir mucho los graves y agudos. Al subir el volumen, tu mezcla sonará agresiva y desproporcionada.
+                        </div>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <span class="text-amber-500 mt-1">▸</span>
+                        <div>
+                            <strong class="text-white">Verifica a varios niveles:</strong> Comienza en 80-85 dB, pero revisa tu mezcla a un nivel casi susurrado para ver si los elementos principales (voz/caja) siguen presentes.
+                        </div>
+                    </li>
+                </ul>
+            </section>
+
+            <section class="pt-10 border-t border-stone-200">
+                <p class="text-sm text-stone-400 italic">
+                    Fuente: Adaptado de <a href="https://producelikeapro.com/blog/fletcher-munson-curve/" target="_blank" class="underline hover:text-stone-600">Produce Like A Pro</a>.
+                </p>
+            </section>
+
+        </article>
+
+        <!-- Footer -->
+        <footer class="mt-20 text-center">
+            <a href="index.html" class="inline-block bg-amber-600 hover:bg-amber-700 text-white font-bold py-4 px-10 rounded-full transition-all shadow-lg hover:shadow-amber-200/50">
+                Volver a la Clase 3
+            </a>
+        </footer>
+
+    </div>
+</body>
+</html>
