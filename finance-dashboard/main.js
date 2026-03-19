@@ -46,7 +46,7 @@ function initAuth() {
         callback: (tokenResponse) => {
             if (tokenResponse && tokenResponse.access_token) {
                 accessToken = tokenResponse.access_token;
-                localStorage.setItem('google_access_token', accessToken);
+                localStorage.setItem(TOKEN_KEY, accessToken);
                 hideLoginModal();
                 fetchAndProcess();
             }
