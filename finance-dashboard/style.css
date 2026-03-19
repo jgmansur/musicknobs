@@ -1,20 +1,37 @@
+/* =============================================
+   DESIGN TOKENS
+   ============================================= */
 :root {
-  --bg-color: #0f172a;
-  --glass-bg: rgba(30, 41, 59, 0.7);
-  --glass-border: rgba(255, 255, 255, 0.1);
+  --bg-color: #0b1120;
+  --glass-bg: rgba(20, 30, 55, 0.75);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-border-hover: rgba(251, 191, 36, 0.35);
   --primary: #fbbf24;
-  --text-main: #f8fafc;
-  --text-muted: #94a3b8;
+  --primary-hover: #f59e0b;
+  --text-main: #f1f5f9;
+  --text-muted: #64748b;
+  --text-soft: #94a3b8;
   --accent-orange: #f97316;
   --accent-blue: #3b82f6;
   --accent-green: #22c55e;
   --font-family: 'Inter', sans-serif;
+  --radius-lg: 1.25rem;
+  --radius-xl: 1.75rem;
+  --shadow-glass: 0 8px 32px rgba(0, 0, 0, 0.45);
 }
 
-* {
+/* =============================================
+   RESET & BASE
+   ============================================= */
+*, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
 }
 
 body {
@@ -22,150 +39,186 @@ body {
   color: var(--text-main);
   font-family: var(--font-family);
   min-height: 100vh;
+  min-height: -webkit-fill-available;
   overflow-x: hidden;
-  background-image: 
-    radial-gradient(circle at 0% 0%, rgba(251, 191, 36, 0.05) 0, transparent 50%),
-    radial-gradient(circle at 100% 100%, rgba(59, 130, 246, 0.05) 0, transparent 50%);
+  background-image:
+    radial-gradient(ellipse at 10% 0%, rgba(251, 191, 36, 0.08) 0, transparent 55%),
+    radial-gradient(ellipse at 90% 100%, rgba(59, 130, 246, 0.07) 0, transparent 55%);
+  /* iPhone safe area */
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
 }
 
 #app {
   max-width: 1400px;
   margin: 0 auto;
-  padding: 2rem;
+  padding: 1.5rem;
+  /* iPhone X+ notch/home bar support */
+  padding-bottom: calc(1.5rem + env(safe-area-inset-bottom));
 }
 
-/* Glassmorphism */
+/* =============================================
+   GLASSMORPHISM UTILITY
+   ============================================= */
 .glass {
   background: var(--glass-bg);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   border: 1px solid var(--glass-border);
-  border-radius: 1.5rem;
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-glass);
+  padding: 1.5rem;
 }
 
-/* Header */
+/* =============================================
+   HEADER
+   ============================================= */
 .glass-header {
-  margin-bottom: 3rem;
-  padding: 1.5rem 2rem;
-  border-radius: 1.5rem;
-  background: rgba(15, 23, 42, 0.8);
+  margin-bottom: 2rem;
+  padding: 1rem 1.5rem;
+  border-radius: var(--radius-xl);
+  background: rgba(11, 17, 32, 0.85);
   border: 1px solid var(--glass-border);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
 }
 
 .header-content {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 1rem;
 }
 
 .premium-title {
-  font-size: 1.5rem;
+  font-size: 1.35rem;
   font-weight: 800;
-  letter-spacing: -0.025em;
+  letter-spacing: -0.03em;
   color: var(--text-main);
+  line-height: 1.2;
 }
 
 .premium-title span {
   color: var(--primary);
-  margin-left: 0.5rem;
+  margin-left: 0.4rem;
   font-weight: 400;
 }
 
 .subtitle {
-  font-size: 0.875rem;
+  font-size: 0.8rem;
   color: var(--text-muted);
-  margin-top: 0.25rem;
+  margin-top: 0.2rem;
+}
+
+.action-area {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-shrink: 0;
 }
 
 .status-badge {
   display: inline-flex;
   align-items: center;
-  padding: 0.5rem 1rem;
-  background: rgba(34, 197, 94, 0.1);
+  padding: 0.4rem 0.9rem;
+  background: rgba(34, 197, 94, 0.12);
   color: var(--accent-green);
+  border: 1px solid rgba(34, 197, 94, 0.2);
   border-radius: 9999px;
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   font-weight: 600;
-  margin-right: 1rem;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
 }
 
-/* KPI Cards */
+/* =============================================
+   KPI CARDS
+   ============================================= */
 .kpi-row {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 1.5rem;
-  margin-bottom: 2rem;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.25rem;
+  margin-bottom: 1.5rem;
 }
 
 .kpi-card {
-  padding: 1.5rem;
   display: flex;
   align-items: center;
-  gap: 1.5rem;
-  transition: transform 0.3s ease, border-color 0.3s ease;
+  gap: 1.25rem;
+  transition: transform 0.25s ease, border-color 0.25s ease;
 }
 
 .kpi-card:hover {
-  transform: translateY(-5px);
-  border-color: rgba(251, 191, 36, 0.4);
+  transform: translateY(-4px);
+  border-color: var(--glass-border-hover);
 }
 
 .kpi-icon {
-  width: 3.5rem;
-  height: 3.5rem;
+  width: 3.25rem;
+  height: 3.25rem;
+  flex-shrink: 0;
   border-radius: 1rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.5rem;
 }
 
-.kpi-icon.orange { background: rgba(249, 115, 22, 0.1); color: var(--accent-orange); }
-.kpi-icon.blue { background: rgba(59, 130, 246, 0.1); color: var(--accent-blue); }
-.kpi-icon.green { background: rgba(34, 197, 94, 0.1); color: var(--accent-green); }
+.kpi-icon svg {
+  width: 1.4rem;
+  height: 1.4rem;
+}
+
+.kpi-icon.orange { background: rgba(249, 115, 22, 0.12); color: var(--accent-orange); }
+.kpi-icon.blue   { background: rgba(59, 130, 246, 0.12); color: var(--accent-blue); }
+.kpi-icon.green  { background: rgba(34, 197, 94, 0.12); color: var(--accent-green); }
 
 .kpi-data .label {
   display: block;
-  font-size: 0.875rem;
-  color: var(--text-muted);
-  margin-bottom: 0.25rem;
+  font-size: 0.78rem;
+  color: var(--text-soft);
+  margin-bottom: 0.2rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
 .kpi-data h2 {
-  font-size: 1.75rem;
+  font-size: 1.6rem;
   font-weight: 700;
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.2rem;
+  line-height: 1.1;
 }
 
 .diff-label {
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   font-weight: 500;
+  color: var(--text-muted);
 }
 
-/* Charts & Tables */
+/* =============================================
+   CHARTS & TABLES GRID
+   ============================================= */
 .main-content-row {
   display: grid;
   grid-template-columns: 1.5fr 1fr;
-  gap: 1.5rem;
-}
-
-.glass {
-  padding: 1.5rem;
+  gap: 1.25rem;
 }
 
 .section-header {
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.25rem;
 }
 
 .section-header h3 {
-  font-size: 1.125rem;
+  font-size: 1rem;
   font-weight: 600;
+  color: var(--text-main);
 }
 
-/* Custom Table */
+/* =============================================
+   TABLE
+   ============================================= */
 .table-wrapper {
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 table {
@@ -175,111 +228,383 @@ table {
 
 th {
   text-align: left;
-  padding: 1rem;
+  padding: 0.75rem 1rem;
   color: var(--text-muted);
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.06em;
   border-bottom: 1px solid var(--glass-border);
 }
 
 td {
-  padding: 1rem;
-  font-size: 0.875rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  padding: 0.85rem 1rem;
+  font-size: 0.85rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
 }
 
 .badge {
-  padding: 0.25rem 0.75rem;
+  padding: 0.2rem 0.7rem;
   border-radius: 9999px;
-  font-size: 0.75rem;
-  font-weight: 600;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
 }
 
-.badge.success, .badge.paid { background: rgba(34, 197, 94, 0.1); color: var(--accent-green); }
-.badge.warning, .badge.pending { background: rgba(249, 115, 22, 0.1); color: var(--accent-orange); }
+.badge.paid    { background: rgba(34, 197, 94, 0.12); color: var(--accent-green); }
+.badge.pending { background: rgba(249, 115, 22, 0.12); color: var(--accent-orange); }
 
-/* Buttons & Modals */
+/* =============================================
+   BUTTONS
+   ============================================= */
 .primary-btn {
   background: var(--primary);
   color: #000;
   border: none;
-  padding: 0.75rem 1.5rem;
-  border-radius: 0.75rem;
+  padding: 0.8rem 1.5rem;
+  border-radius: 0.85rem;
+  font-family: var(--font-family);
+  font-size: 0.9rem;
   font-weight: 700;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.25s ease;
+  letter-spacing: 0.01em;
 }
 
 .primary-btn:hover {
+  background: var(--primary-hover);
   transform: scale(1.02);
-  filter: brightness(1.1);
 }
 
 .icon-btn {
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid var(--glass-border);
   color: var(--text-main);
-  padding: 0.75rem;
+  width: 2.5rem;
+  height: 2.5rem;
   border-radius: 0.75rem;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: background 0.2s;
+  flex-shrink: 0;
+}
+
+.icon-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* =============================================
+   LOGIN MODAL — PREMIUM REDESIGN
+   ============================================= */
+#modal-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 998;
+  background: rgba(4, 8, 20, 0.8);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 
 .modal {
   display: none;
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 1000;
+  inset: 0;
+  z-index: 999;
   align-items: center;
   justify-content: center;
+  padding: 1.5rem;
 }
 
 .modal-inner {
-  width: 90%;
-  max-width: 400px;
+  width: 100%;
+  max-width: 420px;
+  background: linear-gradient(
+    145deg,
+    rgba(18, 28, 52, 0.97) 0%,
+    rgba(11, 17, 32, 0.99) 100%
+  );
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 2rem;
+  padding: 3rem 2.5rem;
+  box-shadow:
+    0 0 0 1px rgba(251, 191, 36, 0.08),
+    0 25px 60px rgba(0, 0, 0, 0.6),
+    0 0 80px rgba(251, 191, 36, 0.05);
+  position: relative;
+  overflow: hidden;
+  animation: modalIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
 
-.modal-logo {
-  margin-bottom: 2rem;
+@keyframes modalIn {
+  from { opacity: 0; transform: translateY(24px) scale(0.96); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Decorative floating orbs inside modal */
+.modal-inner::before {
+  content: '';
+  position: absolute;
+  top: -60px;
+  right: -60px;
+  width: 200px;
+  height: 200px;
+  background: radial-gradient(circle, rgba(251, 191, 36, 0.12) 0%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.modal-inner::after {
+  content: '';
+  position: absolute;
+  bottom: -40px;
+  left: -40px;
+  width: 160px;
+  height: 160px;
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.1) 0%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+/* Logo badge at top */
+.modal-logo-badge {
   display: flex;
   justify-content: center;
+  margin-bottom: 2rem;
 }
 
-.premium-title.mini {
-  font-size: 1.1rem;
+.logo-icon-wrap {
+  width: 4rem;
+  height: 4rem;
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.2), rgba(251, 191, 36, 0.05));
+  border: 1px solid rgba(251, 191, 36, 0.3);
+  border-radius: 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.75rem;
+  box-shadow: 0 0 24px rgba(251, 191, 36, 0.15);
 }
 
+/* Modal text */
+.modal-title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  margin-bottom: 0.5rem;
+  text-align: center;
+  color: var(--text-main);
+}
+
+.modal-title span {
+  color: var(--primary);
+  font-weight: 400;
+}
+
+.modal-subtitle {
+  font-size: 0.85rem;
+  color: var(--text-soft);
+  text-align: center;
+  line-height: 1.5;
+  margin-bottom: 2.25rem;
+}
+
+/* Google Sign-In button — styled per Google brand guidelines */
 .google-btn {
-  background: white !important;
-  color: #3c4043 !important;
+  width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 0.75rem;
-  width: 100%;
-  border: 1px solid #dadce0 !important;
-  box-shadow: 0 1px 2px 0 rgba(60,64,67,.30), 0 1px 3.1px 0 rgba(60,64,67,.15);
+  padding: 0.875rem 1.5rem;
+  background: #ffffff !important;
+  color: #3c4043 !important;
+  border: 1.5px solid #dadce0 !important;
+  border-radius: 0.85rem;
+  font-family: var(--font-family);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 2px 6px rgba(0,0,0,0.08);
 }
 
-.google-btn .btn-icon {
+.google-btn:hover {
+  background: #f8f9fa !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2) !important;
+  transform: translateY(-1px);
+}
+
+.google-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.12) !important;
+}
+
+.btn-icon {
   width: 1.25rem;
   height: 1.25rem;
+  flex-shrink: 0;
 }
 
-.help-text {
-  margin-top: 1.5rem;
-  font-size: 0.75rem;
+/* Divider */
+.modal-divider {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 1.5rem 0;
+}
+
+.modal-divider span {
+  font-size: 0.7rem;
   color: var(--text-muted);
+  letter-spacing: 0.05em;
+  white-space: nowrap;
 }
 
+.modal-divider::before,
+.modal-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--glass-border);
+}
+
+/* Security note */
+.modal-security-note {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  margin-top: 1.5rem;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.modal-security-note svg {
+  flex-shrink: 0;
+  color: var(--accent-green);
+}
+
+/* =============================================
+   RESPONSIVE — TABLET (≤ 1024px)
+   ============================================= */
 @media (max-width: 1024px) {
   .main-content-row {
     grid-template-columns: 1fr;
+  }
+
+  .kpi-row {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* =============================================
+   RESPONSIVE — MOBILE (≤ 768px)
+   ============================================= */
+@media (max-width: 768px) {
+  #app {
+    padding: 1rem;
+    padding-bottom: calc(1rem + env(safe-area-inset-bottom));
+  }
+
+  /* Header stacks on mobile */
+  .glass-header {
+    padding: 0.875rem 1rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .header-content {
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  .premium-title {
+    font-size: 1.1rem;
+  }
+
+  .status-badge {
+    font-size: 0.68rem;
+    padding: 0.35rem 0.75rem;
+  }
+
+  /* KPI cards: 1 column on small phones */
+  .kpi-row {
+    grid-template-columns: 1fr;
+    gap: 0.85rem;
+  }
+
+  .kpi-card {
+    padding: 1.1rem 1.25rem;
+    gap: 1rem;
+  }
+
+  .kpi-data h2 {
+    font-size: 1.4rem;
+  }
+
+  .kpi-icon {
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: 0.875rem;
+  }
+
+  /* Charts and table: single column */
+  .main-content-row {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .glass {
+    padding: 1.1rem;
+    border-radius: 1.25rem;
+  }
+
+  th, td {
+    padding: 0.65rem 0.75rem;
+    font-size: 0.8rem;
+  }
+
+  /* Login modal fills most of screen */
+  .modal-inner {
+    padding: 2.25rem 1.75rem;
+    border-radius: 1.5rem;
+  }
+
+  .modal-title {
+    font-size: 1.3rem;
+  }
+
+  .modal-subtitle {
+    font-size: 0.82rem;
+  }
+}
+
+/* =============================================
+   RESPONSIVE — SMALL PHONES (≤ 390px) — iPhone SE, Mini
+   ============================================= */
+@media (max-width: 390px) {
+  .premium-title {
+    font-size: 0.95rem;
+  }
+
+  .premium-title span {
+    display: block;
+    margin-left: 0;
+  }
+
+  .kpi-data h2 {
+    font-size: 1.25rem;
+  }
+
+  .modal-inner {
+    padding: 2rem 1.5rem;
+  }
+
+  .logo-icon-wrap {
+    width: 3.5rem;
+    height: 3.5rem;
+    font-size: 1.5rem;
   }
 }
