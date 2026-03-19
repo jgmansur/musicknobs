@@ -7,7 +7,9 @@ const SCOPES = 'https://www.googleapis.com/auth/spreadsheets.readonly';
 const SPREADSHEET_LOG_ID = '1pn1bsxj2LaoySXAVUvqfEJY1VR4R_T8NsTOqQnVW5Xw';
 const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA';
 
+const APP_VERSION = 'v2.0.1';
 let accessToken = localStorage.getItem('google_access_token');
+if (accessToken === 'undefined' || accessToken === 'null') accessToken = null;
 let tokenClient;
 
 // --- INICIALIZACIÓN ---
@@ -16,9 +18,15 @@ document.addEventListener('DOMContentLoaded', () => {
     initAuth();
     setupEventListeners();
     
+    // UI Version Tag
+    document.querySelector('.subtitle').innerText += ` | ${APP_VERSION}`;
+    
+    console.log('Auth initialized. Token present:', !!accessToken);
+    
     if (accessToken) {
         fetchAndProcess();
     } else {
+        console.log('No token found, showing login modal');
         showLoginModal();
     }
 });
