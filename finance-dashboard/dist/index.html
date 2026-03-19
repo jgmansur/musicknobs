@@ -8,8 +8,9 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <script type="module" crossorigin src="./assets/index-CbAasZWH.js"></script>
-    <link rel="stylesheet" crossorigin href="./assets/index-CkmH187M.css">
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script type="module" crossorigin src="./assets/index-1wgSSfyY.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-DEHce6g-.css">
   </head>
   <body>
     <div id="app">
@@ -90,11 +91,16 @@
 
       <div id="modal-api" class="modal glass">
         <div class="modal-content">
-          <h3>Configuración de Acceso</h3>
-          <p>Para conectar con Google Sheets de forma segura, ingresa tu API Key:</p>
-          <input type="password" id="api-key-input" placeholder="Google Sheets API Key..." />
-          <button id="save-api-key" class="primary-btn">Conectar Dashboard</button>
-          <p class="help-text">Los datos se guardan localmente en tu navegador.</p>
+          <div class="modal-logo">
+            <h1 class="premium-title mini">ESTRATÉGIA<span>FINANCIERA</span></h1>
+          </div>
+          <h3>Bienvenido, Jay</h3>
+          <p>Para acceder a tus datos financieros en tiempo real, por favor inicia sesión con tu cuenta de Google Workspace.</p>
+          <button id="login-google-btn" class="primary-btn google-btn">
+            <img src="https://www.gstatic.com/images/branding/product/1x/gsa_512dp.png" alt="Google" class="btn-icon">
+            Iniciar Sesión con Google
+          </button>
+          <p class="help-text">Tus datos están protegidos por la seguridad de Google.</p>
         </div>
       </div>
     </div>

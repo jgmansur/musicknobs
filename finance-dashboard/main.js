@@ -1,21 +1,27 @@
-import './style.css'
-import ApexCharts from 'apexcharts'
 import { createIcons, RefreshCw, AlertTriangle, CalendarCheck, TrendingUp } from 'lucide';
+import ApexCharts from 'apexcharts';
+ sedimentary
 
-// --- CONFIGURATION ---
-const SPREADSHEET_ID_CONTROL = '1pn1bsxj2LaoySXAVUvqfEJY1VR4R_T8NsTOqQnVW5Xw';
-const SPREADSHEET_ID_FIXED = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA';
+// --- CONFIGURACIÓN ---
+const CLIENT_ID = '427918095213-6cbm5sgcfn6o8qosg6qe1r6u9toj66dp.apps.googleusercontent.com';
+const SCOPES = 'https://www.googleapis.com/auth/spreadsheets.readonly';
+const SPREADSHEET_LOG_ID = '1pn1bsxj2LaoySXAVUvqfEJY1VR4R_T8NsTOqQnVW5Xw';
+const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA';
 
-// --- STATE MANAGEMENT ---
-let apiKey = localStorage.getItem('google_sheets_api_key');
-let chartInstance = null;
+let accessToken = localStorage.getItem('google_access_token');
+let tokenClient;
 
-// --- INITIALIZATION ---
+// --- INICIALIZACIÓN ---
 document.addEventListener('DOMContentLoaded', () => {
     initIcons();
-    checkApiKey();
+    initAuth();
     setupEventListeners();
-    if (apiKey) refreshData();
+    
+    if (accessToken) {
+        fetchAndProcess();
+    } else {
+        showLoginModal();
+    }
 });
 
 function initIcons() {
@@ -24,171 +30,204 @@ function initIcons() {
     });
 }
 
-function setupEventListeners() {
-    const refreshBtn = document.getElementById('refresh-btn');
-    refreshBtn.addEventListener('click', refreshData);
-
-    const saveApiKeyBtn = document.getElementById('save-api-key');
-    saveApiKeyBtn.addEventListener('click', () => {
-        const input = document.getElementById('api-key-input').value;
-        if (input) {
-            apiKey = input;
-            localStorage.setItem('google_sheets_api_key', apiKey);
-            document.getElementById('modal-api').style.display = 'none';
-            refreshData();
-        }
+function initAuth() {
+    // Inicializar el cliente de Identity Services
+    tokenClient = google.accounts.oauth2.initTokenClient({
+        client_id: CLIENT_ID,
+        scope: SCOPES,
+        callback: (tokenResponse) => {
+            if (tokenResponse && tokenResponse.access_token) {
+                accessToken = tokenResponse.access_token;
+                localStorage.setItem('google_access_token', accessToken);
+                hideLoginModal();
+                fetchAndProcess();
+            }
+        },
     });
 }
 
-function checkApiKey() {
-    if (!apiKey) {
-        document.getElementById('modal-api').style.display = 'block';
-    }
+function setupEventListeners() {
+    document.getElementById('refresh-btn').addEventListener('click', fetchAndProcess);
+    document.getElementById('login-google-btn').addEventListener('click', () => {
+        tokenClient.requestAccessToken();
+    });
 }
 
-// --- DATA FETCHING ---
-async function refreshData() {
-    const statusBadge = document.getElementById('sync-status');
-    statusBadge.innerText = 'Sincronizando...';
-    statusBadge.style.color = 'var(--primary)';
+function showLoginModal() {
+    document.getElementById('modal-api').style.display = 'block';
+}
+
+function hideLoginModal() {
+    document.getElementById('modal-api').style.display = 'none';
+}
+
+// --- LÓGICA DE DATOS ---
+async function fetchAndProcess() {
+    const statusLabel = document.getElementById('sync-status');
+    statusLabel.innerText = 'Sincronizando...';
+    statusLabel.style.color = 'var(--primary)';
 
     try {
-        const [controlData, fixedData] = await Promise.all([
-            fetchSheetData(SPREADSHEET_ID_CONTROL, 'Hoja 1!A2:F'),
-            fetchSheetData(SPREADSHEET_ID_FIXED, 'Hoja 1!A2:E')
+        const [logData, fixedData] = await Promise.all([
+            fetchSheetData(SPREADSHEET_LOG_ID, 'Hoja 1!A2:F'),
+            fetchSheetData(SPREADSHEET_FIXED_ID, 'Hoja 1!A2:E')
         ]);
 
-        processAndRender(controlData, fixedData);
-        
-        statusBadge.innerText = 'Sincronizado';
-        statusBadge.style.color = 'var(--accent-green)';
+        processAndRender(logData, fixedData);
+        statusLabel.innerText = 'Sincronizado';
+        statusLabel.style.color = 'var(--accent-green)';
     } catch (error) {
         console.error('Fetch Error:', error);
-        statusBadge.innerText = 'Error de Conexión';
-        statusBadge.style.color = 'var(--accent-orange)';
-        if (error.status === 403 || error.status === 401) {
-            localStorage.removeItem('google_sheets_api_key');
-            checkApiKey();
+        statusLabel.innerText = 'Sesión Expirada';
+        statusLabel.style.color = 'var(--accent-orange)';
+        
+        if (error.status === 401 || error.status === 403) {
+            localStorage.removeItem('google_access_token');
+            accessToken = null;
+            showLoginModal();
         }
     }
 }
 
 async function fetchSheetData(spreadsheetId, range) {
-    const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${range}?key=${apiKey}`;
-    const response = await fetch(url);
-    if (!response.ok) throw { status: response.status, message: await response.text() };
+    const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${range}`;
+    const response = await fetch(url, {
+        headers: {
+            'Authorization': `Bearer ${accessToken}`
+        }
+    });
+
+    if (!response.ok) {
+        throw { status: response.status, message: await response.text() };
+    }
+
     const data = await response.json();
     return data.values || [];
 }
 
-// --- DATA PROCESSING ---
-function processAndRender(controlRows, fixedRows) {
-    // 1. Gasto Hormiga (Logic: Specific keywords from Jay's spending patterns)
+function processAndRender(logRows, fixedRows) {
     const hormigaKeywords = [
-        'oxxo', 'coca', 'cigarros', 'snacks', 'gomitas', 'vuse', 'tiendita', 
-        'starbucks', 'seven', '7-eleven', 'extra', 'dulces', 'chicles'
+        'oxxo', 'coca', 'cigarros', 'snacks', 'gomitas', 
+        'vuse', 'tiendita', 'starbucks', 'seven', 
+        '7-eleven', 'extra', 'dulces', 'chicles'
     ];
+
     let hormigaTotal = 0;
-    const hormigaHistory = [];
+    let hormoneChartData = [];
 
-    // Map daily log to calculate Hormiga
-    controlRows.forEach(row => {
+    // Procesar Gasto Hormiga (Sheets LOG)
+    // Asumimos: A=Fecha, B=Firma, C=Concepto, D=Monto, E=Tipo, F=Categoría
+    logRows.forEach(row => {
         const concepto = (row[2] || '').toLowerCase();
-        const lugar = (row[1] || '').toLowerCase();
+        const categoria = (row[1] || '').toLowerCase();
         const monto = parseFloat(row[3]) || 0;
-        const fechaStr = row[0] || '';
+        const fecha = row[0] || '';
 
-        const isHormiga = hormigaKeywords.some(kw => concepto.includes(kw) || lugar.includes(kw));
+        const isHormiga = hormigaKeywords.some(kw => concepto.includes(kw) || categoria.includes(kw));
         
         if (isHormiga && row[4] === 'Gasto') {
             hormigaTotal += monto;
-            hormigaHistory.push({ x: fechaStr, y: monto });
+            hormoneChartData.push({ x: fecha, y: monto });
         }
     });
 
-    // 2. Fixed Expenses & Payment Status
-    const currentMonthFixedRows = fixedRows.map(row => {
+    // Procesar Gastos Fijos (Sheets FIXED)
+    // Asumimos: A=Certeza, B=Concepto, C=Monto, D=Descripción, E=Día
+    const fixedExpenses = fixedRows.map(row => {
         const concepto = row[1];
         const monto = parseFloat(row[2]) || 0;
         
-        // Find if paid in Control Sheet (Concept match)
-        const isPaid = controlRows.some(cRow => 
-            cRow[2].toLowerCase().includes(concepto.toLowerCase()) && parseFloat(cRow[3]) > 0
+        // Verificar si existe un pago en el Log para este concepto este mes
+        const isPaid = logRows.some(logRow => 
+            logRow[2].toLowerCase().includes(concepto.toLowerCase()) && 
+            parseFloat(logRow[3]) > 0
         );
 
         return { concepto, monto, isPaid };
     });
 
-    const fixedTotal = currentMonthFixedRows.reduce((acc, curr) => acc + curr.monto, 0);
-    const totalPaidCount = currentMonthFixedRows.filter(r => r.isPaid).length;
+    const fixedTotal = fixedExpenses.reduce((sum, item) => sum + item.monto, 0);
+    const paidCount = fixedExpenses.filter(e => e.isPaid).length;
 
-    // 3. Update UI Scorecards
+    // Actualizar UI
     document.getElementById('gasto-hormiga-total').innerText = formatCurrency(hormigaTotal);
     document.getElementById('gastos-fijos-total').innerText = formatCurrency(fixedTotal);
-    document.getElementById('pago-status').innerText = `${totalPaidCount}/${currentMonthFixedRows.length} Pagados`;
-    
-    // 4. Render Table
-    renderFixedTable(currentMonthFixedRows);
+    document.getElementById('pago-status').innerText = `${paidCount}/${fixedExpenses.length} Pagados`;
 
-    // 5. Render Chart
-    renderChart(hormigaHistory);
+    renderFixedTable(fixedExpenses);
+    renderChart(hormoneChartData);
 }
 
-function renderFixedTable(rows) {
+function renderFixedTable(expenses) {
     const tbody = document.getElementById('fixed-expenses-body');
-    tbody.innerHTML = rows.map(row => `
+    tbody.innerHTML = expenses.map(e => `
         <tr>
-            <td>${row.concepto}</td>
-            <td style="font-weight: 600;">${formatCurrency(row.monto)}</td>
+            <td>${e.concepto}</td>
+            <td>${formatCurrency(e.monto)}</td>
             <td>
-                <span class="badge ${row.isPaid ? 'success' : 'warning'}">
-                    ${row.isPaid ? 'PAGADO' : 'PENDIENTE'}
+                <span class="badge ${e.isPaid ? 'paid' : 'pending'}">
+                    ${e.isPaid ? 'PAGADO' : 'PENDIENTE'}
                 </span>
             </td>
         </tr>
     `).join('');
 }
 
-function renderChart(history) {
-    // Group history by date
-    const grouped = history.reduce((acc, curr) => {
-        const date = curr.x.split(' ')[0]; // YYYY-MM-DD
-        acc[date] = (acc[date] || 0) + curr.y;
+function renderChart(data) {
+    // Agrupar por fecha
+    const grouped = data.reduce((acc, curr) => {
+        acc[curr.x] = (acc[curr.x] || 0) + curr.y;
         return acc;
     }, {});
 
-    const seriesData = Object.entries(grouped).map(([x, y]) => ({ x: new Date(x).getTime(), y }));
-    seriesData.sort((a, b) => a.x - b.x);
+    const sortedDates = Object.keys(grouped).sort();
+    const values = sortedDates.map(d => grouped[d]);
 
     const options = {
-        series: [{ name: 'Gasto Hormiga', data: seriesData }],
+        series: [{ name: 'Gasto Hormiga', data: values }],
         chart: {
             type: 'area',
-            height: 350,
-            foreColor: '#94a3b8',
+            height: 250,
             toolbar: { show: false },
-            zoom: { enabled: false }
+            zoom: { enabled: false },
+            background: 'transparent'
         },
-        colors: ['#fbbf24'],
+        theme: { mode: 'dark' },
+        stroke: { curve: 'smooth', colors: ['#fbbf24'] },
         fill: {
             type: 'gradient',
-            gradient: { shadeIntensity: 1, opacityFrom: 0.7, opacityTo: 0.2, stops: [0, 90, 100] }
+            gradient: {
+                shadeIntensity: 1,
+                opacityFrom: 0.7,
+                opacityTo: 0.3,
+                stops: [0, 90, 100],
+                colorStops: [
+                    { offset: 0, color: "#fbbf24", opacity: 0.4 },
+                    { offset: 100, color: "#fbbf24", opacity: 0 }
+                ]
+            }
         },
         dataLabels: { enabled: false },
-        stroke: { curve: 'smooth', width: 3 },
-        xaxis: { type: 'datetime' },
-        tooltip: { theme: 'dark' },
-        grid: { borderColor: 'rgba(255,255,255,0.05)' }
+        xaxis: {
+            categories: sortedDates,
+            axisBorder: { show: false },
+            axisTicks: { show: false },
+            labels: { style: { colors: '#94a3b8' } }
+        },
+        yaxis: { show: false },
+        grid: { borderColor: '#334155', strokeDashArray: 4 },
+        tooltip: { theme: 'dark' }
     };
 
-    if (chartInstance) {
-        chartInstance.updateSeries([{ data: seriesData }]);
-    } else {
-        chartInstance = new ApexCharts(document.querySelector("#chart-hormiga"), options);
-        chartInstance.render();
-    }
+    const chartContainer = document.getElementById('chart-hormiga');
+    chartContainer.innerHTML = '';
+    const chart = new ApexCharts(chartContainer, options);
+    chart.render();
 }
 
 function formatCurrency(val) {
-    return new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(val);
+    return new Intl.NumberFormat('es-MX', {
+        style: 'currency',
+        currency: 'MXN'
+    }).format(val);
 }
