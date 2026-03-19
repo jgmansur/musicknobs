@@ -443,7 +443,38 @@
                 hasVisualizer: true, visualizerType: "comp", visualizerTitle: "Comportamiento del Limitador", visualizerDesc: "El ratio al infinito (Muro de ladrillos)."
             },
             {
-                id: 9, icon: "💡", title: "Reglas de Oro del Productor",
+                id: 9, icon: "🧬", title: "Clase 9: Warping y Cuantización",
+                objective: "Corregir problemas de tiempo y alinear el audio a la rejilla de forma natural.",
+                intro: "Aprenderás el flujo de trabajo profesional para perfeccionar el ritmo de tus grabaciones. Utilizaremos el <b>Warping</b> (Stretch Markers) para ajustes manuales finos y la <b>División Dinámica</b> para automatizar la cuantización de instrumentos percusivos.",
+                videoUrl: "https://www.youtube.com/embed/oFPJmk43em4",
+                topics: [
+                    "<b>Stretch Markers (Warping):</b> Cómo agregar puntos de anclaje (Shift+W) y mover el audio sin mover el ítem completo.",
+                    "<b>División Dinámica (D):</b> Detección automática de transitorios para trocear audio o generar marcadores de estiramiento.",
+                    "<b>Cuantización de Audio:</b> Alineación automática de múltiples ítems o marcadores a la rejilla (Grid) con control de intensidad.",
+                    "<b>Slip Editing (Alt+Arrastrar):</b> Desplazar el contenido interno de un ítem para ajustes rápidos de fase o tiempo."
+                ],
+                practice: "Importar un loop de batería o una percusión grabada. Usar 'Shift+W' para alinear un golpe que esté fuera de tiempo.",
+                homework: "Usar la herramienta 'Dynamic Split' (D) en una pista de batería multipista, aplicar cuantización y verificar la coherencia de fase entre pistas.",
+                links: [
+                    { text: "Video: Cuantización de Audio", url: "https://youtu.be/oFPJmk43em4" },
+                    { text: "Video: Warping y Stretch Markers", url: "https://youtu.be/Jt0pUgDjzs4" }
+                ],
+                resources: [
+                    { text: "Guía de Cuantización (Video)", url: "https://youtu.be/oFPJmk43em4?si=G5Secaizpikt6LTM" },
+                    { text: "Guía de Warping (Video)", url: "https://youtu.be/Jt0pUgDjzs4?si=GvXV4ixPzZWOqTRs" }
+                ],
+                shortcuts: [
+                    "<b>Dynamic Split (División Dinámica):</b> D",
+                    "<b>Agregar Stretch Marker:</b> Shift + W (Win/Mac)",
+                    "<b>Mover contenido de ítem (Slip Edit):</b> Alt + Arrastrar",
+                    "<b>Cuantizar ítems:</b> Q (Abre el diálogo de cuantización)",
+                    "<b>Borrar Stretch Marker:</b> Alt+Click sobre el marcador"
+                ],
+                instructorNotes: "<p><strong>Meta Docente:</strong> Mostrar que el audio en Reaper es elástico.</p><ul class='list-disc pl-5'><li><strong>Stretch Markers:</strong> Explica que un marcador 'ancla' el audio. Si mueves uno, afectas lo que hay entre él y el anterior.</li><li><strong>Fase en Baterías:</strong> Crucial recordar que si cuantizas una batería con varios micros, debes hacerlo a todas las pistas juntas (Grouping) para no romper la fase.</li></ul>",
+                hasVisualizer: false
+            },
+            {
+                id: 10, icon: "💡", title: "Reglas de Oro del Productor",
                 objective: "Mentalidad y cuidado auditivo.",
                 intro: "Mandamientos fundamentales que te salvarán de cometer errores.",
                 topics: ["<b>1. Botón de Bypass.</b>", "<b>2. Tracks de Referencia.</b>", "<b>3. Fatiga auditiva (Descansos).</b>"],
@@ -613,7 +644,7 @@
                 btn.className = `w-full text-left px-6 py-3 border-b border-stone-200 transition-colors flex items-center gap-3 ${isActive ? 'active' : 'hover:bg-stone-200 text-stone-700'}`;
                 let checkMark = isCompleted ? '<span class="text-emerald-500 font-bold ml-auto">✓</span>' : '';
                 let shortTitle = item.title.split(':')[0];
-                if (item.id === 9) shortTitle = "Reglas de Oro";
+                if (item.id === 10) shortTitle = "Reglas de Oro";
 
                 btn.innerHTML = `<span class="text-xl">${item.icon}</span> <span>${shortTitle}</span> ${checkMark}`;
                 btn.onclick = () => loadClass(item.id);
@@ -716,8 +747,8 @@
         });
 
         function updateProgressUI() {
-            const total = 8;
-            const completed = state.completedClasses.filter(id => id <= 8).length;
+            const total = 9;
+            const completed = state.completedClasses.filter(id => id <= 9).length;
             const percentage = Math.round((completed / total) * 100);
             DOM.progressBar.style.width = `${percentage}%`;
             DOM.progressText.innerText = `${percentage}% Completado`;
