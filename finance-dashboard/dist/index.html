@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Finance Dashboard | Jay Studio</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script type="module" crossorigin src="./assets/index-CbAasZWH.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-CkmH187M.css">
+  </head>
+  <body>
+    <div id="app">
+      <header class="glass-header">
+        <div class="header-content">
+          <div class="logo-area">
+            <h1 class="premium-title">ESTRATÉGIA<span>FINANCIERA</span></h1>
+            <p class="subtitle">Music Knobs | Dashboard Real-Time</p>
+          </div>
+          <div class="action-area">
+            <div id="sync-status" class="status-badge">Sincronizado</div>
+            <button id="refresh-btn" class="icon-btn">
+              <i data-lucide="refresh-cw"></i>
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <main class="dashboard-grid">
+        <!-- KPI Cards -->
+        <section class="kpi-row">
+          <div class="kpi-card glass">
+            <div class="kpi-icon orange"><i data-lucide="alert-triangle"></i></div>
+            <div class="kpi-data">
+              <span class="label">Gasto Hormiga</span>
+              <h2 id="gasto-hormiga-total">$0.00</h2>
+              <span id="gasto-hormiga-diff" class="diff-label">Calculando...</span>
+            </div>
+          </div>
+          <div class="kpi-card glass">
+            <div class="kpi-icon blue"><i data-lucide="calendar-check"></i></div>
+            <div class="kpi-data">
+              <span class="label">Gastos Fijos Mes</span>
+              <h2 id="gastos-fijos-total">$0.00</h2>
+              <span id="pago-status" class="diff-label">0/0 Pagados</span>
+            </div>
+          </div>
+          <div class="kpi-card glass">
+            <div class="kpi-icon green"><i data-lucide="trending-up"></i></div>
+            <div class="kpi-data">
+              <span class="label">Balance Disponible</span>
+              <h2 id="balance-total">$0.00</h2>
+              <span class="diff-label text-success">Libertad Financiera</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- Main Charts/Table -->
+        <div class="main-content-row">
+          <section class="chart-section glass">
+            <div class="section-header">
+              <h3>Tendencia Gasto Hormiga</h3>
+            </div>
+            <div id="chart-hormiga"></div>
+          </section>
+
+          <section class="table-section glass">
+            <div class="section-header">
+              <h3>Estatus Gastos Fijos</h3>
+            </div>
+            <div class="table-wrapper">
+              <table id="fixed-expenses-table">
+                <thead>
+                  <tr>
+                    <th>Concepto</th>
+                    <th>Monto</th>
+                    <th>Estatus</th>
+                  </tr>
+                </thead>
+                <tbody id="fixed-expenses-body">
+                  <!-- JS injected -->
+                </tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+      </main>
+
+      <div id="modal-api" class="modal glass">
+        <div class="modal-content">
+          <h3>Configuración de Acceso</h3>
+          <p>Para conectar con Google Sheets de forma segura, ingresa tu API Key:</p>
+          <input type="password" id="api-key-input" placeholder="Google Sheets API Key..." />
+          <button id="save-api-key" class="primary-btn">Conectar Dashboard</button>
+          <p class="help-text">Los datos se guardan localmente en tu navegador.</p>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
