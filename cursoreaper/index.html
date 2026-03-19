@@ -804,6 +804,7 @@
             const hpfData = [-24, -12, -3, 0, 0, 0, 0, 0, 0, 0];
             const bellData = [0, 0, 0, 0, 6, 0, 0, 0, 0, 0];
             const bellCutData = [0, 0, 0, 0, 0, -8, 0, 0, 0, 0];
+            const highShelfData = [0, 0, 0, 0, 0, 0, 2, 6, 8, 8];
 
             state.chartInstance = new Chart(ctx, {
                 type: 'line', data: { labels: freqLabels, datasets: [{ label: 'Ganancia (dB)', data: flatData, borderColor: '#d97706', backgroundColor: 'rgba(217, 119, 6, 0.1)', borderWidth: 3, tension: 0.4, fill: true }] },
@@ -813,6 +814,7 @@
             DOM.visualizerControls.appendChild(createBtn('High-Pass (HPF)', false, () => { state.chartInstance.data.datasets[0].data = hpfData; state.chartInstance.update(); }));
             DOM.visualizerControls.appendChild(createBtn('Barrido (+)', false, () => { state.chartInstance.data.datasets[0].data = bellData; state.chartInstance.update(); }));
             DOM.visualizerControls.appendChild(createBtn('Corte (-)', false, () => { state.chartInstance.data.datasets[0].data = bellCutData; state.chartInstance.update(); }));
+            DOM.visualizerControls.appendChild(createBtn('High-Shelf', false, () => { state.chartInstance.data.datasets[0].data = highShelfData; state.chartInstance.update(); }));
         }
 
         function setupCompChart(ctx) {
