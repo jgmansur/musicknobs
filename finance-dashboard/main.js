@@ -7,8 +7,9 @@ const SCOPES = 'https://www.googleapis.com/auth/spreadsheets.readonly';
 const SPREADSHEET_LOG_ID = '1pn1bsxj2LaoySXAVUvqfEJY1VR4R_T8NsTOqQnVW5Xw';
 const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA';
 
-const APP_VERSION = 'v2.0.1';
-let accessToken = localStorage.getItem('google_access_token');
+const APP_VERSION = 'v2.0.4';
+const TOKEN_KEY = 'google_access_token_v2';
+let accessToken = localStorage.getItem(TOKEN_KEY);
 if (accessToken === 'undefined' || accessToken === 'null') accessToken = null;
 let tokenClient;
 
@@ -89,7 +90,7 @@ async function fetchAndProcess() {
         statusLabel.style.color = 'var(--accent-orange)';
         
         if (error.status === 401 || error.status === 403) {
-            localStorage.removeItem('google_access_token');
+            localStorage.removeItem(TOKEN_KEY);
             accessToken = null;
             showLoginModal();
         }
