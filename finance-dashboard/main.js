@@ -1,6 +1,5 @@
 import { createIcons, RefreshCw, AlertTriangle, CalendarCheck, TrendingUp } from 'lucide';
 import ApexCharts from 'apexcharts';
- sedimentary
 
 // --- CONFIGURACIÓN ---
 const CLIENT_ID = '427918095213-6cbm5sgcfn6o8qosg6qe1r6u9toj66dp.apps.googleusercontent.com';
