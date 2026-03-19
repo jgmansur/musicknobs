@@ -3,133 +3,301 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="./vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Finance Dashboard | Jay Studio</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Estratégia Financiera | Jay Studio</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <script type="module" crossorigin src="/musicknobs/finance-dashboard/assets/index-DKaGJGO6.js"></script>
-    <link rel="stylesheet" crossorigin href="/musicknobs/finance-dashboard/assets/index-DDJyV5pH.css">
+    <script type="module" crossorigin src="/musicknobs/finance-dashboard/assets/index-DCqNg73Q.js"></script>
+    <link rel="stylesheet" crossorigin href="/musicknobs/finance-dashboard/assets/index-D62kVMkA.css">
   </head>
   <body>
     <div id="app">
+
+      <!-- ── HEADER (shared) ── -->
       <header class="glass-header">
         <div class="header-content">
           <div class="logo-area">
             <h1 class="premium-title">ESTRATÉGIA<span>FINANCIERA</span></h1>
-            <p class="subtitle">Music Knobs | Dashboard Real-Time</p>
+            <p class="subtitle">Music Knobs | v2.2.0</p>
           </div>
           <div class="action-area">
             <div id="sync-status" class="status-badge">Sincronizado</div>
-            <button id="refresh-btn" class="icon-btn">
+            <button id="refresh-btn" class="icon-btn" aria-label="Actualizar">
               <i data-lucide="refresh-cw"></i>
             </button>
           </div>
         </div>
       </header>
 
-      <main class="dashboard-grid">
-        <!-- KPI Cards -->
-        <section class="kpi-row">
-          <div class="kpi-card glass">
-            <div class="kpi-icon orange"><i data-lucide="alert-triangle"></i></div>
-            <div class="kpi-data">
-              <span class="label">Gasto Hormiga</span>
-              <h2 id="gasto-hormiga-total">$0.00</h2>
-              <span id="gasto-hormiga-diff" class="diff-label">Calculando...</span>
+      <!-- ══════════════════════════════════
+           VIEW: DASHBOARD (Tab 1)
+           ══════════════════════════════════ -->
+      <div id="view-dashboard" class="view active">
+        <main class="dashboard-grid">
+          <section class="kpi-row">
+            <div class="kpi-card glass">
+              <div class="kpi-icon orange"><i data-lucide="alert-triangle"></i></div>
+              <div class="kpi-data">
+                <span class="label">Gasto Hormiga</span>
+                <h2 id="gasto-hormiga-total">$0.00</h2>
+                <span id="gasto-hormiga-diff" class="diff-label">Calculando...</span>
+              </div>
             </div>
-          </div>
-          <div class="kpi-card glass">
-            <div class="kpi-icon blue"><i data-lucide="calendar-check"></i></div>
-            <div class="kpi-data">
-              <span class="label">Gastos Fijos Mes</span>
-              <h2 id="gastos-fijos-total">$0.00</h2>
-              <span id="pago-status" class="diff-label">0/0 Pagados</span>
+            <div class="kpi-card glass">
+              <div class="kpi-icon blue"><i data-lucide="calendar-check"></i></div>
+              <div class="kpi-data">
+                <span class="label">Gastos Fijos Mes</span>
+                <h2 id="gastos-fijos-total">$0.00</h2>
+                <span id="pago-status" class="diff-label">0/0 Pagados</span>
+              </div>
             </div>
-          </div>
-          <div class="kpi-card glass">
-            <div class="kpi-icon green"><i data-lucide="trending-up"></i></div>
-            <div class="kpi-data">
-              <span class="label">Balance Disponible</span>
-              <h2 id="balance-total">$0.00</h2>
-              <span class="diff-label text-success">Libertad Financiera</span>
-            </div>
-          </div>
-        </section>
-
-        <!-- Main Charts/Table -->
-        <div class="main-content-row">
-          <section class="chart-section glass">
-            <div class="section-header">
-              <h3>Tendencia Gasto Hormiga</h3>
-            </div>
-            <div id="chart-hormiga"></div>
-          </section>
-
-          <section class="table-section glass">
-            <div class="section-header">
-              <h3>Estatus Gastos Fijos</h3>
-            </div>
-            <div class="table-wrapper">
-              <table id="fixed-expenses-table">
-                <thead>
-                  <tr>
-                    <th>Concepto</th>
-                    <th>Monto</th>
-                    <th>Estatus</th>
-                  </tr>
-                </thead>
-                <tbody id="fixed-expenses-body">
-                  <!-- JS injected -->
-                </tbody>
-              </table>
+            <div class="kpi-card glass">
+              <div class="kpi-icon green"><i data-lucide="trending-up"></i></div>
+              <div class="kpi-data">
+                <span class="label">Balance Disponible</span>
+                <h2 id="balance-total">$0.00</h2>
+                <span class="diff-label text-success">Libertad Financiera</span>
+              </div>
             </div>
           </section>
+
+          <div class="main-content-row">
+            <section class="chart-section glass">
+              <div class="section-header"><h3>Tendencia Gasto Hormiga</h3></div>
+              <div id="chart-hormiga"></div>
+            </section>
+            <section class="table-section glass">
+              <div class="section-header"><h3>Estatus Gastos Fijos</h3></div>
+              <div class="table-wrapper">
+                <table id="fixed-expenses-table">
+                  <thead>
+                    <tr><th>Concepto</th><th>Monto</th><th>Estatus</th></tr>
+                  </thead>
+                  <tbody id="fixed-expenses-body"></tbody>
+                </table>
+              </div>
+            </section>
+          </div>
+        </main>
+      </div>
+
+      <!-- ══════════════════════════════════
+           VIEW: CONTROL DE GASTOS (Tab 2)
+           ══════════════════════════════════ -->
+      <div id="view-gastos" class="view">
+
+        <!-- Form card -->
+        <div class="form-card glass">
+          <input type="hidden" id="g-id-fila" value="">
+          <div class="form-row-2">
+            <div class="form-field">
+              <label class="field-label">Tipo</label>
+              <select id="g-tipo" class="field-input">
+                <option value="Gasto">🔴 Gasto</option>
+                <option value="Ingreso">🟢 Ingreso</option>
+              </select>
+            </div>
+            <div class="form-field">
+              <label class="field-label">Forma de Pago</label>
+              <select id="g-forma-pago" class="field-input">
+                <option>BBVA</option>
+                <option>Santander</option>
+                <option>Cuenta Mariel</option>
+                <option>Efectivo</option>
+                <option>Transferencia</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-field">
+            <label class="field-label">Lugar</label>
+            <input type="text" id="g-lugar" class="field-input" placeholder="Ej. Oxxo">
+          </div>
+          <div class="form-field">
+            <label class="field-label">Concepto</label>
+            <input type="text" id="g-concepto" class="field-input" placeholder="Ej. Coca y Cigarros">
+          </div>
+          <div class="form-field">
+            <label class="field-label">Monto ($)</label>
+            <input type="number" id="g-monto" class="field-input field-input-lg" placeholder="0.00" step="any" inputmode="decimal">
+          </div>
+          <div class="form-actions">
+            <button id="g-btn-save" class="primary-btn" style="flex:1">GUARDAR</button>
+            <button id="g-btn-cancel" class="secondary-btn hidden">Cancelar</button>
+          </div>
+          <p id="g-status" class="form-status"></p>
         </div>
-      </main>
 
-      <!-- Login Modal -->
-      <div id="modal-backdrop"></div>
-
-      <div id="modal-api" class="modal" style="display:none;">
-        <div class="modal-inner">
-
-          <!-- Logo badge -->
-          <div class="modal-logo-badge">
-            <div class="logo-icon-wrap">💰</div>
+        <!-- History -->
+        <div class="glass historial-card">
+          <div class="section-header">
+            <h3>📋 Últimos Movimientos</h3>
           </div>
+          <input type="text" id="g-search" class="search-input" placeholder="🔍 Buscar lugar, concepto...">
+          <div id="g-lista"></div>
+          <button id="g-btn-mas" class="load-more-btn hidden">⬇ Cargar más</button>
+        </div>
 
-          <!-- Title -->
-          <h2 class="modal-title">ESTRATÉGIA<span>FINANCIERA</span></h2>
-          <p class="modal-subtitle">Accede a tus finanzas en tiempo real.<br>Conecta tu cuenta de Google para continuar.</p>
-
-          <!-- Google Button -->
-          <button id="login-google-btn" class="primary-btn google-btn">
-            <svg class="btn-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-              <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-              <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
-              <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-            </svg>
-            Iniciar Sesión con Google
-          </button>
-
-          <!-- Divider -->
-          <div class="modal-divider">
-            <span>ACCESO SEGURO</span>
+        <!-- Detail Modal Backdrop -->
+        <div id="g-modal-backdrop" class="modal-backdrop hidden"></div>
+        <!-- Detail Modal -->
+        <div id="g-modal" class="detail-modal glass hidden">
+          <button id="g-modal-close" class="modal-close-btn">✕</button>
+          <div id="g-m-monto" class="modal-monto-big"></div>
+          <div class="modal-meta-row">
+            <div>
+              <div class="modal-meta-label">Tipo</div>
+              <div id="g-m-tipo" class="modal-badge"></div>
+            </div>
+            <div>
+              <div class="modal-meta-label">Forma de Pago</div>
+              <div id="g-m-pago" class="modal-meta-val"></div>
+            </div>
           </div>
-
-          <!-- Security note -->
-          <div class="modal-security-note">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-            </svg>
-            Protegido por Google OAuth 2.0 · Solo lectura de tus datos
+          <div class="modal-meta-label">Lugar</div>
+          <div id="g-m-lugar" class="modal-meta-val"></div>
+          <div class="modal-meta-label">Concepto</div>
+          <div id="g-m-concepto" class="modal-meta-val"></div>
+          <div class="modal-meta-label">Fecha</div>
+          <div id="g-m-fecha" class="modal-meta-val modal-meta-sm"></div>
+          <div class="modal-meta-label" style="margin-top:1rem">Recibos</div>
+          <div id="g-m-recibos"></div>
+          <div class="modal-actions">
+            <button id="g-modal-btn-editar" class="primary-btn" style="background:var(--accent-orange)">✏️ Editar</button>
+            <button id="g-modal-btn-borrar" class="primary-btn" style="background:#ef4444">🗑️ Borrar</button>
           </div>
-
         </div>
       </div>
-    </div>
+
+      <!-- ══════════════════════════════════
+           VIEW: GASTOS FIJOS (Tab 3)
+           ══════════════════════════════════ -->
+      <div id="view-fijos" class="view">
+
+        <!-- Balance Card -->
+        <div class="glass balance-card">
+          <p id="f-balance-label" class="balance-label">Disponible (Libertad Financiera)</p>
+          <h2 id="f-balance" class="balance-amount">$0.00</h2>
+          <div class="balance-stats">
+            <div class="balance-stat">
+              <span class="stat-label text-success">↑ Ingresos</span>
+              <span id="f-ingresos" class="stat-value text-success">$0.00</span>
+            </div>
+            <div class="balance-stat">
+              <span class="stat-label text-danger">↓ Gastos</span>
+              <span id="f-gastos-total" class="stat-value text-danger">$0.00</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Toolbar -->
+        <div class="toolbar-row">
+          <input type="text" id="f-search" class="search-input" style="flex:1" placeholder="🔍 Buscar...">
+          <div class="filtro-wrap">
+            <button id="f-btn-filtro" class="icon-btn" title="Filtrar por categoría">📂</button>
+            <span id="f-filtro-badge" class="filtro-badge" style="display:none"></span>
+          </div>
+          <select id="f-sort" class="sort-select field-input">
+            <option value="fechaDesc">📅 ↓</option>
+            <option value="fechaAsc">📅 ↑</option>
+            <option value="alphaAsc">A–Z</option>
+          </select>
+        </div>
+
+        <!-- List -->
+        <div id="f-lista" class="glass movimientos-list"></div>
+
+        <!-- FAB -->
+        <button id="f-btn-add" class="fab-btn" aria-label="Nuevo movimiento" title="Nuevo movimiento">＋</button>
+
+        <!-- Bottom Sheet: Add/Edit -->
+        <div id="f-sheet" class="bottom-sheet hidden">
+          <div id="f-sheet-overlay" class="bottom-sheet-overlay"></div>
+          <div class="bottom-sheet-content glass">
+            <div class="sheet-handle"></div>
+            <h4 id="f-sheet-title" class="sheet-title">Nuevo Movimiento</h4>
+            <input type="hidden" id="f-edit-id">
+            <div class="form-field">
+              <label class="field-label">Fecha</label>
+              <input type="date" id="f-fecha" class="field-input">
+            </div>
+            <div class="form-row-2">
+              <div class="form-field">
+                <label class="field-label">Tipo</label>
+                <select id="f-tipo" class="field-input">
+                  <option value="gasto">🔴 Gasto</option>
+                  <option value="ingreso">🟢 Ingreso</option>
+                </select>
+              </div>
+              <div class="form-field">
+                <label class="field-label">Monto</label>
+                <input type="number" id="f-monto" class="field-input" step="0.01" inputmode="decimal" placeholder="0.00">
+              </div>
+            </div>
+            <div class="form-field">
+              <label class="field-label">Concepto</label>
+              <input type="text" id="f-concepto" class="field-input" placeholder="Ej. Netflix">
+            </div>
+            <div class="form-field">
+              <label class="field-label">Categorías</label>
+              <div id="f-cat-checks" class="cat-checks-container"></div>
+            </div>
+            <button id="f-btn-guardar" class="primary-btn" style="width:100%;margin-top:1rem">Guardar</button>
+          </div>
+        </div>
+
+        <!-- Bottom Sheet: Filter -->
+        <div id="f-filter-sheet" class="bottom-sheet hidden">
+          <div id="f-filter-overlay" class="bottom-sheet-overlay"></div>
+          <div class="bottom-sheet-content glass">
+            <div class="sheet-handle"></div>
+            <h4 class="sheet-title">Filtrar por Categoría</h4>
+            <p class="sheet-hint">Muestra movimientos con cualquiera de estas categorías:</p>
+            <div id="f-filter-checks" class="cat-checks-container"></div>
+            <div class="form-row-2" style="margin-top:1.25rem">
+              <button id="f-filter-clear" class="secondary-btn" style="flex:1">Ver Todas</button>
+              <button id="f-filter-apply" class="primary-btn" style="flex:1">Aplicar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── TAB BAR ── -->
+      <nav class="tab-bar">
+        <button class="tab active" id="tab-dashboard" data-tab="dashboard">
+          <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+          <span class="tab-label">Dashboard</span>
+        </button>
+        <button class="tab" id="tab-gastos" data-tab="gastos">
+          <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+          <span class="tab-label">Gastos</span>
+        </button>
+        <button class="tab" id="tab-fijos" data-tab="fijos">
+          <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          <span class="tab-label">Fijos</span>
+        </button>
+      </nav>
+
+      <!-- ── LOGIN MODAL ── -->
+      <div id="modal-backdrop"></div>
+      <div id="modal-api" class="modal" style="display:none;">
+        <div class="modal-inner">
+          <div class="modal-logo-badge"><div class="logo-icon-wrap">💰</div></div>
+          <h2 class="modal-title">ESTRATÉGIA<span>FINANCIERA</span></h2>
+          <p class="modal-subtitle">Accede a tus finanzas en tiempo real.<br>Conecta tu cuenta de Google para continuar.</p>
+          <button id="login-google-btn" class="primary-btn google-btn">
+            <svg class="btn-icon" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+            Iniciar Sesión con Google
+          </button>
+          <div class="modal-divider"><span>ACCESO SEGURO</span></div>
+          <div class="modal-security-note">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            Protegido por Google OAuth 2.0 · Lectura y escritura de tus datos
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /#app -->
   </body>
 </html>
