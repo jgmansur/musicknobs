@@ -1241,25 +1241,31 @@ function parseBool(val) {
     return (val || '').toString().toUpperCase() === 'TRUE';
 }
 
-/** Parse a date that may be a Google Sheets serial number or an ISO/DD/MM/YYYY string */
-function normalizeDateString(val) {
-    if (!val) return new Date().toISOString().split('T')[0];
+/** Parse a date that may be a Google Sheets serial number or an ISO/DD/MM/YYYY string AND RETURNS A JS DATE */
+function parseSheetDate(val) {
+    if (!val) return new Date();
     
-    let d;
     if (typeof val === 'number') {
         const utc = new Date(Date.UTC(1899, 11, 30) + val * 86400000);
-        d = new Date(utc.getUTCFullYear(), utc.getUTCMonth(), utc.getUTCDate());
-    } else {
-        const str = String(val).trim();
-        if (str.includes('/')) {
-            const p = str.split('/');
-            if (p.length === 3) d = new Date(p[2], parseInt(p[1],10)-1, p[0]);
-        } else {
-            d = new Date(str);
+        return new Date(utc.getUTCFullYear(), utc.getUTCMonth(), utc.getUTCDate());
+    }
+    
+    const str = String(val).trim();
+    if (str.includes('/')) {
+        const p = str.split('/');
+        if (p.length === 3) {
+            // Assume DD/MM/YYYY
+            return new Date(p[2], parseInt(p[1],10)-1, p[0]);
         }
     }
-    if (!d || isNaN(d)) d = new Date();
     
+    const d = new Date(str);
+    return isNaN(d) ? new Date() : d;
+}
+
+/** Format a parsed date string into YYYY-MM-DD */
+function normalizeDateString(val) {
+    const d = parseSheetDate(val);
     const yyyy = d.getFullYear();
     const mm = String(d.getMonth() + 1).padStart(2, '0');
     const dd = String(d.getDate()).padStart(2, '0');
