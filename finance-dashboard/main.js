@@ -241,8 +241,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // Boot
     if (accessToken) {
         hideLoginModal();
-        // Recover Firebase redirect auth (if any), then sign in with cached token.
-        firebase_restoreRedirectResult().then(() => firebase_signIn(accessToken, { allowPopupFallback: false })).then(() => {
+        // Recover Firebase redirect auth if present; avoid token-credential sign-in here
+        // because some environments return invalid audience for GIS access tokens.
+        firebase_restoreRedirectResult().then(() => {
+            if (!_fbUid) debugUpdate({ auth: 'Firebase pendiente (se conecta al guardar cuentas)' });
             balance_loadAccounts().then(() => balance_updateKpi());
             showTab('dashboard');
         });
@@ -650,8 +652,9 @@ function requestToken() {
                     localStorage.setItem(EXPIRY_KEY, String(Date.now() + 3500 * 1000));
                     debugUpdate({ token: 'Si (cache)', auth: 'Google OAuth OK' });
                     hideLoginModal();
-                    // Firebase sign-in first so _fbUid is available before loading accounts
-                    firebase_signIn(accessToken, { allowPopupFallback: false }).then(() => {
+                    // Recover redirect session if any; connect Firebase lazily on account save.
+                    firebase_restoreRedirectResult().then(() => {
+                        if (!_fbUid) debugUpdate({ auth: 'Google OK · Firebase pendiente' });
                         balance_loadAccounts().then(() => balance_updateKpi());
                     });
                     showTab('dashboard');
