@@ -1509,7 +1509,8 @@ function processAndRender(logRows, fixedRows) {
     const fixedGastos   = fixedExpenses.filter(e => e.tipo === 'gasto');
     const fixedTotal    = fixedGastos.reduce((s, e) => s + Math.max(0, e.pendingAmount), 0);
     const fixedPaidTotal = fixedGastos.reduce((s, e) => s + Math.max(0, e.paidAmount), 0);
-    const paidCount     = fixedGastos.filter(e => e.isPaid).length;
+    const paidParts     = fixedGastos.reduce((s, e) => s + (e.pagosHechos || 0), 0);
+    const totalParts    = fixedGastos.reduce((s, e) => s + (e.pagosMes || 1), 0);
     const pendingFixed  = fixedTotal;   // already only unpaid gastos
 
     // Update balance module with current pending fixed expenses
@@ -1520,9 +1521,9 @@ function processAndRender(logRows, fixedRows) {
     document.getElementById('gasto-hormiga-total').innerText = formatCurrency(hormigaTotal);
     document.getElementById('gastos-fijos-total').innerText  = formatCurrency(fixedTotal);
     document.getElementById('pago-status').innerText =
-        fixedTotal === 0
+        totalParts > 0 && paidParts >= totalParts
             ? `✅ \u00a1Todo pagado!`
-            : `${paidCount}/${fixedGastos.length} Pagados`;
+            : `${paidParts}/${totalParts} Pagos`;
 
     // Dashboard only shows PENDING (unpaid) fixed expenses
     renderFixedTable(fixedExpenses.filter(e => !e.isPaid));
@@ -2085,12 +2086,17 @@ function fijos_syncDashboardStats() {
         const partAmount = Math.abs(i.monto || 0) / (i.pagosMes || 1);
         return s + (paidParts * partAmount);
     }, 0);
-    const paidCount = fixedGastos.filter(i => (i.pagosHechos || 0) >= (i.pagosMes || 1)).length;
+    const paidParts = fixedGastos.reduce((s, i) => s + Math.max(0, i.pagosHechos || 0), 0);
+    const totalParts = fixedGastos.reduce((s, i) => s + Math.max(1, i.pagosMes || 1), 0);
 
     const totalEl = document.getElementById('gastos-fijos-total');
     const statusEl = document.getElementById('pago-status');
     if (totalEl) totalEl.innerText = formatCurrency(pendingFixed);
-    if (statusEl) statusEl.innerText = `${paidCount}/${fixedGastos.length} Pagados`;
+    if (statusEl) {
+        statusEl.innerText = totalParts > 0 && paidParts >= totalParts
+            ? '✅ ¡Todo pagado!'
+            : `${paidParts}/${totalParts} Pagos`;
+    }
 
     balancePendingFixed = pendingFixed;
     balancePaidFixedTotal = paidFixed;
