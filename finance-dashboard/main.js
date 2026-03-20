@@ -1,7 +1,7 @@
 import { createIcons, RefreshCw, AlertTriangle, CalendarCheck, TrendingUp, LogOut } from 'lucide';
 import ApexCharts from 'apexcharts';
 import { initializeApp } from 'firebase/app';
-import { getAuth, GoogleAuthProvider, onAuthStateChanged, signInWithCredential, signOut as fbSignOut } from 'firebase/auth';
+import { getAuth, GoogleAuthProvider, onAuthStateChanged, signInWithCredential, signInWithPopup, signOut as fbSignOut } from 'firebase/auth';
 import { getFirestore, doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 
 // =============================================
@@ -40,7 +40,23 @@ onAuthStateChanged(_fbAuth, (user) => {
     debugUpdate({ auth: user ? 'Sesion Firebase activa' : 'Sin sesion Firebase', uid: _fbUid || '-' });
 });
 
-async function firebase_signIn(googleAccessToken) {
+async function firebase_signInWithPopup() {
+    try {
+        const provider = new GoogleAuthProvider();
+        const result = await signInWithPopup(_fbAuth, provider);
+        _fbUid = result.user.uid;
+        debugUpdate({ auth: 'Firebase popup OK', uid: _fbUid, token: accessToken ? 'Si' : 'No' });
+        return true;
+    } catch (e) {
+        _fbUid = null;
+        debugUpdate({ auth: `Popup Firebase error: ${debugShort(e.message)}`, uid: '-' });
+        console.warn('[Firebase] popup sign-in failed:', e.code || '', e.message);
+        return false;
+    }
+}
+
+async function firebase_signIn(googleAccessToken, opts = {}) {
+    const { allowPopupFallback = false } = opts;
     if (_fbAuth.currentUser?.uid) {
         _fbUid = _fbAuth.currentUser.uid;
         debugUpdate({ auth: 'Sesion Firebase reutilizada', uid: _fbUid, token: accessToken ? 'Si (cache)' : 'No' });
@@ -57,6 +73,11 @@ async function firebase_signIn(googleAccessToken) {
         console.warn('[Firebase] sign-in failed:', e.message);
         _fbUid = null;
         debugUpdate({ auth: `Firebase error: ${debugShort(e.message)}`, uid: '-' });
+        const isInvalidCredential = e?.code === 'auth/invalid-credential' || String(e?.message || '').includes('Invalid Idp Response');
+        if (allowPopupFallback && isInvalidCredential) {
+            debugUpdate({ auth: 'Reintentando Firebase con popup...' });
+            await firebase_signInWithPopup();
+        }
     }
 }
 
@@ -196,7 +217,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (accessToken) {
         hideLoginModal();
         // Sign into Firebase with the cached Google token, then load accounts
-        firebase_signIn(accessToken).then(() => {
+        firebase_signIn(accessToken, { allowPopupFallback: false }).then(() => {
             balance_loadAccounts().then(() => balance_updateKpi());
             showTab('dashboard');
         });
@@ -334,7 +355,7 @@ async function balance_saveAccounts() {
         debugUpdate({ save: `Solo localStorage (${balanceAccounts.length})`, token: 'No' });
         return;
     }
-    if (!_fbUid) await firebase_signIn(accessToken);
+    if (!_fbUid) await firebase_signIn(accessToken, { allowPopupFallback: true });
     // 2. Write to Firestore (primary) and Sheets (backup) in parallel
     const ops = [];
     if (_fbUid) {
@@ -605,7 +626,7 @@ function requestToken() {
                     debugUpdate({ token: 'Si (cache)', auth: 'Google OAuth OK' });
                     hideLoginModal();
                     // Firebase sign-in first so _fbUid is available before loading accounts
-                    firebase_signIn(accessToken).then(() => {
+                    firebase_signIn(accessToken, { allowPopupFallback: false }).then(() => {
                         balance_loadAccounts().then(() => balance_updateKpi());
                     });
                     showTab('dashboard');
