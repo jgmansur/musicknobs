@@ -13,7 +13,7 @@ const SCOPES = 'https://www.googleapis.com/auth/spreadsheets https://www.googlea
 const SPREADSHEET_LOG_ID   = '1pn1bsxj2LaoySXAVUvqfEJY1VR4R_T8NsTOqQnVW5Xw'; // Control de Gastos
 const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // Gastos Fijos
 const SPREADSHEET_DEUDAS_ID = '1dKxhgqazskm15lx0f6FNCA0gpJ7i5glfxkusiH3b0Uk'; // Control de Deudas
-const APP_VERSION  = 'v3.5.2';
+const APP_VERSION  = 'v3.5.3';
 // Bump token keys to force re-auth with the new drive scope
 const TOKEN_KEY    = 'google_access_token_v4';
 const EXPIRY_KEY   = 'google_token_expiry_v4';
@@ -266,6 +266,7 @@ const ACCOUNT_ICONS  = { bank:'🏦', credit:'💳', cash:'💵', invest:'📈',
 const ACCOUNT_COLORS = { bank:'#3b82f6', credit:'#ef4444', cash:'#22c55e', invest:'#a855f7', other:'#f59e0b' };
 const ACCOUNT_TYPE_LABEL = { bank:'Cuenta bancaria', credit:'Tarjeta de crédito', cash:'Efectivo', invest:'Inversión', other:'Otro' };
 const FX_CACHE_KEY = 'usd_mxn_rate_cache_v1';
+const BTC_CACHE_KEY = 'btc_mxn_rate_cache_v1';
 const INVEST_RATE_CACHE_KEY = 'investment_rate_cache_v1';
 
 let balanceUsdMxnRate = (() => {
@@ -279,6 +280,17 @@ let balanceUsdMxnRate = (() => {
     }
 })();
 let balanceFxFetchInFlight = false;
+let balanceBtcMxnRate = (() => {
+    try {
+        const raw = localStorage.getItem(BTC_CACHE_KEY);
+        if (!raw) return null;
+        const parsed = JSON.parse(raw);
+        return Number(parsed?.rate) || null;
+    } catch {
+        return null;
+    }
+})();
+let balanceBtcFetchInFlight = false;
 let balanceInvestRates = (() => {
     try {
         const raw = localStorage.getItem(INVEST_RATE_CACHE_KEY);
@@ -305,8 +317,8 @@ function balance_normalizeAccount(a = {}) {
         hidden: !!a.hidden,
         creditLimit: typeof a.creditLimit === 'number' ? a.creditLimit : parseSheetValue(a.creditLimit),
         creditLimitVisible: !!a.creditLimitVisible,
-        currency: currency === 'USD' ? 'USD' : 'MXN',
-        investmentType: ['cetes', 'mifel', 'custom'].includes((a.investmentType || '').toString().toLowerCase())
+        currency: ['MXN', 'USD', 'BTC'].includes(currency) ? currency : 'MXN',
+        investmentType: ['cetes', 'mifel', 'bitcoin', 'custom'].includes((a.investmentType || '').toString().toLowerCase())
             ? (a.investmentType || '').toString().toLowerCase()
             : 'custom',
         customAnnualRate: typeof a.customAnnualRate === 'number' ? a.customAnnualRate : parseSheetValue(a.customAnnualRate),
@@ -314,8 +326,12 @@ function balance_normalizeAccount(a = {}) {
 }
 
 function balance_convertToMxn(amount, currency) {
-    if ((currency || 'MXN') === 'USD') {
+    const curr = (currency || 'MXN').toUpperCase();
+    if (curr === 'USD') {
         return amount * (balanceUsdMxnRate || 1);
+    }
+    if (curr === 'BTC') {
+        return amount * (balanceBtcMxnRate || 1);
     }
     return amount;
 }
@@ -352,10 +368,43 @@ async function balance_refreshUsdMxnRate(force = false) {
     }
 }
 
+async function balance_refreshBtcMxnRate(force = false) {
+    const needsRate = balanceAccounts.some(a => a.currency === 'BTC');
+    if (!needsRate && !force) return;
+    if (balanceBtcFetchInFlight) return;
+    balanceBtcFetchInFlight = true;
+    try {
+        const today = new Date().toISOString().slice(0, 10);
+        const raw = localStorage.getItem(BTC_CACHE_KEY);
+        if (!force && raw) {
+            const parsed = JSON.parse(raw);
+            if (parsed?.date === today && Number(parsed?.rate) > 0) {
+                balanceBtcMxnRate = Number(parsed.rate);
+                return;
+            }
+        }
+        const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=mxn');
+        if (!res.ok) return;
+        const data = await res.json();
+        const rate = Number(data?.bitcoin?.mxn);
+        if (!rate || Number.isNaN(rate)) return;
+        balanceBtcMxnRate = rate;
+        localStorage.setItem(BTC_CACHE_KEY, JSON.stringify({ date: today, rate }));
+        balance_updateKpi();
+        const panel = document.getElementById('balance-panel');
+        if (panel && !panel.classList.contains('hidden')) balance_renderPanel();
+    } catch (_) {
+        // Keep cached rate if available
+    } finally {
+        balanceBtcFetchInFlight = false;
+    }
+}
+
 function balance_getEffectiveAnnualRate(acc) {
     if (acc.type !== 'invest') return 0;
     if (acc.investmentType === 'cetes') return balanceInvestRates.cetes;
     if (acc.investmentType === 'mifel') return balanceInvestRates.mifel;
+    if (acc.investmentType === 'bitcoin') return Math.max(0, Number(acc.customAnnualRate) || 0);
     return Math.max(0, Number(acc.customAnnualRate) || 0);
 }
 
@@ -525,6 +574,7 @@ async function balance_loadAccounts() {
             balanceAccounts = raw ? JSON.parse(raw).map(balance_normalizeAccount) : DEFAULT_ACCOUNTS.map(a => balance_normalizeAccount(a));
         } catch { balanceAccounts = DEFAULT_ACCOUNTS.map(a => balance_normalizeAccount(a)); }
         balance_refreshUsdMxnRate();
+        balance_refreshBtcMxnRate();
         balance_refreshInvestmentRates();
         debugUpdate({ load: `localStorage (${balanceAccounts.length})`, token: 'No' });
         return;
@@ -540,6 +590,7 @@ async function balance_loadAccounts() {
                 // Update localStorage cache
                 localStorage.setItem('finance_accounts_v1', JSON.stringify(balanceAccounts));
                 balance_refreshUsdMxnRate();
+                balance_refreshBtcMxnRate();
                 balance_refreshInvestmentRates();
                 debugUpdate({ load: `Firestore (${balanceAccounts.length})`, uid: _fbUid || '-' });
                 return;
@@ -575,6 +626,7 @@ async function balance_loadAccounts() {
         }
         debugUpdate({ load: `Sheets (${balanceAccounts.length})` });
         balance_refreshUsdMxnRate();
+        balance_refreshBtcMxnRate();
         balance_refreshInvestmentRates();
         // Migrate to Firestore now that we have the data
         if (_fbUid) balance_saveToFirestore().catch(console.warn);
@@ -751,7 +803,9 @@ function balance_renderPanel() {
         const signedMxn = balance_convertToMxn(Math.abs(signed), acc.currency) * (signed < 0 ? -1 : 1);
         const creditLimit = Math.abs(acc.creditLimit || 0);
         const creditLimitMxn = balance_convertToMxn(creditLimit, acc.currency);
-        const usdHint = acc.currency === 'USD' ? ` · USD ${Math.abs(signed).toFixed(2)}` : '';
+        const fxHint = acc.currency === 'USD'
+            ? ` · USD ${Math.abs(signed).toFixed(2)}`
+            : (acc.currency === 'BTC' ? ` · BTC ${Math.abs(signed).toFixed(6)}` : '');
         const creditBadge = acc.type === 'credit'
             ? `<span class="account-type-label">Limite: ${acc.creditLimitVisible ? `+${formatCurrency(creditLimitMxn)}` : 'oculto'}${acc.currency === 'USD' ? ` (USD ${creditLimit.toFixed(2)})` : ''}</span>`
             : '';
@@ -770,7 +824,7 @@ function balance_renderPanel() {
             <span class="account-icon" style="background:${color}22;color:${color}">${icon}</span>
             <div class="account-info">
               <span class="account-name">${acc.name}${acc.hidden ? ' <span class="acc-hidden-badge">AHORRO</span>' : ''}</span>
-              <span class="account-type-label">${ACCOUNT_TYPE_LABEL[acc.type] || 'Cuenta'} · ${acc.currency || 'MXN'}${usdHint}</span>
+              <span class="account-type-label">${ACCOUNT_TYPE_LABEL[acc.type] || 'Cuenta'} · ${acc.currency || 'MXN'}${fxHint}</span>
               ${creditBadge}
               ${investBadge}
             </div>
@@ -809,6 +863,7 @@ async function balance_openPanel() {
     document.body.style.overflow = 'hidden';
     await balance_loadAccounts();
     await balance_refreshUsdMxnRate();
+    await balance_refreshBtcMxnRate();
     await balance_refreshInvestmentRates();
     balance_updateKpi();
     balance_renderPanel();
@@ -834,8 +889,16 @@ function balance_renderInvestmentPanel() {
     }
 
     listEl.innerHTML = summary.rows.map(({ acc, principalMxn, annualRate, monthlyYield }) => {
-        const srcLabel = acc.investmentType === 'cetes' ? 'CETES' : (acc.investmentType === 'mifel' ? 'MIFEL' : 'Personalizada');
-        const principalRaw = acc.currency === 'USD' ? `USD ${Math.abs(acc.balance || 0).toFixed(2)}` : formatCurrency(Math.abs(acc.balance || 0));
+        const srcLabel = acc.investmentType === 'cetes'
+            ? 'CETES'
+            : (acc.investmentType === 'mifel'
+                ? 'MIFEL'
+                : (acc.investmentType === 'bitcoin' ? 'BITCOIN' : 'Personalizada'));
+        const principalRaw = acc.currency === 'USD'
+            ? `USD ${Math.abs(acc.balance || 0).toFixed(2)}`
+            : (acc.currency === 'BTC'
+                ? `BTC ${Math.abs(acc.balance || 0).toFixed(6)}`
+                : formatCurrency(Math.abs(acc.balance || 0)));
         return `
           <div class="account-card glass-subtle">
             <div class="account-card-left">
@@ -932,11 +995,15 @@ async function balance_saveAccount() {
     const name    = document.getElementById('acc-name').value.trim();
     const balance = parseFloat(document.getElementById('acc-balance').value) || 0;
     const type    = document.getElementById('acc-type').value;
-    const currency = document.getElementById('acc-currency').value === 'USD' ? 'USD' : 'MXN';
+    let currency = document.getElementById('acc-currency').value;
+    currency = ['MXN', 'USD', 'BTC'].includes(currency) ? currency : 'MXN';
     const creditLimit = Math.abs(parseFloat(document.getElementById('acc-credit-limit').value) || 0);
     const creditLimitVisible = document.getElementById('acc-credit-visible').value === '1';
     const investmentType = document.getElementById('acc-invest-type').value;
     const customAnnualRate = Math.max(0, parseFloat(document.getElementById('acc-invest-rate').value) || 0);
+    if (type === 'invest' && investmentType === 'bitcoin') {
+        currency = 'BTC';
+    }
     if (!name) return;
     const btn = document.getElementById('acc-save-btn');
     btn.disabled = true; btn.innerText = 'Guardando...';
@@ -970,6 +1037,7 @@ async function balance_saveAccount() {
     balance_resetDynamicAnchors();
     await balance_saveAccounts();
     await balance_refreshUsdMxnRate(true);
+    await balance_refreshBtcMxnRate(true);
     await balance_refreshInvestmentRates(true);
     balance_renderPanel();
     balance_updateKpi();
@@ -996,6 +1064,7 @@ function balance_init() {
         if (raw) { balanceAccounts = JSON.parse(raw).map(balance_normalizeAccount); balance_updateKpi(); }
     } catch {}
     balance_refreshUsdMxnRate();
+    balance_refreshBtcMxnRate();
     balance_refreshInvestmentRates();
 
     document.getElementById('kpi-balance-card')
@@ -1019,11 +1088,15 @@ function balance_init() {
     document.getElementById('acc-type')
         .addEventListener('change', balance_refreshCreditFields);
     document.getElementById('acc-currency')
-        .addEventListener('change', () => balance_refreshUsdMxnRate(true));
+        .addEventListener('change', () => {
+            balance_refreshUsdMxnRate(true);
+            balance_refreshBtcMxnRate(true);
+        });
     document.getElementById('acc-invest-type')
         .addEventListener('change', () => {
             balance_refreshCreditFields();
             balance_refreshInvestmentRates(true);
+            balance_refreshBtcMxnRate(true);
         });
     document.getElementById('acc-credit-visible-btn')
         .addEventListener('click', () => {
@@ -1046,12 +1119,19 @@ function balance_refreshCreditFields() {
     const investWrap = document.getElementById('acc-invest-fields');
     const investType = document.getElementById('acc-invest-type').value;
     const investRate = document.getElementById('acc-invest-rate');
+    const currencySelect = document.getElementById('acc-currency');
     const btn = document.getElementById('acc-credit-visible-btn');
     const hiddenInput = document.getElementById('acc-credit-visible');
     const isCredit = type === 'credit';
     creditWrap.classList.toggle('hidden', !isCredit);
     investWrap.classList.toggle('hidden', type !== 'invest');
-    investRate.classList.toggle('hidden', !(type === 'invest' && investType === 'custom'));
+    investRate.classList.toggle('hidden', !(type === 'invest' && (investType === 'custom' || investType === 'bitcoin')));
+    if (type === 'invest' && investType === 'bitcoin') {
+        currencySelect.value = 'BTC';
+        currencySelect.disabled = true;
+    } else {
+        currencySelect.disabled = false;
+    }
     if (!isCredit) return;
     const isVisible = hiddenInput.value === '1';
     btn.innerText = isVisible ? '👁️ Limite visible en balance' : '🙈 Limite oculto en balance';

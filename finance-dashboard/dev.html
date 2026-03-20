@@ -20,7 +20,7 @@
         <div class="header-content">
           <div class="logo-area">
             <h1 class="premium-title">ESTRATÉGIA<span>FINANCIERA</span></h1>
-            <p class="subtitle">Music Knobs | v3.5.2</p>
+            <p class="subtitle">Music Knobs | v3.5.3</p>
           </div>
           <div class="action-area">
             <div id="sync-status" class="status-badge">Sincronizado</div>
@@ -150,6 +150,7 @@
             <select id="acc-currency" class="field-input">
               <option value="MXN">🇲🇽 Pesos (MXN)</option>
               <option value="USD">🇺🇸 Dólares (USD)</option>
+              <option value="BTC">₿ Bitcoin (BTC)</option>
             </select>
             <div id="acc-credit-fields" class="hidden">
               <input id="acc-credit-limit" class="field-input" type="number" placeholder="Límite de crédito ($)" step="0.01" inputmode="decimal">
@@ -160,9 +161,10 @@
               <select id="acc-invest-type" class="field-input">
                 <option value="cetes">CETES (tasa diaria)</option>
                 <option value="mifel">MIFEL (tasa diaria)</option>
+                <option value="bitcoin">Bitcoin</option>
                 <option value="custom">Inversión personalizada</option>
               </select>
-              <input id="acc-invest-rate" class="field-input hidden" type="number" placeholder="Tasa anual personalizada (%)" step="0.01" inputmode="decimal" style="margin-top:.45rem">
+              <input id="acc-invest-rate" class="field-input hidden" type="number" placeholder="Tasa anual estimada (%)" step="0.01" inputmode="decimal" style="margin-top:.45rem">
             </div>
             <div class="form-row-2" style="gap:.5rem">
               <button id="acc-save-btn" class="primary-btn" style="flex:1">Guardar</button>
