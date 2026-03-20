@@ -349,6 +349,12 @@ async function balance_getOrCreateSheet() {
     }
     // Find 'Jay App' folder in Drive
     const folderId = await driveFindFolder('Jay App');
+    // Reuse existing spreadsheet (important for cross-device sync when Firestore is unavailable)
+    sheetId = await driveFindSpreadsheetByName('Finance Dashboard - Cuentas', folderId);
+    if (sheetId) {
+        localStorage.setItem(ACCOUNTS_SHEET_KEY, sheetId);
+        return sheetId;
+    }
     // Create the spreadsheet (in Jay App folder if found, else root Drive)
     sheetId = await driveCreateSpreadsheet('Finance Dashboard - Cuentas', folderId);
     // Initialize header row
@@ -388,7 +394,7 @@ async function balance_loadAccounts() {
             }
             // No Firestore data yet — fall through to Sheets to migrate
         } catch (err) {
-            debugUpdate({ load: `Firestore error -> Sheets (${debugShort(err.message)})` });
+            debugUpdate({ load: `Firestore error -> Sheets (${debugShort(err.code || err.message)})` });
             console.warn('[Firebase] Firestore load failed, falling back to Sheets:', err.message);
         }
     }
@@ -464,9 +470,10 @@ async function balance_saveAccounts() {
     const results = await Promise.allSettled(ops.map(op => op.promise));
     const labels = results.map((result, i) => {
         if (result.status === 'rejected') {
+            const code = result.reason?.code || result.reason?.status || 'ERR';
             const msg = debugShort(result.reason?.message || result.reason || 'error');
             console.warn(`[${ops[i].name}] save failed:`, msg);
-            return `${ops[i].name}:ERR`;
+            return `${ops[i].name}:ERR(${code})`;
         }
         return `${ops[i].name}:OK`;
     });
@@ -828,6 +835,18 @@ async function sheetsClear(ssId, range) {
 async function driveFindFolder(name) {
     const q = encodeURIComponent(`name='${name}' and mimeType='application/vnd.google-apps.folder' and trashed=false`);
     const url = `https://www.googleapis.com/drive/v3/files?q=${q}&fields=files(id,name)`;
+    const r = await fetch(url, { headers: { Authorization: `Bearer ${accessToken}` } });
+    if (!r.ok) return null;
+    const data = await r.json();
+    return data.files?.[0]?.id || null;
+}
+
+async function driveFindSpreadsheetByName(name, parentId = null) {
+    const parentFilter = parentId ? ` and '${parentId}' in parents` : '';
+    const q = encodeURIComponent(
+        `name='${name}' and mimeType='application/vnd.google-apps.spreadsheet' and trashed=false${parentFilter}`
+    );
+    const url = `https://www.googleapis.com/drive/v3/files?q=${q}&fields=files(id,name,createdTime)&orderBy=createdTime desc`;
     const r = await fetch(url, { headers: { Authorization: `Bearer ${accessToken}` } });
     if (!r.ok) return null;
     const data = await r.json();
