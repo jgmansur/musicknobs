@@ -13,7 +13,7 @@ const SCOPES = 'https://www.googleapis.com/auth/spreadsheets https://www.googlea
 const SPREADSHEET_LOG_ID   = '1pn1bsxj2LaoySXAVUvqfEJY1VR4R_T8NsTOqQnVW5Xw'; // Control de Gastos
 const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // Gastos Fijos
 const SPREADSHEET_DEUDAS_ID = '1dKxhgqazskm15lx0f6FNCA0gpJ7i5glfxkusiH3b0Uk'; // Control de Deudas
-const APP_VERSION  = 'v3.4.2';
+const APP_VERSION  = 'v3.4.3';
 // Bump token keys to force re-auth with the new drive scope
 const TOKEN_KEY    = 'google_access_token_v4';
 const EXPIRY_KEY   = 'google_token_expiry_v4';
@@ -46,7 +46,23 @@ onAuthStateChanged(_fbAuth, (user) => {
     balance_handleFirebaseAuthChange();
 });
 
+function isStandaloneAppMode() {
+    return window.matchMedia?.('(display-mode: standalone)')?.matches || window.navigator.standalone === true;
+}
+
 async function firebase_signInWithPopup() {
+    if (isStandaloneAppMode()) {
+        try {
+            const provider = new GoogleAuthProvider();
+            debugUpdate({ auth: 'Modo app: redirigiendo a Firebase...', uid: '-' });
+            await signInWithRedirect(_fbAuth, provider);
+            return false;
+        } catch (redirectErr) {
+            debugUpdate({ auth: `Redirect Firebase error: ${debugShort(redirectErr.message)}`, uid: '-' });
+            console.warn('[Firebase] redirect sign-in failed:', redirectErr.code || '', redirectErr.message);
+            return false;
+        }
+    }
     try {
         const provider = new GoogleAuthProvider();
         const result = await signInWithPopup(_fbAuth, provider);
