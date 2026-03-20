@@ -9,8 +9,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <script type="module" crossorigin src="/musicknobs/finance-dashboard/assets/index-DFvDKJrS.js"></script>
-    <link rel="stylesheet" crossorigin href="/musicknobs/finance-dashboard/assets/index-DHudUJcq.css">
+    <script type="module" crossorigin src="./assets/index-D9Q6a93t.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-DgIAUneV.css">
   </head>
   <body>
     <div id="app">
@@ -20,7 +20,7 @@
         <div class="header-content">
           <div class="logo-area">
             <h1 class="premium-title">ESTRATÉGIA<span>FINANCIERA</span></h1>
-            <p class="subtitle">Music Knobs | v2.7.0</p>
+            <p class="subtitle">Music Knobs | v2.6.0</p>
           </div>
           <div class="action-area">
             <div id="sync-status" class="status-badge">Sincronizado</div>
@@ -64,6 +64,14 @@
                 <span class="label">Balance Disponible <span class="kpi-tap-hint">↗</span></span>
                 <h2 id="balance-total">$0.00</h2>
                 <span id="balance-real-label" class="diff-label text-success">Toca para ver cuentas</span>
+              </div>
+            </div>
+            <div class="kpi-card glass kpi-card--clickable" id="kpi-deuda-card" title="Ver deudas" style="cursor:pointer">
+              <div class="kpi-icon" style="background:rgba(239,68,68,.15);color:#ef4444"><i data-lucide="credit-card"></i></div>
+              <div class="kpi-data">
+                <span class="label">Total Deudas <span class="kpi-tap-hint">↗</span></span>
+                <h2 id="kpi-deuda-amount" class="text-danger">$0.00</h2>
+                <span class="diff-label text-danger">Toca para ver deudas</span>
               </div>
             </div>
           </section>
@@ -179,6 +187,12 @@
           <div class="form-field">
             <label class="field-label">Monto ($)</label>
             <input type="number" id="g-monto" class="field-input field-input-lg" placeholder="0.00" step="any" inputmode="decimal">
+          </div>
+          <div class="form-field">
+            <label class="field-label">Foto / Recibo</label>
+            <input type="file" id="g-fotos-input" multiple accept="image/*,application/pdf" style="display:none">
+            <label for="g-fotos-input" class="foto-btn-label">📷 Adjuntar foto o recibo</label>
+            <div id="g-fotos-feedback" class="foto-feedback"></div>
           </div>
           <div class="form-actions">
             <button id="g-btn-save" class="primary-btn" style="flex:1">GUARDAR</button>
@@ -377,10 +391,14 @@
             <button id="hormiga-panel-close" class="icon-btn" aria-label="Cerrar">✕</button>
           </div>
           
-          <div class="balance-summary-row" style="grid-template-columns: 1fr;">
+          <div class="balance-summary-row">
             <div class="balance-summary-card balance-summary-card--total glass-subtle">
-              <span class="bs-label">Total Gasto Hormiga</span>
+              <span class="bs-label" id="bs-hormiga-label">Este Mes</span>
               <span id="bs-hormiga-total" class="bs-amount text-danger">$0.00</span>
+            </div>
+            <div class="balance-summary-card glass-subtle">
+              <span class="bs-label" id="bs-hormiga-prev-label">Mes Anterior</span>
+              <span id="bs-hormiga-prev" class="bs-amount" style="color:var(--text-muted)">$0.00</span>
             </div>
           </div>
 

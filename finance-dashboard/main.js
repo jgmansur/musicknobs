@@ -1,7 +1,7 @@
 import { createIcons, RefreshCw, AlertTriangle, CalendarCheck, TrendingUp, LogOut } from 'lucide';
 import ApexCharts from 'apexcharts';
 import { initializeApp } from 'firebase/app';
-import { getAuth, GoogleAuthProvider, signInWithCredential, signOut as fbSignOut } from 'firebase/auth';
+import { getAuth, GoogleAuthProvider, signInWithCredential, signInWithPopup, signOut as fbSignOut } from 'firebase/auth';
 import { getFirestore, doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 
 // =============================================
@@ -13,7 +13,7 @@ const SCOPES = 'https://www.googleapis.com/auth/spreadsheets https://www.googlea
 const SPREADSHEET_LOG_ID   = '1pn1bsxj2LaoySXAVUvqfEJY1VR4R_T8NsTOqQnVW5Xw'; // Control de Gastos
 const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // Gastos Fijos
 const SPREADSHEET_DEUDAS_ID = '1dKxhgqazskm15lx0f6FNCA0gpJ7i5glfxkusiH3b0Uk'; // Control de Deudas
-const APP_VERSION  = 'v3.0.0';
+const APP_VERSION  = 'v3.1.0';
 // Bump token keys to force re-auth with the new drive scope
 const TOKEN_KEY    = 'google_access_token_v4';
 const EXPIRY_KEY   = 'google_token_expiry_v4';
@@ -35,15 +35,49 @@ const _fbAuth = getAuth(_fbApp);
 const _fbDb   = getFirestore(_fbApp);
 let   _fbUid  = null; // current Firebase UID, set after sign-in
 
-async function firebase_signIn(googleAccessToken) {
+async function firebase_signInWithPopup() {
+    try {
+        const provider = new GoogleAuthProvider();
+        provider.addScope('https://www.googleapis.com/auth/spreadsheets');
+        provider.addScope('https://www.googleapis.com/auth/drive');
+        const result = await signInWithPopup(_fbAuth, provider);
+        _fbUid = result.user.uid;
+        const cred = GoogleAuthProvider.credentialFromResult(result);
+        if (cred?.accessToken) {
+            accessToken = cred.accessToken;
+            localStorage.setItem(TOKEN_KEY, accessToken);
+            localStorage.setItem(EXPIRY_KEY, String(Date.now() + 3500 * 1000));
+        }
+        debug_update({ auth: 'Popup fallback OK', uid: _fbUid, token: 'Si (popup)' });
+        console.log('[Firebase] popup sign-in OK as', result.user.email, '| uid:', _fbUid);
+    } catch (popupErr) {
+        _fbUid = null;
+        const code = popupErr?.code ? ` (${popupErr.code})` : '';
+        debug_update({ auth: `Popup error${code}: ${debug_trim(popupErr.message)}`, uid: '-' });
+        console.warn('[Firebase] popup sign-in failed:', popupErr.code || '', popupErr.message);
+    }
+}
+
+async function firebase_signIn(googleAccessToken, opts = {}) {
+    const { allowPopupFallback = false, preferPopup = false } = opts;
+    debug_update({ auth: 'Conectando Firebase...' });
+    if (preferPopup) {
+        await firebase_signInWithPopup();
+        return;
+    }
     try {
         const credential = GoogleAuthProvider.credential(null, googleAccessToken);
         const result = await signInWithCredential(_fbAuth, credential);
         _fbUid = result.user.uid;
+        debug_update({ auth: 'Firebase OK', uid: _fbUid, token: 'Si' });
         console.log('[Firebase] signed in as', result.user.email, '| uid:', _fbUid);
     } catch (e) {
-        console.warn('[Firebase] sign-in failed:', e.message);
+        console.warn('[Firebase] sign-in failed:', e.code || '', e.message);
         _fbUid = null;
+        const code = e?.code ? ` (${e.code})` : '';
+        debug_update({ auth: `Firebase error${code}: ${debug_trim(e.message)}`, uid: '-' });
+        if (!allowPopupFallback) return;
+        await firebase_signInWithPopup();
     }
 }
 
@@ -59,6 +93,75 @@ let accessToken = null;
 let tokenClient = null;
 let currentTab  = 'dashboard';
 let tabInited   = { dashboard: false, gastos: false, fijos: false, deudas: false };
+
+const debugState = {
+    auth: 'No autenticado',
+    uid: '-',
+    token: 'No',
+    load: '-',
+    save: '-',
+};
+
+function debug_trim(msg) {
+    const text = String(msg || '');
+    return text.length > 60 ? `${text.slice(0, 57)}...` : text;
+}
+
+function debug_render() {
+    const el = document.getElementById('debug-panel-body');
+    if (!el) return;
+    el.innerHTML = [
+        `<div><strong>Auth:</strong> ${debugState.auth}</div>`,
+        `<div><strong>UID:</strong> ${debugState.uid}</div>`,
+        `<div><strong>Token:</strong> ${debugState.token}</div>`,
+        `<div><strong>Load:</strong> ${debugState.load}</div>`,
+        `<div><strong>Save:</strong> ${debugState.save}</div>`,
+    ].join('');
+}
+
+function debug_update(patch) {
+    Object.assign(debugState, patch || {});
+    debug_render();
+}
+
+function debug_initPanel() {
+    if (document.getElementById('debug-panel')) return;
+    const panel = document.createElement('div');
+    panel.id = 'debug-panel';
+    panel.style.cssText = [
+        'position:fixed',
+        'right:12px',
+        'bottom:calc(var(--tab-height) + 12px + env(safe-area-inset-bottom))',
+        'z-index:1200',
+        'width:min(360px, calc(100vw - 24px))',
+        'background:rgba(7,12,24,.92)',
+        'border:1px solid rgba(255,255,255,.12)',
+        'border-radius:12px',
+        'box-shadow:0 12px 30px rgba(0,0,0,.45)',
+        'font-size:12px',
+        'line-height:1.4',
+        'color:#e2e8f0',
+        'padding:10px 12px',
+        'backdrop-filter:blur(12px)',
+    ].join(';');
+    panel.innerHTML = `
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+            <strong style="font-size:12px;letter-spacing:.02em">Debug Firebase v3.1.0</strong>
+            <button id="debug-panel-toggle" style="background:transparent;border:0;color:#94a3b8;cursor:pointer;font-size:11px">ocultar</button>
+        </div>
+        <div id="debug-panel-body" style="display:grid;gap:3px"></div>
+    `;
+    document.body.appendChild(panel);
+    const toggle = document.getElementById('debug-panel-toggle');
+    toggle?.addEventListener('click', () => {
+        const body = document.getElementById('debug-panel-body');
+        if (!body) return;
+        const hidden = body.style.display === 'none';
+        body.style.display = hidden ? 'grid' : 'none';
+        toggle.innerText = hidden ? 'ocultar' : 'mostrar';
+    });
+    debug_render();
+}
 
 // migrate away from old token keys
 ['google_access_token', 'google_access_token_v2', 'google_access_token_v3'].forEach(k => localStorage.removeItem(k));
@@ -76,6 +179,8 @@ if (_stored && _stored !== 'undefined' && _stored !== 'null' && Date.now() < _ex
 // DOM READY
 // =============================================
 document.addEventListener('DOMContentLoaded', () => {
+    debug_initPanel();
+    debug_update({ token: accessToken ? 'Si (cache)' : 'No' });
     createIcons({ icons: { RefreshCw, AlertTriangle, CalendarCheck, TrendingUp, LogOut } });
     const subtitle = document.querySelector('.subtitle');
     if (subtitle) subtitle.innerText = `Music Knobs | ${APP_VERSION}`;
@@ -163,6 +268,7 @@ async function balance_loadAccounts() {
             const raw = localStorage.getItem('finance_accounts_v1');
             balanceAccounts = raw ? JSON.parse(raw) : DEFAULT_ACCOUNTS.map(a => ({ ...a }));
         } catch { balanceAccounts = DEFAULT_ACCOUNTS.map(a => ({ ...a })); }
+        debug_update({ load: `localStorage (${balanceAccounts.length})`, token: 'No' });
         return;
     }
     // ── 1. Try Firestore first (fastest, cloud-native) ──────────
@@ -181,10 +287,12 @@ async function balance_loadAccounts() {
                 }));
                 // Update localStorage cache
                 localStorage.setItem('finance_accounts_v1', JSON.stringify(balanceAccounts));
+                debug_update({ load: `Firestore (${balanceAccounts.length})`, uid: _fbUid || '-' });
                 return;
             }
             // No Firestore data yet — fall through to Sheets to migrate
         } catch (err) {
+            debug_update({ load: `Firestore error -> Sheets (${debug_trim(err.message)})` });
             console.warn('[Firebase] Firestore load failed, falling back to Sheets:', err.message);
         }
     }
@@ -206,12 +314,14 @@ async function balance_loadAccounts() {
                     hidden:  (r[4] || '').toString().toUpperCase() === 'TRUE',
                 }));
         }
+        debug_update({ load: `Sheets (${balanceAccounts.length})` });
         // Migrate to Firestore now that we have the data
         if (_fbUid) balance_saveToFirestore().catch(console.warn);
     } catch (err) {
         console.error('Error loading accounts from Sheets:', err);
         const raw = localStorage.getItem('finance_accounts_v1');
         balanceAccounts = raw ? JSON.parse(raw) : DEFAULT_ACCOUNTS.map(a => ({ ...a }));
+        debug_update({ load: `localStorage fallback (${balanceAccounts.length})` });
     }
 }
 
@@ -241,16 +351,37 @@ async function balance_saveToFirestore() {
 async function balance_saveAccounts() {
     // 1. Update localStorage cache immediately (offline-first)
     localStorage.setItem('finance_accounts_v1', JSON.stringify(balanceAccounts));
-    if (!accessToken) return;
+    if (!accessToken) {
+        debug_update({ save: `Solo localStorage (${balanceAccounts.length})`, token: 'No' });
+        return;
+    }
+    if (!_fbUid) {
+        await firebase_signIn(accessToken, { allowPopupFallback: true, preferPopup: true });
+    }
     // 2. Write to Firestore (primary) and Sheets (backup) in parallel
-    const saves = [];
-    if (_fbUid) saves.push(balance_saveToFirestore().catch(e => console.warn('[Firebase] save failed:', e.message)));
-    saves.push(
-        balance_getOrCreateSheet()
-            .then(sid => balance_writeToSheet(sid))
-            .catch(e => console.warn('[Sheets] save failed:', e.message))
-    );
-    await Promise.allSettled(saves);
+    const ops = [];
+    if (_fbUid) {
+        ops.push({ name: 'Firestore', promise: balance_saveToFirestore() });
+    }
+    ops.push({
+        name: 'Sheets',
+        promise: balance_getOrCreateSheet().then(sid => balance_writeToSheet(sid)),
+    });
+    const results = await Promise.allSettled(ops.map(op => op.promise));
+    const labels = results.map((result, i) => {
+        if (result.status === 'rejected') {
+            const msg = debug_trim(result.reason?.message || result.reason || 'error');
+            console.warn(`[${ops[i].name}] save failed:`, msg);
+            return `${ops[i].name}:ERR`;
+        }
+        return `${ops[i].name}:OK`;
+    });
+    if (!_fbUid) labels.unshift('Firestore:SKIP(no uid)');
+    if (!_fbUid) {
+        debug_update({ auth: 'Firebase sin UID (no se pudo autenticar)', save: labels.join(' | '), token: 'Si' });
+        return;
+    }
+    debug_update({ save: labels.join(' | '), token: 'Si' });
 }
 
 // ── Compute helpers ──────────────────────────────────────
@@ -500,7 +631,7 @@ function requestToken() {
                     localStorage.setItem(EXPIRY_KEY, String(Date.now() + 3500 * 1000));
                     hideLoginModal();
                     // Firebase sign-in first so _fbUid is available before loading accounts
-                    firebase_signIn(accessToken).then(() => {
+                    firebase_signIn(accessToken, { allowPopupFallback: true }).then(() => {
                         balance_loadAccounts().then(() => balance_updateKpi());
                     });
                     showTab('dashboard');
@@ -537,6 +668,7 @@ function logout() {
     if (window.google?.accounts?.oauth2) {
         google.accounts.oauth2.revoke(accessToken, () => { console.log('Token revoked') });
     }
+    debug_update({ auth: 'Sesion cerrada', uid: '-', token: 'No' });
     showLoginModal();
 }
 
