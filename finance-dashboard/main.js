@@ -318,8 +318,11 @@ function balance_resetDynamicAnchors() {
 function balance_updateLogNetFromRows(logRows) {
     balanceLogNetTotal = (logRows || []).reduce((sum, row) => {
         const lugar = (row[1] || '').toString().trim().toLowerCase();
-        if (lugar === 'gasto fijo') return sum; // fixed expenses already handled separately
         const tipo = (row[4] || '').toString().trim().toLowerCase();
+        // Rows auto-posted from Gastos Fijos:
+        // - Gasto: already applied via balancePaidFixedTotal (avoid double deduction)
+        // - Ingreso: DO count it here so it increases available balance
+        if (lugar === 'gasto fijo' && tipo !== 'ingreso') return sum;
         const monto = Math.abs(parseSheetValue(row[3]));
         if (tipo === 'ingreso') return sum + monto;
         if (tipo === 'gasto') return sum - monto;
@@ -1694,8 +1697,10 @@ window.fijos_togglePagado = async function(id, wasPaid) {
 
     // Optimistic UI update
     item.isPaid = nowPaid;
-    balancePaidFixedTotal += nowPaid ? Math.abs(item.monto) : -Math.abs(item.monto);
-    if (balancePaidFixedTotal < 0) balancePaidFixedTotal = 0;
+    if (item.tipo === 'gasto') {
+        balancePaidFixedTotal += nowPaid ? Math.abs(item.monto) : -Math.abs(item.monto);
+        if (balancePaidFixedTotal < 0) balancePaidFixedTotal = 0;
+    }
     balance_updateKpi();
     fijos_aplicarFiltros();
 
@@ -1749,8 +1754,10 @@ window.fijos_togglePagado = async function(id, wasPaid) {
         console.error('Error toggling Pagado:', e);
         // Revert optimistic update
         item.isPaid = wasPaid;
-        balancePaidFixedTotal += wasPaid ? Math.abs(item.monto) : -Math.abs(item.monto);
-        if (balancePaidFixedTotal < 0) balancePaidFixedTotal = 0;
+        if (item.tipo === 'gasto') {
+            balancePaidFixedTotal += wasPaid ? Math.abs(item.monto) : -Math.abs(item.monto);
+            if (balancePaidFixedTotal < 0) balancePaidFixedTotal = 0;
+        }
         balance_updateKpi();
         fijos_aplicarFiltros();
         handleApiError(e, null);
