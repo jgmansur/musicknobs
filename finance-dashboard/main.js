@@ -42,6 +42,17 @@ async function firebase_signInWithPopup() {
         provider.addScope('https://www.googleapis.com/auth/drive');
         const result = await signInWithPopup(_fbAuth, provider);
         _fbUid = result.user.uid;
+        const cred = GoogleAuthProvider.credentialFromResult(result);
+        const popupAccessToken =
+            cred?.accessToken ||
+            result?._tokenResponse?.oauthAccessToken ||
+            null;
+        if (popupAccessToken) {
+            accessToken = popupAccessToken;
+            localStorage.setItem(TOKEN_KEY, accessToken);
+            localStorage.setItem(EXPIRY_KEY, String(Date.now() + 3500 * 1000));
+            debug_update({ token: 'Si (popup)' });
+        }
         debug_update({ auth: 'Popup fallback OK', uid: _fbUid });
         console.log('[Firebase] popup sign-in OK as', result.user.email, '| uid:', _fbUid);
     } catch (popupErr) {
@@ -609,6 +620,28 @@ function refreshCurrentTab() {
 // GOOGLE AUTH
 // =============================================
 function startGoogleLogin() {
+    // Try single-step login that authenticates Firebase + obtains Google API token.
+    firebase_signInWithPopup().then(() => {
+        if (_fbUid && accessToken) {
+            hideLoginModal();
+            balance_loadAccounts().then(() => balance_updateKpi());
+            showTab('dashboard');
+            return;
+        }
+        // Fallback to GIS token flow if popup did not provide Sheets/Drive token.
+        if (window.google?.accounts?.oauth2) { requestToken(); return; }
+        const btn = document.getElementById('login-google-btn');
+        btn.innerText = 'Cargando...'; btn.disabled = true;
+        const iv = setInterval(() => {
+            if (window.google?.accounts?.oauth2) {
+                clearInterval(iv); btn.innerText = 'Iniciar Sesion con Google'; btn.disabled = false;
+                requestToken();
+            }
+        }, 200);
+        setTimeout(() => { clearInterval(iv); btn.innerText = 'Error: reintenta'; btn.disabled = false; }, 10000);
+    });
+    return;
+
     if (window.google?.accounts?.oauth2) { requestToken(); return; }
     const btn = document.getElementById('login-google-btn');
     btn.innerText = 'Cargando...'; btn.disabled = true;
@@ -634,7 +667,10 @@ function requestToken() {
                     hideLoginModal();
                     // Firebase sign-in first so _fbUid is available before loading accounts.
                     // Keep this non-popup to avoid browser popup-blocked on async callbacks.
-                    firebase_signIn(accessToken, { allowPopupFallback: false }).then(() => {
+                    (_fbUid
+                        ? Promise.resolve()
+                        : firebase_signIn(accessToken, { allowPopupFallback: false })
+                    ).then(() => {
                         balance_loadAccounts().then(() => balance_updateKpi());
                     });
                     showTab('dashboard');
