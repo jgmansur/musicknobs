@@ -184,42 +184,7 @@ function debugUpdate(patch) {
 }
 
 function debugInitPanel() {
-    if (document.getElementById('debug-panel')) return;
-    const panel = document.createElement('div');
-    panel.id = 'debug-panel';
-    panel.style.cssText = [
-        'position:fixed',
-        'right:12px',
-        'bottom:calc(var(--tab-height) + 12px + env(safe-area-inset-bottom))',
-        'z-index:1200',
-        'width:min(360px, calc(100vw - 24px))',
-        'background:rgba(7,12,24,.92)',
-        'border:1px solid rgba(255,255,255,.12)',
-        'border-radius:12px',
-        'box-shadow:0 12px 30px rgba(0,0,0,.45)',
-        'font-size:12px',
-        'line-height:1.4',
-        'color:#e2e8f0',
-        'padding:10px 12px',
-        'backdrop-filter:blur(12px)',
-    ].join(';');
-    panel.innerHTML = `
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-            <strong style="font-size:12px;letter-spacing:.02em">Debug Firebase ${APP_VERSION}</strong>
-            <button id="debug-panel-toggle" style="background:transparent;border:0;color:#94a3b8;cursor:pointer;font-size:11px">ocultar</button>
-        </div>
-        <div id="debug-panel-body" style="display:grid;gap:3px"></div>
-    `;
-    document.body.appendChild(panel);
-    const toggle = document.getElementById('debug-panel-toggle');
-    toggle?.addEventListener('click', () => {
-        const body = document.getElementById('debug-panel-body');
-        if (!body) return;
-        const hidden = body.style.display === 'none';
-        body.style.display = hidden ? 'grid' : 'none';
-        toggle.innerText = hidden ? 'ocultar' : 'mostrar';
-    });
-    debugRender();
+    // Debug window disabled in production UI.
 }
 
 // migrate away from old token keys
