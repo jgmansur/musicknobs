@@ -322,6 +322,7 @@ function balance_normalizeAccount(a = {}) {
             ? (a.investmentType || '').toString().toLowerCase()
             : 'custom',
         customAnnualRate: typeof a.customAnnualRate === 'number' ? a.customAnnualRate : parseSheetValue(a.customAnnualRate),
+        bitcoinInitialMxn: typeof a.bitcoinInitialMxn === 'number' ? a.bitcoinInitialMxn : parseSheetValue(a.bitcoinInitialMxn),
     };
 }
 
@@ -561,7 +562,7 @@ async function balance_getOrCreateSheet() {
     // Create the spreadsheet (in Jay App folder if found, else root Drive)
     sheetId = await driveCreateSpreadsheet('Finance Dashboard - Cuentas', folderId);
     // Initialize header row
-    await sheetsUpdate(sheetId, 'A1:J1', [['ID', 'Nombre', 'Saldo', 'Tipo', 'Oculto', 'LimiteCredito', 'LimiteVisible', 'Moneda', 'TipoInversion', 'TasaPersonal']]);
+    await sheetsUpdate(sheetId, 'A1:K1', [['ID', 'Nombre', 'Saldo', 'Tipo', 'Oculto', 'LimiteCredito', 'LimiteVisible', 'Moneda', 'TipoInversion', 'TasaPersonal', 'BitcoinInicialMXN']]);
     localStorage.setItem(ACCOUNTS_SHEET_KEY, sheetId);
     return sheetId;
 }
@@ -604,7 +605,7 @@ async function balance_loadAccounts() {
     // ── 2. Fallback: Google Sheets ──────────────────────────────
     try {
         const sid  = await balance_getOrCreateSheet();
-        const rows = await sheetsGet(sid, 'A2:J');
+        const rows = await sheetsGet(sid, 'A2:K');
         if (!rows.length) {
             balanceAccounts = DEFAULT_ACCOUNTS.map(a => balance_normalizeAccount(a));
             await balance_writeToSheet(sid); // seed defaults
@@ -622,6 +623,7 @@ async function balance_loadAccounts() {
                     currency: (r[7] || 'MXN').toString().toUpperCase(),
                     investmentType: (r[8] || 'custom').toString().toLowerCase(),
                     customAnnualRate: typeof r[9] === 'number' ? r[9] : parseSheetValue(r[9]),
+                    bitcoinInitialMxn: typeof r[10] === 'number' ? r[10] : parseSheetValue(r[10]),
                 }));
         }
         debugUpdate({ load: `Sheets (${balanceAccounts.length})` });
@@ -639,9 +641,9 @@ async function balance_loadAccounts() {
 }
 
 async function balance_writeToSheet(sheetId) {
-    await sheetsClear(sheetId, 'A2:J');
+    await sheetsClear(sheetId, 'A2:K');
     if (balanceAccounts.length) {
-        await sheetsUpdate(sheetId, `A2:J${1 + balanceAccounts.length}`,
+        await sheetsUpdate(sheetId, `A2:K${1 + balanceAccounts.length}`,
             balanceAccounts.map(a => [
                 a.id,
                 a.name,
@@ -653,6 +655,7 @@ async function balance_writeToSheet(sheetId) {
                 a.currency || 'MXN',
                 a.investmentType || 'custom',
                 Number(a.customAnnualRate) || 0,
+                Number(a.bitcoinInitialMxn) || 0,
             ]));
     }
 }
@@ -672,6 +675,7 @@ async function balance_saveToFirestore() {
             currency: a.currency || 'MXN',
             investmentType: a.investmentType || 'custom',
             customAnnualRate: Number(a.customAnnualRate) || 0,
+            bitcoinInitialMxn: Number(a.bitcoinInitialMxn) || 0,
         })),
         lastUpdated: serverTimestamp(),
     });
@@ -731,13 +735,20 @@ function balance_getInvestmentSummary() {
     const items = balanceAccounts.filter(a => a.type === 'invest');
     const rows = items.map(acc => {
         const principalMxn = balance_convertToMxn(Math.abs(acc.balance || 0), acc.currency);
+        if (acc.investmentType === 'bitcoin') {
+            const currentMxn = principalMxn;
+            const initialMxn = Math.max(0, Number(acc.bitcoinInitialMxn) || 0);
+            const gainCurrent = currentMxn - initialMxn;
+            return { acc, principalMxn, annualRate: 0, monthlyYield: 0, currentMxn, initialMxn, gainCurrent };
+        }
         const annualRate = balance_getEffectiveAnnualRate(acc);
         const monthlyYield = principalMxn * (annualRate / 100) / 12;
-        return { acc, principalMxn, annualRate, monthlyYield };
+        return { acc, principalMxn, annualRate, monthlyYield, currentMxn: principalMxn, initialMxn: principalMxn, gainCurrent: 0 };
     });
     const investedTotal = rows.reduce((s, r) => s + r.principalMxn, 0);
     const monthlyTotal = rows.reduce((s, r) => s + r.monthlyYield, 0);
-    return { rows, investedTotal, monthlyTotal };
+    const bitcoinGainTotal = rows.reduce((s, r) => s + r.gainCurrent, 0);
+    return { rows, investedTotal, monthlyTotal, bitcoinGainTotal, secondaryTotal: monthlyTotal + bitcoinGainTotal };
 }
 
 function balance_updateKpi() {
@@ -765,8 +776,8 @@ function balance_updateKpi() {
     const invYieldEl = document.getElementById('kpi-invest-yield');
     if (invAmountEl) invAmountEl.innerText = formatCurrency(investSummary.investedTotal);
     if (invYieldEl) {
-        invYieldEl.innerText = `+${formatCurrency(investSummary.monthlyTotal)}/mes`;
-        invYieldEl.className = `diff-label ${investSummary.monthlyTotal >= 0 ? 'text-success' : 'text-danger'}`;
+        invYieldEl.innerText = `${investSummary.secondaryTotal >= 0 ? '+' : ''}${formatCurrency(investSummary.secondaryTotal)}${investSummary.bitcoinGainTotal !== 0 ? ' (incl BTC)' : '/mes'}`;
+        invYieldEl.className = `diff-label ${investSummary.secondaryTotal >= 0 ? 'text-success' : 'text-danger'}`;
     }
     const investPanel = document.getElementById('invest-panel');
     if (investPanel && !investPanel.classList.contains('hidden')) {
@@ -811,7 +822,9 @@ function balance_renderPanel() {
             : '';
         const investRate = balance_getEffectiveAnnualRate(acc);
         const investBadge = acc.type === 'invest'
-            ? `<span class="account-type-label">Tasa anual: ${investRate.toFixed(2)}% (${(acc.investmentType || 'custom').toUpperCase()})</span>`
+            ? (acc.investmentType === 'bitcoin'
+                ? `<span class="account-type-label">Inicial: ${formatCurrency(Math.abs(acc.bitcoinInitialMxn || 0))}</span>`
+                : `<span class="account-type-label">Tasa anual: ${investRate.toFixed(2)}% (${(acc.investmentType || 'custom').toUpperCase()})</span>`)
             : '';
         const hiddenClass = acc.hidden ? 'account-card--hidden' : '';
         const eyeIcon = acc.hidden ? '👁️' : '👁';
@@ -878,17 +891,21 @@ function balance_renderInvestmentPanel() {
     const summary = balance_getInvestmentSummary();
     const totalEl = document.getElementById('invest-total');
     const monthlyEl = document.getElementById('invest-monthly');
+    const monthlyLabelEl = document.getElementById('invest-monthly-label');
     const listEl = document.getElementById('invest-list');
     if (!totalEl || !monthlyEl || !listEl) return;
     totalEl.innerText = formatCurrency(summary.investedTotal);
-    monthlyEl.innerText = `+${formatCurrency(summary.monthlyTotal)}`;
+    monthlyEl.innerText = `${summary.secondaryTotal >= 0 ? '+' : ''}${formatCurrency(summary.secondaryTotal)}`;
+    if (monthlyLabelEl) {
+        monthlyLabelEl.innerText = summary.bitcoinGainTotal !== 0 ? 'Rendimiento + Ganancia actual' : 'Rendimiento mensual';
+    }
 
     if (!summary.rows.length) {
         listEl.innerHTML = '<div class="empty-state">No hay cuentas de inversión</div>';
         return;
     }
 
-    listEl.innerHTML = summary.rows.map(({ acc, principalMxn, annualRate, monthlyYield }) => {
+    listEl.innerHTML = summary.rows.map(({ acc, principalMxn, annualRate, monthlyYield, initialMxn, gainCurrent }) => {
         const srcLabel = acc.investmentType === 'cetes'
             ? 'CETES'
             : (acc.investmentType === 'mifel'
@@ -905,12 +922,12 @@ function balance_renderInvestmentPanel() {
               <span class="account-icon" style="background:#38bdf822;color:#38bdf8">📈</span>
               <div class="account-info">
                 <span class="account-name">${acc.name}</span>
-                <span class="account-type-label">${srcLabel} · ${annualRate.toFixed(2)}% anual</span>
+                <span class="account-type-label">${acc.investmentType === 'bitcoin' ? `${srcLabel} · Inversión inicial: ${formatCurrency(initialMxn)}` : `${srcLabel} · ${annualRate.toFixed(2)}% anual`}</span>
                 <span class="account-type-label">Capital: ${principalRaw} (${formatCurrency(principalMxn)})</span>
               </div>
             </div>
             <div class="account-card-right">
-              <span class="account-balance text-success">+${formatCurrency(monthlyYield)}/mes</span>
+              <span class="account-balance ${acc.investmentType === 'bitcoin' ? (gainCurrent >= 0 ? 'text-success' : 'text-danger') : 'text-success'}">${acc.investmentType === 'bitcoin' ? `${gainCurrent >= 0 ? '+' : ''}${formatCurrency(gainCurrent)}` : `+${formatCurrency(monthlyYield)}/mes`}</span>
             </div>
           </div>
         `;
@@ -955,6 +972,7 @@ function balance_openEdit(id) {
     document.getElementById('acc-credit-visible').value = acc.creditLimitVisible ? '1' : '0';
     document.getElementById('acc-invest-type').value = acc.investmentType || 'custom';
     document.getElementById('acc-invest-rate').value = Number(acc.customAnnualRate || 0);
+    document.getElementById('acc-bitcoin-initial').value = Number(acc.bitcoinInitialMxn || 0);
     balance_refreshCreditFields();
     balance_showForm();
 }
@@ -969,6 +987,7 @@ function balance_openAdd() {
     document.getElementById('acc-credit-visible').value = '0';
     document.getElementById('acc-invest-type').value = 'cetes';
     document.getElementById('acc-invest-rate').value = '';
+    document.getElementById('acc-bitcoin-initial').value = '';
     balance_refreshCreditFields();
     balance_showForm();
 }
@@ -1001,6 +1020,7 @@ async function balance_saveAccount() {
     const creditLimitVisible = document.getElementById('acc-credit-visible').value === '1';
     const investmentType = document.getElementById('acc-invest-type').value;
     const customAnnualRate = Math.max(0, parseFloat(document.getElementById('acc-invest-rate').value) || 0);
+    const bitcoinInitialMxn = Math.max(0, parseFloat(document.getElementById('acc-bitcoin-initial').value) || 0);
     if (type === 'invest' && investmentType === 'bitcoin') {
         currency = 'BTC';
     }
@@ -1019,6 +1039,7 @@ async function balance_saveAccount() {
             acc.creditLimitVisible = type === 'credit' ? creditLimitVisible : false;
             acc.investmentType = type === 'invest' ? investmentType : 'custom';
             acc.customAnnualRate = type === 'invest' ? customAnnualRate : 0;
+            acc.bitcoinInitialMxn = (type === 'invest' && investmentType === 'bitcoin') ? bitcoinInitialMxn : 0;
         }
     } else {
         balanceAccounts.push(balance_normalizeAccount({
@@ -1032,6 +1053,7 @@ async function balance_saveAccount() {
             creditLimitVisible: type === 'credit' ? creditLimitVisible : false,
             investmentType: type === 'invest' ? investmentType : 'custom',
             customAnnualRate: type === 'invest' ? customAnnualRate : 0,
+            bitcoinInitialMxn: (type === 'invest' && investmentType === 'bitcoin') ? bitcoinInitialMxn : 0,
         }));
     }
     balance_resetDynamicAnchors();
@@ -1119,13 +1141,15 @@ function balance_refreshCreditFields() {
     const investWrap = document.getElementById('acc-invest-fields');
     const investType = document.getElementById('acc-invest-type').value;
     const investRate = document.getElementById('acc-invest-rate');
+    const bitcoinInitial = document.getElementById('acc-bitcoin-initial');
     const currencySelect = document.getElementById('acc-currency');
     const btn = document.getElementById('acc-credit-visible-btn');
     const hiddenInput = document.getElementById('acc-credit-visible');
     const isCredit = type === 'credit';
     creditWrap.classList.toggle('hidden', !isCredit);
     investWrap.classList.toggle('hidden', type !== 'invest');
-    investRate.classList.toggle('hidden', !(type === 'invest' && (investType === 'custom' || investType === 'bitcoin')));
+    investRate.classList.toggle('hidden', !(type === 'invest' && investType === 'custom'));
+    bitcoinInitial.classList.toggle('hidden', !(type === 'invest' && investType === 'bitcoin'));
     if (type === 'invest' && investType === 'bitcoin') {
         currencySelect.value = 'BTC';
         currencySelect.disabled = true;

@@ -164,6 +164,7 @@
                 <option value="bitcoin">Bitcoin</option>
                 <option value="custom">Inversión personalizada</option>
               </select>
+              <input id="acc-bitcoin-initial" class="field-input hidden" type="number" placeholder="Inversión inicial en pesos (MXN)" step="0.01" inputmode="decimal" style="margin-top:.45rem">
               <input id="acc-invest-rate" class="field-input hidden" type="number" placeholder="Tasa anual estimada (%)" step="0.01" inputmode="decimal" style="margin-top:.45rem">
             </div>
             <div class="form-row-2" style="gap:.5rem">
@@ -462,7 +463,7 @@
               <span id="invest-total" class="bs-amount text-success">$0.00</span>
             </div>
             <div class="balance-summary-card glass-subtle">
-              <span class="bs-label">Rendimiento mensual</span>
+              <span id="invest-monthly-label" class="bs-label">Rendimiento mensual</span>
               <span id="invest-monthly" class="bs-amount text-success">+$0.00</span>
             </div>
           </div>
