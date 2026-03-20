@@ -343,17 +343,18 @@ function balance_handleFirebaseAuthChange() {
 // ── Sheet-backed persistence ─────────────────────────────
 async function balance_getOrCreateSheet() {
     let sheetId = localStorage.getItem(ACCOUNTS_SHEET_KEY);
+    // Find 'Jay App' folder in Drive
+    const folderId = await driveFindFolder('Jay App');
+    // Prefer canonical spreadsheet by name so all devices share the same file.
+    const canonicalSheetId = await driveFindSpreadsheetByName('Finance Dashboard - Cuentas', folderId);
+    if (canonicalSheetId) {
+        localStorage.setItem(ACCOUNTS_SHEET_KEY, canonicalSheetId);
+        return canonicalSheetId;
+    }
+    // Fallback to cached sheet id only if no canonical file was found.
     if (sheetId) {
         try { await sheetsGet(sheetId, 'A1:A1'); return sheetId; }
         catch { localStorage.removeItem(ACCOUNTS_SHEET_KEY); }
-    }
-    // Find 'Jay App' folder in Drive
-    const folderId = await driveFindFolder('Jay App');
-    // Reuse existing spreadsheet (important for cross-device sync when Firestore is unavailable)
-    sheetId = await driveFindSpreadsheetByName('Finance Dashboard - Cuentas', folderId);
-    if (sheetId) {
-        localStorage.setItem(ACCOUNTS_SHEET_KEY, sheetId);
-        return sheetId;
     }
     // Create the spreadsheet (in Jay App folder if found, else root Drive)
     sheetId = await driveCreateSpreadsheet('Finance Dashboard - Cuentas', folderId);
