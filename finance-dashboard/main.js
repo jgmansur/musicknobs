@@ -8,7 +8,7 @@ const CLIENT_ID = '427918095213-6cbm5sgcfn6o8qosg6qe1r6u9toj66dp.apps.googleuser
 const SCOPES = 'https://www.googleapis.com/auth/spreadsheets';
 const SPREADSHEET_LOG_ID   = '1pn1bsxj2LaoySXAVUvqfEJY1VR4R_T8NsTOqQnVW5Xw'; // Control de Gastos
 const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // Gastos Fijos
-const APP_VERSION  = 'v2.3.4';
+const APP_VERSION  = 'v2.3.5';
 const TOKEN_KEY    = 'google_access_token_v3'; // scope: read+write
 const EXPIRY_KEY   = 'google_token_expiry_v3';
 
@@ -144,7 +144,7 @@ function hideLoginModal() {
 // SHEETS API HELPERS
 // =============================================
 async function sheetsGet(ssId, range) {
-    const url = `https://sheets.googleapis.com/v4/spreadsheets/${ssId}/values/${encodeURIComponent(range)}`;
+    const url = `https://sheets.googleapis.com/v4/spreadsheets/${ssId}/values/${encodeURIComponent(range)}?valueRenderOption=UNFORMATTED_VALUE`;
     const r = await fetch(url, { headers: { Authorization: `Bearer ${accessToken}` } });
     if (!r.ok) throw { status: r.status, message: await r.text() };
     return (await r.json()).values || [];
