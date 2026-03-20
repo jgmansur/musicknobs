@@ -9,7 +9,7 @@ const CLIENT_ID = '427918095213-6cbm5sgcfn6o8qosg6qe1r6u9toj66dp.apps.googleuser
 const SCOPES = 'https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/drive';
 const SPREADSHEET_LOG_ID   = '1pn1bsxj2LaoySXAVUvqfEJY1VR4R_T8NsTOqQnVW5Xw'; // Control de Gastos
 const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // Gastos Fijos
-const APP_VERSION  = 'v2.5.0';
+const APP_VERSION  = 'v2.6.0';
 // Bump token keys to force re-auth with the new drive scope
 const TOKEN_KEY    = 'google_access_token_v4';
 const EXPIRY_KEY   = 'google_token_expiry_v4';
@@ -60,6 +60,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // Bind module events
     gastos_bindEvents();
     fijos_bindEvents();
+
+    // Hormiga Panel events
+    document.getElementById('kpi-hormiga-card')?.addEventListener('click', hormiga_openPanel);
+    document.getElementById('hormiga-panel-close')?.addEventListener('click', hormiga_closePanel);
+    document.getElementById('hormiga-panel-overlay')?.addEventListener('click', hormiga_closePanel);
 
     // Balance panel
     balance_init();
@@ -545,6 +550,7 @@ async function fetchAndProcess() {
 function processAndRender(logRows, fixedRows) {
     const hormigaKeywords = ['oxxo','coca','cigarros','snacks','gomitas','vuse','tiendita','starbucks','seven','7-eleven','extra','dulces','chicles'];
     let hormigaTotal = 0, hormigaChartData = [];
+    let hormigaGastos = []; // Guardaremos detalle para el panel
 
     logRows.forEach(row => {
         const concepto = (row[2] || '').toLowerCase();
@@ -554,9 +560,12 @@ function processAndRender(logRows, fixedRows) {
         // FIX: use toLowerCase() so 'Gasto'/'gasto'/'GASTO' all match
         if (hormigaKeywords.some(k => concepto.includes(k) || lugar.includes(k)) && (row[4] || '').toLowerCase() === 'gasto') {
             hormigaTotal += monto;
-            hormigaChartData.push({ x: fecha, y: monto });
+            const parsedDate = normalizeDateString(fecha);
+            hormigaChartData.push({ x: parsedDate, y: monto });
+            hormigaGastos.push({ lugar: row[1] || 'Oxxo', concepto: row[2] || '', monto });
         }
     });
+
 
     // Col F (index 5) = Pagado checkbox value (boolean true/false OR string 'TRUE'/'FALSE')
     const fixedExpenses = fixedRows.map((row, i) => {
@@ -589,6 +598,7 @@ function processAndRender(logRows, fixedRows) {
     // Dashboard only shows PENDING (unpaid) fixed expenses
     renderFixedTable(fixedExpenses.filter(e => !e.isPaid));
     renderChart(hormigaChartData);
+    renderHormigaPanel(hormigaGastos, hormigaTotal);
 }
 
 function renderFixedTable(expenses) {
@@ -600,6 +610,55 @@ function renderFixedTable(expenses) {
           <td>${formatCurrency(e.monto)}</td>
           <td><span class="badge ${e.isPaid ? 'paid' : 'pending'}">${e.isPaid ? 'PAGADO' : 'PENDIENTE'}</span></td>
         </tr>`).join('');
+}
+
+// =============================================
+// HORMIGA PANEL DETAIL
+// =============================================
+function hormiga_openPanel() {
+    document.getElementById('hormiga-panel').classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+}
+
+function hormiga_closePanel() {
+    document.getElementById('hormiga-panel').classList.add('hidden');
+    document.body.style.overflow = '';
+}
+
+function renderHormigaPanel(gastos, total) {
+    document.getElementById('bs-hormiga-total').innerText = formatCurrency(total);
+    
+    // Agrupar por lugar/concepto
+    const agrupados = {};
+    gastos.forEach(g => {
+        // Normalizamos el nombre (ej. "Oxxo" vs "oxxo")
+        const key = g.lugar ? g.lugar.charAt(0).toUpperCase() + g.lugar.slice(1).toLowerCase() : 'Varios';
+        agrupados[key] = (agrupados[key] || 0) + g.monto;
+    });
+
+    const arr = Object.keys(agrupados).map(k => ({ nombre: k, monto: agrupados[k] }));
+    arr.sort((a,b) => b.monto - a.monto); // Mayor gasto primero
+
+    const container = document.getElementById('hormiga-bars-container');
+    if (!arr.length) {
+        container.innerHTML = '<p class="text-muted" style="text-align:center;font-size:0.85rem">No hay registros aún</p>';
+        return;
+    }
+    const maxMonto = arr[0].monto;
+
+    container.innerHTML = arr.map(item => {
+        const pct = Math.max(5, (item.monto / maxMonto) * 100);
+        return `
+        <div class="progress-bar-container">
+            <div class="pb-header">
+                <span class="pb-name">${item.nombre}</span>
+                <span class="pb-amount">${formatCurrency(item.monto)}</span>
+            </div>
+            <div class="pb-track">
+                <div class="pb-fill" style="width: ${pct}%"></div>
+            </div>
+        </div>`;
+    }).join('');
 }
 
 // Chart mode: 'daily' | 'monthly'
@@ -1182,15 +1241,29 @@ function parseBool(val) {
     return (val || '').toString().toUpperCase() === 'TRUE';
 }
 
-/** Parse a date that may be a Google Sheets serial number or an ISO string */
-function parseSheetDate(val) {
-    if (!val) return new Date();
+/** Parse a date that may be a Google Sheets serial number or an ISO/DD/MM/YYYY string */
+function normalizeDateString(val) {
+    if (!val) return new Date().toISOString().split('T')[0];
+    
+    let d;
     if (typeof val === 'number') {
-        // Google Sheets serial: days since Dec 30, 1899
-        return new Date(Date.UTC(1899, 11, 30) + val * 86400000);
+        const utc = new Date(Date.UTC(1899, 11, 30) + val * 86400000);
+        d = new Date(utc.getUTCFullYear(), utc.getUTCMonth(), utc.getUTCDate());
+    } else {
+        const str = String(val).trim();
+        if (str.includes('/')) {
+            const p = str.split('/');
+            if (p.length === 3) d = new Date(p[2], parseInt(p[1],10)-1, p[0]);
+        } else {
+            d = new Date(str);
+        }
     }
-    const d = new Date(val);
-    return isNaN(d) ? new Date() : d;
+    if (!d || isNaN(d)) d = new Date();
+    
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd}`;
 }
 
 function showToast(msg) {
