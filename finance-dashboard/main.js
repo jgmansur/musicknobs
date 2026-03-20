@@ -53,7 +53,11 @@ async function firebase_signInWithPopup() {
     } catch (popupErr) {
         _fbUid = null;
         const code = popupErr?.code ? ` (${popupErr.code})` : '';
-        debug_update({ auth: `Popup error${code}: ${debug_trim(popupErr.message)}`, uid: '-' });
+        if (popupErr?.code === 'auth/popup-blocked') {
+            debug_update({ auth: 'Popup bloqueado: vuelve a intentar con click', uid: '-' });
+        } else {
+            debug_update({ auth: `Popup error${code}: ${debug_trim(popupErr.message)}`, uid: '-' });
+        }
         console.warn('[Firebase] popup sign-in failed:', popupErr.code || '', popupErr.message);
     }
 }
@@ -75,7 +79,11 @@ async function firebase_signIn(googleAccessToken, opts = {}) {
         console.warn('[Firebase] sign-in failed:', e.code || '', e.message);
         _fbUid = null;
         const code = e?.code ? ` (${e.code})` : '';
-        debug_update({ auth: `Firebase error${code}: ${debug_trim(e.message)}`, uid: '-' });
+        if (e?.code === 'auth/invalid-credential') {
+            debug_update({ auth: 'Firebase token no valido para este entorno (usando Sheets)', uid: '-' });
+        } else {
+            debug_update({ auth: `Firebase error${code}: ${debug_trim(e.message)}`, uid: '-' });
+        }
         if (!allowPopupFallback) return;
         await firebase_signInWithPopup();
     }
@@ -607,16 +615,25 @@ function refreshCurrentTab() {
 // GOOGLE AUTH
 // =============================================
 function startGoogleLogin() {
-    if (window.google?.accounts?.oauth2) { requestToken(); return; }
-    const btn = document.getElementById('login-google-btn');
-    btn.innerText = 'Cargando...'; btn.disabled = true;
-    const iv = setInterval(() => {
-        if (window.google?.accounts?.oauth2) {
-            clearInterval(iv); btn.innerText = 'Iniciar Sesión con Google'; btn.disabled = false;
-            requestToken();
+    // Prefer Firebase popup on direct user click to avoid token audience mismatch.
+    firebase_signInWithPopup().then(() => {
+        if (_fbUid && accessToken) {
+            hideLoginModal();
+            balance_loadAccounts().then(() => balance_updateKpi());
+            showTab('dashboard');
+            return;
         }
-    }, 200);
-    setTimeout(() => { clearInterval(iv); btn.innerText = 'Error: reintenta'; btn.disabled = false; }, 10000);
+        if (window.google?.accounts?.oauth2) { requestToken(); return; }
+        const btn = document.getElementById('login-google-btn');
+        btn.innerText = 'Cargando...'; btn.disabled = true;
+        const iv = setInterval(() => {
+            if (window.google?.accounts?.oauth2) {
+                clearInterval(iv); btn.innerText = 'Iniciar Sesion con Google'; btn.disabled = false;
+                requestToken();
+            }
+        }, 200);
+        setTimeout(() => { clearInterval(iv); btn.innerText = 'Error: reintenta'; btn.disabled = false; }, 10000);
+    });
 }
 
 function requestToken() {
@@ -630,8 +647,9 @@ function requestToken() {
                     localStorage.setItem(TOKEN_KEY, accessToken);
                     localStorage.setItem(EXPIRY_KEY, String(Date.now() + 3500 * 1000));
                     hideLoginModal();
-                    // Firebase sign-in first so _fbUid is available before loading accounts
-                    firebase_signIn(accessToken, { allowPopupFallback: true }).then(() => {
+                    // Firebase sign-in first so _fbUid is available before loading accounts.
+                    // Keep this non-popup to avoid browser popup-blocked on async callbacks.
+                    firebase_signIn(accessToken, { allowPopupFallback: false }).then(() => {
                         balance_loadAccounts().then(() => balance_updateKpi());
                     });
                     showTab('dashboard');
