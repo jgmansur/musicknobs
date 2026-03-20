@@ -993,7 +993,7 @@ async function fetchAndProcess() {
     try {
         const [logData, fixedData] = await Promise.all([
             sheetsGet(SPREADSHEET_LOG_ID, 'Hoja 1!A2:G'),
-            sheetsGet(SPREADSHEET_FIXED_ID, 'Hoja 1!A2:F')  // col F = Pagado checkbox
+            sheetsGet(SPREADSHEET_FIXED_ID, 'Hoja 1!A2:H')  // G=pagosMes, H=estado pagos
         ]);
         processAndRender(logData, fixedData);
         status.innerText = 'Sincronizado ✓'; status.style.color = 'var(--accent-green)';
@@ -1057,21 +1057,28 @@ function processAndRender(logRows, fixedRows) {
     });
 
 
-    // Col F (index 5) = Pagado checkbox value (boolean true/false OR string 'TRUE'/'FALSE')
+    // F = pagado legacy, G = pagos por mes, H = estado de pagos parciales (ej. 1010)
     const fixedExpenses = fixedRows.map((row, i) => {
         const concepto = row[1] || '';
         const g = parseSheetValue(row[2]);  // gasto column
         const n = parseSheetValue(row[3]);  // ingreso column
         const tipo = g > 0 ? 'gasto' : 'ingreso';
         const monto = g || n;
-        const isPaid   = parseBool(row[5]);
-        return { rowNum: i + 2, concepto, monto, tipo, isPaid };
+        const legacyPaid = parseBool(row[5]);
+        const pagosMes = parsePaymentsTotal(row[6]);
+        const pagosEstado = parsePaymentStates(row[7], pagosMes, legacyPaid);
+        const pagosHechos = pagosEstado.filter(Boolean).length;
+        const isPaid   = pagosHechos >= pagosMes;
+        const paidRatio = pagosMes > 0 ? (pagosHechos / pagosMes) : 0;
+        const paidAmount = Math.abs(monto) * paidRatio;
+        const pendingAmount = Math.abs(monto) - paidAmount;
+        return { rowNum: i + 2, concepto, monto, tipo, isPaid, pagosMes, pagosEstado, pagosHechos, paidAmount, pendingAmount };
     }).filter(e => e.concepto);
 
-    // KPI: only count GASTO-type, only unpaid (so the number goes down as you pay)
+    // KPI: count partial progress for fixed expenses
     const fixedGastos   = fixedExpenses.filter(e => e.tipo === 'gasto');
-    const fixedTotal    = fixedGastos.filter(e => !e.isPaid).reduce((s, e) => s + Math.abs(e.monto), 0);
-    const fixedPaidTotal = fixedGastos.filter(e => e.isPaid).reduce((s, e) => s + Math.abs(e.monto), 0);
+    const fixedTotal    = fixedGastos.reduce((s, e) => s + Math.max(0, e.pendingAmount), 0);
+    const fixedPaidTotal = fixedGastos.reduce((s, e) => s + Math.max(0, e.paidAmount), 0);
     const paidCount     = fixedGastos.filter(e => e.isPaid).length;
     const pendingFixed  = fixedTotal;   // already only unpaid gastos
 
@@ -1562,7 +1569,7 @@ async function fijos_cargarDatos() {
     document.getElementById('f-lista').innerHTML = '<div class="loading-spinner">⏳ Cargando...</div>';
     try {
         const [rows, catRows] = await Promise.all([
-            sheetsGet(SPREADSHEET_FIXED_ID, 'Hoja 1!A2:F').catch(() => []),  // col F = Pagado
+            sheetsGet(SPREADSHEET_FIXED_ID, 'Hoja 1!A2:H').catch(() => []),  // G=pagosMes, H=estado pagos
             sheetsGet(SPREADSHEET_FIXED_ID, 'Categorias!A:A').catch(() => [])
         ]);
         fijosState.categorias = catRows.map(r => r[0]).filter(Boolean);
@@ -1573,14 +1580,18 @@ async function fijos_cargarDatos() {
         const nowMonth = `${new Date().getFullYear()}-${new Date().getMonth() + 1}`;
         const storedMonth = localStorage.getItem(RESET_MONTH_KEY);
         if (storedMonth && storedMonth !== nowMonth && rows.length > 0) {
-            console.log('[fijos] Nuevo mes detectado — reseteando columna Pagado');
-            // Build batch: set F2:F(n) all to FALSE
+            console.log('[fijos] Nuevo mes detectado — reseteando progreso de pagos');
             const lastRow = rows.length + 1;
             await sheetsUpdate(
                 SPREADSHEET_FIXED_ID,
                 `Hoja 1!F2:F${lastRow}`,
                 rows.map(() => ['FALSE'])
             ).catch(e => console.warn('Reset mensual falló:', e));
+            await sheetsUpdate(
+                SPREADSHEET_FIXED_ID,
+                `Hoja 1!H2:H${lastRow}`,
+                rows.map(r => [serializePaymentStates(new Array(parsePaymentsTotal(r[6])).fill(false))])
+            ).catch(e => console.warn('Reset mensual estado pagos falló:', e));
         }
         // Always store current month
         localStorage.setItem(RESET_MONTH_KEY, nowMonth);
@@ -1591,8 +1602,10 @@ async function fijos_cargarDatos() {
             const d      = parseSheetDate(row[0]);
             const g      = parseSheetValue(row[2]);
             const n      = parseSheetValue(row[3]);
-            // Checkboxes come as boolean true/false (UNFORMATTED_VALUE)
-            const isPaid = parseBool(row[5]);
+            const pagosMes = parsePaymentsTotal(row[6]);
+            const pagosEstado = parsePaymentStates(row[7], pagosMes, parseBool(row[5]));
+            const pagosHechos = pagosEstado.filter(Boolean).length;
+            const isPaid = pagosHechos >= pagosMes;
             return {
                 id: i + 2,
                 fecha: d.toLocaleDateString('es-MX', { day: 'numeric', month: 'short' }),
@@ -1602,6 +1615,9 @@ async function fijos_cargarDatos() {
                 tipo:       g > 0 ? 'gasto' : 'ingreso',
                 categoria:  row[4] || 'General',
                 isPaid,
+                pagosMes,
+                pagosEstado,
+                pagosHechos,
             };
         }).filter(i => i.concepto).reverse();
 
@@ -1649,17 +1665,20 @@ function fijos_renderLista(lista) {
     el.innerHTML = lista.map(item => {
         const sign     = item.tipo==='gasto' ? '-' : '+';
         const cls      = item.tipo==='gasto' ? 'text-danger' : 'text-success';
-        const paidCls  = item.isPaid ? 'pagado-btn pagado-btn--paid' : 'pagado-btn pagado-btn--pending';
-        const paidLbl  = item.isPaid ? '✅ Pagado' : '⏳ Pendiente';
+        const montoParcial = item.pagosMes > 0 ? (item.monto / item.pagosMes) : item.monto;
+        const botonesPagos = item.pagosEstado.map((isPartPaid, idx) => {
+            const clsPart = isPartPaid ? 'pagado-btn pagado-btn--paid' : 'pagado-btn pagado-btn--pending';
+            return `<button class="${clsPart}" style="min-width:52px;padding:.35rem .45rem;font-size:.72rem" onclick="fijos_togglePagoPart(${item.id}, ${idx})">${idx + 1}/${item.pagosMes}</button>`;
+        }).join('');
         return `<div class="movimiento-card ${item.isPaid ? 'card-paid' : ''}">
           <div class="mc-left">
             <span class="mc-fecha">${item.fecha}</span>
             <span class="mc-lugar">${item.concepto}</span>
-            <span class="mc-concepto">${item.categoria}</span>
+            <span class="mc-concepto">${item.categoria} · ${item.pagosHechos}/${item.pagosMes} pagos · ${sign}${fmt.format(montoParcial)} c/u</span>
           </div>
           <div class="mc-right" style="align-items:flex-end;gap:.5rem">
             <span class="mc-monto ${cls}">${sign}${fmt.format(item.monto)}</span>
-            <button class="${paidCls}" onclick="fijos_togglePagado(${item.id}, ${item.isPaid})">${paidLbl}</button>
+            <div style="display:flex;gap:.35rem;flex-wrap:wrap;justify-content:flex-end;max-width:210px">${botonesPagos}</div>
             <div style="display:flex;gap:.4rem;margin-top:.2rem">
               <button class="mini-btn" onclick="fijos_editar(${item.id})">✏️</button>
               <button class="mini-btn mini-btn-danger" onclick="fijos_borrar(${item.id})">🗑️</button>
@@ -1685,36 +1704,36 @@ window.fijos_borrar = async function(id) {
     } catch(e) { console.error(e); el.innerHTML = '<div class="empty-state text-danger">❌ Error al borrar</div>'; }
 };
 
-/**
- * Toggle Pagado status in Sheets + auto-post to Control de Gastos when paid.
- * @param {number} id   - The row number in the spreadsheet (1-based)
- * @param {boolean} wasPaid - Current state before toggle
- */
-window.fijos_togglePagado = async function(id, wasPaid) {
+/** Toggle one partial payment state and sync to Control de Gastos */
+window.fijos_togglePagoPart = async function(id, partIndex) {
     const item = fijosState.allItems.find(i => i.id === id);
     if (!item) return;
-    const nowPaid = !wasPaid;
+    const wasPartPaid = !!item.pagosEstado[partIndex];
+    const nowPartPaid = !wasPartPaid;
+    const wasPaid = item.isPaid;
+    const partAmount = Math.abs(item.monto / item.pagosMes);
 
     // Optimistic UI update
-    item.isPaid = nowPaid;
+    item.pagosEstado[partIndex] = nowPartPaid;
+    item.pagosHechos = item.pagosEstado.filter(Boolean).length;
+    item.isPaid = item.pagosHechos >= item.pagosMes;
     if (item.tipo === 'gasto') {
-        balancePaidFixedTotal += nowPaid ? Math.abs(item.monto) : -Math.abs(item.monto);
+        balancePaidFixedTotal += nowPartPaid ? partAmount : -partAmount;
         if (balancePaidFixedTotal < 0) balancePaidFixedTotal = 0;
     }
     balance_updateKpi();
     fijos_aplicarFiltros();
 
     try {
-        // 1) Write TRUE/FALSE to the Pagado column (F) in Gastos Fijos
-        await sheetsUpdate(SPREADSHEET_FIXED_ID, `Hoja 1!F${id}:F${id}`, [[nowPaid ? 'TRUE' : 'FALSE']]);
+        // 1) Persist partial state (H) + legacy full-paid checkbox (F)
+        await sheetsUpdate(SPREADSHEET_FIXED_ID, `Hoja 1!F${id}:H${id}`, [[item.isPaid ? 'TRUE' : 'FALSE', item.pagosMes, serializePaymentStates(item.pagosEstado)]]);
 
-        // 2) If marking as PAID → auto-append entry in Control de Gastos
-        if (nowPaid) {
+        // 2) If marking one part as PAID -> append partial entry to Control de Gastos
+        if (nowPartPaid) {
             const fecha    = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD
             const lugar    = 'Gasto Fijo';
-            const concepto = item.concepto;
-            // Keep amount positive; type controls + / - rendering in Control de Gastos
-            const monto    = Math.abs(item.monto);
+            const concepto = `${item.concepto} (${partIndex + 1}/${item.pagosMes})`;
+            const monto    = partAmount;
             const tipo     = item.tipo === 'ingreso' ? 'Ingreso' : 'Gasto';
             const forma    = item.categoria || 'General';
             await sheetsAppend(
@@ -1725,15 +1744,15 @@ window.fijos_togglePagado = async function(id, wasPaid) {
             tabInited.gastos = false;
             showToast('✅ Pago registrado en Control de Gastos');
         } else {
-            // UN-SYNC: Find and delete the most recent matching entry in Control de Gastos
+            // UN-SYNC: remove matching partial entry in Control de Gastos
             try {
                 const logSheetId = await getSheetId(SPREADSHEET_LOG_ID, 'Hoja 1');
                 const logRows = await sheetsGet(SPREADSHEET_LOG_ID, 'Hoja 1!A:G');
                 let foundRowIndex = -1;
-                // Search from bottom-to-top by lugar+concepto (not by monto, since stored value may differ)
+                const targetConcepto = `${item.concepto} (${partIndex + 1}/${item.pagosMes})`;
                 for (let i = logRows.length - 1; i >= 0; i--) {
                     const r = logRows[i];
-                    if ((r[1] || '') === 'Gasto Fijo' && (r[2] || '') === item.concepto) {
+                    if ((r[1] || '') === 'Gasto Fijo' && (r[2] || '') === targetConcepto) {
                         foundRowIndex = i;
                         break;
                     }
@@ -1751,11 +1770,13 @@ window.fijos_togglePagado = async function(id, wasPaid) {
             }
         }
     } catch(e) {
-        console.error('Error toggling Pagado:', e);
+        console.error('Error toggling pago parcial:', e);
         // Revert optimistic update
+        item.pagosEstado[partIndex] = wasPartPaid;
+        item.pagosHechos = item.pagosEstado.filter(Boolean).length;
         item.isPaid = wasPaid;
         if (item.tipo === 'gasto') {
-            balancePaidFixedTotal += wasPaid ? Math.abs(item.monto) : -Math.abs(item.monto);
+            balancePaidFixedTotal += wasPartPaid ? partAmount : -partAmount;
             if (balancePaidFixedTotal < 0) balancePaidFixedTotal = 0;
         }
         balance_updateKpi();
@@ -1771,6 +1792,7 @@ function fijos_abrirSheet(item) {
     document.getElementById('f-concepto').value = '';
     document.getElementById('f-monto').value = '';
     document.getElementById('f-tipo').value = 'gasto';
+    document.getElementById('f-pagos-mes').value = '1';
     const hoy = new Date();
     document.getElementById('f-fecha').value = new Date(hoy.getTime() - hoy.getTimezoneOffset()*60000).toISOString().split('T')[0];
     document.querySelectorAll('.f-cat-chk').forEach(cb => cb.checked = false);
@@ -1783,6 +1805,7 @@ function fijos_abrirSheet(item) {
         document.getElementById('f-tipo').value = item.tipo;
         document.getElementById('f-concepto').value = item.concepto;
         document.getElementById('f-monto').value = item.monto;
+        document.getElementById('f-pagos-mes').value = String(item.pagosMes || 1);
         item.categoria.split(', ').forEach(c => { const cb = document.querySelector(`.f-cat-chk[value="${c}"]`); if (cb) cb.checked = true; });
     }
     sheet.classList.remove('hidden');
@@ -1798,6 +1821,7 @@ async function fijos_guardar() {
     const tipo    = document.getElementById('f-tipo').value;
     const concepto= document.getElementById('f-concepto').value.trim();
     const monto   = parseSheetValue(document.getElementById('f-monto').value);
+    const pagosMes = parsePaymentsTotal(document.getElementById('f-pagos-mes').value);
     const editId  = document.getElementById('f-edit-id').value;
     if (!concepto || !monto) return;
     const cats   = [...document.querySelectorAll('.f-cat-chk:checked')].map(cb => cb.value);
@@ -1807,11 +1831,33 @@ async function fijos_guardar() {
     btn.disabled = true; btn.innerText = 'Guardando...';
     try {
         if (editId) {
-            // preserve col F (Pagado) when editing — only update A:E
-            await sheetsUpdate(SPREADSHEET_FIXED_ID, `Hoja 1!A${editId}:E${editId}`, [[fecha, concepto, gasto, ingreso, catStr]]);
+            const current = fijosState.allItems.find(i => i.id === Number(editId));
+            const prevStates = current?.pagosEstado || [];
+            const paidCount = prevStates.filter(Boolean).length;
+            const nextStates = new Array(pagosMes).fill(false).map((_, idx) => idx < Math.min(paidCount, pagosMes));
+            const fullPaid = nextStates.every(Boolean);
+            await sheetsUpdate(SPREADSHEET_FIXED_ID, `Hoja 1!A${editId}:H${editId}`, [[
+                fecha,
+                concepto,
+                gasto,
+                ingreso,
+                catStr,
+                fullPaid ? 'TRUE' : 'FALSE',
+                pagosMes,
+                serializePaymentStates(nextStates),
+            ]]);
         } else {
-            // new rows start as not paid (FALSE in col F)
-            await sheetsAppend(SPREADSHEET_FIXED_ID, 'Hoja 1!A:F', [[fecha, concepto, gasto, ingreso, catStr, 'FALSE']]);
+            // new rows start with all partial payments pending
+            await sheetsAppend(SPREADSHEET_FIXED_ID, 'Hoja 1!A:H', [[
+                fecha,
+                concepto,
+                gasto,
+                ingreso,
+                catStr,
+                'FALSE',
+                pagosMes,
+                serializePaymentStates(new Array(pagosMes).fill(false)),
+            ]]);
         }
         fijos_cerrarSheet();
         fijos_cargarDatos();
@@ -1851,6 +1897,25 @@ function parseBool(val) {
 function normalizeTipo(val) {
     const v = (val || '').toString().trim().toLowerCase();
     return v === 'ingreso' ? 'Ingreso' : 'Gasto';
+}
+
+function parsePaymentsTotal(val) {
+    const n = parseInt(val, 10);
+    if (Number.isNaN(n)) return 1;
+    return Math.min(5, Math.max(1, n));
+}
+
+function serializePaymentStates(states) {
+    return (states || []).map(v => (v ? '1' : '0')).join('');
+}
+
+function parsePaymentStates(raw, total, legacyPaid = false) {
+    const count = parsePaymentsTotal(total);
+    if (!raw && legacyPaid) return new Array(count).fill(true);
+    const chars = (raw || '').toString().replace(/[^01]/g, '').slice(0, count).split('');
+    const states = new Array(count).fill(false);
+    for (let i = 0; i < chars.length; i++) states[i] = chars[i] === '1';
+    return states;
 }
 
 /** Parse a date that may be a Google Sheets serial number or an ISO/DD/MM/YYYY string AND RETURNS A JS DATE */
