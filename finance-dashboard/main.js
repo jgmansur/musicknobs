@@ -61,8 +61,9 @@ document.addEventListener('DOMContentLoaded', () => {
     gastos_bindEvents();
     fijos_bindEvents();
 
-    // Balance panel
+    // Balance & Hormiga panels
     balance_init();
+    hormiga_init();
 
     // Boot
     if (accessToken) {
@@ -582,13 +583,52 @@ function processAndRender(logRows, fixedRows) {
     document.getElementById('gasto-hormiga-total').innerText = formatCurrency(hormigaTotal);
     document.getElementById('gastos-fijos-total').innerText  = formatCurrency(fixedTotal);
     document.getElementById('pago-status').innerText =
-        fixedTotal === 0
-            ? `✅ \u00a1Todo pagado!`
-            : `${paidCount}/${fixedGastos.length} Pagados`;
+        fixedGastos.length === 0
+            ? 'Sin fijar'
+            : fixedTotal === 0
+                ? `✅ \u00a1Todo pagado!`
+                : `${paidCount}/${fixedGastos.length} Pagados`;
 
     // Dashboard only shows PENDING (unpaid) fixed expenses
     renderFixedTable(fixedExpenses.filter(e => !e.isPaid));
     renderChart(hormigaChartData);
+    renderHormigaPanel(hormigaGastos);
+}
+
+function renderHormigaPanel(hormigaGastos) {
+    const list = document.getElementById('hormiga-list');
+    if (!hormigaGastos.length) {
+        list.innerHTML = '<p style="text-align:center;color:var(--text-muted)">Sin gastos hormiga registrados.</p>';
+        return;
+    }
+    
+    // Agrupar por concepto
+    const aggregated = hormigaGastos.reduce((acc, curr) => {
+        const c = curr.concepto || 'Varios';
+        acc[c] = (acc[c] || 0) + curr.monto;
+        return acc;
+    }, {});
+    
+    const items = Object.keys(aggregated).map(k => ({ concepto: k, monto: aggregated[k] }));
+    items.sort((a,b) => b.monto - a.monto); // Mayor gasto primero
+    
+    const maxMonto = items.reduce((max, item) => Math.max(max, item.monto), 0);
+    
+    list.innerHTML = items.map(item => {
+        const pct = maxMonto > 0 ? (item.monto / maxMonto) * 100 : 0;
+        return `
+        <div class="account-item" style="cursor: default">
+          <div class="acc-info" style="width: 100%;">
+            <div style="display:flex; justify-content: space-between; margin-bottom: 6px;">
+                <span class="acc-name" style="font-size:0.95rem">${item.concepto}</span>
+                <span class="acc-balance" style="color:#fbbf24">${formatCurrency(item.monto)}</span>
+            </div>
+            <div style="background: rgba(255,255,255,0.05); border-radius: 4px; height: 6px; width: 100%; overflow: hidden;">
+                <div style="background: #fbbf24; height: 100%; width: ${pct}%; border-radius: 4px; transition: width 0.5s ease;"></div>
+            </div>
+          </div>
+        </div>`;
+    }).join('');
 }
 
 function renderFixedTable(expenses) {
@@ -605,19 +645,20 @@ function renderFixedTable(expenses) {
 // Chart mode: 'daily' | 'monthly'
 let chartMode = 'daily';
 let chartRawData = [];   // stored so the toggle can re-render without re-fetching
+let currentChart = null; // store chart instance to destroy before re-rendering
 
-const DAYS_ES   = ['Domingo','Lunes','Martes','Mi\u00e9rcoles','Jueves','Viernes','S\u00e1bado'];
 const MONTHS_ES = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
 
-function formatDailyLabel(isoDate) {
-    // isoDate: 'YYYY-MM-DD' or similar string from sheets
-    const d = new Date(isoDate + 'T12:00:00'); // noon to avoid TZ shift
-    if (isNaN(d)) return isoDate;
-    return `${DAYS_ES[d.getDay()]} ${d.getDate()}`; // e.g. "Jueves 22"
+function formatDailyLabel(dateStr) {
+    const d = new Date(dateStr);
+    if (isNaN(d)) return dateStr;
+    const str = d.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric' }); // e.g. "jueves, 22" or "jueves 22"
+    return str.charAt(0).toUpperCase() + str.slice(1).replace(',', '');
 }
 
 function formatMonthlyLabel(yyyyMM) {
     const [y, m] = yyyyMM.split('-');
+    if (!m) return yyyyMM;
     return `${MONTHS_ES[parseInt(m, 10) - 1]} ${y}`; // e.g. "Mar 2025"
 }
 
@@ -639,18 +680,24 @@ function _renderChartWithMode(data, mode) {
     let categories, values;
 
     if (mode === 'monthly') {
-        // Group by YYYY-MM
         const grouped = data.reduce((a, c) => {
-            const month = (c.x || '').slice(0, 7); // 'YYYY-MM'
-            a[month] = (a[month] || 0) + c.y;
+            const d = new Date(c.x);
+            if (isNaN(d)) return a;
+            const monthObj = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+            a[monthObj] = (a[monthObj] || 0) + c.y;
             return a;
         }, {});
         const months = Object.keys(grouped).sort();
         categories = months.map(formatMonthlyLabel);
         values = months.map(m => grouped[m]);
     } else {
-        // Daily: group by date, format label
-        const grouped = data.reduce((a, c) => { a[c.x] = (a[c.x] || 0) + c.y; return a; }, {});
+        const grouped = data.reduce((a, c) => {
+            const d = new Date(c.x);
+            if (isNaN(d)) return a;
+            const dayKey = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+            a[dayKey] = (a[dayKey] || 0) + c.y;
+            return a;
+        }, {});
         const dates = Object.keys(grouped).sort();
         categories = dates.map(formatDailyLabel);
         values = dates.map(d => grouped[d]);
@@ -693,8 +740,37 @@ function _renderChartWithMode(data, mode) {
     };
 
     const container = document.getElementById('chart-hormiga');
-    container.innerHTML = '';
-    new ApexCharts(container, opts).render();
+    if (currentChart) {
+        currentChart.destroy();
+    }
+    currentChart = new ApexCharts(container, opts);
+    currentChart.render();
+}
+
+function hormiga_init() {
+    const card = document.getElementById('kpi-hormiga-card');
+    const panel = document.getElementById('hormiga-panel');
+    const closeBtn = document.getElementById('hormiga-panel-close');
+    const overlay = document.getElementById('hormiga-panel-overlay');
+
+    if (card) {
+        card.addEventListener('click', () => {
+            if (panel) {
+                panel.classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+            }
+        });
+    }
+
+    const closeHandler = () => {
+        if (panel) {
+            panel.classList.add('hidden');
+            document.body.style.overflow = '';
+        }
+    };
+
+    if (closeBtn) closeBtn.addEventListener('click', closeHandler);
+    if (overlay) overlay.addEventListener('click', closeHandler);
 }
 
 // =============================================

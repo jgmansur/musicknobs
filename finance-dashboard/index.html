@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <script type="module" crossorigin src="./assets/index-DZtCDIkx.js"></script>
+    <script type="module" crossorigin src="./assets/index-CgYNZKCm.js"></script>
     <link rel="stylesheet" crossorigin href="./assets/index-hYWm30mE.css">
   </head>
   <body>
@@ -37,10 +37,10 @@
       <div id="view-dashboard" class="view active">
         <main class="dashboard-grid">
           <section class="kpi-row">
-            <div class="kpi-card glass">
+            <div class="kpi-card glass kpi-card--clickable" id="kpi-hormiga-card" title="Ver desglose de Gasto Hormiga">
               <div class="kpi-icon orange"><i data-lucide="alert-triangle"></i></div>
               <div class="kpi-data">
-                <span class="label">Gasto Hormiga</span>
+                <span class="label">Gasto Hormiga <span class="kpi-tap-hint">↗</span></span>
                 <h2 id="gasto-hormiga-total">$0.00</h2>
                 <span id="gasto-hormiga-diff" class="diff-label">Calculando...</span>
               </div>
@@ -133,6 +133,21 @@
           </div>
 
           <button id="acc-add-btn" class="add-account-btn">+ Agregar cuenta</button>
+        </div>
+      </div>
+
+      <!-- ══ GASTO HORMIGA DETAIL PANEL ══ -->
+      <div id="hormiga-panel" class="bottom-sheet hidden">
+        <div id="hormiga-panel-overlay" class="bottom-sheet-overlay"></div>
+        <div class="bottom-sheet-content glass balance-panel-inner">
+          <div class="sheet-handle"></div>
+          <div class="balance-panel-header">
+            <h3 class="balance-panel-title">⚠️ Detalle Gasto Hormiga</h3>
+            <button id="hormiga-panel-close" class="icon-btn" aria-label="Cerrar">✕</button>
+          </div>
+          <div id="hormiga-list" class="accounts-list" style="margin-top: 1rem;">
+            <!-- Items will be injected here via JS -->
+          </div>
         </div>
       </div>
 
