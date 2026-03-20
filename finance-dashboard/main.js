@@ -8,7 +8,7 @@ const CLIENT_ID = '427918095213-6cbm5sgcfn6o8qosg6qe1r6u9toj66dp.apps.googleuser
 const SCOPES = 'https://www.googleapis.com/auth/spreadsheets';
 const SPREADSHEET_LOG_ID   = '1pn1bsxj2LaoySXAVUvqfEJY1VR4R_T8NsTOqQnVW5Xw'; // Control de Gastos
 const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // Gastos Fijos
-const APP_VERSION  = 'v2.3.5';
+const APP_VERSION  = 'v2.3.6';
 const TOKEN_KEY    = 'google_access_token_v3'; // scope: read+write
 const EXPIRY_KEY   = 'google_token_expiry_v3';
 
@@ -243,12 +243,11 @@ function processAndRender(logRows, fixedRows) {
         }
     });
 
-    // Col F (index 5) = Pagado checkbox value ('TRUE'/'FALSE'/'' from Sheets)
+    // Col F (index 5) = Pagado checkbox value (boolean true/false OR string 'TRUE'/'FALSE')
     const fixedExpenses = fixedRows.map((row, i) => {
         const concepto = row[1] || '';
         const monto    = parseSheetValue(row[2]) || parseSheetValue(row[3]);
-        const colF     = (row[5] || '').toUpperCase();
-        const isPaid   = colF === 'TRUE';
+        const isPaid   = parseBool(row[5]);
         return { rowNum: i + 2, concepto, monto, isPaid };
     }).filter(e => e.concepto);
 
@@ -530,15 +529,16 @@ async function fijos_cargarDatos() {
         // ─────────────────────────────────────────────────────────────
 
         fijosState.allItems = rows.map((row, i) => {
-            const d      = row[0] ? new Date(row[0]) : new Date();
+            // Dates come as serial numbers (UNFORMATTED_VALUE) or ISO strings
+            const d      = parseSheetDate(row[0]);
             const g      = parseSheetValue(row[2]);
             const n      = parseSheetValue(row[3]);
-            const colF   = (row[5] || '').toUpperCase();
-            const isPaid = colF === 'TRUE';
+            // Checkboxes come as boolean true/false (UNFORMATTED_VALUE)
+            const isPaid = parseBool(row[5]);
             return {
                 id: i + 2,
                 fecha: d.toLocaleDateString('es-MX', { day: 'numeric', month: 'short' }),
-                fechaValue: row[0] || '',
+                fechaValue: d.toISOString().split('T')[0],
                 concepto:   row[1] || '',
                 monto:      g || n,
                 tipo:       g > 0 ? 'gasto' : 'ingreso',
@@ -772,6 +772,23 @@ function parseSheetValue(val) {
     // Remove currency symbols, commas and spaces. Keep digits, dot and minus sign.
     const clean = val.replace(/[^\d.-]/g, '');
     return parseFloat(clean) || 0;
+}
+
+/** Handle boolean values returned by UNFORMATTED_VALUE for checkboxes */
+function parseBool(val) {
+    if (typeof val === 'boolean') return val;
+    return (val || '').toString().toUpperCase() === 'TRUE';
+}
+
+/** Parse a date that may be a Google Sheets serial number or an ISO string */
+function parseSheetDate(val) {
+    if (!val) return new Date();
+    if (typeof val === 'number') {
+        // Google Sheets serial: days since Dec 30, 1899
+        return new Date(Date.UTC(1899, 11, 30) + val * 86400000);
+    }
+    const d = new Date(val);
+    return isNaN(d) ? new Date() : d;
 }
 
 function showToast(msg) {
