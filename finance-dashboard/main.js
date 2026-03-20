@@ -2,7 +2,7 @@ import { createIcons, RefreshCw, AlertTriangle, CalendarCheck, TrendingUp, LogOu
 import ApexCharts from 'apexcharts';
 import { initializeApp } from 'firebase/app';
 import { browserLocalPersistence, getAuth, GoogleAuthProvider, getRedirectResult, onAuthStateChanged, setPersistence, signInWithCredential, signInWithPopup, signInWithRedirect, signOut as fbSignOut } from 'firebase/auth';
-import { getFirestore, doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { getFirestore, doc, getDoc, onSnapshot, setDoc, serverTimestamp } from 'firebase/firestore';
 
 // =============================================
 // CONFIG
@@ -43,6 +43,7 @@ setPersistence(_fbAuth, browserLocalPersistence).catch((e) => {
 onAuthStateChanged(_fbAuth, (user) => {
     _fbUid = user?.uid || null;
     debugUpdate({ auth: user ? 'Sesion Firebase activa' : 'Sin sesion Firebase', uid: _fbUid || '-' });
+    balance_handleFirebaseAuthChange();
 });
 
 async function firebase_signInWithPopup() {
@@ -287,6 +288,57 @@ const ACCOUNT_TYPE_LABEL = { bank:'Cuenta bancaria', credit:'Tarjeta de crédito
 let balanceAccounts   = [];
 let balanceEditingId  = null;
 let balancePendingFixed = 0; // Set by dashboard when fixed expenses load
+let balanceRealtimeUnsub = null;
+let balanceRealtimeUid = null;
+
+function balance_stopRealtimeSync() {
+    if (balanceRealtimeUnsub) {
+        balanceRealtimeUnsub();
+        balanceRealtimeUnsub = null;
+    }
+    balanceRealtimeUid = null;
+}
+
+function balance_startRealtimeSync() {
+    if (!_fbUid) {
+        balance_stopRealtimeSync();
+        return;
+    }
+    if (balanceRealtimeUnsub && balanceRealtimeUid === _fbUid) return;
+    balance_stopRealtimeSync();
+    const ref = doc(_fbDb, 'users', _fbUid, 'balance', 'accounts');
+    balanceRealtimeUid = _fbUid;
+    balanceRealtimeUnsub = onSnapshot(ref, (snap) => {
+        if (!snap.exists()) return;
+        const data = snap.data() || {};
+        const nextAccounts = (data.accounts || []).map(a => ({
+            id:      a.id || Date.now(),
+            name:    a.name || '',
+            balance: a.balance || 0,
+            type:    a.type || 'bank',
+            hidden:  !!a.hidden,
+        }));
+        balanceAccounts = nextAccounts;
+        localStorage.setItem('finance_accounts_v1', JSON.stringify(balanceAccounts));
+        balance_updateKpi();
+        const panel = document.getElementById('balance-panel');
+        if (panel && !panel.classList.contains('hidden')) {
+            balance_renderPanel();
+        }
+        debugUpdate({ load: `Firestore realtime (${balanceAccounts.length})`, uid: _fbUid || '-' });
+    }, (err) => {
+        console.warn('[Firebase] realtime listener failed:', err.message);
+        debugUpdate({ load: `Firestore realtime error (${debugShort(err.message)})` });
+    });
+}
+
+function balance_handleFirebaseAuthChange() {
+    if (_fbUid) {
+        balance_startRealtimeSync();
+    } else {
+        balance_stopRealtimeSync();
+    }
+}
 
 // ── Sheet-backed persistence ─────────────────────────────
 async function balance_getOrCreateSheet() {
@@ -708,6 +760,7 @@ function logout() {
     if (window.google?.accounts?.oauth2) {
         google.accounts.oauth2.revoke(accessToken, () => { console.log('Token revoked') });
     }
+    balance_stopRealtimeSync();
     debugUpdate({ auth: 'Sesion cerrada', uid: '-', token: 'No', load: '-', save: '-' });
     showLoginModal();
 }
