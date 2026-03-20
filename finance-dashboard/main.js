@@ -15,8 +15,8 @@ const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // 
 const SPREADSHEET_DEUDAS_ID = '1dKxhgqazskm15lx0f6FNCA0gpJ7i5glfxkusiH3b0Uk'; // Control de Deudas
 const APP_VERSION  = 'v3.1.0';
 // Bump token keys to force re-auth with the new drive scope
-const TOKEN_KEY    = 'google_access_token_v4';
-const EXPIRY_KEY   = 'google_token_expiry_v4';
+const TOKEN_KEY    = 'google_access_token_v5';
+const EXPIRY_KEY   = 'google_token_expiry_v5';
 const ACCOUNTS_SHEET_KEY = 'finance_accounts_sheet_v1'; // localStorage key for the accounts spreadsheet ID
 
 // =============================================
@@ -42,13 +42,7 @@ async function firebase_signInWithPopup() {
         provider.addScope('https://www.googleapis.com/auth/drive');
         const result = await signInWithPopup(_fbAuth, provider);
         _fbUid = result.user.uid;
-        const cred = GoogleAuthProvider.credentialFromResult(result);
-        if (cred?.accessToken) {
-            accessToken = cred.accessToken;
-            localStorage.setItem(TOKEN_KEY, accessToken);
-            localStorage.setItem(EXPIRY_KEY, String(Date.now() + 3500 * 1000));
-        }
-        debug_update({ auth: 'Popup fallback OK', uid: _fbUid, token: 'Si (popup)' });
+        debug_update({ auth: 'Popup fallback OK', uid: _fbUid });
         console.log('[Firebase] popup sign-in OK as', result.user.email, '| uid:', _fbUid);
     } catch (popupErr) {
         _fbUid = null;
@@ -172,7 +166,7 @@ function debug_initPanel() {
 }
 
 // migrate away from old token keys
-['google_access_token', 'google_access_token_v2', 'google_access_token_v3'].forEach(k => localStorage.removeItem(k));
+['google_access_token', 'google_access_token_v2', 'google_access_token_v3', 'google_access_token_v4'].forEach(k => localStorage.removeItem(k));
 // Load stored token only if not expired (tokens live ~3600s, we use 3500s to be safe)
 const _stored  = localStorage.getItem(TOKEN_KEY);
 const _expiry  = parseInt(localStorage.getItem(EXPIRY_KEY) || '0', 10);
@@ -364,7 +358,7 @@ async function balance_saveAccounts() {
         return;
     }
     if (!_fbUid) {
-        await firebase_signIn(accessToken, { allowPopupFallback: true, preferPopup: true });
+        await firebase_signIn(accessToken, { allowPopupFallback: false });
     }
     // 2. Write to Firestore (primary) and Sheets (backup) in parallel
     const ops = [];
@@ -615,25 +609,16 @@ function refreshCurrentTab() {
 // GOOGLE AUTH
 // =============================================
 function startGoogleLogin() {
-    // Prefer Firebase popup on direct user click to avoid token audience mismatch.
-    firebase_signInWithPopup().then(() => {
-        if (_fbUid && accessToken) {
-            hideLoginModal();
-            balance_loadAccounts().then(() => balance_updateKpi());
-            showTab('dashboard');
-            return;
+    if (window.google?.accounts?.oauth2) { requestToken(); return; }
+    const btn = document.getElementById('login-google-btn');
+    btn.innerText = 'Cargando...'; btn.disabled = true;
+    const iv = setInterval(() => {
+        if (window.google?.accounts?.oauth2) {
+            clearInterval(iv); btn.innerText = 'Iniciar Sesion con Google'; btn.disabled = false;
+            requestToken();
         }
-        if (window.google?.accounts?.oauth2) { requestToken(); return; }
-        const btn = document.getElementById('login-google-btn');
-        btn.innerText = 'Cargando...'; btn.disabled = true;
-        const iv = setInterval(() => {
-            if (window.google?.accounts?.oauth2) {
-                clearInterval(iv); btn.innerText = 'Iniciar Sesion con Google'; btn.disabled = false;
-                requestToken();
-            }
-        }, 200);
-        setTimeout(() => { clearInterval(iv); btn.innerText = 'Error: reintenta'; btn.disabled = false; }, 10000);
-    });
+    }, 200);
+    setTimeout(() => { clearInterval(iv); btn.innerText = 'Error: reintenta'; btn.disabled = false; }, 10000);
 }
 
 function requestToken() {
