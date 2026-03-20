@@ -538,35 +538,28 @@ async function driveCreateSpreadsheet(name, parentId) {
 
 // Upload a File object to a Drive folder and return the sharing URL
 async function driveUploadFile(file, folderId) {
-    // 1. Read file as ArrayBuffer
-    const buffer = await file.arrayBuffer();
-    // 2. Build multipart upload body
-    const boundary = '-------FinanceDashBoundary';
-    const meta = JSON.stringify({ name: file.name, parents: folderId ? [folderId] : undefined });
-    const encoder = new TextEncoder();
-    const metaPart = encoder.encode(
-        `--${boundary}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${meta}\r\n`
-    );
-    const dataPart = encoder.encode(`--${boundary}\r\nContent-Type: ${file.type || 'application/octet-stream'}\r\n\r\n`);
-    const end = encoder.encode(`\r\n--${boundary}--`);
-    const body = new Uint8Array(metaPart.length + dataPart.length + buffer.byteLength + end.length);
-    let offset = 0;
-    body.set(metaPart, offset); offset += metaPart.length;
-    body.set(dataPart, offset); offset += dataPart.length;
-    body.set(new Uint8Array(buffer), offset); offset += buffer.byteLength;
-    body.set(end, offset);
-    // 3. Upload
+    // Build metadata
+    const meta = { name: file.name };
+    if (folderId) meta.parents = [folderId];
+    // Use FormData for reliable multipart upload
+    const form = new FormData();
+    form.append('metadata', new Blob([JSON.stringify(meta)], { type: 'application/json' }));
+    form.append('file', file);
+    // Upload
     const r = await fetch(
-        `https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,webViewLink`,
+        'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,webViewLink',
         {
             method: 'POST',
-            headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': `multipart/related; boundary=${boundary}` },
-            body,
+            headers: { Authorization: `Bearer ${accessToken}` }, // NO Content-Type: let browser set it with boundary
+            body: form,
         }
     );
-    if (!r.ok) throw { status: r.status, message: await r.text() };
+    if (!r.ok) {
+        const errText = await r.text();
+        throw new Error(`Drive upload failed (${r.status}): ${errText}`);
+    }
     const res = await r.json();
-    // 4. Make publicly readable so any link works
+    // Make file readable by anyone with the link
     await fetch(`https://www.googleapis.com/drive/v3/files/${res.id}/permissions`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
@@ -986,8 +979,9 @@ async function gastos_guardar() {
         gastos_cancelar();
         gastos_cargarHistorial();
     } catch(e) {
-        console.error(e);
-        status.innerText = '❌ Error al guardar'; status.style.color = '#f87171';
+        console.error('gastos_guardar error:', e);
+        const msg = e?.message || e?.status || 'Sin detalle';
+        status.innerText = `❌ Error: ${msg.substring(0, 80)}`; status.style.color = '#f87171';
         btn.disabled = false; btn.innerText = idFila ? 'ACTUALIZAR' : 'GUARDAR';
     }
 }
