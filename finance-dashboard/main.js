@@ -10,7 +10,7 @@ const SCOPES = 'https://www.googleapis.com/auth/spreadsheets https://www.googlea
 const SPREADSHEET_LOG_ID   = '1pn1bsxj2LaoySXAVUvqfEJY1VR4R_T8NsTOqQnVW5Xw'; // Control de Gastos
 const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // Gastos Fijos
 const SPREADSHEET_DEUDAS_ID = '1dKxhgqazskm15lx0f6FNCA0gpJ7i5glfxkusiH3b0Uk'; // Control de Deudas
-const APP_VERSION  = 'v2.8.0';
+const APP_VERSION  = 'v2.9.0';
 // Bump token keys to force re-auth with the new drive scope
 const TOKEN_KEY    = 'google_access_token_v4';
 const EXPIRY_KEY   = 'google_token_expiry_v4';
@@ -624,12 +624,18 @@ function processAndRender(logRows, fixedRows) {
     const hormigaKeywords = ['oxxo','coca','cigarros','snacks','gomitas','vuse','tiendita','starbucks','seven','7-eleven','extra','dulces','chicles'];
     let hormigaTotal = 0, hormigaChartData = [];
     let hormigaGastos = []; // Guardaremos detalle para el panel
+    let hormigaPrevTotal = 0; // Previous month hormiga total
 
     const now = new Date();
     const currentMonth = now.getMonth();
     const currentYear = now.getFullYear();
+    // Previous month (handles January → December of previous year)
+    const prevMonthDate = new Date(currentYear, currentMonth - 1, 1);
+    const prevMonth     = prevMonthDate.getMonth();
+    const prevYear      = prevMonthDate.getFullYear();
     const mNames = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
-    const monthName = mNames[currentMonth];
+    const monthName     = mNames[currentMonth];
+    const prevMonthName = mNames[prevMonth];
 
     // Update KPI titles to show the restriction visually
     const kpiLabel = document.querySelector('#kpi-hormiga-card .label');
@@ -654,6 +660,10 @@ function processAndRender(logRows, fixedRows) {
             if (parsedDate.getMonth() === currentMonth && parsedDate.getFullYear() === currentYear) {
                 hormigaTotal += monto;
                 hormigaGastos.push({ lugar: row[1] || 'Oxxo', concepto: row[2] || '', monto });
+            }
+            // Acumulamos el mes anterior para comparación
+            if (parsedDate.getMonth() === prevMonth && parsedDate.getFullYear() === prevYear) {
+                hormigaPrevTotal += monto;
             }
         }
     });
@@ -690,7 +700,7 @@ function processAndRender(logRows, fixedRows) {
     // Dashboard only shows PENDING (unpaid) fixed expenses
     renderFixedTable(fixedExpenses.filter(e => !e.isPaid));
     renderChart(hormigaChartData);
-    renderHormigaPanel(hormigaGastos, hormigaTotal);
+    renderHormigaPanel(hormigaGastos, hormigaTotal, hormigaPrevTotal, monthName, prevMonthName);
 }
 
 function renderFixedTable(expenses) {
@@ -717,8 +727,19 @@ function hormiga_closePanel() {
     document.body.style.overflow = '';
 }
 
-function renderHormigaPanel(gastos, total) {
+function renderHormigaPanel(gastos, total, prevTotal = 0, monthName = '', prevMonthName = '') {
+    const currLabel = document.getElementById('bs-hormiga-label');
+    const prevLabel = document.getElementById('bs-hormiga-prev-label');
+    if (currLabel) currLabel.innerText = monthName ? `${monthName} (Actual)` : 'Este Mes';
+    if (prevLabel) prevLabel.innerText = prevMonthName ? `${prevMonthName} (Anterior)` : 'Mes Anterior';
     document.getElementById('bs-hormiga-total').innerText = formatCurrency(total);
+    const prevEl = document.getElementById('bs-hormiga-prev');
+    if (prevEl) {
+        prevEl.innerText = formatCurrency(prevTotal);
+        // Color hint: if current > previous month, spending is up (danger); equal or less = okay
+        prevEl.style.color = prevTotal === 0 ? 'var(--text-muted)'
+            : total > prevTotal ? 'var(--accent-orange)' : 'var(--accent-green)';
+    }
     
     // Agrupar por lugar/concepto
     const agrupados = {};

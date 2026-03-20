@@ -391,10 +391,14 @@
             <button id="hormiga-panel-close" class="icon-btn" aria-label="Cerrar">✕</button>
           </div>
           
-          <div class="balance-summary-row" style="grid-template-columns: 1fr;">
+          <div class="balance-summary-row">
             <div class="balance-summary-card balance-summary-card--total glass-subtle">
-              <span class="bs-label">Total Gasto Hormiga</span>
+              <span class="bs-label" id="bs-hormiga-label">Este Mes</span>
               <span id="bs-hormiga-total" class="bs-amount text-danger">$0.00</span>
+            </div>
+            <div class="balance-summary-card glass-subtle">
+              <span class="bs-label" id="bs-hormiga-prev-label">Mes Anterior</span>
+              <span id="bs-hormiga-prev" class="bs-amount" style="color:var(--text-muted)">$0.00</span>
             </div>
           </div>
 
