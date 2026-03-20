@@ -572,11 +572,14 @@ function processAndRender(logRows, fixedRows) {
         // FIX: use toLowerCase() so 'Gasto'/'gasto'/'GASTO' all match
         if (hormigaKeywords.some(k => concepto.includes(k) || lugar.includes(k)) && (row[4] || '').toLowerCase() === 'gasto') {
             const parsedDate = parseSheetDate(fecha);
-            // Solo incluir gastos del mes corriente
+            
+            // SIEMPRE agregamos a la gráfica para tener historial completo
+            const formattedDate = normalizeDateString(fecha);
+            hormigaChartData.push({ x: formattedDate, y: monto });
+
+            // Solo incluir gastos del mes corriente en los indicadores visuales y panel
             if (parsedDate.getMonth() === currentMonth && parsedDate.getFullYear() === currentYear) {
                 hormigaTotal += monto;
-                const formattedDate = normalizeDateString(fecha);
-                hormigaChartData.push({ x: formattedDate, y: monto });
                 hormigaGastos.push({ lugar: row[1] || 'Oxxo', concepto: row[2] || '', monto });
             }
         }
