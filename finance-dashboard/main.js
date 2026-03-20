@@ -8,7 +8,7 @@ const CLIENT_ID = '427918095213-6cbm5sgcfn6o8qosg6qe1r6u9toj66dp.apps.googleuser
 const SCOPES = 'https://www.googleapis.com/auth/spreadsheets';
 const SPREADSHEET_LOG_ID   = '1pn1bsxj2LaoySXAVUvqfEJY1VR4R_T8NsTOqQnVW5Xw'; // Control de Gastos
 const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // Gastos Fijos
-const APP_VERSION  = 'v2.3.3';
+const APP_VERSION  = 'v2.3.4';
 const TOKEN_KEY    = 'google_access_token_v3'; // scope: read+write
 const EXPIRY_KEY   = 'google_token_expiry_v3';
 
@@ -647,36 +647,30 @@ window.fijos_togglePagado = async function(id, wasPaid) {
 
         // 2) If marking as PAID → auto-append entry in Control de Gastos
         if (nowPaid) {
-            const fecha   = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD
-            const lugar   = 'Gasto Fijo';
-            const concepto= item.concepto;
-            const monto   = item.monto;
-            const tipo    = item.tipo === 'gasto' ? 'Gasto' : 'Ingreso';
-            const forma   = item.categoria;
+            const fecha    = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD
+            const lugar    = 'Gasto Fijo';
+            const concepto = item.concepto;
+            // Always use positive amount; these are always expenses
+            const monto    = Math.abs(item.monto);
+            const tipo     = 'Gasto';
+            const forma    = item.categoria || 'General';
             await sheetsAppend(
                 SPREADSHEET_LOG_ID,
                 'Hoja 1!A:G',
                 [[fecha, lugar, concepto, monto, tipo, forma, '']]
             );
-            // Force reload Control de Gastos data on next visit
             tabInited.gastos = false;
             showToast('✅ Pago registrado en Control de Gastos');
         } else {
-            // UN-SYNC: Find and delete the entry in Control de Gastos
+            // UN-SYNC: Find and delete the most recent matching entry in Control de Gastos
             try {
-                // Fetch the real sheetId for 'Hoja 1' (DO NOT hardcode 0)
                 const logSheetId = await getSheetId(SPREADSHEET_LOG_ID, 'Hoja 1');
                 const logRows = await sheetsGet(SPREADSHEET_LOG_ID, 'Hoja 1!A:G');
                 let foundRowIndex = -1;
-                // Search from bottom to top for the most recent matching "Gasto Fijo" entry
+                // Search from bottom-to-top by lugar+concepto (not by monto, since stored value may differ)
                 for (let i = logRows.length - 1; i >= 0; i--) {
                     const r = logRows[i];
-                    const rLugar    = (r[1] || '');
-                    const rConcepto = (r[2] || '');
-                    const rMonto    = parseSheetValue(r[3]);
-                    // Compare with a small tolerance to handle floating point
-                    const montoMatch = Math.abs(rMonto - item.monto) < 0.01;
-                    if (rLugar === 'Gasto Fijo' && rConcepto === item.concepto && montoMatch) {
+                    if ((r[1] || '') === 'Gasto Fijo' && (r[2] || '') === item.concepto) {
                         foundRowIndex = i;
                         break;
                     }
@@ -686,11 +680,11 @@ window.fijos_togglePagado = async function(id, wasPaid) {
                     tabInited.gastos = false;
                     showToast('\uD83D\uDDD1\uFE0F Pago eliminado de Control de Gastos');
                 } else {
-                    // Entry not found — possibly already deleted or never added
-                    showToast('ℹ️ Sin registro para eliminar en Control de Gastos');
+                    showToast('\u2139\uFE0F Sin registro para eliminar en Control de Gastos');
                 }
             } catch (err) {
                 console.error('Error un-syncing payment:', err);
+                showToast('\u26A0\uFE0F Error al eliminar pago');
             }
         }
     } catch(e) {
