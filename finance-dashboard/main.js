@@ -552,6 +552,18 @@ function processAndRender(logRows, fixedRows) {
     let hormigaTotal = 0, hormigaChartData = [];
     let hormigaGastos = []; // Guardaremos detalle para el panel
 
+    const now = new Date();
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
+    const mNames = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
+    const monthName = mNames[currentMonth];
+
+    // Update KPI titles to show the restriction visually
+    const kpiLabel = document.querySelector('#kpi-hormiga-card .label');
+    if (kpiLabel) kpiLabel.innerHTML = `Gasto Hormiga (${monthName}) <span class="kpi-tap-hint">↗</span>`;
+    const panelTitle = document.querySelector('.balance-panel-title');
+    if (panelTitle) panelTitle.innerText = `🍔 Gasto Hormiga (${monthName})`;
+
     logRows.forEach(row => {
         const concepto = (row[2] || '').toLowerCase();
         const lugar    = (row[1] || '').toLowerCase();
@@ -559,10 +571,14 @@ function processAndRender(logRows, fixedRows) {
         const fecha    = row[0] || '';
         // FIX: use toLowerCase() so 'Gasto'/'gasto'/'GASTO' all match
         if (hormigaKeywords.some(k => concepto.includes(k) || lugar.includes(k)) && (row[4] || '').toLowerCase() === 'gasto') {
-            hormigaTotal += monto;
-            const parsedDate = normalizeDateString(fecha);
-            hormigaChartData.push({ x: parsedDate, y: monto });
-            hormigaGastos.push({ lugar: row[1] || 'Oxxo', concepto: row[2] || '', monto });
+            const parsedDate = parseSheetDate(fecha);
+            // Solo incluir gastos del mes corriente
+            if (parsedDate.getMonth() === currentMonth && parsedDate.getFullYear() === currentYear) {
+                hormigaTotal += monto;
+                const formattedDate = normalizeDateString(fecha);
+                hormigaChartData.push({ x: formattedDate, y: monto });
+                hormigaGastos.push({ lugar: row[1] || 'Oxxo', concepto: row[2] || '', monto });
+            }
         }
     });
 
