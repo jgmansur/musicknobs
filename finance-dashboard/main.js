@@ -8,7 +8,7 @@ const CLIENT_ID = '427918095213-6cbm5sgcfn6o8qosg6qe1r6u9toj66dp.apps.googleuser
 const SCOPES = 'https://www.googleapis.com/auth/spreadsheets';
 const SPREADSHEET_LOG_ID   = '1pn1bsxj2LaoySXAVUvqfEJY1VR4R_T8NsTOqQnVW5Xw'; // Control de Gastos
 const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // Gastos Fijos
-const APP_VERSION  = 'v2.3.0';
+const APP_VERSION  = 'v2.3.2';
 const TOKEN_KEY    = 'google_access_token_v3'; // scope: read+write
 const EXPIRY_KEY   = 'google_token_expiry_v3';
 
@@ -234,7 +234,7 @@ function processAndRender(logRows, fixedRows) {
     logRows.forEach(row => {
         const concepto = (row[2] || '').toLowerCase();
         const lugar    = (row[1] || '').toLowerCase();
-        const monto    = parseFloat(row[3]) || 0;
+        const monto    = parseSheetValue(row[3]);
         const fecha    = row[0] || '';
         // FIX: use toLowerCase() so 'Gasto'/'gasto'/'GASTO' all match
         if (hormigaKeywords.some(k => concepto.includes(k) || lugar.includes(k)) && (row[4] || '').toLowerCase() === 'gasto') {
@@ -246,7 +246,7 @@ function processAndRender(logRows, fixedRows) {
     // Col F (index 5) = Pagado checkbox value ('TRUE'/'FALSE'/'' from Sheets)
     const fixedExpenses = fixedRows.map((row, i) => {
         const concepto = row[1] || '';
-        const monto    = parseFloat(row[2]) || 0;
+        const monto    = parseSheetValue(row[2]) || parseSheetValue(row[3]);
         const colF     = (row[5] || '').toUpperCase();
         const isPaid   = colF === 'TRUE';
         return { rowNum: i + 2, concepto, monto, isPaid };
@@ -326,7 +326,7 @@ async function gastos_cargarHistorial() {
             fecha:    row[0] || '',
             lugar:    row[1] || '',
             concepto: row[2] || '',
-            monto:    parseFloat(row[3]) || 0,
+            monto:    parseSheetValue(row[3]),
             tipo:     row[4] || 'Gasto',
             formaPago:row[5] || '',
             fotos:    row[6] || '',
@@ -392,9 +392,9 @@ async function gastos_guardar() {
     const forma    = document.getElementById('g-forma-pago').value;
     try {
         if (idFila) {
-            await sheetsUpdate(SPREADSHEET_LOG_ID, `Hoja 1!B${idFila}:F${idFila}`, [[lugar, concepto, parseFloat(monto), tipo, forma]]);
+            await sheetsUpdate(SPREADSHEET_LOG_ID, `Hoja 1!B${idFila}:F${idFila}`, [[lugar, concepto, parseSheetValue(monto), tipo, forma]]);
         } else {
-            await sheetsAppend(SPREADSHEET_LOG_ID, 'Hoja 1!A:G', [[fecha, lugar, concepto, parseFloat(monto), tipo, forma, '']]);
+            await sheetsAppend(SPREADSHEET_LOG_ID, 'Hoja 1!A:G', [[fecha, lugar, concepto, parseSheetValue(monto), tipo, forma, '']]);
         }
         status.innerText = '✅ ' + (idFila ? 'Actualizado' : 'Guardado');
         status.style.color = 'var(--accent-green)';
@@ -531,8 +531,8 @@ async function fijos_cargarDatos() {
 
         fijosState.allItems = rows.map((row, i) => {
             const d      = row[0] ? new Date(row[0]) : new Date();
-            const g      = parseFloat(row[2]) || 0;
-            const n      = parseFloat(row[3]) || 0;
+            const g      = parseSheetValue(row[2]);
+            const n      = parseSheetValue(row[3]);
             const colF   = (row[5] || '').toUpperCase();
             const isPaid = colF === 'TRUE';
             return {
@@ -660,6 +660,31 @@ window.fijos_togglePagado = async function(id, wasPaid) {
             );
             // Force reload Control de Gastos data on next visit
             tabInited.gastos = false;
+            showToast('✅ Pago registrado en Control de Gastos');
+        } else {
+            // UN-SYNC: Find and delete the entry in Control de Gastos
+            try {
+                const logRows = await sheetsGet(SPREADSHEET_LOG_ID, 'Hoja 1!A:G');
+                let foundRowIndex = -1;
+                // Search from bottom to top for the most recent matching "Gasto Fijo" entry
+                for (let i = logRows.length - 1; i >= 0; i--) {
+                    const r = logRows[i];
+                    const rLugar    = (r[1] || '');
+                    const rConcepto = (r[2] || '');
+                    const rMonto    = parseSheetValue(r[3]);
+                    if (rLugar === 'Gasto Fijo' && rConcepto === item.concepto && rMonto === item.monto) {
+                        foundRowIndex = i;
+                        break;
+                    }
+                }
+                if (foundRowIndex !== -1) {
+                    await sheetsDeleteRow(SPREADSHEET_LOG_ID, 0, foundRowIndex);
+                    tabInited.gastos = false;
+                    showToast('🗑️ Pago eliminado de Control de Gastos');
+                }
+            } catch (err) {
+                console.error('Error un-syncing payment:', err);
+            }
         }
     } catch(e) {
         console.error('Error toggling Pagado:', e);
@@ -703,7 +728,7 @@ async function fijos_guardar() {
     const fecha   = document.getElementById('f-fecha').value;
     const tipo    = document.getElementById('f-tipo').value;
     const concepto= document.getElementById('f-concepto').value.trim();
-    const monto   = parseFloat(document.getElementById('f-monto').value) || 0;
+    const monto   = parseSheetValue(document.getElementById('f-monto').value);
     const editId  = document.getElementById('f-edit-id').value;
     if (!concepto || !monto) return;
     const cats   = [...document.querySelectorAll('.f-cat-chk:checked')].map(cb => cb.value);
@@ -738,4 +763,21 @@ function formatFecha(str) {
     if (!str) return '';
     const d = new Date(str);
     return isNaN(d) ? str : d.toLocaleDateString('es-MX', { day:'numeric', month:'short' });
+}
+
+function parseSheetValue(val) {
+    if (typeof val === 'number') return val;
+    if (!val || typeof val !== 'string') return 0;
+    // Remove currency symbols, commas and spaces. Keep digits, dot and minus sign.
+    const clean = val.replace(/[^\d.-]/g, '');
+    return parseFloat(clean) || 0;
+}
+
+function showToast(msg) {
+    const t = document.createElement('div');
+    t.innerText = msg;
+    t.className = 'toast-msg';
+    document.body.appendChild(t);
+    setTimeout(() => t.classList.add('show'), 100);
+    setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 300); }, 3000);
 }
