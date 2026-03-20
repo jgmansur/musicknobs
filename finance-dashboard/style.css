@@ -357,6 +357,27 @@ select.field-input { background-image: url("data:image/svg+xml,%3Csvg xmlns='htt
 .modal-actions { display: flex; gap: .75rem; margin-top: 1.25rem; }
 .modal-actions .primary-btn { flex: 1; }
 
+/* ── Receipt / Photo Upload ── */
+.foto-btn-label {
+  display: flex; align-items: center; justify-content: center; gap: .5rem;
+  width: 100%; padding: .65rem; border: 2px dashed rgba(99,102,241,.45);
+  border-radius: .6rem; color: var(--primary); font-size: .9rem; font-weight: 600;
+  cursor: pointer; transition: background .2s;
+}
+.foto-btn-label:hover { background: rgba(99,102,241,.08); }
+.foto-feedback { font-size: .8rem; color: var(--accent-green); min-height: 1.1rem; margin-top: .3rem; }
+.recibo-item {
+  display: flex; align-items: center; justify-content: space-between;
+  background: rgba(99,102,241,.08); border: 1px solid rgba(99,102,241,.2);
+  border-radius: .5rem; padding: .5rem .75rem; margin-top: .45rem;
+}
+.recibo-item .recibo-link { padding: 0; }
+.recibo-del-btn {
+  background: none; border: none; color: #f87171; font-size: 1.1rem;
+  cursor: pointer; padding: 0 .3rem; line-height: 1;
+}
+.mc-clip { font-size: .75rem; margin-left: .25rem; opacity: .7; }
+
 /* =============================================
    GASTOS FIJOS — Balance Card
    ============================================= */

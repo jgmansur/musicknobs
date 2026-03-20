@@ -9,8 +9,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <script type="module" crossorigin src="./assets/index-Qw6RmGr4.js"></script>
-    <link rel="stylesheet" crossorigin href="./assets/index-DHudUJcq.css">
+    <script type="module" crossorigin src="./assets/index-i1KQVQzx.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-DgIAUneV.css">
   </head>
   <body>
     <div id="app">
@@ -187,6 +187,12 @@
           <div class="form-field">
             <label class="field-label">Monto ($)</label>
             <input type="number" id="g-monto" class="field-input field-input-lg" placeholder="0.00" step="any" inputmode="decimal">
+          </div>
+          <div class="form-field">
+            <label class="field-label">Foto / Recibo</label>
+            <input type="file" id="g-fotos-input" multiple accept="image/*,application/pdf" style="display:none">
+            <label for="g-fotos-input" class="foto-btn-label">📷 Adjuntar foto o recibo</label>
+            <div id="g-fotos-feedback" class="foto-feedback"></div>
           </div>
           <div class="form-actions">
             <button id="g-btn-save" class="primary-btn" style="flex:1">GUARDAR</button>

@@ -10,7 +10,7 @@ const SCOPES = 'https://www.googleapis.com/auth/spreadsheets https://www.googlea
 const SPREADSHEET_LOG_ID   = '1pn1bsxj2LaoySXAVUvqfEJY1VR4R_T8NsTOqQnVW5Xw'; // Control de Gastos
 const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // Gastos Fijos
 const SPREADSHEET_DEUDAS_ID = '1dKxhgqazskm15lx0f6FNCA0gpJ7i5glfxkusiH3b0Uk'; // Control de Deudas
-const APP_VERSION  = 'v2.7.1';
+const APP_VERSION  = 'v2.8.0';
 // Bump token keys to force re-auth with the new drive scope
 const TOKEN_KEY    = 'google_access_token_v4';
 const EXPIRY_KEY   = 'google_token_expiry_v4';
@@ -536,6 +536,53 @@ async function driveCreateSpreadsheet(name, parentId) {
     return (await r.json()).id;
 }
 
+// Upload a File object to a Drive folder and return the sharing URL
+async function driveUploadFile(file, folderId) {
+    // 1. Read file as ArrayBuffer
+    const buffer = await file.arrayBuffer();
+    // 2. Build multipart upload body
+    const boundary = '-------FinanceDashBoundary';
+    const meta = JSON.stringify({ name: file.name, parents: folderId ? [folderId] : undefined });
+    const encoder = new TextEncoder();
+    const metaPart = encoder.encode(
+        `--${boundary}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${meta}\r\n`
+    );
+    const dataPart = encoder.encode(`--${boundary}\r\nContent-Type: ${file.type || 'application/octet-stream'}\r\n\r\n`);
+    const end = encoder.encode(`\r\n--${boundary}--`);
+    const body = new Uint8Array(metaPart.length + dataPart.length + buffer.byteLength + end.length);
+    let offset = 0;
+    body.set(metaPart, offset); offset += metaPart.length;
+    body.set(dataPart, offset); offset += dataPart.length;
+    body.set(new Uint8Array(buffer), offset); offset += buffer.byteLength;
+    body.set(end, offset);
+    // 3. Upload
+    const r = await fetch(
+        `https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,webViewLink`,
+        {
+            method: 'POST',
+            headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': `multipart/related; boundary=${boundary}` },
+            body,
+        }
+    );
+    if (!r.ok) throw { status: r.status, message: await r.text() };
+    const res = await r.json();
+    // 4. Make publicly readable so any link works
+    await fetch(`https://www.googleapis.com/drive/v3/files/${res.id}/permissions`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ role: 'reader', type: 'anyone' }),
+    });
+    return res.webViewLink;
+}
+
+async function driveDeleteFile(fileId) {
+    if (!fileId) return;
+    await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${accessToken}` },
+    });
+}
+
 function handleApiError(err, el) {
     console.error('API Error:', err);
     if (err.status === 401 || err.status === 403) {
@@ -817,6 +864,12 @@ function gastos_bindEvents() {
     document.getElementById('g-modal-backdrop').addEventListener('click', gastos_cerrarModal);
     document.getElementById('g-modal-btn-editar').addEventListener('click', gastos_editarDesdeModal);
     document.getElementById('g-modal-btn-borrar').addEventListener('click', gastos_borrarDesdeModal);
+    // File input feedback
+    document.getElementById('g-fotos-input')?.addEventListener('change', () => {
+        const inp = document.getElementById('g-fotos-input');
+        const fb  = document.getElementById('g-fotos-feedback');
+        fb.innerText = inp.files.length ? `✅ ${inp.files.length} archivo(s) seleccionado(s)` : '';
+    });
 }
 
 async function gastos_cargarHistorial() {
@@ -862,9 +915,10 @@ function gastos_renderLista(append) {
         card.className = 'movimiento-card';
         const isGasto = row.tipo === 'Gasto';
         const fechaStr = row.fecha ? formatFecha(row.fecha) : '';
+        const clipIcon = row.fotos && row.fotos.length > 5 ? '<span class="mc-clip">📎</span>' : '';
         card.innerHTML = `
           <div class="mc-left">
-            <span class="mc-fecha">${fechaStr}</span>
+            <span class="mc-fecha">${fechaStr}${clipIcon}</span>
             <span class="mc-lugar">${row.lugar || '—'}</span>
             <span class="mc-concepto">${row.concepto || '—'}</span>
           </div>
@@ -889,15 +943,43 @@ async function gastos_guardar() {
         status.innerText = '⚠️ Falta Lugar o Monto'; status.style.color = 'var(--accent-orange)'; return;
     }
     btn.disabled = true; btn.innerText = idFila ? 'Actualizando...' : 'Guardando...';
-    const fecha    = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD
+    const fecha    = new Date().toLocaleDateString('en-CA');
     const concepto = document.getElementById('g-concepto').value.trim();
     const tipo     = document.getElementById('g-tipo').value;
     const forma    = document.getElementById('g-forma-pago').value;
+
     try {
+        // ── Upload new photos to Drive ──────────────────────
+        const fileInput = document.getElementById('g-fotos-input');
+        let nuevasUrls = [];
+        if (fileInput.files.length > 0) {
+            btn.innerText = `Subiendo ${fileInput.files.length} archivo(s)...`;
+            const RECIBOS_FOLDER = 'Jay App Recibos';
+            let folderId = await driveFindFolder(RECIBOS_FOLDER);
+            if (!folderId) {
+                // Create the folder if it doesn't exist
+                const r = await fetch('https://www.googleapis.com/drive/v3/files', {
+                    method: 'POST',
+                    headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name: RECIBOS_FOLDER, mimeType: 'application/vnd.google-apps.folder' }),
+                });
+                folderId = (await r.json()).id;
+            }
+            for (const file of fileInput.files) {
+                const url = await driveUploadFile(file, folderId);
+                if (url) nuevasUrls.push(url);
+            }
+        }
+        btn.innerText = idFila ? 'Actualizando...' : 'Guardando...';
+
+        // ── Save to Sheets ──────────────────────────────────
         if (idFila) {
-            await sheetsUpdate(SPREADSHEET_LOG_ID, `Hoja 1!B${idFila}:F${idFila}`, [[lugar, concepto, parseSheetValue(monto), tipo, forma]]);
+            // Edit mode: preserve existing photos, append new ones
+            const existing = gastosState.detailRow?.fotos || '';
+            const allUrls  = [existing, ...nuevasUrls].filter(Boolean).join(',');
+            await sheetsUpdate(SPREADSHEET_LOG_ID, `Hoja 1!B${idFila}:G${idFila}`, [[lugar, concepto, parseSheetValue(monto), tipo, forma, allUrls]]);
         } else {
-            await sheetsAppend(SPREADSHEET_LOG_ID, 'Hoja 1!A:G', [[fecha, lugar, concepto, parseSheetValue(monto), tipo, forma, '']]);
+            await sheetsAppend(SPREADSHEET_LOG_ID, 'Hoja 1!A:G', [[fecha, lugar, concepto, parseSheetValue(monto), tipo, forma, nuevasUrls.join(',')]]);
         }
         status.innerText = '✅ ' + (idFila ? 'Actualizado' : 'Guardado');
         status.style.color = 'var(--accent-green)';
@@ -915,6 +997,10 @@ function gastos_cancelar() {
     document.getElementById('g-lugar').value = '';
     document.getElementById('g-concepto').value = '';
     document.getElementById('g-monto').value = '';
+    const fi = document.getElementById('g-fotos-input');
+    if (fi) fi.value = '';
+    const fb = document.getElementById('g-fotos-feedback');
+    if (fb) fb.innerText = '';
     const btn = document.getElementById('g-btn-save');
     btn.innerText = 'GUARDAR'; btn.disabled = false; btn.classList.remove('btn-edit-mode');
     document.getElementById('g-btn-cancel').classList.add('hidden');
@@ -932,10 +1018,17 @@ function gastos_abrirModal(row) {
     const tipo = document.getElementById('g-m-tipo');
     tipo.innerText = row.tipo; tipo.className = `modal-badge ${isGasto ? 'badge-gasto' : 'badge-ingreso'}`;
     document.getElementById('g-m-pago').innerText = row.formaPago || '—';
+    // ── Receipts with individual delete buttons ──────────
     const recibos = document.getElementById('g-m-recibos');
-    recibos.innerHTML = (row.fotos && row.fotos.length > 5)
-        ? row.fotos.split(',').filter(u => u.trim()).map(u => `<a href="${u.trim()}" target="_blank" class="recibo-link">📄 Ver Recibo</a>`).join('')
-        : '<span class="text-muted">Sin recibos adjuntos</span>';
+    if (row.fotos && row.fotos.length > 5) {
+        recibos.innerHTML = row.fotos.split(',').filter(u => u.trim()).map((u, i) => `
+          <div class="recibo-item" id="recibo-item-${i}">
+            <a href="${u.trim()}" target="_blank" class="recibo-link">📄 Ver Recibo ${i+1}</a>
+            <button class="recibo-del-btn" onclick="gastos_borrarRecibo('${u.trim()}', ${i})" title="Eliminar recibo">🗑️</button>
+          </div>`).join('');
+    } else {
+        recibos.innerHTML = '<span class="text-muted">Sin recibos adjuntos</span>';
+    }
     document.getElementById('g-modal').classList.remove('hidden');
     document.getElementById('g-modal-backdrop').classList.remove('hidden');
 }
@@ -963,11 +1056,18 @@ function gastos_editarDesdeModal() {
 
 async function gastos_borrarDesdeModal() {
     const row = gastosState.detailRow; if (!row) return;
-    if (!confirm('¿Eliminar este movimiento definitivamente?')) return;
+    if (!confirm('¿Eliminar este movimiento y sus recibos definitivamente?')) return;
     gastos_cerrarModal();
     const status = document.getElementById('g-status');
     status.innerText = '🗑️ Borrando...';
     try {
+        // Delete Drive files first
+        if (row.fotos && row.fotos.length > 5) {
+            for (const url of row.fotos.split(',').filter(u => u.trim())) {
+                const match = url.match(/[-\w]{25,}/);
+                if (match) await driveDeleteFile(match[0]).catch(() => {});
+            }
+        }
         if (gastosState.logSheetId === null) gastosState.logSheetId = await getSheetId(SPREADSHEET_LOG_ID, 'Hoja 1');
         await sheetsDeleteRow(SPREADSHEET_LOG_ID, gastosState.logSheetId, row.rowNum - 1);
         status.innerText = '✅ Eliminado'; status.style.color = 'var(--accent-green)';
@@ -976,6 +1076,28 @@ async function gastos_borrarDesdeModal() {
         console.error(e); status.innerText = '❌ Error al borrar'; status.style.color = '#f87171';
     }
 }
+
+window.gastos_borrarRecibo = async function(url, idx) {
+    if (!confirm('¿Eliminar este recibo?')) return;
+    const row = gastosState.detailRow; if (!row) return;
+    try {
+        // Remove URL from the list
+        const urls = row.fotos.split(',').map(u => u.trim()).filter(u => u && u !== url);
+        row.fotos = urls.join(',');
+        // Update the sheet
+        if (gastosState.logSheetId === null) gastosState.logSheetId = await getSheetId(SPREADSHEET_LOG_ID, 'Hoja 1');
+        await sheetsUpdate(SPREADSHEET_LOG_ID, `Hoja 1!G${row.rowNum}`, [[row.fotos]]);
+        // Delete from Drive
+        const match = url.match(/[-\w]{25,}/);
+        if (match) await driveDeleteFile(match[0]).catch(() => {});
+        // Refresh receipts area in modal
+        gastosState.allRows = gastosState.allRows.map(r => r.rowNum === row.rowNum ? { ...r, fotos: row.fotos } : r);
+        showToast('🗑️ Recibo eliminado');
+        gastos_abrirModal(row); // re-render modal with updated list
+    } catch(e) {
+        console.error(e); showToast('❌ Error al borrar recibo');
+    }
+};
 
 // =============================================
 // GASTOS FIJOS MODULE
