@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite'
 
 export default defineConfig({
-  base: './' // Use relative paths for built assets
+  base: '/musicknobs/finance-dashboard/' // Absolute path for GitHub Pages
 })
+
