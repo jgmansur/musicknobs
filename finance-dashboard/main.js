@@ -5,12 +5,15 @@ import ApexCharts from 'apexcharts';
 // CONFIG
 // =============================================
 const CLIENT_ID = '427918095213-6cbm5sgcfn6o8qosg6qe1r6u9toj66dp.apps.googleusercontent.com';
-const SCOPES = 'https://www.googleapis.com/auth/spreadsheets';
+// OAuth: add drive scope for creating the accounts spreadsheet in Drive
+const SCOPES = 'https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/drive';
 const SPREADSHEET_LOG_ID   = '1pn1bsxj2LaoySXAVUvqfEJY1VR4R_T8NsTOqQnVW5Xw'; // Control de Gastos
 const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // Gastos Fijos
-const APP_VERSION  = 'v2.4.0';
-const TOKEN_KEY    = 'google_access_token_v3'; // scope: read+write
-const EXPIRY_KEY   = 'google_token_expiry_v3';
+const APP_VERSION  = 'v2.4.1';
+// Bump token keys to force re-auth with the new drive scope
+const TOKEN_KEY    = 'google_access_token_v4';
+const EXPIRY_KEY   = 'google_token_expiry_v4';
+const ACCOUNTS_SHEET_KEY = 'finance_accounts_sheet_v1'; // localStorage key for the accounts spreadsheet ID
 
 // =============================================
 // STATE
@@ -21,7 +24,7 @@ let currentTab  = 'dashboard';
 let tabInited   = { dashboard: false, gastos: false, fijos: false };
 
 // migrate away from old token keys
-['google_access_token', 'google_access_token_v2'].forEach(k => localStorage.removeItem(k));
+['google_access_token', 'google_access_token_v2', 'google_access_token_v3'].forEach(k => localStorage.removeItem(k));
 // Load stored token only if not expired (tokens live ~3600s, we use 3500s to be safe)
 const _stored  = localStorage.getItem(TOKEN_KEY);
 const _expiry  = parseInt(localStorage.getItem(EXPIRY_KEY) || '0', 10);
@@ -73,46 +76,102 @@ document.addEventListener('DOMContentLoaded', () => {
 // =============================================
 // BALANCE MODULE
 // =============================================
-const ACCOUNTS_KEY = 'finance_accounts_v1';
 const DEFAULT_ACCOUNTS = [
-    { id: 1, name: 'Santander',         balance: 0, type: 'bank'   },
-    { id: 2, name: 'BBVA',              balance: 0, type: 'bank'   },
-    { id: 3, name: 'Bank of America',   balance: 0, type: 'other'  },
-    { id: 4, name: 'Tarjeta de Crédito',balance: 0, type: 'credit' },
+    { id: 1, name: 'Santander',          balance: 0, type: 'bank'   },
+    { id: 2, name: 'BBVA',               balance: 0, type: 'bank'   },
+    { id: 3, name: 'Bank of America',    balance: 0, type: 'other'  },
+    { id: 4, name: 'Tarjeta de Cr\u00e9dito', balance: 0, type: 'credit' },
 ];
 
-const ACCOUNT_ICONS = { bank:'🏦', credit:'💳', cash:'💵', invest:'📈', other:'🌎' };
+const ACCOUNT_ICONS  = { bank:'🏦', credit:'💳', cash:'💵', invest:'📈', other:'🌎' };
 const ACCOUNT_COLORS = { bank:'#3b82f6', credit:'#ef4444', cash:'#22c55e', invest:'#a855f7', other:'#f59e0b' };
+const ACCOUNT_TYPE_LABEL = { bank:'Cuenta bancaria', credit:'Tarjeta de crédito', cash:'Efectivo', invest:'Inversión', other:'Otro' };
 
-let balanceAccounts = [];
-let balanceEditingId = null;
-// Pending fixed expense total (populated when dashboard loads)
-let balancePendingFixed = 0;
+let balanceAccounts   = [];
+let balanceEditingId  = null;
+let balancePendingFixed = 0; // Set by dashboard when fixed expenses load
 
-function balance_loadAccounts() {
+// ── Sheet-backed persistence ─────────────────────────────
+async function balance_getOrCreateSheet() {
+    let sheetId = localStorage.getItem(ACCOUNTS_SHEET_KEY);
+    if (sheetId) {
+        try { await sheetsGet(sheetId, 'A1:A1'); return sheetId; }
+        catch { localStorage.removeItem(ACCOUNTS_SHEET_KEY); }
+    }
+    // Find 'Jay App' folder in Drive
+    const folderId = await driveFindFolder('Jay App');
+    // Create the spreadsheet (in Jay App folder if found, else root Drive)
+    sheetId = await driveCreateSpreadsheet('Finance Dashboard - Cuentas', folderId);
+    // Initialize header row
+    await sheetsUpdate(sheetId, 'A1:D1', [['ID', 'Nombre', 'Saldo', 'Tipo']]);
+    localStorage.setItem(ACCOUNTS_SHEET_KEY, sheetId);
+    return sheetId;
+}
+
+async function balance_loadAccounts() {
+    if (!accessToken) {
+        // Not logged in yet — use localStorage fallback
+        try {
+            const raw = localStorage.getItem('finance_accounts_v1');
+            balanceAccounts = raw ? JSON.parse(raw) : DEFAULT_ACCOUNTS.map(a => ({ ...a }));
+        } catch { balanceAccounts = DEFAULT_ACCOUNTS.map(a => ({ ...a })); }
+        return;
+    }
     try {
-        const raw = localStorage.getItem(ACCOUNTS_KEY);
+        const sid  = await balance_getOrCreateSheet();
+        const rows = await sheetsGet(sid, 'A2:D');
+        if (!rows.length) {
+            balanceAccounts = DEFAULT_ACCOUNTS.map(a => ({ ...a }));
+            await balance_writeToSheet(sid); // seed defaults
+        } else {
+            balanceAccounts = rows
+                .filter(r => r[0])
+                .map(r => ({
+                    id:      Number(r[0]) || Date.now(),
+                    name:    r[1] || '',
+                    balance: typeof r[2] === 'number' ? r[2] : parseSheetValue(r[2]),
+                    type:    r[3] || 'bank',
+                }));
+        }
+    } catch (err) {
+        console.error('Error loading accounts from Sheets:', err);
+        const raw = localStorage.getItem('finance_accounts_v1');
         balanceAccounts = raw ? JSON.parse(raw) : DEFAULT_ACCOUNTS.map(a => ({ ...a }));
-    } catch { balanceAccounts = DEFAULT_ACCOUNTS.map(a => ({ ...a })); }
+    }
 }
 
-function balance_saveAccounts() {
-    localStorage.setItem(ACCOUNTS_KEY, JSON.stringify(balanceAccounts));
+async function balance_writeToSheet(sheetId) {
+    await sheetsClear(sheetId, 'A2:D');
+    if (balanceAccounts.length) {
+        await sheetsUpdate(sheetId, `A2:D${1 + balanceAccounts.length}`,
+            balanceAccounts.map(a => [a.id, a.name, a.balance, a.type]));
+    }
 }
 
+async function balance_saveAccounts() {
+    // Mirror to localStorage as offline cache
+    localStorage.setItem('finance_accounts_v1', JSON.stringify(balanceAccounts));
+    if (!accessToken) return;
+    try {
+        const sid = await balance_getOrCreateSheet();
+        await balance_writeToSheet(sid);
+    } catch (err) {
+        console.error('Error saving accounts to Sheets:', err);
+    }
+}
+
+// ── Compute helpers ──────────────────────────────────────
 function balance_getTotal() {
-    return balanceAccounts.reduce((sum, a) => {
-        return sum + (a.type === 'credit' ? -Math.abs(a.balance) : +a.balance);
-    }, 0);
+    return balanceAccounts.reduce((sum, a) =>
+        sum + (a.type === 'credit' ? -Math.abs(a.balance) : +a.balance), 0);
 }
 
 function balance_updateKpi() {
-    balance_loadAccounts();
     const total = balance_getTotal();
     const real  = total - balancePendingFixed;
-    const el = document.getElementById('balance-total');
+    const el  = document.getElementById('balance-total');
     const lbl = document.getElementById('balance-real-label');
-    if (el) el.innerText = formatCurrency(total);
+    if (el)  el.innerText = formatCurrency(total);
     if (lbl) {
         lbl.innerText = balancePendingFixed > 0
             ? `Real: ${formatCurrency(real)} (pendientes: ${formatCurrency(balancePendingFixed)})`
@@ -121,34 +180,35 @@ function balance_updateKpi() {
     }
 }
 
+// ── Render ───────────────────────────────────────────────
 function balance_renderPanel() {
-    const total   = balance_getTotal();
-    const real    = total - balancePendingFixed;
-
+    const total = balance_getTotal();
+    const real  = total - balancePendingFixed;
     document.getElementById('bs-total').innerText = formatCurrency(total);
     const bsReal = document.getElementById('bs-real');
-    bsReal.innerText = formatCurrency(real);
-    bsReal.className = 'bs-amount ' + (real >= 0 ? 'text-success' : 'text-danger');
+    bsReal.innerText   = formatCurrency(real);
+    bsReal.className   = 'bs-amount ' + (real >= 0 ? 'text-success' : 'text-danger');
     document.getElementById('bs-pending-label').innerText =
-        balancePendingFixed > 0 ? `menos ${ formatCurrency(balancePendingFixed) } pendientes` : 'sin fijos pendientes';
+        balancePendingFixed > 0
+            ? `menos ${formatCurrency(balancePendingFixed)} pendientes`
+            : 'sin fijos pendientes';
 
     const list = document.getElementById('accounts-list');
     list.innerHTML = balanceAccounts.map(acc => {
-        const icon = ACCOUNT_ICONS[acc.type] || '🏦';
-        const color = ACCOUNT_COLORS[acc.type] || '#3b82f6';
+        const icon   = ACCOUNT_ICONS[acc.type]  || '🏦';
+        const color  = ACCOUNT_COLORS[acc.type] || '#3b82f6';
         const signed = acc.type === 'credit' ? -Math.abs(acc.balance) : +acc.balance;
-        const colorCls = signed < 0 ? 'text-danger' : '';
         return `
         <div class="account-card glass-subtle" data-id="${acc.id}">
           <div class="account-card-left">
             <span class="account-icon" style="background:${color}22;color:${color}">${icon}</span>
             <div class="account-info">
               <span class="account-name">${acc.name}</span>
-              <span class="account-type-label">${acc.type === 'credit' ? 'Tarjeta de crédito' : acc.type === 'bank' ? 'Cuenta bancaria' : acc.type === 'cash' ? 'Efectivo' : acc.type === 'invest' ? 'Inversión' : 'Otro'}</span>
+              <span class="account-type-label">${ACCOUNT_TYPE_LABEL[acc.type] || 'Cuenta'}</span>
             </div>
           </div>
           <div class="account-card-right">
-            <span class="account-balance ${colorCls}">${formatCurrency(signed)}</span>
+            <span class="account-balance ${signed < 0 ? 'text-danger' : ''}">${formatCurrency(signed)}</span>
             <div class="account-actions">
               <button class="acc-edit-btn icon-btn-sm" data-id="${acc.id}" title="Editar">✏️</button>
               <button class="acc-del-btn icon-btn-sm" data-id="${acc.id}" title="Eliminar">🗑️</button>
@@ -163,19 +223,35 @@ function balance_renderPanel() {
         btn.addEventListener('click', () => balance_deleteAccount(parseInt(btn.dataset.id))));
 }
 
-function balance_openPanel() {
-    balance_loadAccounts();
-    balance_renderPanel();
-    document.getElementById('balance-panel').classList.remove('hidden');
+// ── Panel open/close ─────────────────────────────────────
+async function balance_openPanel() {
+    const panel = document.getElementById('balance-panel');
+    panel.classList.remove('hidden');
     document.getElementById('add-account-form').classList.add('hidden');
     document.getElementById('acc-add-btn').classList.remove('hidden');
+    document.getElementById('accounts-list').innerHTML =
+        '<p style="text-align:center;color:var(--text-muted);padding:1.5rem">Cargando...</p>';
     balanceEditingId = null;
     document.body.style.overflow = 'hidden';
+    await balance_loadAccounts();
+    balance_updateKpi();
+    balance_renderPanel();
 }
 
 function balance_closePanel() {
     document.getElementById('balance-panel').classList.add('hidden');
     document.body.style.overflow = '';
+}
+
+// ── Edit / Add ───────────────────────────────────────────
+function balance_showForm() {
+    document.getElementById('add-account-form').classList.remove('hidden');
+    document.getElementById('acc-add-btn').classList.add('hidden');
+    // Scroll form into view so save button is visible
+    setTimeout(() => {
+        document.getElementById('add-account-form')
+            .scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }, 120);
 }
 
 function balance_openEdit(id) {
@@ -185,9 +261,7 @@ function balance_openEdit(id) {
     document.getElementById('acc-name').value    = acc.name;
     document.getElementById('acc-balance').value = Math.abs(acc.balance);
     document.getElementById('acc-type').value    = acc.type;
-    document.getElementById('add-account-form').classList.remove('hidden');
-    document.getElementById('acc-add-btn').classList.add('hidden');
-    document.getElementById('acc-name').focus();
+    balance_showForm();
 }
 
 function balance_openAdd() {
@@ -195,43 +269,47 @@ function balance_openAdd() {
     document.getElementById('acc-name').value    = '';
     document.getElementById('acc-balance').value = '';
     document.getElementById('acc-type').value    = 'bank';
-    document.getElementById('add-account-form').classList.remove('hidden');
-    document.getElementById('acc-add-btn').classList.add('hidden');
-    document.getElementById('acc-name').focus();
+    balance_showForm();
 }
 
-function balance_saveAccount() {
+async function balance_saveAccount() {
     const name    = document.getElementById('acc-name').value.trim();
     const balance = parseFloat(document.getElementById('acc-balance').value) || 0;
     const type    = document.getElementById('acc-type').value;
     if (!name) return;
+    const btn = document.getElementById('acc-save-btn');
+    btn.disabled = true; btn.innerText = 'Guardando...';
 
     if (balanceEditingId !== null) {
         const acc = balanceAccounts.find(a => a.id === balanceEditingId);
         if (acc) { acc.name = name; acc.balance = balance; acc.type = type; }
     } else {
-        const newId = Date.now();
-        balanceAccounts.push({ id: newId, name, balance, type });
+        balanceAccounts.push({ id: Date.now(), name, balance, type });
     }
-    balance_saveAccounts();
+    await balance_saveAccounts();
     balance_renderPanel();
     balance_updateKpi();
     document.getElementById('add-account-form').classList.add('hidden');
     document.getElementById('acc-add-btn').classList.remove('hidden');
     balanceEditingId = null;
+    btn.disabled = false; btn.innerText = 'Guardar';
 }
 
-function balance_deleteAccount(id) {
-    if (!confirm('¿Eliminar esta cuenta?')) return;
+async function balance_deleteAccount(id) {
+    if (!confirm('\u00bfEliminar esta cuenta?')) return;
     balanceAccounts = balanceAccounts.filter(a => a.id !== id);
-    balance_saveAccounts();
+    await balance_saveAccounts();
     balance_renderPanel();
     balance_updateKpi();
 }
 
+// ── Init ─────────────────────────────────────────────────
 function balance_init() {
-    balance_loadAccounts();
-    balance_updateKpi();
+    // Load from localStorage cache immediately for instant KPI display
+    try {
+        const raw = localStorage.getItem('finance_accounts_v1');
+        if (raw) { balanceAccounts = JSON.parse(raw); balance_updateKpi(); }
+    } catch {}
 
     document.getElementById('kpi-balance-card')
         .addEventListener('click', balance_openPanel);
@@ -304,6 +382,8 @@ function requestToken() {
                     localStorage.setItem(EXPIRY_KEY, String(Date.now() + 3500 * 1000));
                     hideLoginModal();
                     showTab('dashboard');
+                    // Sync accounts from Sheets now that we have auth
+                    balance_loadAccounts().then(() => balance_updateKpi());
                 } else {
                     showLoginModal();
                 }
@@ -376,6 +456,39 @@ async function getSheetId(ssId, sheetName) {
     return s ? s.properties.sheetId : 0;
 }
 
+async function sheetsClear(ssId, range) {
+    const url = `https://sheets.googleapis.com/v4/spreadsheets/${ssId}/values/${encodeURIComponent(range)}:clear`;
+    const r = await fetch(url, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+    });
+    if (!r.ok) throw { status: r.status, message: await r.text() };
+    return r.json();
+}
+
+// ── Drive API helpers ─────────────────────────────────────
+async function driveFindFolder(name) {
+    const q = encodeURIComponent(`name='${name}' and mimeType='application/vnd.google-apps.folder' and trashed=false`);
+    const url = `https://www.googleapis.com/drive/v3/files?q=${q}&fields=files(id,name)`;
+    const r = await fetch(url, { headers: { Authorization: `Bearer ${accessToken}` } });
+    if (!r.ok) return null;
+    const data = await r.json();
+    return data.files?.[0]?.id || null;
+}
+
+async function driveCreateSpreadsheet(name, parentId) {
+    const body = { name, mimeType: 'application/vnd.google-apps.spreadsheet' };
+    if (parentId) body.parents = [parentId];
+    const url = 'https://www.googleapis.com/drive/v3/files';
+    const r = await fetch(url, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+    });
+    if (!r.ok) throw { status: r.status, message: await r.text() };
+    return (await r.json()).id;
+}
+
 function handleApiError(err, el) {
     console.error('API Error:', err);
     if (err.status === 401 || err.status === 403) {
@@ -430,14 +543,19 @@ function processAndRender(logRows, fixedRows) {
     // Col F (index 5) = Pagado checkbox value (boolean true/false OR string 'TRUE'/'FALSE')
     const fixedExpenses = fixedRows.map((row, i) => {
         const concepto = row[1] || '';
-        const monto    = parseSheetValue(row[2]) || parseSheetValue(row[3]);
+        const g = parseSheetValue(row[2]);  // gasto column
+        const n = parseSheetValue(row[3]);  // ingreso column
+        const tipo = g > 0 ? 'gasto' : 'ingreso';
+        const monto = g || n;
         const isPaid   = parseBool(row[5]);
-        return { rowNum: i + 2, concepto, monto, isPaid };
+        return { rowNum: i + 2, concepto, monto, tipo, isPaid };
     }).filter(e => e.concepto);
 
-    const fixedTotal = fixedExpenses.reduce((s, e) => s + Math.abs(e.monto), 0);
-    const paidCount  = fixedExpenses.filter(e => e.isPaid).length;
-    const pendingFixed = fixedExpenses.filter(e => !e.isPaid).reduce((s, e) => s + Math.abs(e.monto), 0);
+    // KPI: only count GASTO-type, only unpaid (so the number goes down as you pay)
+    const fixedGastos   = fixedExpenses.filter(e => e.tipo === 'gasto');
+    const fixedTotal    = fixedGastos.filter(e => !e.isPaid).reduce((s, e) => s + Math.abs(e.monto), 0);
+    const paidCount     = fixedGastos.filter(e => e.isPaid).length;
+    const pendingFixed  = fixedTotal;   // already only unpaid gastos
 
     // Update balance module with current pending fixed expenses
     balancePendingFixed = pendingFixed;
@@ -445,7 +563,10 @@ function processAndRender(logRows, fixedRows) {
 
     document.getElementById('gasto-hormiga-total').innerText = formatCurrency(hormigaTotal);
     document.getElementById('gastos-fijos-total').innerText  = formatCurrency(fixedTotal);
-    document.getElementById('pago-status').innerText         = `${paidCount}/${fixedExpenses.length} Pagados`;
+    document.getElementById('pago-status').innerText =
+        fixedTotal === 0
+            ? `✅ \u00a1Todo pagado!`
+            : `${paidCount}/${fixedGastos.length} Pagados`;
 
     // Dashboard only shows PENDING (unpaid) fixed expenses
     renderFixedTable(fixedExpenses.filter(e => !e.isPaid));
