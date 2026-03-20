@@ -9,8 +9,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <script type="module" crossorigin src="./assets/index-Ckcmb6kI.js"></script>
-    <link rel="stylesheet" crossorigin href="./assets/index-DrhP4Qjr.css">
+    <script type="module" crossorigin src="./assets/index-DFvDKJrS.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-DHudUJcq.css">
   </head>
   <body>
     <div id="app">
@@ -24,9 +24,14 @@
           </div>
           <div class="action-area">
             <div id="sync-status" class="status-badge">Sincronizado</div>
-            <button id="refresh-btn" class="icon-btn" aria-label="Actualizar">
+          <div style="display: flex; gap: 0.5rem;">
+            <button id="logout-btn" class="icon-btn" aria-label="Cerrar Sesión" title="Cerrar Sesión">
+              <i data-lucide="log-out"></i>
+            </button>
+            <button id="refresh-btn" class="icon-btn" aria-label="Actualizar" title="Actualizar">
               <i data-lucide="refresh-cw"></i>
             </button>
+          </div>
           </div>
         </div>
       </header>
