@@ -1,7 +1,7 @@
 import { createIcons, RefreshCw, AlertTriangle, CalendarCheck, TrendingUp, LogOut } from 'lucide';
 import ApexCharts from 'apexcharts';
 import { initializeApp } from 'firebase/app';
-import { getAuth, GoogleAuthProvider, onAuthStateChanged, signInWithCredential, signInWithPopup, signOut as fbSignOut } from 'firebase/auth';
+import { getAuth, GoogleAuthProvider, getRedirectResult, onAuthStateChanged, signInWithCredential, signInWithPopup, signInWithRedirect, signOut as fbSignOut } from 'firebase/auth';
 import { getFirestore, doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 
 // =============================================
@@ -49,9 +49,34 @@ async function firebase_signInWithPopup() {
         return true;
     } catch (e) {
         _fbUid = null;
+        if (e?.code === 'auth/popup-blocked') {
+            try {
+                const provider = new GoogleAuthProvider();
+                debugUpdate({ auth: 'Popup bloqueado, redirigiendo a Firebase...', uid: '-' });
+                await signInWithRedirect(_fbAuth, provider);
+                return false;
+            } catch (redirectErr) {
+                debugUpdate({ auth: `Redirect Firebase error: ${debugShort(redirectErr.message)}`, uid: '-' });
+                console.warn('[Firebase] redirect sign-in failed:', redirectErr.code || '', redirectErr.message);
+                return false;
+            }
+        }
         debugUpdate({ auth: `Popup Firebase error: ${debugShort(e.message)}`, uid: '-' });
         console.warn('[Firebase] popup sign-in failed:', e.code || '', e.message);
         return false;
+    }
+}
+
+async function firebase_restoreRedirectResult() {
+    try {
+        const result = await getRedirectResult(_fbAuth);
+        if (result?.user?.uid) {
+            _fbUid = result.user.uid;
+            debugUpdate({ auth: 'Firebase redirect OK', uid: _fbUid, token: accessToken ? 'Si' : 'No' });
+        }
+    } catch (e) {
+        debugUpdate({ auth: `Redirect result error: ${debugShort(e.message)}`, uid: '-' });
+        console.warn('[Firebase] getRedirectResult failed:', e.code || '', e.message);
     }
 }
 
@@ -216,8 +241,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // Boot
     if (accessToken) {
         hideLoginModal();
-        // Sign into Firebase with the cached Google token, then load accounts
-        firebase_signIn(accessToken, { allowPopupFallback: false }).then(() => {
+        // Recover Firebase redirect auth (if any), then sign in with cached token.
+        firebase_restoreRedirectResult().then(() => firebase_signIn(accessToken, { allowPopupFallback: false })).then(() => {
             balance_loadAccounts().then(() => balance_updateKpi());
             showTab('dashboard');
         });
