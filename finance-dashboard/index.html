@@ -9,8 +9,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <script type="module" crossorigin src="/musicknobs/finance-dashboard/assets/index-DFvDKJrS.js"></script>
-    <link rel="stylesheet" crossorigin href="/musicknobs/finance-dashboard/assets/index-DHudUJcq.css">
+    <script type="module" crossorigin src="./assets/index-P87JQ6um.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-DrhP4Qjr.css">
   </head>
   <body>
     <div id="app">
@@ -20,18 +20,13 @@
         <div class="header-content">
           <div class="logo-area">
             <h1 class="premium-title">ESTRATÉGIA<span>FINANCIERA</span></h1>
-            <p class="subtitle">Music Knobs | v2.7.0</p>
+            <p class="subtitle">Music Knobs | v2.6.0</p>
           </div>
           <div class="action-area">
             <div id="sync-status" class="status-badge">Sincronizado</div>
-          <div style="display: flex; gap: 0.5rem;">
-            <button id="logout-btn" class="icon-btn" aria-label="Cerrar Sesión" title="Cerrar Sesión">
-              <i data-lucide="log-out"></i>
-            </button>
-            <button id="refresh-btn" class="icon-btn" aria-label="Actualizar" title="Actualizar">
+            <button id="refresh-btn" class="icon-btn" aria-label="Actualizar">
               <i data-lucide="refresh-cw"></i>
             </button>
-          </div>
           </div>
         </div>
       </header>
@@ -321,52 +316,6 @@
         </div>
       </div>
 
-      <!-- ══════════════════════════════════
-           VIEW: DEUDAS (Tab 4)
-           ══════════════════════════════════ -->
-      <div id="view-deudas" class="view">
-        <!-- Balance Card -->
-        <div class="glass balance-card">
-          <p class="balance-label">Total Adeudado</p>
-          <h2 id="d-total" class="balance-amount">$0.00</h2>
-          
-          <button class="btn-notebook" style="margin-top: 15px;" onclick="window.open('https://notebooklm.google.com/notebook/7a39cca5-cdf9-4922-9228-cdb8f523015f', '_blank')">
-            🧠 Analizar Deudas en NotebookLM
-          </button>
-        </div>
-
-        <!-- List -->
-        <div id="d-lista" class="glass movimientos-list" style="margin-top: 1rem;">
-          <div class="loader" style="text-align:center; padding: 20px; color: var(--text-muted);">Cargando deudas...</div>
-        </div>
-
-        <!-- FAB -->
-        <button id="d-btn-add" class="fab-btn" aria-label="Nueva deuda" title="Nueva deuda">＋</button>
-
-        <!-- Bottom Sheet: Add/Edit -->
-        <div id="d-sheet" class="bottom-sheet hidden">
-          <div id="d-sheet-overlay" class="bottom-sheet-overlay"></div>
-          <div class="bottom-sheet-content glass">
-            <div class="sheet-handle"></div>
-            <h4 id="d-sheet-title" class="sheet-title">Nueva Deuda</h4>
-            <input type="hidden" id="d-edit-id">
-            
-            <div class="form-field">
-              <label class="field-label">Concepto</label>
-              <input type="text" id="d-concepto" class="field-input" placeholder="Ej. Tarjeta Mariel">
-            </div>
-            
-            <div class="form-field">
-              <label class="field-label">Monto Adeudado</label>
-              <input type="number" id="d-monto" class="field-input" step="0.01" inputmode="decimal" placeholder="0.00">
-            </div>
-
-            <button id="d-btn-guardar" class="primary-btn" style="width:100%;margin-top:1rem">Guardar</button>
-          </div>
-        </div>
-
-      </div>
-
       <!-- ══ HORMIGA DETAIL PANEL ══ -->
       <div id="hormiga-panel" class="bottom-sheet hidden">
         <div id="hormiga-panel-overlay" class="bottom-sheet-overlay"></div>
@@ -404,10 +353,6 @@
         <button class="tab" id="tab-fijos" data-tab="fijos">
           <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
           <span class="tab-label">Fijos</span>
-        </button>
-        <button class="tab" id="tab-deudas" data-tab="deudas">
-          <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-          <span class="tab-label">Deudas</span>
         </button>
       </nav>
 
