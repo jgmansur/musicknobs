@@ -10,7 +10,7 @@ const SCOPES = 'https://www.googleapis.com/auth/spreadsheets https://www.googlea
 const SPREADSHEET_LOG_ID   = '1pn1bsxj2LaoySXAVUvqfEJY1VR4R_T8NsTOqQnVW5Xw'; // Control de Gastos
 const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // Gastos Fijos
 const SPREADSHEET_DEUDAS_ID = '1dKxhgqazskm15lx0f6FNCA0gpJ7i5glfxkusiH3b0Uk'; // Control de Deudas
-const APP_VERSION  = 'v2.7.0';
+const APP_VERSION  = 'v2.7.1';
 // Bump token keys to force re-auth with the new drive scope
 const TOKEN_KEY    = 'google_access_token_v4';
 const EXPIRY_KEY   = 'google_token_expiry_v4';
@@ -189,6 +189,12 @@ function balance_updateKpi() {
             : 'Toca para ver cuentas';
         lbl.className = 'diff-label ' + (real >= 0 ? 'text-success' : 'text-danger');
     }
+    // Update debt summary card on dashboard
+    const deudaEl = document.getElementById('kpi-deuda-amount');
+    if (deudaEl) {
+        const deudaTotal = deudasState.allItems.reduce((s, i) => s + (i.monto || 0), 0);
+        deudaEl.innerText = deudaTotal > 0 ? `-${formatCurrency(deudaTotal)}` : formatCurrency(0);
+    }
 }
 
 // ── Render ───────────────────────────────────────────────
@@ -339,6 +345,8 @@ function balance_init() {
 
     document.getElementById('kpi-balance-card')
         .addEventListener('click', balance_openPanel);
+    document.getElementById('kpi-deuda-card')
+        ?.addEventListener('click', () => showTab('deudas'));
     document.getElementById('balance-panel-close')
         .addEventListener('click', balance_closePanel);
     document.getElementById('balance-panel-overlay')
@@ -1403,7 +1411,10 @@ function deudas_renderLista() {
         </div>`;
     }).join('');
     
-    if (totalEl) totalEl.innerText = formatCurrency(total);
+    if (totalEl) totalEl.innerText = total > 0 ? `-${formatCurrency(total)}` : formatCurrency(0);
+    // Refresh dashboard deuda card whenever deudas list updates
+    const deudaEl = document.getElementById('kpi-deuda-amount');
+    if (deudaEl) deudaEl.innerText = total > 0 ? `-${formatCurrency(total)}` : formatCurrency(0);
 }
 
 window.deudas_editar = function(id) {
