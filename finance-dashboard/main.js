@@ -8,8 +8,9 @@ const CLIENT_ID = '427918095213-6cbm5sgcfn6o8qosg6qe1r6u9toj66dp.apps.googleuser
 const SCOPES = 'https://www.googleapis.com/auth/spreadsheets';
 const SPREADSHEET_LOG_ID   = '1pn1bsxj2LaoySXAVUvqfEJY1VR4R_T8NsTOqQnVW5Xw'; // Control de Gastos
 const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // Gastos Fijos
-const APP_VERSION = 'v2.2.0';
-const TOKEN_KEY   = 'google_access_token_v3'; // new key — scope changed to read+write
+const APP_VERSION  = 'v2.3.0';
+const TOKEN_KEY    = 'google_access_token_v3'; // scope: read+write
+const EXPIRY_KEY   = 'google_token_expiry_v3';
 
 // =============================================
 // STATE
@@ -21,8 +22,15 @@ let tabInited   = { dashboard: false, gastos: false, fijos: false };
 
 // migrate away from old token keys
 ['google_access_token', 'google_access_token_v2'].forEach(k => localStorage.removeItem(k));
-const _stored = localStorage.getItem(TOKEN_KEY);
-if (_stored && _stored !== 'undefined' && _stored !== 'null') accessToken = _stored;
+// Load stored token only if not expired (tokens live ~3600s, we use 3500s to be safe)
+const _stored  = localStorage.getItem(TOKEN_KEY);
+const _expiry  = parseInt(localStorage.getItem(EXPIRY_KEY) || '0', 10);
+if (_stored && _stored !== 'undefined' && _stored !== 'null' && Date.now() < _expiry) {
+    accessToken = _stored;
+} else {
+    localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem(EXPIRY_KEY);
+}
 
 // =============================================
 // DOM READY
@@ -108,6 +116,8 @@ function requestToken() {
                 if (res?.access_token) {
                     accessToken = res.access_token;
                     localStorage.setItem(TOKEN_KEY, accessToken);
+                    // store expiry: now + 3500s (tokens expire at 3600s)
+                    localStorage.setItem(EXPIRY_KEY, String(Date.now() + 3500 * 1000));
                     hideLoginModal();
                     showTab('dashboard');
                 } else {
@@ -185,7 +195,10 @@ async function getSheetId(ssId, sheetName) {
 function handleApiError(err, el) {
     console.error('API Error:', err);
     if (err.status === 401 || err.status === 403) {
-        localStorage.removeItem(TOKEN_KEY); accessToken = null; showLoginModal();
+        localStorage.removeItem(TOKEN_KEY);
+        localStorage.removeItem(EXPIRY_KEY);
+        accessToken = null;
+        showLoginModal();
     } else if (el) {
         el.innerHTML = '<div class="empty-state text-danger">⚠️ Error al cargar. Intenta de nuevo.</div>';
     }
@@ -200,7 +213,7 @@ async function fetchAndProcess() {
     try {
         const [logData, fixedData] = await Promise.all([
             sheetsGet(SPREADSHEET_LOG_ID, 'Hoja 1!A2:G'),
-            sheetsGet(SPREADSHEET_FIXED_ID, 'Hoja 1!A2:E')
+            sheetsGet(SPREADSHEET_FIXED_ID, 'Hoja 1!A2:F')  // col F = Pagado checkbox
         ]);
         processAndRender(logData, fixedData);
         status.innerText = 'Sincronizado ✓'; status.style.color = 'var(--accent-green)';
@@ -223,18 +236,21 @@ function processAndRender(logRows, fixedRows) {
         const lugar    = (row[1] || '').toLowerCase();
         const monto    = parseFloat(row[3]) || 0;
         const fecha    = row[0] || '';
-        if (hormigaKeywords.some(k => concepto.includes(k) || lugar.includes(k)) && row[4] === 'Gasto') {
+        // FIX: use toLowerCase() so 'Gasto'/'gasto'/'GASTO' all match
+        if (hormigaKeywords.some(k => concepto.includes(k) || lugar.includes(k)) && (row[4] || '').toLowerCase() === 'gasto') {
             hormigaTotal += monto;
             hormigaChartData.push({ x: fecha, y: monto });
         }
     });
 
-    const fixedExpenses = fixedRows.map(row => {
+    // Col F (index 5) = Pagado checkbox value ('TRUE'/'FALSE'/'' from Sheets)
+    const fixedExpenses = fixedRows.map((row, i) => {
         const concepto = row[1] || '';
         const monto    = parseFloat(row[2]) || 0;
-        const isPaid   = logRows.some(lr => (lr[2] || '').toLowerCase().includes(concepto.toLowerCase()) && parseFloat(lr[3]) > 0);
-        return { concepto, monto, isPaid };
-    });
+        const colF     = (row[5] || '').toUpperCase();
+        const isPaid   = colF === 'TRUE';
+        return { rowNum: i + 2, concepto, monto, isPaid };
+    }).filter(e => e.concepto);
 
     const fixedTotal = fixedExpenses.reduce((s, e) => s + e.monto, 0);
     const paidCount  = fixedExpenses.filter(e => e.isPaid).length;
@@ -243,7 +259,8 @@ function processAndRender(logRows, fixedRows) {
     document.getElementById('gastos-fijos-total').innerText  = formatCurrency(fixedTotal);
     document.getElementById('pago-status').innerText         = `${paidCount}/${fixedExpenses.length} Pagados`;
 
-    renderFixedTable(fixedExpenses);
+    // Dashboard only shows PENDING (unpaid) fixed expenses
+    renderFixedTable(fixedExpenses.filter(e => !e.isPaid));
     renderChart(hormigaChartData);
 }
 
@@ -460,7 +477,14 @@ async function gastos_borrarDesdeModal() {
 // =============================================
 // GASTOS FIJOS MODULE
 // =============================================
-const fijosState = { allItems: [], categorias: [], filtrosActivos: [], sheetId: null };
+const fijosState = {
+    allItems: [],
+    categorias: [],
+    filtrosActivos: [],
+    sheetId: null,
+    lastResetMonth: null,  // tracks month of last reset check
+};
+const RESET_MONTH_KEY = 'fijos_last_reset_month';
 
 function fijos_bindEvents() {
     document.getElementById('f-btn-add').addEventListener('click', () => fijos_abrirSheet(null));
@@ -481,17 +505,46 @@ async function fijos_cargarDatos() {
     document.getElementById('f-lista').innerHTML = '<div class="loading-spinner">⏳ Cargando...</div>';
     try {
         const [rows, catRows] = await Promise.all([
-            sheetsGet(SPREADSHEET_FIXED_ID, 'Hoja 1!A2:E').catch(() => []),
+            sheetsGet(SPREADSHEET_FIXED_ID, 'Hoja 1!A2:F').catch(() => []),  // col F = Pagado
             sheetsGet(SPREADSHEET_FIXED_ID, 'Categorias!A:A').catch(() => [])
         ]);
         fijosState.categorias = catRows.map(r => r[0]).filter(Boolean);
         if (!fijosState.categorias.length) fijosState.categorias = ['General'];
 
+        // ── Monthly Reset ──────────────────────────────────────────────
+        // If month changed since last reset, clear all 'Pagado' checkboxes
+        const nowMonth = `${new Date().getFullYear()}-${new Date().getMonth() + 1}`;
+        const storedMonth = localStorage.getItem(RESET_MONTH_KEY);
+        if (storedMonth && storedMonth !== nowMonth && rows.length > 0) {
+            console.log('[fijos] Nuevo mes detectado — reseteando columna Pagado');
+            // Build batch: set F2:F(n) all to FALSE
+            const lastRow = rows.length + 1;
+            await sheetsUpdate(
+                SPREADSHEET_FIXED_ID,
+                `Hoja 1!F2:F${lastRow}`,
+                rows.map(() => ['FALSE'])
+            ).catch(e => console.warn('Reset mensual falló:', e));
+        }
+        // Always store current month
+        localStorage.setItem(RESET_MONTH_KEY, nowMonth);
+        // ─────────────────────────────────────────────────────────────
+
         fijosState.allItems = rows.map((row, i) => {
-            const d = row[0] ? new Date(row[0]) : new Date();
-            const g = parseFloat(row[2]) || 0;
-            const n = parseFloat(row[3]) || 0;
-            return { id: i + 2, fecha: d.toLocaleDateString('es-MX',{day:'numeric',month:'short'}), fechaValue: row[0] || '', concepto: row[1]||'', monto: g || n, tipo: g > 0 ? 'gasto' : 'ingreso', categoria: row[4]||'General' };
+            const d      = row[0] ? new Date(row[0]) : new Date();
+            const g      = parseFloat(row[2]) || 0;
+            const n      = parseFloat(row[3]) || 0;
+            const colF   = (row[5] || '').toUpperCase();
+            const isPaid = colF === 'TRUE';
+            return {
+                id: i + 2,
+                fecha: d.toLocaleDateString('es-MX', { day: 'numeric', month: 'short' }),
+                fechaValue: row[0] || '',
+                concepto:   row[1] || '',
+                monto:      g || n,
+                tipo:       g > 0 ? 'gasto' : 'ingreso',
+                categoria:  row[4] || 'General',
+                isPaid,
+            };
         }).filter(i => i.concepto).reverse();
 
         fijos_generarPills();
@@ -536,17 +589,20 @@ function fijos_renderLista(lista) {
     const fmt = new Intl.NumberFormat('es-MX',{style:'currency',currency:'MXN'});
     if (!lista.length) { el.innerHTML = '<div class="empty-state">Sin movimientos</div>'; return; }
     el.innerHTML = lista.map(item => {
-        const sign = item.tipo==='gasto' ? '-' : '+';
-        const cls  = item.tipo==='gasto' ? 'text-danger' : 'text-success';
-        return `<div class="movimiento-card">
+        const sign     = item.tipo==='gasto' ? '-' : '+';
+        const cls      = item.tipo==='gasto' ? 'text-danger' : 'text-success';
+        const paidCls  = item.isPaid ? 'pagado-btn pagado-btn--paid' : 'pagado-btn pagado-btn--pending';
+        const paidLbl  = item.isPaid ? '✅ Pagado' : '⏳ Pendiente';
+        return `<div class="movimiento-card ${item.isPaid ? 'card-paid' : ''}">
           <div class="mc-left">
             <span class="mc-fecha">${item.fecha}</span>
             <span class="mc-lugar">${item.concepto}</span>
             <span class="mc-concepto">${item.categoria}</span>
           </div>
-          <div class="mc-right" style="align-items:flex-end">
+          <div class="mc-right" style="align-items:flex-end;gap:.5rem">
             <span class="mc-monto ${cls}">${sign}${fmt.format(item.monto)}</span>
-            <div style="display:flex;gap:.4rem;margin-top:.4rem">
+            <button class="${paidCls}" onclick="fijos_togglePagado(${item.id}, ${item.isPaid})">${paidLbl}</button>
+            <div style="display:flex;gap:.4rem;margin-top:.2rem">
               <button class="mini-btn" onclick="fijos_editar(${item.id})">✏️</button>
               <button class="mini-btn mini-btn-danger" onclick="fijos_borrar(${item.id})">🗑️</button>
             </div>
@@ -569,6 +625,49 @@ window.fijos_borrar = async function(id) {
         await sheetsDeleteRow(SPREADSHEET_FIXED_ID, fijosState.sheetId, id - 1);
         fijos_cargarDatos();
     } catch(e) { console.error(e); el.innerHTML = '<div class="empty-state text-danger">❌ Error al borrar</div>'; }
+};
+
+/**
+ * Toggle Pagado status in Sheets + auto-post to Control de Gastos when paid.
+ * @param {number} id   - The row number in the spreadsheet (1-based)
+ * @param {boolean} wasPaid - Current state before toggle
+ */
+window.fijos_togglePagado = async function(id, wasPaid) {
+    const item = fijosState.allItems.find(i => i.id === id);
+    if (!item) return;
+    const nowPaid = !wasPaid;
+
+    // Optimistic UI update
+    item.isPaid = nowPaid;
+    fijos_aplicarFiltros();
+
+    try {
+        // 1) Write TRUE/FALSE to the Pagado column (F) in Gastos Fijos
+        await sheetsUpdate(SPREADSHEET_FIXED_ID, `Hoja 1!F${id}:F${id}`, [[nowPaid ? 'TRUE' : 'FALSE']]);
+
+        // 2) If marking as PAID → auto-append entry in Control de Gastos
+        if (nowPaid) {
+            const fecha   = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD
+            const lugar   = 'Gasto Fijo';
+            const concepto= item.concepto;
+            const monto   = item.monto;
+            const tipo    = item.tipo === 'gasto' ? 'Gasto' : 'Ingreso';
+            const forma   = item.categoria;
+            await sheetsAppend(
+                SPREADSHEET_LOG_ID,
+                'Hoja 1!A:G',
+                [[fecha, lugar, concepto, monto, tipo, forma, '']]
+            );
+            // Force reload Control de Gastos data on next visit
+            tabInited.gastos = false;
+        }
+    } catch(e) {
+        console.error('Error toggling Pagado:', e);
+        // Revert optimistic update
+        item.isPaid = wasPaid;
+        fijos_aplicarFiltros();
+        handleApiError(e, null);
+    }
 };
 
 function fijos_abrirSheet(item) {
@@ -614,9 +713,11 @@ async function fijos_guardar() {
     btn.disabled = true; btn.innerText = 'Guardando...';
     try {
         if (editId) {
+            // preserve col F (Pagado) when editing — only update A:E
             await sheetsUpdate(SPREADSHEET_FIXED_ID, `Hoja 1!A${editId}:E${editId}`, [[fecha, concepto, gasto, ingreso, catStr]]);
         } else {
-            await sheetsAppend(SPREADSHEET_FIXED_ID, 'Hoja 1!A:E', [[fecha, concepto, gasto, ingreso, catStr]]);
+            // new rows start as not paid (FALSE in col F)
+            await sheetsAppend(SPREADSHEET_FIXED_ID, 'Hoja 1!A:F', [[fecha, concepto, gasto, ingreso, catStr, 'FALSE']]);
         }
         fijos_cerrarSheet();
         fijos_cargarDatos();
