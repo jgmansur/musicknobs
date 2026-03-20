@@ -13,7 +13,7 @@ const SCOPES = 'https://www.googleapis.com/auth/spreadsheets https://www.googlea
 const SPREADSHEET_LOG_ID   = '1pn1bsxj2LaoySXAVUvqfEJY1VR4R_T8NsTOqQnVW5Xw'; // Control de Gastos
 const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // Gastos Fijos
 const SPREADSHEET_DEUDAS_ID = '1dKxhgqazskm15lx0f6FNCA0gpJ7i5glfxkusiH3b0Uk'; // Control de Deudas
-const APP_VERSION  = 'v3.5.3';
+const APP_VERSION  = 'v3.5.4';
 // Bump token keys to force re-auth with the new drive scope
 const TOKEN_KEY    = 'google_access_token_v4';
 const EXPIRY_KEY   = 'google_token_expiry_v4';
@@ -268,6 +268,7 @@ const ACCOUNT_TYPE_LABEL = { bank:'Cuenta bancaria', credit:'Tarjeta de crédito
 const FX_CACHE_KEY = 'usd_mxn_rate_cache_v1';
 const BTC_CACHE_KEY = 'btc_mxn_rate_cache_v1';
 const INVEST_RATE_CACHE_KEY = 'investment_rate_cache_v1';
+const DEBT_VISIBLE_KEY = 'debt_visible_in_balance_v1';
 
 let balanceUsdMxnRate = (() => {
     try {
@@ -306,6 +307,7 @@ let balanceInvestRates = (() => {
     }
 })();
 let balanceInvestFetchInFlight = false;
+let debtVisibleInBalance = localStorage.getItem(DEBT_VISIBLE_KEY) !== '0';
 
 function balance_normalizeAccount(a = {}) {
     const currency = (a.currency || 'MXN').toString().toUpperCase();
@@ -728,7 +730,8 @@ function balance_getTotal() {
             }
             return sum + (a.balance < 0 ? -balanceMxn : balanceMxn);
         }, 0);
-    return base - balance_getPaidFixedDeduction() + balance_getLogNetAdjustment();
+    const debtImpact = debtVisibleInBalance ? deudas_getTotalAmount() : 0;
+    return base - balance_getPaidFixedDeduction() + balance_getLogNetAdjustment() - debtImpact;
 }
 
 function balance_getInvestmentSummary() {
@@ -784,11 +787,7 @@ function balance_updateKpi() {
         balance_renderInvestmentPanel();
     }
     // Update debt summary card on dashboard
-    const deudaEl = document.getElementById('kpi-deuda-amount');
-    if (deudaEl) {
-        const deudaTotal = deudasState.allItems.reduce((s, i) => s + (i.monto || 0), 0);
-        deudaEl.innerText = deudaTotal > 0 ? `-${formatCurrency(deudaTotal)}` : formatCurrency(0);
-    }
+    deudas_updateKpiCard();
 }
 
 // ── Render ───────────────────────────────────────────────
@@ -1092,7 +1091,7 @@ function balance_init() {
     document.getElementById('kpi-balance-card')
         .addEventListener('click', balance_openPanel);
     document.getElementById('kpi-deuda-card')
-        ?.addEventListener('click', () => showTab('deudas'));
+        ?.addEventListener('click', deudas_toggleVisibilityInBalance);
     document.getElementById('kpi-invest-card')
         ?.addEventListener('click', balance_openInvestPanel);
     document.getElementById('balance-panel-close')
@@ -1132,6 +1131,8 @@ function balance_init() {
             document.getElementById('acc-add-btn').classList.remove('hidden');
             balanceEditingId = null;
         });
+    deudas_updateKpiCard();
+    deudas_ensureLoaded();
     balance_refreshCreditFields();
 }
 
@@ -2393,8 +2394,47 @@ function showToast(msg, duration = 3000) {
 // =============================================
 let deudasState = {
     allItems: [],
-    sheetId: null
+    sheetId: null,
+    loaded: false,
+    loading: false,
 };
+
+function deudas_getTotalAmount() {
+    return deudasState.allItems.reduce((s, i) => s + (i.monto || 0), 0);
+}
+
+function deudas_updateKpiCard() {
+    const deudaEl = document.getElementById('kpi-deuda-amount');
+    const statusEl = document.getElementById('kpi-deuda-status');
+    const cardEl = document.getElementById('kpi-deuda-card');
+    if (!deudaEl) return;
+    const deudaTotal = deudas_getTotalAmount();
+    deudaEl.innerText = deudaTotal > 0 ? `-${formatCurrency(deudaTotal)}` : formatCurrency(0);
+    deudaEl.classList.toggle('kpi-debt-muted', !debtVisibleInBalance);
+    if (statusEl) {
+        statusEl.innerText = debtVisibleInBalance ? '👁 Deudas visibles en balance' : '🙈 Deudas ocultas en balance';
+        statusEl.className = `diff-label ${debtVisibleInBalance ? 'text-danger' : ''}`;
+    }
+    if (cardEl) cardEl.title = debtVisibleInBalance ? 'Click para ocultar de balance' : 'Click para incluir en balance';
+}
+
+async function deudas_ensureLoaded() {
+    if (!accessToken || deudasState.loaded || deudasState.loading) return;
+    deudasState.loading = true;
+    try {
+        await deudas_cargarDatos();
+    } finally {
+        deudasState.loading = false;
+    }
+}
+
+async function deudas_toggleVisibilityInBalance() {
+    debtVisibleInBalance = !debtVisibleInBalance;
+    localStorage.setItem(DEBT_VISIBLE_KEY, debtVisibleInBalance ? '1' : '0');
+    await deudas_ensureLoaded();
+    deudas_updateKpiCard();
+    balance_updateKpi();
+}
 
 function deudas_bindEvents() {
     document.getElementById('d-btn-add')?.addEventListener('click', () => deudas_abrirSheet(null));
@@ -2440,6 +2480,7 @@ async function deudas_cargarDatos() {
             concepto: row[0] || '',
             monto: parseSheetValue(row[1])
         })).filter(i => i.concepto);
+        deudasState.loaded = true;
         
         deudas_renderLista();
     } catch(e) {
@@ -2476,9 +2517,8 @@ function deudas_renderLista() {
     }).join('');
     
     if (totalEl) totalEl.innerText = total > 0 ? `-${formatCurrency(total)}` : formatCurrency(0);
-    // Refresh dashboard deuda card whenever deudas list updates
-    const deudaEl = document.getElementById('kpi-deuda-amount');
-    if (deudaEl) deudaEl.innerText = total > 0 ? `-${formatCurrency(total)}` : formatCurrency(0);
+    deudas_updateKpiCard();
+    balance_updateKpi();
 }
 
 window.deudas_editar = function(id) {
