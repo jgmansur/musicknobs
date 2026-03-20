@@ -585,10 +585,10 @@ select.field-input { background-image: url("data:image/svg+xml,%3Csvg xmlns='htt
   font-size:1.2rem;
 }
 .account-info { display:flex; flex-direction:column; gap:.15rem; }
-.account-name { font-size:.95rem; font-weight:600; }
-.account-type-label { font-size:.68rem; color:var(--text-muted); }
+.account-name { font-size:.89rem; font-weight:600; }
+.account-type-label { font-size:.62rem; color:var(--text-muted); }
 .account-card-right { display:flex; align-items:center; gap:.6rem; }
-.account-balance { font-size:1rem; font-weight:700; }
+.account-balance { font-size:.92rem; font-weight:700; }
 .account-actions { display:flex; gap:.2rem; }
 
 /* Add account form */
@@ -716,4 +716,3 @@ select.field-input { background-image: url("data:image/svg+xml,%3Csvg xmlns='htt
   height: 100%; background: var(--primary);
   border-radius: 99px; transition: width 0.4s ease-out;
 }
-

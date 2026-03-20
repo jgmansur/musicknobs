@@ -300,8 +300,22 @@ const DEFAULT_ACCOUNTS = [
 const ACCOUNT_ICONS  = { bank:'🏦', credit:'💳', cash:'💵', invest:'📈', other:'🌎' };
 const ACCOUNT_COLORS = { bank:'#3b82f6', credit:'#ef4444', cash:'#22c55e', invest:'#a855f7', other:'#f59e0b' };
 const ACCOUNT_TYPE_LABEL = { bank:'Cuenta bancaria', credit:'Tarjeta de crédito', cash:'Efectivo', invest:'Inversión', other:'Otro' };
+const FX_CACHE_KEY = 'usd_mxn_rate_cache_v1';
+
+let balanceUsdMxnRate = (() => {
+    try {
+        const raw = localStorage.getItem(FX_CACHE_KEY);
+        if (!raw) return null;
+        const parsed = JSON.parse(raw);
+        return Number(parsed?.rate) || null;
+    } catch {
+        return null;
+    }
+})();
+let balanceFxFetchInFlight = false;
 
 function balance_normalizeAccount(a = {}) {
+    const currency = (a.currency || 'MXN').toString().toUpperCase();
     return {
         id: a.id || Date.now(),
         name: a.name || '',
@@ -310,7 +324,47 @@ function balance_normalizeAccount(a = {}) {
         hidden: !!a.hidden,
         creditLimit: typeof a.creditLimit === 'number' ? a.creditLimit : parseSheetValue(a.creditLimit),
         creditLimitVisible: !!a.creditLimitVisible,
+        currency: currency === 'USD' ? 'USD' : 'MXN',
     };
+}
+
+function balance_convertToMxn(amount, currency) {
+    if ((currency || 'MXN') === 'USD') {
+        return amount * (balanceUsdMxnRate || 1);
+    }
+    return amount;
+}
+
+async function balance_refreshUsdMxnRate(force = false) {
+    const needsRate = balanceAccounts.some(a => a.currency === 'USD');
+    if (!needsRate && !force) return;
+    if (balanceFxFetchInFlight) return;
+    balanceFxFetchInFlight = true;
+    try {
+        const today = new Date().toISOString().slice(0, 10);
+        const raw = localStorage.getItem(FX_CACHE_KEY);
+        if (!force && raw) {
+            const parsed = JSON.parse(raw);
+            if (parsed?.date === today && Number(parsed?.rate) > 0) {
+                balanceUsdMxnRate = Number(parsed.rate);
+                return;
+            }
+        }
+        const res = await fetch('https://open.er-api.com/v6/latest/USD');
+        if (!res.ok) return;
+        const data = await res.json();
+        const rate = Number(data?.rates?.MXN);
+        if (!rate || Number.isNaN(rate)) return;
+        balanceUsdMxnRate = rate;
+        localStorage.setItem(FX_CACHE_KEY, JSON.stringify({ date: today, rate }));
+        balance_updateKpi();
+        const panel = document.getElementById('balance-panel');
+        if (panel && !panel.classList.contains('hidden')) balance_renderPanel();
+    } catch (_) {
+        // Keep cached rate if available
+    } finally {
+        balanceFxFetchInFlight = false;
+    }
 }
 
 let balanceAccounts   = [];
@@ -421,7 +475,7 @@ async function balance_getOrCreateSheet() {
     // Create the spreadsheet (in Jay App folder if found, else root Drive)
     sheetId = await driveCreateSpreadsheet('Finance Dashboard - Cuentas', folderId);
     // Initialize header row
-    await sheetsUpdate(sheetId, 'A1:G1', [['ID', 'Nombre', 'Saldo', 'Tipo', 'Oculto', 'LimiteCredito', 'LimiteVisible']]);
+    await sheetsUpdate(sheetId, 'A1:H1', [['ID', 'Nombre', 'Saldo', 'Tipo', 'Oculto', 'LimiteCredito', 'LimiteVisible', 'Moneda']]);
     localStorage.setItem(ACCOUNTS_SHEET_KEY, sheetId);
     return sheetId;
 }
@@ -433,6 +487,7 @@ async function balance_loadAccounts() {
             const raw = localStorage.getItem('finance_accounts_v1');
             balanceAccounts = raw ? JSON.parse(raw).map(balance_normalizeAccount) : DEFAULT_ACCOUNTS.map(a => balance_normalizeAccount(a));
         } catch { balanceAccounts = DEFAULT_ACCOUNTS.map(a => balance_normalizeAccount(a)); }
+        balance_refreshUsdMxnRate();
         debugUpdate({ load: `localStorage (${balanceAccounts.length})`, token: 'No' });
         return;
     }
@@ -446,6 +501,7 @@ async function balance_loadAccounts() {
                 balanceAccounts = (data.accounts || []).map(balance_normalizeAccount);
                 // Update localStorage cache
                 localStorage.setItem('finance_accounts_v1', JSON.stringify(balanceAccounts));
+                balance_refreshUsdMxnRate();
                 debugUpdate({ load: `Firestore (${balanceAccounts.length})`, uid: _fbUid || '-' });
                 return;
             }
@@ -458,7 +514,7 @@ async function balance_loadAccounts() {
     // ── 2. Fallback: Google Sheets ──────────────────────────────
     try {
         const sid  = await balance_getOrCreateSheet();
-        const rows = await sheetsGet(sid, 'A2:G');
+        const rows = await sheetsGet(sid, 'A2:H');
         if (!rows.length) {
             balanceAccounts = DEFAULT_ACCOUNTS.map(a => balance_normalizeAccount(a));
             await balance_writeToSheet(sid); // seed defaults
@@ -473,9 +529,11 @@ async function balance_loadAccounts() {
                     hidden:  (r[4] || '').toString().toUpperCase() === 'TRUE',
                     creditLimit: typeof r[5] === 'number' ? r[5] : parseSheetValue(r[5]),
                     creditLimitVisible: (r[6] || '').toString().toUpperCase() === 'TRUE',
+                    currency: (r[7] || 'MXN').toString().toUpperCase(),
                 }));
         }
         debugUpdate({ load: `Sheets (${balanceAccounts.length})` });
+        balance_refreshUsdMxnRate();
         // Migrate to Firestore now that we have the data
         if (_fbUid) balance_saveToFirestore().catch(console.warn);
     } catch (err) {
@@ -487,9 +545,9 @@ async function balance_loadAccounts() {
 }
 
 async function balance_writeToSheet(sheetId) {
-    await sheetsClear(sheetId, 'A2:G');
+    await sheetsClear(sheetId, 'A2:H');
     if (balanceAccounts.length) {
-        await sheetsUpdate(sheetId, `A2:G${1 + balanceAccounts.length}`,
+        await sheetsUpdate(sheetId, `A2:H${1 + balanceAccounts.length}`,
             balanceAccounts.map(a => [
                 a.id,
                 a.name,
@@ -498,6 +556,7 @@ async function balance_writeToSheet(sheetId) {
                 a.hidden ? 'TRUE' : 'FALSE',
                 Math.abs(a.creditLimit || 0),
                 a.creditLimitVisible ? 'TRUE' : 'FALSE',
+                a.currency || 'MXN',
             ]));
     }
 }
@@ -514,6 +573,7 @@ async function balance_saveToFirestore() {
             hidden:  !!a.hidden,
             creditLimit: Math.abs(a.creditLimit || 0),
             creditLimitVisible: !!a.creditLimitVisible,
+            currency: a.currency || 'MXN',
         })),
         lastUpdated: serverTimestamp(),
     });
@@ -556,12 +616,15 @@ function balance_getTotal() {
     const base = balanceAccounts
         .filter(a => !a.hidden)
         .reduce((sum, a) => {
+            const balanceMxn = balance_convertToMxn(Math.abs(a.balance || 0), a.currency);
             if (a.type === 'credit') {
-                const deuda = -Math.abs(a.balance);
-                const limiteVisible = a.creditLimitVisible ? Math.abs(a.creditLimit || 0) : 0;
+                const deuda = -balanceMxn;
+                const limiteVisible = a.creditLimitVisible
+                    ? balance_convertToMxn(Math.abs(a.creditLimit || 0), a.currency)
+                    : 0;
                 return sum + deuda + limiteVisible;
             }
-            return sum + (+a.balance || 0);
+            return sum + (a.balance < 0 ? -balanceMxn : balanceMxn);
         }, 0);
     return base - balance_getPaidFixedDeduction() + balance_getLogNetAdjustment();
 }
@@ -614,9 +677,11 @@ function balance_renderPanel() {
         const icon   = ACCOUNT_ICONS[acc.type]  || '🏦';
         const color  = acc.hidden ? '#475569' : (ACCOUNT_COLORS[acc.type] || '#3b82f6');
         const signed = acc.type === 'credit' ? -Math.abs(acc.balance) : +acc.balance;
+        const signedMxn = balance_convertToMxn(Math.abs(signed), acc.currency) * (signed < 0 ? -1 : 1);
         const creditLimit = Math.abs(acc.creditLimit || 0);
+        const creditLimitMxn = balance_convertToMxn(creditLimit, acc.currency);
         const creditBadge = acc.type === 'credit'
-            ? `<span class="account-type-label">Limite: ${acc.creditLimitVisible ? `+${formatCurrency(creditLimit)}` : 'oculto'}</span>`
+            ? `<span class="account-type-label">Limite: ${acc.creditLimitVisible ? `+${formatCurrency(creditLimitMxn)}` : 'oculto'}${acc.currency === 'USD' ? ` (USD ${creditLimit.toFixed(2)})` : ''}</span>`
             : '';
         const hiddenClass = acc.hidden ? 'account-card--hidden' : '';
         const eyeIcon = acc.hidden ? '👁️' : '👁';
@@ -629,12 +694,12 @@ function balance_renderPanel() {
             <span class="account-icon" style="background:${color}22;color:${color}">${icon}</span>
             <div class="account-info">
               <span class="account-name">${acc.name}${acc.hidden ? ' <span class="acc-hidden-badge">AHORRO</span>' : ''}</span>
-              <span class="account-type-label">${ACCOUNT_TYPE_LABEL[acc.type] || 'Cuenta'}</span>
+              <span class="account-type-label">${ACCOUNT_TYPE_LABEL[acc.type] || 'Cuenta'} · ${acc.currency || 'MXN'}</span>
               ${creditBadge}
             </div>
           </div>
           <div class="account-card-right">
-            <span class="account-balance ${signed < 0 ? 'text-danger' : ''} ${acc.hidden ? 'acc-balance-hidden' : ''}">${formatCurrency(signed)}</span>
+            <span class="account-balance ${signedMxn < 0 ? 'text-danger' : ''} ${acc.hidden ? 'acc-balance-hidden' : ''}">${formatCurrency(signedMxn)}</span>
             <div class="account-actions">
               <button class="acc-toggle-btn icon-btn-sm" data-id="${acc.id}" title="${eyeTitle}">${eyeIcon}</button>
               ${acc.type === 'credit' ? `<button class="acc-credit-limit-btn icon-btn-sm" data-id="${acc.id}" title="${creditEyeTitle}">${creditEyeIcon}</button>` : ''}
@@ -666,6 +731,7 @@ async function balance_openPanel() {
     balanceEditingId = null;
     document.body.style.overflow = 'hidden';
     await balance_loadAccounts();
+    await balance_refreshUsdMxnRate();
     balance_updateKpi();
     balance_renderPanel();
 }
@@ -693,6 +759,7 @@ function balance_openEdit(id) {
     document.getElementById('acc-name').value    = acc.name;
     document.getElementById('acc-balance').value = Math.abs(acc.balance);
     document.getElementById('acc-type').value    = acc.type;
+    document.getElementById('acc-currency').value = acc.currency || 'MXN';
     document.getElementById('acc-credit-limit').value = Math.abs(acc.creditLimit || 0);
     document.getElementById('acc-credit-visible').value = acc.creditLimitVisible ? '1' : '0';
     balance_refreshCreditFields();
@@ -704,6 +771,7 @@ function balance_openAdd() {
     document.getElementById('acc-name').value    = '';
     document.getElementById('acc-balance').value = '';
     document.getElementById('acc-type').value    = 'bank';
+    document.getElementById('acc-currency').value = 'MXN';
     document.getElementById('acc-credit-limit').value = '';
     document.getElementById('acc-credit-visible').value = '0';
     balance_refreshCreditFields();
@@ -732,6 +800,7 @@ async function balance_saveAccount() {
     const name    = document.getElementById('acc-name').value.trim();
     const balance = parseFloat(document.getElementById('acc-balance').value) || 0;
     const type    = document.getElementById('acc-type').value;
+    const currency = document.getElementById('acc-currency').value === 'USD' ? 'USD' : 'MXN';
     const creditLimit = Math.abs(parseFloat(document.getElementById('acc-credit-limit').value) || 0);
     const creditLimitVisible = document.getElementById('acc-credit-visible').value === '1';
     if (!name) return;
@@ -744,6 +813,7 @@ async function balance_saveAccount() {
             acc.name = name;
             acc.balance = balance;
             acc.type = type;
+            acc.currency = currency;
             acc.creditLimit = type === 'credit' ? creditLimit : 0;
             acc.creditLimitVisible = type === 'credit' ? creditLimitVisible : false;
         }
@@ -753,6 +823,7 @@ async function balance_saveAccount() {
             name,
             balance,
             type,
+            currency,
             hidden: false,
             creditLimit: type === 'credit' ? creditLimit : 0,
             creditLimitVisible: type === 'credit' ? creditLimitVisible : false,
@@ -760,6 +831,7 @@ async function balance_saveAccount() {
     }
     balance_resetDynamicAnchors();
     await balance_saveAccounts();
+    await balance_refreshUsdMxnRate(true);
     balance_renderPanel();
     balance_updateKpi();
     document.getElementById('add-account-form').classList.add('hidden');
@@ -784,6 +856,7 @@ function balance_init() {
         const raw = localStorage.getItem('finance_accounts_v1');
         if (raw) { balanceAccounts = JSON.parse(raw).map(balance_normalizeAccount); balance_updateKpi(); }
     } catch {}
+    balance_refreshUsdMxnRate();
 
     document.getElementById('kpi-balance-card')
         .addEventListener('click', balance_openPanel);
@@ -799,6 +872,8 @@ function balance_init() {
         .addEventListener('click', balance_saveAccount);
     document.getElementById('acc-type')
         .addEventListener('change', balance_refreshCreditFields);
+    document.getElementById('acc-currency')
+        .addEventListener('change', () => balance_refreshUsdMxnRate(true));
     document.getElementById('acc-credit-visible-btn')
         .addEventListener('click', () => {
             const input = document.getElementById('acc-credit-visible');
