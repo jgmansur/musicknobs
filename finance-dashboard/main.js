@@ -13,7 +13,7 @@ const SCOPES = 'https://www.googleapis.com/auth/spreadsheets https://www.googlea
 const SPREADSHEET_LOG_ID   = '1pn1bsxj2LaoySXAVUvqfEJY1VR4R_T8NsTOqQnVW5Xw'; // Control de Gastos
 const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // Gastos Fijos
 const SPREADSHEET_DEUDAS_ID = '1dKxhgqazskm15lx0f6FNCA0gpJ7i5glfxkusiH3b0Uk'; // Control de Deudas
-const APP_VERSION  = 'v3.5.5';
+const APP_VERSION  = 'v3.5.6';
 // Bump token keys to force re-auth with the new drive scope
 const TOKEN_KEY    = 'google_access_token_v4';
 const EXPIRY_KEY   = 'google_token_expiry_v4';
@@ -2052,6 +2052,7 @@ async function fijos_cargarDatos() {
         }).filter(i => i.concepto).reverse();
 
         fijos_generarPills();
+        fijos_syncDashboardStats();
         fijos_aplicarFiltros();
     } catch(e) { handleApiError(e, document.getElementById('f-lista')); }
 }
@@ -2070,6 +2071,29 @@ function fijos_generarPills() {
     document.getElementById('f-cat-checks').innerHTML = pills('f-cat-chk');
     document.getElementById('f-filter-checks').innerHTML = pills('f-filter-chk');
     fijosState.filtrosActivos.forEach(c => { const el = document.querySelector(`.f-filter-chk[value="${c}"]`); if (el) el.checked = true; });
+}
+
+function fijos_syncDashboardStats() {
+    const fixedGastos = fijosState.allItems.filter(i => i.tipo === 'gasto');
+    const pendingFixed = fixedGastos.reduce((s, i) => {
+        const unpaidParts = Math.max(0, (i.pagosMes || 1) - (i.pagosHechos || 0));
+        const partAmount = Math.abs(i.monto || 0) / (i.pagosMes || 1);
+        return s + (unpaidParts * partAmount);
+    }, 0);
+    const paidFixed = fixedGastos.reduce((s, i) => {
+        const paidParts = Math.max(0, i.pagosHechos || 0);
+        const partAmount = Math.abs(i.monto || 0) / (i.pagosMes || 1);
+        return s + (paidParts * partAmount);
+    }, 0);
+    const paidCount = fixedGastos.filter(i => (i.pagosHechos || 0) >= (i.pagosMes || 1)).length;
+
+    const totalEl = document.getElementById('gastos-fijos-total');
+    const statusEl = document.getElementById('pago-status');
+    if (totalEl) totalEl.innerText = formatCurrency(pendingFixed);
+    if (statusEl) statusEl.innerText = `${paidCount}/${fixedGastos.length} Pagados`;
+
+    balancePendingFixed = pendingFixed;
+    balancePaidFixedTotal = paidFixed;
 }
 
 function fijos_aplicarFiltros() {
@@ -2169,6 +2193,7 @@ window.fijos_togglePagoPart = async function(id, partIndex) {
     item.pagosHechos = item.pagosEstado.filter(Boolean).length;
     item.isPaid = item.pagosHechos >= item.pagosMes;
     balanceLogNetTotal += nowPartPaid ? signedPartAmount : -signedPartAmount;
+    fijos_syncDashboardStats();
     balance_updateKpi();
     fijos_aplicarFiltros();
 
@@ -2224,6 +2249,7 @@ window.fijos_togglePagoPart = async function(id, partIndex) {
         item.pagosHechos = item.pagosEstado.filter(Boolean).length;
         item.isPaid = wasPaid;
         balanceLogNetTotal += wasPartPaid ? signedPartAmount : -signedPartAmount;
+        fijos_syncDashboardStats();
         balance_updateKpi();
         fijos_aplicarFiltros();
         handleApiError(e, null);
