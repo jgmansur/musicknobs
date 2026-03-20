@@ -8,7 +8,7 @@ const CLIENT_ID = '427918095213-6cbm5sgcfn6o8qosg6qe1r6u9toj66dp.apps.googleuser
 const SCOPES = 'https://www.googleapis.com/auth/spreadsheets';
 const SPREADSHEET_LOG_ID   = '1pn1bsxj2LaoySXAVUvqfEJY1VR4R_T8NsTOqQnVW5Xw'; // Control de Gastos
 const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // Gastos Fijos
-const APP_VERSION  = 'v2.3.6';
+const APP_VERSION  = 'v2.4.0';
 const TOKEN_KEY    = 'google_access_token_v3'; // scope: read+write
 const EXPIRY_KEY   = 'google_token_expiry_v3';
 
@@ -58,6 +58,9 @@ document.addEventListener('DOMContentLoaded', () => {
     gastos_bindEvents();
     fijos_bindEvents();
 
+    // Balance panel
+    balance_init();
+
     // Boot
     if (accessToken) {
         hideLoginModal();
@@ -66,6 +69,187 @@ document.addEventListener('DOMContentLoaded', () => {
         showLoginModal();
     }
 });
+
+// =============================================
+// BALANCE MODULE
+// =============================================
+const ACCOUNTS_KEY = 'finance_accounts_v1';
+const DEFAULT_ACCOUNTS = [
+    { id: 1, name: 'Santander',         balance: 0, type: 'bank'   },
+    { id: 2, name: 'BBVA',              balance: 0, type: 'bank'   },
+    { id: 3, name: 'Bank of America',   balance: 0, type: 'other'  },
+    { id: 4, name: 'Tarjeta de Crédito',balance: 0, type: 'credit' },
+];
+
+const ACCOUNT_ICONS = { bank:'🏦', credit:'💳', cash:'💵', invest:'📈', other:'🌎' };
+const ACCOUNT_COLORS = { bank:'#3b82f6', credit:'#ef4444', cash:'#22c55e', invest:'#a855f7', other:'#f59e0b' };
+
+let balanceAccounts = [];
+let balanceEditingId = null;
+// Pending fixed expense total (populated when dashboard loads)
+let balancePendingFixed = 0;
+
+function balance_loadAccounts() {
+    try {
+        const raw = localStorage.getItem(ACCOUNTS_KEY);
+        balanceAccounts = raw ? JSON.parse(raw) : DEFAULT_ACCOUNTS.map(a => ({ ...a }));
+    } catch { balanceAccounts = DEFAULT_ACCOUNTS.map(a => ({ ...a })); }
+}
+
+function balance_saveAccounts() {
+    localStorage.setItem(ACCOUNTS_KEY, JSON.stringify(balanceAccounts));
+}
+
+function balance_getTotal() {
+    return balanceAccounts.reduce((sum, a) => {
+        return sum + (a.type === 'credit' ? -Math.abs(a.balance) : +a.balance);
+    }, 0);
+}
+
+function balance_updateKpi() {
+    balance_loadAccounts();
+    const total = balance_getTotal();
+    const real  = total - balancePendingFixed;
+    const el = document.getElementById('balance-total');
+    const lbl = document.getElementById('balance-real-label');
+    if (el) el.innerText = formatCurrency(total);
+    if (lbl) {
+        lbl.innerText = balancePendingFixed > 0
+            ? `Real: ${formatCurrency(real)} (pendientes: ${formatCurrency(balancePendingFixed)})`
+            : 'Toca para ver cuentas';
+        lbl.className = 'diff-label ' + (real >= 0 ? 'text-success' : 'text-danger');
+    }
+}
+
+function balance_renderPanel() {
+    const total   = balance_getTotal();
+    const real    = total - balancePendingFixed;
+
+    document.getElementById('bs-total').innerText = formatCurrency(total);
+    const bsReal = document.getElementById('bs-real');
+    bsReal.innerText = formatCurrency(real);
+    bsReal.className = 'bs-amount ' + (real >= 0 ? 'text-success' : 'text-danger');
+    document.getElementById('bs-pending-label').innerText =
+        balancePendingFixed > 0 ? `menos ${ formatCurrency(balancePendingFixed) } pendientes` : 'sin fijos pendientes';
+
+    const list = document.getElementById('accounts-list');
+    list.innerHTML = balanceAccounts.map(acc => {
+        const icon = ACCOUNT_ICONS[acc.type] || '🏦';
+        const color = ACCOUNT_COLORS[acc.type] || '#3b82f6';
+        const signed = acc.type === 'credit' ? -Math.abs(acc.balance) : +acc.balance;
+        const colorCls = signed < 0 ? 'text-danger' : '';
+        return `
+        <div class="account-card glass-subtle" data-id="${acc.id}">
+          <div class="account-card-left">
+            <span class="account-icon" style="background:${color}22;color:${color}">${icon}</span>
+            <div class="account-info">
+              <span class="account-name">${acc.name}</span>
+              <span class="account-type-label">${acc.type === 'credit' ? 'Tarjeta de crédito' : acc.type === 'bank' ? 'Cuenta bancaria' : acc.type === 'cash' ? 'Efectivo' : acc.type === 'invest' ? 'Inversión' : 'Otro'}</span>
+            </div>
+          </div>
+          <div class="account-card-right">
+            <span class="account-balance ${colorCls}">${formatCurrency(signed)}</span>
+            <div class="account-actions">
+              <button class="acc-edit-btn icon-btn-sm" data-id="${acc.id}" title="Editar">✏️</button>
+              <button class="acc-del-btn icon-btn-sm" data-id="${acc.id}" title="Eliminar">🗑️</button>
+            </div>
+          </div>
+        </div>`;
+    }).join('');
+
+    list.querySelectorAll('.acc-edit-btn').forEach(btn =>
+        btn.addEventListener('click', () => balance_openEdit(parseInt(btn.dataset.id))));
+    list.querySelectorAll('.acc-del-btn').forEach(btn =>
+        btn.addEventListener('click', () => balance_deleteAccount(parseInt(btn.dataset.id))));
+}
+
+function balance_openPanel() {
+    balance_loadAccounts();
+    balance_renderPanel();
+    document.getElementById('balance-panel').classList.remove('hidden');
+    document.getElementById('add-account-form').classList.add('hidden');
+    document.getElementById('acc-add-btn').classList.remove('hidden');
+    balanceEditingId = null;
+    document.body.style.overflow = 'hidden';
+}
+
+function balance_closePanel() {
+    document.getElementById('balance-panel').classList.add('hidden');
+    document.body.style.overflow = '';
+}
+
+function balance_openEdit(id) {
+    const acc = balanceAccounts.find(a => a.id === id);
+    if (!acc) return;
+    balanceEditingId = id;
+    document.getElementById('acc-name').value    = acc.name;
+    document.getElementById('acc-balance').value = Math.abs(acc.balance);
+    document.getElementById('acc-type').value    = acc.type;
+    document.getElementById('add-account-form').classList.remove('hidden');
+    document.getElementById('acc-add-btn').classList.add('hidden');
+    document.getElementById('acc-name').focus();
+}
+
+function balance_openAdd() {
+    balanceEditingId = null;
+    document.getElementById('acc-name').value    = '';
+    document.getElementById('acc-balance').value = '';
+    document.getElementById('acc-type').value    = 'bank';
+    document.getElementById('add-account-form').classList.remove('hidden');
+    document.getElementById('acc-add-btn').classList.add('hidden');
+    document.getElementById('acc-name').focus();
+}
+
+function balance_saveAccount() {
+    const name    = document.getElementById('acc-name').value.trim();
+    const balance = parseFloat(document.getElementById('acc-balance').value) || 0;
+    const type    = document.getElementById('acc-type').value;
+    if (!name) return;
+
+    if (balanceEditingId !== null) {
+        const acc = balanceAccounts.find(a => a.id === balanceEditingId);
+        if (acc) { acc.name = name; acc.balance = balance; acc.type = type; }
+    } else {
+        const newId = Date.now();
+        balanceAccounts.push({ id: newId, name, balance, type });
+    }
+    balance_saveAccounts();
+    balance_renderPanel();
+    balance_updateKpi();
+    document.getElementById('add-account-form').classList.add('hidden');
+    document.getElementById('acc-add-btn').classList.remove('hidden');
+    balanceEditingId = null;
+}
+
+function balance_deleteAccount(id) {
+    if (!confirm('¿Eliminar esta cuenta?')) return;
+    balanceAccounts = balanceAccounts.filter(a => a.id !== id);
+    balance_saveAccounts();
+    balance_renderPanel();
+    balance_updateKpi();
+}
+
+function balance_init() {
+    balance_loadAccounts();
+    balance_updateKpi();
+
+    document.getElementById('kpi-balance-card')
+        .addEventListener('click', balance_openPanel);
+    document.getElementById('balance-panel-close')
+        .addEventListener('click', balance_closePanel);
+    document.getElementById('balance-panel-overlay')
+        .addEventListener('click', balance_closePanel);
+    document.getElementById('acc-add-btn')
+        .addEventListener('click', balance_openAdd);
+    document.getElementById('acc-save-btn')
+        .addEventListener('click', balance_saveAccount);
+    document.getElementById('acc-cancel-btn')
+        .addEventListener('click', () => {
+            document.getElementById('add-account-form').classList.add('hidden');
+            document.getElementById('acc-add-btn').classList.remove('hidden');
+            balanceEditingId = null;
+        });
+}
 
 // =============================================
 // TAB NAVIGATION
@@ -251,8 +435,13 @@ function processAndRender(logRows, fixedRows) {
         return { rowNum: i + 2, concepto, monto, isPaid };
     }).filter(e => e.concepto);
 
-    const fixedTotal = fixedExpenses.reduce((s, e) => s + e.monto, 0);
+    const fixedTotal = fixedExpenses.reduce((s, e) => s + Math.abs(e.monto), 0);
     const paidCount  = fixedExpenses.filter(e => e.isPaid).length;
+    const pendingFixed = fixedExpenses.filter(e => !e.isPaid).reduce((s, e) => s + Math.abs(e.monto), 0);
+
+    // Update balance module with current pending fixed expenses
+    balancePendingFixed = pendingFixed;
+    balance_updateKpi();
 
     document.getElementById('gasto-hormiga-total').innerText = formatCurrency(hormigaTotal);
     document.getElementById('gastos-fijos-total').innerText  = formatCurrency(fixedTotal);
