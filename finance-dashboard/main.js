@@ -1,7 +1,7 @@
 import { createIcons, RefreshCw, AlertTriangle, CalendarCheck, TrendingUp, LogOut } from 'lucide';
 import ApexCharts from 'apexcharts';
 import { initializeApp } from 'firebase/app';
-import { getAuth, GoogleAuthProvider, getRedirectResult, onAuthStateChanged, signInWithCredential, signInWithPopup, signInWithRedirect, signOut as fbSignOut } from 'firebase/auth';
+import { browserLocalPersistence, getAuth, GoogleAuthProvider, getRedirectResult, onAuthStateChanged, setPersistence, signInWithCredential, signInWithPopup, signInWithRedirect, signOut as fbSignOut } from 'firebase/auth';
 import { getFirestore, doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 
 // =============================================
@@ -34,6 +34,11 @@ const _fbApp  = initializeApp(FIREBASE_CONFIG);
 const _fbAuth = getAuth(_fbApp);
 const _fbDb   = getFirestore(_fbApp);
 let   _fbUid  = null; // current Firebase UID, set after sign-in
+const FB_FORCE_INTERACTIVE_KEY = 'firebase_force_interactive_v1';
+
+setPersistence(_fbAuth, browserLocalPersistence).catch((e) => {
+    console.warn('[Firebase] setPersistence failed:', e.message);
+});
 
 onAuthStateChanged(_fbAuth, (user) => {
     _fbUid = user?.uid || null;
@@ -45,6 +50,7 @@ async function firebase_signInWithPopup() {
         const provider = new GoogleAuthProvider();
         const result = await signInWithPopup(_fbAuth, provider);
         _fbUid = result.user.uid;
+        localStorage.setItem(FB_FORCE_INTERACTIVE_KEY, '1');
         debugUpdate({ auth: 'Firebase popup OK', uid: _fbUid, token: accessToken ? 'Si' : 'No' });
         return true;
     } catch (e) {
@@ -87,11 +93,21 @@ async function firebase_signIn(googleAccessToken, opts = {}) {
         debugUpdate({ auth: 'Sesion Firebase reutilizada', uid: _fbUid, token: accessToken ? 'Si (cache)' : 'No' });
         return;
     }
+    const forceInteractive = localStorage.getItem(FB_FORCE_INTERACTIVE_KEY) === '1';
+    if (forceInteractive) {
+        if (allowPopupFallback) {
+            await firebase_signInWithPopup();
+        } else {
+            debugUpdate({ auth: 'Firebase pendiente (requiere popup/redirect una vez)' });
+        }
+        return;
+    }
     try {
         debugUpdate({ auth: 'Conectando Firebase...' });
         const credential = GoogleAuthProvider.credential(null, googleAccessToken);
         const result = await signInWithCredential(_fbAuth, credential);
         _fbUid = result.user.uid;
+        localStorage.removeItem(FB_FORCE_INTERACTIVE_KEY);
         debugUpdate({ auth: 'Firebase OK', uid: _fbUid, token: accessToken ? 'Si (cache)' : 'No' });
         console.log('[Firebase] signed in as', result.user.email, '| uid:', _fbUid);
     } catch (e) {
@@ -100,6 +116,7 @@ async function firebase_signIn(googleAccessToken, opts = {}) {
         debugUpdate({ auth: `Firebase error: ${debugShort(e.message)}`, uid: '-' });
         const isInvalidCredential = e?.code === 'auth/invalid-credential' || String(e?.message || '').includes('Invalid Idp Response');
         if (allowPopupFallback && isInvalidCredential) {
+            localStorage.setItem(FB_FORCE_INTERACTIVE_KEY, '1');
             debugUpdate({ auth: 'Reintentando Firebase con popup...' });
             await firebase_signInWithPopup();
         }
