@@ -950,47 +950,59 @@ async function gastos_guardar() {
     const tipo     = document.getElementById('g-tipo').value;
     const forma    = document.getElementById('g-forma-pago').value;
 
-    try {
-        // ── Upload new photos to Drive ──────────────────────
-        const fileInput = document.getElementById('g-fotos-input');
-        let nuevasUrls = [];
-        if (fileInput.files.length > 0) {
-            btn.innerText = `Subiendo ${fileInput.files.length} archivo(s)...`;
+    // ── Upload photos to Drive (non-blocking: failure just skips photos) ──
+    const fileInput = document.getElementById('g-fotos-input');
+    let nuevasUrls = [];
+    if (fileInput.files.length > 0) {
+        btn.innerText = `Subiendo ${fileInput.files.length} archivo(s)...`;
+        try {
             const RECIBOS_FOLDER = 'Jay App Recibos';
             let folderId = await driveFindFolder(RECIBOS_FOLDER);
             if (!folderId) {
-                // Create the folder if it doesn't exist
                 const r = await fetch('https://www.googleapis.com/drive/v3/files', {
                     method: 'POST',
                     headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
                     body: JSON.stringify({ name: RECIBOS_FOLDER, mimeType: 'application/vnd.google-apps.folder' }),
                 });
+                if (!r.ok) throw new Error(`Folder create failed (${r.status})`);
                 folderId = (await r.json()).id;
             }
             for (const file of fileInput.files) {
                 const url = await driveUploadFile(file, folderId);
                 if (url) nuevasUrls.push(url);
             }
+        } catch (driveErr) {
+            // Drive API not enabled or permission error — save transaction anyway, warn user
+            console.warn('Drive upload skipped:', driveErr);
+            const isDriveDisabled = driveErr?.message?.includes('403');
+            showToast(isDriveDisabled
+                ? '⚠️ Foto no subida: Drive API no habilitada. El gasto se guardará sin recibo.'
+                : `⚠️ Foto no subida: ${driveErr.message?.substring(0,60)}. El gasto se guardará.`,
+                4000
+            );
         }
         btn.innerText = idFila ? 'Actualizando...' : 'Guardando...';
+    }
 
-        // ── Save to Sheets ──────────────────────────────────
+    // ── Save to Sheets ──────────────────────────────────
+    try {
         if (idFila) {
-            // Edit mode: preserve existing photos, append new ones
             const existing = gastosState.detailRow?.fotos || '';
             const allUrls  = [existing, ...nuevasUrls].filter(Boolean).join(',');
             await sheetsUpdate(SPREADSHEET_LOG_ID, `Hoja 1!B${idFila}:G${idFila}`, [[lugar, concepto, parseSheetValue(monto), tipo, forma, allUrls]]);
         } else {
             await sheetsAppend(SPREADSHEET_LOG_ID, 'Hoja 1!A:G', [[fecha, lugar, concepto, parseSheetValue(monto), tipo, forma, nuevasUrls.join(',')]]);
         }
-        status.innerText = '✅ ' + (idFila ? 'Actualizado' : 'Guardado');
+        status.innerText = nuevasUrls.length
+            ? '✅ ' + (idFila ? 'Actualizado con recibo' : 'Guardado con recibo')
+            : '✅ ' + (idFila ? 'Actualizado' : 'Guardado');
         status.style.color = 'var(--accent-green)';
         gastos_cancelar();
         gastos_cargarHistorial();
     } catch(e) {
         console.error('gastos_guardar error:', e);
         const msg = e?.message || e?.status || 'Sin detalle';
-        status.innerText = `❌ Error: ${msg.substring(0, 80)}`; status.style.color = '#f87171';
+        status.innerText = `❌ Error al guardar: ${msg.substring(0, 70)}`; status.style.color = '#f87171';
         btn.disabled = false; btn.innerText = idFila ? 'ACTUALIZAR' : 'GUARDAR';
     }
 }
@@ -1440,13 +1452,13 @@ function normalizeDateString(val) {
     return `${yyyy}-${mm}-${dd}`;
 }
 
-function showToast(msg) {
+function showToast(msg, duration = 3000) {
     const t = document.createElement('div');
     t.innerText = msg;
     t.className = 'toast-msg';
     document.body.appendChild(t);
     setTimeout(() => t.classList.add('show'), 100);
-    setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 300); }, 3000);
+    setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 300); }, duration);
 }
 
 // =============================================
