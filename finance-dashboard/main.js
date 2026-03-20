@@ -13,7 +13,7 @@ const SCOPES = 'https://www.googleapis.com/auth/spreadsheets https://www.googlea
 const SPREADSHEET_LOG_ID   = '1pn1bsxj2LaoySXAVUvqfEJY1VR4R_T8NsTOqQnVW5Xw'; // Control de Gastos
 const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // Gastos Fijos
 const SPREADSHEET_DEUDAS_ID = '1dKxhgqazskm15lx0f6FNCA0gpJ7i5glfxkusiH3b0Uk'; // Control de Deudas
-const APP_VERSION  = 'v3.3.0';
+const APP_VERSION  = 'v3.3.1';
 // Bump token keys to force re-auth with the new drive scope
 const TOKEN_KEY    = 'google_access_token_v4';
 const EXPIRY_KEY   = 'google_token_expiry_v4';
@@ -290,6 +290,12 @@ let balanceEditingId  = null;
 let balancePendingFixed = 0; // Set by dashboard when fixed expenses load
 let balancePaidFixedTotal = 0;
 let balancePaidFixedAnchor = parseFloat(localStorage.getItem('balance_paid_anchor_v1') || '0') || 0;
+let balanceLogNetTotal = 0;
+let balanceLogNetAnchor = (() => {
+    const raw = localStorage.getItem('balance_log_anchor_v1');
+    if (raw === null) return null;
+    return parseFloat(raw) || 0;
+})();
 let balanceRealtimeUnsub = null;
 let balanceRealtimeUid = null;
 
@@ -297,9 +303,32 @@ function balance_getPaidFixedDeduction() {
     return Math.max(0, balancePaidFixedTotal - balancePaidFixedAnchor);
 }
 
-function balance_resetPaidDeductionAnchor() {
+function balance_getLogNetAdjustment() {
+    if (balanceLogNetAnchor === null) return 0;
+    return balanceLogNetTotal - balanceLogNetAnchor;
+}
+
+function balance_resetDynamicAnchors() {
     balancePaidFixedAnchor = balancePaidFixedTotal;
     localStorage.setItem('balance_paid_anchor_v1', String(balancePaidFixedAnchor));
+    balanceLogNetAnchor = balanceLogNetTotal;
+    localStorage.setItem('balance_log_anchor_v1', String(balanceLogNetAnchor));
+}
+
+function balance_updateLogNetFromRows(logRows) {
+    balanceLogNetTotal = (logRows || []).reduce((sum, row) => {
+        const lugar = (row[1] || '').toString().trim().toLowerCase();
+        if (lugar === 'gasto fijo') return sum; // fixed expenses already handled separately
+        const tipo = (row[4] || '').toString().trim().toLowerCase();
+        const monto = Math.abs(parseSheetValue(row[3]));
+        if (tipo === 'ingreso') return sum + monto;
+        if (tipo === 'gasto') return sum - monto;
+        return sum;
+    }, 0);
+    if (balanceLogNetAnchor === null) {
+        balanceLogNetAnchor = balanceLogNetTotal;
+        localStorage.setItem('balance_log_anchor_v1', String(balanceLogNetAnchor));
+    }
 }
 
 function balance_stopRealtimeSync() {
@@ -499,20 +528,22 @@ function balance_getTotal() {
     const base = balanceAccounts
         .filter(a => !a.hidden)
         .reduce((sum, a) => sum + (a.type === 'credit' ? -Math.abs(a.balance) : +a.balance), 0);
-    return base - balance_getPaidFixedDeduction();
+    return base - balance_getPaidFixedDeduction() + balance_getLogNetAdjustment();
 }
 
 function balance_updateKpi() {
     const total = balance_getTotal();
     const real  = total - balancePendingFixed;
     const paidDeduction = balance_getPaidFixedDeduction();
+    const logAdjustment = balance_getLogNetAdjustment();
     const el  = document.getElementById('balance-total');
     const lbl = document.getElementById('balance-real-label');
     if (el)  el.innerText = formatCurrency(total);
     if (lbl) {
-        if (balancePendingFixed > 0 || paidDeduction > 0) {
+        if (balancePendingFixed > 0 || paidDeduction > 0 || logAdjustment !== 0) {
             const parts = [];
             if (paidDeduction > 0) parts.push(`pagados: ${formatCurrency(paidDeduction)}`);
+            if (logAdjustment !== 0) parts.push(`movs: ${logAdjustment >= 0 ? '+' : ''}${formatCurrency(logAdjustment)}`);
             if (balancePendingFixed > 0) parts.push(`pendientes: ${formatCurrency(balancePendingFixed)}`);
             lbl.innerText = `Real: ${formatCurrency(real)} (${parts.join(' | ')})`;
         } else {
@@ -533,13 +564,14 @@ function balance_renderPanel() {
     const total = balance_getTotal();
     const real  = total - balancePendingFixed;
     const paidDeduction = balance_getPaidFixedDeduction();
+    const logAdjustment = balance_getLogNetAdjustment();
     document.getElementById('bs-total').innerText = formatCurrency(total);
     const bsReal = document.getElementById('bs-real');
     bsReal.innerText   = formatCurrency(real);
     bsReal.className   = 'bs-amount ' + (real >= 0 ? 'text-success' : 'text-danger');
     document.getElementById('bs-pending-label').innerText =
-        (balancePendingFixed > 0 || paidDeduction > 0)
-            ? `${paidDeduction > 0 ? `menos ${formatCurrency(paidDeduction)} pagados` : 'sin pagados'}${balancePendingFixed > 0 ? ` · menos ${formatCurrency(balancePendingFixed)} pendientes` : ''}`
+        (balancePendingFixed > 0 || paidDeduction > 0 || logAdjustment !== 0)
+            ? `${paidDeduction > 0 ? `menos ${formatCurrency(paidDeduction)} pagados` : 'sin pagados'}${logAdjustment !== 0 ? ` · movs ${logAdjustment >= 0 ? '+' : ''}${formatCurrency(logAdjustment)}` : ''}${balancePendingFixed > 0 ? ` · menos ${formatCurrency(balancePendingFixed)} pendientes` : ''}`
             : 'sin fijos pendientes';
 
     const list = document.getElementById('accounts-list');
@@ -650,7 +682,7 @@ async function balance_saveAccount() {
     } else {
         balanceAccounts.push({ id: Date.now(), name, balance, type, hidden: false });
     }
-    balance_resetPaidDeductionAnchor();
+    balance_resetDynamicAnchors();
     await balance_saveAccounts();
     balance_renderPanel();
     balance_updateKpi();
@@ -663,7 +695,7 @@ async function balance_saveAccount() {
 async function balance_deleteAccount(id) {
     if (!confirm('\u00bfEliminar esta cuenta?')) return;
     balanceAccounts = balanceAccounts.filter(a => a.id !== id);
-    balance_resetPaidDeductionAnchor();
+    balance_resetDynamicAnchors();
     await balance_saveAccounts();
     balance_renderPanel();
     balance_updateKpi();
@@ -973,6 +1005,7 @@ async function fetchAndProcess() {
 }
 
 function processAndRender(logRows, fixedRows) {
+    balance_updateLogNetFromRows(logRows);
     const hormigaKeywords = ['oxxo','coca','cigarros','snacks','gomitas','vuse','tiendita','starbucks','seven','7-eleven','extra','dulces','chicles'];
     let hormigaTotal = 0, hormigaChartData = [];
     let hormigaGastos = []; // Guardaremos detalle para el panel
@@ -1254,18 +1287,24 @@ async function gastos_cargarHistorial() {
     lista.innerHTML = '<div class="loading-spinner">⏳ Cargando...</div>';
     try {
         const rows = await sheetsGet(SPREADSHEET_LOG_ID, 'Hoja 1!A2:G');
+        balance_updateLogNetFromRows(rows);
         gastosState.allRows = rows.map((row, i) => ({
             rowNum:   i + 2,
             fecha:    row[0] || '',
             lugar:    row[1] || '',
             concepto: row[2] || '',
             monto:    parseSheetValue(row[3]),
-            tipo:     row[4] || 'Gasto',
+            tipo:     normalizeTipo(row[4] || 'Gasto'),
             formaPago:row[5] || '',
             fotos:    row[6] || '',
         })).reverse();
         gastosState.offset = 0;
         gastos_renderLista(false);
+        balance_updateKpi();
+        const panel = document.getElementById('balance-panel');
+        if (panel && !panel.classList.contains('hidden')) {
+            balance_renderPanel();
+        }
     } catch(e) { handleApiError(e, lista); }
 }
 
@@ -1290,7 +1329,7 @@ function gastos_renderLista(append) {
     page.forEach(row => {
         const card = document.createElement('div');
         card.className = 'movimiento-card';
-        const isGasto = row.tipo === 'Gasto';
+        const isGasto = normalizeTipo(row.tipo) === 'Gasto';
         const fechaStr = row.fecha ? formatFecha(row.fecha) : '';
         const clipIcon = row.fotos && row.fotos.length > 5 ? '<span class="mc-clip">📎</span>' : '';
         card.innerHTML = `
@@ -1322,7 +1361,7 @@ async function gastos_guardar() {
     btn.disabled = true; btn.innerText = idFila ? 'Actualizando...' : 'Guardando...';
     const fecha    = new Date().toLocaleDateString('en-CA');
     const concepto = document.getElementById('g-concepto').value.trim();
-    const tipo     = document.getElementById('g-tipo').value;
+    const tipo     = normalizeTipo(document.getElementById('g-tipo').value);
     const forma    = document.getElementById('g-forma-pago').value;
 
     // ── Upload photos to Drive (non-blocking: failure just skips photos) ──
@@ -1399,14 +1438,14 @@ function gastos_cancelar() {
 
 function gastos_abrirModal(row) {
     gastosState.detailRow = row;
-    const isGasto = row.tipo === 'Gasto';
+    const isGasto = normalizeTipo(row.tipo) === 'Gasto';
     document.getElementById('g-m-monto').innerText = (isGasto ? '-' : '+') + formatCurrency(row.monto);
     document.getElementById('g-m-monto').className = `modal-monto-big ${isGasto ? 'text-danger' : 'text-success'}`;
     document.getElementById('g-m-lugar').innerText = row.lugar || '—';
     document.getElementById('g-m-concepto').innerText = row.concepto || '—';
     document.getElementById('g-m-fecha').innerText = row.fecha ? new Date(row.fecha).toLocaleDateString('es-MX', { weekday:'short', day:'numeric', month:'long', year:'numeric' }) : '—';
     const tipo = document.getElementById('g-m-tipo');
-    tipo.innerText = row.tipo; tipo.className = `modal-badge ${isGasto ? 'badge-gasto' : 'badge-ingreso'}`;
+    tipo.innerText = normalizeTipo(row.tipo); tipo.className = `modal-badge ${isGasto ? 'badge-gasto' : 'badge-ingreso'}`;
     document.getElementById('g-m-pago').innerText = row.formaPago || '—';
     // ── Receipts with individual delete buttons ──────────
     const recibos = document.getElementById('g-m-recibos');
@@ -1669,9 +1708,9 @@ window.fijos_togglePagado = async function(id, wasPaid) {
             const fecha    = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD
             const lugar    = 'Gasto Fijo';
             const concepto = item.concepto;
-            // Always use positive amount; these are always expenses
+            // Keep amount positive; type controls + / - rendering in Control de Gastos
             const monto    = Math.abs(item.monto);
-            const tipo     = 'Gasto';
+            const tipo     = item.tipo === 'ingreso' ? 'Ingreso' : 'Gasto';
             const forma    = item.categoria || 'General';
             await sheetsAppend(
                 SPREADSHEET_LOG_ID,
@@ -1800,6 +1839,11 @@ function parseSheetValue(val) {
 function parseBool(val) {
     if (typeof val === 'boolean') return val;
     return (val || '').toString().toUpperCase() === 'TRUE';
+}
+
+function normalizeTipo(val) {
+    const v = (val || '').toString().trim().toLowerCase();
+    return v === 'ingreso' ? 'Ingreso' : 'Gasto';
 }
 
 /** Parse a date that may be a Google Sheets serial number or an ISO/DD/MM/YYYY string AND RETURNS A JS DATE */
