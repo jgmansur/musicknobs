@@ -24,6 +24,14 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Build finance dashboard
+        run: npm ci --prefix finance-dashboard && npm run build --prefix finance-dashboard
+      - name: Prepare finance dashboard deploy files
+        run: cp finance-dashboard/dist/index.html finance-dashboard/index.html && mkdir -p finance-dashboard/assets && cp -R finance-dashboard/dist/assets/. finance-dashboard/assets/
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Upload artifact
