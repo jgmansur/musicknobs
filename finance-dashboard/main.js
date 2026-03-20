@@ -13,7 +13,7 @@ const SCOPES = 'https://www.googleapis.com/auth/spreadsheets https://www.googlea
 const SPREADSHEET_LOG_ID   = '1pn1bsxj2LaoySXAVUvqfEJY1VR4R_T8NsTOqQnVW5Xw'; // Control de Gastos
 const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // Gastos Fijos
 const SPREADSHEET_DEUDAS_ID = '1dKxhgqazskm15lx0f6FNCA0gpJ7i5glfxkusiH3b0Uk'; // Control de Deudas
-const APP_VERSION  = 'v3.5.4';
+const APP_VERSION  = 'v3.5.5';
 // Bump token keys to force re-auth with the new drive scope
 const TOKEN_KEY    = 'google_access_token_v4';
 const EXPIRY_KEY   = 'google_token_expiry_v4';
@@ -2057,7 +2057,16 @@ async function fijos_cargarDatos() {
 }
 
 function fijos_generarPills() {
-    const pills = cat => fijosState.categorias.map(c => `<label class="cat-check-label"><input type="checkbox" class="${cat}" value="${c}" id="${cat}_${c}">${c}</label>`).join('');
+    const pills = cat => {
+        const typePills = [
+            `<label class="cat-check-label"><input type="checkbox" class="${cat}" value="__tipo_gasto" id="${cat}___tipo_gasto">🔴 Gastos</label>`,
+            `<label class="cat-check-label"><input type="checkbox" class="${cat}" value="__tipo_ingreso" id="${cat}___tipo_ingreso">🟢 Ingresos</label>`,
+        ].join('');
+        const categoryPills = fijosState.categorias
+            .map(c => `<label class="cat-check-label"><input type="checkbox" class="${cat}" value="${c}" id="${cat}_${c}">${c}</label>`)
+            .join('');
+        return typePills + categoryPills;
+    };
     document.getElementById('f-cat-checks').innerHTML = pills('f-cat-chk');
     document.getElementById('f-filter-checks').innerHTML = pills('f-filter-chk');
     fijosState.filtrosActivos.forEach(c => { const el = document.querySelector(`.f-filter-chk[value="${c}"]`); if (el) el.checked = true; });
@@ -2069,8 +2078,13 @@ function fijos_aplicarFiltros() {
     const fmt  = new Intl.NumberFormat('es-MX', { style:'currency', currency:'MXN' });
     let lista  = fijosState.allItems.filter(item => {
         const t = item.concepto.toLowerCase().includes(q) || item.categoria.toLowerCase().includes(q);
-        const c = !fijosState.filtrosActivos.length || fijosState.filtrosActivos.some(f => item.categoria.split(', ').includes(f));
-        return t && c;
+        const tipoActivos = fijosState.filtrosActivos.filter(f => f === '__tipo_gasto' || f === '__tipo_ingreso');
+        const catActivos = fijosState.filtrosActivos.filter(f => !f.startsWith('__tipo_'));
+        const tipoOk = !tipoActivos.length
+            || (tipoActivos.includes('__tipo_gasto') && item.tipo === 'gasto')
+            || (tipoActivos.includes('__tipo_ingreso') && item.tipo === 'ingreso');
+        const catOk = !catActivos.length || catActivos.some(f => item.categoria.split(', ').includes(f));
+        return t && tipoOk && catOk;
     });
     lista.sort((a,b) => {
         if (sort==='fechaDesc') return b.fechaValue.localeCompare(a.fechaValue);
