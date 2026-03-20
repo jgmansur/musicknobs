@@ -1,5 +1,5 @@
 import { defineConfig } from 'vite'
 
 export default defineConfig({
-  base: './',
+  base: './' // Use relative paths for built assets
 })
