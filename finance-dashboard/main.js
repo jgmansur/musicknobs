@@ -322,30 +322,7 @@ function balance_normalizeAccount(a = {}) {
             ? (a.investmentType || '').toString().toLowerCase()
             : 'custom',
         customAnnualRate: typeof a.customAnnualRate === 'number' ? a.customAnnualRate : parseSheetValue(a.customAnnualRate),
-        bitcoinEntryRate: typeof a.bitcoinEntryRate === 'number' ? a.bitcoinEntryRate : parseSheetValue(a.bitcoinEntryRate),
-        bitcoinEntryAt: a.bitcoinEntryAt || null,
     };
-}
-
-function balance_getBitcoinCurrentValueMxn(acc) {
-    const invested = Math.abs(acc.balance || 0);
-    const entryRate = Number(acc.bitcoinEntryRate) || 0;
-    const currentRate = Number(balanceBtcMxnRate) || 0;
-    if (!invested || !entryRate || !currentRate) return invested;
-    const btcUnits = invested / entryRate;
-    return btcUnits * currentRate;
-}
-
-function balance_getBitcoinAnnualRate(acc) {
-    const invested = Math.abs(acc.balance || 0);
-    const current = balance_getBitcoinCurrentValueMxn(acc);
-    const entryAt = acc.bitcoinEntryAt ? new Date(acc.bitcoinEntryAt).getTime() : 0;
-    if (!invested || !current || !entryAt) return 0;
-    const ms = Date.now() - entryAt;
-    const days = Math.max(1, ms / (1000 * 60 * 60 * 24));
-    const ratio = current / invested;
-    if (ratio <= 0) return 0;
-    return (Math.pow(ratio, 365 / days) - 1) * 100;
 }
 
 function balance_convertToMxn(amount, currency) {
@@ -584,7 +561,7 @@ async function balance_getOrCreateSheet() {
     // Create the spreadsheet (in Jay App folder if found, else root Drive)
     sheetId = await driveCreateSpreadsheet('Finance Dashboard - Cuentas', folderId);
     // Initialize header row
-    await sheetsUpdate(sheetId, 'A1:L1', [['ID', 'Nombre', 'Saldo', 'Tipo', 'Oculto', 'LimiteCredito', 'LimiteVisible', 'Moneda', 'TipoInversion', 'TasaPersonal', 'BtcEntryRate', 'BtcEntryAt']]);
+    await sheetsUpdate(sheetId, 'A1:J1', [['ID', 'Nombre', 'Saldo', 'Tipo', 'Oculto', 'LimiteCredito', 'LimiteVisible', 'Moneda', 'TipoInversion', 'TasaPersonal']]);
     localStorage.setItem(ACCOUNTS_SHEET_KEY, sheetId);
     return sheetId;
 }
@@ -627,7 +604,7 @@ async function balance_loadAccounts() {
     // ── 2. Fallback: Google Sheets ──────────────────────────────
     try {
         const sid  = await balance_getOrCreateSheet();
-        const rows = await sheetsGet(sid, 'A2:L');
+        const rows = await sheetsGet(sid, 'A2:J');
         if (!rows.length) {
             balanceAccounts = DEFAULT_ACCOUNTS.map(a => balance_normalizeAccount(a));
             await balance_writeToSheet(sid); // seed defaults
@@ -645,8 +622,6 @@ async function balance_loadAccounts() {
                     currency: (r[7] || 'MXN').toString().toUpperCase(),
                     investmentType: (r[8] || 'custom').toString().toLowerCase(),
                     customAnnualRate: typeof r[9] === 'number' ? r[9] : parseSheetValue(r[9]),
-                    bitcoinEntryRate: typeof r[10] === 'number' ? r[10] : parseSheetValue(r[10]),
-                    bitcoinEntryAt: r[11] || null,
                 }));
         }
         debugUpdate({ load: `Sheets (${balanceAccounts.length})` });
@@ -664,9 +639,9 @@ async function balance_loadAccounts() {
 }
 
 async function balance_writeToSheet(sheetId) {
-    await sheetsClear(sheetId, 'A2:L');
+    await sheetsClear(sheetId, 'A2:J');
     if (balanceAccounts.length) {
-        await sheetsUpdate(sheetId, `A2:L${1 + balanceAccounts.length}`,
+        await sheetsUpdate(sheetId, `A2:J${1 + balanceAccounts.length}`,
             balanceAccounts.map(a => [
                 a.id,
                 a.name,
@@ -678,8 +653,6 @@ async function balance_writeToSheet(sheetId) {
                 a.currency || 'MXN',
                 a.investmentType || 'custom',
                 Number(a.customAnnualRate) || 0,
-                Number(a.bitcoinEntryRate) || 0,
-                a.bitcoinEntryAt || '',
             ]));
     }
 }
@@ -699,8 +672,6 @@ async function balance_saveToFirestore() {
             currency: a.currency || 'MXN',
             investmentType: a.investmentType || 'custom',
             customAnnualRate: Number(a.customAnnualRate) || 0,
-            bitcoinEntryRate: Number(a.bitcoinEntryRate) || 0,
-            bitcoinEntryAt: a.bitcoinEntryAt || null,
         })),
         lastUpdated: serverTimestamp(),
     });
@@ -743,9 +714,7 @@ function balance_getTotal() {
     const base = balanceAccounts
         .filter(a => !a.hidden)
         .reduce((sum, a) => {
-            const balanceMxn = (a.type === 'invest' && a.investmentType === 'bitcoin')
-                ? balance_getBitcoinCurrentValueMxn(a)
-                : balance_convertToMxn(Math.abs(a.balance || 0), a.currency);
+            const balanceMxn = balance_convertToMxn(Math.abs(a.balance || 0), a.currency);
             if (a.type === 'credit') {
                 const deuda = -balanceMxn;
                 const limiteVisible = a.creditLimitVisible
@@ -762,15 +731,9 @@ function balance_getInvestmentSummary() {
     const items = balanceAccounts.filter(a => a.type === 'invest');
     const rows = items.map(acc => {
         const principalMxn = balance_convertToMxn(Math.abs(acc.balance || 0), acc.currency);
-        if (acc.investmentType === 'bitcoin') {
-            const currentMxn = balance_getBitcoinCurrentValueMxn(acc);
-            const annualRate = balance_getBitcoinAnnualRate(acc);
-            const monthlyYield = (currentMxn - principalMxn) / 12;
-            return { acc, principalMxn, currentMxn, annualRate, monthlyYield };
-        }
         const annualRate = balance_getEffectiveAnnualRate(acc);
         const monthlyYield = principalMxn * (annualRate / 100) / 12;
-        return { acc, principalMxn, currentMxn: principalMxn, annualRate, monthlyYield };
+        return { acc, principalMxn, annualRate, monthlyYield };
     });
     const investedTotal = rows.reduce((s, r) => s + r.principalMxn, 0);
     const monthlyTotal = rows.reduce((s, r) => s + r.monthlyYield, 0);
@@ -925,7 +888,7 @@ function balance_renderInvestmentPanel() {
         return;
     }
 
-    listEl.innerHTML = summary.rows.map(({ acc, principalMxn, currentMxn, annualRate, monthlyYield }) => {
+    listEl.innerHTML = summary.rows.map(({ acc, principalMxn, annualRate, monthlyYield }) => {
         const srcLabel = acc.investmentType === 'cetes'
             ? 'CETES'
             : (acc.investmentType === 'mifel'
@@ -943,8 +906,7 @@ function balance_renderInvestmentPanel() {
               <div class="account-info">
                 <span class="account-name">${acc.name}</span>
                 <span class="account-type-label">${srcLabel} · ${annualRate.toFixed(2)}% anual</span>
-                <span class="account-type-label">Invertido: ${principalRaw} (${formatCurrency(principalMxn)})</span>
-                ${acc.investmentType === 'bitcoin' ? `<span class="account-type-label">Valor hoy: ${formatCurrency(currentMxn)}</span>` : ''}
+                <span class="account-type-label">Capital: ${principalRaw} (${formatCurrency(principalMxn)})</span>
               </div>
             </div>
             <div class="account-card-right">
@@ -1040,7 +1002,7 @@ async function balance_saveAccount() {
     const investmentType = document.getElementById('acc-invest-type').value;
     const customAnnualRate = Math.max(0, parseFloat(document.getElementById('acc-invest-rate').value) || 0);
     if (type === 'invest' && investmentType === 'bitcoin') {
-        currency = 'MXN';
+        currency = 'BTC';
     }
     if (!name) return;
     const btn = document.getElementById('acc-save-btn');
@@ -1056,11 +1018,7 @@ async function balance_saveAccount() {
             acc.creditLimit = type === 'credit' ? creditLimit : 0;
             acc.creditLimitVisible = type === 'credit' ? creditLimitVisible : false;
             acc.investmentType = type === 'invest' ? investmentType : 'custom';
-            acc.customAnnualRate = type === 'invest' ? (investmentType === 'custom' ? customAnnualRate : 0) : 0;
-            if (type === 'invest' && investmentType === 'bitcoin' && balanceBtcMxnRate) {
-                acc.bitcoinEntryRate = balanceBtcMxnRate;
-                acc.bitcoinEntryAt = new Date().toISOString();
-            }
+            acc.customAnnualRate = type === 'invest' ? customAnnualRate : 0;
         }
     } else {
         balanceAccounts.push(balance_normalizeAccount({
@@ -1073,9 +1031,7 @@ async function balance_saveAccount() {
             creditLimit: type === 'credit' ? creditLimit : 0,
             creditLimitVisible: type === 'credit' ? creditLimitVisible : false,
             investmentType: type === 'invest' ? investmentType : 'custom',
-            customAnnualRate: type === 'invest' ? (investmentType === 'custom' ? customAnnualRate : 0) : 0,
-            bitcoinEntryRate: (type === 'invest' && investmentType === 'bitcoin' && balanceBtcMxnRate) ? balanceBtcMxnRate : 0,
-            bitcoinEntryAt: (type === 'invest' && investmentType === 'bitcoin') ? new Date().toISOString() : null,
+            customAnnualRate: type === 'invest' ? customAnnualRate : 0,
         }));
     }
     balance_resetDynamicAnchors();
@@ -1169,9 +1125,9 @@ function balance_refreshCreditFields() {
     const isCredit = type === 'credit';
     creditWrap.classList.toggle('hidden', !isCredit);
     investWrap.classList.toggle('hidden', type !== 'invest');
-    investRate.classList.toggle('hidden', !(type === 'invest' && investType === 'custom'));
+    investRate.classList.toggle('hidden', !(type === 'invest' && (investType === 'custom' || investType === 'bitcoin')));
     if (type === 'invest' && investType === 'bitcoin') {
-        currencySelect.value = 'MXN';
+        currencySelect.value = 'BTC';
         currencySelect.disabled = true;
     } else {
         currencySelect.disabled = false;
