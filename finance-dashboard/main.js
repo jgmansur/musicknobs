@@ -13,7 +13,7 @@ const SCOPES = 'https://www.googleapis.com/auth/spreadsheets https://www.googlea
 const SPREADSHEET_LOG_ID   = '1pn1bsxj2LaoySXAVUvqfEJY1VR4R_T8NsTOqQnVW5Xw'; // Control de Gastos
 const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // Gastos Fijos
 const SPREADSHEET_DEUDAS_ID = '1dKxhgqazskm15lx0f6FNCA0gpJ7i5glfxkusiH3b0Uk'; // Control de Deudas
-const APP_VERSION  = 'v3.5.1';
+const APP_VERSION  = 'v3.5.2';
 // Bump token keys to force re-auth with the new drive scope
 const TOKEN_KEY    = 'google_access_token_v4';
 const EXPIRY_KEY   = 'google_token_expiry_v4';
@@ -301,6 +301,7 @@ const ACCOUNT_ICONS  = { bank:'🏦', credit:'💳', cash:'💵', invest:'📈',
 const ACCOUNT_COLORS = { bank:'#3b82f6', credit:'#ef4444', cash:'#22c55e', invest:'#a855f7', other:'#f59e0b' };
 const ACCOUNT_TYPE_LABEL = { bank:'Cuenta bancaria', credit:'Tarjeta de crédito', cash:'Efectivo', invest:'Inversión', other:'Otro' };
 const FX_CACHE_KEY = 'usd_mxn_rate_cache_v1';
+const INVEST_RATE_CACHE_KEY = 'investment_rate_cache_v1';
 
 let balanceUsdMxnRate = (() => {
     try {
@@ -313,6 +314,21 @@ let balanceUsdMxnRate = (() => {
     }
 })();
 let balanceFxFetchInFlight = false;
+let balanceInvestRates = (() => {
+    try {
+        const raw = localStorage.getItem(INVEST_RATE_CACHE_KEY);
+        if (!raw) return { date: null, cetes: 10.5, mifel: 10.0 };
+        const parsed = JSON.parse(raw);
+        return {
+            date: parsed?.date || null,
+            cetes: Number(parsed?.cetes) || 10.5,
+            mifel: Number(parsed?.mifel) || 10.0,
+        };
+    } catch {
+        return { date: null, cetes: 10.5, mifel: 10.0 };
+    }
+})();
+let balanceInvestFetchInFlight = false;
 
 function balance_normalizeAccount(a = {}) {
     const currency = (a.currency || 'MXN').toString().toUpperCase();
@@ -325,6 +341,10 @@ function balance_normalizeAccount(a = {}) {
         creditLimit: typeof a.creditLimit === 'number' ? a.creditLimit : parseSheetValue(a.creditLimit),
         creditLimitVisible: !!a.creditLimitVisible,
         currency: currency === 'USD' ? 'USD' : 'MXN',
+        investmentType: ['cetes', 'mifel', 'custom'].includes((a.investmentType || '').toString().toLowerCase())
+            ? (a.investmentType || '').toString().toLowerCase()
+            : 'custom',
+        customAnnualRate: typeof a.customAnnualRate === 'number' ? a.customAnnualRate : parseSheetValue(a.customAnnualRate),
     };
 }
 
@@ -364,6 +384,58 @@ async function balance_refreshUsdMxnRate(force = false) {
         // Keep cached rate if available
     } finally {
         balanceFxFetchInFlight = false;
+    }
+}
+
+function balance_getEffectiveAnnualRate(acc) {
+    if (acc.type !== 'invest') return 0;
+    if (acc.investmentType === 'cetes') return balanceInvestRates.cetes;
+    if (acc.investmentType === 'mifel') return balanceInvestRates.mifel;
+    return Math.max(0, Number(acc.customAnnualRate) || 0);
+}
+
+async function balance_refreshInvestmentRates(force = false) {
+    const hasAutoInvestment = balanceAccounts.some(a => a.type === 'invest' && (a.investmentType === 'cetes' || a.investmentType === 'mifel'));
+    if (!hasAutoInvestment && !force) return;
+    if (balanceInvestFetchInFlight) return;
+    const today = new Date().toISOString().slice(0, 10);
+    if (!force && balanceInvestRates.date === today) return;
+
+    balanceInvestFetchInFlight = true;
+    try {
+        const next = { ...balanceInvestRates, date: today };
+
+        if (hasAutoInvestment) {
+            // CETES (best effort scrape)
+            try {
+                const cetesRes = await fetch('https://api.allorigins.win/raw?url=https%3A%2F%2Fwww.cetesdirecto.com%2Fsites%2Fportal%2Finvertir-en-cetes');
+                if (cetesRes.ok) {
+                    const html = await cetesRes.text();
+                    const m = html.match(/(\d{1,2}[\.,]\d{1,2})\s*%/);
+                    if (m) next.cetes = parseFloat(m[1].replace(',', '.')) || next.cetes;
+                }
+            } catch (_) {}
+
+            // MIFEL (best effort scrape)
+            try {
+                const mifelRes = await fetch('https://api.allorigins.win/raw?url=https%3A%2F%2Fwww.mifel.com.mx%2Finversiones');
+                if (mifelRes.ok) {
+                    const html = await mifelRes.text();
+                    const m = html.match(/(\d{1,2}[\.,]\d{1,2})\s*%/);
+                    if (m) next.mifel = parseFloat(m[1].replace(',', '.')) || next.mifel;
+                }
+            } catch (_) {}
+        }
+
+        balanceInvestRates = {
+            date: today,
+            cetes: Math.max(0, Number(next.cetes) || 10.5),
+            mifel: Math.max(0, Number(next.mifel) || 10.0),
+        };
+        localStorage.setItem(INVEST_RATE_CACHE_KEY, JSON.stringify(balanceInvestRates));
+        balance_updateKpi();
+    } finally {
+        balanceInvestFetchInFlight = false;
     }
 }
 
@@ -475,7 +547,7 @@ async function balance_getOrCreateSheet() {
     // Create the spreadsheet (in Jay App folder if found, else root Drive)
     sheetId = await driveCreateSpreadsheet('Finance Dashboard - Cuentas', folderId);
     // Initialize header row
-    await sheetsUpdate(sheetId, 'A1:H1', [['ID', 'Nombre', 'Saldo', 'Tipo', 'Oculto', 'LimiteCredito', 'LimiteVisible', 'Moneda']]);
+    await sheetsUpdate(sheetId, 'A1:J1', [['ID', 'Nombre', 'Saldo', 'Tipo', 'Oculto', 'LimiteCredito', 'LimiteVisible', 'Moneda', 'TipoInversion', 'TasaPersonal']]);
     localStorage.setItem(ACCOUNTS_SHEET_KEY, sheetId);
     return sheetId;
 }
@@ -488,6 +560,7 @@ async function balance_loadAccounts() {
             balanceAccounts = raw ? JSON.parse(raw).map(balance_normalizeAccount) : DEFAULT_ACCOUNTS.map(a => balance_normalizeAccount(a));
         } catch { balanceAccounts = DEFAULT_ACCOUNTS.map(a => balance_normalizeAccount(a)); }
         balance_refreshUsdMxnRate();
+        balance_refreshInvestmentRates();
         debugUpdate({ load: `localStorage (${balanceAccounts.length})`, token: 'No' });
         return;
     }
@@ -502,6 +575,7 @@ async function balance_loadAccounts() {
                 // Update localStorage cache
                 localStorage.setItem('finance_accounts_v1', JSON.stringify(balanceAccounts));
                 balance_refreshUsdMxnRate();
+                balance_refreshInvestmentRates();
                 debugUpdate({ load: `Firestore (${balanceAccounts.length})`, uid: _fbUid || '-' });
                 return;
             }
@@ -514,7 +588,7 @@ async function balance_loadAccounts() {
     // ── 2. Fallback: Google Sheets ──────────────────────────────
     try {
         const sid  = await balance_getOrCreateSheet();
-        const rows = await sheetsGet(sid, 'A2:H');
+        const rows = await sheetsGet(sid, 'A2:J');
         if (!rows.length) {
             balanceAccounts = DEFAULT_ACCOUNTS.map(a => balance_normalizeAccount(a));
             await balance_writeToSheet(sid); // seed defaults
@@ -530,10 +604,13 @@ async function balance_loadAccounts() {
                     creditLimit: typeof r[5] === 'number' ? r[5] : parseSheetValue(r[5]),
                     creditLimitVisible: (r[6] || '').toString().toUpperCase() === 'TRUE',
                     currency: (r[7] || 'MXN').toString().toUpperCase(),
+                    investmentType: (r[8] || 'custom').toString().toLowerCase(),
+                    customAnnualRate: typeof r[9] === 'number' ? r[9] : parseSheetValue(r[9]),
                 }));
         }
         debugUpdate({ load: `Sheets (${balanceAccounts.length})` });
         balance_refreshUsdMxnRate();
+        balance_refreshInvestmentRates();
         // Migrate to Firestore now that we have the data
         if (_fbUid) balance_saveToFirestore().catch(console.warn);
     } catch (err) {
@@ -545,9 +622,9 @@ async function balance_loadAccounts() {
 }
 
 async function balance_writeToSheet(sheetId) {
-    await sheetsClear(sheetId, 'A2:H');
+    await sheetsClear(sheetId, 'A2:J');
     if (balanceAccounts.length) {
-        await sheetsUpdate(sheetId, `A2:H${1 + balanceAccounts.length}`,
+        await sheetsUpdate(sheetId, `A2:J${1 + balanceAccounts.length}`,
             balanceAccounts.map(a => [
                 a.id,
                 a.name,
@@ -557,6 +634,8 @@ async function balance_writeToSheet(sheetId) {
                 Math.abs(a.creditLimit || 0),
                 a.creditLimitVisible ? 'TRUE' : 'FALSE',
                 a.currency || 'MXN',
+                a.investmentType || 'custom',
+                Number(a.customAnnualRate) || 0,
             ]));
     }
 }
@@ -574,6 +653,8 @@ async function balance_saveToFirestore() {
             creditLimit: Math.abs(a.creditLimit || 0),
             creditLimitVisible: !!a.creditLimitVisible,
             currency: a.currency || 'MXN',
+            investmentType: a.investmentType || 'custom',
+            customAnnualRate: Number(a.customAnnualRate) || 0,
         })),
         lastUpdated: serverTimestamp(),
     });
@@ -629,6 +710,19 @@ function balance_getTotal() {
     return base - balance_getPaidFixedDeduction() + balance_getLogNetAdjustment();
 }
 
+function balance_getInvestmentSummary() {
+    const items = balanceAccounts.filter(a => a.type === 'invest');
+    const rows = items.map(acc => {
+        const principalMxn = balance_convertToMxn(Math.abs(acc.balance || 0), acc.currency);
+        const annualRate = balance_getEffectiveAnnualRate(acc);
+        const monthlyYield = principalMxn * (annualRate / 100) / 12;
+        return { acc, principalMxn, annualRate, monthlyYield };
+    });
+    const investedTotal = rows.reduce((s, r) => s + r.principalMxn, 0);
+    const monthlyTotal = rows.reduce((s, r) => s + r.monthlyYield, 0);
+    return { rows, investedTotal, monthlyTotal };
+}
+
 function balance_updateKpi() {
     const total = balance_getTotal();
     const real  = total - balancePendingFixed;
@@ -648,6 +742,18 @@ function balance_updateKpi() {
             lbl.innerText = 'Toca para ver cuentas';
         }
         lbl.className = 'diff-label ' + (real >= 0 ? 'text-success' : 'text-danger');
+    }
+    const investSummary = balance_getInvestmentSummary();
+    const invAmountEl = document.getElementById('kpi-invest-amount');
+    const invYieldEl = document.getElementById('kpi-invest-yield');
+    if (invAmountEl) invAmountEl.innerText = formatCurrency(investSummary.investedTotal);
+    if (invYieldEl) {
+        invYieldEl.innerText = `+${formatCurrency(investSummary.monthlyTotal)}/mes`;
+        invYieldEl.className = `diff-label ${investSummary.monthlyTotal >= 0 ? 'text-success' : 'text-danger'}`;
+    }
+    const investPanel = document.getElementById('invest-panel');
+    if (investPanel && !investPanel.classList.contains('hidden')) {
+        balance_renderInvestmentPanel();
     }
     // Update debt summary card on dashboard
     const deudaEl = document.getElementById('kpi-deuda-amount');
@@ -680,8 +786,13 @@ function balance_renderPanel() {
         const signedMxn = balance_convertToMxn(Math.abs(signed), acc.currency) * (signed < 0 ? -1 : 1);
         const creditLimit = Math.abs(acc.creditLimit || 0);
         const creditLimitMxn = balance_convertToMxn(creditLimit, acc.currency);
+        const usdHint = acc.currency === 'USD' ? ` · USD ${Math.abs(signed).toFixed(2)}` : '';
         const creditBadge = acc.type === 'credit'
             ? `<span class="account-type-label">Limite: ${acc.creditLimitVisible ? `+${formatCurrency(creditLimitMxn)}` : 'oculto'}${acc.currency === 'USD' ? ` (USD ${creditLimit.toFixed(2)})` : ''}</span>`
+            : '';
+        const investRate = balance_getEffectiveAnnualRate(acc);
+        const investBadge = acc.type === 'invest'
+            ? `<span class="account-type-label">Tasa anual: ${investRate.toFixed(2)}% (${(acc.investmentType || 'custom').toUpperCase()})</span>`
             : '';
         const hiddenClass = acc.hidden ? 'account-card--hidden' : '';
         const eyeIcon = acc.hidden ? '👁️' : '👁';
@@ -694,8 +805,9 @@ function balance_renderPanel() {
             <span class="account-icon" style="background:${color}22;color:${color}">${icon}</span>
             <div class="account-info">
               <span class="account-name">${acc.name}${acc.hidden ? ' <span class="acc-hidden-badge">AHORRO</span>' : ''}</span>
-              <span class="account-type-label">${ACCOUNT_TYPE_LABEL[acc.type] || 'Cuenta'} · ${acc.currency || 'MXN'}</span>
+              <span class="account-type-label">${ACCOUNT_TYPE_LABEL[acc.type] || 'Cuenta'} · ${acc.currency || 'MXN'}${usdHint}</span>
               ${creditBadge}
+              ${investBadge}
             </div>
           </div>
           <div class="account-card-right">
@@ -732,12 +844,63 @@ async function balance_openPanel() {
     document.body.style.overflow = 'hidden';
     await balance_loadAccounts();
     await balance_refreshUsdMxnRate();
+    await balance_refreshInvestmentRates();
     balance_updateKpi();
     balance_renderPanel();
 }
 
 function balance_closePanel() {
     document.getElementById('balance-panel').classList.add('hidden');
+    document.body.style.overflow = '';
+}
+
+function balance_renderInvestmentPanel() {
+    const summary = balance_getInvestmentSummary();
+    const totalEl = document.getElementById('invest-total');
+    const monthlyEl = document.getElementById('invest-monthly');
+    const listEl = document.getElementById('invest-list');
+    if (!totalEl || !monthlyEl || !listEl) return;
+    totalEl.innerText = formatCurrency(summary.investedTotal);
+    monthlyEl.innerText = `+${formatCurrency(summary.monthlyTotal)}`;
+
+    if (!summary.rows.length) {
+        listEl.innerHTML = '<div class="empty-state">No hay cuentas de inversión</div>';
+        return;
+    }
+
+    listEl.innerHTML = summary.rows.map(({ acc, principalMxn, annualRate, monthlyYield }) => {
+        const srcLabel = acc.investmentType === 'cetes' ? 'CETES' : (acc.investmentType === 'mifel' ? 'MIFEL' : 'Personalizada');
+        const principalRaw = acc.currency === 'USD' ? `USD ${Math.abs(acc.balance || 0).toFixed(2)}` : formatCurrency(Math.abs(acc.balance || 0));
+        return `
+          <div class="account-card glass-subtle">
+            <div class="account-card-left">
+              <span class="account-icon" style="background:#38bdf822;color:#38bdf8">📈</span>
+              <div class="account-info">
+                <span class="account-name">${acc.name}</span>
+                <span class="account-type-label">${srcLabel} · ${annualRate.toFixed(2)}% anual</span>
+                <span class="account-type-label">Capital: ${principalRaw} (${formatCurrency(principalMxn)})</span>
+              </div>
+            </div>
+            <div class="account-card-right">
+              <span class="account-balance text-success">+${formatCurrency(monthlyYield)}/mes</span>
+            </div>
+          </div>
+        `;
+    }).join('');
+}
+
+function balance_openInvestPanel() {
+    const panel = document.getElementById('invest-panel');
+    if (!panel) return;
+    panel.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+    balance_renderInvestmentPanel();
+}
+
+function balance_closeInvestPanel() {
+    const panel = document.getElementById('invest-panel');
+    if (!panel) return;
+    panel.classList.add('hidden');
     document.body.style.overflow = '';
 }
 
@@ -762,6 +925,8 @@ function balance_openEdit(id) {
     document.getElementById('acc-currency').value = acc.currency || 'MXN';
     document.getElementById('acc-credit-limit').value = Math.abs(acc.creditLimit || 0);
     document.getElementById('acc-credit-visible').value = acc.creditLimitVisible ? '1' : '0';
+    document.getElementById('acc-invest-type').value = acc.investmentType || 'custom';
+    document.getElementById('acc-invest-rate').value = Number(acc.customAnnualRate || 0);
     balance_refreshCreditFields();
     balance_showForm();
 }
@@ -774,6 +939,8 @@ function balance_openAdd() {
     document.getElementById('acc-currency').value = 'MXN';
     document.getElementById('acc-credit-limit').value = '';
     document.getElementById('acc-credit-visible').value = '0';
+    document.getElementById('acc-invest-type').value = 'cetes';
+    document.getElementById('acc-invest-rate').value = '';
     balance_refreshCreditFields();
     balance_showForm();
 }
@@ -803,6 +970,8 @@ async function balance_saveAccount() {
     const currency = document.getElementById('acc-currency').value === 'USD' ? 'USD' : 'MXN';
     const creditLimit = Math.abs(parseFloat(document.getElementById('acc-credit-limit').value) || 0);
     const creditLimitVisible = document.getElementById('acc-credit-visible').value === '1';
+    const investmentType = document.getElementById('acc-invest-type').value;
+    const customAnnualRate = Math.max(0, parseFloat(document.getElementById('acc-invest-rate').value) || 0);
     if (!name) return;
     const btn = document.getElementById('acc-save-btn');
     btn.disabled = true; btn.innerText = 'Guardando...';
@@ -816,6 +985,8 @@ async function balance_saveAccount() {
             acc.currency = currency;
             acc.creditLimit = type === 'credit' ? creditLimit : 0;
             acc.creditLimitVisible = type === 'credit' ? creditLimitVisible : false;
+            acc.investmentType = type === 'invest' ? investmentType : 'custom';
+            acc.customAnnualRate = type === 'invest' ? customAnnualRate : 0;
         }
     } else {
         balanceAccounts.push(balance_normalizeAccount({
@@ -827,11 +998,14 @@ async function balance_saveAccount() {
             hidden: false,
             creditLimit: type === 'credit' ? creditLimit : 0,
             creditLimitVisible: type === 'credit' ? creditLimitVisible : false,
+            investmentType: type === 'invest' ? investmentType : 'custom',
+            customAnnualRate: type === 'invest' ? customAnnualRate : 0,
         }));
     }
     balance_resetDynamicAnchors();
     await balance_saveAccounts();
     await balance_refreshUsdMxnRate(true);
+    await balance_refreshInvestmentRates(true);
     balance_renderPanel();
     balance_updateKpi();
     document.getElementById('add-account-form').classList.add('hidden');
@@ -857,15 +1031,22 @@ function balance_init() {
         if (raw) { balanceAccounts = JSON.parse(raw).map(balance_normalizeAccount); balance_updateKpi(); }
     } catch {}
     balance_refreshUsdMxnRate();
+    balance_refreshInvestmentRates();
 
     document.getElementById('kpi-balance-card')
         .addEventListener('click', balance_openPanel);
     document.getElementById('kpi-deuda-card')
         ?.addEventListener('click', () => showTab('deudas'));
+    document.getElementById('kpi-invest-card')
+        ?.addEventListener('click', balance_openInvestPanel);
     document.getElementById('balance-panel-close')
         .addEventListener('click', balance_closePanel);
     document.getElementById('balance-panel-overlay')
         .addEventListener('click', balance_closePanel);
+    document.getElementById('invest-panel-close')
+        ?.addEventListener('click', balance_closeInvestPanel);
+    document.getElementById('invest-panel-overlay')
+        ?.addEventListener('click', balance_closeInvestPanel);
     document.getElementById('acc-add-btn')
         .addEventListener('click', balance_openAdd);
     document.getElementById('acc-save-btn')
@@ -874,6 +1055,11 @@ function balance_init() {
         .addEventListener('change', balance_refreshCreditFields);
     document.getElementById('acc-currency')
         .addEventListener('change', () => balance_refreshUsdMxnRate(true));
+    document.getElementById('acc-invest-type')
+        .addEventListener('change', () => {
+            balance_refreshCreditFields();
+            balance_refreshInvestmentRates(true);
+        });
     document.getElementById('acc-credit-visible-btn')
         .addEventListener('click', () => {
             const input = document.getElementById('acc-credit-visible');
@@ -891,11 +1077,16 @@ function balance_init() {
 
 function balance_refreshCreditFields() {
     const type = document.getElementById('acc-type').value;
-    const wrap = document.getElementById('acc-credit-fields');
+    const creditWrap = document.getElementById('acc-credit-fields');
+    const investWrap = document.getElementById('acc-invest-fields');
+    const investType = document.getElementById('acc-invest-type').value;
+    const investRate = document.getElementById('acc-invest-rate');
     const btn = document.getElementById('acc-credit-visible-btn');
     const hiddenInput = document.getElementById('acc-credit-visible');
     const isCredit = type === 'credit';
-    wrap.classList.toggle('hidden', !isCredit);
+    creditWrap.classList.toggle('hidden', !isCredit);
+    investWrap.classList.toggle('hidden', type !== 'invest');
+    investRate.classList.toggle('hidden', !(type === 'invest' && investType === 'custom'));
     if (!isCredit) return;
     const isVisible = hiddenInput.value === '1';
     btn.innerText = isVisible ? '👁️ Limite visible en balance' : '🙈 Limite oculto en balance';

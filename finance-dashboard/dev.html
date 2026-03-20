@@ -20,7 +20,7 @@
         <div class="header-content">
           <div class="logo-area">
             <h1 class="premium-title">ESTRATÉGIA<span>FINANCIERA</span></h1>
-            <p class="subtitle">Music Knobs | v3.5.1</p>
+            <p class="subtitle">Music Knobs | v3.5.2</p>
           </div>
           <div class="action-area">
             <div id="sync-status" class="status-badge">Sincronizado</div>
@@ -72,6 +72,14 @@
                 <span class="label">Total Deudas <span class="kpi-tap-hint">↗</span></span>
                 <h2 id="kpi-deuda-amount" class="text-danger">$0.00</h2>
                 <span class="diff-label text-danger">Toca para ver deudas</span>
+              </div>
+            </div>
+            <div class="kpi-card glass kpi-card--clickable" id="kpi-invest-card" title="Ver detalle de inversiones" style="cursor:pointer">
+              <div class="kpi-icon" style="background:rgba(56,189,248,.16);color:#38bdf8"><i data-lucide="trending-up"></i></div>
+              <div class="kpi-data">
+                <span class="label">Inversiones <span class="kpi-tap-hint">↗</span></span>
+                <h2 id="kpi-invest-amount" class="text-success">$0.00</h2>
+                <span id="kpi-invest-yield" class="diff-label text-success">+$0.00/mes</span>
               </div>
             </div>
           </section>
@@ -147,6 +155,14 @@
               <input id="acc-credit-limit" class="field-input" type="number" placeholder="Límite de crédito ($)" step="0.01" inputmode="decimal">
               <input id="acc-credit-visible" type="hidden" value="0">
               <button id="acc-credit-visible-btn" type="button" class="secondary-btn" style="width:100%;margin-top:.45rem">🙈 Limite oculto en balance</button>
+            </div>
+            <div id="acc-invest-fields" class="hidden">
+              <select id="acc-invest-type" class="field-input">
+                <option value="cetes">CETES (tasa diaria)</option>
+                <option value="mifel">MIFEL (tasa diaria)</option>
+                <option value="custom">Inversión personalizada</option>
+              </select>
+              <input id="acc-invest-rate" class="field-input hidden" type="number" placeholder="Tasa anual personalizada (%)" step="0.01" inputmode="decimal" style="margin-top:.45rem">
             </div>
             <div class="form-row-2" style="gap:.5rem">
               <button id="acc-save-btn" class="primary-btn" style="flex:1">Guardar</button>
@@ -425,6 +441,31 @@
           <div id="hormiga-bars-container" style="display: flex; flex-direction: column; gap: 0.75rem;">
             <!-- Barras se insertan dinámicamente aquí -->
           </div>
+        </div>
+      </div>
+
+      <!-- ══ INVESTMENT DETAIL PANEL ══ -->
+      <div id="invest-panel" class="bottom-sheet hidden">
+        <div id="invest-panel-overlay" class="bottom-sheet-overlay"></div>
+        <div class="bottom-sheet-content glass hormiga-panel-inner">
+          <div class="sheet-handle"></div>
+          <div class="balance-panel-header">
+            <h3 class="balance-panel-title">📈 Detalle Inversiones</h3>
+            <button id="invest-panel-close" class="icon-btn" aria-label="Cerrar">✕</button>
+          </div>
+
+          <div class="balance-summary-row">
+            <div class="balance-summary-card balance-summary-card--total glass-subtle">
+              <span class="bs-label">Total invertido</span>
+              <span id="invest-total" class="bs-amount text-success">$0.00</span>
+            </div>
+            <div class="balance-summary-card glass-subtle">
+              <span class="bs-label">Rendimiento mensual</span>
+              <span id="invest-monthly" class="bs-amount text-success">+$0.00</span>
+            </div>
+          </div>
+
+          <div id="invest-list" class="accounts-list"></div>
         </div>
       </div>
 
