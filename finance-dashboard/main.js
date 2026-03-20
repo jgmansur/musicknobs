@@ -288,8 +288,19 @@ const ACCOUNT_TYPE_LABEL = { bank:'Cuenta bancaria', credit:'Tarjeta de crédito
 let balanceAccounts   = [];
 let balanceEditingId  = null;
 let balancePendingFixed = 0; // Set by dashboard when fixed expenses load
+let balancePaidFixedTotal = 0;
+let balancePaidFixedAnchor = parseFloat(localStorage.getItem('balance_paid_anchor_v1') || '0') || 0;
 let balanceRealtimeUnsub = null;
 let balanceRealtimeUid = null;
+
+function balance_getPaidFixedDeduction() {
+    return Math.max(0, balancePaidFixedTotal - balancePaidFixedAnchor);
+}
+
+function balance_resetPaidDeductionAnchor() {
+    balancePaidFixedAnchor = balancePaidFixedTotal;
+    localStorage.setItem('balance_paid_anchor_v1', String(balancePaidFixedAnchor));
+}
 
 function balance_stopRealtimeSync() {
     if (balanceRealtimeUnsub) {
@@ -485,21 +496,28 @@ async function balance_saveAccounts() {
 // ── Compute helpers ──────────────────────────────────────
 function balance_getTotal() {
     // Skip accounts marked as hidden (savings, reserves, etc.)
-    return balanceAccounts
+    const base = balanceAccounts
         .filter(a => !a.hidden)
         .reduce((sum, a) => sum + (a.type === 'credit' ? -Math.abs(a.balance) : +a.balance), 0);
+    return base - balance_getPaidFixedDeduction();
 }
 
 function balance_updateKpi() {
     const total = balance_getTotal();
     const real  = total - balancePendingFixed;
+    const paidDeduction = balance_getPaidFixedDeduction();
     const el  = document.getElementById('balance-total');
     const lbl = document.getElementById('balance-real-label');
     if (el)  el.innerText = formatCurrency(total);
     if (lbl) {
-        lbl.innerText = balancePendingFixed > 0
-            ? `Real: ${formatCurrency(real)} (pendientes: ${formatCurrency(balancePendingFixed)})`
-            : 'Toca para ver cuentas';
+        if (balancePendingFixed > 0 || paidDeduction > 0) {
+            const parts = [];
+            if (paidDeduction > 0) parts.push(`pagados: ${formatCurrency(paidDeduction)}`);
+            if (balancePendingFixed > 0) parts.push(`pendientes: ${formatCurrency(balancePendingFixed)}`);
+            lbl.innerText = `Real: ${formatCurrency(real)} (${parts.join(' | ')})`;
+        } else {
+            lbl.innerText = 'Toca para ver cuentas';
+        }
         lbl.className = 'diff-label ' + (real >= 0 ? 'text-success' : 'text-danger');
     }
     // Update debt summary card on dashboard
@@ -514,13 +532,14 @@ function balance_updateKpi() {
 function balance_renderPanel() {
     const total = balance_getTotal();
     const real  = total - balancePendingFixed;
+    const paidDeduction = balance_getPaidFixedDeduction();
     document.getElementById('bs-total').innerText = formatCurrency(total);
     const bsReal = document.getElementById('bs-real');
     bsReal.innerText   = formatCurrency(real);
     bsReal.className   = 'bs-amount ' + (real >= 0 ? 'text-success' : 'text-danger');
     document.getElementById('bs-pending-label').innerText =
-        balancePendingFixed > 0
-            ? `menos ${formatCurrency(balancePendingFixed)} pendientes`
+        (balancePendingFixed > 0 || paidDeduction > 0)
+            ? `${paidDeduction > 0 ? `menos ${formatCurrency(paidDeduction)} pagados` : 'sin pagados'}${balancePendingFixed > 0 ? ` · menos ${formatCurrency(balancePendingFixed)} pendientes` : ''}`
             : 'sin fijos pendientes';
 
     const list = document.getElementById('accounts-list');
@@ -631,6 +650,7 @@ async function balance_saveAccount() {
     } else {
         balanceAccounts.push({ id: Date.now(), name, balance, type, hidden: false });
     }
+    balance_resetPaidDeductionAnchor();
     await balance_saveAccounts();
     balance_renderPanel();
     balance_updateKpi();
@@ -643,6 +663,7 @@ async function balance_saveAccount() {
 async function balance_deleteAccount(id) {
     if (!confirm('\u00bfEliminar esta cuenta?')) return;
     balanceAccounts = balanceAccounts.filter(a => a.id !== id);
+    balance_resetPaidDeductionAnchor();
     await balance_saveAccounts();
     balance_renderPanel();
     balance_updateKpi();
@@ -1014,11 +1035,13 @@ function processAndRender(logRows, fixedRows) {
     // KPI: only count GASTO-type, only unpaid (so the number goes down as you pay)
     const fixedGastos   = fixedExpenses.filter(e => e.tipo === 'gasto');
     const fixedTotal    = fixedGastos.filter(e => !e.isPaid).reduce((s, e) => s + Math.abs(e.monto), 0);
+    const fixedPaidTotal = fixedGastos.filter(e => e.isPaid).reduce((s, e) => s + Math.abs(e.monto), 0);
     const paidCount     = fixedGastos.filter(e => e.isPaid).length;
     const pendingFixed  = fixedTotal;   // already only unpaid gastos
 
     // Update balance module with current pending fixed expenses
     balancePendingFixed = pendingFixed;
+    balancePaidFixedTotal = fixedPaidTotal;
     balance_updateKpi();
 
     document.getElementById('gasto-hormiga-total').innerText = formatCurrency(hormigaTotal);
@@ -1632,6 +1655,9 @@ window.fijos_togglePagado = async function(id, wasPaid) {
 
     // Optimistic UI update
     item.isPaid = nowPaid;
+    balancePaidFixedTotal += nowPaid ? Math.abs(item.monto) : -Math.abs(item.monto);
+    if (balancePaidFixedTotal < 0) balancePaidFixedTotal = 0;
+    balance_updateKpi();
     fijos_aplicarFiltros();
 
     try {
@@ -1684,6 +1710,9 @@ window.fijos_togglePagado = async function(id, wasPaid) {
         console.error('Error toggling Pagado:', e);
         // Revert optimistic update
         item.isPaid = wasPaid;
+        balancePaidFixedTotal += wasPaid ? Math.abs(item.monto) : -Math.abs(item.monto);
+        if (balancePaidFixedTotal < 0) balancePaidFixedTotal = 0;
+        balance_updateKpi();
         fijos_aplicarFiltros();
         handleApiError(e, null);
     }
