@@ -15,7 +15,6 @@
   },
   "dependencies": {
     "apexcharts": "^5.10.4",
-    "firebase": "^12.11.0",
     "lucide": "^0.577.0"
   }
 }
