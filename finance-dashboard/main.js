@@ -37,21 +37,26 @@ let   _fbUid  = null; // current Firebase UID, set after sign-in
 
 onAuthStateChanged(_fbAuth, (user) => {
     _fbUid = user?.uid || null;
+    debugUpdate({ auth: user ? 'Sesion Firebase activa' : 'Sin sesion Firebase', uid: _fbUid || '-' });
 });
 
 async function firebase_signIn(googleAccessToken) {
     if (_fbAuth.currentUser?.uid) {
         _fbUid = _fbAuth.currentUser.uid;
+        debugUpdate({ auth: 'Sesion Firebase reutilizada', uid: _fbUid, token: accessToken ? 'Si (cache)' : 'No' });
         return;
     }
     try {
+        debugUpdate({ auth: 'Conectando Firebase...' });
         const credential = GoogleAuthProvider.credential(null, googleAccessToken);
         const result = await signInWithCredential(_fbAuth, credential);
         _fbUid = result.user.uid;
+        debugUpdate({ auth: 'Firebase OK', uid: _fbUid, token: accessToken ? 'Si (cache)' : 'No' });
         console.log('[Firebase] signed in as', result.user.email, '| uid:', _fbUid);
     } catch (e) {
         console.warn('[Firebase] sign-in failed:', e.message);
         _fbUid = null;
+        debugUpdate({ auth: `Firebase error: ${debugShort(e.message)}`, uid: '-' });
     }
 }
 
@@ -67,6 +72,75 @@ let accessToken = null;
 let tokenClient = null;
 let currentTab  = 'dashboard';
 let tabInited   = { dashboard: false, gastos: false, fijos: false, deudas: false };
+
+const debugState = {
+    auth: 'No autenticado',
+    uid: '-',
+    token: 'No',
+    load: '-',
+    save: '-',
+};
+
+function debugShort(text) {
+    const v = String(text || '');
+    return v.length > 70 ? `${v.slice(0, 67)}...` : v;
+}
+
+function debugRender() {
+    const body = document.getElementById('debug-panel-body');
+    if (!body) return;
+    body.innerHTML = [
+        `<div><strong>Auth:</strong> ${debugState.auth}</div>`,
+        `<div><strong>UID:</strong> ${debugState.uid}</div>`,
+        `<div><strong>Token:</strong> ${debugState.token}</div>`,
+        `<div><strong>Load:</strong> ${debugState.load}</div>`,
+        `<div><strong>Save:</strong> ${debugState.save}</div>`,
+    ].join('');
+}
+
+function debugUpdate(patch) {
+    Object.assign(debugState, patch || {});
+    debugRender();
+}
+
+function debugInitPanel() {
+    if (document.getElementById('debug-panel')) return;
+    const panel = document.createElement('div');
+    panel.id = 'debug-panel';
+    panel.style.cssText = [
+        'position:fixed',
+        'right:12px',
+        'bottom:calc(var(--tab-height) + 12px + env(safe-area-inset-bottom))',
+        'z-index:1200',
+        'width:min(360px, calc(100vw - 24px))',
+        'background:rgba(7,12,24,.92)',
+        'border:1px solid rgba(255,255,255,.12)',
+        'border-radius:12px',
+        'box-shadow:0 12px 30px rgba(0,0,0,.45)',
+        'font-size:12px',
+        'line-height:1.4',
+        'color:#e2e8f0',
+        'padding:10px 12px',
+        'backdrop-filter:blur(12px)',
+    ].join(';');
+    panel.innerHTML = `
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+            <strong style="font-size:12px;letter-spacing:.02em">Debug Firebase ${APP_VERSION}</strong>
+            <button id="debug-panel-toggle" style="background:transparent;border:0;color:#94a3b8;cursor:pointer;font-size:11px">ocultar</button>
+        </div>
+        <div id="debug-panel-body" style="display:grid;gap:3px"></div>
+    `;
+    document.body.appendChild(panel);
+    const toggle = document.getElementById('debug-panel-toggle');
+    toggle?.addEventListener('click', () => {
+        const body = document.getElementById('debug-panel-body');
+        if (!body) return;
+        const hidden = body.style.display === 'none';
+        body.style.display = hidden ? 'grid' : 'none';
+        toggle.innerText = hidden ? 'ocultar' : 'mostrar';
+    });
+    debugRender();
+}
 
 // migrate away from old token keys
 ['google_access_token', 'google_access_token_v2', 'google_access_token_v3'].forEach(k => localStorage.removeItem(k));
@@ -84,6 +158,8 @@ if (_stored && _stored !== 'undefined' && _stored !== 'null' && Date.now() < _ex
 // DOM READY
 // =============================================
 document.addEventListener('DOMContentLoaded', () => {
+    debugInitPanel();
+    debugUpdate({ token: accessToken ? 'Si (cache)' : 'No' });
     createIcons({ icons: { RefreshCw, AlertTriangle, CalendarCheck, TrendingUp, LogOut } });
     const subtitle = document.querySelector('.subtitle');
     if (subtitle) subtitle.innerText = `Music Knobs | ${APP_VERSION}`;
@@ -171,6 +247,7 @@ async function balance_loadAccounts() {
             const raw = localStorage.getItem('finance_accounts_v1');
             balanceAccounts = raw ? JSON.parse(raw) : DEFAULT_ACCOUNTS.map(a => ({ ...a }));
         } catch { balanceAccounts = DEFAULT_ACCOUNTS.map(a => ({ ...a })); }
+        debugUpdate({ load: `localStorage (${balanceAccounts.length})`, token: 'No' });
         return;
     }
     // ── 1. Try Firestore first (fastest, cloud-native) ──────────
@@ -189,10 +266,12 @@ async function balance_loadAccounts() {
                 }));
                 // Update localStorage cache
                 localStorage.setItem('finance_accounts_v1', JSON.stringify(balanceAccounts));
+                debugUpdate({ load: `Firestore (${balanceAccounts.length})`, uid: _fbUid || '-' });
                 return;
             }
             // No Firestore data yet — fall through to Sheets to migrate
         } catch (err) {
+            debugUpdate({ load: `Firestore error -> Sheets (${debugShort(err.message)})` });
             console.warn('[Firebase] Firestore load failed, falling back to Sheets:', err.message);
         }
     }
@@ -214,12 +293,14 @@ async function balance_loadAccounts() {
                     hidden:  (r[4] || '').toString().toUpperCase() === 'TRUE',
                 }));
         }
+        debugUpdate({ load: `Sheets (${balanceAccounts.length})` });
         // Migrate to Firestore now that we have the data
         if (_fbUid) balance_saveToFirestore().catch(console.warn);
     } catch (err) {
         console.error('Error loading accounts from Sheets:', err);
         const raw = localStorage.getItem('finance_accounts_v1');
         balanceAccounts = raw ? JSON.parse(raw) : DEFAULT_ACCOUNTS.map(a => ({ ...a }));
+        debugUpdate({ load: `localStorage fallback (${balanceAccounts.length})` });
     }
 }
 
@@ -249,17 +330,31 @@ async function balance_saveToFirestore() {
 async function balance_saveAccounts() {
     // 1. Update localStorage cache immediately (offline-first)
     localStorage.setItem('finance_accounts_v1', JSON.stringify(balanceAccounts));
-    if (!accessToken) return;
+    if (!accessToken) {
+        debugUpdate({ save: `Solo localStorage (${balanceAccounts.length})`, token: 'No' });
+        return;
+    }
     if (!_fbUid) await firebase_signIn(accessToken);
     // 2. Write to Firestore (primary) and Sheets (backup) in parallel
-    const saves = [];
-    if (_fbUid) saves.push(balance_saveToFirestore().catch(e => console.warn('[Firebase] save failed:', e.message)));
-    saves.push(
-        balance_getOrCreateSheet()
-            .then(sid => balance_writeToSheet(sid))
-            .catch(e => console.warn('[Sheets] save failed:', e.message))
-    );
-    await Promise.allSettled(saves);
+    const ops = [];
+    if (_fbUid) {
+        ops.push({ name: 'Firestore', promise: balance_saveToFirestore() });
+    }
+    ops.push({
+        name: 'Sheets',
+        promise: balance_getOrCreateSheet().then(sid => balance_writeToSheet(sid)),
+    });
+    const results = await Promise.allSettled(ops.map(op => op.promise));
+    const labels = results.map((result, i) => {
+        if (result.status === 'rejected') {
+            const msg = debugShort(result.reason?.message || result.reason || 'error');
+            console.warn(`[${ops[i].name}] save failed:`, msg);
+            return `${ops[i].name}:ERR`;
+        }
+        return `${ops[i].name}:OK`;
+    });
+    if (!_fbUid) labels.unshift('Firestore:SKIP(no uid)');
+    debugUpdate({ save: labels.join(' | '), token: 'Si' });
 }
 
 // ── Compute helpers ──────────────────────────────────────
@@ -507,6 +602,7 @@ function requestToken() {
                     accessToken = res.access_token;
                     localStorage.setItem(TOKEN_KEY, accessToken);
                     localStorage.setItem(EXPIRY_KEY, String(Date.now() + 3500 * 1000));
+                    debugUpdate({ token: 'Si (cache)', auth: 'Google OAuth OK' });
                     hideLoginModal();
                     // Firebase sign-in first so _fbUid is available before loading accounts
                     firebase_signIn(accessToken).then(() => {
@@ -546,6 +642,7 @@ function logout() {
     if (window.google?.accounts?.oauth2) {
         google.accounts.oauth2.revoke(accessToken, () => { console.log('Token revoked') });
     }
+    debugUpdate({ auth: 'Sesion cerrada', uid: '-', token: 'No', load: '-', save: '-' });
     showLoginModal();
 }
 
