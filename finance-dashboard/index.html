@@ -23,7 +23,7 @@
         <div class="header-content">
           <div class="logo-area">
             <h1 class="premium-title">ESTRATÉGIA<span>FINANCIERA</span></h1>
-            <p class="subtitle">Music Knobs | v3.5.4</p>
+            <p class="subtitle">Music Knobs | v3.5.5</p>
           </div>
           <div class="action-area">
             <div id="sync-status" class="status-badge">Sincronizado</div>
@@ -45,12 +45,12 @@
       <div id="view-dashboard" class="view active">
         <main class="dashboard-grid">
           <section class="kpi-row">
-            <div class="kpi-card glass kpi-card--clickable" id="kpi-hormiga-card" title="Ver detalle de gasto hormiga">
-              <div class="kpi-icon orange"><i data-lucide="alert-triangle"></i></div>
+            <div class="kpi-card glass kpi-card--clickable" id="kpi-balance-card" title="Ver detalle de cuentas">
+              <div class="kpi-icon green"><i data-lucide="trending-up"></i></div>
               <div class="kpi-data">
-                <span class="label">Gasto Hormiga <span class="kpi-tap-hint">↗</span></span>
-                <h2 id="gasto-hormiga-total">$0.00</h2>
-                <span id="gasto-hormiga-diff" class="diff-label">Calculando...</span>
+                <span class="label">Balance Disponible <span class="kpi-tap-hint">↗</span></span>
+                <h2 id="balance-total">$0.00</h2>
+                <span id="balance-real-label" class="diff-label text-success">Toca para ver cuentas</span>
               </div>
             </div>
             <div class="kpi-card glass">
@@ -61,12 +61,12 @@
                 <span id="pago-status" class="diff-label">0/0 Pagados</span>
               </div>
             </div>
-            <div class="kpi-card glass kpi-card--clickable" id="kpi-balance-card" title="Ver detalle de cuentas">
-              <div class="kpi-icon green"><i data-lucide="trending-up"></i></div>
+            <div class="kpi-card glass kpi-card--clickable" id="kpi-invest-card" title="Ver detalle de inversiones" style="cursor:pointer">
+              <div class="kpi-icon" style="background:rgba(56,189,248,.16);color:#38bdf8"><i data-lucide="trending-up"></i></div>
               <div class="kpi-data">
-                <span class="label">Balance Disponible <span class="kpi-tap-hint">↗</span></span>
-                <h2 id="balance-total">$0.00</h2>
-                <span id="balance-real-label" class="diff-label text-success">Toca para ver cuentas</span>
+                <span class="label">Inversiones <span class="kpi-tap-hint">↗</span></span>
+                <h2 id="kpi-invest-amount" class="text-success">$0.00</h2>
+                <span id="kpi-invest-yield" class="diff-label text-success">+$0.00/mes</span>
               </div>
             </div>
             <div class="kpi-card glass kpi-card--clickable" id="kpi-deuda-card" title="Ver deudas" style="cursor:pointer">
@@ -77,12 +77,12 @@
                 <span id="kpi-deuda-status" class="diff-label text-danger">Deudas visibles en balance</span>
               </div>
             </div>
-            <div class="kpi-card glass kpi-card--clickable" id="kpi-invest-card" title="Ver detalle de inversiones" style="cursor:pointer">
-              <div class="kpi-icon" style="background:rgba(56,189,248,.16);color:#38bdf8"><i data-lucide="trending-up"></i></div>
+            <div class="kpi-card glass kpi-card--clickable" id="kpi-hormiga-card" title="Ver detalle de gasto hormiga">
+              <div class="kpi-icon orange"><i data-lucide="alert-triangle"></i></div>
               <div class="kpi-data">
-                <span class="label">Inversiones <span class="kpi-tap-hint">↗</span></span>
-                <h2 id="kpi-invest-amount" class="text-success">$0.00</h2>
-                <span id="kpi-invest-yield" class="diff-label text-success">+$0.00/mes</span>
+                <span class="label">Gasto Hormiga <span class="kpi-tap-hint">↗</span></span>
+                <h2 id="gasto-hormiga-total">$0.00</h2>
+                <span id="gasto-hormiga-diff" class="diff-label">Calculando...</span>
               </div>
             </div>
           </section>
