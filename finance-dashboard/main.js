@@ -1,5 +1,8 @@
 import { createIcons, RefreshCw, AlertTriangle, CalendarCheck, TrendingUp, LogOut } from 'lucide';
 import ApexCharts from 'apexcharts';
+import { initializeApp } from 'firebase/app';
+import { getAuth, GoogleAuthProvider, signInWithCredential, signOut as fbSignOut } from 'firebase/auth';
+import { getFirestore, doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 
 // =============================================
 // CONFIG
@@ -10,11 +13,44 @@ const SCOPES = 'https://www.googleapis.com/auth/spreadsheets https://www.googlea
 const SPREADSHEET_LOG_ID   = '1pn1bsxj2LaoySXAVUvqfEJY1VR4R_T8NsTOqQnVW5Xw'; // Control de Gastos
 const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // Gastos Fijos
 const SPREADSHEET_DEUDAS_ID = '1dKxhgqazskm15lx0f6FNCA0gpJ7i5glfxkusiH3b0Uk'; // Control de Deudas
-const APP_VERSION  = 'v2.9.0';
+const APP_VERSION  = 'v3.0.0';
 // Bump token keys to force re-auth with the new drive scope
 const TOKEN_KEY    = 'google_access_token_v4';
 const EXPIRY_KEY   = 'google_token_expiry_v4';
 const ACCOUNTS_SHEET_KEY = 'finance_accounts_sheet_v1'; // localStorage key for the accounts spreadsheet ID
+
+// =============================================
+// FIREBASE
+// =============================================
+const FIREBASE_CONFIG = {
+    apiKey:            'AIzaSyCvYPZLCQdfuGLD4WDVnMUSerhPVutThy8',
+    authDomain:        'opengravity-telebot-2026.firebaseapp.com',
+    projectId:         'opengravity-telebot-2026',
+    storageBucket:     'opengravity-telebot-2026.firebasestorage.app',
+    messagingSenderId: '27971024867',
+    appId:             '1:27971024867:web:ac2a8ecc8d65d5566792d6',
+};
+const _fbApp  = initializeApp(FIREBASE_CONFIG);
+const _fbAuth = getAuth(_fbApp);
+const _fbDb   = getFirestore(_fbApp);
+let   _fbUid  = null; // current Firebase UID, set after sign-in
+
+async function firebase_signIn(googleAccessToken) {
+    try {
+        const credential = GoogleAuthProvider.credential(null, googleAccessToken);
+        const result = await signInWithCredential(_fbAuth, credential);
+        _fbUid = result.user.uid;
+        console.log('[Firebase] signed in as', result.user.email, '| uid:', _fbUid);
+    } catch (e) {
+        console.warn('[Firebase] sign-in failed:', e.message);
+        _fbUid = null;
+    }
+}
+
+async function firebase_signOut() {
+    try { await fbSignOut(_fbAuth); } catch (_) {}
+    _fbUid = null;
+}
 
 // =============================================
 // STATE
@@ -75,7 +111,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // Boot
     if (accessToken) {
         hideLoginModal();
-        showTab('dashboard');
+        // Sign into Firebase with the cached Google token, then load accounts
+        firebase_signIn(accessToken).then(() => {
+            balance_loadAccounts().then(() => balance_updateKpi());
+            showTab('dashboard');
+        });
     } else {
         showLoginModal();
     }
@@ -118,13 +158,37 @@ async function balance_getOrCreateSheet() {
 
 async function balance_loadAccounts() {
     if (!accessToken) {
-        // Not logged in yet — use localStorage fallback
+        // Not logged in — use localStorage fallback
         try {
             const raw = localStorage.getItem('finance_accounts_v1');
             balanceAccounts = raw ? JSON.parse(raw) : DEFAULT_ACCOUNTS.map(a => ({ ...a }));
         } catch { balanceAccounts = DEFAULT_ACCOUNTS.map(a => ({ ...a })); }
         return;
     }
+    // ── 1. Try Firestore first (fastest, cloud-native) ──────────
+    if (_fbUid) {
+        try {
+            const ref  = doc(_fbDb, 'users', _fbUid, 'balance', 'accounts');
+            const snap = await getDoc(ref);
+            if (snap.exists()) {
+                const data = snap.data();
+                balanceAccounts = (data.accounts || []).map(a => ({
+                    id:      a.id      || Date.now(),
+                    name:    a.name    || '',
+                    balance: a.balance || 0,
+                    type:    a.type    || 'bank',
+                    hidden:  !!a.hidden,
+                }));
+                // Update localStorage cache
+                localStorage.setItem('finance_accounts_v1', JSON.stringify(balanceAccounts));
+                return;
+            }
+            // No Firestore data yet — fall through to Sheets to migrate
+        } catch (err) {
+            console.warn('[Firebase] Firestore load failed, falling back to Sheets:', err.message);
+        }
+    }
+    // ── 2. Fallback: Google Sheets ──────────────────────────────
     try {
         const sid  = await balance_getOrCreateSheet();
         const rows = await sheetsGet(sid, 'A2:E');
@@ -142,6 +206,8 @@ async function balance_loadAccounts() {
                     hidden:  (r[4] || '').toString().toUpperCase() === 'TRUE',
                 }));
         }
+        // Migrate to Firestore now that we have the data
+        if (_fbUid) balance_saveToFirestore().catch(console.warn);
     } catch (err) {
         console.error('Error loading accounts from Sheets:', err);
         const raw = localStorage.getItem('finance_accounts_v1');
@@ -157,16 +223,34 @@ async function balance_writeToSheet(sheetId) {
     }
 }
 
+async function balance_saveToFirestore() {
+    if (!_fbUid) return;
+    const ref = doc(_fbDb, 'users', _fbUid, 'balance', 'accounts');
+    await setDoc(ref, {
+        accounts: balanceAccounts.map(a => ({
+            id:      a.id,
+            name:    a.name,
+            balance: a.balance,
+            type:    a.type,
+            hidden:  !!a.hidden,
+        })),
+        lastUpdated: serverTimestamp(),
+    });
+}
+
 async function balance_saveAccounts() {
-    // Mirror to localStorage as offline cache
+    // 1. Update localStorage cache immediately (offline-first)
     localStorage.setItem('finance_accounts_v1', JSON.stringify(balanceAccounts));
     if (!accessToken) return;
-    try {
-        const sid = await balance_getOrCreateSheet();
-        await balance_writeToSheet(sid);
-    } catch (err) {
-        console.error('Error saving accounts to Sheets:', err);
-    }
+    // 2. Write to Firestore (primary) and Sheets (backup) in parallel
+    const saves = [];
+    if (_fbUid) saves.push(balance_saveToFirestore().catch(e => console.warn('[Firebase] save failed:', e.message)));
+    saves.push(
+        balance_getOrCreateSheet()
+            .then(sid => balance_writeToSheet(sid))
+            .catch(e => console.warn('[Sheets] save failed:', e.message))
+    );
+    await Promise.allSettled(saves);
 }
 
 // ── Compute helpers ──────────────────────────────────────
@@ -413,12 +497,13 @@ function requestToken() {
                 if (res?.access_token) {
                     accessToken = res.access_token;
                     localStorage.setItem(TOKEN_KEY, accessToken);
-                    // store expiry: now + 3500s (tokens expire at 3600s)
                     localStorage.setItem(EXPIRY_KEY, String(Date.now() + 3500 * 1000));
                     hideLoginModal();
+                    // Firebase sign-in first so _fbUid is available before loading accounts
+                    firebase_signIn(accessToken).then(() => {
+                        balance_loadAccounts().then(() => balance_updateKpi());
+                    });
                     showTab('dashboard');
-                    // Sync accounts from Sheets now that we have auth
-                    balance_loadAccounts().then(() => balance_updateKpi());
                 } else {
                     showLoginModal();
                 }
@@ -447,7 +532,8 @@ function logout() {
     accessToken = null;
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(EXPIRY_KEY);
-    // Revoke token if possible
+    firebase_signOut(); // clear Firebase auth state
+    // Revoke Google token if possible
     if (window.google?.accounts?.oauth2) {
         google.accounts.oauth2.revoke(accessToken, () => { console.log('Token revoked') });
     }
