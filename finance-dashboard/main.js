@@ -1,4 +1,4 @@
-import { createIcons, RefreshCw, AlertTriangle, CalendarCheck, TrendingUp } from 'lucide';
+import { createIcons, RefreshCw, AlertTriangle, CalendarCheck, TrendingUp, LogOut } from 'lucide';
 import ApexCharts from 'apexcharts';
 
 // =============================================
@@ -9,7 +9,8 @@ const CLIENT_ID = '427918095213-6cbm5sgcfn6o8qosg6qe1r6u9toj66dp.apps.googleuser
 const SCOPES = 'https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/drive';
 const SPREADSHEET_LOG_ID   = '1pn1bsxj2LaoySXAVUvqfEJY1VR4R_T8NsTOqQnVW5Xw'; // Control de Gastos
 const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // Gastos Fijos
-const APP_VERSION  = 'v2.6.0';
+const SPREADSHEET_DEUDAS_ID = '1dKxhgqazskm15lx0f6FNCA0gpJ7i5glfxkusiH3b0Uk'; // Control de Deudas
+const APP_VERSION  = 'v2.7.0';
 // Bump token keys to force re-auth with the new drive scope
 const TOKEN_KEY    = 'google_access_token_v4';
 const EXPIRY_KEY   = 'google_token_expiry_v4';
@@ -21,7 +22,7 @@ const ACCOUNTS_SHEET_KEY = 'finance_accounts_sheet_v1'; // localStorage key for 
 let accessToken = null;
 let tokenClient = null;
 let currentTab  = 'dashboard';
-let tabInited   = { dashboard: false, gastos: false, fijos: false };
+let tabInited   = { dashboard: false, gastos: false, fijos: false, deudas: false };
 
 // migrate away from old token keys
 ['google_access_token', 'google_access_token_v2', 'google_access_token_v3'].forEach(k => localStorage.removeItem(k));
@@ -39,7 +40,7 @@ if (_stored && _stored !== 'undefined' && _stored !== 'null' && Date.now() < _ex
 // DOM READY
 // =============================================
 document.addEventListener('DOMContentLoaded', () => {
-    createIcons({ icons: { RefreshCw, AlertTriangle, CalendarCheck, TrendingUp } });
+    createIcons({ icons: { RefreshCw, AlertTriangle, CalendarCheck, TrendingUp, LogOut } });
     const subtitle = document.querySelector('.subtitle');
     if (subtitle) subtitle.innerText = `Music Knobs | ${APP_VERSION}`;
 
@@ -54,12 +55,14 @@ document.addEventListener('DOMContentLoaded', () => {
         else showLoginModal();
     });
 
-    // Login
+    // Login/Logout
     document.getElementById('login-google-btn').addEventListener('click', startGoogleLogin);
+    document.getElementById('logout-btn').addEventListener('click', logout);
 
     // Bind module events
     gastos_bindEvents();
     fijos_bindEvents();
+    deudas_bindEvents();
 
     // Hormiga Panel events
     document.getElementById('kpi-hormiga-card')?.addEventListener('click', hormiga_openPanel);
@@ -368,6 +371,7 @@ function showTab(name) {
         if (name === 'dashboard') fetchAndProcess();
         if (name === 'gastos')    gastos_cargarHistorial();
         if (name === 'fijos')     fijos_cargarDatos();
+        if (name === 'deudas')    deudas_cargarDatos();
     }
 }
 
@@ -430,6 +434,18 @@ function hideLoginModal() {
 // =============================================
 // SHEETS API HELPERS
 // =============================================
+
+function logout() {
+    accessToken = null;
+    localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem(EXPIRY_KEY);
+    // Revoke token if possible
+    if (window.google?.accounts?.oauth2) {
+        google.accounts.oauth2.revoke(accessToken, () => { console.log('Token revoked') });
+    }
+    showLoginModal();
+}
+
 async function sheetsGet(ssId, range) {
     const url = `https://sheets.googleapis.com/v4/spreadsheets/${ssId}/values/${encodeURIComponent(range)}?valueRenderOption=UNFORMATTED_VALUE`;
     const r = await fetch(url, { headers: { Authorization: `Bearer ${accessToken}` } });
@@ -572,11 +588,14 @@ function processAndRender(logRows, fixedRows) {
         // FIX: use toLowerCase() so 'Gasto'/'gasto'/'GASTO' all match
         if (hormigaKeywords.some(k => concepto.includes(k) || lugar.includes(k)) && (row[4] || '').toLowerCase() === 'gasto') {
             const parsedDate = parseSheetDate(fecha);
-            // Solo incluir gastos del mes corriente
+            
+            // SIEMPRE agregamos a la gráfica para tener historial completo
+            const formattedDate = normalizeDateString(fecha);
+            hormigaChartData.push({ x: formattedDate, y: monto });
+
+            // Solo incluir gastos del mes corriente en los indicadores visuales y panel
             if (parsedDate.getMonth() === currentMonth && parsedDate.getFullYear() === currentYear) {
                 hormigaTotal += monto;
-                const formattedDate = normalizeDateString(fecha);
-                hormigaChartData.push({ x: formattedDate, y: monto });
                 hormigaGastos.push({ lugar: row[1] || 'Oxxo', concepto: row[2] || '', monto });
             }
         }
@@ -1295,4 +1314,177 @@ function showToast(msg) {
     document.body.appendChild(t);
     setTimeout(() => t.classList.add('show'), 100);
     setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 300); }, 3000);
+}
+
+// =============================================
+// DEUDAS MODULE
+// =============================================
+let deudasState = {
+    allItems: [],
+    sheetId: null
+};
+
+function deudas_bindEvents() {
+    document.getElementById('d-btn-add')?.addEventListener('click', () => deudas_abrirSheet(null));
+    const overlay = document.getElementById('d-sheet-overlay');
+    if (overlay) {
+        overlay.addEventListener('click', deudas_cerrarSheet);
+    } else {
+        // Fallback for click outside
+        window.addEventListener('click', (e) => {
+            const sheet = document.getElementById('d-sheet');
+            if (sheet && !sheet.classList.contains('hidden')) {
+                 if (e.target.id === 'd-sheet') {
+                     deudas_cerrarSheet();
+                 }
+            }
+        });
+    }
+    
+    // Check if we have a close button to add event listener to
+    const closeBtn = document.getElementById('d-sheet-close');
+    if (closeBtn) {
+        closeBtn.addEventListener('click', deudas_cerrarSheet);
+    } else {
+         // Create one or just let the overlay handle it. 
+         // In index.html there is no d-sheet-close inside d-sheet based on grep
+    }
+    document.getElementById('d-btn-guardar')?.addEventListener('click', deudas_guardar);
+}
+
+async function deudas_cargarDatos() {
+    const lista = document.getElementById('d-lista');
+    lista.innerHTML = '<div class="loading-spinner" style="margin-top: 2rem;">Cargando deudas...</div>';
+    try {
+        let rows = [];
+        try {
+            rows = await sheetsGet(SPREADSHEET_DEUDAS_ID, 'Deudas!A2:B');
+        } catch(e) {
+            rows = await sheetsGet(SPREADSHEET_DEUDAS_ID, 'Hoja 1!A2:B');
+        }
+        
+        deudasState.allItems = rows.map((row, i) => ({
+            id: i + 2,
+            concepto: row[0] || '',
+            monto: parseSheetValue(row[1])
+        })).filter(i => i.concepto);
+        
+        deudas_renderLista();
+    } catch(e) {
+        handleApiError(e, lista);
+    }
+}
+
+function deudas_renderLista() {
+    const el = document.getElementById('d-lista');
+    const totalEl = document.getElementById('d-total');
+    let total = 0;
+    
+    if (!deudasState.allItems.length) {
+        el.innerHTML = '<div class="empty-state">No tienes deudas registradas 🎉</div>';
+        if (totalEl) totalEl.innerText = formatCurrency(0);
+        return;
+    }
+    
+    el.innerHTML = deudasState.allItems.map(item => {
+        total += item.monto;
+        return `
+        <div class="movimiento-card">
+          <div class="mc-left">
+            <span class="mc-lugar" style="font-size:1.05rem; font-weight: 600;">${item.concepto}</span>
+          </div>
+          <div class="mc-right" style="align-items:flex-end;gap:.5rem">
+            <span class="mc-monto text-danger" style="font-size:1.1rem;font-weight:700">-${formatCurrency(item.monto)}</span>
+            <div style="display:flex;gap:.4rem;margin-top:.2rem">
+              <button class="mini-btn icon-btn-sm" onclick="deudas_editar(${item.id})" style="font-size: 1.1rem; padding: 4px;">✏️</button>
+              <button class="mini-btn mini-btn-danger icon-btn-sm" onclick="deudas_borrar(${item.id})" style="font-size: 1.1rem; padding: 4px;">🗑️</button>
+            </div>
+          </div>
+        </div>`;
+    }).join('');
+    
+    if (totalEl) totalEl.innerText = formatCurrency(total);
+}
+
+window.deudas_editar = function(id) {
+    const item = deudasState.allItems.find(i => i.id === id);
+    if (item) deudas_abrirSheet(item);
+};
+
+window.deudas_borrar = async function(id) {
+    if (!confirm('¿Eliminar esta deuda?')) return;
+    const el = document.getElementById('d-lista');
+    el.innerHTML = '<div class="loading-spinner" style="margin-top: 2rem;">Actualizando...</div>';
+    try {
+        if (deudasState.sheetId === null) {
+            try {
+                deudasState.sheetId = await getSheetId(SPREADSHEET_DEUDAS_ID, 'Deudas');
+            } catch(e) {
+                deudasState.sheetId = await getSheetId(SPREADSHEET_DEUDAS_ID, 'Hoja 1');
+            }
+        }
+        await sheetsDeleteRow(SPREADSHEET_DEUDAS_ID, deudasState.sheetId, id - 1);
+        deudas_cargarDatos();
+        showToast('🗑️ Deuda eliminada');
+    } catch(e) { 
+        console.error(e); 
+        el.innerHTML = '<div class="empty-state text-danger">❌ Error al borrar</div>'; 
+    }
+};
+
+function deudas_abrirSheet(item) {
+    const sheet = document.getElementById('d-sheet');
+    document.getElementById('d-edit-id').value = '';
+    document.getElementById('d-sheet-title').innerText = 'Nueva Deuda';
+    document.getElementById('d-concepto').value = '';
+    document.getElementById('d-monto').value = '';
+    
+    if (item) {
+        document.getElementById('d-edit-id').value = item.id;
+        document.getElementById('d-sheet-title').innerText = 'Editar Deuda';
+        document.getElementById('d-concepto').value = item.concepto;
+        document.getElementById('d-monto').value = item.monto;
+    }
+    sheet.classList.remove('hidden');
+}
+
+function deudas_cerrarSheet() { 
+    document.getElementById('d-sheet').classList.add('hidden'); 
+}
+
+async function deudas_guardar() {
+    const btn = document.getElementById('d-btn-guardar');
+    const concepto = document.getElementById('d-concepto').value.trim();
+    const monto = parseSheetValue(document.getElementById('d-monto').value);
+    const editId = document.getElementById('d-edit-id').value;
+    
+    if (!concepto || !monto) {
+        alert('Por favor llena todos los campos.');
+        return;
+    }
+    
+    btn.disabled = true; btn.innerText = 'Guardando...';
+    try {
+        let sheetName = 'Deudas';
+        try {
+            await sheetsGet(SPREADSHEET_DEUDAS_ID, 'Deudas!A1:A1');
+        } catch(e) {
+            sheetName = 'Hoja 1';
+        }
+        
+        if (editId) {
+            await sheetsUpdate(SPREADSHEET_DEUDAS_ID, `${sheetName}!A${editId}:B${editId}`, [[concepto, monto]]);
+            showToast('✅ Deuda actualizada');
+        } else {
+            await sheetsAppend(SPREADSHEET_DEUDAS_ID, `${sheetName}!A:B`, [[concepto, Math.abs(monto)]]);
+            showToast('✅ Deuda agregada');
+        }
+        deudas_cerrarSheet();
+        deudas_cargarDatos();
+    } catch(e) {
+        console.error(e); 
+        alert('❌ Error al guardar deuda');
+    } finally {
+        btn.disabled = false; btn.innerText = 'Guardar';
+    }
 }

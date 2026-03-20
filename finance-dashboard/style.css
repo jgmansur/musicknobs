@@ -187,7 +187,31 @@ td { padding: .75rem .9rem; font-size: .82rem; border-bottom: 1px solid rgba(255
   cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background .2s; flex-shrink: 0;
 }
 .icon-btn:hover { background: rgba(255,255,255,.1); }
+.icon-btn:hover { background: rgba(255,255,255,.1); }
 .hidden { display: none !important; }
+
+.btn-notebook {
+  width: 100%;
+  background: linear-gradient(135deg, #1e8e3e, #188038);
+  color: #fff;
+  border: none;
+  padding: .8rem 1.25rem;
+  font-family: var(--font-family);
+  font-size: .88rem;
+  font-weight: 700;
+  border-radius: .85rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: 0 4px 15px rgba(30,142,62,.3);
+  transition: transform .2s, opacity .2s;
+}
+.btn-notebook:hover {
+  transform: translateY(-2px);
+  opacity: .95;
+}
 
 /* =============================================
    FORMS — shared
