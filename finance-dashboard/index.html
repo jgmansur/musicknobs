@@ -9,8 +9,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <script type="module" crossorigin src="/musicknobs/finance-dashboard/assets/index-CBbr7rcn.js"></script>
-    <link rel="stylesheet" crossorigin href="/musicknobs/finance-dashboard/assets/index-C7yMlwdJ.css">
+    <script type="module" src="/main.js"></script>
+    <link rel="stylesheet" href="/style.css">
   </head>
   <body>
     <div id="app">
@@ -65,7 +65,13 @@
 
           <div class="main-content-row">
             <section class="chart-section glass">
-              <div class="section-header"><h3>Tendencia Gasto Hormiga</h3></div>
+              <div class="section-header chart-header">
+                <h3>Tendencia Gasto Hormiga</h3>
+                <div class="chart-toggle-group">
+                  <button id="chart-toggle-daily" class="chart-toggle-btn active" onclick="setChartMode('daily')">Diario</button>
+                  <button id="chart-toggle-monthly" class="chart-toggle-btn" onclick="setChartMode('monthly')">Mensual</button>
+                </div>
+              </div>
               <div id="chart-hormiga"></div>
             </section>
             <section class="table-section glass">

@@ -9,7 +9,7 @@ const CLIENT_ID = '427918095213-6cbm5sgcfn6o8qosg6qe1r6u9toj66dp.apps.googleuser
 const SCOPES = 'https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/drive';
 const SPREADSHEET_LOG_ID   = '1pn1bsxj2LaoySXAVUvqfEJY1VR4R_T8NsTOqQnVW5Xw'; // Control de Gastos
 const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // Gastos Fijos
-const APP_VERSION  = 'v2.4.1';
+const APP_VERSION  = 'v2.5.0';
 // Bump token keys to force re-auth with the new drive scope
 const TOKEN_KEY    = 'google_access_token_v4';
 const EXPIRY_KEY   = 'google_token_expiry_v4';
@@ -77,10 +77,10 @@ document.addEventListener('DOMContentLoaded', () => {
 // BALANCE MODULE
 // =============================================
 const DEFAULT_ACCOUNTS = [
-    { id: 1, name: 'Santander',          balance: 0, type: 'bank'   },
-    { id: 2, name: 'BBVA',               balance: 0, type: 'bank'   },
-    { id: 3, name: 'Bank of America',    balance: 0, type: 'other'  },
-    { id: 4, name: 'Tarjeta de Cr\u00e9dito', balance: 0, type: 'credit' },
+    { id: 1, name: 'Santander',               balance: 0, type: 'bank',   hidden: false },
+    { id: 2, name: 'BBVA',                    balance: 0, type: 'bank',   hidden: false },
+    { id: 3, name: 'Bank of America',         balance: 0, type: 'other',  hidden: false },
+    { id: 4, name: 'Tarjeta de Cr\u00e9dito', balance: 0, type: 'credit', hidden: false },
 ];
 
 const ACCOUNT_ICONS  = { bank:'🏦', credit:'💳', cash:'💵', invest:'📈', other:'🌎' };
@@ -119,7 +119,7 @@ async function balance_loadAccounts() {
     }
     try {
         const sid  = await balance_getOrCreateSheet();
-        const rows = await sheetsGet(sid, 'A2:D');
+        const rows = await sheetsGet(sid, 'A2:E');
         if (!rows.length) {
             balanceAccounts = DEFAULT_ACCOUNTS.map(a => ({ ...a }));
             await balance_writeToSheet(sid); // seed defaults
@@ -131,6 +131,7 @@ async function balance_loadAccounts() {
                     name:    r[1] || '',
                     balance: typeof r[2] === 'number' ? r[2] : parseSheetValue(r[2]),
                     type:    r[3] || 'bank',
+                    hidden:  (r[4] || '').toString().toUpperCase() === 'TRUE',
                 }));
         }
     } catch (err) {
@@ -141,10 +142,10 @@ async function balance_loadAccounts() {
 }
 
 async function balance_writeToSheet(sheetId) {
-    await sheetsClear(sheetId, 'A2:D');
+    await sheetsClear(sheetId, 'A2:E');
     if (balanceAccounts.length) {
-        await sheetsUpdate(sheetId, `A2:D${1 + balanceAccounts.length}`,
-            balanceAccounts.map(a => [a.id, a.name, a.balance, a.type]));
+        await sheetsUpdate(sheetId, `A2:E${1 + balanceAccounts.length}`,
+            balanceAccounts.map(a => [a.id, a.name, a.balance, a.type, a.hidden ? 'TRUE' : 'FALSE']));
     }
 }
 
@@ -162,8 +163,10 @@ async function balance_saveAccounts() {
 
 // ── Compute helpers ──────────────────────────────────────
 function balance_getTotal() {
-    return balanceAccounts.reduce((sum, a) =>
-        sum + (a.type === 'credit' ? -Math.abs(a.balance) : +a.balance), 0);
+    // Skip accounts marked as hidden (savings, reserves, etc.)
+    return balanceAccounts
+        .filter(a => !a.hidden)
+        .reduce((sum, a) => sum + (a.type === 'credit' ? -Math.abs(a.balance) : +a.balance), 0);
 }
 
 function balance_updateKpi() {
@@ -196,20 +199,24 @@ function balance_renderPanel() {
     const list = document.getElementById('accounts-list');
     list.innerHTML = balanceAccounts.map(acc => {
         const icon   = ACCOUNT_ICONS[acc.type]  || '🏦';
-        const color  = ACCOUNT_COLORS[acc.type] || '#3b82f6';
+        const color  = acc.hidden ? '#475569' : (ACCOUNT_COLORS[acc.type] || '#3b82f6');
         const signed = acc.type === 'credit' ? -Math.abs(acc.balance) : +acc.balance;
+        const hiddenClass = acc.hidden ? 'account-card--hidden' : '';
+        const eyeIcon = acc.hidden ? '👁️' : '👁';
+        const eyeTitle = acc.hidden ? 'Incluir en balance' : 'Excluir del balance (ahorro)';
         return `
-        <div class="account-card glass-subtle" data-id="${acc.id}">
+        <div class="account-card glass-subtle ${hiddenClass}" data-id="${acc.id}">
           <div class="account-card-left">
             <span class="account-icon" style="background:${color}22;color:${color}">${icon}</span>
             <div class="account-info">
-              <span class="account-name">${acc.name}</span>
+              <span class="account-name">${acc.name}${acc.hidden ? ' <span class="acc-hidden-badge">AHORRO</span>' : ''}</span>
               <span class="account-type-label">${ACCOUNT_TYPE_LABEL[acc.type] || 'Cuenta'}</span>
             </div>
           </div>
           <div class="account-card-right">
-            <span class="account-balance ${signed < 0 ? 'text-danger' : ''}">${formatCurrency(signed)}</span>
+            <span class="account-balance ${signed < 0 ? 'text-danger' : ''} ${acc.hidden ? 'acc-balance-hidden' : ''}">${formatCurrency(signed)}</span>
             <div class="account-actions">
+              <button class="acc-toggle-btn icon-btn-sm" data-id="${acc.id}" title="${eyeTitle}">${eyeIcon}</button>
               <button class="acc-edit-btn icon-btn-sm" data-id="${acc.id}" title="Editar">✏️</button>
               <button class="acc-del-btn icon-btn-sm" data-id="${acc.id}" title="Eliminar">🗑️</button>
             </div>
@@ -217,6 +224,8 @@ function balance_renderPanel() {
         </div>`;
     }).join('');
 
+    list.querySelectorAll('.acc-toggle-btn').forEach(btn =>
+        btn.addEventListener('click', () => balance_toggleHidden(parseInt(btn.dataset.id))));
     list.querySelectorAll('.acc-edit-btn').forEach(btn =>
         btn.addEventListener('click', () => balance_openEdit(parseInt(btn.dataset.id))));
     list.querySelectorAll('.acc-del-btn').forEach(btn =>
@@ -272,6 +281,15 @@ function balance_openAdd() {
     balance_showForm();
 }
 
+async function balance_toggleHidden(id) {
+    const acc = balanceAccounts.find(a => a.id === id);
+    if (!acc) return;
+    acc.hidden = !acc.hidden;
+    await balance_saveAccounts();
+    balance_renderPanel();
+    balance_updateKpi();
+}
+
 async function balance_saveAccount() {
     const name    = document.getElementById('acc-name').value.trim();
     const balance = parseFloat(document.getElementById('acc-balance').value) || 0;
@@ -284,7 +302,7 @@ async function balance_saveAccount() {
         const acc = balanceAccounts.find(a => a.id === balanceEditingId);
         if (acc) { acc.name = name; acc.balance = balance; acc.type = type; }
     } else {
-        balanceAccounts.push({ id: Date.now(), name, balance, type });
+        balanceAccounts.push({ id: Date.now(), name, balance, type, hidden: false });
     }
     await balance_saveAccounts();
     balance_renderPanel();
@@ -584,22 +602,96 @@ function renderFixedTable(expenses) {
         </tr>`).join('');
 }
 
+// Chart mode: 'daily' | 'monthly'
+let chartMode = 'daily';
+let chartRawData = [];   // stored so the toggle can re-render without re-fetching
+
+const DAYS_ES   = ['Domingo','Lunes','Martes','Mi\u00e9rcoles','Jueves','Viernes','S\u00e1bado'];
+const MONTHS_ES = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+
+function formatDailyLabel(isoDate) {
+    // isoDate: 'YYYY-MM-DD' or similar string from sheets
+    const d = new Date(isoDate + 'T12:00:00'); // noon to avoid TZ shift
+    if (isNaN(d)) return isoDate;
+    return `${DAYS_ES[d.getDay()]} ${d.getDate()}`; // e.g. "Jueves 22"
+}
+
+function formatMonthlyLabel(yyyyMM) {
+    const [y, m] = yyyyMM.split('-');
+    return `${MONTHS_ES[parseInt(m, 10) - 1]} ${y}`; // e.g. "Mar 2025"
+}
+
+window.setChartMode = function(mode) {
+    chartMode = mode;
+    ['daily', 'monthly'].forEach(m => {
+        const btn = document.getElementById(`chart-toggle-${m}`);
+        if (btn) btn.classList.toggle('active', m === mode);
+    });
+    if (chartRawData.length) _renderChartWithMode(chartRawData, mode);
+};
+
 function renderChart(data) {
-    const grouped = data.reduce((a, c) => { a[c.x] = (a[c.x] || 0) + c.y; return a; }, {});
-    const dates = Object.keys(grouped).sort();
-    const values = dates.map(d => grouped[d]);
+    chartRawData = data;
+    _renderChartWithMode(data, chartMode);
+}
+
+function _renderChartWithMode(data, mode) {
+    let categories, values;
+
+    if (mode === 'monthly') {
+        // Group by YYYY-MM
+        const grouped = data.reduce((a, c) => {
+            const month = (c.x || '').slice(0, 7); // 'YYYY-MM'
+            a[month] = (a[month] || 0) + c.y;
+            return a;
+        }, {});
+        const months = Object.keys(grouped).sort();
+        categories = months.map(formatMonthlyLabel);
+        values = months.map(m => grouped[m]);
+    } else {
+        // Daily: group by date, format label
+        const grouped = data.reduce((a, c) => { a[c.x] = (a[c.x] || 0) + c.y; return a; }, {});
+        const dates = Object.keys(grouped).sort();
+        categories = dates.map(formatDailyLabel);
+        values = dates.map(d => grouped[d]);
+    }
+
     const opts = {
         series: [{ name: 'Gasto Hormiga', data: values }],
-        chart: { type: 'area', height: 220, toolbar: { show: false }, zoom: { enabled: false }, background: 'transparent' },
+        chart: {
+            type: 'area', height: 220,
+            toolbar: { show: false }, zoom: { enabled: false }, background: 'transparent'
+        },
         theme: { mode: 'dark' },
         stroke: { curve: 'smooth', colors: ['#fbbf24'] },
-        fill: { type: 'gradient', gradient: { shadeIntensity: 1, opacityFrom: .7, opacityTo: .05, colorStops: [{ offset: 0, color: '#fbbf24', opacity: .35 }, { offset: 100, color: '#fbbf24', opacity: 0 }] } },
+        fill: {
+            type: 'gradient',
+            gradient: {
+                shadeIntensity: 1, opacityFrom: .7, opacityTo: .05,
+                colorStops: [
+                    { offset: 0,   color: '#fbbf24', opacity: .35 },
+                    { offset: 100, color: '#fbbf24', opacity: 0   }
+                ]
+            }
+        },
         dataLabels: { enabled: false },
-        xaxis: { categories: dates, axisBorder: { show: false }, axisTicks: { show: false }, labels: { style: { colors: '#94a3b8' }, rotate: -30 } },
+        xaxis: {
+            categories,
+            axisBorder: { show: false }, axisTicks: { show: false },
+            labels: {
+                style: { colors: '#94a3b8', fontSize: '11px' },
+                rotate: -35,
+                hideOverlappingLabels: true,
+            }
+        },
         yaxis: { show: false },
         grid: { borderColor: '#334155', strokeDashArray: 4 },
-        tooltip: { theme: 'dark' }
+        tooltip: {
+            theme: 'dark',
+            y: { formatter: v => `$${v.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}` }
+        }
     };
+
     const container = document.getElementById('chart-hormiga');
     container.innerHTML = '';
     new ApexCharts(container, opts).render();
