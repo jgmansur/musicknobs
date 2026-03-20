@@ -13,7 +13,7 @@ const SCOPES = 'https://www.googleapis.com/auth/spreadsheets https://www.googlea
 const SPREADSHEET_LOG_ID   = '1pn1bsxj2LaoySXAVUvqfEJY1VR4R_T8NsTOqQnVW5Xw'; // Control de Gastos
 const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // Gastos Fijos
 const SPREADSHEET_DEUDAS_ID = '1dKxhgqazskm15lx0f6FNCA0gpJ7i5glfxkusiH3b0Uk'; // Control de Deudas
-const APP_VERSION  = 'v3.4.0';
+const APP_VERSION  = 'v3.4.1';
 // Bump token keys to force re-auth with the new drive scope
 const TOKEN_KEY    = 'google_access_token_v4';
 const EXPIRY_KEY   = 'google_token_expiry_v4';
@@ -300,7 +300,9 @@ let balanceRealtimeUnsub = null;
 let balanceRealtimeUid = null;
 
 function balance_getPaidFixedDeduction() {
-    return Math.max(0, balancePaidFixedTotal - balancePaidFixedAnchor);
+    // v3.4.1: keep at 0; fixed payments now affect balance through
+    // Control de Gastos net movements so manual edits there are reflected.
+    return 0;
 }
 
 function balance_getLogNetAdjustment() {
@@ -317,12 +319,7 @@ function balance_resetDynamicAnchors() {
 
 function balance_updateLogNetFromRows(logRows) {
     balanceLogNetTotal = (logRows || []).reduce((sum, row) => {
-        const lugar = (row[1] || '').toString().trim().toLowerCase();
         const tipo = (row[4] || '').toString().trim().toLowerCase();
-        // Rows auto-posted from Gastos Fijos:
-        // - Gasto: already applied via balancePaidFixedTotal (avoid double deduction)
-        // - Ingreso: DO count it here so it increases available balance
-        if (lugar === 'gasto fijo' && tipo !== 'ingreso') return sum;
         const monto = Math.abs(parseSheetValue(row[3]));
         if (tipo === 'ingreso') return sum + monto;
         if (tipo === 'gasto') return sum - monto;
@@ -1666,19 +1663,25 @@ function fijos_renderLista(lista) {
         const sign     = item.tipo==='gasto' ? '-' : '+';
         const cls      = item.tipo==='gasto' ? 'text-danger' : 'text-success';
         const montoParcial = item.pagosMes > 0 ? (item.monto / item.pagosMes) : item.monto;
-        const botonesPagos = item.pagosEstado.map((isPartPaid, idx) => {
-            const clsPart = isPartPaid ? 'pagado-btn pagado-btn--paid' : 'pagado-btn pagado-btn--pending';
-            return `<button class="${clsPart}" style="min-width:52px;padding:.35rem .45rem;font-size:.72rem" onclick="fijos_togglePagoPart(${item.id}, ${idx})">${idx + 1}/${item.pagosMes}</button>`;
-        }).join('');
+        const botonesPagos = item.pagosMes === 1
+            ? (() => {
+                const clsPart = item.isPaid ? 'pagado-btn pagado-btn--paid' : 'pagado-btn pagado-btn--pending';
+                const lbl = item.isPaid ? '✅ Pagado' : '⏳ Pendiente';
+                return `<button class="${clsPart}" onclick="fijos_togglePagoPart(${item.id}, 0)">${lbl}</button>`;
+            })()
+            : item.pagosEstado.map((isPartPaid, idx) => {
+                const clsPart = isPartPaid ? 'pagado-btn pagado-btn--paid' : 'pagado-btn pagado-btn--pending';
+                return `<button class="${clsPart}" style="min-width:44px;padding:.35rem .45rem;font-size:.72rem" onclick="fijos_togglePagoPart(${item.id}, ${idx})">${idx + 1}</button>`;
+            }).join('');
         return `<div class="movimiento-card ${item.isPaid ? 'card-paid' : ''}">
           <div class="mc-left">
             <span class="mc-fecha">${item.fecha}</span>
             <span class="mc-lugar">${item.concepto}</span>
-            <span class="mc-concepto">${item.categoria} · ${item.pagosHechos}/${item.pagosMes} pagos · ${sign}${fmt.format(montoParcial)} c/u</span>
+            <span class="mc-concepto">${item.categoria}${item.pagosMes > 1 ? ` · ${item.pagosHechos}/${item.pagosMes} pagos · ${sign}${fmt.format(montoParcial)} c/u` : ''}</span>
           </div>
           <div class="mc-right" style="align-items:flex-end;gap:.5rem">
             <span class="mc-monto ${cls}">${sign}${fmt.format(item.monto)}</span>
-            <div style="display:flex;gap:.35rem;flex-wrap:wrap;justify-content:flex-end;max-width:210px">${botonesPagos}</div>
+            <div style="display:flex;gap:.35rem;flex-wrap:wrap;justify-content:flex-end;max-width:220px">${botonesPagos}</div>
             <div style="display:flex;gap:.4rem;margin-top:.2rem">
               <button class="mini-btn" onclick="fijos_editar(${item.id})">✏️</button>
               <button class="mini-btn mini-btn-danger" onclick="fijos_borrar(${item.id})">🗑️</button>
@@ -1712,15 +1715,13 @@ window.fijos_togglePagoPart = async function(id, partIndex) {
     const nowPartPaid = !wasPartPaid;
     const wasPaid = item.isPaid;
     const partAmount = Math.abs(item.monto / item.pagosMes);
+    const signedPartAmount = item.tipo === 'ingreso' ? partAmount : -partAmount;
 
     // Optimistic UI update
     item.pagosEstado[partIndex] = nowPartPaid;
     item.pagosHechos = item.pagosEstado.filter(Boolean).length;
     item.isPaid = item.pagosHechos >= item.pagosMes;
-    if (item.tipo === 'gasto') {
-        balancePaidFixedTotal += nowPartPaid ? partAmount : -partAmount;
-        if (balancePaidFixedTotal < 0) balancePaidFixedTotal = 0;
-    }
+    balanceLogNetTotal += nowPartPaid ? signedPartAmount : -signedPartAmount;
     balance_updateKpi();
     fijos_aplicarFiltros();
 
@@ -1775,10 +1776,7 @@ window.fijos_togglePagoPart = async function(id, partIndex) {
         item.pagosEstado[partIndex] = wasPartPaid;
         item.pagosHechos = item.pagosEstado.filter(Boolean).length;
         item.isPaid = wasPaid;
-        if (item.tipo === 'gasto') {
-            balancePaidFixedTotal += wasPartPaid ? partAmount : -partAmount;
-            if (balancePaidFixedTotal < 0) balancePaidFixedTotal = 0;
-        }
+        balanceLogNetTotal += wasPartPaid ? signedPartAmount : -signedPartAmount;
         balance_updateKpi();
         fijos_aplicarFiltros();
         handleApiError(e, null);
