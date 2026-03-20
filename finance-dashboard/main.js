@@ -748,7 +748,7 @@ function balance_getInvestmentSummary() {
     const investedTotal = rows.reduce((s, r) => s + r.principalMxn, 0);
     const monthlyTotal = rows.reduce((s, r) => s + r.monthlyYield, 0);
     const bitcoinGainTotal = rows.reduce((s, r) => s + r.gainCurrent, 0);
-    return { rows, investedTotal, monthlyTotal, bitcoinGainTotal, secondaryTotal: monthlyTotal + bitcoinGainTotal };
+    return { rows, investedTotal, monthlyTotal, bitcoinGainTotal };
 }
 
 function balance_updateKpi() {
@@ -776,8 +776,8 @@ function balance_updateKpi() {
     const invYieldEl = document.getElementById('kpi-invest-yield');
     if (invAmountEl) invAmountEl.innerText = formatCurrency(investSummary.investedTotal);
     if (invYieldEl) {
-        invYieldEl.innerText = `${investSummary.secondaryTotal >= 0 ? '+' : ''}${formatCurrency(investSummary.secondaryTotal)}${investSummary.bitcoinGainTotal !== 0 ? ' (incl BTC)' : '/mes'}`;
-        invYieldEl.className = `diff-label ${investSummary.secondaryTotal >= 0 ? 'text-success' : 'text-danger'}`;
+        invYieldEl.innerText = `+${formatCurrency(investSummary.monthlyTotal)}/mes`;
+        invYieldEl.className = `diff-label ${investSummary.monthlyTotal >= 0 ? 'text-success' : 'text-danger'}`;
     }
     const investPanel = document.getElementById('invest-panel');
     if (investPanel && !investPanel.classList.contains('hidden')) {
@@ -895,9 +895,9 @@ function balance_renderInvestmentPanel() {
     const listEl = document.getElementById('invest-list');
     if (!totalEl || !monthlyEl || !listEl) return;
     totalEl.innerText = formatCurrency(summary.investedTotal);
-    monthlyEl.innerText = `${summary.secondaryTotal >= 0 ? '+' : ''}${formatCurrency(summary.secondaryTotal)}`;
+    monthlyEl.innerText = `+${formatCurrency(summary.monthlyTotal)}`;
     if (monthlyLabelEl) {
-        monthlyLabelEl.innerText = summary.bitcoinGainTotal !== 0 ? 'Rendimiento + Ganancia actual' : 'Rendimiento mensual';
+        monthlyLabelEl.innerText = 'Rendimiento mensual';
     }
 
     if (!summary.rows.length) {
