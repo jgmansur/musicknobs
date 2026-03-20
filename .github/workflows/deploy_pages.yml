@@ -31,7 +31,7 @@ jobs:
       - name: Build finance dashboard
         run: npm ci --prefix finance-dashboard && npm run build --prefix finance-dashboard
       - name: Prepare finance dashboard deploy files
-        run: cp finance-dashboard/dist/index.html finance-dashboard/index.html && mkdir -p finance-dashboard/assets && cp -R finance-dashboard/dist/assets/. finance-dashboard/assets/
+        run: rm -rf finance-dashboard/assets && cp finance-dashboard/dist/index.html finance-dashboard/index.html && mkdir -p finance-dashboard/assets && cp -R finance-dashboard/dist/assets/. finance-dashboard/assets/
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Upload artifact
