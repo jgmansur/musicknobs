@@ -1,7 +1,7 @@
 import { createIcons, RefreshCw, AlertTriangle, CalendarCheck, TrendingUp, LogOut } from 'lucide';
 import ApexCharts from 'apexcharts';
 import { initializeApp } from 'firebase/app';
-import { getAuth, GoogleAuthProvider, signInWithCredential, signOut as fbSignOut } from 'firebase/auth';
+import { getAuth, GoogleAuthProvider, onAuthStateChanged, signInWithCredential, signOut as fbSignOut } from 'firebase/auth';
 import { getFirestore, doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 
 // =============================================
@@ -13,7 +13,7 @@ const SCOPES = 'https://www.googleapis.com/auth/spreadsheets https://www.googlea
 const SPREADSHEET_LOG_ID   = '1pn1bsxj2LaoySXAVUvqfEJY1VR4R_T8NsTOqQnVW5Xw'; // Control de Gastos
 const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // Gastos Fijos
 const SPREADSHEET_DEUDAS_ID = '1dKxhgqazskm15lx0f6FNCA0gpJ7i5glfxkusiH3b0Uk'; // Control de Deudas
-const APP_VERSION  = 'v3.0.0';
+const APP_VERSION  = 'v3.1.0';
 // Bump token keys to force re-auth with the new drive scope
 const TOKEN_KEY    = 'google_access_token_v4';
 const EXPIRY_KEY   = 'google_token_expiry_v4';
@@ -35,7 +35,15 @@ const _fbAuth = getAuth(_fbApp);
 const _fbDb   = getFirestore(_fbApp);
 let   _fbUid  = null; // current Firebase UID, set after sign-in
 
+onAuthStateChanged(_fbAuth, (user) => {
+    _fbUid = user?.uid || null;
+});
+
 async function firebase_signIn(googleAccessToken) {
+    if (_fbAuth.currentUser?.uid) {
+        _fbUid = _fbAuth.currentUser.uid;
+        return;
+    }
     try {
         const credential = GoogleAuthProvider.credential(null, googleAccessToken);
         const result = await signInWithCredential(_fbAuth, credential);
@@ -242,6 +250,7 @@ async function balance_saveAccounts() {
     // 1. Update localStorage cache immediately (offline-first)
     localStorage.setItem('finance_accounts_v1', JSON.stringify(balanceAccounts));
     if (!accessToken) return;
+    if (!_fbUid) await firebase_signIn(accessToken);
     // 2. Write to Firestore (primary) and Sheets (backup) in parallel
     const saves = [];
     if (_fbUid) saves.push(balance_saveToFirestore().catch(e => console.warn('[Firebase] save failed:', e.message)));
@@ -673,7 +682,7 @@ async function driveDeleteFile(fileId) {
 
 function handleApiError(err, el) {
     console.error('API Error:', err);
-    if (err.status === 401 || err.status === 403) {
+    if (err.status === 401) {
         localStorage.removeItem(TOKEN_KEY);
         localStorage.removeItem(EXPIRY_KEY);
         accessToken = null;
@@ -697,7 +706,7 @@ async function fetchAndProcess() {
         processAndRender(logData, fixedData);
         status.innerText = 'Sincronizado ✓'; status.style.color = 'var(--accent-green)';
     } catch (err) {
-        if (err.status === 401 || err.status === 403) {
+        if (err.status === 401) {
             status.innerText = 'Sesión expirada'; status.style.color = 'var(--accent-orange)';
             localStorage.removeItem(TOKEN_KEY); accessToken = null; showLoginModal();
         } else {
