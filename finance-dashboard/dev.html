@@ -20,7 +20,7 @@
         <div class="header-content">
           <div class="logo-area">
             <h1 class="premium-title">ESTRATÉGIA<span>FINANCIERA</span></h1>
-            <p class="subtitle">Music Knobs | v3.4.3</p>
+            <p class="subtitle">Music Knobs | v3.5.0</p>
           </div>
           <div class="action-area">
             <div id="sync-status" class="status-badge">Sincronizado</div>
@@ -139,6 +139,11 @@
               <option value="invest">📈 Inversión</option>
               <option value="other">🌎 Otro</option>
             </select>
+            <div id="acc-credit-fields" class="hidden">
+              <input id="acc-credit-limit" class="field-input" type="number" placeholder="Límite de crédito ($)" step="0.01" inputmode="decimal">
+              <input id="acc-credit-visible" type="hidden" value="0">
+              <button id="acc-credit-visible-btn" type="button" class="secondary-btn" style="width:100%;margin-top:.45rem">🙈 Limite oculto en balance</button>
+            </div>
             <div class="form-row-2" style="gap:.5rem">
               <button id="acc-save-btn" class="primary-btn" style="flex:1">Guardar</button>
               <button id="acc-cancel-btn" class="secondary-btn">Cancelar</button>

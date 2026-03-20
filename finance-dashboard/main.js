@@ -13,7 +13,7 @@ const SCOPES = 'https://www.googleapis.com/auth/spreadsheets https://www.googlea
 const SPREADSHEET_LOG_ID   = '1pn1bsxj2LaoySXAVUvqfEJY1VR4R_T8NsTOqQnVW5Xw'; // Control de Gastos
 const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // Gastos Fijos
 const SPREADSHEET_DEUDAS_ID = '1dKxhgqazskm15lx0f6FNCA0gpJ7i5glfxkusiH3b0Uk'; // Control de Deudas
-const APP_VERSION  = 'v3.4.3';
+const APP_VERSION  = 'v3.5.0';
 // Bump token keys to force re-auth with the new drive scope
 const TOKEN_KEY    = 'google_access_token_v4';
 const EXPIRY_KEY   = 'google_token_expiry_v4';
@@ -294,12 +294,24 @@ const DEFAULT_ACCOUNTS = [
     { id: 1, name: 'Santander',               balance: 0, type: 'bank',   hidden: false },
     { id: 2, name: 'BBVA',                    balance: 0, type: 'bank',   hidden: false },
     { id: 3, name: 'Bank of America',         balance: 0, type: 'other',  hidden: false },
-    { id: 4, name: 'Tarjeta de Cr\u00e9dito', balance: 0, type: 'credit', hidden: false },
+    { id: 4, name: 'Tarjeta de Cr\u00e9dito', balance: 0, type: 'credit', hidden: false, creditLimit: 0, creditLimitVisible: false },
 ];
 
 const ACCOUNT_ICONS  = { bank:'🏦', credit:'💳', cash:'💵', invest:'📈', other:'🌎' };
 const ACCOUNT_COLORS = { bank:'#3b82f6', credit:'#ef4444', cash:'#22c55e', invest:'#a855f7', other:'#f59e0b' };
 const ACCOUNT_TYPE_LABEL = { bank:'Cuenta bancaria', credit:'Tarjeta de crédito', cash:'Efectivo', invest:'Inversión', other:'Otro' };
+
+function balance_normalizeAccount(a = {}) {
+    return {
+        id: a.id || Date.now(),
+        name: a.name || '',
+        balance: typeof a.balance === 'number' ? a.balance : parseSheetValue(a.balance),
+        type: a.type || 'bank',
+        hidden: !!a.hidden,
+        creditLimit: typeof a.creditLimit === 'number' ? a.creditLimit : parseSheetValue(a.creditLimit),
+        creditLimitVisible: !!a.creditLimitVisible,
+    };
+}
 
 let balanceAccounts   = [];
 let balanceEditingId  = null;
@@ -367,13 +379,7 @@ function balance_startRealtimeSync() {
     balanceRealtimeUnsub = onSnapshot(ref, (snap) => {
         if (!snap.exists()) return;
         const data = snap.data() || {};
-        const nextAccounts = (data.accounts || []).map(a => ({
-            id:      a.id || Date.now(),
-            name:    a.name || '',
-            balance: a.balance || 0,
-            type:    a.type || 'bank',
-            hidden:  !!a.hidden,
-        }));
+        const nextAccounts = (data.accounts || []).map(balance_normalizeAccount);
         balanceAccounts = nextAccounts;
         localStorage.setItem('finance_accounts_v1', JSON.stringify(balanceAccounts));
         balance_updateKpi();
@@ -415,7 +421,7 @@ async function balance_getOrCreateSheet() {
     // Create the spreadsheet (in Jay App folder if found, else root Drive)
     sheetId = await driveCreateSpreadsheet('Finance Dashboard - Cuentas', folderId);
     // Initialize header row
-    await sheetsUpdate(sheetId, 'A1:D1', [['ID', 'Nombre', 'Saldo', 'Tipo']]);
+    await sheetsUpdate(sheetId, 'A1:G1', [['ID', 'Nombre', 'Saldo', 'Tipo', 'Oculto', 'LimiteCredito', 'LimiteVisible']]);
     localStorage.setItem(ACCOUNTS_SHEET_KEY, sheetId);
     return sheetId;
 }
@@ -425,8 +431,8 @@ async function balance_loadAccounts() {
         // Not logged in — use localStorage fallback
         try {
             const raw = localStorage.getItem('finance_accounts_v1');
-            balanceAccounts = raw ? JSON.parse(raw) : DEFAULT_ACCOUNTS.map(a => ({ ...a }));
-        } catch { balanceAccounts = DEFAULT_ACCOUNTS.map(a => ({ ...a })); }
+            balanceAccounts = raw ? JSON.parse(raw).map(balance_normalizeAccount) : DEFAULT_ACCOUNTS.map(a => balance_normalizeAccount(a));
+        } catch { balanceAccounts = DEFAULT_ACCOUNTS.map(a => balance_normalizeAccount(a)); }
         debugUpdate({ load: `localStorage (${balanceAccounts.length})`, token: 'No' });
         return;
     }
@@ -437,13 +443,7 @@ async function balance_loadAccounts() {
             const snap = await getDoc(ref);
             if (snap.exists()) {
                 const data = snap.data();
-                balanceAccounts = (data.accounts || []).map(a => ({
-                    id:      a.id      || Date.now(),
-                    name:    a.name    || '',
-                    balance: a.balance || 0,
-                    type:    a.type    || 'bank',
-                    hidden:  !!a.hidden,
-                }));
+                balanceAccounts = (data.accounts || []).map(balance_normalizeAccount);
                 // Update localStorage cache
                 localStorage.setItem('finance_accounts_v1', JSON.stringify(balanceAccounts));
                 debugUpdate({ load: `Firestore (${balanceAccounts.length})`, uid: _fbUid || '-' });
@@ -458,19 +458,21 @@ async function balance_loadAccounts() {
     // ── 2. Fallback: Google Sheets ──────────────────────────────
     try {
         const sid  = await balance_getOrCreateSheet();
-        const rows = await sheetsGet(sid, 'A2:E');
+        const rows = await sheetsGet(sid, 'A2:G');
         if (!rows.length) {
-            balanceAccounts = DEFAULT_ACCOUNTS.map(a => ({ ...a }));
+            balanceAccounts = DEFAULT_ACCOUNTS.map(a => balance_normalizeAccount(a));
             await balance_writeToSheet(sid); // seed defaults
         } else {
             balanceAccounts = rows
                 .filter(r => r[0])
-                .map(r => ({
+                .map(r => balance_normalizeAccount({
                     id:      Number(r[0]) || Date.now(),
                     name:    r[1] || '',
                     balance: typeof r[2] === 'number' ? r[2] : parseSheetValue(r[2]),
                     type:    r[3] || 'bank',
                     hidden:  (r[4] || '').toString().toUpperCase() === 'TRUE',
+                    creditLimit: typeof r[5] === 'number' ? r[5] : parseSheetValue(r[5]),
+                    creditLimitVisible: (r[6] || '').toString().toUpperCase() === 'TRUE',
                 }));
         }
         debugUpdate({ load: `Sheets (${balanceAccounts.length})` });
@@ -479,16 +481,24 @@ async function balance_loadAccounts() {
     } catch (err) {
         console.error('Error loading accounts from Sheets:', err);
         const raw = localStorage.getItem('finance_accounts_v1');
-        balanceAccounts = raw ? JSON.parse(raw) : DEFAULT_ACCOUNTS.map(a => ({ ...a }));
+        balanceAccounts = raw ? JSON.parse(raw).map(balance_normalizeAccount) : DEFAULT_ACCOUNTS.map(a => balance_normalizeAccount(a));
         debugUpdate({ load: `localStorage fallback (${balanceAccounts.length})` });
     }
 }
 
 async function balance_writeToSheet(sheetId) {
-    await sheetsClear(sheetId, 'A2:E');
+    await sheetsClear(sheetId, 'A2:G');
     if (balanceAccounts.length) {
-        await sheetsUpdate(sheetId, `A2:E${1 + balanceAccounts.length}`,
-            balanceAccounts.map(a => [a.id, a.name, a.balance, a.type, a.hidden ? 'TRUE' : 'FALSE']));
+        await sheetsUpdate(sheetId, `A2:G${1 + balanceAccounts.length}`,
+            balanceAccounts.map(a => [
+                a.id,
+                a.name,
+                a.balance,
+                a.type,
+                a.hidden ? 'TRUE' : 'FALSE',
+                Math.abs(a.creditLimit || 0),
+                a.creditLimitVisible ? 'TRUE' : 'FALSE',
+            ]));
     }
 }
 
@@ -502,6 +512,8 @@ async function balance_saveToFirestore() {
             balance: a.balance,
             type:    a.type,
             hidden:  !!a.hidden,
+            creditLimit: Math.abs(a.creditLimit || 0),
+            creditLimitVisible: !!a.creditLimitVisible,
         })),
         lastUpdated: serverTimestamp(),
     });
@@ -543,7 +555,14 @@ function balance_getTotal() {
     // Skip accounts marked as hidden (savings, reserves, etc.)
     const base = balanceAccounts
         .filter(a => !a.hidden)
-        .reduce((sum, a) => sum + (a.type === 'credit' ? -Math.abs(a.balance) : +a.balance), 0);
+        .reduce((sum, a) => {
+            if (a.type === 'credit') {
+                const deuda = -Math.abs(a.balance);
+                const limiteVisible = a.creditLimitVisible ? Math.abs(a.creditLimit || 0) : 0;
+                return sum + deuda + limiteVisible;
+            }
+            return sum + (+a.balance || 0);
+        }, 0);
     return base - balance_getPaidFixedDeduction() + balance_getLogNetAdjustment();
 }
 
@@ -595,9 +614,15 @@ function balance_renderPanel() {
         const icon   = ACCOUNT_ICONS[acc.type]  || '🏦';
         const color  = acc.hidden ? '#475569' : (ACCOUNT_COLORS[acc.type] || '#3b82f6');
         const signed = acc.type === 'credit' ? -Math.abs(acc.balance) : +acc.balance;
+        const creditLimit = Math.abs(acc.creditLimit || 0);
+        const creditBadge = acc.type === 'credit'
+            ? `<span class="account-type-label">Limite: ${acc.creditLimitVisible ? `+${formatCurrency(creditLimit)}` : 'oculto'}</span>`
+            : '';
         const hiddenClass = acc.hidden ? 'account-card--hidden' : '';
         const eyeIcon = acc.hidden ? '👁️' : '👁';
         const eyeTitle = acc.hidden ? 'Incluir en balance' : 'Excluir del balance (ahorro)';
+        const creditEyeIcon = acc.creditLimitVisible ? '👁️' : '🙈';
+        const creditEyeTitle = acc.creditLimitVisible ? 'Ocultar limite en balance' : 'Incluir limite en balance';
         return `
         <div class="account-card glass-subtle ${hiddenClass}" data-id="${acc.id}">
           <div class="account-card-left">
@@ -605,12 +630,14 @@ function balance_renderPanel() {
             <div class="account-info">
               <span class="account-name">${acc.name}${acc.hidden ? ' <span class="acc-hidden-badge">AHORRO</span>' : ''}</span>
               <span class="account-type-label">${ACCOUNT_TYPE_LABEL[acc.type] || 'Cuenta'}</span>
+              ${creditBadge}
             </div>
           </div>
           <div class="account-card-right">
             <span class="account-balance ${signed < 0 ? 'text-danger' : ''} ${acc.hidden ? 'acc-balance-hidden' : ''}">${formatCurrency(signed)}</span>
             <div class="account-actions">
               <button class="acc-toggle-btn icon-btn-sm" data-id="${acc.id}" title="${eyeTitle}">${eyeIcon}</button>
+              ${acc.type === 'credit' ? `<button class="acc-credit-limit-btn icon-btn-sm" data-id="${acc.id}" title="${creditEyeTitle}">${creditEyeIcon}</button>` : ''}
               <button class="acc-edit-btn icon-btn-sm" data-id="${acc.id}" title="Editar">✏️</button>
               <button class="acc-del-btn icon-btn-sm" data-id="${acc.id}" title="Eliminar">🗑️</button>
             </div>
@@ -624,6 +651,8 @@ function balance_renderPanel() {
         btn.addEventListener('click', () => balance_openEdit(parseInt(btn.dataset.id))));
     list.querySelectorAll('.acc-del-btn').forEach(btn =>
         btn.addEventListener('click', () => balance_deleteAccount(parseInt(btn.dataset.id))));
+    list.querySelectorAll('.acc-credit-limit-btn').forEach(btn =>
+        btn.addEventListener('click', () => balance_toggleCreditLimitVisibility(parseInt(btn.dataset.id))));
 }
 
 // ── Panel open/close ─────────────────────────────────────
@@ -664,6 +693,9 @@ function balance_openEdit(id) {
     document.getElementById('acc-name').value    = acc.name;
     document.getElementById('acc-balance').value = Math.abs(acc.balance);
     document.getElementById('acc-type').value    = acc.type;
+    document.getElementById('acc-credit-limit').value = Math.abs(acc.creditLimit || 0);
+    document.getElementById('acc-credit-visible').value = acc.creditLimitVisible ? '1' : '0';
+    balance_refreshCreditFields();
     balance_showForm();
 }
 
@@ -672,6 +704,9 @@ function balance_openAdd() {
     document.getElementById('acc-name').value    = '';
     document.getElementById('acc-balance').value = '';
     document.getElementById('acc-type').value    = 'bank';
+    document.getElementById('acc-credit-limit').value = '';
+    document.getElementById('acc-credit-visible').value = '0';
+    balance_refreshCreditFields();
     balance_showForm();
 }
 
@@ -684,19 +719,44 @@ async function balance_toggleHidden(id) {
     balance_updateKpi();
 }
 
+async function balance_toggleCreditLimitVisibility(id) {
+    const acc = balanceAccounts.find(a => a.id === id);
+    if (!acc || acc.type !== 'credit') return;
+    acc.creditLimitVisible = !acc.creditLimitVisible;
+    await balance_saveAccounts();
+    balance_renderPanel();
+    balance_updateKpi();
+}
+
 async function balance_saveAccount() {
     const name    = document.getElementById('acc-name').value.trim();
     const balance = parseFloat(document.getElementById('acc-balance').value) || 0;
     const type    = document.getElementById('acc-type').value;
+    const creditLimit = Math.abs(parseFloat(document.getElementById('acc-credit-limit').value) || 0);
+    const creditLimitVisible = document.getElementById('acc-credit-visible').value === '1';
     if (!name) return;
     const btn = document.getElementById('acc-save-btn');
     btn.disabled = true; btn.innerText = 'Guardando...';
 
     if (balanceEditingId !== null) {
         const acc = balanceAccounts.find(a => a.id === balanceEditingId);
-        if (acc) { acc.name = name; acc.balance = balance; acc.type = type; }
+        if (acc) {
+            acc.name = name;
+            acc.balance = balance;
+            acc.type = type;
+            acc.creditLimit = type === 'credit' ? creditLimit : 0;
+            acc.creditLimitVisible = type === 'credit' ? creditLimitVisible : false;
+        }
     } else {
-        balanceAccounts.push({ id: Date.now(), name, balance, type, hidden: false });
+        balanceAccounts.push(balance_normalizeAccount({
+            id: Date.now(),
+            name,
+            balance,
+            type,
+            hidden: false,
+            creditLimit: type === 'credit' ? creditLimit : 0,
+            creditLimitVisible: type === 'credit' ? creditLimitVisible : false,
+        }));
     }
     balance_resetDynamicAnchors();
     await balance_saveAccounts();
@@ -722,7 +782,7 @@ function balance_init() {
     // Load from localStorage cache immediately for instant KPI display
     try {
         const raw = localStorage.getItem('finance_accounts_v1');
-        if (raw) { balanceAccounts = JSON.parse(raw); balance_updateKpi(); }
+        if (raw) { balanceAccounts = JSON.parse(raw).map(balance_normalizeAccount); balance_updateKpi(); }
     } catch {}
 
     document.getElementById('kpi-balance-card')
@@ -737,12 +797,33 @@ function balance_init() {
         .addEventListener('click', balance_openAdd);
     document.getElementById('acc-save-btn')
         .addEventListener('click', balance_saveAccount);
+    document.getElementById('acc-type')
+        .addEventListener('change', balance_refreshCreditFields);
+    document.getElementById('acc-credit-visible-btn')
+        .addEventListener('click', () => {
+            const input = document.getElementById('acc-credit-visible');
+            input.value = input.value === '1' ? '0' : '1';
+            balance_refreshCreditFields();
+        });
     document.getElementById('acc-cancel-btn')
         .addEventListener('click', () => {
             document.getElementById('add-account-form').classList.add('hidden');
             document.getElementById('acc-add-btn').classList.remove('hidden');
             balanceEditingId = null;
         });
+    balance_refreshCreditFields();
+}
+
+function balance_refreshCreditFields() {
+    const type = document.getElementById('acc-type').value;
+    const wrap = document.getElementById('acc-credit-fields');
+    const btn = document.getElementById('acc-credit-visible-btn');
+    const hiddenInput = document.getElementById('acc-credit-visible');
+    const isCredit = type === 'credit';
+    wrap.classList.toggle('hidden', !isCredit);
+    if (!isCredit) return;
+    const isVisible = hiddenInput.value === '1';
+    btn.innerText = isVisible ? '👁️ Limite visible en balance' : '🙈 Limite oculto en balance';
 }
 
 // =============================================
