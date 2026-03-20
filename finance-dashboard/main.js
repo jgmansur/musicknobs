@@ -538,20 +538,29 @@ async function driveCreateSpreadsheet(name, parentId) {
 
 // Upload a File object to a Drive folder and return the sharing URL
 async function driveUploadFile(file, folderId) {
-    // Build metadata
+    // Drive API multipart upload requires Content-Type: multipart/related (NOT form-data).
+    // Using Blob array lets us mix text boundaries with binary File data correctly.
     const meta = { name: file.name };
     if (folderId) meta.parents = [folderId];
-    // Use FormData for reliable multipart upload
-    const form = new FormData();
-    form.append('metadata', new Blob([JSON.stringify(meta)], { type: 'application/json' }));
-    form.append('file', file);
-    // Upload
+    const metaJson = JSON.stringify(meta);
+    const boundary = 'findb_' + Date.now();
+
+    const body = new Blob([
+        `--${boundary}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${metaJson}\r\n`,
+        `--${boundary}\r\nContent-Type: ${file.type || 'application/octet-stream'}\r\n\r\n`,
+        file,
+        `\r\n--${boundary}--`
+    ]);
+
     const r = await fetch(
-        'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,webViewLink',
+        `https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,webViewLink`,
         {
             method: 'POST',
-            headers: { Authorization: `Bearer ${accessToken}` }, // NO Content-Type: let browser set it with boundary
-            body: form,
+            headers: {
+                Authorization: `Bearer ${accessToken}`,
+                'Content-Type': `multipart/related; boundary=${boundary}`,
+            },
+            body,
         }
     );
     if (!r.ok) {
@@ -559,7 +568,7 @@ async function driveUploadFile(file, folderId) {
         throw new Error(`Drive upload failed (${r.status}): ${errText}`);
     }
     const res = await r.json();
-    // Make file readable by anyone with the link
+    // Make file publicly readable (anyone with link)
     await fetch(`https://www.googleapis.com/drive/v3/files/${res.id}/permissions`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
