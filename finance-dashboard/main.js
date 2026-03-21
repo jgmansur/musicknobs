@@ -2653,11 +2653,11 @@ function planner_buildModel(items, monthKey) {
         id: 'balance',
         key: 'inc-balance',
         concept: 'Balance disponible',
-        day: 99,
+        day: 0,
         amount: Number(balance_getTotal()) || 0,
         isBalanceSource: true,
     };
-    const incomes = [...fixedIncomes, balanceIncome];
+    const incomes = [balanceIncome, ...fixedIncomes];
 
     const expenses = [];
     items
@@ -2683,15 +2683,36 @@ function planner_buildModel(items, monthKey) {
 
     const savedOverrides = planner_readOverrides(monthKey);
     const assignments = {};
-    const assignedByIncome = incomes.map(() => []);
+    let assignedByIncome = incomes.map(() => []);
     const autoIncomes = fixedIncomes.length ? fixedIncomes : incomes;
     expenses.forEach(exp => {
         let idx = planner_assignIndexByDay(exp.day, autoIncomes);
+        if (fixedIncomes.length) idx += 1;
         const manualIdx = Number(savedOverrides[exp.key]);
         if (!Number.isNaN(manualIdx) && manualIdx >= 0 && manualIdx < incomes.length) {
             idx = manualIdx;
         }
         assignments[exp.key] = idx;
+        if (idx >= 0) assignedByIncome[idx].push(exp);
+    });
+
+    const balanceIdx = 0;
+    for (let idx = 1; idx < incomes.length; idx++) {
+        const income = incomes[idx];
+        const currentExpenses = assignedByIncome[idx] || [];
+        let overflow = currentExpenses.reduce((s, e) => s + e.amount, 0) - income.amount;
+        if (overflow <= 0) continue;
+        const movable = [...currentExpenses].sort((a, b) => b.day - a.day || b.amount - a.amount);
+        for (const exp of movable) {
+            if (overflow <= 0) break;
+            assignments[exp.key] = balanceIdx;
+            overflow -= exp.amount;
+        }
+    }
+
+    assignedByIncome = incomes.map(() => []);
+    expenses.forEach(exp => {
+        const idx = assignments[exp.key];
         if (idx >= 0) assignedByIncome[idx].push(exp);
     });
 
