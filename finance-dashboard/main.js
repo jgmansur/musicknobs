@@ -804,6 +804,12 @@ function balance_updateFixedCoverageKpi() {
     el.className = `kpi-inline-note ${coverage >= 0 ? 'kpi-inline-note--positive' : 'kpi-inline-note--negative'}`;
 }
 
+function balance_setFixedTotalKpi(amount) {
+    const totalEl = document.getElementById('gastos-fijos-total');
+    if (!totalEl) return;
+    totalEl.innerHTML = `${formatCurrency(amount)} <span id="gastos-fijos-coverage" class="kpi-inline-note"></span>`;
+}
+
 // ── Render ───────────────────────────────────────────────
 function balance_renderPanel() {
     const total = balance_getTotal();
@@ -1536,7 +1542,8 @@ function processAndRender(logRows, fixedRows) {
     balance_updateKpi();
 
     document.getElementById('gasto-hormiga-total').innerText = formatCurrency(hormigaTotal);
-    document.getElementById('gastos-fijos-total').innerText  = formatCurrency(fixedTotal);
+    balance_setFixedTotalKpi(fixedTotal);
+    balance_updateFixedCoverageKpi();
     document.getElementById('pago-status').innerText =
         totalParts > 0 && paidParts >= totalParts
             ? `✅ \u00a1Todo pagado!`
@@ -2114,9 +2121,9 @@ function fijos_syncDashboardStats() {
     const paidParts = fixedGastos.reduce((s, i) => s + Math.max(0, i.pagosHechos || 0), 0);
     const totalParts = fixedGastos.reduce((s, i) => s + Math.max(1, i.pagosMes || 1), 0);
 
-    const totalEl = document.getElementById('gastos-fijos-total');
     const statusEl = document.getElementById('pago-status');
-    if (totalEl) totalEl.innerText = formatCurrency(pendingFixed);
+    balance_setFixedTotalKpi(pendingFixed);
+    balance_updateFixedCoverageKpi();
     if (statusEl) {
         statusEl.innerText = totalParts > 0 && paidParts >= totalParts
             ? '✅ ¡Todo pagado!'
