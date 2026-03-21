@@ -278,6 +278,7 @@ select.field-input { background-image: url("data:image/svg+xml,%3Csvg xmlns='htt
   font-size: .75rem; cursor: pointer; transition: background .15s;
 }
 .mini-btn:hover { background: rgba(255,255,255,.12); }
+.mini-btn:disabled { opacity: .35; cursor: not-allowed; }
 .mini-btn-danger:hover { background: rgba(239,68,68,.15); color: #f87171; }
 
 /* Pagado toggle button */
@@ -732,4 +733,85 @@ select.field-input { background-image: url("data:image/svg+xml,%3Csvg xmlns='htt
 .pb-fill {
   height: 100%; background: var(--primary);
   border-radius: 99px; transition: width 0.4s ease-out;
+}
+
+/* =============================================
+   PLANIFICADOR
+   ============================================= */
+.plan-income-card {
+  margin-bottom: .8rem;
+  padding: .9rem;
+}
+.plan-reset-btn {
+  margin-top: .75rem;
+  width: 100%;
+}
+.plan-income-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: .75rem;
+}
+.plan-income-title {
+  font-size: .9rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+.plan-income-sub {
+  font-size: .72rem;
+  color: var(--text-muted);
+  margin-top: .15rem;
+}
+.plan-income-diff {
+  font-weight: 700;
+  font-size: .92rem;
+}
+.plan-buckets {
+  margin-top: .6rem;
+  border-top: 1px solid rgba(255,255,255,.08);
+  padding-top: .5rem;
+}
+.plan-bucket-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: .72rem;
+  color: var(--text-soft);
+  padding: .14rem 0;
+}
+.plan-bucket-row strong {
+  color: var(--text-main);
+  font-size: .75rem;
+}
+.plan-expenses-list {
+  margin-top: .6rem;
+  border-top: 1px solid rgba(255,255,255,.08);
+  padding-top: .45rem;
+}
+.plan-expense-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: .5rem;
+  padding: .38rem 0;
+}
+.plan-expense-title {
+  font-size: .82rem;
+  color: var(--text-main);
+}
+.plan-expense-meta {
+  font-size: .68rem;
+  color: var(--text-muted);
+}
+.plan-expense-actions {
+  display: flex;
+  align-items: center;
+  gap: .35rem;
+}
+.plan-expense-amount {
+  min-width: 86px;
+  text-align: right;
+  font-size: .79rem;
+  font-weight: 700;
+  color: var(--text-main);
 }

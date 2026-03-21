@@ -366,6 +366,16 @@
               </select>
             </div>
             <div class="form-field">
+              <label class="field-label">Categoría Presupuestal</label>
+              <select id="f-budget-cat" class="field-input">
+                <option value="Seguros">Seguros</option>
+                <option value="Gasolina y Autos">Gasolina y Autos</option>
+                <option value="Super">Super</option>
+                <option value="Mantenimiento y Pago de Servicios">Mantenimiento y Pago de Servicios</option>
+                <option value="Muchachas y Pago de Deudas">Muchachas y Pago de Deudas</option>
+              </select>
+            </div>
+            <div class="form-field">
               <label class="field-label">Concepto</label>
               <input type="text" id="f-concepto" class="field-input" placeholder="Ej. Netflix">
             </div>
@@ -439,6 +449,19 @@
 
       </div>
 
+      <!-- ══════════════════════════════════
+           VIEW: PLAN DE PAGOS (Tab 5)
+           ══════════════════════════════════ -->
+      <div id="view-plan" class="view">
+        <div class="glass balance-card">
+          <p class="balance-label">Planificador de Pagos por Ingreso</p>
+          <h2 id="plan-summary" class="balance-amount">$0.00</h2>
+          <div id="plan-summary-sub" class="diff-label">Cargando entradas fijas...</div>
+          <button class="secondary-btn plan-reset-btn" onclick="planner_resetAssignments()">Reiniciar movimientos manuales</button>
+        </div>
+        <div id="plan-income-groups" class="movimientos-list glass" style="margin-top:1rem;"></div>
+      </div>
+
       <!-- ══ HORMIGA DETAIL PANEL ══ -->
       <div id="hormiga-panel" class="bottom-sheet hidden">
         <div id="hormiga-panel-overlay" class="bottom-sheet-overlay"></div>
@@ -509,6 +532,10 @@
         <button class="tab" id="tab-deudas" data-tab="deudas">
           <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
           <span class="tab-label">Deudas</span>
+        </button>
+        <button class="tab" id="tab-plan" data-tab="plan">
+          <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 6h18M3 12h18M3 18h18"/><circle cx="8" cy="6" r="1.5"/><circle cx="14" cy="12" r="1.5"/><circle cx="10" cy="18" r="1.5"/></svg>
+          <span class="tab-label">Plan</span>
         </button>
       </nav>
 

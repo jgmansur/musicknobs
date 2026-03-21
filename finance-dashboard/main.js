@@ -151,7 +151,15 @@ async function firebase_signOut() {
 let accessToken = null;
 let tokenClient = null;
 let currentTab  = 'dashboard';
-let tabInited   = { dashboard: false, gastos: false, fijos: false, deudas: false };
+let tabInited   = { dashboard: false, gastos: false, fijos: false, deudas: false, plan: false };
+
+const BUDGET_BUCKETS = [
+    'Seguros',
+    'Gasolina y Autos',
+    'Super',
+    'Mantenimiento y Pago de Servicios',
+    'Muchachas y Pago de Deudas',
+];
 
 const debugState = {
     auth: 'No autenticado',
@@ -1199,6 +1207,7 @@ function showTab(name) {
         if (name === 'gastos')    gastos_cargarHistorial();
         if (name === 'fijos')     fijos_cargarDatos();
         if (name === 'deudas')    deudas_cargarDatos();
+        if (name === 'plan')      planner_cargarVista();
     }
 }
 
@@ -1443,7 +1452,7 @@ async function fetchAndProcess() {
     try {
         const [logData, fixedData] = await Promise.all([
             sheetsGet(SPREADSHEET_LOG_ID, 'Hoja 1!A2:G'),
-            sheetsGet(SPREADSHEET_FIXED_ID, 'Hoja 1!A2:H')  // G=pagosMes, H=estado pagos
+            sheetsGet(SPREADSHEET_FIXED_ID, 'Hoja 1!A2:L')  // H=estado pagos, I=periodicidad, J=inicio, K=pagador, L=budget
         ]);
         processAndRender(logData, fixedData);
         status.innerText = 'Sincronizado ✓'; status.style.color = 'var(--accent-green)';
@@ -1522,10 +1531,10 @@ function processAndRender(logRows, fixedRows) {
         const periodicidad = parseFixedPeriodicity(row[8]);
         const inicioMes = parseStartMonth(row[9], `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}`);
         const isDueThisMonth = isFixedDueThisMonth(periodicidad, inicioMes, `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}`);
-        const paidRatio = pagosMes > 0 ? (pagosHechos / pagosMes) : 0;
-        const paidAmount = Math.abs(monto) * paidRatio;
-        const pendingAmount = Math.abs(monto) - paidAmount;
-        return { rowNum: i + 2, concepto, monto, tipo, isPaid, pagosMes, pagosEstado, pagosHechos, paidAmount, pendingAmount, periodicidad, inicioMes, isDueThisMonth, pagador: parseFixedPayer(row[10]) };
+        const partAmount = Math.abs(monto) / (pagosMes || 1);
+        const paidAmount = partAmount * Math.max(0, pagosHechos);
+        const pendingAmount = partAmount * Math.max(0, pagosMes - pagosHechos);
+        return { rowNum: i + 2, concepto, monto, tipo, isPaid, pagosMes, pagosEstado, pagosHechos, paidAmount, pendingAmount, periodicidad, inicioMes, isDueThisMonth, pagador: parseFixedPayer(row[10]), budgetCategory: parseBudgetCategory(row[11]) };
     }).filter(e => e.concepto);
 
     // KPI: count partial progress for fixed expenses
@@ -2026,11 +2035,20 @@ function fijos_bindEvents() {
     document.getElementById('f-periodicidad').addEventListener('change', fijos_togglePeriodicityFields);
 }
 
+function planner_refreshIfReady() {
+    if (!tabInited.plan) return;
+    if (currentTab === 'plan') {
+        planner_cargarVista();
+        return;
+    }
+    tabInited.plan = false;
+}
+
 async function fijos_cargarDatos() {
     document.getElementById('f-lista').innerHTML = '<div class="loading-spinner">⏳ Cargando...</div>';
     try {
         const [rows, catRows] = await Promise.all([
-            sheetsGet(SPREADSHEET_FIXED_ID, 'Hoja 1!A2:K').catch(() => []),  // I=periodicidad, J=inicio, K=pagador
+            sheetsGet(SPREADSHEET_FIXED_ID, 'Hoja 1!A2:L').catch(() => []),  // I=periodicidad, J=inicio, K=pagador, L=budget
             sheetsGet(SPREADSHEET_FIXED_ID, 'Categorias!A:A').catch(() => [])
         ]);
         fijosState.categorias = catRows.map(r => r[0]).filter(Boolean);
@@ -2086,12 +2104,14 @@ async function fijos_cargarDatos() {
                 inicioMes,
                 isDueThisMonth,
                 pagador: parseFixedPayer(row[10]),
+                budgetCategory: parseBudgetCategory(row[11]),
             };
         }).filter(i => i.concepto).sort((a, b) => a.diaMes - b.diaMes);
 
         fijos_generarPills();
         fijos_syncDashboardStats();
         fijos_aplicarFiltros();
+        planner_refreshIfReady();
     } catch(e) { handleApiError(e, document.getElementById('f-lista')); }
 }
 
@@ -2232,6 +2252,7 @@ window.fijos_borrar = async function(id) {
         if (fijosState.sheetId === null) fijosState.sheetId = await getSheetId(SPREADSHEET_FIXED_ID, 'Hoja 1');
         await sheetsDeleteRow(SPREADSHEET_FIXED_ID, fijosState.sheetId, id - 1);
         fijos_cargarDatos();
+        planner_refreshIfReady();
     } catch(e) { console.error(e); el.innerHTML = '<div class="empty-state text-danger">❌ Error al borrar</div>'; }
 };
 
@@ -2299,6 +2320,7 @@ window.fijos_togglePagoPart = async function(id, partIndex) {
                 showToast('\u26A0\uFE0F Error al eliminar pago');
             }
         }
+        planner_refreshIfReady();
     } catch(e) {
         console.error('Error toggling pago parcial:', e);
         // Revert optimistic update
@@ -2309,6 +2331,7 @@ window.fijos_togglePagoPart = async function(id, partIndex) {
         fijos_syncDashboardStats();
         balance_updateKpi();
         fijos_aplicarFiltros();
+        planner_refreshIfReady();
         handleApiError(e, null);
     }
 };
@@ -2325,6 +2348,7 @@ function fijos_abrirSheet(item) {
     document.getElementById('f-periodicidad').value = 'mensual';
     document.getElementById('f-inicio-mes').value = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}`;
     document.getElementById('f-pagador').value = 'yo';
+    document.getElementById('f-budget-cat').value = BUDGET_BUCKETS[0];
     document.getElementById('f-fecha').value = String(hoy.getDate());
     document.querySelectorAll('.f-cat-chk').forEach(cb => cb.checked = false);
     const def = document.querySelector('.f-cat-chk[value="General"]');
@@ -2340,6 +2364,7 @@ function fijos_abrirSheet(item) {
         document.getElementById('f-periodicidad').value = item.periodicidad || 'mensual';
         document.getElementById('f-inicio-mes').value = item.inicioMes || `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}`;
         document.getElementById('f-pagador').value = item.pagador || 'yo';
+        document.getElementById('f-budget-cat').value = parseBudgetCategory(item.budgetCategory);
         item.categoria.split(', ').forEach(c => { const cb = document.querySelector(`.f-cat-chk[value="${c}"]`); if (cb) cb.checked = true; });
     }
     fijos_togglePeriodicityFields();
@@ -2367,6 +2392,7 @@ async function fijos_guardar() {
     const periodicidad = parseFixedPeriodicity(document.getElementById('f-periodicidad').value);
     const inicioMes = parseStartMonth(document.getElementById('f-inicio-mes').value);
     const pagador = parseFixedPayer(document.getElementById('f-pagador').value);
+    const budgetCategory = parseBudgetCategory(document.getElementById('f-budget-cat').value);
     const editId  = document.getElementById('f-edit-id').value;
     if (!concepto || !monto) return;
     const cats   = [...document.querySelectorAll('.f-cat-chk:checked')].map(cb => cb.value);
@@ -2381,7 +2407,7 @@ async function fijos_guardar() {
             const paidCount = prevStates.filter(Boolean).length;
             const nextStates = new Array(pagosMes).fill(false).map((_, idx) => idx < Math.min(paidCount, pagosMes));
             const fullPaid = nextStates.every(Boolean);
-            await sheetsUpdate(SPREADSHEET_FIXED_ID, `Hoja 1!A${editId}:K${editId}`, [[
+            await sheetsUpdate(SPREADSHEET_FIXED_ID, `Hoja 1!A${editId}:L${editId}`, [[
                 fecha,
                 concepto,
                 gasto,
@@ -2393,10 +2419,11 @@ async function fijos_guardar() {
                 periodicidad,
                 inicioMes,
                 pagador,
+                budgetCategory,
             ]]);
         } else {
             // new rows start with all partial payments pending
-            await sheetsAppend(SPREADSHEET_FIXED_ID, 'Hoja 1!A:K', [[
+            await sheetsAppend(SPREADSHEET_FIXED_ID, 'Hoja 1!A:L', [[
                 fecha,
                 concepto,
                 gasto,
@@ -2408,6 +2435,7 @@ async function fijos_guardar() {
                 periodicidad,
                 inicioMes,
                 pagador,
+                budgetCategory,
             ]]);
         }
         fijos_cerrarSheet();
@@ -2418,6 +2446,239 @@ async function fijos_guardar() {
         btn.disabled = false; btn.innerText = 'Guardar';
     }
 }
+
+// =============================================
+// PLANIFICADOR MODULE
+// =============================================
+const PLANNER_OVERRIDES_KEY = 'planner_assignments_v1';
+const plannerState = {
+    loading: false,
+    monthKey: '',
+    incomes: [],
+    expenses: [],
+    assignments: {},
+    assignedByIncome: [],
+    totals: { income: 0, assigned: 0, diff: 0 },
+};
+
+function planner_getMonthKey() {
+    const now = new Date();
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+}
+
+function planner_readOverrides(monthKey) {
+    try {
+        const raw = localStorage.getItem(PLANNER_OVERRIDES_KEY);
+        const all = raw ? JSON.parse(raw) : {};
+        if (!all || typeof all !== 'object') return {};
+        const monthMap = all[monthKey];
+        return monthMap && typeof monthMap === 'object' ? monthMap : {};
+    } catch (_) {
+        return {};
+    }
+}
+
+function planner_writeOverrides(monthKey, assignments) {
+    try {
+        const raw = localStorage.getItem(PLANNER_OVERRIDES_KEY);
+        const all = raw ? JSON.parse(raw) : {};
+        all[monthKey] = assignments;
+        localStorage.setItem(PLANNER_OVERRIDES_KEY, JSON.stringify(all));
+    } catch (_) {}
+}
+
+function planner_assignIndexByDay(day, incomes) {
+    if (!incomes.length) return -1;
+    const idx = incomes.findIndex(i => day <= i.day);
+    return idx === -1 ? incomes.length - 1 : idx;
+}
+
+function planner_buildModel(items, monthKey) {
+    const incomes = items
+        .filter(i => i.tipo === 'ingreso' && i.pagador === 'yo' && i.isDueThisMonth)
+        .map(i => {
+            const partAmount = Math.abs(i.monto || 0) / (i.pagosMes || 1);
+            const pendingParts = Math.max(0, (i.pagosMes || 1) - (i.pagosHechos || 0));
+            return {
+                id: i.id,
+                key: `inc-${i.id}`,
+                concept: i.concepto,
+                day: parseDayOfMonth(i.diaMes),
+                amount: partAmount * pendingParts,
+            };
+        })
+        .filter(i => i.amount > 0)
+        .sort((a, b) => a.day - b.day || a.id - b.id);
+
+    const expenses = [];
+    items
+        .filter(i => i.tipo === 'gasto' && i.pagador === 'yo' && i.isDueThisMonth)
+        .forEach(i => {
+            const totalParts = i.pagosMes || 1;
+            const paidParts = Math.max(0, i.pagosHechos || 0);
+            const partAmount = Math.abs(i.monto || 0) / totalParts;
+            for (let partIdx = paidParts; partIdx < totalParts; partIdx++) {
+                expenses.push({
+                    key: `${i.id}:${partIdx + 1}`,
+                    fixedId: i.id,
+                    concept: i.concepto,
+                    day: parseDayOfMonth(i.diaMes),
+                    amount: partAmount,
+                    partLabel: totalParts > 1 ? `${partIdx + 1}/${totalParts}` : null,
+                    budgetCategory: parseBudgetCategory(i.budgetCategory),
+                });
+            }
+        });
+
+    expenses.sort((a, b) => a.day - b.day || a.fixedId - b.fixedId);
+
+    const savedOverrides = planner_readOverrides(monthKey);
+    const assignments = {};
+    const assignedByIncome = incomes.map(() => []);
+    expenses.forEach(exp => {
+        let idx = planner_assignIndexByDay(exp.day, incomes);
+        const manualIdx = Number(savedOverrides[exp.key]);
+        if (!Number.isNaN(manualIdx) && manualIdx >= 0 && manualIdx < incomes.length) {
+            idx = manualIdx;
+        }
+        assignments[exp.key] = idx;
+        if (idx >= 0) assignedByIncome[idx].push(exp);
+    });
+
+    const totalIncome = incomes.reduce((s, i) => s + i.amount, 0);
+    const totalAssigned = expenses.reduce((s, e) => s + e.amount, 0);
+
+    return {
+        monthKey,
+        incomes,
+        expenses,
+        assignments,
+        assignedByIncome,
+        totals: {
+            income: totalIncome,
+            assigned: totalAssigned,
+            diff: totalIncome - totalAssigned,
+        },
+    };
+}
+
+function planner_render() {
+    const summaryEl = document.getElementById('plan-summary');
+    const subEl = document.getElementById('plan-summary-sub');
+    const groupsEl = document.getElementById('plan-income-groups');
+    if (!summaryEl || !subEl || !groupsEl) return;
+
+    const fmt = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' });
+
+    if (!plannerState.incomes.length) {
+        summaryEl.innerText = fmt.format(0);
+        summaryEl.classList.remove('text-danger');
+        summaryEl.classList.remove('text-success');
+        subEl.innerText = 'No hay ingresos propios pendientes este mes en Gastos Fijos.';
+        groupsEl.innerHTML = '<div class="empty-state">Agrega al menos un ingreso fijo pagado por ti para usar el planificador.</div>';
+        return;
+    }
+
+    summaryEl.innerText = fmt.format(plannerState.totals.diff);
+    summaryEl.classList.toggle('text-danger', plannerState.totals.diff < 0);
+    summaryEl.classList.toggle('text-success', plannerState.totals.diff >= 0);
+    subEl.innerText = `${plannerState.incomes.length} ingresos · ${plannerState.expenses.length} pagos pendientes · Asignado ${fmt.format(plannerState.totals.assigned)} de ${fmt.format(plannerState.totals.income)}`;
+
+    groupsEl.innerHTML = plannerState.incomes.map((income, idx) => {
+        const expenses = plannerState.assignedByIncome[idx] || [];
+        const assignedTotal = expenses.reduce((s, e) => s + e.amount, 0);
+        const diff = income.amount - assignedTotal;
+
+        const bucketTotals = BUDGET_BUCKETS.reduce((acc, bucket) => {
+            acc[bucket] = 0;
+            return acc;
+        }, {});
+        expenses.forEach(e => {
+            bucketTotals[e.budgetCategory] += e.amount;
+        });
+
+        const bucketHtml = BUDGET_BUCKETS.map(bucket => {
+            const value = bucketTotals[bucket] || 0;
+            return `<div class="plan-bucket-row"><span>${bucket}</span><strong>${fmt.format(value)}</strong></div>`;
+        }).join('');
+
+        const expenseRows = expenses.length
+            ? expenses.map(e => {
+                const canMovePrev = plannerState.assignments[e.key] > 0;
+                const canMoveNext = plannerState.assignments[e.key] < plannerState.incomes.length - 1;
+                return `<div class="plan-expense-row">
+                    <div>
+                        <div class="plan-expense-title">${e.concept}${e.partLabel ? ` (${e.partLabel})` : ''}</div>
+                        <div class="plan-expense-meta">Dia ${e.day} · ${e.budgetCategory}</div>
+                    </div>
+                    <div class="plan-expense-actions">
+                        <button class="mini-btn" onclick="planner_moveExpense('${e.key}', -1)" ${canMovePrev ? '' : 'disabled'}>←</button>
+                        <span class="plan-expense-amount">${fmt.format(e.amount)}</span>
+                        <button class="mini-btn" onclick="planner_moveExpense('${e.key}', 1)" ${canMoveNext ? '' : 'disabled'}>→</button>
+                    </div>
+                </div>`;
+            }).join('')
+            : '<div class="empty-state" style="margin-top:.5rem;">Sin pagos asignados en esta ventana.</div>';
+
+        return `<div class="glass-subtle plan-income-card">
+            <div class="plan-income-head">
+                <div>
+                    <div class="plan-income-title">Dia ${income.day} · ${income.concept}</div>
+                    <div class="plan-income-sub">Ingreso pendiente: ${fmt.format(income.amount)}</div>
+                </div>
+                <div class="plan-income-diff ${diff < 0 ? 'text-danger' : 'text-success'}">${fmt.format(diff)}</div>
+            </div>
+            <div class="plan-income-sub">Asignado: ${fmt.format(assignedTotal)}</div>
+            <div class="plan-buckets">${bucketHtml}</div>
+            <div class="plan-expenses-list">${expenseRows}</div>
+        </div>`;
+    }).join('');
+}
+
+async function planner_cargarVista() {
+    if (plannerState.loading) return;
+    plannerState.loading = true;
+    const groupsEl = document.getElementById('plan-income-groups');
+    if (groupsEl) groupsEl.innerHTML = '<div class="loading-spinner">⏳ Armando plan...</div>';
+    try {
+        if (!fijosState.allItems.length) {
+            await fijos_cargarDatos();
+        }
+        const monthKey = planner_getMonthKey();
+        Object.assign(plannerState, planner_buildModel(fijosState.allItems, monthKey));
+        planner_render();
+    } finally {
+        plannerState.loading = false;
+    }
+}
+
+window.planner_moveExpense = function(expenseKey, direction) {
+    const curr = plannerState.assignments[expenseKey];
+    if (curr === undefined || curr < 0) return;
+    const next = Math.max(0, Math.min(plannerState.incomes.length - 1, curr + direction));
+    if (next === curr) return;
+    plannerState.assignments[expenseKey] = next;
+    planner_writeOverrides(plannerState.monthKey, plannerState.assignments);
+
+    const byIncome = plannerState.incomes.map(() => []);
+    plannerState.expenses.forEach(exp => {
+        const idx = plannerState.assignments[exp.key];
+        if (idx >= 0) byIncome[idx].push(exp);
+    });
+    plannerState.assignedByIncome = byIncome;
+    planner_render();
+};
+
+window.planner_resetAssignments = function() {
+    if (!plannerState.monthKey) return;
+    const monthKey = plannerState.monthKey;
+    const current = planner_readOverrides(monthKey);
+    if (!Object.keys(current).length) return;
+    planner_writeOverrides(monthKey, {});
+    Object.assign(plannerState, planner_buildModel(fijosState.allItems, monthKey));
+    planner_render();
+    showToast('↺ Asignaciones manuales reiniciadas');
+};
 
 // =============================================
 // UTILITIES
@@ -2536,6 +2797,11 @@ function isFixedDueThisMonth(periodicity, startMonth, nowMonth) {
 function parseFixedPayer(val) {
     const raw = (val || '').toString().trim().toLowerCase();
     return raw === 'esposa' ? 'esposa' : 'yo';
+}
+
+function parseBudgetCategory(val) {
+    const raw = (val || '').toString().trim();
+    return BUDGET_BUCKETS.includes(raw) ? raw : BUDGET_BUCKETS[0];
 }
 
 /** Format a parsed date string into YYYY-MM-DD */
