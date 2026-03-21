@@ -13,7 +13,7 @@ const SCOPES = 'https://www.googleapis.com/auth/spreadsheets https://www.googlea
 const SPREADSHEET_LOG_ID   = '1pn1bsxj2LaoySXAVUvqfEJY1VR4R_T8NsTOqQnVW5Xw'; // Control de Gastos
 const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // Gastos Fijos
 const SPREADSHEET_DEUDAS_ID = '1dKxhgqazskm15lx0f6FNCA0gpJ7i5glfxkusiH3b0Uk'; // Control de Deudas
-const APP_VERSION  = 'v3.5.7';
+const APP_VERSION  = 'v3.5.8';
 // Bump token keys to force re-auth with the new drive scope
 const TOKEN_KEY    = 'google_access_token_v4';
 const EXPIRY_KEY   = 'google_token_expiry_v4';
@@ -2036,8 +2036,7 @@ async function fijos_cargarDatos() {
         // ─────────────────────────────────────────────────────────────
 
         fijosState.allItems = rows.map((row, i) => {
-            // Dates come as serial numbers (UNFORMATTED_VALUE) or ISO strings
-            const d      = parseSheetDate(row[0]);
+            const dayOfMonth = parseDayOfMonth(row[0]);
             const g      = parseSheetValue(row[2]);
             const n      = parseSheetValue(row[3]);
             const pagosMes = parsePaymentsTotal(row[6]);
@@ -2046,8 +2045,9 @@ async function fijos_cargarDatos() {
             const isPaid = pagosHechos >= pagosMes;
             return {
                 id: i + 2,
-                fecha: d.toLocaleDateString('es-MX', { day: 'numeric', month: 'short' }),
-                fechaValue: d.toISOString().split('T')[0],
+                fecha: `Día ${dayOfMonth}`,
+                fechaValue: String(dayOfMonth).padStart(2, '0'),
+                diaMes: dayOfMonth,
                 concepto:   row[1] || '',
                 monto:      g || n,
                 tipo:       g > 0 ? 'gasto' : 'ingreso',
@@ -2285,14 +2285,14 @@ function fijos_abrirSheet(item) {
     document.getElementById('f-tipo').value = 'gasto';
     document.getElementById('f-pagos-mes').value = '1';
     const hoy = new Date();
-    document.getElementById('f-fecha').value = new Date(hoy.getTime() - hoy.getTimezoneOffset()*60000).toISOString().split('T')[0];
+    document.getElementById('f-fecha').value = String(hoy.getDate());
     document.querySelectorAll('.f-cat-chk').forEach(cb => cb.checked = false);
     const def = document.querySelector('.f-cat-chk[value="General"]');
     if (def) def.checked = true;
     if (item) {
         document.getElementById('f-edit-id').value = item.id;
         document.getElementById('f-sheet-title').innerText = 'Editar Movimiento';
-        document.getElementById('f-fecha').value = item.fechaValue;
+        document.getElementById('f-fecha').value = String(item.diaMes || parseDayOfMonth(item.fechaValue));
         document.getElementById('f-tipo').value = item.tipo;
         document.getElementById('f-concepto').value = item.concepto;
         document.getElementById('f-monto').value = item.monto;
@@ -2308,7 +2308,7 @@ function fijos_cerrarFiltro() { document.getElementById('f-filter-sheet').classL
 
 async function fijos_guardar() {
     const btn     = document.getElementById('f-btn-guardar');
-    const fecha   = document.getElementById('f-fecha').value;
+    const fecha   = String(parseDayOfMonth(document.getElementById('f-fecha').value));
     const tipo    = document.getElementById('f-tipo').value;
     const concepto= document.getElementById('f-concepto').value.trim();
     const monto   = parseSheetValue(document.getElementById('f-monto').value);
@@ -2429,6 +2429,23 @@ function parseSheetDate(val) {
     
     const d = new Date(str);
     return isNaN(d) ? new Date() : d;
+}
+
+function parseDayOfMonth(val) {
+    if (val === null || val === undefined || val === '') return 1;
+    if (typeof val === 'number') {
+        if (val >= 1 && val <= 31) return Math.floor(val);
+        const d = parseSheetDate(val);
+        const day = d.getDate();
+        return Math.min(31, Math.max(1, day || 1));
+    }
+    const str = String(val).trim();
+    if (/^\d{1,2}$/.test(str)) {
+        return Math.min(31, Math.max(1, parseInt(str, 10)));
+    }
+    const d = parseSheetDate(str);
+    const day = d.getDate();
+    return Math.min(31, Math.max(1, day || 1));
 }
 
 /** Format a parsed date string into YYYY-MM-DD */
