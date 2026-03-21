@@ -35,6 +35,10 @@ jobs:
         run: npm ci --prefix finance-dashboard && npm run build --prefix finance-dashboard
       - name: Prepare finance dashboard deploy files
         run: rm -rf finance-dashboard/assets && cp finance-dashboard/dist/index.html finance-dashboard/index.html && mkdir -p finance-dashboard/assets && cp -R finance-dashboard/dist/assets/. finance-dashboard/assets/
+      - name: Build casa galeria portfolio
+        run: npm ci --prefix casa-galeria-portfolio && npm run build --prefix casa-galeria-portfolio
+      - name: Prepare casa galeria portfolio deploy files
+        run: rm -rf casa-galeria-portfolio/assets && cp -r casa-galeria-portfolio/dist/* casa-galeria-portfolio/ && cp casa-galeria-portfolio/dist/.nojekyll casa-galeria-portfolio/ || true
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Upload artifact

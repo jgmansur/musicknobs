@@ -39,7 +39,7 @@ function App() {
         <div className="absolute inset-0 z-0">
           <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-brand z-10" />
           <img 
-            src="/assets/IMG_2261.jpg" 
+            src={`${import.meta.env.BASE_URL}assets/IMG_2261.jpg`} 
             alt="Casa Galeria Hero" 
             className="w-full h-full object-cover object-center scale-105 animate-[slow-zoom_20s_ease-in-out_infinite_alternate]"
           />
@@ -123,7 +123,7 @@ function App() {
               transition={{ duration: 0.8 }}
               className="relative aspect-[4/5] rounded-3xl overflow-hidden shadow-2xl"
             >
-              <img src="/assets/IMG_2269.jpg" alt="Interior Details" className="w-full h-full object-cover" />
+              <img src={`${import.meta.env.BASE_URL}assets/IMG_2269.jpg`} alt="Interior Details" className="w-full h-full object-cover" />
               <div className="absolute inset-0 border border-white/10 rounded-3xl pointer-events-none" />
             </motion.div>
             
@@ -196,7 +196,7 @@ function App() {
                 className="group relative rounded-2xl overflow-hidden bg-brand-light break-inside-avoid"
               >
                 <img 
-                  src={`/assets/${img}`} 
+                  src={`${import.meta.env.BASE_URL}assets/${img}`} 
                   alt={`Casa Galeria ${i}`}
                   loading="lazy"
                   className="w-full h-auto object-cover transform transition-transform duration-700 group-hover:scale-110"
