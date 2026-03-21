@@ -2596,6 +2596,7 @@ const plannerState = {
     expenses: [],
     assignments: {},
     assignedByIncome: [],
+    autoSortedThisMonth: false,
     totals: { income: 0, assigned: 0, diff: 0 },
 };
 
@@ -2682,6 +2683,7 @@ function planner_buildModel(items, monthKey) {
     expenses.sort((a, b) => a.day - b.day || a.fixedId - b.fixedId);
 
     const savedOverrides = planner_readOverrides(monthKey);
+    const hasSavedOverrides = Object.keys(savedOverrides).length > 0;
     const assignments = {};
     let assignedByIncome = incomes.map(() => []);
     const autoIncomes = fixedIncomes.length ? fixedIncomes : incomes;
@@ -2696,18 +2698,23 @@ function planner_buildModel(items, monthKey) {
         if (idx >= 0) assignedByIncome[idx].push(exp);
     });
 
-    const balanceIdx = 0;
-    for (let idx = 1; idx < incomes.length; idx++) {
-        const income = incomes[idx];
-        const currentExpenses = assignedByIncome[idx] || [];
-        let overflow = currentExpenses.reduce((s, e) => s + e.amount, 0) - income.amount;
-        if (overflow <= 0) continue;
-        const movable = [...currentExpenses].sort((a, b) => b.day - a.day || b.amount - a.amount);
-        for (const exp of movable) {
-            if (overflow <= 0) break;
-            assignments[exp.key] = balanceIdx;
-            overflow -= exp.amount;
+    let autoSortedThisMonth = false;
+    const isFirstDayOfMonth = new Date().getDate() === 1;
+    if (!hasSavedOverrides && isFirstDayOfMonth) {
+        const balanceIdx = 0;
+        for (let idx = 1; idx < incomes.length; idx++) {
+            const income = incomes[idx];
+            const currentExpenses = assignedByIncome[idx] || [];
+            let overflow = currentExpenses.reduce((s, e) => s + e.amount, 0) - income.amount;
+            if (overflow <= 0) continue;
+            const movable = [...currentExpenses].sort((a, b) => b.day - a.day || b.amount - a.amount);
+            for (const exp of movable) {
+                if (overflow <= 0) break;
+                assignments[exp.key] = balanceIdx;
+                overflow -= exp.amount;
+            }
         }
+        autoSortedThisMonth = true;
     }
 
     assignedByIncome = incomes.map(() => []);
@@ -2725,6 +2732,7 @@ function planner_buildModel(items, monthKey) {
         expenses,
         assignments,
         assignedByIncome,
+        autoSortedThisMonth,
         totals: {
             income: totalIncome,
             assigned: totalAssigned,
@@ -2826,6 +2834,10 @@ async function planner_cargarVista() {
         }
         const monthKey = planner_getMonthKey();
         Object.assign(plannerState, planner_buildModel(fijosState.allItems, monthKey));
+        if (plannerState.autoSortedThisMonth) {
+            planner_writeOverrides(monthKey, plannerState.assignments);
+            plannerState.autoSortedThisMonth = false;
+        }
         planner_render();
     } finally {
         plannerState.loading = false;
