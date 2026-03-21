@@ -1989,6 +1989,8 @@ const fijosState = {
 const RESET_MONTH_KEY = 'fijos_last_reset_month';
 
 function fijos_bindEvents() {
+    const sortEl = document.getElementById('f-sort');
+    if (sortEl) sortEl.value = 'fechaAsc';
     document.getElementById('f-btn-add').addEventListener('click', () => fijos_abrirSheet(null));
     document.getElementById('f-btn-guardar').addEventListener('click', fijos_guardar);
     document.getElementById('f-search').addEventListener('input', fijos_aplicarFiltros);
