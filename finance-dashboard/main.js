@@ -13,7 +13,7 @@ const SCOPES = 'https://www.googleapis.com/auth/spreadsheets https://www.googlea
 const SPREADSHEET_LOG_ID   = '1pn1bsxj2LaoySXAVUvqfEJY1VR4R_T8NsTOqQnVW5Xw'; // Control de Gastos
 const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // Gastos Fijos
 const SPREADSHEET_DEUDAS_ID = '1dKxhgqazskm15lx0f6FNCA0gpJ7i5glfxkusiH3b0Uk'; // Control de Deudas
-const APP_VERSION  = 'v4.2.0';
+const APP_VERSION  = 'v4.1.0';
 // Bump token keys to force re-auth with the new drive scope
 const TOKEN_KEY    = 'google_access_token_v4';
 const EXPIRY_KEY   = 'google_token_expiry_v4';
@@ -798,15 +798,7 @@ function balance_updateKpi() {
 function balance_updateFixedCoverageKpi() {
     const el = document.getElementById('gastos-fijos-coverage');
     if (!el) return;
-    const pendingToPay = Math.max(0, balancePendingFixed || 0);
-    const availableNow = balance_getTotal();
-    const pendingToCollect = Math.max(0, balancePendingFixedIncome || 0);
-    if (pendingToPay <= 0) {
-        el.innerText = 'al corriente $0.00';
-        el.className = 'kpi-inline-note kpi-inline-note--positive';
-        return;
-    }
-    const coverage = (availableNow + pendingToCollect) - pendingToPay;
+    const coverage = (balance_getTotal() + balancePendingFixedIncome) - balancePendingFixed;
     const sign = coverage >= 0 ? '+' : '';
     el.innerText = `${coverage >= 0 ? 'te sobra' : 'te faltan'} ${sign}${formatCurrency(coverage)}`;
     el.className = `kpi-inline-note ${coverage >= 0 ? 'kpi-inline-note--positive' : 'kpi-inline-note--negative'}`;
@@ -1451,7 +1443,7 @@ async function fetchAndProcess() {
     try {
         const [logData, fixedData] = await Promise.all([
             sheetsGet(SPREADSHEET_LOG_ID, 'Hoja 1!A2:G'),
-            sheetsGet(SPREADSHEET_FIXED_ID, 'Hoja 1!A2:K')  // H=estado pagos, I=periodicidad, J=inicio, K=pagador
+            sheetsGet(SPREADSHEET_FIXED_ID, 'Hoja 1!A2:H')  // G=pagosMes, H=estado pagos
         ]);
         processAndRender(logData, fixedData);
         status.innerText = 'Sincronizado ✓'; status.style.color = 'var(--accent-green)';
@@ -1530,18 +1522,18 @@ function processAndRender(logRows, fixedRows) {
         const periodicidad = parseFixedPeriodicity(row[8]);
         const inicioMes = parseStartMonth(row[9], `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}`);
         const isDueThisMonth = isFixedDueThisMonth(periodicidad, inicioMes, `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}`);
-        const partAmount = Math.abs(monto) / (pagosMes || 1);
-        const paidAmount = partAmount * Math.max(0, pagosHechos);
-        const pendingAmount = partAmount * Math.max(0, pagosMes - pagosHechos);
+        const paidRatio = pagosMes > 0 ? (pagosHechos / pagosMes) : 0;
+        const paidAmount = Math.abs(monto) * paidRatio;
+        const pendingAmount = Math.abs(monto) - paidAmount;
         return { rowNum: i + 2, concepto, monto, tipo, isPaid, pagosMes, pagosEstado, pagosHechos, paidAmount, pendingAmount, periodicidad, inicioMes, isDueThisMonth, pagador: parseFixedPayer(row[10]) };
     }).filter(e => e.concepto);
 
     // KPI: count partial progress for fixed expenses
     const fixedGastos   = fixedExpenses.filter(e => e.tipo === 'gasto' && e.isDueThisMonth);
     const fixedIngresos = fixedExpenses.filter(e => e.tipo === 'ingreso' && e.isDueThisMonth);
-    const fixedTotal    = fixedGastos.reduce((s, e) => s + (Math.abs(e.monto || 0) / (e.pagosMes || 1)) * Math.max(0, (e.pagosMes || 1) - (e.pagosHechos || 0)), 0);
-    const pendingIncome = fixedIngresos.reduce((s, e) => s + (Math.abs(e.monto || 0) / (e.pagosMes || 1)) * Math.max(0, (e.pagosMes || 1) - (e.pagosHechos || 0)), 0);
-    const fixedPaidTotal = fixedGastos.reduce((s, e) => s + (Math.abs(e.monto || 0) / (e.pagosMes || 1)) * Math.max(0, e.pagosHechos || 0), 0);
+    const fixedTotal    = fixedGastos.reduce((s, e) => s + Math.max(0, e.pendingAmount), 0);
+    const pendingIncome = fixedIngresos.reduce((s, e) => s + Math.max(0, e.pendingAmount), 0);
+    const fixedPaidTotal = fixedGastos.reduce((s, e) => s + Math.max(0, e.paidAmount), 0);
     const paidParts     = fixedGastos.reduce((s, e) => s + (e.pagosHechos || 0), 0);
     const totalParts    = fixedGastos.reduce((s, e) => s + (e.pagosMes || 1), 0);
     const pendingFixed  = fixedTotal;   // already only unpaid gastos
@@ -1555,12 +1547,10 @@ function processAndRender(logRows, fixedRows) {
     document.getElementById('gasto-hormiga-total').innerText = formatCurrency(hormigaTotal);
     balance_setFixedTotalKpi(fixedTotal);
     balance_updateFixedCoverageKpi();
-    const pagoStatusEl = document.getElementById('pago-status');
-    if (pagoStatusEl) {
-        pagoStatusEl.innerText = totalParts > 0 && paidParts >= totalParts
+    document.getElementById('pago-status').innerText =
+        totalParts > 0 && paidParts >= totalParts
             ? `✅ \u00a1Todo pagado!`
             : `${paidParts}/${totalParts} Pagos`;
-    }
 
     // Dashboard only shows PENDING (unpaid) fixed expenses
     renderFixedTable(fixedExpenses.filter(e => e.isDueThisMonth && !e.isPaid));
@@ -2309,8 +2299,6 @@ window.fijos_togglePagoPart = async function(id, partIndex) {
                 showToast('\u26A0\uFE0F Error al eliminar pago');
             }
         }
-        // Force canonical refresh from sheet to avoid any drift in paid-part counters.
-        await fijos_cargarDatos();
     } catch(e) {
         console.error('Error toggling pago parcial:', e);
         // Revert optimistic update
