@@ -1,6 +1,6 @@
-import React from 'react';
-import { motion } from 'framer-motion';
-import { MapPin, Maximize, TrendingUp, Instagram, Play } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { MapPin, Maximize, TrendingUp, Instagram, Play, X } from 'lucide-react';
 
 const GalleryImages = [
   'IMG_2261.jpg', 'IMG_2269.jpg', 'IMG_2126.jpg', 'IMG_2124.jpg', 
@@ -13,10 +13,29 @@ const VideoPlaceholders = [
   { title: "Recorrido Exclusivo", id: "LeSV9K8AsqY" },
   { title: "Reel de Interiores", id: "q46Fmi6FORA" },
   { title: "Reel de Exteriores y Amenidades", id: "cq9A3kC_B_E" },
-  { title: "Vista Aérea (Dron)", id: "uYOWJLKrzZ4" }
+  { title: "Vista Aérea (Dron)", id: "uYOWJLKrzZ4" },
+  { title: "Historias y Servicios", id: "hDyXAfxPB1w" }
 ];
 
+const HeroImages = ["IMG_2261", "IMG_0016", "c628da91-9467-4885-b655-294b7ed88dfa", "a5d15570-cc2d-436f-b345-c1366ac80a6e"];
+
 function App() {
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [heroIndex, setHeroIndex] = useState(0);
+
+  useEffect(() => {
+    // Preload hero images
+    HeroImages.forEach(img => {
+      const image = new Image();
+      image.src = `${import.meta.env.BASE_URL}assets/${img}.webp`;
+    });
+
+    // Hero Carousel Timer
+    const timer = setInterval(() => {
+      setHeroIndex(prev => (prev + 1) % HeroImages.length);
+    }, 4500);
+    return () => clearInterval(timer);
+  }, []);
   return (
     <div className="min-h-screen bg-brand selection:bg-brand-gold/30">
       
@@ -35,14 +54,21 @@ function App() {
       </nav>
 
       {/* Hero Section */}
-      <section className="relative h-screen flex items-center justify-center overflow-hidden">
-        <div className="absolute inset-0 z-0">
+      <section className="relative min-h-[90vh] flex flex-col justify-center overflow-hidden">
+        <div className="absolute inset-0 z-0 bg-black">
+          <AnimatePresence mode="wait">
+            <motion.img 
+              key={heroIndex}
+              initial={{ opacity: 0, scale: 1.05 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 1.2, ease: "easeInOut" }}
+              src={`${import.meta.env.BASE_URL}assets/${HeroImages[heroIndex]}.webp`} 
+              alt="Casa Galeria Hero" 
+              className="absolute inset-0 w-full h-full object-cover object-center"
+            />
+          </AnimatePresence>
           <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-brand z-10" />
-          <img 
-            src={`${import.meta.env.BASE_URL}assets/IMG_2261.jpg`} 
-            alt="Casa Galeria Hero" 
-            className="w-full h-full object-cover object-center scale-105 animate-[slow-zoom_20s_ease-in-out_infinite_alternate]"
-          />
         </div>
         
         <div className="relative z-20 text-center px-4 max-w-4xl mx-auto">
@@ -123,7 +149,7 @@ function App() {
               transition={{ duration: 0.8 }}
               className="relative aspect-[4/5] rounded-3xl overflow-hidden shadow-2xl"
             >
-              <img src={`${import.meta.env.BASE_URL}assets/IMG_2269.jpg`} alt="Interior Details" className="w-full h-full object-cover" />
+              <img src={`${import.meta.env.BASE_URL}assets/IMG_2269.webp`} alt="Interior Details" className="w-full h-full object-cover" />
               <div className="absolute inset-0 border border-white/10 rounded-3xl pointer-events-none" />
             </motion.div>
             
@@ -193,19 +219,15 @@ function App() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "0px 0px -100px 0px" }}
                 transition={{ duration: 0.5, delay: (i % 3) * 0.1 }}
-                className="group relative rounded-2xl overflow-hidden bg-brand-light break-inside-avoid"
+                className="group relative rounded-2xl overflow-hidden bg-brand-light break-inside-avoid cursor-zoom-in"
+                onClick={() => setSelectedImage(img)}
               >
                 <img 
-                  src={`${import.meta.env.BASE_URL}assets/${img}`} 
+                  src={`${import.meta.env.BASE_URL}assets/${img.replace(/\.[^/.]+$/, "")}.webp`} 
                   alt={`Casa Galeria ${i}`}
                   loading="lazy"
-                  className="w-full h-auto object-cover transform transition-transform duration-700 group-hover:scale-110"
+                  className="w-full h-auto object-cover transform transition-transform duration-700 group-hover:scale-105"
                 />
-                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                  <div className="w-12 h-12 rounded-full border border-white/30 flex items-center justify-center backdrop-blur-sm">
-                    <Maximize className="text-white" size={20} />
-                  </div>
-                </div>
               </motion.div>
             ))}
           </div>
