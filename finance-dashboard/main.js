@@ -1555,10 +1555,12 @@ function processAndRender(logRows, fixedRows) {
     document.getElementById('gasto-hormiga-total').innerText = formatCurrency(hormigaTotal);
     balance_setFixedTotalKpi(fixedTotal);
     balance_updateFixedCoverageKpi();
-    document.getElementById('pago-status').innerText =
-        totalParts > 0 && paidParts >= totalParts
+    const pagoStatusEl = document.getElementById('pago-status');
+    if (pagoStatusEl) {
+        pagoStatusEl.innerText = totalParts > 0 && paidParts >= totalParts
             ? `✅ \u00a1Todo pagado!`
             : `${paidParts}/${totalParts} Pagos`;
+    }
 
     // Dashboard only shows PENDING (unpaid) fixed expenses
     renderFixedTable(fixedExpenses.filter(e => e.isDueThisMonth && !e.isPaid));
