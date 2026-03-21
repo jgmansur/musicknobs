@@ -1,4 +1,4 @@
-import { createIcons, RefreshCw, AlertTriangle, CalendarCheck, TrendingUp, LogOut } from 'lucide';
+import { createIcons, RefreshCw, AlertTriangle, CalendarCheck, TrendingUp, LogOut, CreditCard } from 'lucide';
 import ApexCharts from 'apexcharts';
 import { initializeApp } from 'firebase/app';
 import { browserLocalPersistence, getAuth, GoogleAuthProvider, getRedirectResult, onAuthStateChanged, setPersistence, signInWithCredential, signInWithPopup, signInWithRedirect, signOut as fbSignOut } from 'firebase/auth';
@@ -13,7 +13,7 @@ const SCOPES = 'https://www.googleapis.com/auth/spreadsheets https://www.googlea
 const SPREADSHEET_LOG_ID   = '1pn1bsxj2LaoySXAVUvqfEJY1VR4R_T8NsTOqQnVW5Xw'; // Control de Gastos
 const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // Gastos Fijos
 const SPREADSHEET_DEUDAS_ID = '1dKxhgqazskm15lx0f6FNCA0gpJ7i5glfxkusiH3b0Uk'; // Control de Deudas
-const APP_VERSION  = 'v4.6.4';
+const APP_VERSION  = 'v4.7.0';
 // Bump token keys to force re-auth with the new drive scope
 const TOKEN_KEY    = 'google_access_token_v4';
 const EXPIRY_KEY   = 'google_token_expiry_v4';
@@ -223,7 +223,7 @@ if (_stored && _stored !== 'undefined' && _stored !== 'null' && Date.now() < _ex
 document.addEventListener('DOMContentLoaded', () => {
     debugInitPanel();
     debugUpdate({ token: accessToken ? 'Si (cache)' : 'No' });
-    createIcons({ icons: { RefreshCw, AlertTriangle, CalendarCheck, TrendingUp, LogOut } });
+    createIcons({ icons: { RefreshCw, AlertTriangle, CalendarCheck, TrendingUp, LogOut, CreditCard } });
     const subtitle = document.querySelector('.subtitle');
     if (subtitle) subtitle.innerText = `Music Knobs | ${APP_VERSION}`;
 
