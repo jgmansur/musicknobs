@@ -1451,7 +1451,7 @@ async function fetchAndProcess() {
     try {
         const [logData, fixedData] = await Promise.all([
             sheetsGet(SPREADSHEET_LOG_ID, 'Hoja 1!A2:G'),
-            sheetsGet(SPREADSHEET_FIXED_ID, 'Hoja 1!A2:H')  // G=pagosMes, H=estado pagos
+            sheetsGet(SPREADSHEET_FIXED_ID, 'Hoja 1!A2:K')  // H=estado pagos, I=periodicidad, J=inicio, K=pagador
         ]);
         processAndRender(logData, fixedData);
         status.innerText = 'Sincronizado ✓'; status.style.color = 'var(--accent-green)';
@@ -2307,8 +2307,7 @@ window.fijos_togglePagoPart = async function(id, partIndex) {
                 showToast('\u26A0\uFE0F Error al eliminar pago');
             }
         }
-        // Re-sync dashboard numbers from authoritative sheet data.
-        loadDashboardData().catch(() => {});
+        // Keep dashboard in sync from local optimistic state.
     } catch(e) {
         console.error('Error toggling pago parcial:', e);
         // Revert optimistic update
