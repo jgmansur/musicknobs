@@ -13,7 +13,7 @@ const SCOPES = 'https://www.googleapis.com/auth/spreadsheets https://www.googlea
 const SPREADSHEET_LOG_ID   = '1pn1bsxj2LaoySXAVUvqfEJY1VR4R_T8NsTOqQnVW5Xw'; // Control de Gastos
 const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // Gastos Fijos
 const SPREADSHEET_DEUDAS_ID = '1dKxhgqazskm15lx0f6FNCA0gpJ7i5glfxkusiH3b0Uk'; // Control de Deudas
-const APP_VERSION  = 'v4.1.0';
+const APP_VERSION  = 'v4.2.0';
 // Bump token keys to force re-auth with the new drive scope
 const TOKEN_KEY    = 'google_access_token_v4';
 const EXPIRY_KEY   = 'google_token_expiry_v4';
@@ -798,7 +798,15 @@ function balance_updateKpi() {
 function balance_updateFixedCoverageKpi() {
     const el = document.getElementById('gastos-fijos-coverage');
     if (!el) return;
-    const coverage = (balance_getTotal() + balancePendingFixedIncome) - balancePendingFixed;
+    const pendingToPay = Math.max(0, balancePendingFixed || 0);
+    const availableNow = balance_getTotal();
+    const pendingToCollect = Math.max(0, balancePendingFixedIncome || 0);
+    if (pendingToPay <= 0) {
+        el.innerText = 'al corriente $0.00';
+        el.className = 'kpi-inline-note kpi-inline-note--positive';
+        return;
+    }
+    const coverage = (availableNow + pendingToCollect) - pendingToPay;
     const sign = coverage >= 0 ? '+' : '';
     el.innerText = `${coverage >= 0 ? 'te sobra' : 'te faltan'} ${sign}${formatCurrency(coverage)}`;
     el.className = `kpi-inline-note ${coverage >= 0 ? 'kpi-inline-note--positive' : 'kpi-inline-note--negative'}`;
