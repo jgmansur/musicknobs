@@ -1573,7 +1573,7 @@ function renderFixedTable(expenses) {
     tbody.innerHTML = expenses.map(e => `
         <tr>
           <td>${e.concepto}</td>
-          <td class="${e.tipo === 'ingreso' ? 'text-success' : 'text-danger'}">${formatCurrency(Math.max(0, e.pendingAmount ?? Math.abs(e.monto || 0)))}</td>
+          <td class="${e.tipo === 'ingreso' ? 'text-success' : ''}" style="${e.tipo === 'ingreso' ? 'font-weight:700;' : ''}">${formatCurrency(Math.max(0, e.pendingAmount ?? Math.abs(e.monto || 0)))}</td>
           <td><span class="badge ${e.isPaid ? 'paid' : 'pending'}">${e.isPaid ? 'PAGADO' : 'PENDIENTE'}</span></td>
         </tr>`).join('');
 }
