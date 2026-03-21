@@ -1507,7 +1507,7 @@ function processAndRender(logRows, fixedRows) {
     });
 
 
-    // F = pagado legacy, G = pagos por mes, H = estado de pagos parciales (ej. 1010)
+    // F = pagado legacy, G = pagos por mes, H = estado pagos, I = periodicidad, J = inicio, K = pagador
     const fixedExpenses = fixedRows.map((row, i) => {
         const concepto = row[1] || '';
         const g = parseSheetValue(row[2]);  // gasto column
@@ -1519,15 +1519,18 @@ function processAndRender(logRows, fixedRows) {
         const pagosEstado = parsePaymentStates(row[7], pagosMes, legacyPaid);
         const pagosHechos = pagosEstado.filter(Boolean).length;
         const isPaid   = pagosHechos >= pagosMes;
+        const periodicidad = parseFixedPeriodicity(row[8]);
+        const inicioMes = parseStartMonth(row[9], `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}`);
+        const isDueThisMonth = isFixedDueThisMonth(periodicidad, inicioMes, `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}`);
         const paidRatio = pagosMes > 0 ? (pagosHechos / pagosMes) : 0;
         const paidAmount = Math.abs(monto) * paidRatio;
         const pendingAmount = Math.abs(monto) - paidAmount;
-        return { rowNum: i + 2, concepto, monto, tipo, isPaid, pagosMes, pagosEstado, pagosHechos, paidAmount, pendingAmount };
+        return { rowNum: i + 2, concepto, monto, tipo, isPaid, pagosMes, pagosEstado, pagosHechos, paidAmount, pendingAmount, periodicidad, inicioMes, isDueThisMonth, pagador: parseFixedPayer(row[10]) };
     }).filter(e => e.concepto);
 
     // KPI: count partial progress for fixed expenses
-    const fixedGastos   = fixedExpenses.filter(e => e.tipo === 'gasto');
-    const fixedIngresos = fixedExpenses.filter(e => e.tipo === 'ingreso');
+    const fixedGastos   = fixedExpenses.filter(e => e.tipo === 'gasto' && e.isDueThisMonth);
+    const fixedIngresos = fixedExpenses.filter(e => e.tipo === 'ingreso' && e.isDueThisMonth);
     const fixedTotal    = fixedGastos.reduce((s, e) => s + Math.max(0, e.pendingAmount), 0);
     const pendingIncome = fixedIngresos.reduce((s, e) => s + Math.max(0, e.pendingAmount), 0);
     const fixedPaidTotal = fixedGastos.reduce((s, e) => s + Math.max(0, e.paidAmount), 0);
@@ -1550,7 +1553,7 @@ function processAndRender(logRows, fixedRows) {
             : `${paidParts}/${totalParts} Pagos`;
 
     // Dashboard only shows PENDING (unpaid) fixed expenses
-    renderFixedTable(fixedExpenses.filter(e => !e.isPaid));
+    renderFixedTable(fixedExpenses.filter(e => e.isDueThisMonth && !e.isPaid));
     renderChart(hormigaChartData);
     renderHormigaPanel(hormigaGastos, hormigaTotal, hormigaPrevTotal, monthName, prevMonthName);
 }
@@ -2020,13 +2023,14 @@ function fijos_bindEvents() {
     });
     document.getElementById('f-sheet-overlay').addEventListener('click', fijos_cerrarSheet);
     document.getElementById('f-filter-overlay').addEventListener('click', fijos_cerrarFiltro);
+    document.getElementById('f-periodicidad').addEventListener('change', fijos_togglePeriodicityFields);
 }
 
 async function fijos_cargarDatos() {
     document.getElementById('f-lista').innerHTML = '<div class="loading-spinner">⏳ Cargando...</div>';
     try {
         const [rows, catRows] = await Promise.all([
-            sheetsGet(SPREADSHEET_FIXED_ID, 'Hoja 1!A2:H').catch(() => []),  // G=pagosMes, H=estado pagos
+            sheetsGet(SPREADSHEET_FIXED_ID, 'Hoja 1!A2:K').catch(() => []),  // I=periodicidad, J=inicio, K=pagador
             sheetsGet(SPREADSHEET_FIXED_ID, 'Categorias!A:A').catch(() => [])
         ]);
         fijosState.categorias = catRows.map(r => r[0]).filter(Boolean);
@@ -2062,6 +2066,9 @@ async function fijos_cargarDatos() {
             const pagosEstado = parsePaymentStates(row[7], pagosMes, parseBool(row[5]));
             const pagosHechos = pagosEstado.filter(Boolean).length;
             const isPaid = pagosHechos >= pagosMes;
+            const periodicidad = parseFixedPeriodicity(row[8]);
+            const inicioMes = parseStartMonth(row[9], nowMonth);
+            const isDueThisMonth = isFixedDueThisMonth(periodicidad, inicioMes, nowMonth);
             return {
                 id: i + 2,
                 fecha: `Día ${dayOfMonth}`,
@@ -2075,6 +2082,10 @@ async function fijos_cargarDatos() {
                 pagosMes,
                 pagosEstado,
                 pagosHechos,
+                periodicidad,
+                inicioMes,
+                isDueThisMonth,
+                pagador: parseFixedPayer(row[10]),
             };
         }).filter(i => i.concepto).sort((a, b) => a.diaMes - b.diaMes);
 
@@ -2101,8 +2112,8 @@ function fijos_generarPills() {
 }
 
 function fijos_syncDashboardStats() {
-    const fixedGastos = fijosState.allItems.filter(i => i.tipo === 'gasto');
-    const fixedIngresos = fijosState.allItems.filter(i => i.tipo === 'ingreso');
+    const fixedGastos = fijosState.allItems.filter(i => i.tipo === 'gasto' && i.isDueThisMonth);
+    const fixedIngresos = fijosState.allItems.filter(i => i.tipo === 'ingreso' && i.isDueThisMonth);
     const pendingFixed = fixedGastos.reduce((s, i) => {
         const unpaidParts = Math.max(0, (i.pagosMes || 1) - (i.pagosHechos || 0));
         const partAmount = Math.abs(i.monto || 0) / (i.pagosMes || 1);
@@ -2147,7 +2158,7 @@ function fijos_aplicarFiltros() {
             || (tipoActivos.includes('__tipo_gasto') && item.tipo === 'gasto')
             || (tipoActivos.includes('__tipo_ingreso') && item.tipo === 'ingreso');
         const catOk = !catActivos.length || catActivos.some(f => item.categoria.split(', ').includes(f));
-        return t && tipoOk && catOk;
+        return t && tipoOk && catOk && item.isDueThisMonth;
     });
     lista.sort((a,b) => {
         if (sort==='fechaDesc') return b.fechaValue.localeCompare(a.fechaValue);
@@ -2187,7 +2198,7 @@ function fijos_renderLista(lista) {
           <div class="mc-left">
             <span class="mc-fecha">${item.fecha}</span>
             <span class="mc-lugar">${item.concepto}</span>
-            <span class="mc-concepto">${item.categoria}${item.pagosMes > 1 ? ` · ${item.pagosHechos}/${item.pagosMes} pagos · ${sign}${fmt.format(montoParcial)} c/u` : ''}</span>
+            <span class="mc-concepto">${item.categoria} · ${item.periodicidad === 'bimestral' ? 'Bimestral' : 'Mensual'} · ${item.pagador === 'esposa' ? 'Paga esposa' : 'Pago propio'}${item.pagosMes > 1 ? ` · ${item.pagosHechos}/${item.pagosMes} pagos · ${sign}${fmt.format(montoParcial)} c/u` : ''}</span>
           </div>
           <div class="mc-right" style="align-items:flex-end;gap:.5rem">
             <span class="mc-monto ${cls}">${sign}${fmt.format(item.monto)}</span>
@@ -2297,13 +2308,16 @@ window.fijos_togglePagoPart = async function(id, partIndex) {
 
 function fijos_abrirSheet(item) {
     const sheet = document.getElementById('f-sheet');
+    const hoy = new Date();
     document.getElementById('f-edit-id').value = '';
     document.getElementById('f-sheet-title').innerText = 'Nuevo Movimiento';
     document.getElementById('f-concepto').value = '';
     document.getElementById('f-monto').value = '';
     document.getElementById('f-tipo').value = 'gasto';
     document.getElementById('f-pagos-mes').value = '1';
-    const hoy = new Date();
+    document.getElementById('f-periodicidad').value = 'mensual';
+    document.getElementById('f-inicio-mes').value = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}`;
+    document.getElementById('f-pagador').value = 'yo';
     document.getElementById('f-fecha').value = String(hoy.getDate());
     document.querySelectorAll('.f-cat-chk').forEach(cb => cb.checked = false);
     const def = document.querySelector('.f-cat-chk[value="General"]');
@@ -2316,9 +2330,20 @@ function fijos_abrirSheet(item) {
         document.getElementById('f-concepto').value = item.concepto;
         document.getElementById('f-monto').value = item.monto;
         document.getElementById('f-pagos-mes').value = String(item.pagosMes || 1);
+        document.getElementById('f-periodicidad').value = item.periodicidad || 'mensual';
+        document.getElementById('f-inicio-mes').value = item.inicioMes || `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}`;
+        document.getElementById('f-pagador').value = item.pagador || 'yo';
         item.categoria.split(', ').forEach(c => { const cb = document.querySelector(`.f-cat-chk[value="${c}"]`); if (cb) cb.checked = true; });
     }
+    fijos_togglePeriodicityFields();
     sheet.classList.remove('hidden');
+}
+
+function fijos_togglePeriodicityFields() {
+    const periodicidad = document.getElementById('f-periodicidad').value;
+    const wrap = document.getElementById('f-inicio-mes-wrap');
+    if (!wrap) return;
+    wrap.classList.toggle('hidden', periodicidad !== 'bimestral');
 }
 
 function fijos_cerrarSheet() { document.getElementById('f-sheet').classList.add('hidden'); }
@@ -2332,6 +2357,9 @@ async function fijos_guardar() {
     const concepto= document.getElementById('f-concepto').value.trim();
     const monto   = parseSheetValue(document.getElementById('f-monto').value);
     const pagosMes = parsePaymentsTotal(document.getElementById('f-pagos-mes').value);
+    const periodicidad = parseFixedPeriodicity(document.getElementById('f-periodicidad').value);
+    const inicioMes = parseStartMonth(document.getElementById('f-inicio-mes').value);
+    const pagador = parseFixedPayer(document.getElementById('f-pagador').value);
     const editId  = document.getElementById('f-edit-id').value;
     if (!concepto || !monto) return;
     const cats   = [...document.querySelectorAll('.f-cat-chk:checked')].map(cb => cb.value);
@@ -2346,7 +2374,7 @@ async function fijos_guardar() {
             const paidCount = prevStates.filter(Boolean).length;
             const nextStates = new Array(pagosMes).fill(false).map((_, idx) => idx < Math.min(paidCount, pagosMes));
             const fullPaid = nextStates.every(Boolean);
-            await sheetsUpdate(SPREADSHEET_FIXED_ID, `Hoja 1!A${editId}:H${editId}`, [[
+            await sheetsUpdate(SPREADSHEET_FIXED_ID, `Hoja 1!A${editId}:K${editId}`, [[
                 fecha,
                 concepto,
                 gasto,
@@ -2355,10 +2383,13 @@ async function fijos_guardar() {
                 fullPaid ? 'TRUE' : 'FALSE',
                 pagosMes,
                 serializePaymentStates(nextStates),
+                periodicidad,
+                inicioMes,
+                pagador,
             ]]);
         } else {
             // new rows start with all partial payments pending
-            await sheetsAppend(SPREADSHEET_FIXED_ID, 'Hoja 1!A:H', [[
+            await sheetsAppend(SPREADSHEET_FIXED_ID, 'Hoja 1!A:K', [[
                 fecha,
                 concepto,
                 gasto,
@@ -2367,6 +2398,9 @@ async function fijos_guardar() {
                 'FALSE',
                 pagosMes,
                 serializePaymentStates(new Array(pagosMes).fill(false)),
+                periodicidad,
+                inicioMes,
+                pagador,
             ]]);
         }
         fijos_cerrarSheet();
@@ -2465,6 +2499,36 @@ function parseDayOfMonth(val) {
     const d = parseSheetDate(str);
     const day = d.getDate();
     return Math.min(31, Math.max(1, day || 1));
+}
+
+function parseFixedPeriodicity(val) {
+    const raw = (val || '').toString().trim().toLowerCase();
+    return raw === 'bimestral' ? 'bimestral' : 'mensual';
+}
+
+function parseStartMonth(val, fallback = null) {
+    const raw = (val || '').toString().trim();
+    if (/^\d{4}-\d{2}$/.test(raw)) return raw;
+    const ref = fallback || `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`;
+    return ref;
+}
+
+function monthDiff(fromYm, toYm) {
+    const [fy, fm] = fromYm.split('-').map(Number);
+    const [ty, tm] = toYm.split('-').map(Number);
+    return (ty - fy) * 12 + (tm - fm);
+}
+
+function isFixedDueThisMonth(periodicity, startMonth, nowMonth) {
+    if (periodicity !== 'bimestral') return true;
+    const diff = monthDiff(startMonth, nowMonth);
+    if (diff < 0) return false;
+    return diff % 2 === 0;
+}
+
+function parseFixedPayer(val) {
+    const raw = (val || '').toString().trim().toLowerCase();
+    return raw === 'esposa' ? 'esposa' : 'yo';
 }
 
 /** Format a parsed date string into YYYY-MM-DD */
