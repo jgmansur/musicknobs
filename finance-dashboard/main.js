@@ -13,7 +13,7 @@ const SCOPES = 'https://www.googleapis.com/auth/spreadsheets https://www.googlea
 const SPREADSHEET_LOG_ID   = '1pn1bsxj2LaoySXAVUvqfEJY1VR4R_T8NsTOqQnVW5Xw'; // Control de Gastos
 const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // Gastos Fijos
 const SPREADSHEET_DEUDAS_ID = '1dKxhgqazskm15lx0f6FNCA0gpJ7i5glfxkusiH3b0Uk'; // Control de Deudas
-const APP_VERSION  = 'v4.6.0';
+const APP_VERSION  = 'v4.6.1';
 // Bump token keys to force re-auth with the new drive scope
 const TOKEN_KEY    = 'google_access_token_v4';
 const EXPIRY_KEY   = 'google_token_expiry_v4';
@@ -242,7 +242,10 @@ document.addEventListener('DOMContentLoaded', () => {
     fijos_bindEvents();
     deudas_bindEvents();
 
-    const fixedSearchInput = document.getElementById('fixed-search');
+    document.getElementById('fixed-search-open')?.addEventListener('click', dashboard_openFixedSearch);
+    document.getElementById('fixed-search-close')?.addEventListener('click', dashboard_closeFixedSearch);
+    document.getElementById('fixed-search-overlay')?.addEventListener('click', dashboard_closeFixedSearch);
+    const fixedSearchInput = document.getElementById('fixed-search-input');
     if (fixedSearchInput) {
         fixedSearchInput.addEventListener('input', () => {
             dashboardFixedState.query = fixedSearchInput.value.toLowerCase().trim();
@@ -1595,7 +1598,8 @@ function renderFixedTable(expenses) {
         return;
     }
     tbody.innerHTML = filtered.map(e => {
-        const botonesPagos = (e.pagosMes || 1) === 1
+        const pagosMes = e.pagosMes || 1;
+        const botonesPagos = pagosMes === 1
             ? (() => {
                 const clsPart = e.isPaid ? 'pagado-btn pagado-btn--paid' : 'pagado-btn pagado-btn--pending';
                 const lbl = e.isPaid ? '✅ Pagado' : '⏳ Pendiente';
@@ -1605,20 +1609,32 @@ function renderFixedTable(expenses) {
                 const clsPart = isPartPaid ? 'pagado-btn pagado-btn--paid' : 'pagado-btn pagado-btn--pending';
                 return `<button class="${clsPart} fixed-remote-btn" onclick="dashboard_togglePagoPart(${e.rowNum}, ${idx})">${idx + 1}</button>`;
             }).join('');
-        const paidLabel = (e.pagosMes || 1) > 1
-            ? `<div class="fixed-remote-meta">${e.pagosHechos}/${e.pagosMes} pagos</div>`
-            : '';
+        const controlsClass = pagosMes === 1 ? 'fixed-remote-controls fixed-remote-controls--single' : 'fixed-remote-controls fixed-remote-controls--parts';
+        const controlsStyle = pagosMes === 1 ? '' : `style="grid-template-columns:repeat(${pagosMes}, minmax(0, 1fr));"`;
         return `
         <tr>
           <td>${e.concepto}</td>
           <td class="${e.tipo === 'ingreso' ? 'text-success' : ''}" style="${e.tipo === 'ingreso' ? 'font-weight:700;' : ''}">${formatCurrency(Math.max(0, e.pendingAmount ?? Math.abs(e.monto || 0)))}</td>
           <td>
-            <span class="badge ${e.isPaid ? 'paid' : 'pending'}">${e.isPaid ? 'PAGADO' : 'PENDIENTE'}</span>
-            <div class="fixed-remote-controls">${botonesPagos}</div>
-            ${paidLabel}
+            <div class="${controlsClass}" ${controlsStyle}>${botonesPagos}</div>
           </td>
         </tr>`;
     }).join('');
+}
+
+function dashboard_openFixedSearch() {
+    const modal = document.getElementById('fixed-search-modal');
+    const input = document.getElementById('fixed-search-input');
+    if (!modal || !input) return;
+    modal.classList.remove('hidden');
+    input.value = dashboardFixedState.query;
+    setTimeout(() => input.focus(), 0);
+}
+
+function dashboard_closeFixedSearch() {
+    const modal = document.getElementById('fixed-search-modal');
+    if (!modal) return;
+    modal.classList.add('hidden');
 }
 
 window.dashboard_togglePagoPart = async function(id, partIndex) {

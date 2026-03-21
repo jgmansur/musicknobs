@@ -96,8 +96,10 @@
               <div id="chart-hormiga"></div>
             </section>
             <section class="table-section glass">
-              <div class="section-header"><h3>Estatus Gastos Fijos</h3></div>
-              <input id="fixed-search" class="search-input fixed-search-input" type="search" placeholder="Buscar gasto fijo...">
+              <div class="section-header fixed-status-header">
+                <h3>Estatus Gastos Fijos</h3>
+                <button id="fixed-search-open" class="icon-btn" aria-label="Buscar gastos fijos">🔍</button>
+              </div>
               <div class="table-wrapper">
                 <table id="fixed-expenses-table">
                   <thead>
@@ -107,6 +109,16 @@
                 </table>
               </div>
             </section>
+          </div>
+          <div id="fixed-search-modal" class="fixed-search-modal hidden">
+            <div id="fixed-search-overlay" class="fixed-search-overlay"></div>
+            <div class="fixed-search-card glass">
+              <div class="fixed-search-head">
+                <h4>Buscar gasto fijo</h4>
+                <button id="fixed-search-close" class="icon-btn" aria-label="Cerrar buscador">✕</button>
+              </div>
+              <input id="fixed-search-input" class="field-input" type="search" placeholder="Escribe concepto o categoría...">
+            </div>
           </div>
         </main>
       </div>
