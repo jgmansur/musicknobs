@@ -13,7 +13,7 @@ const SCOPES = 'https://www.googleapis.com/auth/spreadsheets https://www.googlea
 const SPREADSHEET_LOG_ID   = '1pn1bsxj2LaoySXAVUvqfEJY1VR4R_T8NsTOqQnVW5Xw'; // Control de Gastos
 const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // Gastos Fijos
 const SPREADSHEET_DEUDAS_ID = '1dKxhgqazskm15lx0f6FNCA0gpJ7i5glfxkusiH3b0Uk'; // Control de Deudas
-const APP_VERSION  = 'v4.7.0';
+const APP_VERSION  = 'v4.8.0';
 // Bump token keys to force re-auth with the new drive scope
 const TOKEN_KEY    = 'google_access_token_v4';
 const EXPIRY_KEY   = 'google_token_expiry_v4';
@@ -2632,7 +2632,7 @@ function planner_assignIndexByDay(day, incomes) {
 }
 
 function planner_buildModel(items, monthKey) {
-    const incomes = items
+    const fixedIncomes = items
         .filter(i => i.tipo === 'ingreso' && i.pagador === 'yo' && i.isDueThisMonth)
         .map(i => {
             const partAmount = Math.abs(i.monto || 0) / (i.pagosMes || 1);
@@ -2643,10 +2643,21 @@ function planner_buildModel(items, monthKey) {
                 concept: i.concepto,
                 day: parseDayOfMonth(i.diaMes),
                 amount: partAmount * pendingParts,
+                isBalanceSource: false,
             };
         })
         .filter(i => i.amount > 0)
         .sort((a, b) => a.day - b.day || a.id - b.id);
+
+    const balanceIncome = {
+        id: 'balance',
+        key: 'inc-balance',
+        concept: 'Balance disponible',
+        day: 99,
+        amount: Number(balance_getTotal()) || 0,
+        isBalanceSource: true,
+    };
+    const incomes = [...fixedIncomes, balanceIncome];
 
     const expenses = [];
     items
@@ -2673,8 +2684,9 @@ function planner_buildModel(items, monthKey) {
     const savedOverrides = planner_readOverrides(monthKey);
     const assignments = {};
     const assignedByIncome = incomes.map(() => []);
+    const autoIncomes = fixedIncomes.length ? fixedIncomes : incomes;
     expenses.forEach(exp => {
-        let idx = planner_assignIndexByDay(exp.day, incomes);
+        let idx = planner_assignIndexByDay(exp.day, autoIncomes);
         const manualIdx = Number(savedOverrides[exp.key]);
         if (!Number.isNaN(manualIdx) && manualIdx >= 0 && manualIdx < incomes.length) {
             idx = manualIdx;
@@ -2708,8 +2720,6 @@ function planner_render() {
 
     const fmt = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' });
 
-    const availableBalance = balance_getTotal();
-
     if (!plannerState.incomes.length) {
         summaryEl.innerText = fmt.format(0);
         summaryEl.classList.remove('text-danger');
@@ -2719,11 +2729,12 @@ function planner_render() {
         return;
     }
 
-    const projectedAvailable = plannerState.totals.diff + availableBalance;
+    const projectedAvailable = plannerState.totals.diff;
+    const fixedIncomeCount = plannerState.incomes.filter(i => !i.isBalanceSource).length;
     summaryEl.innerText = fmt.format(projectedAvailable);
     summaryEl.classList.toggle('text-danger', projectedAvailable < 0);
     summaryEl.classList.toggle('text-success', projectedAvailable >= 0);
-    subEl.innerText = `${plannerState.incomes.length} ingresos · ${plannerState.expenses.length} pagos pendientes · Asignado ${fmt.format(plannerState.totals.assigned)} de ${fmt.format(plannerState.totals.income)} · Incluye balance disponible ${fmt.format(availableBalance)}`;
+    subEl.innerText = `${fixedIncomeCount} ingresos fijos + 1 balance disponible · ${plannerState.expenses.length} pagos pendientes · Asignado ${fmt.format(plannerState.totals.assigned)} de ${fmt.format(plannerState.totals.income)}`;
 
     groupsEl.innerHTML = plannerState.incomes.map((income, idx) => {
         const expenses = plannerState.assignedByIncome[idx] || [];
@@ -2761,11 +2772,18 @@ function planner_render() {
             }).join('')
             : '<div class="empty-state" style="margin-top:.5rem;">Sin pagos asignados en esta ventana.</div>';
 
+        const headTitle = income.isBalanceSource
+            ? income.concept
+            : `Dia ${income.day} · ${income.concept}`;
+        const incomeSub = income.isBalanceSource
+            ? `Disponible en cuentas: ${fmt.format(income.amount)}`
+            : `Ingreso pendiente: ${fmt.format(income.amount)}`;
+
         return `<div class="glass-subtle plan-income-card">
             <div class="plan-income-head">
                 <div>
-                    <div class="plan-income-title">Dia ${income.day} · ${income.concept}</div>
-                    <div class="plan-income-sub">Ingreso pendiente: ${fmt.format(income.amount)}</div>
+                    <div class="plan-income-title">${headTitle}</div>
+                    <div class="plan-income-sub">${incomeSub}</div>
                 </div>
                 <div class="plan-income-diff ${diff < 0 ? 'text-danger' : 'text-success'}">${fmt.format(diff)}</div>
             </div>
