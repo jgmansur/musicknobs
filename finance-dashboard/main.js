@@ -13,7 +13,7 @@ const SCOPES = 'https://www.googleapis.com/auth/spreadsheets https://www.googlea
 const SPREADSHEET_LOG_ID   = '1pn1bsxj2LaoySXAVUvqfEJY1VR4R_T8NsTOqQnVW5Xw'; // Control de Gastos
 const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // Gastos Fijos
 const SPREADSHEET_DEUDAS_ID = '1dKxhgqazskm15lx0f6FNCA0gpJ7i5glfxkusiH3b0Uk'; // Control de Deudas
-const APP_VERSION  = 'v4.6.1';
+const APP_VERSION  = 'v4.6.2';
 // Bump token keys to force re-auth with the new drive scope
 const TOKEN_KEY    = 'google_access_token_v4';
 const EXPIRY_KEY   = 'google_token_expiry_v4';
@@ -2273,7 +2273,13 @@ function fijos_aplicarFiltros() {
         if (i.tipo === 'gasto') gastoT += pendingAmount;
         else ingresoT += pendingAmount;
     });
-    document.getElementById('f-balance').innerText      = fmt.format(ingresoT - gastoT);
+    const fBalanceEl = document.getElementById('f-balance');
+    const fixedNet = ingresoT - gastoT;
+    const fixedWithAvailableBalance = fixedNet + balance_getTotal();
+    if (fBalanceEl) {
+        fBalanceEl.innerText = fmt.format(fixedWithAvailableBalance);
+        fBalanceEl.classList.toggle('text-danger', fixedWithAvailableBalance < 0);
+    }
     document.getElementById('f-ingresos').innerText     = fmt.format(ingresoT);
     document.getElementById('f-gastos-total').innerText = fmt.format(gastoT);
     const badge = document.getElementById('f-filtro-badge');
