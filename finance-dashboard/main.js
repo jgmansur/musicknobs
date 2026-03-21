@@ -13,7 +13,7 @@ const SCOPES = 'https://www.googleapis.com/auth/spreadsheets https://www.googlea
 const SPREADSHEET_LOG_ID   = '1pn1bsxj2LaoySXAVUvqfEJY1VR4R_T8NsTOqQnVW5Xw'; // Control de Gastos
 const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // Gastos Fijos
 const SPREADSHEET_DEUDAS_ID = '1dKxhgqazskm15lx0f6FNCA0gpJ7i5glfxkusiH3b0Uk'; // Control de Deudas
-const APP_VERSION  = 'v3.5.6';
+const APP_VERSION  = 'v3.5.7';
 // Bump token keys to force re-auth with the new drive scope
 const TOKEN_KEY    = 'google_access_token_v4';
 const EXPIRY_KEY   = 'google_token_expiry_v4';
@@ -459,6 +459,7 @@ async function balance_refreshInvestmentRates(force = false) {
 let balanceAccounts   = [];
 let balanceEditingId  = null;
 let balancePendingFixed = 0; // Set by dashboard when fixed expenses load
+let balancePendingFixedIncome = 0; // Unpaid fixed ingresos pending this month
 let balancePaidFixedTotal = 0;
 let balancePaidFixedAnchor = parseFloat(localStorage.getItem('balance_paid_anchor_v1') || '0') || 0;
 let balanceLogNetTotal = 0;
@@ -761,7 +762,10 @@ function balance_updateKpi() {
     const logAdjustment = balance_getLogNetAdjustment();
     const el  = document.getElementById('balance-total');
     const lbl = document.getElementById('balance-real-label');
-    if (el)  el.innerText = formatCurrency(total);
+    if (el) {
+        const incomingText = balancePendingFixedIncome > 0 ? ` +${formatCurrency(balancePendingFixedIncome)} por cobrar` : '';
+        el.innerHTML = `${formatCurrency(total)}<span id="balance-total-income-pending" class="kpi-inline-note">${incomingText}</span>`;
+    }
     if (lbl) {
         if (balancePendingFixed > 0 || paidDeduction > 0 || logAdjustment !== 0) {
             const parts = [];
@@ -1507,7 +1511,9 @@ function processAndRender(logRows, fixedRows) {
 
     // KPI: count partial progress for fixed expenses
     const fixedGastos   = fixedExpenses.filter(e => e.tipo === 'gasto');
+    const fixedIngresos = fixedExpenses.filter(e => e.tipo === 'ingreso');
     const fixedTotal    = fixedGastos.reduce((s, e) => s + Math.max(0, e.pendingAmount), 0);
+    const pendingIncome = fixedIngresos.reduce((s, e) => s + Math.max(0, e.pendingAmount), 0);
     const fixedPaidTotal = fixedGastos.reduce((s, e) => s + Math.max(0, e.paidAmount), 0);
     const paidParts     = fixedGastos.reduce((s, e) => s + (e.pagosHechos || 0), 0);
     const totalParts    = fixedGastos.reduce((s, e) => s + (e.pagosMes || 1), 0);
@@ -1515,6 +1521,7 @@ function processAndRender(logRows, fixedRows) {
 
     // Update balance module with current pending fixed expenses
     balancePendingFixed = pendingFixed;
+    balancePendingFixedIncome = pendingIncome;
     balancePaidFixedTotal = fixedPaidTotal;
     balance_updateKpi();
 
@@ -2076,6 +2083,7 @@ function fijos_generarPills() {
 
 function fijos_syncDashboardStats() {
     const fixedGastos = fijosState.allItems.filter(i => i.tipo === 'gasto');
+    const fixedIngresos = fijosState.allItems.filter(i => i.tipo === 'ingreso');
     const pendingFixed = fixedGastos.reduce((s, i) => {
         const unpaidParts = Math.max(0, (i.pagosMes || 1) - (i.pagosHechos || 0));
         const partAmount = Math.abs(i.monto || 0) / (i.pagosMes || 1);
@@ -2085,6 +2093,11 @@ function fijos_syncDashboardStats() {
         const paidParts = Math.max(0, i.pagosHechos || 0);
         const partAmount = Math.abs(i.monto || 0) / (i.pagosMes || 1);
         return s + (paidParts * partAmount);
+    }, 0);
+    const pendingIncome = fixedIngresos.reduce((s, i) => {
+        const unpaidParts = Math.max(0, (i.pagosMes || 1) - (i.pagosHechos || 0));
+        const partAmount = Math.abs(i.monto || 0) / (i.pagosMes || 1);
+        return s + (unpaidParts * partAmount);
     }, 0);
     const paidParts = fixedGastos.reduce((s, i) => s + Math.max(0, i.pagosHechos || 0), 0);
     const totalParts = fixedGastos.reduce((s, i) => s + Math.max(1, i.pagosMes || 1), 0);
@@ -2099,6 +2112,7 @@ function fijos_syncDashboardStats() {
     }
 
     balancePendingFixed = pendingFixed;
+    balancePendingFixedIncome = pendingIncome;
     balancePaidFixedTotal = paidFixed;
 }
 
