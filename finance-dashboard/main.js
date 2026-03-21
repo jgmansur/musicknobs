@@ -1530,18 +1530,18 @@ function processAndRender(logRows, fixedRows) {
         const periodicidad = parseFixedPeriodicity(row[8]);
         const inicioMes = parseStartMonth(row[9], `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}`);
         const isDueThisMonth = isFixedDueThisMonth(periodicidad, inicioMes, `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}`);
-        const paidRatio = pagosMes > 0 ? (pagosHechos / pagosMes) : 0;
-        const paidAmount = Math.abs(monto) * paidRatio;
-        const pendingAmount = Math.abs(monto) - paidAmount;
+        const partAmount = Math.abs(monto) / (pagosMes || 1);
+        const paidAmount = partAmount * Math.max(0, pagosHechos);
+        const pendingAmount = partAmount * Math.max(0, pagosMes - pagosHechos);
         return { rowNum: i + 2, concepto, monto, tipo, isPaid, pagosMes, pagosEstado, pagosHechos, paidAmount, pendingAmount, periodicidad, inicioMes, isDueThisMonth, pagador: parseFixedPayer(row[10]) };
     }).filter(e => e.concepto);
 
     // KPI: count partial progress for fixed expenses
     const fixedGastos   = fixedExpenses.filter(e => e.tipo === 'gasto' && e.isDueThisMonth);
     const fixedIngresos = fixedExpenses.filter(e => e.tipo === 'ingreso' && e.isDueThisMonth);
-    const fixedTotal    = fixedGastos.reduce((s, e) => s + Math.max(0, e.pendingAmount), 0);
-    const pendingIncome = fixedIngresos.reduce((s, e) => s + Math.max(0, e.pendingAmount), 0);
-    const fixedPaidTotal = fixedGastos.reduce((s, e) => s + Math.max(0, e.paidAmount), 0);
+    const fixedTotal    = fixedGastos.reduce((s, e) => s + (Math.abs(e.monto || 0) / (e.pagosMes || 1)) * Math.max(0, (e.pagosMes || 1) - (e.pagosHechos || 0)), 0);
+    const pendingIncome = fixedIngresos.reduce((s, e) => s + (Math.abs(e.monto || 0) / (e.pagosMes || 1)) * Math.max(0, (e.pagosMes || 1) - (e.pagosHechos || 0)), 0);
+    const fixedPaidTotal = fixedGastos.reduce((s, e) => s + (Math.abs(e.monto || 0) / (e.pagosMes || 1)) * Math.max(0, e.pagosHechos || 0), 0);
     const paidParts     = fixedGastos.reduce((s, e) => s + (e.pagosHechos || 0), 0);
     const totalParts    = fixedGastos.reduce((s, e) => s + (e.pagosMes || 1), 0);
     const pendingFixed  = fixedTotal;   // already only unpaid gastos
@@ -2307,6 +2307,8 @@ window.fijos_togglePagoPart = async function(id, partIndex) {
                 showToast('\u26A0\uFE0F Error al eliminar pago');
             }
         }
+        // Re-sync dashboard numbers from authoritative sheet data.
+        loadDashboardData().catch(() => {});
     } catch(e) {
         console.error('Error toggling pago parcial:', e);
         // Revert optimistic update
