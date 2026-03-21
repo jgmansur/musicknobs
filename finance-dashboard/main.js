@@ -800,7 +800,7 @@ function balance_updateFixedCoverageKpi() {
     if (!el) return;
     const coverage = (balance_getTotal() + balancePendingFixedIncome) - balancePendingFixed;
     const sign = coverage >= 0 ? '+' : '';
-    el.innerText = `${sign}${formatCurrency(coverage)}`;
+    el.innerText = `${sign}${formatCurrency(coverage)} ${coverage >= 0 ? 'si llegas' : 'no llegas'}`;
     el.className = `kpi-inline-note ${coverage >= 0 ? 'kpi-inline-note--positive' : 'kpi-inline-note--negative'}`;
 }
 
