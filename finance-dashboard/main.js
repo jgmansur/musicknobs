@@ -13,7 +13,7 @@ const SCOPES = 'https://www.googleapis.com/auth/spreadsheets https://www.googlea
 const SPREADSHEET_LOG_ID   = '1pn1bsxj2LaoySXAVUvqfEJY1VR4R_T8NsTOqQnVW5Xw'; // Control de Gastos
 const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // Gastos Fijos
 const SPREADSHEET_DEUDAS_ID = '1dKxhgqazskm15lx0f6FNCA0gpJ7i5glfxkusiH3b0Uk'; // Control de Deudas
-const APP_VERSION  = 'v4.3.0';
+const APP_VERSION  = 'v4.4.0';
 // Bump token keys to force re-auth with the new drive scope
 const TOKEN_KEY    = 'google_access_token_v4';
 const EXPIRY_KEY   = 'google_token_expiry_v4';
@@ -1573,7 +1573,7 @@ function renderFixedTable(expenses) {
     tbody.innerHTML = expenses.map(e => `
         <tr>
           <td>${e.concepto}</td>
-          <td>${formatCurrency(e.monto)}</td>
+          <td>${formatCurrency(Math.max(0, e.pendingAmount ?? Math.abs(e.monto || 0)))}</td>
           <td><span class="badge ${e.isPaid ? 'paid' : 'pending'}">${e.isPaid ? 'PAGADO' : 'PENDIENTE'}</span></td>
         </tr>`).join('');
 }
@@ -2193,7 +2193,14 @@ function fijos_aplicarFiltros() {
         return a.concepto.localeCompare(b.concepto);
     });
     let gastoT = 0, ingresoT = 0;
-    lista.forEach(i => { if (i.tipo==='gasto') gastoT += i.monto; else ingresoT += i.monto; });
+    lista.forEach(i => {
+        const totalParts = i.pagosMes || 1;
+        const unpaidParts = Math.max(0, totalParts - (i.pagosHechos || 0));
+        const partAmount = Math.abs(i.monto || 0) / totalParts;
+        const pendingAmount = unpaidParts * partAmount;
+        if (i.tipo === 'gasto') gastoT += pendingAmount;
+        else ingresoT += pendingAmount;
+    });
     document.getElementById('f-balance').innerText      = fmt.format(ingresoT - gastoT);
     document.getElementById('f-ingresos').innerText     = fmt.format(ingresoT);
     document.getElementById('f-gastos-total').innerText = fmt.format(gastoT);
@@ -2211,6 +2218,8 @@ function fijos_renderLista(lista) {
         const sign     = item.tipo==='gasto' ? '-' : '+';
         const cls      = item.tipo==='gasto' ? 'text-danger' : 'text-success';
         const montoParcial = item.pagosMes > 0 ? (item.monto / item.pagosMes) : item.monto;
+        const pendingParts = Math.max(0, (item.pagosMes || 1) - (item.pagosHechos || 0));
+        const pendingAmount = (Math.abs(item.monto || 0) / (item.pagosMes || 1)) * pendingParts;
         const botonesPagos = item.pagosMes === 1
             ? (() => {
                 const clsPart = item.isPaid ? 'pagado-btn pagado-btn--paid' : 'pagado-btn pagado-btn--pending';
@@ -2228,7 +2237,7 @@ function fijos_renderLista(lista) {
             <span class="mc-concepto">${item.categoria} · ${item.periodicidad === 'bimestral' ? 'Bimestral' : 'Mensual'} · ${item.pagador === 'esposa' ? 'Paga esposa' : 'Pago propio'}${item.pagosMes > 1 ? ` · ${item.pagosHechos}/${item.pagosMes} pagos · ${sign}${fmt.format(montoParcial)} c/u` : ''}</span>
           </div>
           <div class="mc-right" style="align-items:flex-end;gap:.5rem">
-            <span class="mc-monto ${cls}">${sign}${fmt.format(item.monto)}</span>
+            <span class="mc-monto ${cls}">${sign}${fmt.format(pendingAmount)}</span>
             <div style="display:flex;gap:.35rem;flex-wrap:wrap;justify-content:flex-end;max-width:220px">${botonesPagos}</div>
             <div style="display:flex;gap:.4rem;margin-top:.2rem">
               <button class="mini-btn" onclick="fijos_editar(${item.id})">✏️</button>
