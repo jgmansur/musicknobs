@@ -13,7 +13,7 @@ const SCOPES = 'https://www.googleapis.com/auth/spreadsheets https://www.googlea
 const SPREADSHEET_LOG_ID   = '1pn1bsxj2LaoySXAVUvqfEJY1VR4R_T8NsTOqQnVW5Xw'; // Control de Gastos
 const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // Gastos Fijos
 const SPREADSHEET_DEUDAS_ID = '1dKxhgqazskm15lx0f6FNCA0gpJ7i5glfxkusiH3b0Uk'; // Control de Deudas
-const APP_VERSION  = 'v4.5.0';
+const APP_VERSION  = 'v4.6.0';
 // Bump token keys to force re-auth with the new drive scope
 const TOKEN_KEY    = 'google_access_token_v4';
 const EXPIRY_KEY   = 'google_token_expiry_v4';
@@ -161,6 +161,11 @@ const BUDGET_BUCKETS = [
     'Muchachas y Pago de Deudas',
 ];
 
+const dashboardFixedState = {
+    entries: [],
+    query: '',
+};
+
 const debugState = {
     auth: 'No autenticado',
     uid: '-',
@@ -236,6 +241,14 @@ document.addEventListener('DOMContentLoaded', () => {
     gastos_bindEvents();
     fijos_bindEvents();
     deudas_bindEvents();
+
+    const fixedSearchInput = document.getElementById('fixed-search');
+    if (fixedSearchInput) {
+        fixedSearchInput.addEventListener('input', () => {
+            dashboardFixedState.query = fixedSearchInput.value.toLowerCase().trim();
+            renderFixedTable();
+        });
+    }
 
     // Hormiga Panel events
     document.getElementById('kpi-hormiga-card')?.addEventListener('click', hormiga_openPanel);
@@ -1519,6 +1532,7 @@ function processAndRender(logRows, fixedRows) {
     // F = pagado legacy, G = pagos por mes, H = estado pagos, I = periodicidad, J = inicio, K = pagador
     const fixedExpenses = fixedRows.map((row, i) => {
         const concepto = row[1] || '';
+        const categoria = row[4] || 'General';
         const g = parseSheetValue(row[2]);  // gasto column
         const n = parseSheetValue(row[3]);  // ingreso column
         const tipo = g > 0 ? 'gasto' : 'ingreso';
@@ -1534,7 +1548,7 @@ function processAndRender(logRows, fixedRows) {
         const partAmount = Math.abs(monto) / (pagosMes || 1);
         const paidAmount = partAmount * Math.max(0, pagosHechos);
         const pendingAmount = partAmount * Math.max(0, pagosMes - pagosHechos);
-        return { rowNum: i + 2, concepto, monto, tipo, isPaid, pagosMes, pagosEstado, pagosHechos, paidAmount, pendingAmount, periodicidad, inicioMes, isDueThisMonth, pagador: parseFixedPayer(row[10]), budgetCategory: parseBudgetCategory(row[11]) };
+        return { rowNum: i + 2, concepto, categoria, monto, tipo, isPaid, pagosMes, pagosEstado, pagosHechos, paidAmount, pendingAmount, periodicidad, inicioMes, isDueThisMonth, pagador: parseFixedPayer(row[10]), budgetCategory: parseBudgetCategory(row[11]) };
     }).filter(e => e.concepto);
 
     // KPI: count partial progress for fixed expenses
@@ -1568,15 +1582,57 @@ function processAndRender(logRows, fixedRows) {
 }
 
 function renderFixedTable(expenses) {
+    if (Array.isArray(expenses)) dashboardFixedState.entries = expenses;
     const tbody = document.getElementById('fixed-expenses-body');
-    if (!expenses.length) { tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;color:var(--text-muted)">Sin datos</td></tr>'; return; }
-    tbody.innerHTML = expenses.map(e => `
+    if (!tbody) return;
+    const base = dashboardFixedState.entries || [];
+    const q = dashboardFixedState.query || '';
+    const filtered = !q
+        ? base
+        : base.filter(e => `${e.concepto} ${(e.categoria || '')}`.toLowerCase().includes(q));
+    if (!filtered.length) {
+        tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;color:var(--text-muted)">Sin resultados</td></tr>';
+        return;
+    }
+    tbody.innerHTML = filtered.map(e => {
+        const botonesPagos = (e.pagosMes || 1) === 1
+            ? (() => {
+                const clsPart = e.isPaid ? 'pagado-btn pagado-btn--paid' : 'pagado-btn pagado-btn--pending';
+                const lbl = e.isPaid ? '✅ Pagado' : '⏳ Pendiente';
+                return `<button class="${clsPart}" onclick="dashboard_togglePagoPart(${e.rowNum}, 0)">${lbl}</button>`;
+            })()
+            : e.pagosEstado.map((isPartPaid, idx) => {
+                const clsPart = isPartPaid ? 'pagado-btn pagado-btn--paid' : 'pagado-btn pagado-btn--pending';
+                return `<button class="${clsPart} fixed-remote-btn" onclick="dashboard_togglePagoPart(${e.rowNum}, ${idx})">${idx + 1}</button>`;
+            }).join('');
+        const paidLabel = (e.pagosMes || 1) > 1
+            ? `<div class="fixed-remote-meta">${e.pagosHechos}/${e.pagosMes} pagos</div>`
+            : '';
+        return `
         <tr>
           <td>${e.concepto}</td>
           <td class="${e.tipo === 'ingreso' ? 'text-success' : ''}" style="${e.tipo === 'ingreso' ? 'font-weight:700;' : ''}">${formatCurrency(Math.max(0, e.pendingAmount ?? Math.abs(e.monto || 0)))}</td>
-          <td><span class="badge ${e.isPaid ? 'paid' : 'pending'}">${e.isPaid ? 'PAGADO' : 'PENDIENTE'}</span></td>
-        </tr>`).join('');
+          <td>
+            <span class="badge ${e.isPaid ? 'paid' : 'pending'}">${e.isPaid ? 'PAGADO' : 'PENDIENTE'}</span>
+            <div class="fixed-remote-controls">${botonesPagos}</div>
+            ${paidLabel}
+          </td>
+        </tr>`;
+    }).join('');
 }
+
+window.dashboard_togglePagoPart = async function(id, partIndex) {
+    try {
+        await fijos_cargarDatos();
+        await window.fijos_togglePagoPart(id, partIndex);
+        if (currentTab === 'dashboard') {
+            await fetchAndProcess();
+        }
+    } catch (e) {
+        console.error('Error toggling dashboard fixed payment:', e);
+        showToast('⚠️ Error al actualizar pago');
+    }
+};
 
 // =============================================
 // HORMIGA PANEL DETAIL
