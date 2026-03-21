@@ -233,6 +233,13 @@
             <input type="number" id="g-monto" class="field-input field-input-lg" placeholder="0.00" step="any" inputmode="decimal">
           </div>
           <div class="form-field">
+            <label class="field-label">Moneda</label>
+            <select id="g-currency" class="field-input">
+              <option value="MXN">🇲🇽 Pesos (MXN)</option>
+              <option value="USD">🇺🇸 Dólares (USD)</option>
+            </select>
+          </div>
+          <div class="form-field">
             <label class="field-label">Foto / Recibo</label>
             <input type="file" id="g-fotos-input" multiple accept="image/*,application/pdf" style="display:none">
             <label for="g-fotos-input" class="foto-btn-label">📷 Adjuntar foto o recibo</label>
@@ -379,6 +386,13 @@
               <select id="f-pagador" class="field-input">
                 <option value="yo">Mi sueldo</option>
                 <option value="esposa">Sueldo de mi esposa</option>
+              </select>
+            </div>
+            <div class="form-field">
+              <label class="field-label">Moneda</label>
+              <select id="f-currency" class="field-input">
+                <option value="MXN">🇲🇽 Pesos (MXN)</option>
+                <option value="USD">🇺🇸 Dólares (USD)</option>
               </select>
             </div>
             <div class="form-field">

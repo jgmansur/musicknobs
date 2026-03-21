@@ -524,7 +524,9 @@ function balance_resetDynamicAnchors() {
 function balance_updateLogNetFromRows(logRows) {
     balanceLogNetTotal = (logRows || []).reduce((sum, row) => {
         const tipo = (row[4] || '').toString().trim().toLowerCase();
-        const monto = Math.abs(parseSheetValue(row[3]));
+        const montoRaw = Math.abs(parseSheetValue(row[3]));
+        const moneda = parseCurrencyCode(row[7]);
+        const monto = convertTransactionAmountToMxn(montoRaw, moneda);
         if (tipo === 'ingreso') return sum + monto;
         if (tipo === 'gasto') return sum - monto;
         return sum;
@@ -1474,9 +1476,10 @@ async function fetchAndProcess() {
     const status = document.getElementById('sync-status');
     status.innerText = 'Sincronizando...'; status.style.color = 'var(--primary)';
     try {
+        await ensureUsdMxnRateForTransactions();
         const [logData, fixedData] = await Promise.all([
-            sheetsGet(SPREADSHEET_LOG_ID, 'Hoja 1!A2:G'),
-            sheetsGet(SPREADSHEET_FIXED_ID, 'Hoja 1!A2:L')  // H=estado pagos, I=periodicidad, J=inicio, K=pagador, L=budget
+            sheetsGet(SPREADSHEET_LOG_ID, 'Hoja 1!A2:H'),
+            sheetsGet(SPREADSHEET_FIXED_ID, 'Hoja 1!A2:M')  // H=estado pagos, I=periodicidad, J=inicio, K=pagador, L=budget, M=moneda
         ]);
         processAndRender(logData, fixedData);
         status.innerText = 'Sincronizado ✓'; status.style.color = 'var(--accent-green)';
@@ -1517,7 +1520,8 @@ function processAndRender(logRows, fixedRows) {
     logRows.forEach(row => {
         const concepto = (row[2] || '').toLowerCase();
         const lugar    = (row[1] || '').toLowerCase();
-        const monto    = parseSheetValue(row[3]);
+        const moneda   = parseCurrencyCode(row[7]);
+        const monto    = convertTransactionAmountToMxn(parseSheetValue(row[3]), moneda);
         const fecha    = row[0] || '';
         // FIX: use toLowerCase() so 'Gasto'/'gasto'/'GASTO' all match
         if (hormigaKeywords.some(k => concepto.includes(k) || lugar.includes(k)) && (row[4] || '').toLowerCase() === 'gasto') {
@@ -1544,10 +1548,14 @@ function processAndRender(logRows, fixedRows) {
     const fixedExpenses = fixedRows.map((row, i) => {
         const concepto = row[1] || '';
         const categoria = row[4] || 'General';
-        const g = parseSheetValue(row[2]);  // gasto column
-        const n = parseSheetValue(row[3]);  // ingreso column
+        const moneda = parseCurrencyCode(row[12]);
+        const gRaw = parseSheetValue(row[2]);  // gasto column (raw currency)
+        const nRaw = parseSheetValue(row[3]);  // ingreso column (raw currency)
+        const g = convertTransactionAmountToMxn(gRaw, moneda);
+        const n = convertTransactionAmountToMxn(nRaw, moneda);
         const tipo = g > 0 ? 'gasto' : 'ingreso';
         const monto = g || n;
+        const montoOriginal = gRaw || nRaw;
         const legacyPaid = parseBool(row[5]);
         const pagosMes = parsePaymentsTotal(row[6]);
         const pagosEstado = parsePaymentStates(row[7], pagosMes, legacyPaid);
@@ -1559,7 +1567,7 @@ function processAndRender(logRows, fixedRows) {
         const partAmount = Math.abs(monto) / (pagosMes || 1);
         const paidAmount = partAmount * Math.max(0, pagosHechos);
         const pendingAmount = partAmount * Math.max(0, pagosMes - pagosHechos);
-        return { rowNum: i + 2, concepto, categoria, monto, tipo, isPaid, pagosMes, pagosEstado, pagosHechos, paidAmount, pendingAmount, periodicidad, inicioMes, isDueThisMonth, pagador: parseFixedPayer(row[10]), budgetCategory: parseBudgetCategory(row[11]) };
+        return { rowNum: i + 2, concepto, categoria, monto, montoOriginal, moneda, tipo, isPaid, pagosMes, pagosEstado, pagosHechos, paidAmount, pendingAmount, periodicidad, inicioMes, isDueThisMonth, pagador: parseFixedPayer(row[10]), budgetCategory: parseBudgetCategory(row[11]) };
     }).filter(e => e.concepto);
 
     // KPI: count partial progress for fixed expenses
@@ -1886,14 +1894,17 @@ async function gastos_cargarHistorial() {
     const lista = document.getElementById('g-lista');
     lista.innerHTML = '<div class="loading-spinner">⏳ Cargando...</div>';
     try {
-        const rows = await sheetsGet(SPREADSHEET_LOG_ID, 'Hoja 1!A2:G');
+        await ensureUsdMxnRateForTransactions();
+        const rows = await sheetsGet(SPREADSHEET_LOG_ID, 'Hoja 1!A2:H');
         balance_updateLogNetFromRows(rows);
         gastosState.allRows = rows.map((row, i) => ({
             rowNum:   i + 2,
             fecha:    row[0] || '',
             lugar:    row[1] || '',
             concepto: row[2] || '',
-            monto:    parseSheetValue(row[3]),
+            montoOriginal: parseSheetValue(row[3]),
+            moneda:   parseCurrencyCode(row[7]),
+            monto:    convertTransactionAmountToMxn(parseSheetValue(row[3]), parseCurrencyCode(row[7])),
             tipo:     normalizeTipo(row[4] || 'Gasto'),
             formaPago:row[5] || '',
             fotos:    row[6] || '',
@@ -1936,7 +1947,7 @@ function gastos_renderLista(append) {
           <div class="mc-left">
             <span class="mc-fecha">${fechaStr}${clipIcon}</span>
             <span class="mc-lugar">${row.lugar || '—'}</span>
-            <span class="mc-concepto">${row.concepto || '—'}</span>
+            <span class="mc-concepto">${row.concepto || '—'}${row.moneda === 'USD' ? ` · USD ${Number(row.montoOriginal || 0).toFixed(2)}` : ''}</span>
           </div>
           <div class="mc-right">
             <span class="mc-monto ${isGasto ? 'text-danger' : 'text-success'}">${isGasto ? '-' : '+'}${formatCurrency(row.monto)}</span>
@@ -1954,6 +1965,7 @@ async function gastos_guardar() {
     const lugar    = document.getElementById('g-lugar').value.trim();
     const monto    = document.getElementById('g-monto').value;
     const idFila   = document.getElementById('g-id-fila').value;
+    const moneda   = parseCurrencyCode(document.getElementById('g-currency').value);
 
     if (!lugar || !monto) {
         status.innerText = '⚠️ Falta Lugar o Monto'; status.style.color = 'var(--accent-orange)'; return;
@@ -2003,9 +2015,9 @@ async function gastos_guardar() {
         if (idFila) {
             const existing = gastosState.detailRow?.fotos || '';
             const allUrls  = [existing, ...nuevasUrls].filter(Boolean).join(',');
-            await sheetsUpdate(SPREADSHEET_LOG_ID, `Hoja 1!B${idFila}:G${idFila}`, [[lugar, concepto, parseSheetValue(monto), tipo, forma, allUrls]]);
+            await sheetsUpdate(SPREADSHEET_LOG_ID, `Hoja 1!B${idFila}:H${idFila}`, [[lugar, concepto, parseSheetValue(monto), tipo, forma, allUrls, moneda]]);
         } else {
-            await sheetsAppend(SPREADSHEET_LOG_ID, 'Hoja 1!A:G', [[fecha, lugar, concepto, parseSheetValue(monto), tipo, forma, nuevasUrls.join(',')]]);
+            await sheetsAppend(SPREADSHEET_LOG_ID, 'Hoja 1!A:H', [[fecha, lugar, concepto, parseSheetValue(monto), tipo, forma, nuevasUrls.join(','), moneda]]);
         }
         status.innerText = nuevasUrls.length
             ? '✅ ' + (idFila ? 'Actualizado con recibo' : 'Guardado con recibo')
@@ -2026,6 +2038,7 @@ function gastos_cancelar() {
     document.getElementById('g-lugar').value = '';
     document.getElementById('g-concepto').value = '';
     document.getElementById('g-monto').value = '';
+    document.getElementById('g-currency').value = 'MXN';
     const fi = document.getElementById('g-fotos-input');
     if (fi) fi.value = '';
     const fb = document.getElementById('g-fotos-feedback');
@@ -2047,6 +2060,9 @@ function gastos_abrirModal(row) {
     const tipo = document.getElementById('g-m-tipo');
     tipo.innerText = normalizeTipo(row.tipo); tipo.className = `modal-badge ${isGasto ? 'badge-gasto' : 'badge-ingreso'}`;
     document.getElementById('g-m-pago').innerText = row.formaPago || '—';
+    if (row.moneda === 'USD') {
+        document.getElementById('g-m-concepto').innerText = `${row.concepto || '—'} · USD ${Number(row.montoOriginal || 0).toFixed(2)}`;
+    }
     // ── Receipts with individual delete buttons ──────────
     const recibos = document.getElementById('g-m-recibos');
     if (row.fotos && row.fotos.length > 5) {
@@ -2072,7 +2088,8 @@ function gastos_editarDesdeModal() {
     const row = gastosState.detailRow; if (!row) return;
     document.getElementById('g-lugar').value     = row.lugar;
     document.getElementById('g-concepto').value  = row.concepto;
-    document.getElementById('g-monto').value     = row.monto;
+    document.getElementById('g-monto').value     = row.montoOriginal;
+    document.getElementById('g-currency').value  = row.moneda || 'MXN';
     document.getElementById('g-tipo').value      = row.tipo;
     document.getElementById('g-forma-pago').value= row.formaPago;
     document.getElementById('g-id-fila').value   = row.rowNum;
@@ -2170,8 +2187,9 @@ function planner_refreshIfReady() {
 async function fijos_cargarDatos() {
     document.getElementById('f-lista').innerHTML = '<div class="loading-spinner">⏳ Cargando...</div>';
     try {
+        await ensureUsdMxnRateForTransactions();
         const [rows, catRows] = await Promise.all([
-            sheetsGet(SPREADSHEET_FIXED_ID, 'Hoja 1!A2:L').catch(() => []),  // I=periodicidad, J=inicio, K=pagador, L=budget
+            sheetsGet(SPREADSHEET_FIXED_ID, 'Hoja 1!A2:M').catch(() => []),  // I=periodicidad, J=inicio, K=pagador, L=budget, M=moneda
             sheetsGet(SPREADSHEET_FIXED_ID, 'Categorias!A:A').catch(() => [])
         ]);
         fijosState.categorias = catRows.map(r => r[0]).filter(Boolean);
@@ -2201,8 +2219,11 @@ async function fijos_cargarDatos() {
 
         fijosState.allItems = rows.map((row, i) => {
             const dayOfMonth = parseDayOfMonth(row[0]);
-            const g      = parseSheetValue(row[2]);
-            const n      = parseSheetValue(row[3]);
+            const moneda = parseCurrencyCode(row[12]);
+            const gRaw   = parseSheetValue(row[2]);
+            const nRaw   = parseSheetValue(row[3]);
+            const g      = convertTransactionAmountToMxn(gRaw, moneda);
+            const n      = convertTransactionAmountToMxn(nRaw, moneda);
             const pagosMes = parsePaymentsTotal(row[6]);
             const pagosEstado = parsePaymentStates(row[7], pagosMes, parseBool(row[5]));
             const pagosHechos = pagosEstado.filter(Boolean).length;
@@ -2217,6 +2238,8 @@ async function fijos_cargarDatos() {
                 diaMes: dayOfMonth,
                 concepto:   row[1] || '',
                 monto:      g || n,
+                montoOriginal: gRaw || nRaw,
+                moneda,
                 tipo:       g > 0 ? 'gasto' : 'ingreso',
                 categoria:  row[4] || 'General',
                 isPaid,
@@ -2347,6 +2370,7 @@ function fijos_renderLista(lista) {
         const sign     = item.tipo==='gasto' ? '-' : '+';
         const cls      = item.tipo==='gasto' ? 'text-danger' : 'text-success';
         const montoParcial = item.pagosMes > 0 ? (item.monto / item.pagosMes) : item.monto;
+        const currencyHint = item.moneda === 'USD' ? ` · USD ${Number(item.montoOriginal || 0).toFixed(2)}` : '';
         const pendingParts = Math.max(0, (item.pagosMes || 1) - (item.pagosHechos || 0));
         const pendingAmount = (Math.abs(item.monto || 0) / (item.pagosMes || 1)) * pendingParts;
         const botonesPagos = item.pagosMes === 1
@@ -2363,7 +2387,7 @@ function fijos_renderLista(lista) {
           <div class="mc-left">
             <span class="mc-fecha">${item.fecha}</span>
             <span class="mc-lugar">${item.concepto}</span>
-            <span class="mc-concepto">${item.categoria} · ${item.periodicidad === 'bimestral' ? 'Bimestral' : 'Mensual'} · ${item.pagador === 'esposa' ? 'Paga esposa' : 'Pago propio'}${item.pagosMes > 1 ? ` · ${item.pagosHechos}/${item.pagosMes} pagos · ${sign}${fmt.format(montoParcial)} c/u` : ''}</span>
+            <span class="mc-concepto">${item.categoria} · ${item.periodicidad === 'bimestral' ? 'Bimestral' : 'Mensual'} · ${item.pagador === 'esposa' ? 'Paga esposa' : 'Pago propio'}${item.pagosMes > 1 ? ` · ${item.pagosHechos}/${item.pagosMes} pagos · ${sign}${fmt.format(montoParcial)} c/u` : ''}${currencyHint}</span>
           </div>
           <div class="mc-right" style="align-items:flex-end;gap:.5rem">
             <span class="mc-monto ${cls}">${sign}${fmt.format(pendingAmount)}</span>
@@ -2402,6 +2426,7 @@ window.fijos_togglePagoPart = async function(id, partIndex) {
     const nowPartPaid = !wasPartPaid;
     const wasPaid = item.isPaid;
     const partAmount = Math.abs(item.monto / item.pagosMes);
+    const partAmountOriginal = Math.abs((item.montoOriginal || item.monto) / item.pagosMes);
     const signedPartAmount = item.tipo === 'ingreso' ? partAmount : -partAmount;
 
     // Optimistic UI update
@@ -2422,13 +2447,13 @@ window.fijos_togglePagoPart = async function(id, partIndex) {
             const fecha    = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD
             const lugar    = 'Gasto Fijo';
             const concepto = `${item.concepto} (${partIndex + 1}/${item.pagosMes})`;
-            const monto    = partAmount;
+            const monto    = partAmountOriginal;
             const tipo     = item.tipo === 'ingreso' ? 'Ingreso' : 'Gasto';
             const forma    = item.categoria || 'General';
             await sheetsAppend(
                 SPREADSHEET_LOG_ID,
-                'Hoja 1!A:G',
-                [[fecha, lugar, concepto, monto, tipo, forma, '']]
+                'Hoja 1!A:H',
+                [[fecha, lugar, concepto, monto, tipo, forma, '', item.moneda || 'MXN']]
             );
             tabInited.gastos = false;
             showToast('✅ Pago registrado en Control de Gastos');
@@ -2436,7 +2461,7 @@ window.fijos_togglePagoPart = async function(id, partIndex) {
             // UN-SYNC: remove matching partial entry in Control de Gastos
             try {
                 const logSheetId = await getSheetId(SPREADSHEET_LOG_ID, 'Hoja 1');
-                const logRows = await sheetsGet(SPREADSHEET_LOG_ID, 'Hoja 1!A:G');
+                const logRows = await sheetsGet(SPREADSHEET_LOG_ID, 'Hoja 1!A:H');
                 let foundRowIndex = -1;
                 const targetConcepto = `${item.concepto} (${partIndex + 1}/${item.pagosMes})`;
                 for (let i = logRows.length - 1; i >= 0; i--) {
@@ -2486,6 +2511,7 @@ function fijos_abrirSheet(item) {
     document.getElementById('f-periodicidad').value = 'mensual';
     document.getElementById('f-inicio-mes').value = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}`;
     document.getElementById('f-pagador').value = 'yo';
+    document.getElementById('f-currency').value = 'MXN';
     document.getElementById('f-budget-cat').value = BUDGET_BUCKETS[0];
     document.getElementById('f-fecha').value = String(hoy.getDate());
     document.querySelectorAll('.f-cat-chk').forEach(cb => cb.checked = false);
@@ -2497,11 +2523,12 @@ function fijos_abrirSheet(item) {
         document.getElementById('f-fecha').value = String(item.diaMes || parseDayOfMonth(item.fechaValue));
         document.getElementById('f-tipo').value = item.tipo;
         document.getElementById('f-concepto').value = item.concepto;
-        document.getElementById('f-monto').value = item.monto;
+        document.getElementById('f-monto').value = item.montoOriginal;
         document.getElementById('f-pagos-mes').value = String(item.pagosMes || 1);
         document.getElementById('f-periodicidad').value = item.periodicidad || 'mensual';
         document.getElementById('f-inicio-mes').value = item.inicioMes || `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}`;
         document.getElementById('f-pagador').value = item.pagador || 'yo';
+        document.getElementById('f-currency').value = item.moneda || 'MXN';
         document.getElementById('f-budget-cat').value = parseBudgetCategory(item.budgetCategory);
         item.categoria.split(', ').forEach(c => { const cb = document.querySelector(`.f-cat-chk[value="${c}"]`); if (cb) cb.checked = true; });
     }
@@ -2530,6 +2557,7 @@ async function fijos_guardar() {
     const periodicidad = parseFixedPeriodicity(document.getElementById('f-periodicidad').value);
     const inicioMes = parseStartMonth(document.getElementById('f-inicio-mes').value);
     const pagador = parseFixedPayer(document.getElementById('f-pagador').value);
+    const moneda = parseCurrencyCode(document.getElementById('f-currency').value);
     const budgetCategory = parseBudgetCategory(document.getElementById('f-budget-cat').value);
     const editId  = document.getElementById('f-edit-id').value;
     if (!concepto || !monto) return;
@@ -2545,7 +2573,7 @@ async function fijos_guardar() {
             const paidCount = prevStates.filter(Boolean).length;
             const nextStates = new Array(pagosMes).fill(false).map((_, idx) => idx < Math.min(paidCount, pagosMes));
             const fullPaid = nextStates.every(Boolean);
-            await sheetsUpdate(SPREADSHEET_FIXED_ID, `Hoja 1!A${editId}:L${editId}`, [[
+            await sheetsUpdate(SPREADSHEET_FIXED_ID, `Hoja 1!A${editId}:M${editId}`, [[
                 fecha,
                 concepto,
                 gasto,
@@ -2558,10 +2586,11 @@ async function fijos_guardar() {
                 inicioMes,
                 pagador,
                 budgetCategory,
+                moneda,
             ]]);
         } else {
             // new rows start with all partial payments pending
-            await sheetsAppend(SPREADSHEET_FIXED_ID, 'Hoja 1!A:L', [[
+            await sheetsAppend(SPREADSHEET_FIXED_ID, 'Hoja 1!A:M', [[
                 fecha,
                 concepto,
                 gasto,
@@ -2574,6 +2603,7 @@ async function fijos_guardar() {
                 inicioMes,
                 pagador,
                 budgetCategory,
+                moneda,
             ]]);
         }
         fijos_cerrarSheet();
@@ -2994,6 +3024,44 @@ function parseFixedPayer(val) {
 function parseBudgetCategory(val) {
     const raw = (val || '').toString().trim();
     return BUDGET_BUCKETS.includes(raw) ? raw : BUDGET_BUCKETS[0];
+}
+
+function parseCurrencyCode(val) {
+    const raw = (val || '').toString().trim().toUpperCase();
+    return raw === 'USD' ? 'USD' : 'MXN';
+}
+
+function convertTransactionAmountToMxn(amount, currency) {
+    const abs = Math.abs(parseSheetValue(amount));
+    return parseCurrencyCode(currency) === 'USD' ? balance_convertToMxn(abs, 'USD') : abs;
+}
+
+async function ensureUsdMxnRateForTransactions() {
+    try {
+        if (balanceUsdMxnRate && balanceUsdMxnRate > 0) return;
+        const today = new Date().toISOString().slice(0, 10);
+        const raw = localStorage.getItem(FX_CACHE_KEY);
+        if (raw) {
+            const parsed = JSON.parse(raw);
+            if (parsed?.date === today && Number(parsed?.rate) > 0) {
+                balanceUsdMxnRate = Number(parsed.rate);
+                return;
+            }
+        }
+        if (balanceFxFetchInFlight) return;
+        balanceFxFetchInFlight = true;
+        const res = await fetch('https://open.er-api.com/v6/latest/USD');
+        if (!res.ok) return;
+        const data = await res.json();
+        const rate = Number(data?.rates?.MXN);
+        if (!rate || Number.isNaN(rate)) return;
+        balanceUsdMxnRate = rate;
+        localStorage.setItem(FX_CACHE_KEY, JSON.stringify({ date: today, rate }));
+    } catch (_) {
+        // keep fallback behavior if exchange rate API fails
+    } finally {
+        balanceFxFetchInFlight = false;
+    }
 }
 
 /** Format a parsed date string into YYYY-MM-DD */
