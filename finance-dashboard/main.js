@@ -13,7 +13,7 @@ const SCOPES = 'https://www.googleapis.com/auth/spreadsheets https://www.googlea
 const SPREADSHEET_LOG_ID   = '1pn1bsxj2LaoySXAVUvqfEJY1VR4R_T8NsTOqQnVW5Xw'; // Control de Gastos
 const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // Gastos Fijos
 const SPREADSHEET_DEUDAS_ID = '1dKxhgqazskm15lx0f6FNCA0gpJ7i5glfxkusiH3b0Uk'; // Control de Deudas
-const APP_VERSION  = 'v4.6.2';
+const APP_VERSION  = 'v4.6.3';
 // Bump token keys to force re-auth with the new drive scope
 const TOKEN_KEY    = 'google_access_token_v4';
 const EXPIRY_KEY   = 'google_token_expiry_v4';
@@ -166,6 +166,11 @@ const dashboardFixedState = {
     query: '',
 };
 
+const dashboardFixedPayerStats = {
+    yo: { pending: 0, paid: 0 },
+    esposa: { pending: 0, paid: 0 },
+};
+
 const debugState = {
     auth: 'No autenticado',
     uid: '-',
@@ -257,6 +262,9 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('kpi-hormiga-card')?.addEventListener('click', hormiga_openPanel);
     document.getElementById('hormiga-panel-close')?.addEventListener('click', hormiga_closePanel);
     document.getElementById('hormiga-panel-overlay')?.addEventListener('click', hormiga_closePanel);
+    document.getElementById('kpi-fixed-card')?.addEventListener('click', fixed_openPanel);
+    document.getElementById('fixed-panel-close')?.addEventListener('click', fixed_closePanel);
+    document.getElementById('fixed-panel-overlay')?.addEventListener('click', fixed_closePanel);
 
     // Balance panel
     balance_init();
@@ -1578,6 +1586,20 @@ function processAndRender(logRows, fixedRows) {
             ? `✅ \u00a1Todo pagado!`
             : `${paidParts}/${totalParts} Pagos`;
 
+    dashboardFixedPayerStats.yo.pending = fixedGastos
+        .filter(e => e.pagador === 'yo')
+        .reduce((s, e) => s + Math.max(0, e.pendingAmount), 0);
+    dashboardFixedPayerStats.yo.paid = fixedGastos
+        .filter(e => e.pagador === 'yo')
+        .reduce((s, e) => s + Math.max(0, e.paidAmount), 0);
+    dashboardFixedPayerStats.esposa.pending = fixedGastos
+        .filter(e => e.pagador === 'esposa')
+        .reduce((s, e) => s + Math.max(0, e.pendingAmount), 0);
+    dashboardFixedPayerStats.esposa.paid = fixedGastos
+        .filter(e => e.pagador === 'esposa')
+        .reduce((s, e) => s + Math.max(0, e.paidAmount), 0);
+    fixed_renderPanel();
+
     // Dashboard only shows PENDING (unpaid) fixed expenses
     renderFixedTable(fixedExpenses.filter(e => e.isDueThisMonth && !e.isPaid));
     renderChart(hormigaChartData);
@@ -1635,6 +1657,29 @@ function dashboard_closeFixedSearch() {
     const modal = document.getElementById('fixed-search-modal');
     if (!modal) return;
     modal.classList.add('hidden');
+}
+
+function fixed_openPanel() {
+    fixed_renderPanel();
+    document.getElementById('fixed-panel')?.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+}
+
+function fixed_closePanel() {
+    document.getElementById('fixed-panel')?.classList.add('hidden');
+    document.body.style.overflow = '';
+}
+
+function fixed_renderPanel() {
+    const yoPendingEl = document.getElementById('fixed-yo-pending');
+    const yoPaidEl = document.getElementById('fixed-yo-paid');
+    const esposaPendingEl = document.getElementById('fixed-esposa-pending');
+    const esposaPaidEl = document.getElementById('fixed-esposa-paid');
+    if (!yoPendingEl || !yoPaidEl || !esposaPendingEl || !esposaPaidEl) return;
+    yoPendingEl.innerText = formatCurrency(dashboardFixedPayerStats.yo.pending);
+    yoPaidEl.innerText = formatCurrency(dashboardFixedPayerStats.yo.paid);
+    esposaPendingEl.innerText = formatCurrency(dashboardFixedPayerStats.esposa.pending);
+    esposaPaidEl.innerText = formatCurrency(dashboardFixedPayerStats.esposa.paid);
 }
 
 window.dashboard_togglePagoPart = async function(id, partIndex) {

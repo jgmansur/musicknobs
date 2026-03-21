@@ -53,10 +53,10 @@
                 <span id="balance-real-label" class="diff-label text-success">Toca para ver cuentas</span>
               </div>
             </div>
-            <div class="kpi-card glass">
+            <div class="kpi-card glass kpi-card--clickable" id="kpi-fixed-card" title="Ver desglose por pagador">
               <div class="kpi-icon blue"><i data-lucide="calendar-check"></i></div>
               <div class="kpi-data">
-                <span class="label">Gastos Fijos Mes</span>
+                <span class="label">Gastos Fijos Mes <span class="kpi-tap-hint">↗</span></span>
                 <h2 id="gastos-fijos-total">$0.00 <span id="gastos-fijos-coverage" class="kpi-inline-note"></span></h2>
                 <span id="pago-status" class="diff-label">0/0 Pagados</span>
               </div>
@@ -476,6 +476,31 @@
           <button class="secondary-btn plan-reset-btn" onclick="planner_resetAssignments()">Reiniciar movimientos manuales</button>
         </div>
         <div id="plan-income-groups" class="movimientos-list glass" style="margin-top:1rem;"></div>
+      </div>
+
+      <!-- ══ HORMIGA DETAIL PANEL ══ -->
+      <div id="fixed-panel" class="bottom-sheet hidden">
+        <div id="fixed-panel-overlay" class="bottom-sheet-overlay"></div>
+        <div class="bottom-sheet-content glass hormiga-panel-inner">
+          <div class="sheet-handle"></div>
+          <div class="balance-panel-header">
+            <h3 class="balance-panel-title">🧾 Desglose Gastos Fijos</h3>
+            <button id="fixed-panel-close" class="icon-btn" aria-label="Cerrar">✕</button>
+          </div>
+
+          <div class="balance-summary-row">
+            <div class="balance-summary-card balance-summary-card--total glass-subtle">
+              <span class="bs-label">Pago propio (pendiente)</span>
+              <span id="fixed-yo-pending" class="bs-amount text-danger">$0.00</span>
+              <span class="bs-sublabel">Pagado: <strong id="fixed-yo-paid">$0.00</strong></span>
+            </div>
+            <div class="balance-summary-card glass-subtle">
+              <span class="bs-label">Pago esposa (pendiente)</span>
+              <span id="fixed-esposa-pending" class="bs-amount text-danger">$0.00</span>
+              <span class="bs-sublabel">Pagado: <strong id="fixed-esposa-paid">$0.00</strong></span>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- ══ HORMIGA DETAIL PANEL ══ -->
