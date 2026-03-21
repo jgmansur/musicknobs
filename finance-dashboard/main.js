@@ -2057,7 +2057,7 @@ async function fijos_cargarDatos() {
                 pagosEstado,
                 pagosHechos,
             };
-        }).filter(i => i.concepto).reverse();
+        }).filter(i => i.concepto).sort((a, b) => a.diaMes - b.diaMes);
 
         fijos_generarPills();
         fijos_syncDashboardStats();
