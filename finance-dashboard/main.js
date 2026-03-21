@@ -13,7 +13,7 @@ const SCOPES = 'https://www.googleapis.com/auth/spreadsheets https://www.googlea
 const SPREADSHEET_LOG_ID   = '1pn1bsxj2LaoySXAVUvqfEJY1VR4R_T8NsTOqQnVW5Xw'; // Control de Gastos
 const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // Gastos Fijos
 const SPREADSHEET_DEUDAS_ID = '1dKxhgqazskm15lx0f6FNCA0gpJ7i5glfxkusiH3b0Uk'; // Control de Deudas
-const APP_VERSION  = 'v3.5.8';
+const APP_VERSION  = 'v3.5.9';
 // Bump token keys to force re-auth with the new drive scope
 const TOKEN_KEY    = 'google_access_token_v4';
 const EXPIRY_KEY   = 'google_token_expiry_v4';
@@ -792,6 +792,16 @@ function balance_updateKpi() {
     }
     // Update debt summary card on dashboard
     deudas_updateKpiCard();
+    balance_updateFixedCoverageKpi();
+}
+
+function balance_updateFixedCoverageKpi() {
+    const el = document.getElementById('gastos-fijos-coverage');
+    if (!el) return;
+    const coverage = (balance_getTotal() + balancePendingFixedIncome) - balancePendingFixed;
+    const sign = coverage >= 0 ? '+' : '';
+    el.innerText = `${sign}${formatCurrency(coverage)}`;
+    el.className = `kpi-inline-note ${coverage >= 0 ? 'kpi-inline-note--positive' : 'kpi-inline-note--negative'}`;
 }
 
 // ── Render ───────────────────────────────────────────────
