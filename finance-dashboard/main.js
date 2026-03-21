@@ -505,6 +505,7 @@ let balanceLogNetAnchor = (() => {
     if (raw === null) return null;
     return parseFloat(raw) || 0;
 })();
+let balanceAnchorNeedsMigration = false;
 let balanceRealtimeUnsub = null;
 let balanceRealtimeUid = null;
 
@@ -540,6 +541,12 @@ function balance_updateLogNetFromRows(logRows) {
         balanceLogNetAnchor = balanceLogNetTotal;
         localStorage.setItem('balance_log_anchor_v1', String(balanceLogNetAnchor));
     }
+    if (balanceAnchorNeedsMigration) {
+        balanceLogNetAnchor = balanceLogNetTotal;
+        localStorage.setItem('balance_log_anchor_v1', String(balanceLogNetAnchor));
+        balanceAnchorNeedsMigration = false;
+        if (_fbUid) balance_saveToFirestore().catch(console.warn);
+    }
 }
 
 function balance_stopRealtimeSync() {
@@ -564,6 +571,12 @@ function balance_startRealtimeSync() {
         const data = snap.data() || {};
         const nextAccounts = (data.accounts || []).map(balance_normalizeAccount);
         balanceAccounts = nextAccounts;
+        const cloudAnchor = Number(data.logNetAnchor);
+        if (Number.isFinite(cloudAnchor)) {
+            balanceLogNetAnchor = cloudAnchor;
+            localStorage.setItem('balance_log_anchor_v1', String(balanceLogNetAnchor));
+            balanceAnchorNeedsMigration = false;
+        }
         localStorage.setItem('finance_accounts_v1', JSON.stringify(balanceAccounts));
         balance_updateKpi();
         const panel = document.getElementById('balance-panel');
@@ -630,6 +643,14 @@ async function balance_loadAccounts() {
             if (snap.exists()) {
                 const data = snap.data();
                 balanceAccounts = (data.accounts || []).map(balance_normalizeAccount);
+                const cloudAnchor = Number(data.logNetAnchor);
+                if (Number.isFinite(cloudAnchor)) {
+                    balanceLogNetAnchor = cloudAnchor;
+                    localStorage.setItem('balance_log_anchor_v1', String(balanceLogNetAnchor));
+                    balanceAnchorNeedsMigration = false;
+                } else {
+                    balanceAnchorNeedsMigration = true;
+                }
                 // Update localStorage cache
                 localStorage.setItem('finance_accounts_v1', JSON.stringify(balanceAccounts));
                 balance_refreshUsdMxnRate();
@@ -719,6 +740,7 @@ async function balance_saveToFirestore() {
             customAnnualRate: Number(a.customAnnualRate) || 0,
             bitcoinInitialMxn: Number(a.bitcoinInitialMxn) || 0,
         })),
+        logNetAnchor: balanceLogNetAnchor === null ? null : Number(balanceLogNetAnchor),
         lastUpdated: serverTimestamp(),
     });
 }
