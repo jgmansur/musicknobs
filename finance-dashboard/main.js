@@ -13,7 +13,7 @@ const SCOPES = 'https://www.googleapis.com/auth/spreadsheets https://www.googlea
 const SPREADSHEET_LOG_ID   = '1pn1bsxj2LaoySXAVUvqfEJY1VR4R_T8NsTOqQnVW5Xw'; // Control de Gastos
 const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // Gastos Fijos
 const SPREADSHEET_DEUDAS_ID = '1dKxhgqazskm15lx0f6FNCA0gpJ7i5glfxkusiH3b0Uk'; // Control de Deudas
-const APP_VERSION  = 'v4.4.0';
+const APP_VERSION  = 'v4.5.0';
 // Bump token keys to force re-auth with the new drive scope
 const TOKEN_KEY    = 'google_access_token_v4';
 const EXPIRY_KEY   = 'google_token_expiry_v4';
@@ -1573,7 +1573,7 @@ function renderFixedTable(expenses) {
     tbody.innerHTML = expenses.map(e => `
         <tr>
           <td>${e.concepto}</td>
-          <td>${formatCurrency(Math.max(0, e.pendingAmount ?? Math.abs(e.monto || 0)))}</td>
+          <td class="${e.tipo === 'ingreso' ? 'text-success' : 'text-danger'}">${formatCurrency(Math.max(0, e.pendingAmount ?? Math.abs(e.monto || 0)))}</td>
           <td><span class="badge ${e.isPaid ? 'paid' : 'pending'}">${e.isPaid ? 'PAGADO' : 'PENDIENTE'}</span></td>
         </tr>`).join('');
 }
