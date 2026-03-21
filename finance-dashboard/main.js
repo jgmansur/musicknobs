@@ -13,7 +13,7 @@ const SCOPES = 'https://www.googleapis.com/auth/spreadsheets https://www.googlea
 const SPREADSHEET_LOG_ID   = '1pn1bsxj2LaoySXAVUvqfEJY1VR4R_T8NsTOqQnVW5Xw'; // Control de Gastos
 const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // Gastos Fijos
 const SPREADSHEET_DEUDAS_ID = '1dKxhgqazskm15lx0f6FNCA0gpJ7i5glfxkusiH3b0Uk'; // Control de Deudas
-const APP_VERSION  = 'v4.9.0';
+const APP_VERSION  = 'v4.9.1';
 // Bump token keys to force re-auth with the new drive scope
 const TOKEN_KEY    = 'google_access_token_v4';
 const EXPIRY_KEY   = 'google_token_expiry_v4';
@@ -164,6 +164,11 @@ const BUDGET_BUCKETS = [
 const dashboardFixedState = {
     entries: [],
     query: '',
+};
+
+const fixedPressState = {
+    timer: null,
+    suppressKey: null,
 };
 
 const dashboardFixedPayerStats = {
@@ -1610,8 +1615,8 @@ function processAndRender(logRows, fixedRows) {
     dashboardFixedPayerStats.esposa.total = dashboardFixedPayerStats.esposa.pending + dashboardFixedPayerStats.esposa.paid;
     fixed_renderPanel();
 
-    // Dashboard only shows PENDING (unpaid) fixed expenses
-    renderFixedTable(fixedExpenses.filter(e => e.isDueThisMonth && !e.isPaid));
+    // Keep all due fixed entries visible so waived/paid parts can be reverted quickly
+    renderFixedTable(fixedExpenses.filter(e => e.isDueThisMonth));
     renderChart(hormigaChartData);
     renderHormigaPanel(hormigaGastos, hormigaTotal, hormigaPrevTotal, monthName, prevMonthName);
 }
@@ -1635,11 +1640,11 @@ function renderFixedTable(expenses) {
             ? (() => {
                 const clsPart = e.isPaid ? 'pagado-btn pagado-btn--paid' : 'pagado-btn pagado-btn--pending';
                 const lbl = e.isPaid ? '✅ Pagado' : '⏳ Pendiente';
-                return `<button class="${clsPart}" onclick="dashboard_togglePagoPart(${e.rowNum}, 0)">${lbl}</button>`;
+                return `<button class="${clsPart}" ${fixedPartButtonAttrs(e.rowNum, 0, 'dashboard')}>${lbl}</button>`;
             })()
             : e.pagosEstado.map((isPartPaid, idx) => {
                 const clsPart = isPartPaid ? 'pagado-btn pagado-btn--paid' : 'pagado-btn pagado-btn--pending';
-                return `<button class="${clsPart} fixed-remote-btn" onclick="dashboard_togglePagoPart(${e.rowNum}, ${idx})">${idx + 1}</button>`;
+                return `<button class="${clsPart} fixed-remote-btn" ${fixedPartButtonAttrs(e.rowNum, idx, 'dashboard')}>${idx + 1}</button>`;
             }).join('');
         const controlsClass = pagosMes === 1 ? 'fixed-remote-controls fixed-remote-controls--single' : 'fixed-remote-controls fixed-remote-controls--parts';
         const controlsStyle = pagosMes === 1 ? '' : `style="grid-template-columns:repeat(${pagosMes}, minmax(0, 1fr));"`;
@@ -1696,10 +1701,10 @@ function fixed_renderPanel() {
     esposaTotalEl.innerText = formatCurrency(dashboardFixedPayerStats.esposa.total);
 }
 
-window.dashboard_togglePagoPart = async function(id, partIndex) {
+window.dashboard_togglePagoPart = async function(id, partIndex, options = {}) {
     try {
         await fijos_cargarDatos();
-        await window.fijos_togglePagoPart(id, partIndex);
+        await window.fijos_togglePagoPart(id, partIndex, options);
         if (currentTab === 'dashboard') {
             await fetchAndProcess();
         }
@@ -1708,6 +1713,52 @@ window.dashboard_togglePagoPart = async function(id, partIndex) {
         showToast('⚠️ Error al actualizar pago');
     }
 };
+
+function fixedPartButtonAttrs(id, partIndex, source) {
+    return `onpointerdown="fixed_partPointerDown(${id}, ${partIndex}, '${source}')" onpointerup="fixed_partPointerUp()" onpointerleave="fixed_partPointerUp()" onpointercancel="fixed_partPointerUp()" onclick="fixed_partClick(${id}, ${partIndex}, '${source}')"`;
+}
+
+window.fixed_partPointerDown = function(id, partIndex, source) {
+    if (fixedPressState.timer) clearTimeout(fixedPressState.timer);
+    const key = `${source}:${id}:${partIndex}`;
+    fixedPressState.timer = setTimeout(async () => {
+        fixedPressState.suppressKey = key;
+        await fixed_confirmWaive(id, partIndex, source);
+    }, 650);
+};
+
+window.fixed_partPointerUp = function() {
+    if (fixedPressState.timer) {
+        clearTimeout(fixedPressState.timer);
+        fixedPressState.timer = null;
+    }
+};
+
+window.fixed_partClick = function(id, partIndex, source) {
+    const key = `${source}:${id}:${partIndex}`;
+    if (fixedPressState.suppressKey === key) {
+        fixedPressState.suppressKey = null;
+        return;
+    }
+    if (source === 'dashboard') {
+        window.dashboard_togglePagoPart(id, partIndex);
+    } else {
+        window.fijos_togglePagoPart(id, partIndex);
+    }
+};
+
+async function fixed_confirmWaive(id, partIndex, source) {
+    const item = fijosState.allItems.find(i => i.id === id);
+    const partLabel = item && (item.pagosMes || 1) > 1 ? ` (${partIndex + 1}/${item.pagosMes})` : '';
+    const concepto = item?.concepto || 'este pago';
+    const ok = confirm(`¿Waive ${concepto}${partLabel}?\n\nSe marcará como hecho solo este mes y NO se agregará a Control de Gastos.`);
+    if (!ok) return;
+    if (source === 'dashboard') {
+        await window.dashboard_togglePagoPart(id, partIndex, { skipControlLog: true, waive: true });
+    } else {
+        await window.fijos_togglePagoPart(id, partIndex, { skipControlLog: true, waive: true });
+    }
+}
 
 // =============================================
 // HORMIGA PANEL DETAIL
@@ -2377,11 +2428,11 @@ function fijos_renderLista(lista) {
             ? (() => {
                 const clsPart = item.isPaid ? 'pagado-btn pagado-btn--paid' : 'pagado-btn pagado-btn--pending';
                 const lbl = item.isPaid ? '✅ Pagado' : '⏳ Pendiente';
-                return `<button class="${clsPart}" onclick="fijos_togglePagoPart(${item.id}, 0)">${lbl}</button>`;
+                return `<button class="${clsPart}" ${fixedPartButtonAttrs(item.id, 0, 'fijos')}>${lbl}</button>`;
             })()
             : item.pagosEstado.map((isPartPaid, idx) => {
                 const clsPart = isPartPaid ? 'pagado-btn pagado-btn--paid' : 'pagado-btn pagado-btn--pending';
-                return `<button class="${clsPart}" style="min-width:44px;padding:.35rem .45rem;font-size:.72rem" onclick="fijos_togglePagoPart(${item.id}, ${idx})">${idx + 1}</button>`;
+                return `<button class="${clsPart}" style="min-width:44px;padding:.35rem .45rem;font-size:.72rem" ${fixedPartButtonAttrs(item.id, idx, 'fijos')}>${idx + 1}</button>`;
             }).join('');
         return `<div class="movimiento-card ${item.isPaid ? 'card-paid' : ''}">
           <div class="mc-left">
@@ -2419,7 +2470,7 @@ window.fijos_borrar = async function(id) {
 };
 
 /** Toggle one partial payment state and sync to Control de Gastos */
-window.fijos_togglePagoPart = async function(id, partIndex) {
+window.fijos_togglePagoPart = async function(id, partIndex, options = {}) {
     const item = fijosState.allItems.find(i => i.id === id);
     if (!item) return;
     const wasPartPaid = !!item.pagosEstado[partIndex];
@@ -2443,7 +2494,7 @@ window.fijos_togglePagoPart = async function(id, partIndex) {
         await sheetsUpdate(SPREADSHEET_FIXED_ID, `Hoja 1!F${id}:H${id}`, [[item.isPaid ? 'TRUE' : 'FALSE', item.pagosMes, serializePaymentStates(item.pagosEstado)]]);
 
         // 2) If marking one part as PAID -> append partial entry to Control de Gastos
-        if (nowPartPaid) {
+        if (nowPartPaid && !options.skipControlLog) {
             const fecha    = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD
             const lugar    = 'Gasto Fijo';
             const concepto = `${item.concepto} (${partIndex + 1}/${item.pagosMes})`;
@@ -2457,7 +2508,7 @@ window.fijos_togglePagoPart = async function(id, partIndex) {
             );
             tabInited.gastos = false;
             showToast('✅ Pago registrado en Control de Gastos');
-        } else {
+        } else if (!nowPartPaid) {
             // UN-SYNC: remove matching partial entry in Control de Gastos
             try {
                 const logSheetId = await getSheetId(SPREADSHEET_LOG_ID, 'Hoja 1');
@@ -2482,6 +2533,9 @@ window.fijos_togglePagoPart = async function(id, partIndex) {
                 console.error('Error un-syncing payment:', err);
                 showToast('\u26A0\uFE0F Error al eliminar pago');
             }
+        }
+        if (nowPartPaid && options.skipControlLog) {
+            showToast('🟡 Pago waived (sin registro en Control de Gastos)');
         }
         planner_refreshIfReady();
     } catch(e) {
