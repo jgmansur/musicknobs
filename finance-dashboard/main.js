@@ -167,8 +167,8 @@ const dashboardFixedState = {
 };
 
 const dashboardFixedPayerStats = {
-    yo: { pending: 0, paid: 0 },
-    esposa: { pending: 0, paid: 0 },
+    yo: { pending: 0, paid: 0, total: 0 },
+    esposa: { pending: 0, paid: 0, total: 0 },
 };
 
 const debugState = {
@@ -1598,6 +1598,8 @@ function processAndRender(logRows, fixedRows) {
     dashboardFixedPayerStats.esposa.paid = fixedGastos
         .filter(e => e.pagador === 'esposa')
         .reduce((s, e) => s + Math.max(0, e.paidAmount), 0);
+    dashboardFixedPayerStats.yo.total = dashboardFixedPayerStats.yo.pending + dashboardFixedPayerStats.yo.paid;
+    dashboardFixedPayerStats.esposa.total = dashboardFixedPayerStats.esposa.pending + dashboardFixedPayerStats.esposa.paid;
     fixed_renderPanel();
 
     // Dashboard only shows PENDING (unpaid) fixed expenses
@@ -1673,13 +1675,17 @@ function fixed_closePanel() {
 function fixed_renderPanel() {
     const yoPendingEl = document.getElementById('fixed-yo-pending');
     const yoPaidEl = document.getElementById('fixed-yo-paid');
+    const yoTotalEl = document.getElementById('fixed-yo-total');
     const esposaPendingEl = document.getElementById('fixed-esposa-pending');
     const esposaPaidEl = document.getElementById('fixed-esposa-paid');
-    if (!yoPendingEl || !yoPaidEl || !esposaPendingEl || !esposaPaidEl) return;
+    const esposaTotalEl = document.getElementById('fixed-esposa-total');
+    if (!yoPendingEl || !yoPaidEl || !yoTotalEl || !esposaPendingEl || !esposaPaidEl || !esposaTotalEl) return;
     yoPendingEl.innerText = formatCurrency(dashboardFixedPayerStats.yo.pending);
     yoPaidEl.innerText = formatCurrency(dashboardFixedPayerStats.yo.paid);
+    yoTotalEl.innerText = formatCurrency(dashboardFixedPayerStats.yo.total);
     esposaPendingEl.innerText = formatCurrency(dashboardFixedPayerStats.esposa.pending);
     esposaPaidEl.innerText = formatCurrency(dashboardFixedPayerStats.esposa.paid);
+    esposaTotalEl.innerText = formatCurrency(dashboardFixedPayerStats.esposa.total);
 }
 
 window.dashboard_togglePagoPart = async function(id, partIndex) {
