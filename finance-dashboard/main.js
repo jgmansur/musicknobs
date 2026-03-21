@@ -2100,6 +2100,8 @@ function fijos_generarPills() {
         const typePills = [
             `<label class="cat-check-label"><input type="checkbox" class="${cat}" value="__tipo_gasto" id="${cat}___tipo_gasto">🔴 Gastos</label>`,
             `<label class="cat-check-label"><input type="checkbox" class="${cat}" value="__tipo_ingreso" id="${cat}___tipo_ingreso">🟢 Ingresos</label>`,
+            `<label class="cat-check-label"><input type="checkbox" class="${cat}" value="__payer_yo" id="${cat}___payer_yo">👤 Pago propio</label>`,
+            `<label class="cat-check-label"><input type="checkbox" class="${cat}" value="__payer_esposa" id="${cat}___payer_esposa">👩 Pago esposa</label>`,
         ].join('');
         const categoryPills = fijosState.categorias
             .map(c => `<label class="cat-check-label"><input type="checkbox" class="${cat}" value="${c}" id="${cat}_${c}">${c}</label>`)
@@ -2153,12 +2155,17 @@ function fijos_aplicarFiltros() {
     let lista  = fijosState.allItems.filter(item => {
         const t = item.concepto.toLowerCase().includes(q) || item.categoria.toLowerCase().includes(q);
         const tipoActivos = fijosState.filtrosActivos.filter(f => f === '__tipo_gasto' || f === '__tipo_ingreso');
+        const payerActivos = fijosState.filtrosActivos.filter(f => f === '__payer_yo' || f === '__payer_esposa');
         const catActivos = fijosState.filtrosActivos.filter(f => !f.startsWith('__tipo_'));
         const tipoOk = !tipoActivos.length
             || (tipoActivos.includes('__tipo_gasto') && item.tipo === 'gasto')
             || (tipoActivos.includes('__tipo_ingreso') && item.tipo === 'ingreso');
-        const catOk = !catActivos.length || catActivos.some(f => item.categoria.split(', ').includes(f));
-        return t && tipoOk && catOk && item.isDueThisMonth;
+        const payerOk = !payerActivos.length
+            || (payerActivos.includes('__payer_yo') && item.pagador === 'yo')
+            || (payerActivos.includes('__payer_esposa') && item.pagador === 'esposa');
+        const catOk = !catActivos.filter(f => !f.startsWith('__payer_')).length
+            || catActivos.filter(f => !f.startsWith('__payer_')).some(f => item.categoria.split(', ').includes(f));
+        return t && tipoOk && payerOk && catOk && item.isDueThisMonth;
     });
     lista.sort((a,b) => {
         if (sort==='fechaDesc') return b.fechaValue.localeCompare(a.fechaValue);
