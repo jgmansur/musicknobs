@@ -2307,7 +2307,8 @@ window.fijos_togglePagoPart = async function(id, partIndex) {
                 showToast('\u26A0\uFE0F Error al eliminar pago');
             }
         }
-        // Keep dashboard in sync from local optimistic state.
+        // Force canonical refresh from sheet to avoid any drift in paid-part counters.
+        await fijos_cargarDatos();
     } catch(e) {
         console.error('Error toggling pago parcial:', e);
         // Revert optimistic update
