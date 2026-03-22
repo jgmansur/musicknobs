@@ -14,7 +14,7 @@ const SPREADSHEET_LOG_ID   = '1pn1bsxj2LaoySXAVUvqfEJY1VR4R_T8NsTOqQnVW5Xw'; // 
 const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // Gastos Fijos
 const SPREADSHEET_DEUDAS_ID = '1dKxhgqazskm15lx0f6FNCA0gpJ7i5glfxkusiH3b0Uk'; // Control de Deudas
 const SPREADSHEET_AUTOS_ID = SPREADSHEET_DEUDAS_ID; // Autos + Reparaciones live in same workbook
-const APP_VERSION  = 'v6.0.2';
+const APP_VERSION  = 'v6.0.3';
 // Bump token keys to force re-auth with the new drive scope
 const TOKEN_KEY    = 'google_access_token_v4';
 const EXPIRY_KEY   = 'google_token_expiry_v4';
@@ -3292,6 +3292,14 @@ function autos_parseUrlList(raw) {
         .filter(Boolean);
 }
 
+function autos_phoneLinkOrText(raw, fallbackLabel = 'Tel') {
+    const value = (raw || '').toString().trim();
+    if (!value) return '-';
+    const tel = value.replace(/[^\d+]/g, '');
+    if (!tel || tel.length < 8) return value || fallbackLabel;
+    return `<a href="tel:${tel}" class="autos-phone-link" title="Llamar ${value}">${value}</a>`;
+}
+
 async function autos_cargarVista() {
     const listEl = document.getElementById('autos-car-list');
     if (listEl) listEl.innerHTML = '<div class="loading-spinner">⏳ Cargando autos...</div>';
@@ -3479,6 +3487,11 @@ function autos_renderSelectedCar() {
         ['Certificado Polarizado', car.certificadoPolarizado],
     ].filter(([, url]) => !!url);
 
+    const emergenciaInteriorHtml = autos_phoneLinkOrText(car.emergenciaInterior, 'Interior');
+    const emergenciaMetroHtml = autos_phoneLinkOrText(car.emergenciaMetro, 'Metro');
+    const siniestros1Html = autos_phoneLinkOrText(car.reporteSiniestros1, 'Siniestros 1');
+    const siniestros2Html = autos_phoneLinkOrText(car.reporteSiniestros2, 'Siniestros 2');
+
     profileEl.innerHTML = `<div class="glass-subtle autos-profile-card" style="padding:.8rem;display:grid;grid-template-columns:96px minmax(0,1fr);gap:.7rem;align-items:start;">
         <img src="${car.fotoAuto || ''}" alt="Auto" style="width:96px;height:72px;object-fit:cover;border-radius:.75rem;background:rgba(255,255,255,.06);" onerror="this.style.display='none'" />
         <div class="autos-profile-main" style="display:grid;gap:.2rem;min-width:0;">
@@ -3486,7 +3499,8 @@ function autos_renderSelectedCar() {
             <span class="account-type-label">Placa: ${car.placa || '-'} · VIN: ${car.vin || '-'}</span>
             <span class="account-type-label">Propietario: ${car.propietario || '-'} · Seguro: ${car.tieneSeguro ? 'Si' : 'No'}</span>
             <span class="account-type-label">Poliza: ${car.polizaSeguro || '-'} · Llantas: ${car.tipoLlantas || '-'}</span>
-            <span class="account-type-label">Emergencia interior: ${car.emergenciaInterior || '-'} · Metro: ${car.emergenciaMetro || '-'}</span>
+            <span class="account-type-label">Emergencia: ${emergenciaInteriorHtml} · ${emergenciaMetroHtml}</span>
+            <span class="account-type-label">Siniestros: ${siniestros1Html} · ${siniestros2Html}</span>
             <div style="display:flex;gap:.35rem;flex-wrap:wrap;margin-top:.3rem;">
                 <button class="mini-btn" onclick="autos_openCarSheet('${car.id}')">✏️ Editar auto</button>
             </div>

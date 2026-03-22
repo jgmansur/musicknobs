@@ -696,6 +696,12 @@ select.field-input { background-image: url("data:image/svg+xml,%3Csvg xmlns='htt
   pointer-events: none;
 }
 
+.autos-phone-link {
+  color: #34d399;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
 .kpi-debt-muted {
   opacity: 0.45;
   filter: saturate(0.35);
