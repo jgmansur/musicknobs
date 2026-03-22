@@ -14,7 +14,7 @@ const SPREADSHEET_LOG_ID   = '1pn1bsxj2LaoySXAVUvqfEJY1VR4R_T8NsTOqQnVW5Xw'; // 
 const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // Gastos Fijos
 const SPREADSHEET_DEUDAS_ID = '1dKxhgqazskm15lx0f6FNCA0gpJ7i5glfxkusiH3b0Uk'; // Control de Deudas
 const SPREADSHEET_AUTOS_ID = SPREADSHEET_DEUDAS_ID; // Autos + Reparaciones live in same workbook
-const APP_VERSION  = 'v6.1.1';
+const APP_VERSION  = 'v6.1.2';
 // Bump token keys to force re-auth with the new drive scope
 const TOKEN_KEY    = 'google_access_token_v4';
 const EXPIRY_KEY   = 'google_token_expiry_v4';
@@ -3253,13 +3253,13 @@ function autos_bindEvents() {
     document.getElementById('autos-detail-close')?.addEventListener('click', autos_closeCarDetail);
     document.getElementById('autos-license-overlay')?.addEventListener('click', autos_closeLicensePanel);
     document.getElementById('autos-license-close')?.addEventListener('click', autos_closeLicensePanel);
-    const licBtn = document.getElementById('autos-license-btn');
-    if (licBtn) {
-        licBtn.addEventListener('pointerdown', autos_licensePointerDown);
-        licBtn.addEventListener('pointerup', autos_licensePointerUp);
-        licBtn.addEventListener('pointerleave', autos_licensePointerUp);
-        licBtn.addEventListener('pointercancel', autos_licensePointerUp);
-        licBtn.addEventListener('click', autos_licenseClick);
+    const licCard = document.getElementById('autos-license-card');
+    if (licCard) {
+        licCard.addEventListener('pointerdown', autos_licensePointerDown);
+        licCard.addEventListener('pointerup', autos_licensePointerUp);
+        licCard.addEventListener('pointerleave', autos_licensePointerUp);
+        licCard.addEventListener('pointercancel', autos_licensePointerUp);
+        licCard.addEventListener('click', autos_licenseClick);
     }
     document.getElementById('autos-license-file')?.addEventListener('change', autos_handleLicenseFile);
     document.getElementById('autos-car-foto-file')?.addEventListener('change', (e) => autos_updateFileFeedback('autos-car-foto-feedback', e.target.files));
@@ -3331,11 +3331,14 @@ function autos_phoneLinkOrText(raw, fallbackLabel = 'Tel') {
 
 function autos_docPreview(url, label) {
     if (!url) return '<div class="empty-state">Sin archivo</div>';
+    const driveMatch = url.match(/drive\.google\.com\/file\/d\/([^/]+)/i);
+    const drivePreview = driveMatch ? `https://drive.google.com/thumbnail?id=${driveMatch[1]}&sz=w1200` : '';
     const isPdf = /\.pdf(\?|$)/i.test(url);
     if (isPdf) {
         return `<a class="mini-btn" href="${url}" target="_blank" rel="noopener">Abrir ${label} PDF</a>`;
     }
-    return `<a href="${url}" target="_blank" rel="noopener"><img src="${url}" alt="${label}" style="width:100%;height:140px;object-fit:cover;border-radius:.6rem;background:rgba(255,255,255,.05);" /></a>`;
+    const previewUrl = drivePreview || url;
+    return `<a href="${url}" target="_blank" rel="noopener"><img src="${previewUrl}" alt="${label}" style="width:100%;height:140px;object-fit:cover;border-radius:.6rem;background:rgba(255,255,255,.05);" onerror="this.style.display='none'; this.parentElement.insertAdjacentHTML('beforeend','<span class=\"mini-btn\">Abrir ${label}</span>')" /></a>`;
 }
 
 async function autos_saveMeta() {

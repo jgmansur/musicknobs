@@ -496,13 +496,16 @@
       <div id="view-autos" class="view">
         <main class="dashboard-grid">
           <section class="kpi-row">
-            <div class="kpi-card glass">
+            <div class="kpi-card glass kpi-card--clickable" id="autos-license-card" title="Tap: ver licencia · Dejar presionado: subir licencia">
               <div class="kpi-icon" style="background:rgba(34,197,94,.15);color:#22c55e"><i data-lucide="car-front"></i></div>
               <div class="kpi-data">
                 <span class="label">Control de Autos</span>
-                <div style="display:flex;align-items:center;justify-content:space-between;gap:.45rem;">
+                <div class="autos-kpi-head">
                   <h2 id="autos-total-spent" class="text-danger" style="margin:0;">$0.00</h2>
-                  <button id="autos-license-btn" class="icon-btn" title="Ver licencia (dejar presionado para subir)">🪪</button>
+                  <div class="autos-license-anchor">
+                    <div id="autos-license-btn" class="icon-btn autos-license-icon">🪪</div>
+                    <span class="autos-license-label">Licencia</span>
+                  </div>
                 </div>
                 <span class="diff-label">Gasto acumulado historico</span>
               </div>
