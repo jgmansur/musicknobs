@@ -770,6 +770,16 @@ select.field-input { background-image: url("data:image/svg+xml,%3Csvg xmlns='htt
   word-break: break-word;
 }
 
+.autos-repair-filters {
+  align-items: center;
+}
+
+@media (max-width: 560px) {
+  .autos-repair-filters {
+    grid-template-columns: 1fr !important;
+  }
+}
+
 .autos-profile-clickable {
   cursor: pointer;
   transition: border-color .15s, transform .12s;

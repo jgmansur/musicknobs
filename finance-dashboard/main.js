@@ -14,7 +14,7 @@ const SPREADSHEET_LOG_ID   = '1pn1bsxj2LaoySXAVUvqfEJY1VR4R_T8NsTOqQnVW5Xw'; // 
 const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // Gastos Fijos
 const SPREADSHEET_DEUDAS_ID = '1dKxhgqazskm15lx0f6FNCA0gpJ7i5glfxkusiH3b0Uk'; // Control de Deudas
 const SPREADSHEET_AUTOS_ID = SPREADSHEET_DEUDAS_ID; // Autos + Reparaciones live in same workbook
-const APP_VERSION  = 'v6.1.4';
+const APP_VERSION  = 'v6.1.5';
 // Bump token keys to force re-auth with the new drive scope
 const TOKEN_KEY    = 'google_access_token_v4';
 const EXPIRY_KEY   = 'google_token_expiry_v4';
@@ -3187,7 +3187,8 @@ const autosState = {
     repairsSheetId: null,
     selectedCarId: '',
     repairSearch: '',
-    repairDateFilter: '',
+    repairDateFrom: '',
+    repairDateTo: '',
     repairVisibleCount: 10,
     meta: {},
     licenseLongPressFired: false,
@@ -3246,8 +3247,13 @@ function autos_bindEvents() {
         autosState.repairVisibleCount = 10;
         autos_renderSelectedCar();
     });
-    document.getElementById('autos-repair-date-filter')?.addEventListener('change', (e) => {
-        autosState.repairDateFilter = (e.target.value || '').trim();
+    document.getElementById('autos-repair-date-from')?.addEventListener('change', (e) => {
+        autosState.repairDateFrom = (e.target.value || '').trim();
+        autosState.repairVisibleCount = 10;
+        autos_renderSelectedCar();
+    });
+    document.getElementById('autos-repair-date-to')?.addEventListener('change', (e) => {
+        autosState.repairDateTo = (e.target.value || '').trim();
         autosState.repairVisibleCount = 10;
         autos_renderSelectedCar();
     });
@@ -3596,9 +3602,11 @@ function autos_render() {
 
     const listEl = document.getElementById('autos-car-list');
     const searchEl = document.getElementById('autos-repair-search');
-    const dateEl = document.getElementById('autos-repair-date-filter');
+    const dateFromEl = document.getElementById('autos-repair-date-from');
+    const dateToEl = document.getElementById('autos-repair-date-to');
     if (searchEl && searchEl.value !== autosState.repairSearch) searchEl.value = autosState.repairSearch;
-    if (dateEl && dateEl.value !== autosState.repairDateFilter) dateEl.value = autosState.repairDateFilter;
+    if (dateFromEl && dateFromEl.value !== autosState.repairDateFrom) dateFromEl.value = autosState.repairDateFrom;
+    if (dateToEl && dateToEl.value !== autosState.repairDateTo) dateToEl.value = autosState.repairDateTo;
     if (listEl) {
         listEl.innerHTML = autosState.cars.map(car => {
             const spent = autos_getCarSpent(car.id);
@@ -3673,28 +3681,42 @@ function autos_renderSelectedCar() {
     <div style="display:flex;gap:.35rem;flex-wrap:wrap;margin-top:.5rem;">${links.map(([label, url]) => `<a class="mini-btn" href="${url}" target="_blank" rel="noopener">${label}</a>`).join('')}</div>`;
 
     const allRepairs = autosState.repairs.filter(r => r.carId === car.id).sort((a, b) => b.fecha.localeCompare(a.fecha));
-    const uniqueDates = [...new Set(allRepairs.map(r => r.fecha).filter(Boolean))];
-    const dateFilterEl = document.getElementById('autos-repair-date-filter');
-    if (dateFilterEl) {
-        const options = ['<option value="">Todas las fechas</option>']
-            .concat(uniqueDates.map(d => `<option value="${d}">${formatFecha(d)}</option>`));
-        dateFilterEl.innerHTML = options.join('');
-        if (autosState.repairDateFilter && !uniqueDates.includes(autosState.repairDateFilter)) {
-            autosState.repairDateFilter = '';
-        }
-        dateFilterEl.value = autosState.repairDateFilter;
+    const dateFromEl = document.getElementById('autos-repair-date-from');
+    const dateToEl = document.getElementById('autos-repair-date-to');
+    const dateValues = allRepairs.map(r => (r.fecha || '').slice(0, 10)).filter(Boolean).sort();
+    const minDate = dateValues[0] || '';
+    const maxDate = dateValues[dateValues.length - 1] || '';
+    if (dateFromEl) {
+        dateFromEl.min = minDate;
+        dateFromEl.max = maxDate;
+        if (autosState.repairDateFrom && (autosState.repairDateFrom < minDate || autosState.repairDateFrom > maxDate)) autosState.repairDateFrom = '';
+        dateFromEl.value = autosState.repairDateFrom;
+    }
+    if (dateToEl) {
+        dateToEl.min = minDate;
+        dateToEl.max = maxDate;
+        if (autosState.repairDateTo && (autosState.repairDateTo < minDate || autosState.repairDateTo > maxDate)) autosState.repairDateTo = '';
+        dateToEl.value = autosState.repairDateTo;
     }
 
     const q = autosState.repairSearch;
-    const selectedDate = autosState.repairDateFilter;
+    const from = autosState.repairDateFrom;
+    const to = autosState.repairDateTo;
     const filteredRepairs = !q
-        ? allRepairs.filter(r => !selectedDate || r.fecha === selectedDate)
+        ? allRepairs.filter(r => {
+            const d = (r.fecha || '').slice(0, 10);
+            if (!d) return false;
+            if (from && d < from) return false;
+            if (to && d > to) return false;
+            return true;
+        })
         : allRepairs.filter(r => {
             const dateA = (r.fecha || '').toLowerCase();
             const dateB = formatFecha(r.fecha).toLowerCase();
             const text = `${r.reparacion} ${r.lugar} ${r.descripcion}`.toLowerCase();
             const textMatch = dateA.includes(q) || dateB.includes(q) || text.includes(q);
-            const dateMatch = !selectedDate || r.fecha === selectedDate;
+            const d = (r.fecha || '').slice(0, 10);
+            const dateMatch = (!from || d >= from) && (!to || d <= to);
             return textMatch && dateMatch;
         });
     const visibleRepairs = filteredRepairs.slice(0, autosState.repairVisibleCount);
