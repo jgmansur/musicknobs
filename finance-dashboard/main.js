@@ -155,6 +155,7 @@ let tokenClient = null;
 let tokenRefreshTimer = null;
 let tokenRequestInFlight = null;
 let tokenRequestInteractive = true;
+let tokenRequestWatchdog = null;
 let currentTab  = 'dashboard';
 let tabInited   = { dashboard: false, gastos: false, fijos: false, deudas: false, plan: false };
 
@@ -231,6 +232,11 @@ function clearAccessTokenCache() {
     accessToken = null;
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(EXPIRY_KEY);
+    tokenRequestInFlight = null;
+    if (tokenRequestWatchdog) {
+        clearTimeout(tokenRequestWatchdog);
+        tokenRequestWatchdog = null;
+    }
     if (tokenRefreshTimer) {
         clearTimeout(tokenRefreshTimer);
         tokenRefreshTimer = null;
@@ -316,8 +322,8 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     } else {
         showLoginModal();
-        const trySilent = () => {
-            if (!window.google?.accounts?.oauth2) return false;
+        // One silent attempt only; do not block interactive login.
+        if (window.google?.accounts?.oauth2) {
             requestToken({ interactive: false }).then(ok => {
                 if (!ok) return;
                 hideLoginModal();
@@ -327,14 +333,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     showTab('dashboard');
                 });
             });
-            return true;
-        };
-        if (!trySilent()) {
-            let attempts = 0;
-            const iv = setInterval(() => {
-                attempts += 1;
-                if (trySilent() || attempts >= 15) clearInterval(iv);
-            }, 200);
         }
     }
 });
@@ -1360,15 +1358,34 @@ function startGoogleLogin() {
 
 async function requestToken(options = {}) {
     const interactive = options.interactive !== false;
-    if (tokenRequestInFlight) return tokenRequestInFlight;
+    if (tokenRequestInFlight) {
+        if (interactive && !tokenRequestInteractive) {
+            tokenRequestInFlight = null;
+            if (tokenRequestWatchdog) {
+                clearTimeout(tokenRequestWatchdog);
+                tokenRequestWatchdog = null;
+            }
+        } else {
+            return tokenRequestInFlight;
+        }
+    }
 
     tokenRequestInFlight = new Promise((resolve) => {
         tokenRequestInteractive = interactive;
+        tokenRequestWatchdog = setTimeout(() => {
+            tokenRequestInFlight = null;
+            tokenRequestWatchdog = null;
+            resolve(false);
+        }, 12000);
         if (!tokenClient) {
             tokenClient = google.accounts.oauth2.initTokenClient({
                 client_id: CLIENT_ID,
                 scope: SCOPES,
                 callback: (res) => {
+                    if (tokenRequestWatchdog) {
+                        clearTimeout(tokenRequestWatchdog);
+                        tokenRequestWatchdog = null;
+                    }
                     const ok = !!res?.access_token;
                     if (ok) {
                         accessToken = res.access_token;
@@ -1394,7 +1411,16 @@ async function requestToken(options = {}) {
                 },
             });
         }
-        tokenClient.requestAccessToken({ prompt: interactive ? 'consent' : '' });
+        try {
+            tokenClient.requestAccessToken({ prompt: interactive ? 'select_account' : '' });
+        } catch (_) {
+            if (tokenRequestWatchdog) {
+                clearTimeout(tokenRequestWatchdog);
+                tokenRequestWatchdog = null;
+            }
+            tokenRequestInFlight = null;
+            resolve(false);
+        }
     });
 
     return tokenRequestInFlight;
