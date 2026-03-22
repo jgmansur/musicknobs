@@ -15,7 +15,7 @@ const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // 
 const SPREADSHEET_DEUDAS_ID = '1dKxhgqazskm15lx0f6FNCA0gpJ7i5glfxkusiH3b0Uk'; // Control de Deudas
 const SPREADSHEET_AUTOS_ID = SPREADSHEET_DEUDAS_ID; // Autos + Reparaciones live in same workbook
 const SPREADSHEET_ESTUDIO_ID = SPREADSHEET_DEUDAS_ID; // Estudio + Plugins in same workbook
-const APP_VERSION  = 'v7.0.1';
+const APP_VERSION  = 'v7.0.2';
 // Bump token keys to force re-auth with the new drive scope
 const TOKEN_KEY    = 'google_access_token_v4';
 const EXPIRY_KEY   = 'google_token_expiry_v4';
@@ -4323,6 +4323,8 @@ const estudioState = {
     inventario: [],
     plugins: [],
     activeSubtab: 'inventario',
+    inventarioSearch: '',
+    pluginsSearch: '',
     loaded: false,
 };
 
@@ -4392,6 +4394,14 @@ function estudio_bindEvents() {
     document.getElementById('estudio-plugin-overlay')?.addEventListener('click', estudio_closePluginSheet);
     document.getElementById('estudio-inventario-save')?.addEventListener('click', estudio_saveInventario);
     document.getElementById('estudio-plugin-save')?.addEventListener('click', estudio_savePlugin);
+    document.getElementById('estudio-inventario-search')?.addEventListener('input', (e) => {
+        estudioState.inventarioSearch = (e.target.value || '').toLowerCase().trim();
+        estudio_render();
+    });
+    document.getElementById('estudio-plugins-search')?.addEventListener('input', (e) => {
+        estudioState.pluginsSearch = (e.target.value || '').toLowerCase().trim();
+        estudio_render();
+    });
 }
 
 function estudio_setSubtab(name) {
@@ -4525,8 +4535,26 @@ function estudio_render() {
     if (totalEl) totalEl.innerText = formatCurrency(totalMxn);
 
     const invList = document.getElementById('estudio-inventario-list');
+    const invSearchEl = document.getElementById('estudio-inventario-search');
+    if (invSearchEl && invSearchEl.value !== estudioState.inventarioSearch) invSearchEl.value = estudioState.inventarioSearch;
+    const invQuery = (estudioState.inventarioSearch || '').trim();
+    const inventarioRows = !invQuery
+        ? estudioState.inventario
+        : estudioState.inventario.filter((item) => {
+            const text = [
+                item.name,
+                item.categoria,
+                item.marca,
+                item.modelo,
+                item.serial,
+                item.account,
+                item.notas,
+                item.anioCompra,
+            ].join(' ').toLowerCase();
+            return text.includes(invQuery);
+        });
     if (invList) {
-        invList.innerHTML = estudioState.inventario.map((item) => {
+        invList.innerHTML = inventarioRows.map((item) => {
             const totalUsd = parseSheetValue(item.precioUsd) * Math.max(1, parseInt(item.cantidad, 10) || 1);
             return `<div class="account-card glass-subtle estudio-card">
                 <div class="account-card-left">
@@ -4549,12 +4577,28 @@ function estudio_render() {
                     <span class="account-type-label">USD ${totalUsd.toFixed(2)}</span>
                 </div>
             </div>`;
-        }).join('') || '<div class="empty-state">Sin equipo registrado</div>';
+        }).join('') || (invQuery ? '<div class="empty-state">Sin coincidencias en inventario</div>' : '<div class="empty-state">Sin equipo registrado</div>');
     }
 
     const plgList = document.getElementById('estudio-plugins-list');
+    const plgSearchEl = document.getElementById('estudio-plugins-search');
+    if (plgSearchEl && plgSearchEl.value !== estudioState.pluginsSearch) plgSearchEl.value = estudioState.pluginsSearch;
+    const plgQuery = (estudioState.pluginsSearch || '').trim();
+    const pluginRows = !plgQuery
+        ? estudioState.plugins
+        : estudioState.plugins.filter((item) => {
+            const text = [
+                item.name,
+                item.marca,
+                item.descripcion,
+                item.licencia,
+                item.serial,
+                item.account,
+            ].join(' ').toLowerCase();
+            return text.includes(plgQuery);
+        });
     if (plgList) {
-        plgList.innerHTML = estudioState.plugins.map((item) => {
+        plgList.innerHTML = pluginRows.map((item) => {
             const price = parseSheetValue(item.precioUsd);
             return `<div class="account-card glass-subtle estudio-card">
                 <div class="account-card-left">
@@ -4576,7 +4620,7 @@ function estudio_render() {
                     <span class="account-type-label">USD ${price.toFixed(2)}</span>
                 </div>
             </div>`;
-        }).join('') || '<div class="empty-state">Sin plugins registrados</div>';
+        }).join('') || (plgQuery ? '<div class="empty-state">Sin coincidencias en plugins</div>' : '<div class="empty-state">Sin plugins registrados</div>');
     }
 }
 
