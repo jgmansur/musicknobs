@@ -15,7 +15,7 @@ const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // 
 const SPREADSHEET_DEUDAS_ID = '1dKxhgqazskm15lx0f6FNCA0gpJ7i5glfxkusiH3b0Uk'; // Control de Deudas
 const SPREADSHEET_AUTOS_ID = SPREADSHEET_DEUDAS_ID; // Autos + Reparaciones live in same workbook
 const SPREADSHEET_ESTUDIO_ID = SPREADSHEET_DEUDAS_ID; // Estudio + Plugins in same workbook
-const APP_VERSION  = 'v7.0.16';
+const APP_VERSION  = 'v7.0.17';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -373,7 +373,13 @@ async function meli_exchangeCodeForToken(code, verifier) {
         meli_updateDebugInfo({ phase: 'token_exchange_error', tokenExchangeStatus: res.status, tokenExchangeDetail: String(detail) });
         throw new Error(`Meli token error: ${detail}`);
     }
-    meli_updateDebugInfo({ phase: 'token_exchange_ok', tokenExchangeStatus: res.status, hasAccessToken: !!payload?.access_token, hasRefreshToken: !!payload?.refresh_token });
+    meli_updateDebugInfo({
+        phase: 'token_exchange_ok',
+        tokenExchangeStatus: res.status,
+        tokenExchangeDetail: '-',
+        hasAccessToken: !!payload?.access_token,
+        hasRefreshToken: !!payload?.refresh_token,
+    });
     return payload;
 }
 
@@ -3892,25 +3898,37 @@ async function autos_refreshCarValuationIfNeeded(car, options = {}) {
     if (autosState.selectedCarId === car.id) autos_renderSelectedCar();
     try {
         const meliToken = providedToken || await meli_ensureAccessToken(interactiveAuth);
-        if (!meliToken) {
-            meli_updateDebugInfo({ valuationPhase: 'valuation_no_token' });
-            const prevMxn = parseSheetValue(autosState.meta?.[autos_valuationMetaKey(car.id, 'mxn')]);
-            if (prevMxn > 0) {
-                autos_setValuationStatus(car.id, 'ok', '');
-            } else {
-                autos_setValuationStatus(car.id, '', 'Mercado Libre no conectado');
-            }
-            autosState.meta[dateKey] = today;
-            await autos_saveMeta();
-            return;
-        }
+        if (!meliToken) meli_updateDebugInfo({ valuationPhase: 'valuation_no_token' });
         await ensureUsdMxnRateForTransactions();
         const url = `https://api.mercadolibre.com/sites/MLM/search?category=MLM1744&limit=50&q=${encodeURIComponent(query)}`;
-        const headers = { Authorization: `Bearer ${meliToken}` };
-        const res = await fetch(url, { headers });
-        meli_updateDebugInfo({ valuationHttpStatus: res.status });
-        if (!res.ok) throw new Error(`MLM valuation ${res.status}`);
-        const data = await res.json();
+        let data = null;
+        let res = null;
+        let lastError = '';
+
+        if (meliToken) {
+            try {
+                res = await fetch(url, { headers: { Authorization: `Bearer ${meliToken}` } });
+                meli_updateDebugInfo({ valuationHttpStatus: res.status, valuationPhase: 'valuation_fetch_auth' });
+                if (res.ok) data = await res.json();
+            } catch (err) {
+                lastError = String(err?.message || err || 'Load failed');
+                meli_updateDebugInfo({ valuationPhase: 'valuation_fetch_auth_error', valuationError: lastError });
+            }
+        }
+
+        if (!data) {
+            try {
+                res = await fetch(url);
+                meli_updateDebugInfo({ valuationHttpStatus: res.status, valuationPhase: 'valuation_fetch_public' });
+                if (!res.ok) throw new Error(`MLM valuation ${res.status}`);
+                data = await res.json();
+            } catch (err) {
+                const publicErr = String(err?.message || err || 'Load failed');
+                if (!lastError) lastError = publicErr;
+                throw new Error(publicErr || lastError || 'MLM valuation failed');
+            }
+        }
+
         const results = Array.isArray(data?.results) ? data.results : [];
         const prices = [];
         for (const row of results) {
