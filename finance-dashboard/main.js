@@ -3788,7 +3788,12 @@ async function autos_refreshCarValuationIfNeeded(car, options = {}) {
     try {
         const meliToken = providedToken || await meli_ensureAccessToken(interactiveAuth);
         if (!meliToken) {
-            autos_setValuationStatus(car.id, 'error', 'Mercado Libre no conectado');
+            const prevMxn = parseSheetValue(autosState.meta?.[autos_valuationMetaKey(car.id, 'mxn')]);
+            if (prevMxn > 0) {
+                autos_setValuationStatus(car.id, 'ok', '');
+            } else {
+                autos_setValuationStatus(car.id, '', 'Mercado Libre no conectado');
+            }
             autosState.meta[dateKey] = today;
             await autos_saveMeta();
             return;
@@ -4553,7 +4558,7 @@ window.autos_updateMileageAndRevalue = async function(carId) {
     try {
         await autos_saveCarsSheet();
         autos_renderSelectedCar();
-        await autos_refreshCarValuationIfNeeded(car, { force: true, interactiveAuth: false });
+        await autos_refreshCarValuationIfNeeded(car, { force: true, interactiveAuth: true });
         autos_render();
         showToast('✅ KM y valuacion actualizados');
     } catch (err) {
@@ -4647,7 +4652,7 @@ async function autos_saveCar() {
     await autos_saveCarsSheet();
     autos_closeCarSheet();
     autos_render();
-    await autos_refreshCarValuationIfNeeded(car, { force: shouldForceValuation, interactiveAuth: false });
+    await autos_refreshCarValuationIfNeeded(car, { force: shouldForceValuation, interactiveAuth: true });
     autos_render();
     showToast('✅ Auto guardado');
 }
