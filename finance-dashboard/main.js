@@ -13,7 +13,7 @@ const SCOPES = 'https://www.googleapis.com/auth/spreadsheets https://www.googlea
 const SPREADSHEET_LOG_ID   = '1pn1bsxj2LaoySXAVUvqfEJY1VR4R_T8NsTOqQnVW5Xw'; // Control de Gastos
 const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // Gastos Fijos
 const SPREADSHEET_DEUDAS_ID = '1dKxhgqazskm15lx0f6FNCA0gpJ7i5glfxkusiH3b0Uk'; // Control de Deudas
-const APP_VERSION  = 'v5.2.1';
+const APP_VERSION  = 'v5.2.3';
 // Bump token keys to force re-auth with the new drive scope
 const TOKEN_KEY    = 'google_access_token_v4';
 const EXPIRY_KEY   = 'google_token_expiry_v4';
@@ -1660,7 +1660,12 @@ async function fetchAndProcess() {
 
 function processAndRender(logRows, fixedRows) {
     balance_updateLogNetFromRows(logRows);
-    const hormigaKeywords = ['oxxo','coca','cigarros','snacks','gomitas','vuse','tiendita','starbucks','seven','7-eleven','extra','dulces','chicles','lerele','danny trova','dany trova'];
+    const hormigaKeywords = [
+        'oxxo','coca','cigarros','snacks','gomitas','tiendita','starbucks','seven','7-eleven','extra',
+        'dulces','chicles','golosinas','chocolate','tamarindos','cine','brincolines',
+        'restaurante','restaurant','comida fuera','comidas fuera','fuera de casa',
+        'lerele','danny trova','dany trova'
+    ];
     let hormigaTotal = 0, hormigaChartData = [];
     let hormigaGastos = []; // Guardaremos detalle para el panel
     let hormigaPrevTotal = 0; // Previous month hormiga total
