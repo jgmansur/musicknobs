@@ -15,7 +15,7 @@ const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // 
 const SPREADSHEET_DEUDAS_ID = '1dKxhgqazskm15lx0f6FNCA0gpJ7i5glfxkusiH3b0Uk'; // Control de Deudas
 const SPREADSHEET_AUTOS_ID = SPREADSHEET_DEUDAS_ID; // Autos + Reparaciones live in same workbook
 const SPREADSHEET_ESTUDIO_ID = SPREADSHEET_DEUDAS_ID; // Estudio + Plugins in same workbook
-const APP_VERSION  = 'v7.0.9';
+const APP_VERSION  = 'v7.0.10';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_TOKEN_URL = 'https://api.mercadolibre.com/oauth/token';
@@ -386,7 +386,7 @@ async function meli_handleOAuthCallbackIfPresent() {
     } catch (err) {
         console.warn('Meli OAuth callback failed:', err);
         meliAuthState.lastError = String(err?.message || 'Error de OAuth');
-        showToast('⚠️ Error conectando Mercado Libre');
+        showToast('⚠️ Mercado Libre no conecto; usando modo publico');
     } finally {
         localStorage.removeItem(MELI_PKCE_VERIFIER_KEY);
         localStorage.removeItem(MELI_OAUTH_STATE_KEY);
@@ -4235,7 +4235,6 @@ function autos_renderSelectedCar() {
     const siniestros1Html = autos_phoneLinkOrText(car.reporteSiniestros1, 'Siniestros 1');
     const siniestros2Html = autos_phoneLinkOrText(car.reporteSiniestros2, 'Siniestros 2');
     const valuationLabel = autos_getValuationLabel(car.id);
-    const meliConnected = meli_isAccessTokenValid() || !!meliAuthState.refreshToken;
 
     profileEl.innerHTML = `<div class="glass-subtle autos-profile-card autos-profile-clickable" onclick="autos_openCarDetail()" style="padding:.8rem;display:grid;grid-template-columns:96px minmax(0,1fr);gap:.7rem;align-items:start;">
         <img src="${car.fotoAuto || ''}" alt="Auto" style="width:96px;height:72px;object-fit:cover;border-radius:.75rem;background:rgba(255,255,255,.06);" onerror="this.style.display='none'" />
@@ -4244,13 +4243,11 @@ function autos_renderSelectedCar() {
             <span class="account-type-label">Placa: ${car.placa || '-'} · VIN: ${car.vin || '-'}</span>
             <span class="account-type-label">Propietario: ${car.propietario || '-'} · Seguro: ${car.tieneSeguro ? 'Si' : 'No'}</span>
             <span class="account-type-label">Poliza: ${car.polizaSeguro || '-'} · Llantas: ${car.tipoLlantas || '-'}</span>
-            <span class="account-type-label" style="color:#34d399;">Valor hoy: ${valuationLabel}</span>
-            <span class="account-type-label" style="color:${meliConnected ? '#34d399' : '#fbbf24'};">Mercado Libre: ${meliConnected ? 'Conectado' : 'Por conectar'}</span>
+            <span class="account-type-label">Valor hoy: ${valuationLabel}</span>
             <span class="account-type-label">Emergencia: ${emergenciaInteriorHtml} · ${emergenciaMetroHtml}</span>
             <span class="account-type-label">Siniestros: ${siniestros1Html} · ${siniestros2Html}</span>
             <div style="display:flex;gap:.35rem;flex-wrap:wrap;margin-top:.3rem;">
                 <button class="mini-btn" onclick="event.stopPropagation(); autos_openCarSheet('${car.id}')">✏️ Editar auto</button>
-                ${meliConnected ? '' : '<button class="mini-btn" onclick="event.stopPropagation(); autos_connectMercadoLibre()">🔐 Conectar ML</button>'}
             </div>
         </div>
     </div>
