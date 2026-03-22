@@ -15,7 +15,7 @@ const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // 
 const SPREADSHEET_DEUDAS_ID = '1dKxhgqazskm15lx0f6FNCA0gpJ7i5glfxkusiH3b0Uk'; // Control de Deudas
 const SPREADSHEET_AUTOS_ID = SPREADSHEET_DEUDAS_ID; // Autos + Reparaciones live in same workbook
 const SPREADSHEET_ESTUDIO_ID = SPREADSHEET_DEUDAS_ID; // Estudio + Plugins in same workbook
-const APP_VERSION  = 'v7.0.23';
+const APP_VERSION  = 'v7.0.24';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -3119,6 +3119,7 @@ async function fijos_guardar() {
 // =============================================
 const PLANNER_OVERRIDES_KEY = 'planner_assignments_v1';
 const PLANNER_DONE_INCOMES_KEY = 'planner_done_incomes_v1';
+const PLANNER_RESET_MARKER_KEY = 'planner_reset_marker_v1';
 const plannerState = {
     loading: false,
     monthKey: '',
@@ -3175,6 +3176,29 @@ function planner_writeDoneIncomes(monthKey, doneIncomeKeys) {
         const all = raw ? JSON.parse(raw) : {};
         all[monthKey] = Array.from(new Set((doneIncomeKeys || []).map(x => `${x}`)));
         localStorage.setItem(PLANNER_DONE_INCOMES_KEY, JSON.stringify(all));
+    } catch (_) {}
+}
+
+function planner_forceResetCurrentMonthIfNeeded(monthKey) {
+    const resetMarker = 'v7.0.24-plan-reset';
+    try {
+        if (localStorage.getItem(PLANNER_RESET_MARKER_KEY) === resetMarker) return;
+
+        const rawOverrides = localStorage.getItem(PLANNER_OVERRIDES_KEY);
+        const allOverrides = rawOverrides ? JSON.parse(rawOverrides) : {};
+        if (allOverrides && typeof allOverrides === 'object' && allOverrides[monthKey]) {
+            delete allOverrides[monthKey];
+            localStorage.setItem(PLANNER_OVERRIDES_KEY, JSON.stringify(allOverrides));
+        }
+
+        const rawDone = localStorage.getItem(PLANNER_DONE_INCOMES_KEY);
+        const allDone = rawDone ? JSON.parse(rawDone) : {};
+        if (allDone && typeof allDone === 'object' && allDone[monthKey]) {
+            delete allDone[monthKey];
+            localStorage.setItem(PLANNER_DONE_INCOMES_KEY, JSON.stringify(allDone));
+        }
+
+        localStorage.setItem(PLANNER_RESET_MARKER_KEY, resetMarker);
     } catch (_) {}
 }
 
@@ -3427,6 +3451,7 @@ async function planner_cargarVista() {
             await fijos_cargarDatos();
         }
         const monthKey = planner_getMonthKey();
+        planner_forceResetCurrentMonthIfNeeded(monthKey);
         Object.assign(plannerState, planner_buildModel(fijosState.allItems, monthKey));
         if (plannerState.autoSortedThisMonth) {
             planner_writeOverrides(monthKey, plannerState.assignments);
