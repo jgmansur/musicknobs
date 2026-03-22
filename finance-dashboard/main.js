@@ -3234,6 +3234,8 @@ function autos_bindEvents() {
     document.getElementById('autos-car-save')?.addEventListener('click', autos_saveCar);
     document.getElementById('autos-repair-save')?.addEventListener('click', autos_saveRepair);
     document.getElementById('autos-car-foto-file')?.addEventListener('change', (e) => autos_updateFileFeedback('autos-car-foto-feedback', e.target.files));
+    document.getElementById('autos-car-tarjeta-frente-file')?.addEventListener('change', (e) => autos_updateFileFeedback('autos-car-tarjeta-frente-feedback', e.target.files));
+    document.getElementById('autos-car-tarjeta-atras-file')?.addEventListener('change', (e) => autos_updateFileFeedback('autos-car-tarjeta-atras-feedback', e.target.files));
     document.getElementById('autos-repair-photo-file')?.addEventListener('change', (e) => autos_updateFileFeedback('autos-repair-photo-feedback', e.target.files));
     document.getElementById('autos-repair-receipt-file')?.addEventListener('change', (e) => autos_updateFileFeedback('autos-repair-receipt-feedback', e.target.files));
 }
@@ -3245,7 +3247,7 @@ function autos_updateFileFeedback(elId, files) {
         el.innerText = '';
         return;
     }
-    el.innerText = `Archivo: ${files[0].name}`;
+    el.innerText = files.length === 1 ? `Archivo: ${files[0].name}` : `${files.length} archivos seleccionados`;
 }
 
 async function autos_ensureRecibosFolder() {
@@ -3268,6 +3270,26 @@ async function autos_uploadFirstFile(inputId) {
     const folderId = await autos_ensureRecibosFolder();
     const file = input.files[0];
     return driveUploadFile(file, folderId);
+}
+
+async function autos_uploadFiles(inputId) {
+    const input = document.getElementById(inputId);
+    if (!input || !input.files || !input.files.length) return [];
+    const folderId = await autos_ensureRecibosFolder();
+    const urls = [];
+    for (const file of input.files) {
+        const url = await driveUploadFile(file, folderId);
+        if (url) urls.push(url);
+    }
+    return urls;
+}
+
+function autos_parseUrlList(raw) {
+    return (raw || '')
+        .toString()
+        .split(',')
+        .map(s => s.trim())
+        .filter(Boolean);
 }
 
 async function autos_cargarVista() {
@@ -3481,8 +3503,8 @@ function autos_renderSelectedCar() {
                 <span class="mc-lugar">${r.reparacion}</span>
                 <span class="mc-concepto">${r.lugar || 'Sin taller'}${r.descripcion ? ` · ${r.descripcion}` : ''}</span>
                 <div style="display:flex;gap:.35rem;flex-wrap:wrap;margin-top:.25rem;">
-                    ${r.foto ? `<a class="mini-btn" href="${r.foto}" target="_blank" rel="noopener">Foto</a>` : ''}
-                    ${r.recibo ? `<a class="mini-btn" href="${r.recibo}" target="_blank" rel="noopener">Recibo</a>` : ''}
+                    ${autos_parseUrlList(r.foto).map((u, i) => `<a class="mini-btn" href="${u}" target="_blank" rel="noopener">Foto ${i + 1}</a>`).join('')}
+                    ${autos_parseUrlList(r.recibo).map((u, i) => `<a class="mini-btn" href="${u}" target="_blank" rel="noopener">Recibo ${i + 1}</a>`).join('')}
                 </div>
             </div>
             <div class="mc-right" style="align-items:flex-end;gap:.4rem;">
@@ -3524,8 +3546,14 @@ function autos_openCarSheet(carId) {
     document.getElementById('autos-car-tarjeta-frente').value = car?.tarjetaCirculacionFrente || '';
     document.getElementById('autos-car-tarjeta-atras').value = car?.tarjetaCirculacionAtras || '';
     const carFile = document.getElementById('autos-car-foto-file');
+    const tarjetaFrenteFile = document.getElementById('autos-car-tarjeta-frente-file');
+    const tarjetaAtrasFile = document.getElementById('autos-car-tarjeta-atras-file');
     if (carFile) carFile.value = '';
+    if (tarjetaFrenteFile) tarjetaFrenteFile.value = '';
+    if (tarjetaAtrasFile) tarjetaAtrasFile.value = '';
     autos_updateFileFeedback('autos-car-foto-feedback', null);
+    autos_updateFileFeedback('autos-car-tarjeta-frente-feedback', null);
+    autos_updateFileFeedback('autos-car-tarjeta-atras-feedback', null);
     document.getElementById('autos-car-sheet').classList.remove('hidden');
 }
 
@@ -3563,9 +3591,13 @@ async function autos_saveCar() {
     try {
         const uploadedPhoto = await autos_uploadFirstFile('autos-car-foto-file');
         if (uploadedPhoto) car.fotoAuto = uploadedPhoto;
+        const uploadedTarjetaFrente = await autos_uploadFirstFile('autos-car-tarjeta-frente-file');
+        if (uploadedTarjetaFrente) car.tarjetaCirculacionFrente = uploadedTarjetaFrente;
+        const uploadedTarjetaAtras = await autos_uploadFirstFile('autos-car-tarjeta-atras-file');
+        if (uploadedTarjetaAtras) car.tarjetaCirculacionAtras = uploadedTarjetaAtras;
     } catch (e) {
         console.warn('No se pudo subir foto del auto:', e);
-        showToast('⚠️ No se pudo subir foto del auto, se guarda con URL actual');
+        showToast('⚠️ No se pudo subir archivo del auto, se guarda con URLs actuales');
     }
     const idx = autosState.cars.findIndex(c => c.id === id);
     if (idx >= 0) autosState.cars[idx] = car;
@@ -3638,10 +3670,12 @@ async function autos_saveRepair() {
         return;
     }
     try {
-        const uploadedPhoto = await autos_uploadFirstFile('autos-repair-photo-file');
-        if (uploadedPhoto) repair.foto = uploadedPhoto;
-        const uploadedReceipt = await autos_uploadFirstFile('autos-repair-receipt-file');
-        if (uploadedReceipt) repair.recibo = uploadedReceipt;
+        const uploadedPhotos = await autos_uploadFiles('autos-repair-photo-file');
+        const uploadedReceipts = await autos_uploadFiles('autos-repair-receipt-file');
+        const nextPhotos = [...autos_parseUrlList(repair.foto), ...uploadedPhotos];
+        const nextReceipts = [...autos_parseUrlList(repair.recibo), ...uploadedReceipts];
+        repair.foto = nextPhotos.join(',');
+        repair.recibo = nextReceipts.join(',');
     } catch (e) {
         console.warn('No se pudieron subir archivos de reparacion:', e);
         showToast('⚠️ No se pudo subir archivo, se guarda con URLs actuales');
