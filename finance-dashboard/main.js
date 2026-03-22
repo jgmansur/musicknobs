@@ -2778,8 +2778,7 @@ async function fijos_guardar() {
             const current = fijosState.allItems.find(i => i.id === Number(editId));
             const prevStates = current?.pagosEstado || [];
             const prevWaived = current?.waivedEstado || [];
-            const paidCount = prevStates.filter(Boolean).length;
-            const nextStates = new Array(pagosMes).fill(false).map((_, idx) => idx < Math.min(paidCount, pagosMes));
+            const nextStates = new Array(pagosMes).fill(false).map((_, idx) => !!prevStates[idx]);
             const nextWaived = new Array(pagosMes).fill(false).map((_, idx) => {
                 if (!nextStates[idx]) return false;
                 return !!prevWaived[idx];
