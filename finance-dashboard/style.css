@@ -653,6 +653,21 @@ select.field-input { background-image: url("data:image/svg+xml,%3Csvg xmlns='htt
   word-break: break-word;
 }
 
+.autos-profile .glass-subtle {
+  overflow: hidden;
+}
+
+.autos-profile .autos-profile-main {
+  min-width: 0;
+}
+
+@media (max-width: 420px) {
+  .autos-profile .autos-profile-card {
+    grid-template-columns: 82px minmax(0,1fr) !important;
+    gap: .55rem !important;
+  }
+}
+
 .autos-profile .mini-btn {
   max-width: 100%;
   overflow: hidden;

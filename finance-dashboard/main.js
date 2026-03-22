@@ -3457,9 +3457,9 @@ function autos_renderSelectedCar() {
         ['Certificado Polarizado', car.certificadoPolarizado],
     ].filter(([, url]) => !!url);
 
-    profileEl.innerHTML = `<div class="glass-subtle" style="padding:.8rem;display:grid;grid-template-columns:110px 1fr;gap:.8rem;align-items:start;">
-        <img src="${car.fotoAuto || ''}" alt="Auto" style="width:110px;height:78px;object-fit:cover;border-radius:.75rem;background:rgba(255,255,255,.06);" onerror="this.style.display='none'" />
-        <div style="display:grid;gap:.2rem;">
+    profileEl.innerHTML = `<div class="glass-subtle autos-profile-card" style="padding:.8rem;display:grid;grid-template-columns:96px minmax(0,1fr);gap:.7rem;align-items:start;">
+        <img src="${car.fotoAuto || ''}" alt="Auto" style="width:96px;height:72px;object-fit:cover;border-radius:.75rem;background:rgba(255,255,255,.06);" onerror="this.style.display='none'" />
+        <div class="autos-profile-main" style="display:grid;gap:.2rem;min-width:0;">
             <span class="account-name">${car.marca} ${car.modelo} · ${car.anio || '-'}</span>
             <span class="account-type-label">Placa: ${car.placa || '-'} · VIN: ${car.vin || '-'}</span>
             <span class="account-type-label">Propietario: ${car.propietario || '-'} · Seguro: ${car.tieneSeguro ? 'Si' : 'No'}</span>
