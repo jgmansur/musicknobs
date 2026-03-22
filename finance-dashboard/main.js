@@ -15,7 +15,7 @@ const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // 
 const SPREADSHEET_DEUDAS_ID = '1dKxhgqazskm15lx0f6FNCA0gpJ7i5glfxkusiH3b0Uk'; // Control de Deudas
 const SPREADSHEET_AUTOS_ID = SPREADSHEET_DEUDAS_ID; // Autos + Reparaciones live in same workbook
 const SPREADSHEET_ESTUDIO_ID = SPREADSHEET_DEUDAS_ID; // Estudio + Plugins in same workbook
-const APP_VERSION  = 'v7.0.11';
+const APP_VERSION  = 'v7.0.12';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_TOKEN_URL = 'https://api.mercadolibre.com/oauth/token';
@@ -168,12 +168,25 @@ const MELI_REFRESH_TOKEN_KEY = 'meli_refresh_token_v1';
 const MELI_EXPIRES_AT_KEY = 'meli_expires_at_v1';
 const MELI_PKCE_VERIFIER_KEY = 'meli_pkce_verifier_v1';
 const MELI_OAUTH_STATE_KEY = 'meli_oauth_state_v1';
+const MELI_DEBUG_INFO_KEY = 'meli_debug_info_v1';
+
+function meli_loadDebugInfo() {
+    try {
+        const raw = localStorage.getItem(MELI_DEBUG_INFO_KEY);
+        if (!raw) return {};
+        const parsed = JSON.parse(raw);
+        return parsed && typeof parsed === 'object' ? parsed : {};
+    } catch {
+        return {};
+    }
+}
 
 const meliAuthState = {
     accessToken: localStorage.getItem(MELI_ACCESS_TOKEN_KEY) || '',
     refreshToken: localStorage.getItem(MELI_REFRESH_TOKEN_KEY) || '',
     expiresAt: parseInt(localStorage.getItem(MELI_EXPIRES_AT_KEY) || '0', 10) || 0,
     lastError: '',
+    debugInfo: meli_loadDebugInfo(),
 };
 
 const BUDGET_BUCKETS = [
@@ -288,6 +301,15 @@ function meli_saveAuthTokens(payload = {}) {
     localStorage.setItem(MELI_EXPIRES_AT_KEY, String(meliAuthState.expiresAt || 0));
 }
 
+function meli_updateDebugInfo(patch = {}) {
+    meliAuthState.debugInfo = {
+        ...(meliAuthState.debugInfo || {}),
+        ...patch,
+        updatedAt: new Date().toISOString(),
+    };
+    localStorage.setItem(MELI_DEBUG_INFO_KEY, JSON.stringify(meliAuthState.debugInfo));
+}
+
 function meli_isAccessTokenValid() {
     return !!meliAuthState.accessToken && !!meliAuthState.expiresAt && (meliAuthState.expiresAt - Date.now() > 90 * 1000);
 }
@@ -316,6 +338,12 @@ async function meli_startOAuthLogin() {
     const state = `meli-${Date.now()}-${meli_randomString(24)}`;
     localStorage.setItem(MELI_PKCE_VERIFIER_KEY, verifier);
     localStorage.setItem(MELI_OAUTH_STATE_KEY, state);
+    meli_updateDebugInfo({
+        phase: 'oauth_start',
+        redirectUri: meli_getRedirectUri(),
+        statePreview: state.slice(0, 24),
+        hasVerifier: true,
+    });
     const params = new URLSearchParams({
         response_type: 'code',
         client_id: MELI_CLIENT_ID,
@@ -335,6 +363,7 @@ async function meli_exchangeCodeForToken(code, verifier) {
         redirect_uri: meli_getRedirectUri(),
         code_verifier: verifier,
     });
+    meli_updateDebugInfo({ phase: 'token_exchange', hasCode: !!code, hasVerifier: !!verifier });
     const res = await fetch(MELI_TOKEN_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -343,8 +372,10 @@ async function meli_exchangeCodeForToken(code, verifier) {
     const payload = await res.json().catch(() => ({}));
     if (!res.ok) {
         const detail = payload?.message || payload?.error_description || payload?.error || `HTTP ${res.status}`;
+        meli_updateDebugInfo({ phase: 'token_exchange_error', tokenExchangeStatus: res.status, tokenExchangeDetail: String(detail) });
         throw new Error(`Meli token error: ${detail}`);
     }
+    meli_updateDebugInfo({ phase: 'token_exchange_ok', tokenExchangeStatus: res.status, hasAccessToken: !!payload?.access_token, hasRefreshToken: !!payload?.refresh_token });
     return payload;
 }
 
@@ -355,15 +386,23 @@ async function meli_refreshAccessToken() {
         client_id: MELI_CLIENT_ID,
         refresh_token: meliAuthState.refreshToken,
     });
+    meli_updateDebugInfo({ phase: 'token_refresh' });
     const res = await fetch(MELI_TOKEN_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: body.toString(),
     });
-    if (!res.ok) return null;
+    if (!res.ok) {
+        meli_updateDebugInfo({ phase: 'token_refresh_error', tokenRefreshStatus: res.status });
+        return null;
+    }
     const payload = await res.json().catch(() => null);
-    if (!payload?.access_token) return null;
+    if (!payload?.access_token) {
+        meli_updateDebugInfo({ phase: 'token_refresh_invalid_payload' });
+        return null;
+    }
     meli_saveAuthTokens(payload);
+    meli_updateDebugInfo({ phase: 'token_refresh_ok', hasAccessToken: true, hasRefreshToken: !!payload?.refresh_token });
     return meliAuthState.accessToken || null;
 }
 
@@ -377,6 +416,7 @@ async function meli_handleOAuthCallbackIfPresent() {
     const expectedState = (localStorage.getItem(MELI_OAUTH_STATE_KEY) || '').trim();
     if (oauthError) {
         meliAuthState.lastError = oauthErrorDesc || oauthError;
+        meli_updateDebugInfo({ phase: 'oauth_callback_error', oauthError, oauthErrorDesc, callbackState: state || '' });
         showToast(`⚠️ Mercado Libre: ${meliAuthState.lastError}`);
         url.searchParams.delete('error');
         url.searchParams.delete('error_description');
@@ -385,10 +425,17 @@ async function meli_handleOAuthCallbackIfPresent() {
     }
     if (!code || !state || !state.startsWith('meli-')) return false;
     if (!verifier || !expectedState || state !== expectedState) {
+        meli_updateDebugInfo({
+            phase: 'oauth_callback_invalid_state',
+            callbackState: state,
+            expectedState,
+            hasVerifier: !!verifier,
+        });
         showToast('⚠️ No se pudo validar login de Mercado Libre');
         return false;
     }
     try {
+        meli_updateDebugInfo({ phase: 'oauth_callback_ok', callbackState: state, hasCode: !!code });
         const payload = await meli_exchangeCodeForToken(code, verifier);
         meli_saveAuthTokens(payload);
         meliAuthState.lastError = '';
@@ -396,6 +443,7 @@ async function meli_handleOAuthCallbackIfPresent() {
     } catch (err) {
         console.warn('Meli OAuth callback failed:', err);
         meliAuthState.lastError = String(err?.message || 'Error de OAuth');
+        meli_updateDebugInfo({ phase: 'oauth_callback_exchange_failed', callbackError: meliAuthState.lastError });
         showToast(`⚠️ Mercado Libre no conecto: ${meliAuthState.lastError}`);
     } finally {
         localStorage.removeItem(MELI_PKCE_VERIFIER_KEY);
@@ -425,6 +473,8 @@ window.autos_connectMercadoLibre = () => {
         showToast('⚠️ No se pudo iniciar Mercado Libre');
     });
 };
+window.autos_openMeliDebug = autos_openMeliDebug;
+window.autos_closeMeliDebug = autos_closeMeliDebug;
 
 // =============================================
 // DOM READY
@@ -3446,6 +3496,8 @@ function autos_bindEvents() {
     document.getElementById('autos-detail-close')?.addEventListener('click', autos_closeCarDetail);
     document.getElementById('autos-license-overlay')?.addEventListener('click', autos_closeLicensePanel);
     document.getElementById('autos-license-close')?.addEventListener('click', autos_closeLicensePanel);
+    document.getElementById('autos-meli-debug-overlay')?.addEventListener('click', autos_closeMeliDebug);
+    document.getElementById('autos-meli-debug-close')?.addEventListener('click', autos_closeMeliDebug);
     document.getElementById('autos-license-upload-btn')?.addEventListener('click', () => document.getElementById('autos-license-file')?.click());
     document.getElementById('autos-license-crop-overlay')?.addEventListener('click', autos_closeLicenseCropPanel);
     document.getElementById('autos-license-crop-close')?.addEventListener('click', autos_closeLicenseCropPanel);
@@ -3618,6 +3670,43 @@ function autos_getMeliConnectionLabel() {
     if (meliAuthState.refreshToken) return 'Mercado Libre conectado (renovando...)';
     if (meliAuthState.lastError) return 'Mercado Libre: error de conexion';
     return 'Mercado Libre por conectar';
+}
+
+function autos_renderMeliDebug() {
+    const bodyEl = document.getElementById('autos-meli-debug-body');
+    if (!bodyEl) return;
+    const info = meliAuthState.debugInfo || {};
+    const now = new Date();
+    const expiresInSec = meliAuthState.expiresAt ? Math.floor((meliAuthState.expiresAt - now.getTime()) / 1000) : 0;
+    const rows = [
+        ['appVersion', APP_VERSION],
+        ['redirectUri', meli_getRedirectUri()],
+        ['meliConnected', meli_isAccessTokenValid() ? 'yes' : 'no'],
+        ['hasAccessToken', meliAuthState.accessToken ? 'yes' : 'no'],
+        ['hasRefreshToken', meliAuthState.refreshToken ? 'yes' : 'no'],
+        ['expiresInSec', String(expiresInSec)],
+        ['lastError', meliAuthState.lastError || '-'],
+        ['debug.phase', info.phase || '-'],
+        ['debug.updatedAt', info.updatedAt || '-'],
+        ['debug.oauthError', info.oauthError || '-'],
+        ['debug.oauthErrorDesc', info.oauthErrorDesc || '-'],
+        ['debug.callbackState', info.callbackState || '-'],
+        ['debug.expectedState', info.expectedState || '-'],
+        ['debug.hasVerifier', String(info.hasVerifier ?? '-')],
+        ['debug.tokenExchangeStatus', String(info.tokenExchangeStatus ?? '-')],
+        ['debug.tokenExchangeDetail', info.tokenExchangeDetail || '-'],
+        ['debug.tokenRefreshStatus', String(info.tokenRefreshStatus ?? '-')],
+    ];
+    bodyEl.innerHTML = rows.map(([k, v]) => `<div class="autos-debug-row"><span>${k}</span><strong>${String(v)}</strong></div>`).join('');
+}
+
+function autos_openMeliDebug() {
+    autos_renderMeliDebug();
+    document.getElementById('autos-meli-debug-panel')?.classList.remove('hidden');
+}
+
+function autos_closeMeliDebug() {
+    document.getElementById('autos-meli-debug-panel')?.classList.add('hidden');
 }
 
 function autos_buildValuationQuery(car) {
@@ -4274,6 +4363,7 @@ function autos_renderSelectedCar() {
             <div style="display:flex;gap:.35rem;flex-wrap:wrap;margin-top:.3rem;">
                 <button class="mini-btn" onclick="event.stopPropagation(); autos_openCarSheet('${car.id}')">✏️ Editar auto</button>
                 ${meliConnected ? '' : '<button class="mini-btn" onclick="event.stopPropagation(); autos_connectMercadoLibre()">🔐 Conectar ML</button>'}
+                <button class="mini-btn" onclick="event.stopPropagation(); autos_openMeliDebug()">🐞 Debug ML</button>
             </div>
         </div>
     </div>

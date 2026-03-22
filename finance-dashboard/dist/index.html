@@ -12,8 +12,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <script type="module" crossorigin src="./assets/index-DtZykXTP.js"></script>
-    <link rel="stylesheet" crossorigin href="./assets/index-BkdHFuCb.css">
+    <script type="module" crossorigin src="./assets/index-CeUSsDkY.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-Ccj5cNo2.css">
   </head>
   <body>
     <div id="app">
@@ -574,6 +574,22 @@
             <div id="autos-license-empty" class="empty-state hidden" style="margin-top:1rem;">No hay licencia guardada</div>
           </div>
           <input id="autos-license-file" type="file" class="autos-file-native" accept="image/*,application/pdf">
+        </div>
+
+        <div id="autos-meli-debug-panel" class="bottom-sheet hidden">
+          <div id="autos-meli-debug-overlay" class="bottom-sheet-overlay"></div>
+          <div class="bottom-sheet-content glass">
+            <div class="sheet-handle"></div>
+            <div class="balance-panel-header">
+              <h3 class="balance-panel-title">Debug Mercado Libre</h3>
+              <button id="autos-meli-debug-close" class="icon-btn">✕</button>
+            </div>
+            <div id="autos-meli-debug-body" class="autos-debug-body"></div>
+            <div style="display:flex;gap:.4rem;flex-wrap:wrap;margin-top:.65rem;">
+              <button class="secondary-btn" onclick="autos_connectMercadoLibre()">🔐 Reintentar conectar</button>
+              <button class="secondary-btn" onclick="autos_openMeliDebug()">↻ Refrescar debug</button>
+            </div>
+          </div>
         </div>
 
         <div id="autos-license-crop-panel" class="bottom-sheet hidden">

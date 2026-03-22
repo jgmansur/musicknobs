@@ -573,6 +573,22 @@
           <input id="autos-license-file" type="file" class="autos-file-native" accept="image/*,application/pdf">
         </div>
 
+        <div id="autos-meli-debug-panel" class="bottom-sheet hidden">
+          <div id="autos-meli-debug-overlay" class="bottom-sheet-overlay"></div>
+          <div class="bottom-sheet-content glass">
+            <div class="sheet-handle"></div>
+            <div class="balance-panel-header">
+              <h3 class="balance-panel-title">Debug Mercado Libre</h3>
+              <button id="autos-meli-debug-close" class="icon-btn">✕</button>
+            </div>
+            <div id="autos-meli-debug-body" class="autos-debug-body"></div>
+            <div style="display:flex;gap:.4rem;flex-wrap:wrap;margin-top:.65rem;">
+              <button class="secondary-btn" onclick="autos_connectMercadoLibre()">🔐 Reintentar conectar</button>
+              <button class="secondary-btn" onclick="autos_openMeliDebug()">↻ Refrescar debug</button>
+            </div>
+          </div>
+        </div>
+
         <div id="autos-license-crop-panel" class="bottom-sheet hidden">
           <div id="autos-license-crop-overlay" class="bottom-sheet-overlay"></div>
           <div class="bottom-sheet-content glass">
