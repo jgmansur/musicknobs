@@ -812,6 +812,7 @@ select.field-input { background-image: url("data:image/svg+xml,%3Csvg xmlns='htt
   border-radius: .8rem;
   border: 1px solid rgba(251,191,36,.35);
   background: #0b1120;
+  touch-action: none;
 }
 
 .autos-license-crop-grid {

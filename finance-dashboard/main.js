@@ -3194,6 +3194,10 @@ const autosState = {
     licenseLongPressFired: false,
     licenseLongPressTimer: null,
     licenseCrop: null,
+    licenseCropPointers: new Map(),
+    licenseCropDragLast: null,
+    licenseCropPinchBaseDist: 0,
+    licenseCropPinchBaseZoom: 1,
     loaded: false,
 };
 
@@ -3276,6 +3280,14 @@ function autos_bindEvents() {
     document.getElementById('autos-license-crop-zoom')?.addEventListener('input', autos_updateLicenseCropFromControls);
     document.getElementById('autos-license-crop-x')?.addEventListener('input', autos_updateLicenseCropFromControls);
     document.getElementById('autos-license-crop-y')?.addEventListener('input', autos_updateLicenseCropFromControls);
+    const cropCanvas = document.getElementById('autos-license-crop-canvas');
+    if (cropCanvas) {
+        cropCanvas.addEventListener('pointerdown', autos_cropPointerDown);
+        cropCanvas.addEventListener('pointermove', autos_cropPointerMove);
+        cropCanvas.addEventListener('pointerup', autos_cropPointerUp);
+        cropCanvas.addEventListener('pointercancel', autos_cropPointerUp);
+        cropCanvas.addEventListener('pointerleave', autos_cropPointerUp);
+    }
     const licCard = document.getElementById('autos-license-card');
     if (licCard) {
         licCard.addEventListener('pointerdown', autos_licensePointerDown);
@@ -3545,6 +3557,10 @@ async function autos_openLicenseCropper(file) {
         offsetX: 0,
         offsetY: 0,
     };
+    autosState.licenseCropPointers = new Map();
+    autosState.licenseCropDragLast = null;
+    autosState.licenseCropPinchBaseDist = 0;
+    autosState.licenseCropPinchBaseZoom = 1;
     const zoomEl = document.getElementById('autos-license-crop-zoom');
     const xEl = document.getElementById('autos-license-crop-x');
     const yEl = document.getElementById('autos-license-crop-y');
@@ -3558,15 +3574,135 @@ async function autos_openLicenseCropper(file) {
 function autos_closeLicenseCropPanel() {
     document.getElementById('autos-license-crop-panel')?.classList.add('hidden');
     autosState.licenseCrop = null;
+    autosState.licenseCropPointers = new Map();
+    autosState.licenseCropDragLast = null;
+    autosState.licenseCropPinchBaseDist = 0;
+    autosState.licenseCropPinchBaseZoom = 1;
 }
 
 function autos_updateLicenseCropFromControls() {
     const crop = autosState.licenseCrop;
     if (!crop) return;
-    crop.zoom = Number(document.getElementById('autos-license-crop-zoom')?.value || 1);
-    crop.offsetX = Number(document.getElementById('autos-license-crop-x')?.value || 0);
-    crop.offsetY = Number(document.getElementById('autos-license-crop-y')?.value || 0);
+    crop.zoom = autos_clamp(Number(document.getElementById('autos-license-crop-zoom')?.value || 1), 1, 3);
+    crop.offsetX = autos_clamp(Number(document.getElementById('autos-license-crop-x')?.value || 0), -100, 100);
+    crop.offsetY = autos_clamp(Number(document.getElementById('autos-license-crop-y')?.value || 0), -100, 100);
     autos_renderLicenseCrop();
+}
+
+function autos_syncLicenseCropControls() {
+    const crop = autosState.licenseCrop;
+    if (!crop) return;
+    const zoomEl = document.getElementById('autos-license-crop-zoom');
+    const xEl = document.getElementById('autos-license-crop-x');
+    const yEl = document.getElementById('autos-license-crop-y');
+    if (zoomEl) zoomEl.value = String(crop.zoom);
+    if (xEl) xEl.value = String(crop.offsetX);
+    if (yEl) yEl.value = String(crop.offsetY);
+}
+
+function autos_clamp(v, min, max) {
+    return Math.max(min, Math.min(max, v));
+}
+
+function autos_canvasPoint(e, canvas) {
+    const rect = canvas.getBoundingClientRect();
+    return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+}
+
+function autos_distance(a, b) {
+    const dx = a.x - b.x;
+    const dy = a.y - b.y;
+    return Math.sqrt(dx * dx + dy * dy);
+}
+
+function autos_getLicenseCropDrawBox(crop, cw, ch) {
+    const img = crop.image;
+    const baseScale = Math.max(cw / img.width, ch / img.height);
+    const scale = baseScale * (crop.zoom || 1);
+    const drawW = img.width * scale;
+    const drawH = img.height * scale;
+    const freeX = Math.max(0, (drawW - cw) / 2);
+    const freeY = Math.max(0, (drawH - ch) / 2);
+    const dx = (cw - drawW) / 2 + (crop.offsetX / 100) * freeX;
+    const dy = (ch - drawH) / 2 + (crop.offsetY / 100) * freeY;
+    return { dx, dy, drawW, drawH };
+}
+
+function autos_drawLicenseCropScene(ctx, crop, cw, ch, showFrame = true) {
+    const { dx, dy, drawW, drawH } = autos_getLicenseCropDrawBox(crop, cw, ch);
+    ctx.clearRect(0, 0, cw, ch);
+    ctx.fillStyle = '#0b1120';
+    ctx.fillRect(0, 0, cw, ch);
+    ctx.drawImage(crop.image, dx, dy, drawW, drawH);
+    if (showFrame) {
+        ctx.strokeStyle = 'rgba(251,191,36,.9)';
+        ctx.lineWidth = 4;
+        ctx.strokeRect(2, 2, cw - 4, ch - 4);
+    }
+}
+
+function autos_cropPointerDown(e) {
+    const crop = autosState.licenseCrop;
+    const canvas = document.getElementById('autos-license-crop-canvas');
+    if (!crop || !canvas) return;
+    canvas.setPointerCapture(e.pointerId);
+    const p = autos_canvasPoint(e, canvas);
+    autosState.licenseCropPointers.set(e.pointerId, p);
+
+    if (autosState.licenseCropPointers.size === 1) {
+        autosState.licenseCropDragLast = p;
+    }
+    if (autosState.licenseCropPointers.size >= 2) {
+        const pts = [...autosState.licenseCropPointers.values()].slice(0, 2);
+        autosState.licenseCropPinchBaseDist = autos_distance(pts[0], pts[1]) || 1;
+        autosState.licenseCropPinchBaseZoom = crop.zoom;
+    }
+}
+
+function autos_cropPointerMove(e) {
+    const crop = autosState.licenseCrop;
+    const canvas = document.getElementById('autos-license-crop-canvas');
+    if (!crop || !canvas) return;
+    if (!autosState.licenseCropPointers.has(e.pointerId)) return;
+    const p = autos_canvasPoint(e, canvas);
+    autosState.licenseCropPointers.set(e.pointerId, p);
+
+    if (autosState.licenseCropPointers.size === 1 && autosState.licenseCropDragLast) {
+        const prev = autosState.licenseCropDragLast;
+        const dx = p.x - prev.x;
+        const dy = p.y - prev.y;
+        const draw = autos_getLicenseCropDrawBox(crop, canvas.width, canvas.height);
+        const freeX = Math.max(1, (draw.drawW - canvas.width) / 2);
+        const freeY = Math.max(1, (draw.drawH - canvas.height) / 2);
+        crop.offsetX = autos_clamp(crop.offsetX + (dx / freeX) * 100, -100, 100);
+        crop.offsetY = autos_clamp(crop.offsetY + (dy / freeY) * 100, -100, 100);
+        autosState.licenseCropDragLast = p;
+        autos_syncLicenseCropControls();
+        autos_renderLicenseCrop();
+        return;
+    }
+
+    if (autosState.licenseCropPointers.size >= 2) {
+        const pts = [...autosState.licenseCropPointers.values()].slice(0, 2);
+        const dist = autos_distance(pts[0], pts[1]) || 1;
+        const baseDist = autosState.licenseCropPinchBaseDist || dist;
+        const baseZoom = autosState.licenseCropPinchBaseZoom || crop.zoom;
+        crop.zoom = autos_clamp(baseZoom * (dist / baseDist), 1, 3);
+        autos_syncLicenseCropControls();
+        autos_renderLicenseCrop();
+    }
+}
+
+function autos_cropPointerUp(e) {
+    autosState.licenseCropPointers.delete(e.pointerId);
+    if (autosState.licenseCropPointers.size === 1) {
+        autosState.licenseCropDragLast = [...autosState.licenseCropPointers.values()][0];
+    } else {
+        autosState.licenseCropDragLast = null;
+    }
+    if (autosState.licenseCropPointers.size < 2) {
+        autosState.licenseCropPinchBaseDist = 0;
+    }
 }
 
 function autos_renderLicenseCrop() {
@@ -3577,31 +3713,19 @@ function autos_renderLicenseCrop() {
     if (!ctx) return;
     const cw = canvas.width;
     const ch = canvas.height;
-    const img = crop.image;
-
-    ctx.clearRect(0, 0, cw, ch);
-    ctx.fillStyle = '#0b1120';
-    ctx.fillRect(0, 0, cw, ch);
-
-    const baseScale = Math.max(cw / img.width, ch / img.height);
-    const scale = baseScale * (crop.zoom || 1);
-    const drawW = img.width * scale;
-    const drawH = img.height * scale;
-    const freeX = Math.max(0, (drawW - cw) / 2);
-    const freeY = Math.max(0, (drawH - ch) / 2);
-    const dx = (cw - drawW) / 2 + (crop.offsetX / 100) * freeX;
-    const dy = (ch - drawH) / 2 + (crop.offsetY / 100) * freeY;
-
-    ctx.drawImage(img, dx, dy, drawW, drawH);
-    ctx.strokeStyle = 'rgba(251,191,36,.9)';
-    ctx.lineWidth = 4;
-    ctx.strokeRect(2, 2, cw - 4, ch - 4);
+    autos_drawLicenseCropScene(ctx, crop, cw, ch, true);
 }
 
 async function autos_applyLicenseCrop() {
-    const canvas = document.getElementById('autos-license-crop-canvas');
-    if (!canvas) return;
-    const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.92));
+    const crop = autosState.licenseCrop;
+    if (!crop) return;
+    const outCanvas = document.createElement('canvas');
+    outCanvas.width = 1200;
+    outCanvas.height = 756;
+    const outCtx = outCanvas.getContext('2d');
+    if (!outCtx) return;
+    autos_drawLicenseCropScene(outCtx, crop, outCanvas.width, outCanvas.height, false);
+    const blob = await new Promise(resolve => outCanvas.toBlob(resolve, 'image/jpeg', 0.92));
     if (!blob) {
         showToast('⚠️ No se pudo crear recorte');
         return;
