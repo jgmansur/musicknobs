@@ -3359,9 +3359,33 @@ function autos_docPreview(url, label) {
 function autos_previewUrlForImage(url) {
     const raw = (url || '').toString().trim();
     if (!raw) return '';
-    const driveMatch = raw.match(/drive\.google\.com\/file\/d\/([^/]+)/i);
-    if (driveMatch) return `https://drive.google.com/thumbnail?id=${driveMatch[1]}&sz=w1200`;
+    const driveId = autos_extractDriveFileId(raw);
+    if (driveId) return `https://drive.google.com/thumbnail?id=${driveId}&sz=w1600`;
     return raw;
+}
+
+function autos_extractDriveFileId(url) {
+    const raw = (url || '').toString();
+    let m = raw.match(/drive\.google\.com\/file\/d\/([^/]+)/i);
+    if (m) return m[1];
+    m = raw.match(/[?&]id=([^&]+)/i);
+    if (m) return m[1];
+    m = raw.match(/\/d\/([^/=?#]+)/i);
+    if (m) return m[1];
+    return '';
+}
+
+function autos_licensePreviewCandidates(url) {
+    const raw = (url || '').toString().trim();
+    if (!raw) return [];
+    const id = autos_extractDriveFileId(raw);
+    if (!id) return [raw];
+    return [
+        `https://drive.google.com/thumbnail?id=${id}&sz=w2000`,
+        `https://drive.google.com/uc?export=view&id=${id}`,
+        `https://lh3.googleusercontent.com/d/${id}=w2000`,
+        raw,
+    ];
 }
 
 async function autos_saveMeta() {
@@ -3411,21 +3435,28 @@ function autos_openLicensePanel() {
     const empty = document.getElementById('autos-license-empty');
     const link = document.getElementById('autos-license-open-link');
     const url = (autosState.meta?.licenciaUrl || '').trim();
-    const previewUrl = autos_previewUrlForImage(url);
     const isPdf = /\.pdf(\?|$)/i.test(url);
     if (img) {
-        img.src = previewUrl || '';
+        const candidates = autos_licensePreviewCandidates(url);
+        let idx = 0;
+        img.onerror = () => {
+            idx += 1;
+            if (idx < candidates.length) {
+                img.src = candidates[idx];
+                return;
+            }
+            img.style.display = 'none';
+            if (link) link.classList.remove('hidden');
+        };
+        img.onload = () => {
+            if (link) link.classList.add('hidden');
+        };
+        img.src = candidates[0] || '';
         img.style.display = url && !isPdf ? 'block' : 'none';
-        if (url && !isPdf) {
-            img.onerror = () => {
-                img.style.display = 'none';
-                if (link) link.classList.remove('hidden');
-            };
-        }
     }
     if (link) {
         link.href = url || '#';
-        link.classList.toggle('hidden', !url);
+        link.classList.toggle('hidden', !url || !isPdf);
     }
     if (empty) empty.classList.toggle('hidden', !!url);
     document.getElementById('autos-license-panel')?.classList.remove('hidden');
