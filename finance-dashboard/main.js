@@ -15,7 +15,7 @@ const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // 
 const SPREADSHEET_DEUDAS_ID = '1dKxhgqazskm15lx0f6FNCA0gpJ7i5glfxkusiH3b0Uk'; // Control de Deudas
 const SPREADSHEET_AUTOS_ID = SPREADSHEET_DEUDAS_ID; // Autos + Reparaciones live in same workbook
 const SPREADSHEET_ESTUDIO_ID = SPREADSHEET_DEUDAS_ID; // Estudio + Plugins in same workbook
-const APP_VERSION  = 'v7.0.0';
+const APP_VERSION  = 'v7.0.1';
 // Bump token keys to force re-auth with the new drive scope
 const TOKEN_KEY    = 'google_access_token_v4';
 const EXPIRY_KEY   = 'google_token_expiry_v4';
@@ -4605,6 +4605,10 @@ function estudio_closeInventarioSheet() {
 
 async function estudio_saveInventario() {
     const id = document.getElementById('estudio-inventario-edit-id').value || `inv-${Date.now()}`;
+    const idx = estudioState.inventario.findIndex((x) => x.id === id);
+    const existing = idx >= 0 ? estudioState.inventario[idx] : null;
+    const isNew = idx === -1;
+    const marker = isNew ? estudio_getInventarioMarker(id) : ((existing?.logMarker || '').toString().trim());
     const item = {
         id,
         name: document.getElementById('estudio-inventario-name').value.trim(),
@@ -4620,17 +4624,25 @@ async function estudio_saveInventario() {
         account: document.getElementById('estudio-inventario-account').value.trim(),
         notas: document.getElementById('estudio-inventario-notes').value.trim(),
         fechaCompra: normalizeDateString(new Date().toLocaleDateString('en-CA')),
-        logMarker: estudio_getInventarioMarker(id),
+        logMarker: marker,
     };
     if (!item.name) {
         showToast('⚠️ Captura nombre del equipo');
         return;
     }
-    const idx = estudioState.inventario.findIndex((x) => x.id === id);
     if (idx >= 0) estudioState.inventario[idx] = { ...estudioState.inventario[idx], ...item };
     else estudioState.inventario.push(item);
     await estudio_saveInventarioSheet();
-    await estudio_syncInventarioToLog(item);
+    try {
+        if (isNew) {
+            await estudio_syncInventarioToLog(item, { allowCreate: true });
+        } else if (item.logMarker) {
+            await estudio_syncInventarioToLog(item, { allowCreate: false });
+        }
+    } catch (e) {
+        console.warn('No se pudo sincronizar inventario a Control de Gastos:', e);
+        showToast('⚠️ Se guardo el equipo, pero fallo la sincronizacion a gastos');
+    }
     estudio_closeInventarioSheet();
     estudio_render();
     tabInited.gastos = false;
@@ -4642,7 +4654,7 @@ async function estudio_saveInventarioSheet() {
     if (!estudioState.inventario.length) return;
     await sheetsUpdate(SPREADSHEET_ESTUDIO_ID, `EstudioInventario!A2:O${1 + estudioState.inventario.length}`, estudioState.inventario.map((x) => [
         x.id, x.name, x.cantidad, x.precioUsd, x.categoria, x.anioCompra, x.foto, x.marca, x.modelo, x.site,
-        x.serial, x.account, x.notas, x.fechaCompra, x.logMarker || estudio_getInventarioMarker(x.id),
+        x.serial, x.account, x.notas, x.fechaCompra, x.logMarker || '',
     ]));
 }
 
@@ -4668,6 +4680,10 @@ function estudio_closePluginSheet() {
 
 async function estudio_savePlugin() {
     const id = document.getElementById('estudio-plugin-edit-id').value || `plg-${Date.now()}`;
+    const idx = estudioState.plugins.findIndex((x) => x.id === id);
+    const existing = idx >= 0 ? estudioState.plugins[idx] : null;
+    const isNew = idx === -1;
+    const marker = isNew ? estudio_getPluginMarker(id) : ((existing?.logMarker || '').toString().trim());
     const item = {
         id,
         name: document.getElementById('estudio-plugin-name').value.trim(),
@@ -4680,18 +4696,26 @@ async function estudio_savePlugin() {
         account: document.getElementById('estudio-plugin-account').value.trim(),
         foto: document.getElementById('estudio-plugin-photo').value.trim(),
         fechaCompra: normalizeDateString(new Date().toLocaleDateString('en-CA')),
-        logMarker: estudio_getPluginMarker(id),
+        logMarker: marker,
         currency: 'USD',
     };
     if (!item.name) {
         showToast('⚠️ Captura nombre del plugin');
         return;
     }
-    const idx = estudioState.plugins.findIndex((x) => x.id === id);
     if (idx >= 0) estudioState.plugins[idx] = { ...estudioState.plugins[idx], ...item };
     else estudioState.plugins.push(item);
     await estudio_savePluginsSheet();
-    await estudio_syncPluginToLog(item);
+    try {
+        if (isNew) {
+            await estudio_syncPluginToLog(item, { allowCreate: true });
+        } else if (item.logMarker) {
+            await estudio_syncPluginToLog(item, { allowCreate: false });
+        }
+    } catch (e) {
+        console.warn('No se pudo sincronizar plugin a Control de Gastos:', e);
+        showToast('⚠️ Se guardo el plugin, pero fallo la sincronizacion a gastos');
+    }
     estudio_closePluginSheet();
     estudio_render();
     tabInited.gastos = false;
@@ -4702,7 +4726,7 @@ async function estudio_savePluginsSheet() {
     await sheetsClear(SPREADSHEET_ESTUDIO_ID, 'EstudioPlugins!A2:M');
     if (!estudioState.plugins.length) return;
     await sheetsUpdate(SPREADSHEET_ESTUDIO_ID, `EstudioPlugins!A2:M${1 + estudioState.plugins.length}`, estudioState.plugins.map((x) => [
-        x.id, x.name, x.marca, x.descripcion, x.precioUsd, x.site, x.licencia, x.serial, x.account, x.foto, x.fechaCompra, x.logMarker || estudio_getPluginMarker(x.id), x.currency || 'USD',
+        x.id, x.name, x.marca, x.descripcion, x.precioUsd, x.site, x.licencia, x.serial, x.account, x.foto, x.fechaCompra, x.logMarker || '', x.currency || 'USD',
     ]));
 }
 
@@ -4714,8 +4738,10 @@ function estudio_getPluginMarker(id) {
     return `ESTUDIOLOG#PLG#${id}`;
 }
 
-async function estudio_syncInventarioToLog(item) {
-    const marker = item.logMarker || estudio_getInventarioMarker(item.id);
+async function estudio_syncInventarioToLog(item, options = {}) {
+    const allowCreate = options.allowCreate !== false;
+    const marker = (item.logMarker || '').toString().trim();
+    if (!marker) return;
     const logRows = await sheetsGet(SPREADSHEET_LOG_ID, 'Hoja 1!A2:H');
     let found = -1;
     for (let i = 0; i < logRows.length; i++) {
@@ -4725,6 +4751,7 @@ async function estudio_syncInventarioToLog(item) {
         }
     }
     const monto = parseSheetValue(item.precioUsd) * Math.max(1, parseInt(item.cantidad, 10) || 1);
+    if (found === -1 && !allowCreate) return;
     if (monto <= 0) {
         if (found !== -1) {
             const logSheetId = await getSheetId(SPREADSHEET_LOG_ID, 'Hoja 1');
@@ -4750,8 +4777,10 @@ async function estudio_syncInventarioToLog(item) {
     }
 }
 
-async function estudio_syncPluginToLog(item) {
-    const marker = item.logMarker || estudio_getPluginMarker(item.id);
+async function estudio_syncPluginToLog(item, options = {}) {
+    const allowCreate = options.allowCreate !== false;
+    const marker = (item.logMarker || '').toString().trim();
+    if (!marker) return;
     const logRows = await sheetsGet(SPREADSHEET_LOG_ID, 'Hoja 1!A2:H');
     let found = -1;
     for (let i = 0; i < logRows.length; i++) {
@@ -4761,6 +4790,7 @@ async function estudio_syncPluginToLog(item) {
         }
     }
     const monto = parseSheetValue(item.precioUsd);
+    if (found === -1 && !allowCreate) return;
     if (monto <= 0) {
         if (found !== -1) {
             const logSheetId = await getSheetId(SPREADSHEET_LOG_ID, 'Hoja 1');
@@ -4793,7 +4823,12 @@ window.estudio_deleteInventario = async function(id) {
     estudioState.inventario = estudioState.inventario.filter((x) => x.id !== id);
     await estudio_saveInventarioSheet();
     try {
-        const marker = item.logMarker || estudio_getInventarioMarker(item.id);
+        const marker = (item.logMarker || '').toString().trim();
+        if (!marker) {
+            estudio_render();
+            showToast('🗑️ Equipo eliminado');
+            return;
+        }
         const logRows = await sheetsGet(SPREADSHEET_LOG_ID, 'Hoja 1!A2:H');
         const idx = logRows.findIndex((row) => ((row[2] || '').toString()).includes(marker));
         if (idx !== -1) {
@@ -4815,7 +4850,12 @@ window.estudio_deletePlugin = async function(id) {
     estudioState.plugins = estudioState.plugins.filter((x) => x.id !== id);
     await estudio_savePluginsSheet();
     try {
-        const marker = item.logMarker || estudio_getPluginMarker(item.id);
+        const marker = (item.logMarker || '').toString().trim();
+        if (!marker) {
+            estudio_render();
+            showToast('🗑️ Plugin eliminado');
+            return;
+        }
         const logRows = await sheetsGet(SPREADSHEET_LOG_ID, 'Hoja 1!A2:H');
         const idx = logRows.findIndex((row) => ((row[2] || '').toString()).includes(marker));
         if (idx !== -1) {
