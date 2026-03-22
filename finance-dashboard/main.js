@@ -15,7 +15,7 @@ const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // 
 const SPREADSHEET_DEUDAS_ID = '1dKxhgqazskm15lx0f6FNCA0gpJ7i5glfxkusiH3b0Uk'; // Control de Deudas
 const SPREADSHEET_AUTOS_ID = SPREADSHEET_DEUDAS_ID; // Autos + Reparaciones live in same workbook
 const SPREADSHEET_ESTUDIO_ID = SPREADSHEET_DEUDAS_ID; // Estudio + Plugins in same workbook
-const APP_VERSION  = 'v7.0.8';
+const APP_VERSION  = 'v7.0.9';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_TOKEN_URL = 'https://api.mercadolibre.com/oauth/token';
@@ -173,6 +173,7 @@ const meliAuthState = {
     accessToken: localStorage.getItem(MELI_ACCESS_TOKEN_KEY) || '',
     refreshToken: localStorage.getItem(MELI_REFRESH_TOKEN_KEY) || '',
     expiresAt: parseInt(localStorage.getItem(MELI_EXPIRES_AT_KEY) || '0', 10) || 0,
+    lastError: '',
 };
 
 const BUDGET_BUCKETS = [
@@ -339,8 +340,12 @@ async function meli_exchangeCodeForToken(code, verifier) {
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: body.toString(),
     });
-    if (!res.ok) throw new Error(`Meli token error ${res.status}`);
-    return res.json();
+    const payload = await res.json().catch(() => ({}));
+    if (!res.ok) {
+        const detail = payload?.message || payload?.error_description || payload?.error || `HTTP ${res.status}`;
+        throw new Error(`Meli token error: ${detail}`);
+    }
+    return payload;
 }
 
 async function meli_refreshAccessToken() {
@@ -356,7 +361,8 @@ async function meli_refreshAccessToken() {
         body: body.toString(),
     });
     if (!res.ok) return null;
-    const payload = await res.json();
+    const payload = await res.json().catch(() => null);
+    if (!payload?.access_token) return null;
     meli_saveAuthTokens(payload);
     return meliAuthState.accessToken || null;
 }
@@ -375,9 +381,11 @@ async function meli_handleOAuthCallbackIfPresent() {
     try {
         const payload = await meli_exchangeCodeForToken(code, verifier);
         meli_saveAuthTokens(payload);
+        meliAuthState.lastError = '';
         showToast('✅ Mercado Libre conectado');
     } catch (err) {
         console.warn('Meli OAuth callback failed:', err);
+        meliAuthState.lastError = String(err?.message || 'Error de OAuth');
         showToast('⚠️ Error conectando Mercado Libre');
     } finally {
         localStorage.removeItem(MELI_PKCE_VERIFIER_KEY);
@@ -3621,12 +3629,10 @@ async function autos_refreshCarValuationIfNeeded(car, options = {}) {
     autosState.valuationInFlight.add(car.id);
     try {
         const meliToken = providedToken || await meli_ensureAccessToken(interactiveAuth);
-        if (!meliToken) return;
         await ensureUsdMxnRateForTransactions();
         const url = `https://api.mercadolibre.com/sites/MLM/search?category=MLM1744&limit=50&q=${encodeURIComponent(query)}`;
-        const res = await fetch(url, {
-            headers: { Authorization: `Bearer ${meliToken}` },
-        });
+        const headers = meliToken ? { Authorization: `Bearer ${meliToken}` } : undefined;
+        const res = await fetch(url, headers ? { headers } : undefined);
         if (!res.ok) throw new Error(`MLM valuation ${res.status}`);
         const data = await res.json();
         const results = Array.isArray(data?.results) ? data.results : [];
@@ -3668,8 +3674,7 @@ async function autos_refreshCarValuationIfNeeded(car, options = {}) {
 function autos_refreshAllDailyValuations() {
     const list = [...autosState.cars];
     const run = async () => {
-        const token = await meli_ensureAccessToken(true);
-        if (!token) return;
+        const token = await meli_ensureAccessToken(false);
         for (const car of list) {
             await autos_refreshCarValuationIfNeeded(car, { accessToken: token, interactiveAuth: false });
         }
