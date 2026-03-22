@@ -14,7 +14,7 @@ const SPREADSHEET_LOG_ID   = '1pn1bsxj2LaoySXAVUvqfEJY1VR4R_T8NsTOqQnVW5Xw'; // 
 const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // Gastos Fijos
 const SPREADSHEET_DEUDAS_ID = '1dKxhgqazskm15lx0f6FNCA0gpJ7i5glfxkusiH3b0Uk'; // Control de Deudas
 const SPREADSHEET_AUTOS_ID = SPREADSHEET_DEUDAS_ID; // Autos + Reparaciones live in same workbook
-const APP_VERSION  = 'v6.1.5';
+const APP_VERSION  = 'v6.1.6';
 // Bump token keys to force re-auth with the new drive scope
 const TOKEN_KEY    = 'google_access_token_v4';
 const EXPIRY_KEY   = 'google_token_expiry_v4';
@@ -3685,17 +3685,17 @@ function autos_renderSelectedCar() {
     const allRepairs = autosState.repairs.filter(r => r.carId === car.id).sort((a, b) => b.fecha.localeCompare(a.fecha));
     const dateFromEl = document.getElementById('autos-repair-date-from');
     const dateToEl = document.getElementById('autos-repair-date-to');
-    const dateValues = [...new Set(allRepairs.map(r => (r.fecha || '').slice(0, 10)).filter(Boolean))].sort();
+    const dateValues = allRepairs.map(r => (r.fecha || '').slice(0, 10)).filter(Boolean).sort();
+    const minDate = dateValues[0] || '';
+    const maxDate = dateValues[dateValues.length - 1] || '';
     if (dateFromEl) {
-        dateFromEl.innerHTML = ['<option value="">Cualquier fecha</option>']
-            .concat(dateValues.map(d => `<option value="${d}">${formatFecha(d)}</option>`)).join('');
-        if (autosState.repairDateFrom && !dateValues.includes(autosState.repairDateFrom)) autosState.repairDateFrom = '';
+        if (minDate) dateFromEl.min = minDate;
+        if (maxDate) dateFromEl.max = maxDate;
         dateFromEl.value = autosState.repairDateFrom;
     }
     if (dateToEl) {
-        dateToEl.innerHTML = ['<option value="">Cualquier fecha</option>']
-            .concat(dateValues.map(d => `<option value="${d}">${formatFecha(d)}</option>`)).join('');
-        if (autosState.repairDateTo && !dateValues.includes(autosState.repairDateTo)) autosState.repairDateTo = '';
+        if (minDate) dateToEl.min = minDate;
+        if (maxDate) dateToEl.max = maxDate;
         dateToEl.value = autosState.repairDateTo;
     }
 
