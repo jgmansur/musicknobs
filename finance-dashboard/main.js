@@ -15,7 +15,7 @@ const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // 
 const SPREADSHEET_DEUDAS_ID = '1dKxhgqazskm15lx0f6FNCA0gpJ7i5glfxkusiH3b0Uk'; // Control de Deudas
 const SPREADSHEET_AUTOS_ID = SPREADSHEET_DEUDAS_ID; // Autos + Reparaciones live in same workbook
 const SPREADSHEET_ESTUDIO_ID = SPREADSHEET_DEUDAS_ID; // Estudio + Plugins in same workbook
-const APP_VERSION  = 'v7.0.24';
+const APP_VERSION  = 'v7.0.25';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -3378,11 +3378,22 @@ function planner_render() {
     subEl.innerText = `${fixedIncomeCount} ingresos fijos + 1 balance disponible · ${plannerState.expenses.length} pagos pendientes · Asignado ${fmt.format(plannerState.totals.assigned)} de ${fmt.format(plannerState.totals.income)}`;
 
     const doneSet = new Set(plannerState.doneIncomeKeys || []);
+    const assignedTotalsByIncome = plannerState.incomes.map((_, idx) => {
+        const expenses = plannerState.assignedByIncome[idx] || [];
+        return expenses.reduce((s, e) => s + e.amount, 0);
+    });
+    const reservedForOtherIncomes = assignedTotalsByIncome
+        .slice(1)
+        .reduce((s, v) => s + v, 0);
+
     groupsEl.innerHTML = plannerState.incomes.map((income, idx) => {
         if (!income.isBalanceSource && doneSet.has(income.key)) return '';
         const expenses = plannerState.assignedByIncome[idx] || [];
-        const assignedTotal = expenses.reduce((s, e) => s + e.amount, 0);
-        const diff = income.amount - assignedTotal;
+        const assignedTotal = assignedTotalsByIncome[idx] || 0;
+        const availableAmount = income.isBalanceSource
+            ? Math.max(0, income.amount - reservedForOtherIncomes)
+            : income.amount;
+        const diff = availableAmount - assignedTotal;
 
         const bucketTotals = BUDGET_BUCKETS.reduce((acc, bucket) => {
             acc[bucket] = 0;
@@ -3422,7 +3433,7 @@ function planner_render() {
             ? income.concept
             : `Dia ${income.day} · ${income.concept}`;
         const incomeSub = income.isBalanceSource
-            ? `Disponible en cuentas: ${fmt.format(income.amount)}`
+            ? `Disponible neto: ${fmt.format(availableAmount)} · apartados en otros ingresos: ${fmt.format(reservedForOtherIncomes)}`
             : `Ingreso del mes: ${fmt.format(income.amount)} · pagado ${income.paidParts || 0}/${income.totalParts || 1}`;
 
         return `<div class="glass-subtle plan-income-card">
