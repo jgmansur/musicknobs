@@ -15,7 +15,7 @@ const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // 
 const SPREADSHEET_DEUDAS_ID = '1dKxhgqazskm15lx0f6FNCA0gpJ7i5glfxkusiH3b0Uk'; // Control de Deudas
 const SPREADSHEET_AUTOS_ID = SPREADSHEET_DEUDAS_ID; // Autos + Reparaciones live in same workbook
 const SPREADSHEET_ESTUDIO_ID = SPREADSHEET_DEUDAS_ID; // Estudio + Plugins in same workbook
-const APP_VERSION  = 'v7.0.6';
+const APP_VERSION  = 'v7.0.7';
 // Bump token keys to force re-auth with the new drive scope
 const TOKEN_KEY    = 'google_access_token_v4';
 const EXPIRY_KEY   = 'google_token_expiry_v4';
@@ -3201,6 +3201,7 @@ const autosState = {
     licenseCropDragLast: null,
     licenseCropPinchBaseDist: 0,
     licenseCropPinchBaseZoom: 1,
+    valuationInFlight: new Set(),
     loaded: false,
 };
 
@@ -3418,6 +3419,104 @@ async function autos_saveMeta() {
     await sheetsUpdate(SPREADSHEET_AUTOS_ID, `AutosMeta!A2:B${entries.length + 1}`, entries.map(([k, v]) => [k, v]));
 }
 
+function autos_valuationMetaKey(carId, suffix) {
+    return `valuation_${carId}_${suffix}`;
+}
+
+function autos_getValuationInfo(carId) {
+    const mxn = parseSheetValue(autosState.meta?.[autos_valuationMetaKey(carId, 'mxn')]);
+    const low = parseSheetValue(autosState.meta?.[autos_valuationMetaKey(carId, 'low')]);
+    const high = parseSheetValue(autosState.meta?.[autos_valuationMetaKey(carId, 'high')]);
+    const date = (autosState.meta?.[autos_valuationMetaKey(carId, 'date')] || '').toString();
+    const sample = parseInt(autosState.meta?.[autos_valuationMetaKey(carId, 'sample')] || '0', 10) || 0;
+    const source = (autosState.meta?.[autos_valuationMetaKey(carId, 'source')] || '').toString();
+    return { mxn, low, high, date, sample, source };
+}
+
+function autos_getValuationLabel(carId) {
+    const info = autos_getValuationInfo(carId);
+    if (!info.mxn) return 'Calculando valor de mercado...';
+    const dateTxt = info.date ? ` (${info.date})` : '';
+    return `${formatCurrency(info.mxn)}${dateTxt}`;
+}
+
+function autos_buildValuationQuery(car) {
+    const marca = (car?.marca || '').toString().trim();
+    const modelo = (car?.modelo || '').toString().trim();
+    const anio = (car?.anio || '').toString().trim();
+    return [marca, modelo, anio].filter(Boolean).join(' ');
+}
+
+function autos_percentile(sorted, p) {
+    if (!sorted.length) return 0;
+    const idx = Math.max(0, Math.min(sorted.length - 1, Math.floor((sorted.length - 1) * p)));
+    return sorted[idx];
+}
+
+async function autos_refreshCarValuationIfNeeded(car, options = {}) {
+    if (!car?.id) return;
+    const force = options.force === true;
+    const today = new Date().toISOString().slice(0, 10);
+    const dateKey = autos_valuationMetaKey(car.id, 'date');
+    if (!force && (autosState.meta?.[dateKey] || '') === today) return;
+    if (autosState.valuationInFlight.has(car.id)) return;
+
+    const query = autos_buildValuationQuery(car);
+    if (!query) return;
+
+    autosState.valuationInFlight.add(car.id);
+    try {
+        await ensureUsdMxnRateForTransactions();
+        const url = `https://api.mercadolibre.com/sites/MLM/search?category=MLM1744&limit=50&q=${encodeURIComponent(query)}`;
+        const res = await fetch(url);
+        if (!res.ok) throw new Error(`MLM valuation ${res.status}`);
+        const data = await res.json();
+        const results = Array.isArray(data?.results) ? data.results : [];
+        const prices = [];
+        for (const row of results) {
+            const amount = parseSheetValue(row?.price);
+            if (amount <= 0) continue;
+            const currency = parseCurrencyCode((row?.currency_id || 'MXN').toString().toUpperCase());
+            const mxn = convertTransactionAmountToMxn(amount, currency);
+            if (mxn > 0) prices.push(mxn);
+        }
+        prices.sort((a, b) => a - b);
+        if (!prices.length) {
+            autosState.meta[dateKey] = today;
+            autosState.meta[autos_valuationMetaKey(car.id, 'mxn')] = '0';
+            autosState.meta[autos_valuationMetaKey(car.id, 'sample')] = '0';
+            autosState.meta[autos_valuationMetaKey(car.id, 'source')] = 'MercadoLibre';
+            await autos_saveMeta();
+            return;
+        }
+        const low = autos_percentile(prices, 0.2);
+        const mid = autos_percentile(prices, 0.5);
+        const high = autos_percentile(prices, 0.8);
+        autosState.meta[dateKey] = today;
+        autosState.meta[autos_valuationMetaKey(car.id, 'mxn')] = String(Math.round(mid));
+        autosState.meta[autos_valuationMetaKey(car.id, 'low')] = String(Math.round(low));
+        autosState.meta[autos_valuationMetaKey(car.id, 'high')] = String(Math.round(high));
+        autosState.meta[autos_valuationMetaKey(car.id, 'sample')] = String(prices.length);
+        autosState.meta[autos_valuationMetaKey(car.id, 'source')] = 'MercadoLibre';
+        await autos_saveMeta();
+        if (autosState.selectedCarId === car.id) autos_renderSelectedCar();
+    } catch (err) {
+        console.warn('No se pudo actualizar valuacion del auto:', err);
+    } finally {
+        autosState.valuationInFlight.delete(car.id);
+    }
+}
+
+function autos_refreshAllDailyValuations() {
+    const list = [...autosState.cars];
+    const run = async () => {
+        for (const car of list) {
+            await autos_refreshCarValuationIfNeeded(car);
+        }
+    };
+    run().catch(() => {});
+}
+
 function autos_openCarDetail() {
     const car = autosState.cars.find(c => c.id === autosState.selectedCarId);
     if (!car) return;
@@ -3431,6 +3530,7 @@ function autos_openCarDetail() {
             <div class="autos-detail-row"><strong>VIN:</strong> <span>${car.vin || '-'}</span></div>
             <div class="autos-detail-row"><strong>Propietario:</strong> <span>${car.propietario || '-'}</span></div>
             <div class="autos-detail-row"><strong>Seguro:</strong> <span>${car.tieneSeguro ? 'Si' : 'No'} · Poliza ${car.polizaSeguro || '-'}</span></div>
+            <div class="autos-detail-row"><strong>Valor hoy:</strong> <span>${autos_getValuationLabel(car.id)}</span></div>
             <div class="autos-detail-row"><strong>Emergencia:</strong> <span>${autos_phoneLinkOrText(car.emergenciaInterior, 'Interior')} · ${autos_phoneLinkOrText(car.emergenciaMetro, 'Metro')}</span></div>
             <div class="autos-detail-row"><strong>Siniestros:</strong> <span>${autos_phoneLinkOrText(car.reporteSiniestros1, 'Siniestros 1')} · ${autos_phoneLinkOrText(car.reporteSiniestros2, 'Siniestros 2')}</span></div>
             <div class="autos-detail-row"><strong>Llantas:</strong> <span>${car.tipoLlantas || '-'}</span></div>
@@ -3768,6 +3868,7 @@ async function autos_cargarVista() {
         await autos_ensureSheets();
         await autos_loadData();
         autos_render();
+        autos_refreshAllDailyValuations();
     } catch (e) {
         handleApiError(e, listEl);
     }
@@ -3968,6 +4069,7 @@ function autos_renderSelectedCar() {
     const emergenciaMetroHtml = autos_phoneLinkOrText(car.emergenciaMetro, 'Metro');
     const siniestros1Html = autos_phoneLinkOrText(car.reporteSiniestros1, 'Siniestros 1');
     const siniestros2Html = autos_phoneLinkOrText(car.reporteSiniestros2, 'Siniestros 2');
+    const valuationLabel = autos_getValuationLabel(car.id);
 
     profileEl.innerHTML = `<div class="glass-subtle autos-profile-card autos-profile-clickable" onclick="autos_openCarDetail()" style="padding:.8rem;display:grid;grid-template-columns:96px minmax(0,1fr);gap:.7rem;align-items:start;">
         <img src="${car.fotoAuto || ''}" alt="Auto" style="width:96px;height:72px;object-fit:cover;border-radius:.75rem;background:rgba(255,255,255,.06);" onerror="this.style.display='none'" />
@@ -3976,6 +4078,7 @@ function autos_renderSelectedCar() {
             <span class="account-type-label">Placa: ${car.placa || '-'} · VIN: ${car.vin || '-'}</span>
             <span class="account-type-label">Propietario: ${car.propietario || '-'} · Seguro: ${car.tieneSeguro ? 'Si' : 'No'}</span>
             <span class="account-type-label">Poliza: ${car.polizaSeguro || '-'} · Llantas: ${car.tipoLlantas || '-'}</span>
+            <span class="account-type-label" style="color:#34d399;">Valor hoy: ${valuationLabel}</span>
             <span class="account-type-label">Emergencia: ${emergenciaInteriorHtml} · ${emergenciaMetroHtml}</span>
             <span class="account-type-label">Siniestros: ${siniestros1Html} · ${siniestros2Html}</span>
             <div style="display:flex;gap:.35rem;flex-wrap:wrap;margin-top:.3rem;">
@@ -4058,6 +4161,8 @@ function autos_renderSelectedCar() {
     const selectedSpent = autos_getCarSpent(car.id);
     const selectedSpentEl = document.getElementById('autos-selected-spent');
     if (selectedSpentEl) selectedSpentEl.innerText = formatCurrency(selectedSpent);
+
+    autos_refreshCarValuationIfNeeded(car).catch(() => {});
 }
 
 function autos_getCarSpent(carId) {
