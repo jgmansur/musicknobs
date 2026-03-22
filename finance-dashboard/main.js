@@ -15,7 +15,7 @@ const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // 
 const SPREADSHEET_DEUDAS_ID = '1dKxhgqazskm15lx0f6FNCA0gpJ7i5glfxkusiH3b0Uk'; // Control de Deudas
 const SPREADSHEET_AUTOS_ID = SPREADSHEET_DEUDAS_ID; // Autos + Reparaciones live in same workbook
 const SPREADSHEET_ESTUDIO_ID = SPREADSHEET_DEUDAS_ID; // Estudio + Plugins in same workbook
-const APP_VERSION  = 'v7.0.22';
+const APP_VERSION  = 'v7.0.23';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -3118,6 +3118,7 @@ async function fijos_guardar() {
 // PLANIFICADOR MODULE
 // =============================================
 const PLANNER_OVERRIDES_KEY = 'planner_assignments_v1';
+const PLANNER_DONE_INCOMES_KEY = 'planner_done_incomes_v1';
 const plannerState = {
     loading: false,
     monthKey: '',
@@ -3125,6 +3126,7 @@ const plannerState = {
     expenses: [],
     assignments: {},
     assignedByIncome: [],
+    doneIncomeKeys: [],
     autoSortedThisMonth: false,
     totals: { income: 0, assigned: 0, diff: 0 },
 };
@@ -3153,6 +3155,38 @@ function planner_writeOverrides(monthKey, assignments) {
         all[monthKey] = assignments;
         localStorage.setItem(PLANNER_OVERRIDES_KEY, JSON.stringify(all));
     } catch (_) {}
+}
+
+function planner_readDoneIncomes(monthKey) {
+    try {
+        const raw = localStorage.getItem(PLANNER_DONE_INCOMES_KEY);
+        const all = raw ? JSON.parse(raw) : {};
+        if (!all || typeof all !== 'object') return [];
+        const monthList = all[monthKey];
+        return Array.isArray(monthList) ? monthList.map(x => `${x}`) : [];
+    } catch (_) {
+        return [];
+    }
+}
+
+function planner_writeDoneIncomes(monthKey, doneIncomeKeys) {
+    try {
+        const raw = localStorage.getItem(PLANNER_DONE_INCOMES_KEY);
+        const all = raw ? JSON.parse(raw) : {};
+        all[monthKey] = Array.from(new Set((doneIncomeKeys || []).map(x => `${x}`)));
+        localStorage.setItem(PLANNER_DONE_INCOMES_KEY, JSON.stringify(all));
+    } catch (_) {}
+}
+
+function planner_findNextActiveIncomeIndex(fromIdx, direction, incomes, doneSet) {
+    let idx = fromIdx + direction;
+    while (idx >= 0 && idx < incomes.length) {
+        const income = incomes[idx];
+        const isDone = !income.isBalanceSource && doneSet.has(income.key);
+        if (!isDone) return idx;
+        idx += direction;
+    }
+    return fromIdx;
 }
 
 function planner_assignIndexByDay(day, incomes) {
@@ -3217,6 +3251,8 @@ function planner_buildModel(items, monthKey) {
     expenses.sort((a, b) => a.day - b.day || a.fixedId - b.fixedId);
 
     const savedOverrides = planner_readOverrides(monthKey);
+    const doneIncomeKeys = planner_readDoneIncomes(monthKey);
+    const doneSet = new Set(doneIncomeKeys);
     const hasSavedOverrides = Object.keys(savedOverrides).length > 0;
     const assignments = {};
     let assignedByIncome = incomes.map(() => []);
@@ -3257,6 +3293,23 @@ function planner_buildModel(items, monthKey) {
         if (idx >= 0) assignedByIncome[idx].push(exp);
     });
 
+    for (let idx = 1; idx < incomes.length; idx++) {
+        const income = incomes[idx];
+        if (!doneSet.has(income.key)) continue;
+        const targetIdx = planner_findNextActiveIncomeIndex(idx, 1, incomes, doneSet);
+        const fallbackIdx = targetIdx === idx ? 0 : targetIdx;
+        const currentExpenses = assignedByIncome[idx] || [];
+        currentExpenses.forEach(exp => {
+            assignments[exp.key] = fallbackIdx;
+        });
+    }
+
+    assignedByIncome = incomes.map(() => []);
+    expenses.forEach(exp => {
+        const idx = assignments[exp.key];
+        if (idx >= 0) assignedByIncome[idx].push(exp);
+    });
+
     const totalIncome = incomes.reduce((s, i) => s + i.amount, 0);
     const totalAssigned = expenses.reduce((s, e) => s + e.amount, 0);
 
@@ -3266,6 +3319,7 @@ function planner_buildModel(items, monthKey) {
         expenses,
         assignments,
         assignedByIncome,
+        doneIncomeKeys,
         autoSortedThisMonth,
         totals: {
             income: totalIncome,
@@ -3299,7 +3353,9 @@ function planner_render() {
     summaryEl.classList.toggle('text-success', projectedAvailable >= 0);
     subEl.innerText = `${fixedIncomeCount} ingresos fijos + 1 balance disponible · ${plannerState.expenses.length} pagos pendientes · Asignado ${fmt.format(plannerState.totals.assigned)} de ${fmt.format(plannerState.totals.income)}`;
 
+    const doneSet = new Set(plannerState.doneIncomeKeys || []);
     groupsEl.innerHTML = plannerState.incomes.map((income, idx) => {
+        if (!income.isBalanceSource && doneSet.has(income.key)) return '';
         const expenses = plannerState.assignedByIncome[idx] || [];
         const assignedTotal = expenses.reduce((s, e) => s + e.amount, 0);
         const diff = income.amount - assignedTotal;
@@ -3319,8 +3375,11 @@ function planner_render() {
 
         const expenseRows = expenses.length
             ? expenses.map(e => {
-                const canMovePrev = plannerState.assignments[e.key] > 0;
-                const canMoveNext = plannerState.assignments[e.key] < plannerState.incomes.length - 1;
+                const currentIdx = plannerState.assignments[e.key];
+                const prevIdx = planner_findNextActiveIncomeIndex(currentIdx, -1, plannerState.incomes, doneSet);
+                const nextIdx = planner_findNextActiveIncomeIndex(currentIdx, 1, plannerState.incomes, doneSet);
+                const canMovePrev = prevIdx !== currentIdx;
+                const canMoveNext = nextIdx !== currentIdx;
                 return `<div class="plan-expense-row">
                     <div>
                         <div class="plan-expense-title">${e.concept}${e.partLabel ? ` (${e.partLabel})` : ''}</div>
@@ -3351,6 +3410,7 @@ function planner_render() {
                 <div class="plan-income-diff ${diff < 0 ? 'text-danger' : 'text-success'}">${fmt.format(diff)}</div>
             </div>
             <div class="plan-income-sub">Asignado: ${fmt.format(assignedTotal)}</div>
+            ${income.isBalanceSource ? '' : `<div style="margin:.45rem 0 0;"><button class="mini-btn" onclick="planner_finishIncome('${income.key}')">✅ Terminado (mover al siguiente)</button></div>`}
             <div class="plan-buckets">${bucketHtml}</div>
             <div class="plan-expenses-list">${expenseRows}</div>
         </div>`;
@@ -3381,7 +3441,8 @@ async function planner_cargarVista() {
 window.planner_moveExpense = function(expenseKey, direction) {
     const curr = plannerState.assignments[expenseKey];
     if (curr === undefined || curr < 0) return;
-    const next = Math.max(0, Math.min(plannerState.incomes.length - 1, curr + direction));
+    const doneSet = new Set(plannerState.doneIncomeKeys || []);
+    const next = planner_findNextActiveIncomeIndex(curr, direction, plannerState.incomes, doneSet);
     if (next === curr) return;
     plannerState.assignments[expenseKey] = next;
     planner_writeOverrides(plannerState.monthKey, plannerState.assignments);
@@ -3395,12 +3456,44 @@ window.planner_moveExpense = function(expenseKey, direction) {
     planner_render();
 };
 
+window.planner_finishIncome = function(incomeKey) {
+    if (!plannerState.monthKey || !incomeKey) return;
+    const idx = plannerState.incomes.findIndex(i => i.key === incomeKey && !i.isBalanceSource);
+    if (idx < 0) return;
+
+    const doneSet = new Set(plannerState.doneIncomeKeys || []);
+    doneSet.add(incomeKey);
+    const nextIdx = planner_findNextActiveIncomeIndex(idx, 1, plannerState.incomes, doneSet);
+    const targetIdx = nextIdx === idx ? 0 : nextIdx;
+
+    plannerState.expenses.forEach(exp => {
+        if (plannerState.assignments[exp.key] === idx) {
+            plannerState.assignments[exp.key] = targetIdx;
+        }
+    });
+
+    plannerState.doneIncomeKeys = Array.from(doneSet);
+    planner_writeOverrides(plannerState.monthKey, plannerState.assignments);
+    planner_writeDoneIncomes(plannerState.monthKey, plannerState.doneIncomeKeys);
+
+    const byIncome = plannerState.incomes.map(() => []);
+    plannerState.expenses.forEach(exp => {
+        const assignmentIdx = plannerState.assignments[exp.key];
+        if (assignmentIdx >= 0) byIncome[assignmentIdx].push(exp);
+    });
+    plannerState.assignedByIncome = byIncome;
+    planner_render();
+    showToast('✅ Ingreso terminado; gastos movidos al siguiente');
+};
+
 window.planner_resetAssignments = function() {
     if (!plannerState.monthKey) return;
     const monthKey = plannerState.monthKey;
     const current = planner_readOverrides(monthKey);
-    if (!Object.keys(current).length) return;
+    const currentDone = planner_readDoneIncomes(monthKey);
+    if (!Object.keys(current).length && !currentDone.length) return;
     planner_writeOverrides(monthKey, {});
+    planner_writeDoneIncomes(monthKey, []);
     Object.assign(plannerState, planner_buildModel(fijosState.allItems, monthKey));
     planner_render();
     showToast('↺ Asignaciones manuales reiniciadas');
