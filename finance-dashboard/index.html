@@ -523,7 +523,7 @@
                 <h3 id="autos-selected-title">Selecciona un auto</h3>
                 <button id="autos-btn-add-repair" class="primary-btn" style="padding:.45rem .7rem;">+ Reparacion</button>
               </div>
-              <div id="autos-car-profile"></div>
+              <div id="autos-car-profile" class="autos-profile"></div>
               <div class="balance-summary-card glass-subtle">
                 <span class="bs-label">Total gastado en este auto</span>
                 <span id="autos-selected-spent" class="bs-amount text-danger">$0.00</span>
@@ -555,6 +555,8 @@
               <input id="autos-car-llantas" class="field-input" placeholder="Tipo de llantas">
             </div>
             <input id="autos-car-foto" class="field-input" style="margin-top:.6rem;" placeholder="URL foto del auto">
+            <input id="autos-car-foto-file" type="file" class="field-input" style="margin-top:.45rem;" accept="image/*" capture="environment">
+            <div id="autos-car-foto-feedback" class="diff-label"></div>
             <input id="autos-car-tarjeta-frente" class="field-input" style="margin-top:.45rem;" placeholder="URL tarjeta circulacion frontal">
             <input id="autos-car-tarjeta-atras" class="field-input" style="margin-top:.45rem;" placeholder="URL tarjeta circulacion trasera">
             <button id="autos-car-save" class="primary-btn" style="margin-top:.8rem;width:100%;">Guardar Auto</button>
@@ -579,7 +581,11 @@
               <input id="autos-repair-date" type="date" class="field-input">
             </div>
             <input id="autos-repair-photo" class="field-input" style="margin-top:.5rem;" placeholder="URL foto">
+            <input id="autos-repair-photo-file" type="file" class="field-input" style="margin-top:.45rem;" accept="image/*" capture="environment">
+            <div id="autos-repair-photo-feedback" class="diff-label"></div>
             <input id="autos-repair-receipt" class="field-input" style="margin-top:.45rem;" placeholder="URL recibo">
+            <input id="autos-repair-receipt-file" type="file" class="field-input" style="margin-top:.45rem;" accept="image/*,application/pdf" capture="environment">
+            <div id="autos-repair-receipt-feedback" class="diff-label"></div>
             <textarea id="autos-repair-desc" class="field-input" rows="3" style="margin-top:.45rem;" placeholder="Descripcion"></textarea>
             <button id="autos-repair-save" class="primary-btn" style="margin-top:.8rem;width:100%;">Guardar Reparacion</button>
           </div>

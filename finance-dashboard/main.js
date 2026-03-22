@@ -14,7 +14,7 @@ const SPREADSHEET_LOG_ID   = '1pn1bsxj2LaoySXAVUvqfEJY1VR4R_T8NsTOqQnVW5Xw'; // 
 const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // Gastos Fijos
 const SPREADSHEET_DEUDAS_ID = '1dKxhgqazskm15lx0f6FNCA0gpJ7i5glfxkusiH3b0Uk'; // Control de Deudas
 const SPREADSHEET_AUTOS_ID = SPREADSHEET_DEUDAS_ID; // Autos + Reparaciones live in same workbook
-const APP_VERSION  = 'v6.0.0';
+const APP_VERSION  = 'v6.0.1';
 // Bump token keys to force re-auth with the new drive scope
 const TOKEN_KEY    = 'google_access_token_v4';
 const EXPIRY_KEY   = 'google_token_expiry_v4';
@@ -3233,6 +3233,41 @@ function autos_bindEvents() {
     document.getElementById('autos-repair-sheet-overlay')?.addEventListener('click', autos_closeRepairSheet);
     document.getElementById('autos-car-save')?.addEventListener('click', autos_saveCar);
     document.getElementById('autos-repair-save')?.addEventListener('click', autos_saveRepair);
+    document.getElementById('autos-car-foto-file')?.addEventListener('change', (e) => autos_updateFileFeedback('autos-car-foto-feedback', e.target.files));
+    document.getElementById('autos-repair-photo-file')?.addEventListener('change', (e) => autos_updateFileFeedback('autos-repair-photo-feedback', e.target.files));
+    document.getElementById('autos-repair-receipt-file')?.addEventListener('change', (e) => autos_updateFileFeedback('autos-repair-receipt-feedback', e.target.files));
+}
+
+function autos_updateFileFeedback(elId, files) {
+    const el = document.getElementById(elId);
+    if (!el) return;
+    if (!files || !files.length) {
+        el.innerText = '';
+        return;
+    }
+    el.innerText = `Archivo: ${files[0].name}`;
+}
+
+async function autos_ensureRecibosFolder() {
+    const RECIBOS_FOLDER = 'Jay App Recibos';
+    let folderId = await driveFindFolder(RECIBOS_FOLDER);
+    if (folderId) return folderId;
+    const r = await authFetch('https://www.googleapis.com/drive/v3/files', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: RECIBOS_FOLDER, mimeType: 'application/vnd.google-apps.folder' }),
+    });
+    if (!r.ok) throw new Error(`Folder create failed (${r.status})`);
+    folderId = (await r.json()).id;
+    return folderId;
+}
+
+async function autos_uploadFirstFile(inputId) {
+    const input = document.getElementById(inputId);
+    if (!input || !input.files || !input.files.length) return '';
+    const folderId = await autos_ensureRecibosFolder();
+    const file = input.files[0];
+    return driveUploadFile(file, folderId);
 }
 
 async function autos_cargarVista() {
@@ -3488,6 +3523,9 @@ function autos_openCarSheet(carId) {
     document.getElementById('autos-car-llantas').value = car?.tipoLlantas || '';
     document.getElementById('autos-car-tarjeta-frente').value = car?.tarjetaCirculacionFrente || '';
     document.getElementById('autos-car-tarjeta-atras').value = car?.tarjetaCirculacionAtras || '';
+    const carFile = document.getElementById('autos-car-foto-file');
+    if (carFile) carFile.value = '';
+    autos_updateFileFeedback('autos-car-foto-feedback', null);
     document.getElementById('autos-car-sheet').classList.remove('hidden');
 }
 
@@ -3522,6 +3560,13 @@ async function autos_saveCar() {
         pagoTenencia: '', vencimientoTenencia: '', tablaPagos: '', tablaPagosSeguro: '',
         tipoLlantas: document.getElementById('autos-car-llantas').value.trim(), llantasFoto: '', certificadoPolarizado: '',
     };
+    try {
+        const uploadedPhoto = await autos_uploadFirstFile('autos-car-foto-file');
+        if (uploadedPhoto) car.fotoAuto = uploadedPhoto;
+    } catch (e) {
+        console.warn('No se pudo subir foto del auto:', e);
+        showToast('⚠️ No se pudo subir foto del auto, se guarda con URL actual');
+    }
     const idx = autosState.cars.findIndex(c => c.id === id);
     if (idx >= 0) autosState.cars[idx] = car;
     else autosState.cars.push(car);
@@ -3560,6 +3605,12 @@ function autos_openRepairSheet(repairId) {
     document.getElementById('autos-repair-photo').value = repair?.foto || '';
     document.getElementById('autos-repair-receipt').value = repair?.recibo || '';
     document.getElementById('autos-repair-desc').value = repair?.descripcion || '';
+    const photoFile = document.getElementById('autos-repair-photo-file');
+    const receiptFile = document.getElementById('autos-repair-receipt-file');
+    if (photoFile) photoFile.value = '';
+    if (receiptFile) receiptFile.value = '';
+    autos_updateFileFeedback('autos-repair-photo-feedback', null);
+    autos_updateFileFeedback('autos-repair-receipt-feedback', null);
     document.getElementById('autos-repair-sheet').classList.remove('hidden');
 }
 
@@ -3586,6 +3637,16 @@ async function autos_saveRepair() {
         showToast('⚠️ Selecciona auto y reparacion');
         return;
     }
+    try {
+        const uploadedPhoto = await autos_uploadFirstFile('autos-repair-photo-file');
+        if (uploadedPhoto) repair.foto = uploadedPhoto;
+        const uploadedReceipt = await autos_uploadFirstFile('autos-repair-receipt-file');
+        if (uploadedReceipt) repair.recibo = uploadedReceipt;
+    } catch (e) {
+        console.warn('No se pudieron subir archivos de reparacion:', e);
+        showToast('⚠️ No se pudo subir archivo, se guarda con URLs actuales');
+    }
+
     const idx = autosState.repairs.findIndex(r => r.id === id);
     if (idx >= 0) autosState.repairs[idx] = repair;
     else autosState.repairs.push(repair);
