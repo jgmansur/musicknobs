@@ -3770,13 +3770,12 @@ async function autos_refreshCarValuationIfNeeded(car, options = {}) {
     const providedToken = (options.accessToken || '').toString().trim();
     const today = new Date().toISOString().slice(0, 10);
     const dateKey = autos_valuationMetaKey(car.id, 'date');
-    const statusKey = autos_valuationMetaKey(car.id, 'status');
-    const currentStatus = (autosState.meta?.[statusKey] || '').toString();
-    if (!force && (autosState.meta?.[dateKey] || '') === today && currentStatus !== 'error') return;
+    if (!force && (autosState.meta?.[dateKey] || '') === today) return;
     if (autosState.valuationInFlight.has(car.id)) return;
 
     const query = autos_buildValuationQuery(car);
     if (!query) {
+        autosState.meta[dateKey] = today;
         autos_setValuationStatus(car.id, 'error', 'Faltan datos para consultar');
         if (autosState.selectedCarId === car.id) autos_renderSelectedCar();
         await autos_saveMeta();
