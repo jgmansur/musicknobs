@@ -3258,9 +3258,7 @@ function autos_bindEvents() {
         autos_renderSelectedCar();
     };
     document.getElementById('autos-repair-date-from')?.addEventListener('change', onDateFromChange);
-    document.getElementById('autos-repair-date-from')?.addEventListener('input', onDateFromChange);
     document.getElementById('autos-repair-date-to')?.addEventListener('change', onDateToChange);
-    document.getElementById('autos-repair-date-to')?.addEventListener('input', onDateToChange);
     document.getElementById('autos-repair-load-more')?.addEventListener('click', () => {
         autosState.repairVisibleCount += 10;
         autos_renderSelectedCar();
@@ -3687,19 +3685,17 @@ function autos_renderSelectedCar() {
     const allRepairs = autosState.repairs.filter(r => r.carId === car.id).sort((a, b) => b.fecha.localeCompare(a.fecha));
     const dateFromEl = document.getElementById('autos-repair-date-from');
     const dateToEl = document.getElementById('autos-repair-date-to');
-    const dateValues = allRepairs.map(r => (r.fecha || '').slice(0, 10)).filter(Boolean).sort();
-    const minDate = dateValues[0] || '';
-    const maxDate = dateValues[dateValues.length - 1] || '';
+    const dateValues = [...new Set(allRepairs.map(r => (r.fecha || '').slice(0, 10)).filter(Boolean))].sort();
     if (dateFromEl) {
-        dateFromEl.min = minDate;
-        dateFromEl.max = maxDate;
-        if (autosState.repairDateFrom && (autosState.repairDateFrom < minDate || autosState.repairDateFrom > maxDate)) autosState.repairDateFrom = '';
+        dateFromEl.innerHTML = ['<option value="">Cualquier fecha</option>']
+            .concat(dateValues.map(d => `<option value="${d}">${formatFecha(d)}</option>`)).join('');
+        if (autosState.repairDateFrom && !dateValues.includes(autosState.repairDateFrom)) autosState.repairDateFrom = '';
         dateFromEl.value = autosState.repairDateFrom;
     }
     if (dateToEl) {
-        dateToEl.min = minDate;
-        dateToEl.max = maxDate;
-        if (autosState.repairDateTo && (autosState.repairDateTo < minDate || autosState.repairDateTo > maxDate)) autosState.repairDateTo = '';
+        dateToEl.innerHTML = ['<option value="">Cualquier fecha</option>']
+            .concat(dateValues.map(d => `<option value="${d}">${formatFecha(d)}</option>`)).join('');
+        if (autosState.repairDateTo && !dateValues.includes(autosState.repairDateTo)) autosState.repairDateTo = '';
         dateToEl.value = autosState.repairDateTo;
     }
 
