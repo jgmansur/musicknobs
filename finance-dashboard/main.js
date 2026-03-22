@@ -15,7 +15,7 @@ const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // 
 const SPREADSHEET_DEUDAS_ID = '1dKxhgqazskm15lx0f6FNCA0gpJ7i5glfxkusiH3b0Uk'; // Control de Deudas
 const SPREADSHEET_AUTOS_ID = SPREADSHEET_DEUDAS_ID; // Autos + Reparaciones live in same workbook
 const SPREADSHEET_ESTUDIO_ID = SPREADSHEET_DEUDAS_ID; // Estudio + Plugins in same workbook
-const APP_VERSION  = 'v7.0.21';
+const APP_VERSION  = 'v7.0.22';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -3165,14 +3165,19 @@ function planner_buildModel(items, monthKey) {
     const fixedIncomes = items
         .filter(i => i.tipo === 'ingreso' && i.pagador === 'yo' && i.isDueThisMonth)
         .map(i => {
-            const partAmount = Math.abs(i.monto || 0) / (i.pagosMes || 1);
-            const pendingParts = Math.max(0, (i.pagosMes || 1) - (i.pagosHechos || 0));
+            const monthlyAmount = Math.abs(i.monto || 0);
+            const paidParts = Math.max(0, i.pagosHechos || 0);
+            const totalParts = i.pagosMes || 1;
+            const pendingParts = Math.max(0, totalParts - paidParts);
             return {
                 id: i.id,
                 key: `inc-${i.id}`,
                 concept: i.concepto,
                 day: parseDayOfMonth(i.diaMes),
-                amount: partAmount * pendingParts,
+                amount: monthlyAmount,
+                paidParts,
+                totalParts,
+                pendingParts,
                 isBalanceSource: false,
             };
         })
@@ -3282,7 +3287,7 @@ function planner_render() {
         summaryEl.innerText = fmt.format(0);
         summaryEl.classList.remove('text-danger');
         summaryEl.classList.remove('text-success');
-        subEl.innerText = 'No hay ingresos propios pendientes este mes en Gastos Fijos.';
+        subEl.innerText = 'No hay ingresos propios de este mes en Gastos Fijos.';
         groupsEl.innerHTML = '<div class="empty-state">Agrega al menos un ingreso fijo pagado por ti para usar el planificador.</div>';
         return;
     }
@@ -3335,7 +3340,7 @@ function planner_render() {
             : `Dia ${income.day} · ${income.concept}`;
         const incomeSub = income.isBalanceSource
             ? `Disponible en cuentas: ${fmt.format(income.amount)}`
-            : `Ingreso pendiente: ${fmt.format(income.amount)}`;
+            : `Ingreso del mes: ${fmt.format(income.amount)} · pagado ${income.paidParts || 0}/${income.totalParts || 1}`;
 
         return `<div class="glass-subtle plan-income-card">
             <div class="plan-income-head">
