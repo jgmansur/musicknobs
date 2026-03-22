@@ -15,7 +15,7 @@ const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // 
 const SPREADSHEET_DEUDAS_ID = '1dKxhgqazskm15lx0f6FNCA0gpJ7i5glfxkusiH3b0Uk'; // Control de Deudas
 const SPREADSHEET_AUTOS_ID = SPREADSHEET_DEUDAS_ID; // Autos + Reparaciones live in same workbook
 const SPREADSHEET_ESTUDIO_ID = SPREADSHEET_DEUDAS_ID; // Estudio + Plugins in same workbook
-const APP_VERSION  = 'v7.0.14';
+const APP_VERSION  = 'v7.0.16';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -469,6 +469,7 @@ window.autos_connectMercadoLibre = () => {
 };
 window.autos_openMeliDebug = autos_openMeliDebug;
 window.autos_closeMeliDebug = autos_closeMeliDebug;
+window.autos_copyMeliDebug = autos_copyMeliDebug;
 
 // =============================================
 // DOM READY
@@ -3690,6 +3691,10 @@ function autos_renderMeliDebug() {
     const info = meliAuthState.debugInfo || {};
     const now = new Date();
     const expiresInSec = meliAuthState.expiresAt ? Math.floor((meliAuthState.expiresAt - now.getTime()) / 1000) : 0;
+    const selectedCar = autosState.cars.find(c => c.id === autosState.selectedCarId) || null;
+    const selectedValuation = selectedCar ? autos_getValuationInfo(selectedCar.id) : null;
+    const selectedKm = selectedCar ? autos_parseMileage(selectedCar.kilometraje) : 0;
+    const selectedQuery = selectedCar ? autos_buildValuationQuery(selectedCar) : '';
     const rows = [
         ['appVersion', APP_VERSION],
         ['meliClientId', MELI_CLIENT_ID],
@@ -3710,8 +3715,100 @@ function autos_renderMeliDebug() {
         ['debug.tokenExchangeStatus', String(info.tokenExchangeStatus ?? '-')],
         ['debug.tokenExchangeDetail', info.tokenExchangeDetail || '-'],
         ['debug.tokenRefreshStatus', String(info.tokenRefreshStatus ?? '-')],
+        ['valuation.carId', selectedCar?.id || '-'],
+        ['valuation.carName', selectedCar ? `${selectedCar.marca || '-'} ${selectedCar.modelo || '-'}`.trim() : '-'],
+        ['valuation.year', selectedCar?.anio || '-'],
+        ['valuation.km', selectedKm ? String(selectedKm) : '-'],
+        ['valuation.query', selectedQuery || '-'],
+        ['valuation.status', selectedValuation?.status || '-'],
+        ['valuation.error', selectedValuation?.error || '-'],
+        ['valuation.date', selectedValuation?.date || '-'],
+        ['valuation.sample', selectedValuation ? String(selectedValuation.sample || 0) : '-'],
+        ['valuation.lowMxn', selectedValuation ? String(Math.round(selectedValuation.low || 0)) : '-'],
+        ['valuation.midMxn', selectedValuation ? String(Math.round(selectedValuation.mxn || 0)) : '-'],
+        ['valuation.highMxn', selectedValuation ? String(Math.round(selectedValuation.high || 0)) : '-'],
+        ['valuation.kmAdjPct', selectedValuation ? String(selectedValuation.kmAdjustmentPct || 0) : '-'],
+        ['valuation.debug.phase', info.valuationPhase || '-'],
+        ['valuation.debug.httpStatus', String(info.valuationHttpStatus ?? '-')],
+        ['valuation.debug.results', String(info.valuationResultsCount ?? '-')],
+        ['valuation.debug.prices', String(info.valuationPricesCount ?? '-')],
+        ['valuation.debug.error', info.valuationError || '-'],
+        ['valuation.debug.force', String(info.valuationForce ?? '-')],
+        ['valuation.debug.interactiveAuth', String(info.valuationInteractiveAuth ?? '-')],
     ];
     bodyEl.innerHTML = rows.map(([k, v]) => `<div class="autos-debug-row"><span>${k}</span><strong>${String(v)}</strong></div>`).join('');
+}
+
+function autos_buildMeliDebugSnapshot() {
+    const info = meliAuthState.debugInfo || {};
+    const selectedCar = autosState.cars.find(c => c.id === autosState.selectedCarId) || null;
+    const selectedValuation = selectedCar ? autos_getValuationInfo(selectedCar.id) : null;
+    const selectedKm = selectedCar ? autos_parseMileage(selectedCar.kilometraje) : 0;
+    const selectedQuery = selectedCar ? autos_buildValuationQuery(selectedCar) : '';
+    const nowIso = new Date().toISOString();
+    const expiresInSec = meliAuthState.expiresAt ? Math.floor((meliAuthState.expiresAt - Date.now()) / 1000) : 0;
+    const lines = [
+        `debugCapturedAt=${nowIso}`,
+        `appVersion=${APP_VERSION}`,
+        `meliClientId=${MELI_CLIENT_ID}`,
+        `brokerBaseUrl=${MELI_BROKER_BASE_URL}`,
+        `redirectUri=${meli_getRedirectUri()}`,
+        `meliConnected=${meli_isAccessTokenValid() ? 'yes' : 'no'}`,
+        `hasAccessToken=${meliAuthState.accessToken ? 'yes' : 'no'}`,
+        `hasRefreshToken=${meliAuthState.refreshToken ? 'yes' : 'no'}`,
+        `expiresInSec=${expiresInSec}`,
+        `lastError=${meliAuthState.lastError || '-'}`,
+        `debug.phase=${info.phase || '-'}`,
+        `debug.updatedAt=${info.updatedAt || '-'}`,
+        `debug.tokenExchangeStatus=${String(info.tokenExchangeStatus ?? '-')}`,
+        `debug.tokenExchangeDetail=${info.tokenExchangeDetail || '-'}`,
+        `debug.tokenRefreshStatus=${String(info.tokenRefreshStatus ?? '-')}`,
+        `valuation.carId=${selectedCar?.id || '-'}`,
+        `valuation.carName=${selectedCar ? `${selectedCar.marca || '-'} ${selectedCar.modelo || '-'}`.trim() : '-'}`,
+        `valuation.year=${selectedCar?.anio || '-'}`,
+        `valuation.km=${selectedKm ? String(selectedKm) : '-'}`,
+        `valuation.query=${selectedQuery || '-'}`,
+        `valuation.status=${selectedValuation?.status || '-'}`,
+        `valuation.error=${selectedValuation?.error || '-'}`,
+        `valuation.date=${selectedValuation?.date || '-'}`,
+        `valuation.sample=${selectedValuation ? String(selectedValuation.sample || 0) : '-'}`,
+        `valuation.lowMxn=${selectedValuation ? String(Math.round(selectedValuation.low || 0)) : '-'}`,
+        `valuation.midMxn=${selectedValuation ? String(Math.round(selectedValuation.mxn || 0)) : '-'}`,
+        `valuation.highMxn=${selectedValuation ? String(Math.round(selectedValuation.high || 0)) : '-'}`,
+        `valuation.kmAdjPct=${selectedValuation ? String(selectedValuation.kmAdjustmentPct || 0) : '-'}`,
+        `valuation.debug.phase=${info.valuationPhase || '-'}`,
+        `valuation.debug.httpStatus=${String(info.valuationHttpStatus ?? '-')}`,
+        `valuation.debug.results=${String(info.valuationResultsCount ?? '-')}`,
+        `valuation.debug.prices=${String(info.valuationPricesCount ?? '-')}`,
+        `valuation.debug.error=${info.valuationError || '-'}`,
+        `valuation.debug.force=${String(info.valuationForce ?? '-')}`,
+        `valuation.debug.interactiveAuth=${String(info.valuationInteractiveAuth ?? '-')}`,
+    ];
+    return lines.join('\n');
+}
+
+async function autos_copyMeliDebug() {
+    const text = autos_buildMeliDebugSnapshot();
+    try {
+        if (navigator.clipboard?.writeText) {
+            await navigator.clipboard.writeText(text);
+        } else {
+            const ta = document.createElement('textarea');
+            ta.value = text;
+            ta.setAttribute('readonly', '');
+            ta.style.position = 'fixed';
+            ta.style.opacity = '0';
+            document.body.appendChild(ta);
+            ta.focus();
+            ta.select();
+            document.execCommand('copy');
+            document.body.removeChild(ta);
+        }
+        showToast('📋 Debug copiado, pegalo en el chat');
+    } catch (err) {
+        console.warn('No se pudo copiar debug:', err);
+        showToast('⚠️ No se pudo copiar debug');
+    }
 }
 
 function autos_openMeliDebug() {
@@ -3774,9 +3871,17 @@ async function autos_refreshCarValuationIfNeeded(car, options = {}) {
     if (autosState.valuationInFlight.has(car.id)) return;
 
     const query = autos_buildValuationQuery(car);
+    meli_updateDebugInfo({
+        valuationPhase: 'valuation_start',
+        valuationCarId: car.id,
+        valuationQuery: query,
+        valuationForce: force,
+        valuationInteractiveAuth: interactiveAuth,
+    });
     if (!query) {
         autosState.meta[dateKey] = today;
         autos_setValuationStatus(car.id, 'error', 'Faltan datos para consultar');
+        meli_updateDebugInfo({ valuationPhase: 'valuation_missing_query' });
         if (autosState.selectedCarId === car.id) autos_renderSelectedCar();
         await autos_saveMeta();
         return;
@@ -3788,6 +3893,7 @@ async function autos_refreshCarValuationIfNeeded(car, options = {}) {
     try {
         const meliToken = providedToken || await meli_ensureAccessToken(interactiveAuth);
         if (!meliToken) {
+            meli_updateDebugInfo({ valuationPhase: 'valuation_no_token' });
             const prevMxn = parseSheetValue(autosState.meta?.[autos_valuationMetaKey(car.id, 'mxn')]);
             if (prevMxn > 0) {
                 autos_setValuationStatus(car.id, 'ok', '');
@@ -3802,6 +3908,7 @@ async function autos_refreshCarValuationIfNeeded(car, options = {}) {
         const url = `https://api.mercadolibre.com/sites/MLM/search?category=MLM1744&limit=50&q=${encodeURIComponent(query)}`;
         const headers = { Authorization: `Bearer ${meliToken}` };
         const res = await fetch(url, { headers });
+        meli_updateDebugInfo({ valuationHttpStatus: res.status });
         if (!res.ok) throw new Error(`MLM valuation ${res.status}`);
         const data = await res.json();
         const results = Array.isArray(data?.results) ? data.results : [];
@@ -3814,6 +3921,7 @@ async function autos_refreshCarValuationIfNeeded(car, options = {}) {
             if (mxn > 0) prices.push(mxn);
         }
         prices.sort((a, b) => a - b);
+        meli_updateDebugInfo({ valuationResultsCount: results.length, valuationPricesCount: prices.length });
         if (!prices.length) {
             autosState.meta[dateKey] = today;
             autosState.meta[autos_valuationMetaKey(car.id, 'mxn')] = '0';
@@ -3823,6 +3931,7 @@ async function autos_refreshCarValuationIfNeeded(car, options = {}) {
             autosState.meta[autos_valuationMetaKey(car.id, 'kmAdjPct')] = '0';
             autosState.meta[autos_valuationMetaKey(car.id, 'source')] = 'MercadoLibre';
             autos_setValuationStatus(car.id, 'no_data', '');
+            meli_updateDebugInfo({ valuationPhase: 'valuation_no_data' });
             await autos_saveMeta();
             return;
         }
@@ -3841,12 +3950,14 @@ async function autos_refreshCarValuationIfNeeded(car, options = {}) {
         autosState.meta[autos_valuationMetaKey(car.id, 'kmAdjPct')] = String(kmAdj.adjustmentPct);
         autosState.meta[autos_valuationMetaKey(car.id, 'source')] = 'MercadoLibre';
         autos_setValuationStatus(car.id, 'ok', '');
+        meli_updateDebugInfo({ valuationPhase: 'valuation_ok' });
         await autos_saveMeta();
         if (autosState.selectedCarId === car.id) autos_renderSelectedCar();
     } catch (err) {
         console.warn('No se pudo actualizar valuacion del auto:', err);
         autosState.meta[dateKey] = today;
         autos_setValuationStatus(car.id, 'error', String(err?.message || 'Error inesperado'));
+        meli_updateDebugInfo({ valuationPhase: 'valuation_error', valuationError: String(err?.message || 'Error inesperado') });
         await autos_saveMeta();
     } finally {
         autosState.valuationInFlight.delete(car.id);
