@@ -3253,6 +3253,7 @@ function autos_bindEvents() {
     document.getElementById('autos-detail-close')?.addEventListener('click', autos_closeCarDetail);
     document.getElementById('autos-license-overlay')?.addEventListener('click', autos_closeLicensePanel);
     document.getElementById('autos-license-close')?.addEventListener('click', autos_closeLicensePanel);
+    document.getElementById('autos-license-upload-btn')?.addEventListener('click', () => document.getElementById('autos-license-file')?.click());
     const licCard = document.getElementById('autos-license-card');
     if (licCard) {
         licCard.addEventListener('pointerdown', autos_licensePointerDown);
@@ -3354,16 +3355,16 @@ function autos_openCarDetail() {
     const detailEl = document.getElementById('autos-detail-content');
     if (!detailEl) return;
     detailEl.innerHTML = `
-        <div class="glass-subtle" style="padding:.85rem;display:grid;gap:.4rem;">
+        <div class="glass-subtle autos-detail-card" style="padding:.85rem;display:grid;gap:.55rem;">
             <img src="${car.fotoAuto || ''}" alt="Auto" style="width:100%;max-height:220px;object-fit:cover;border-radius:.75rem;background:rgba(255,255,255,.05);" onerror="this.style.display='none'" />
-            <span class="account-name">${car.marca} ${car.modelo} (${car.anio || '-'})</span>
-            <span class="account-type-label">Placa: ${car.placa || '-'}</span>
-            <span class="account-type-label">VIN: ${car.vin || '-'}</span>
-            <span class="account-type-label">Propietario: ${car.propietario || '-'}</span>
-            <span class="account-type-label">Seguro: ${car.tieneSeguro ? 'Si' : 'No'} · Poliza: ${car.polizaSeguro || '-'}</span>
-            <span class="account-type-label">Emergencia interior: ${car.emergenciaInterior || '-'} · Metro: ${car.emergenciaMetro || '-'}</span>
-            <span class="account-type-label">Siniestros: ${car.reporteSiniestros1 || '-'} · ${car.reporteSiniestros2 || '-'}</span>
-            <span class="account-type-label">Tipo de llantas: ${car.tipoLlantas || '-'}</span>
+            <div class="autos-detail-title">${car.marca} ${car.modelo} (${car.anio || '-'})</div>
+            <div class="autos-detail-row"><strong>Placa:</strong> <span>${car.placa || '-'}</span></div>
+            <div class="autos-detail-row"><strong>VIN:</strong> <span>${car.vin || '-'}</span></div>
+            <div class="autos-detail-row"><strong>Propietario:</strong> <span>${car.propietario || '-'}</span></div>
+            <div class="autos-detail-row"><strong>Seguro:</strong> <span>${car.tieneSeguro ? 'Si' : 'No'} · Poliza ${car.polizaSeguro || '-'}</span></div>
+            <div class="autos-detail-row"><strong>Emergencia:</strong> <span>${autos_phoneLinkOrText(car.emergenciaInterior, 'Interior')} · ${autos_phoneLinkOrText(car.emergenciaMetro, 'Metro')}</span></div>
+            <div class="autos-detail-row"><strong>Siniestros:</strong> <span>${autos_phoneLinkOrText(car.reporteSiniestros1, 'Siniestros 1')} · ${autos_phoneLinkOrText(car.reporteSiniestros2, 'Siniestros 2')}</span></div>
+            <div class="autos-detail-row"><strong>Llantas:</strong> <span>${car.tipoLlantas || '-'}</span></div>
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:.65rem;margin-top:.75rem;">
             <div class="glass-subtle" style="padding:.55rem;">

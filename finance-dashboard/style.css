@@ -653,16 +653,6 @@ select.field-input { background-image: url("data:image/svg+xml,%3Csvg xmlns='htt
   word-break: break-all;
 }
 
-.autos-profile .account-name {
-  font-size: .98rem;
-  line-height: 1.28;
-}
-
-.autos-profile .account-type-label {
-  font-size: .76rem;
-  line-height: 1.32;
-}
-
 .autos-profile .glass-subtle {
   overflow: hidden;
 }
@@ -744,38 +734,40 @@ select.field-input { background-image: url("data:image/svg+xml,%3Csvg xmlns='htt
   pointer-events: none;
 }
 
-.autos-kpi-head {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: .45rem;
-}
-
-.autos-license-anchor {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-left: auto;
-}
-
-.autos-license-icon {
-  width: 2rem;
-  height: 2rem;
-  font-size: 1rem;
-}
-
-.autos-license-label {
-  font-size: .62rem;
-  color: var(--text-muted);
-  margin-top: .12rem;
-  letter-spacing: .03em;
-  text-transform: uppercase;
-}
-
 .autos-phone-link {
   color: #34d399;
   text-decoration: underline;
   text-underline-offset: 2px;
+}
+
+.autos-detail-card {
+  overflow-wrap: anywhere;
+}
+
+.autos-detail-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.autos-detail-row {
+  display: grid;
+  grid-template-columns: 110px minmax(0, 1fr);
+  gap: .45rem;
+  align-items: start;
+  font-size: .86rem;
+  line-height: 1.35;
+  color: var(--text-soft);
+}
+
+.autos-detail-row strong {
+  color: var(--text-main);
+  font-weight: 700;
+}
+
+.autos-detail-row span {
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .autos-profile-clickable {
