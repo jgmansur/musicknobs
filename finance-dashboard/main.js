@@ -3339,7 +3339,7 @@ function autos_docPreview(url, label) {
         return `<a class="mini-btn" href="${url}" target="_blank" rel="noopener">Abrir ${label} PDF</a>`;
     }
     const previewUrl = drivePreview || url;
-    return `<a href="${url}" target="_blank" rel="noopener"><img src="${previewUrl}" alt="${label}" style="width:100%;height:140px;object-fit:cover;border-radius:.6rem;background:rgba(255,255,255,.05);" onerror="this.style.display='none'; this.parentElement.insertAdjacentHTML('beforeend','<span class=\"mini-btn\">Abrir ${label}</span>')" /></a>`;
+    return `<a href="${url}" target="_blank" rel="noopener"><img src="${previewUrl}" alt="${label}" style="width:100%;height:140px;object-fit:cover;border-radius:.6rem;background:rgba(255,255,255,.05);" onerror="this.style.display='none'" /></a>`;
 }
 
 async function autos_saveMeta() {
@@ -3634,6 +3634,15 @@ function autos_renderSelectedCar() {
     }
     selectedEl.innerText = `${car.marca} ${car.modelo}`;
 
+    const links = [
+        ['Tarjeta Frontal', car.tarjetaCirculacionFrente],
+        ['Tarjeta Trasera', car.tarjetaCirculacionAtras],
+        ['Tabla Pagos', car.tablaPagos],
+        ['Tabla Seguro', car.tablaPagosSeguro],
+        ['Foto Llantas', car.llantasFoto],
+        ['Certificado Polarizado', car.certificadoPolarizado],
+    ].filter(([, url]) => !!url);
+
     const emergenciaInteriorHtml = autos_phoneLinkOrText(car.emergenciaInterior, 'Interior');
     const emergenciaMetroHtml = autos_phoneLinkOrText(car.emergenciaMetro, 'Metro');
     const siniestros1Html = autos_phoneLinkOrText(car.reporteSiniestros1, 'Siniestros 1');
@@ -3652,7 +3661,8 @@ function autos_renderSelectedCar() {
                 <button class="mini-btn" onclick="event.stopPropagation(); autos_openCarSheet('${car.id}')">✏️ Editar auto</button>
             </div>
         </div>
-    </div>`;
+    </div>
+    <div style="display:flex;gap:.35rem;flex-wrap:wrap;margin-top:.5rem;">${links.map(([label, url]) => `<a class="mini-btn" href="${url}" target="_blank" rel="noopener">${label}</a>`).join('')}</div>`;
 
     const allRepairs = autosState.repairs.filter(r => r.carId === car.id).sort((a, b) => b.fecha.localeCompare(a.fecha));
     const q = autosState.repairSearch;
