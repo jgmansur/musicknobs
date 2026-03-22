@@ -14,7 +14,8 @@ const SPREADSHEET_LOG_ID   = '1pn1bsxj2LaoySXAVUvqfEJY1VR4R_T8NsTOqQnVW5Xw'; // 
 const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // Gastos Fijos
 const SPREADSHEET_DEUDAS_ID = '1dKxhgqazskm15lx0f6FNCA0gpJ7i5glfxkusiH3b0Uk'; // Control de Deudas
 const SPREADSHEET_AUTOS_ID = SPREADSHEET_DEUDAS_ID; // Autos + Reparaciones live in same workbook
-const APP_VERSION  = 'v6.2.0';
+const SPREADSHEET_ESTUDIO_ID = SPREADSHEET_DEUDAS_ID; // Estudio + Plugins in same workbook
+const APP_VERSION  = 'v7.0.0';
 // Bump token keys to force re-auth with the new drive scope
 const TOKEN_KEY    = 'google_access_token_v4';
 const EXPIRY_KEY   = 'google_token_expiry_v4';
@@ -158,7 +159,7 @@ let tokenRequestInFlight = null;
 let tokenRequestInteractive = true;
 let tokenRequestWatchdog = null;
 let currentTab  = 'dashboard';
-let tabInited   = { dashboard: false, gastos: false, fijos: false, deudas: false, plan: false, autos: false };
+let tabInited   = { dashboard: false, gastos: false, fijos: false, deudas: false, plan: false, autos: false, estudio: false };
 
 const BUDGET_BUCKETS = [
     'Seguros',
@@ -289,6 +290,7 @@ document.addEventListener('DOMContentLoaded', () => {
     fijos_bindEvents();
     deudas_bindEvents();
     autos_bindEvents();
+    estudio_bindEvents();
 
     document.getElementById('fixed-search-open')?.addEventListener('click', dashboard_openFixedSearch);
     document.getElementById('fixed-search-close')?.addEventListener('click', dashboard_closeFixedSearch);
@@ -1335,6 +1337,7 @@ function showTab(name) {
         if (name === 'deudas')    deudas_cargarDatos();
         if (name === 'plan')      planner_cargarVista();
         if (name === 'autos')     autos_cargarVista();
+        if (name === 'estudio')   estudio_cargarVista();
     }
 }
 
@@ -4312,6 +4315,525 @@ window.autos_closeCarSheet = autos_closeCarSheet;
 window.autos_openRepairSheet = autos_openRepairSheet;
 window.autos_closeRepairSheet = autos_closeRepairSheet;
 window.autos_openCarDetail = autos_openCarDetail;
+
+// =============================================
+// ESTUDIO MODULE
+// =============================================
+const estudioState = {
+    inventario: [],
+    plugins: [],
+    activeSubtab: 'inventario',
+    loaded: false,
+};
+
+const ESTUDIO_INVENTARIO_HEADERS = [
+    'id', 'name', 'cantidad', 'precioUsd', 'categoria', 'anioCompra', 'foto', 'marca', 'modelo', 'site',
+    'serial', 'account', 'notas', 'fechaCompra', 'logMarker',
+];
+
+const ESTUDIO_PLUGIN_HEADERS = [
+    'id', 'name', 'marca', 'descripcion', 'precioUsd', 'site', 'licencia', 'serial', 'account', 'foto', 'fechaCompra', 'logMarker', 'currency',
+];
+
+const ESTUDIO_SEED_INVENTARIO = [
+    ['SHURE SM57', 2, 198, 'Microfonos', '2003', '', '', '', '', '', '', '', ''],
+    ['SENHEISER MD 421 II', 1, 379, 'Microfonos', '2003', '', '', '', '', '', '', '', ''],
+    ['SHURE BETA 52A', 1, 189, 'Microfonos', '2003', '', '', '', '', '', '', '', ''],
+    ['NEUMANN KM184', 1, 799, 'Microfonos', '2003', '', '', '', '', '', '', '', ''],
+    ['AKG 414 C', 1, 974, 'Microfonos', '2003', '', '', '', '', '', '', '', ''],
+    ['RODE NT5', 2, 698, 'Microfonos', '2013', '', '', '', '', '', '', '', ''],
+    ['SSL ALPHA VHD PRE', 1, 1799, 'Preamps', '2009', '', '', '', '', '', '', '', ''],
+    ['JOHN HARDY M 1', 1, 2600, 'Preamps', '2003', '', '', '', '', '', '', '', ''],
+    ['GENELEC', 2, 6000, 'Monitores de Audio', '2003', 'https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/szp3mFYNwh3181ZkC2gi/pub/k8d7AaCz2wi18wHhtwRq.jpg', '', '', '', '', '', '', ''],
+    ['YAMAHAS HS8 8', 2, 740, 'Monitores de Audio', '2009', 'https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/szp3mFYNwh3181ZkC2gi/pub/XPTVrDtAVII9D7xXSdib.jpg', '', '', '', '', '', '', ''],
+    ['DANGEROUS 2 BUS LT', 1, 1499, 'Sumador de Audio', '2007', '', '', '', '', '', '', '', ''],
+    ['FURMANN POWER CONDITIONER', 3, 357, 'Power Protection', '2003', '', '', '', '', '', '', '', ''],
+    ['ELEVEN RACK', 1, 699, 'Guitar Processor', '2007', '', '', '', '', '', '', '', ''],
+    ['SWITCHCRAFT STUDIO PATCH 9625', 1, 989, 'Patch Bay', '2003', '', '', '', '', '', '', '', ''],
+    ['MESA ARGOSY PARA HARDWARE', 1, 2999, 'Mobiliario', '2009', '', '', '', '', '', '', '', ''],
+    ['UAD APOLLO TWIN', 1, 999, 'Interface de Audio', '2018', 'https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/szp3mFYNwh3181ZkC2gi/pub/lA5Af7itU9nbpnq4CsFa.jpg', 'Universal Audio', 'Apollo Twin', 'https://www.uaudio.com', '', '', '', ''],
+    ['UAD APOLLO x8p', 1, 3499, 'Interface de Audio', '2021', '', 'Universal Audio', 'Apollo x8p', 'https://www.uaudio.com', '', '', '', ''],
+    ['MONITOR DE VIDEO SAMSUNG', 1, 200, 'Monitor de Video', '2018', '', '', '', '', '', '', '', ''],
+    ['LINE 6 POD X3 PRO GUITAR MODULE', 1, 8000, 'Guitar Processor', '2004', '', '', '', '', '', '', '', ''],
+    ['BAJO ELECTRICO', 1, 300, 'Instrumentos', '2004', '', 'Ibanez', '', '', '', '', '', ''],
+    ['BATERIA TAMA', 1, 700, 'Instrumentos', '2009', '', '', '', '', '', '', '', ''],
+    ['BABY TAYLOR GUITARRA ACUSTICA', 1, 500, 'Instrumentos', '2009', '', '', '', '', '', '', '', ''],
+    ['YEMBE REMO', 1, 400, 'Instrumentos', '2008', '', '', '', '', '', '', '', ''],
+    ['M-AUDIO AXIOM PRO 49 CONTROLADOR', 1, 300, 'Instrumentos', '2008', '', '', '', '', '', '', '', ''],
+    ['UKULELE', 1, 120, 'Instrumentos', '2012', '', '', '', '', '', '', '', ''],
+    ['TELECASTER', 1, 999, 'Instrumentos', '2005', '', '', '', '', '', '', '', ''],
+    ['Macbook Pro', 1, 4500, 'Computadoras', '2019', 'https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/szp3mFYNwh3181ZkC2gi/pub/u9A68nb5NZVoaJyqT3wH.jpg', 'Apple', 'MacBook Pro Intel i9 2.3ghz 8core 32 GB memoria ram', '', '', '', '', ''],
+    ['Lenovo Laptop', 1, 1200, 'Computadoras', '2024', '', 'Lenovo', '', '', '', '', '', ''],
+    ['Sony ZV-1', 1, 1000, 'Camaras', '2022', '', 'Sony', 'ZV-1', '', '', '', '', ''],
+    ['GoPro Hero 3+', 1, 350, 'Camaras', '', '', 'GoPro', 'Hero 3+', '', '', '', '', ''],
+];
+
+const ESTUDIO_SEED_PLUGINS = [
+    ['Pro - L2', 'Fab Filter', 'Limitador', 169, 'https://www.fabfilter.com/shop/pro-l-2-limiter-plug-in', '', '', '', '', '', '', '', 'USD'],
+    ['Rbass', 'Waves', 'EQ', 35, 'https://www.waves.com', '', '', '', '', '', '', '', 'USD'],
+    ['Abbey Road RS56', 'Waves', 'EQ', 35, 'https://www.waves.com', '', '', '', '', '', '', '', 'USD'],
+    ['CLA Vintage Compressors', 'Waves', 'Compresores', 77, 'https://www.waves.com', '', '', '', '', '', '', '', 'USD'],
+    ['Auto-Tune', 'Antares / Universal Audio', 'Afinador', 300, 'https://www.uaudio.com', '', '', '', '', '', '', '', 'USD'],
+    ['Puig Tech', 'Waves', 'EQ', 35, 'https://www.waves.com', '', '', '', '', '', '', '', 'USD'],
+    ['H-Delay', '', '', 30, '', '', '', '', '', '', '', '', 'USD'],
+    ['Kramer Tape', '', '', 30, '', '', '', '', '', '', '', '', 'USD'],
+    ['Abbey Roads TG Mastering', '', '', 39, '', '', '', '', '', '', '', '', 'USD'],
+    ['Waves VU Meter', '', '', 27, '', '', '', '', '', '', '', '', 'USD'],
+    ['Waves API bundle', '', '', 90, '', '', '', '', '', '', '', '', 'USD'],
+    ['The God Particle', '', 'Limitador', 150, '', 'Cuenta Online', '', '', '', '', '', '', 'USD'],
+];
+
+function estudio_bindEvents() {
+    document.getElementById('estudio-subtab-inventario')?.addEventListener('click', () => estudio_setSubtab('inventario'));
+    document.getElementById('estudio-subtab-plugins')?.addEventListener('click', () => estudio_setSubtab('plugins'));
+    document.getElementById('estudio-btn-add-inventario')?.addEventListener('click', () => estudio_openInventarioSheet(null));
+    document.getElementById('estudio-btn-add-plugin')?.addEventListener('click', () => estudio_openPluginSheet(null));
+    document.getElementById('estudio-inventario-overlay')?.addEventListener('click', estudio_closeInventarioSheet);
+    document.getElementById('estudio-plugin-overlay')?.addEventListener('click', estudio_closePluginSheet);
+    document.getElementById('estudio-inventario-save')?.addEventListener('click', estudio_saveInventario);
+    document.getElementById('estudio-plugin-save')?.addEventListener('click', estudio_savePlugin);
+}
+
+function estudio_setSubtab(name) {
+    estudioState.activeSubtab = name === 'plugins' ? 'plugins' : 'inventario';
+    const invBtn = document.getElementById('estudio-subtab-inventario');
+    const plgBtn = document.getElementById('estudio-subtab-plugins');
+    const invSection = document.getElementById('estudio-inventario-section');
+    const plgSection = document.getElementById('estudio-plugins-section');
+    invBtn?.classList.toggle('active', estudioState.activeSubtab === 'inventario');
+    plgBtn?.classList.toggle('active', estudioState.activeSubtab === 'plugins');
+    invSection?.classList.toggle('hidden', estudioState.activeSubtab !== 'inventario');
+    plgSection?.classList.toggle('hidden', estudioState.activeSubtab !== 'plugins');
+}
+
+async function estudio_cargarVista() {
+    const invList = document.getElementById('estudio-inventario-list');
+    const plgList = document.getElementById('estudio-plugins-list');
+    if (invList) invList.innerHTML = '<div class="loading-spinner">⏳ Cargando inventario...</div>';
+    if (plgList) plgList.innerHTML = '<div class="loading-spinner">⏳ Cargando plugins...</div>';
+    try {
+        await estudio_ensureSheets();
+        await estudio_loadData();
+        estudio_render();
+    } catch (e) {
+        handleApiError(e, invList);
+    }
+}
+
+async function estudio_ensureSheets() {
+    await autos_ensureSheet('EstudioInventario', ESTUDIO_INVENTARIO_HEADERS);
+    await autos_ensureSheet('EstudioPlugins', ESTUDIO_PLUGIN_HEADERS);
+}
+
+async function estudio_loadData() {
+    const [inventarioRows, pluginRows] = await Promise.all([
+        sheetsGet(SPREADSHEET_ESTUDIO_ID, 'EstudioInventario!A2:O').catch(() => []),
+        sheetsGet(SPREADSHEET_ESTUDIO_ID, 'EstudioPlugins!A2:M').catch(() => []),
+    ]);
+
+    if (!inventarioRows.length && !pluginRows.length) {
+        await estudio_seedInitialData();
+        return estudio_loadData();
+    }
+
+    estudioState.inventario = inventarioRows.map((r) => ({
+        id: (r[0] || '').toString(),
+        name: (r[1] || '').toString(),
+        cantidad: Math.max(1, parseInt(r[2], 10) || 1),
+        precioUsd: parseSheetValue(r[3]),
+        categoria: (r[4] || '').toString(),
+        anioCompra: (r[5] || '').toString(),
+        foto: (r[6] || '').toString(),
+        marca: (r[7] || '').toString(),
+        modelo: (r[8] || '').toString(),
+        site: (r[9] || '').toString(),
+        serial: (r[10] || '').toString(),
+        account: (r[11] || '').toString(),
+        notas: (r[12] || '').toString(),
+        fechaCompra: normalizeDateString(r[13] || new Date().toLocaleDateString('en-CA')),
+        logMarker: (r[14] || '').toString(),
+    })).filter((x) => x.id && x.name);
+
+    estudioState.plugins = pluginRows.map((r) => ({
+        id: (r[0] || '').toString(),
+        name: (r[1] || '').toString(),
+        marca: (r[2] || '').toString(),
+        descripcion: (r[3] || '').toString(),
+        precioUsd: parseSheetValue(r[4]),
+        site: (r[5] || '').toString(),
+        licencia: (r[6] || '').toString(),
+        serial: (r[7] || '').toString(),
+        account: (r[8] || '').toString(),
+        foto: (r[9] || '').toString(),
+        fechaCompra: normalizeDateString(r[10] || new Date().toLocaleDateString('en-CA')),
+        logMarker: (r[11] || '').toString(),
+        currency: parseCurrencyCode((r[12] || 'USD').toString().toUpperCase() === 'MXN' ? 'MXN' : 'USD'),
+    })).filter((x) => x.id && x.name);
+
+    estudioState.loaded = true;
+}
+
+async function estudio_seedInitialData() {
+    const nowDate = normalizeDateString(new Date().toLocaleDateString('en-CA'));
+    const inventario = ESTUDIO_SEED_INVENTARIO.map((r, i) => ({
+        id: `inv-${Date.now()}-${i + 1}`,
+        name: r[0],
+        cantidad: r[1],
+        precioUsd: r[2],
+        categoria: r[3],
+        anioCompra: r[4],
+        foto: r[5],
+        marca: r[6],
+        modelo: r[7],
+        site: r[8],
+        serial: r[9],
+        account: r[10],
+        notas: r[11],
+        fechaCompra: nowDate,
+        logMarker: '',
+    }));
+    const plugins = ESTUDIO_SEED_PLUGINS.map((r, i) => ({
+        id: `plg-${Date.now()}-${i + 1}`,
+        name: r[0],
+        marca: r[1],
+        descripcion: r[2],
+        precioUsd: r[3],
+        site: r[4],
+        licencia: r[5],
+        serial: r[6],
+        account: r[7],
+        foto: r[8],
+        fechaCompra: nowDate,
+        logMarker: '',
+        currency: 'USD',
+    }));
+    await sheetsUpdate(SPREADSHEET_ESTUDIO_ID, `EstudioInventario!A2:O${1 + inventario.length}`, inventario.map((x) => [
+        x.id, x.name, x.cantidad, x.precioUsd, x.categoria, x.anioCompra, x.foto, x.marca, x.modelo, x.site,
+        x.serial, x.account, x.notas, x.fechaCompra, x.logMarker,
+    ]));
+    await sheetsUpdate(SPREADSHEET_ESTUDIO_ID, `EstudioPlugins!A2:M${1 + plugins.length}`, plugins.map((x) => [
+        x.id, x.name, x.marca, x.descripcion, x.precioUsd, x.site, x.licencia, x.serial, x.account, x.foto, x.fechaCompra, x.logMarker, x.currency,
+    ]));
+}
+
+function estudio_render() {
+    estudio_setSubtab(estudioState.activeSubtab);
+    const totalInventario = estudioState.inventario.reduce((sum, i) => sum + (parseSheetValue(i.precioUsd) * Math.max(1, parseInt(i.cantidad, 10) || 1)), 0);
+    const totalPlugins = estudioState.plugins.reduce((sum, p) => sum + parseSheetValue(p.precioUsd), 0);
+    const totalMxn = convertTransactionAmountToMxn(totalInventario, 'USD') + convertTransactionAmountToMxn(totalPlugins, 'USD');
+    const totalEl = document.getElementById('estudio-total-spent');
+    if (totalEl) totalEl.innerText = formatCurrency(totalMxn);
+
+    const invList = document.getElementById('estudio-inventario-list');
+    if (invList) {
+        invList.innerHTML = estudioState.inventario.map((item) => {
+            const totalUsd = parseSheetValue(item.precioUsd) * Math.max(1, parseInt(item.cantidad, 10) || 1);
+            return `<div class="account-card glass-subtle estudio-card">
+                <div class="account-card-left">
+                    <span class="account-icon" style="background:rgba(56,189,248,.15);color:#38bdf8">🎛️</span>
+                    <div class="account-info" style="gap:.28rem;">
+                        <span class="account-name">${item.name}</span>
+                        <span class="account-type-label">${item.categoria || 'Sin categoria'} · Cantidad: ${item.cantidad || 1} · ${item.anioCompra || '-'}</span>
+                        <span class="account-type-label">Marca: ${item.marca || '-'} · Modelo: ${item.modelo || '-'}</span>
+                        <span class="account-type-label">Serial: ${item.serial || '-'} · Cuenta: ${item.account || '-'}</span>
+                        ${item.site ? `<a class="mini-btn" href="${item.site}" target="_blank" rel="noopener">Sitio</a>` : ''}
+                        <div style="display:flex;gap:.35rem;flex-wrap:wrap;">
+                            ${item.foto ? `<a class="mini-btn" href="${item.foto}" target="_blank" rel="noopener">Foto</a>` : ''}
+                            <button class="mini-btn" onclick="estudio_openInventarioSheet('${item.id}')">✏️ Editar</button>
+                            <button class="mini-btn mini-btn-danger" onclick="estudio_deleteInventario('${item.id}')">🗑️</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="account-card-right estudio-card-right">
+                    <span class="account-balance text-danger">${formatCurrency(convertTransactionAmountToMxn(totalUsd, 'USD'))}</span>
+                    <span class="account-type-label">USD ${totalUsd.toFixed(2)}</span>
+                </div>
+            </div>`;
+        }).join('') || '<div class="empty-state">Sin equipo registrado</div>';
+    }
+
+    const plgList = document.getElementById('estudio-plugins-list');
+    if (plgList) {
+        plgList.innerHTML = estudioState.plugins.map((item) => {
+            const price = parseSheetValue(item.precioUsd);
+            return `<div class="account-card glass-subtle estudio-card">
+                <div class="account-card-left">
+                    <span class="account-icon" style="background:rgba(251,191,36,.14);color:#fbbf24">🧩</span>
+                    <div class="account-info" style="gap:.28rem;">
+                        <span class="account-name">${item.name}</span>
+                        <span class="account-type-label">${item.marca || 'Sin marca'} · ${item.descripcion || 'Sin descripcion'}</span>
+                        <span class="account-type-label">Licencia: ${item.licencia || '-'} · Serial: ${item.serial || '-'} · Cuenta: ${item.account || '-'}</span>
+                        ${item.site ? `<a class="mini-btn" href="${item.site}" target="_blank" rel="noopener">Sitio</a>` : ''}
+                        <div style="display:flex;gap:.35rem;flex-wrap:wrap;">
+                            ${item.foto ? `<a class="mini-btn" href="${item.foto}" target="_blank" rel="noopener">Imagen</a>` : ''}
+                            <button class="mini-btn" onclick="estudio_openPluginSheet('${item.id}')">✏️ Editar</button>
+                            <button class="mini-btn mini-btn-danger" onclick="estudio_deletePlugin('${item.id}')">🗑️</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="account-card-right estudio-card-right">
+                    <span class="account-balance text-danger">${formatCurrency(convertTransactionAmountToMxn(price, 'USD'))}</span>
+                    <span class="account-type-label">USD ${price.toFixed(2)}</span>
+                </div>
+            </div>`;
+        }).join('') || '<div class="empty-state">Sin plugins registrados</div>';
+    }
+}
+
+function estudio_openInventarioSheet(id) {
+    const item = estudioState.inventario.find((x) => x.id === id) || null;
+    document.getElementById('estudio-inventario-edit-id').value = item?.id || '';
+    document.getElementById('estudio-inventario-title').innerText = item ? 'Editar Equipo' : 'Nuevo Equipo';
+    document.getElementById('estudio-inventario-name').value = item?.name || '';
+    document.getElementById('estudio-inventario-cantidad').value = item?.cantidad || 1;
+    document.getElementById('estudio-inventario-price').value = item?.precioUsd || '';
+    document.getElementById('estudio-inventario-category').value = item?.categoria || '';
+    document.getElementById('estudio-inventario-year').value = item?.anioCompra || '';
+    document.getElementById('estudio-inventario-brand').value = item?.marca || '';
+    document.getElementById('estudio-inventario-model').value = item?.modelo || '';
+    document.getElementById('estudio-inventario-photo').value = item?.foto || '';
+    document.getElementById('estudio-inventario-site').value = item?.site || '';
+    document.getElementById('estudio-inventario-serial').value = item?.serial || '';
+    document.getElementById('estudio-inventario-account').value = item?.account || '';
+    document.getElementById('estudio-inventario-notes').value = item?.notas || '';
+    document.getElementById('estudio-inventario-sheet').classList.remove('hidden');
+}
+
+function estudio_closeInventarioSheet() {
+    document.getElementById('estudio-inventario-sheet').classList.add('hidden');
+}
+
+async function estudio_saveInventario() {
+    const id = document.getElementById('estudio-inventario-edit-id').value || `inv-${Date.now()}`;
+    const item = {
+        id,
+        name: document.getElementById('estudio-inventario-name').value.trim(),
+        cantidad: Math.max(1, parseInt(document.getElementById('estudio-inventario-cantidad').value, 10) || 1),
+        precioUsd: parseSheetValue(document.getElementById('estudio-inventario-price').value),
+        categoria: document.getElementById('estudio-inventario-category').value.trim(),
+        anioCompra: document.getElementById('estudio-inventario-year').value.trim(),
+        foto: document.getElementById('estudio-inventario-photo').value.trim(),
+        marca: document.getElementById('estudio-inventario-brand').value.trim(),
+        modelo: document.getElementById('estudio-inventario-model').value.trim(),
+        site: document.getElementById('estudio-inventario-site').value.trim(),
+        serial: document.getElementById('estudio-inventario-serial').value.trim(),
+        account: document.getElementById('estudio-inventario-account').value.trim(),
+        notas: document.getElementById('estudio-inventario-notes').value.trim(),
+        fechaCompra: normalizeDateString(new Date().toLocaleDateString('en-CA')),
+        logMarker: estudio_getInventarioMarker(id),
+    };
+    if (!item.name) {
+        showToast('⚠️ Captura nombre del equipo');
+        return;
+    }
+    const idx = estudioState.inventario.findIndex((x) => x.id === id);
+    if (idx >= 0) estudioState.inventario[idx] = { ...estudioState.inventario[idx], ...item };
+    else estudioState.inventario.push(item);
+    await estudio_saveInventarioSheet();
+    await estudio_syncInventarioToLog(item);
+    estudio_closeInventarioSheet();
+    estudio_render();
+    tabInited.gastos = false;
+    showToast('✅ Equipo guardado');
+}
+
+async function estudio_saveInventarioSheet() {
+    await sheetsClear(SPREADSHEET_ESTUDIO_ID, 'EstudioInventario!A2:O');
+    if (!estudioState.inventario.length) return;
+    await sheetsUpdate(SPREADSHEET_ESTUDIO_ID, `EstudioInventario!A2:O${1 + estudioState.inventario.length}`, estudioState.inventario.map((x) => [
+        x.id, x.name, x.cantidad, x.precioUsd, x.categoria, x.anioCompra, x.foto, x.marca, x.modelo, x.site,
+        x.serial, x.account, x.notas, x.fechaCompra, x.logMarker || estudio_getInventarioMarker(x.id),
+    ]));
+}
+
+function estudio_openPluginSheet(id) {
+    const item = estudioState.plugins.find((x) => x.id === id) || null;
+    document.getElementById('estudio-plugin-edit-id').value = item?.id || '';
+    document.getElementById('estudio-plugin-title').innerText = item ? 'Editar Plugin' : 'Nuevo Plugin';
+    document.getElementById('estudio-plugin-name').value = item?.name || '';
+    document.getElementById('estudio-plugin-brand').value = item?.marca || '';
+    document.getElementById('estudio-plugin-price').value = item?.precioUsd || '';
+    document.getElementById('estudio-plugin-description').value = item?.descripcion || '';
+    document.getElementById('estudio-plugin-site').value = item?.site || '';
+    document.getElementById('estudio-plugin-license').value = item?.licencia || '';
+    document.getElementById('estudio-plugin-serial').value = item?.serial || '';
+    document.getElementById('estudio-plugin-account').value = item?.account || '';
+    document.getElementById('estudio-plugin-photo').value = item?.foto || '';
+    document.getElementById('estudio-plugin-sheet').classList.remove('hidden');
+}
+
+function estudio_closePluginSheet() {
+    document.getElementById('estudio-plugin-sheet').classList.add('hidden');
+}
+
+async function estudio_savePlugin() {
+    const id = document.getElementById('estudio-plugin-edit-id').value || `plg-${Date.now()}`;
+    const item = {
+        id,
+        name: document.getElementById('estudio-plugin-name').value.trim(),
+        marca: document.getElementById('estudio-plugin-brand').value.trim(),
+        descripcion: document.getElementById('estudio-plugin-description').value.trim(),
+        precioUsd: parseSheetValue(document.getElementById('estudio-plugin-price').value),
+        site: document.getElementById('estudio-plugin-site').value.trim(),
+        licencia: document.getElementById('estudio-plugin-license').value.trim(),
+        serial: document.getElementById('estudio-plugin-serial').value.trim(),
+        account: document.getElementById('estudio-plugin-account').value.trim(),
+        foto: document.getElementById('estudio-plugin-photo').value.trim(),
+        fechaCompra: normalizeDateString(new Date().toLocaleDateString('en-CA')),
+        logMarker: estudio_getPluginMarker(id),
+        currency: 'USD',
+    };
+    if (!item.name) {
+        showToast('⚠️ Captura nombre del plugin');
+        return;
+    }
+    const idx = estudioState.plugins.findIndex((x) => x.id === id);
+    if (idx >= 0) estudioState.plugins[idx] = { ...estudioState.plugins[idx], ...item };
+    else estudioState.plugins.push(item);
+    await estudio_savePluginsSheet();
+    await estudio_syncPluginToLog(item);
+    estudio_closePluginSheet();
+    estudio_render();
+    tabInited.gastos = false;
+    showToast('✅ Plugin guardado');
+}
+
+async function estudio_savePluginsSheet() {
+    await sheetsClear(SPREADSHEET_ESTUDIO_ID, 'EstudioPlugins!A2:M');
+    if (!estudioState.plugins.length) return;
+    await sheetsUpdate(SPREADSHEET_ESTUDIO_ID, `EstudioPlugins!A2:M${1 + estudioState.plugins.length}`, estudioState.plugins.map((x) => [
+        x.id, x.name, x.marca, x.descripcion, x.precioUsd, x.site, x.licencia, x.serial, x.account, x.foto, x.fechaCompra, x.logMarker || estudio_getPluginMarker(x.id), x.currency || 'USD',
+    ]));
+}
+
+function estudio_getInventarioMarker(id) {
+    return `ESTUDIOLOG#INV#${id}`;
+}
+
+function estudio_getPluginMarker(id) {
+    return `ESTUDIOLOG#PLG#${id}`;
+}
+
+async function estudio_syncInventarioToLog(item) {
+    const marker = item.logMarker || estudio_getInventarioMarker(item.id);
+    const logRows = await sheetsGet(SPREADSHEET_LOG_ID, 'Hoja 1!A2:H');
+    let found = -1;
+    for (let i = 0; i < logRows.length; i++) {
+        if (((logRows[i][2] || '').toString()).includes(marker)) {
+            found = i;
+            break;
+        }
+    }
+    const monto = parseSheetValue(item.precioUsd) * Math.max(1, parseInt(item.cantidad, 10) || 1);
+    if (monto <= 0) {
+        if (found !== -1) {
+            const logSheetId = await getSheetId(SPREADSHEET_LOG_ID, 'Hoja 1');
+            await sheetsDeleteRow(SPREADSHEET_LOG_ID, logSheetId, found + 1);
+        }
+        return;
+    }
+    const row = [
+        item.fechaCompra || normalizeDateString(new Date().toLocaleDateString('en-CA')),
+        'Estudio - Inventario',
+        `${item.name} (${item.categoria || 'Equipo'}) [${marker}]`,
+        monto,
+        'Gasto',
+        'Estudio',
+        item.foto || item.site || '',
+        'USD',
+    ];
+    if (found !== -1) {
+        const rowNum = found + 2;
+        await sheetsUpdate(SPREADSHEET_LOG_ID, `Hoja 1!A${rowNum}:H${rowNum}`, [row]);
+    } else {
+        await sheetsAppend(SPREADSHEET_LOG_ID, 'Hoja 1!A:H', [row]);
+    }
+}
+
+async function estudio_syncPluginToLog(item) {
+    const marker = item.logMarker || estudio_getPluginMarker(item.id);
+    const logRows = await sheetsGet(SPREADSHEET_LOG_ID, 'Hoja 1!A2:H');
+    let found = -1;
+    for (let i = 0; i < logRows.length; i++) {
+        if (((logRows[i][2] || '').toString()).includes(marker)) {
+            found = i;
+            break;
+        }
+    }
+    const monto = parseSheetValue(item.precioUsd);
+    if (monto <= 0) {
+        if (found !== -1) {
+            const logSheetId = await getSheetId(SPREADSHEET_LOG_ID, 'Hoja 1');
+            await sheetsDeleteRow(SPREADSHEET_LOG_ID, logSheetId, found + 1);
+        }
+        return;
+    }
+    const row = [
+        item.fechaCompra || normalizeDateString(new Date().toLocaleDateString('en-CA')),
+        'Estudio - Plugins',
+        `${item.name} (${item.marca || 'Plugin'}) [${marker}]`,
+        monto,
+        'Gasto',
+        'Estudio',
+        item.site || item.foto || '',
+        item.currency || 'USD',
+    ];
+    if (found !== -1) {
+        const rowNum = found + 2;
+        await sheetsUpdate(SPREADSHEET_LOG_ID, `Hoja 1!A${rowNum}:H${rowNum}`, [row]);
+    } else {
+        await sheetsAppend(SPREADSHEET_LOG_ID, 'Hoja 1!A:H', [row]);
+    }
+}
+
+window.estudio_deleteInventario = async function(id) {
+    const item = estudioState.inventario.find((x) => x.id === id);
+    if (!item) return;
+    if (!confirm('¿Eliminar este equipo del inventario?')) return;
+    estudioState.inventario = estudioState.inventario.filter((x) => x.id !== id);
+    await estudio_saveInventarioSheet();
+    try {
+        const marker = item.logMarker || estudio_getInventarioMarker(item.id);
+        const logRows = await sheetsGet(SPREADSHEET_LOG_ID, 'Hoja 1!A2:H');
+        const idx = logRows.findIndex((row) => ((row[2] || '').toString()).includes(marker));
+        if (idx !== -1) {
+            const logSheetId = await getSheetId(SPREADSHEET_LOG_ID, 'Hoja 1');
+            await sheetsDeleteRow(SPREADSHEET_LOG_ID, logSheetId, idx + 1);
+            tabInited.gastos = false;
+        }
+    } catch (e) {
+        console.warn('No se pudo borrar gasto sincronizado de inventario:', e);
+    }
+    estudio_render();
+    showToast('🗑️ Equipo eliminado');
+};
+
+window.estudio_deletePlugin = async function(id) {
+    const item = estudioState.plugins.find((x) => x.id === id);
+    if (!item) return;
+    if (!confirm('¿Eliminar este plugin?')) return;
+    estudioState.plugins = estudioState.plugins.filter((x) => x.id !== id);
+    await estudio_savePluginsSheet();
+    try {
+        const marker = item.logMarker || estudio_getPluginMarker(item.id);
+        const logRows = await sheetsGet(SPREADSHEET_LOG_ID, 'Hoja 1!A2:H');
+        const idx = logRows.findIndex((row) => ((row[2] || '').toString()).includes(marker));
+        if (idx !== -1) {
+            const logSheetId = await getSheetId(SPREADSHEET_LOG_ID, 'Hoja 1');
+            await sheetsDeleteRow(SPREADSHEET_LOG_ID, logSheetId, idx + 1);
+            tabInited.gastos = false;
+        }
+    } catch (e) {
+        console.warn('No se pudo borrar gasto sincronizado de plugin:', e);
+    }
+    estudio_render();
+    showToast('🗑️ Plugin eliminado');
+};
+
+window.estudio_openInventarioSheet = estudio_openInventarioSheet;
+window.estudio_closeInventarioSheet = estudio_closeInventarioSheet;
+window.estudio_openPluginSheet = estudio_openPluginSheet;
+window.estudio_closePluginSheet = estudio_closePluginSheet;
 
 // =============================================
 // UTILITIES

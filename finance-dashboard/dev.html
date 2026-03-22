@@ -682,6 +682,101 @@
         </div>
       </div>
 
+      <!-- ══════════════════════════════════
+           VIEW: ESTUDIO (Tab 7)
+           ══════════════════════════════════ -->
+      <div id="view-estudio" class="view">
+        <main class="dashboard-grid">
+          <section class="kpi-row">
+            <div class="kpi-card glass">
+              <div class="kpi-icon" style="background:rgba(56,189,248,.15);color:#38bdf8"><i data-lucide="wrench"></i></div>
+              <div class="kpi-data">
+                <span class="label">Control de Estudio</span>
+                <h2 id="estudio-total-spent" class="text-danger" style="margin:0;">$0.00</h2>
+                <span class="diff-label">Inventario + Plugins sincronizados a gastos</span>
+              </div>
+            </div>
+          </section>
+
+          <section class="glass" style="display:grid;gap:.75rem;">
+            <div class="section-header" style="display:flex;justify-content:space-between;align-items:center;gap:.6rem;flex-wrap:wrap;">
+              <h3>Estudio</h3>
+              <div class="estudio-subtabs">
+                <button id="estudio-subtab-inventario" class="estudio-subtab-btn active" type="button">Inventario</button>
+                <button id="estudio-subtab-plugins" class="estudio-subtab-btn" type="button">Plugins</button>
+              </div>
+            </div>
+
+            <div id="estudio-inventario-section" style="display:grid;gap:.65rem;">
+              <div class="section-header" style="display:flex;justify-content:space-between;align-items:center;gap:.6rem;">
+                <h3>Inventario de Estudio</h3>
+                <button id="estudio-btn-add-inventario" class="secondary-btn" style="padding:.45rem .7rem;">+ Equipo</button>
+              </div>
+              <div id="estudio-inventario-list" class="accounts-list"></div>
+            </div>
+
+            <div id="estudio-plugins-section" class="hidden" style="display:grid;gap:.65rem;">
+              <div class="section-header" style="display:flex;justify-content:space-between;align-items:center;gap:.6rem;">
+                <h3>Plugins</h3>
+                <button id="estudio-btn-add-plugin" class="secondary-btn" style="padding:.45rem .7rem;">+ Plugin</button>
+              </div>
+              <div id="estudio-plugins-list" class="accounts-list"></div>
+            </div>
+          </section>
+        </main>
+
+        <div id="estudio-inventario-sheet" class="bottom-sheet hidden">
+          <div id="estudio-inventario-overlay" class="bottom-sheet-overlay"></div>
+          <div class="bottom-sheet-content glass">
+            <div class="sheet-handle"></div>
+            <div class="balance-panel-header">
+              <h3 id="estudio-inventario-title" class="balance-panel-title">Nuevo Equipo</h3>
+              <button class="icon-btn" onclick="estudio_closeInventarioSheet()">✕</button>
+            </div>
+            <input id="estudio-inventario-edit-id" type="hidden">
+            <input id="estudio-inventario-name" class="field-input" placeholder="Nombre del equipo">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin-top:.55rem;">
+              <input id="estudio-inventario-cantidad" type="number" step="1" class="field-input" placeholder="Cantidad">
+              <input id="estudio-inventario-price" type="number" step="0.01" class="field-input" placeholder="Precio USD">
+              <input id="estudio-inventario-category" class="field-input" placeholder="Categoría">
+              <input id="estudio-inventario-year" class="field-input" placeholder="Año de compra">
+              <input id="estudio-inventario-brand" class="field-input" placeholder="Marca">
+              <input id="estudio-inventario-model" class="field-input" placeholder="Modelo">
+            </div>
+            <input id="estudio-inventario-photo" class="field-input" style="margin-top:.45rem;" placeholder="URL foto (opcional)">
+            <input id="estudio-inventario-site" class="field-input" style="margin-top:.45rem;" placeholder="Sitio (opcional)">
+            <input id="estudio-inventario-serial" class="field-input" style="margin-top:.45rem;" placeholder="Serial / No. de serie (opcional)">
+            <input id="estudio-inventario-account" class="field-input" style="margin-top:.45rem;" placeholder="Cuenta / Email licencia (opcional)">
+            <textarea id="estudio-inventario-notes" class="field-input" rows="3" style="margin-top:.45rem;" placeholder="Notas (opcional)"></textarea>
+            <button id="estudio-inventario-save" class="primary-btn" style="margin-top:.8rem;width:100%;">Guardar Equipo</button>
+          </div>
+        </div>
+
+        <div id="estudio-plugin-sheet" class="bottom-sheet hidden">
+          <div id="estudio-plugin-overlay" class="bottom-sheet-overlay"></div>
+          <div class="bottom-sheet-content glass">
+            <div class="sheet-handle"></div>
+            <div class="balance-panel-header">
+              <h3 id="estudio-plugin-title" class="balance-panel-title">Nuevo Plugin</h3>
+              <button class="icon-btn" onclick="estudio_closePluginSheet()">✕</button>
+            </div>
+            <input id="estudio-plugin-edit-id" type="hidden">
+            <input id="estudio-plugin-name" class="field-input" placeholder="Nombre del plugin">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin-top:.55rem;">
+              <input id="estudio-plugin-brand" class="field-input" placeholder="Marca">
+              <input id="estudio-plugin-price" type="number" step="0.01" class="field-input" placeholder="Precio USD">
+            </div>
+            <textarea id="estudio-plugin-description" class="field-input" rows="3" style="margin-top:.45rem;" placeholder="Descripción"></textarea>
+            <input id="estudio-plugin-site" class="field-input" style="margin-top:.45rem;" placeholder="Sitio (opcional)">
+            <input id="estudio-plugin-license" class="field-input" style="margin-top:.45rem;" placeholder="Licencia (opcional)">
+            <input id="estudio-plugin-serial" class="field-input" style="margin-top:.45rem;" placeholder="Serial / No. de serie (opcional)">
+            <input id="estudio-plugin-account" class="field-input" style="margin-top:.45rem;" placeholder="Cuenta / Email licencia (opcional)">
+            <input id="estudio-plugin-photo" class="field-input" style="margin-top:.45rem;" placeholder="URL imagen (opcional)">
+            <button id="estudio-plugin-save" class="primary-btn" style="margin-top:.8rem;width:100%;">Guardar Plugin</button>
+          </div>
+        </div>
+      </div>
+
       <!-- ══ HORMIGA DETAIL PANEL ══ -->
       <div id="fixed-panel" class="bottom-sheet hidden">
         <div id="fixed-panel-overlay" class="bottom-sheet-overlay"></div>
@@ -787,6 +882,10 @@
         <button class="tab" id="tab-autos" data-tab="autos">
           <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 13l1.5-4.5A2 2 0 0 1 6.4 7h11.2a2 2 0 0 1 1.9 1.5L21 13"/><path d="M5 13h14v5a2 2 0 0 1-2 2h-1a1 1 0 0 1-1-1v-1H9v1a1 1 0 0 1-1 1H7a2 2 0 0 1-2-2v-5z"/><circle cx="7.5" cy="15.5" r="1"/><circle cx="16.5" cy="15.5" r="1"/></svg>
           <span class="tab-label">Autos</span>
+        </button>
+        <button class="tab" id="tab-estudio" data-tab="estudio">
+          <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 4h12v3H6z"/><path d="M5 7h14l-1.2 11.2a2 2 0 0 1-2 1.8H8.2a2 2 0 0 1-2-1.8z"/><path d="M10 10v6M14 10v6"/></svg>
+          <span class="tab-label">Estudio</span>
         </button>
       </nav>
 
