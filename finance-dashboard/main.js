@@ -15,7 +15,7 @@ const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // 
 const SPREADSHEET_DEUDAS_ID = '1dKxhgqazskm15lx0f6FNCA0gpJ7i5glfxkusiH3b0Uk'; // Control de Deudas
 const SPREADSHEET_AUTOS_ID = SPREADSHEET_DEUDAS_ID; // Autos + Reparaciones live in same workbook
 const SPREADSHEET_ESTUDIO_ID = SPREADSHEET_DEUDAS_ID; // Estudio + Plugins in same workbook
-const APP_VERSION  = 'v7.0.4';
+const APP_VERSION  = 'v7.0.5';
 // Bump token keys to force re-auth with the new drive scope
 const TOKEN_KEY    = 'google_access_token_v4';
 const EXPIRY_KEY   = 'google_token_expiry_v4';
@@ -4561,9 +4561,7 @@ function estudio_render() {
     if (breakdownEl) {
         const inv = formatCurrency(convertTransactionAmountToMxn(totalInventario, 'USD'));
         const plg = formatCurrency(convertTransactionAmountToMxn(totalPlugins, 'USD'));
-        breakdownEl.innerText = estudioState.activeSubtab === 'inventario'
-            ? `Inventario histórico: ${inv} · Plugins: ${plg}`
-            : `Plugins histórico: ${plg} · Inventario: ${inv}`;
+        breakdownEl.innerText = estudioState.activeSubtab === 'inventario' ? inv : plg;
     }
 
     const inventarioCategories = estudio_uniqueCategories(estudioState.inventario, 'categoria');
