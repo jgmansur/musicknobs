@@ -15,7 +15,7 @@ const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // 
 const SPREADSHEET_DEUDAS_ID = '1dKxhgqazskm15lx0f6FNCA0gpJ7i5glfxkusiH3b0Uk'; // Control de Deudas
 const SPREADSHEET_AUTOS_ID = SPREADSHEET_DEUDAS_ID; // Autos + Reparaciones live in same workbook
 const SPREADSHEET_ESTUDIO_ID = SPREADSHEET_DEUDAS_ID; // Estudio + Plugins in same workbook
-const APP_VERSION  = 'v7.0.19';
+const APP_VERSION  = 'v7.0.20';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -3671,7 +3671,8 @@ function autos_getValuationLabel(carId) {
     if (info.status === 'loading') return 'Calculando valor de mercado...';
     if (info.status === 'ok' && info.mxn > 0) {
         const dateTxt = info.date ? ` (${info.date})` : '';
-        return `${formatCurrency(info.mxn)}${dateTxt}`;
+        const sourceTxt = info.source === 'EstimadoLocal' ? ' (estimado)' : '';
+        return `${formatCurrency(info.mxn)}${sourceTxt}${dateTxt}`;
     }
     if (info.status === 'no_data') {
         const dateTxt = info.date ? ` (${info.date})` : '';
@@ -3727,6 +3728,7 @@ function autos_renderMeliDebug() {
         ['valuation.km', selectedKm ? String(selectedKm) : '-'],
         ['valuation.query', selectedQuery || '-'],
         ['valuation.status', selectedValuation?.status || '-'],
+        ['valuation.source', selectedValuation?.source || '-'],
         ['valuation.error', selectedValuation?.error || '-'],
         ['valuation.date', selectedValuation?.date || '-'],
         ['valuation.sample', selectedValuation ? String(selectedValuation.sample || 0) : '-'],
@@ -3776,6 +3778,7 @@ function autos_buildMeliDebugSnapshot() {
         `valuation.km=${selectedKm ? String(selectedKm) : '-'}`,
         `valuation.query=${selectedQuery || '-'}`,
         `valuation.status=${selectedValuation?.status || '-'}`,
+        `valuation.source=${selectedValuation?.source || '-'}`,
         `valuation.error=${selectedValuation?.error || '-'}`,
         `valuation.date=${selectedValuation?.date || '-'}`,
         `valuation.sample=${selectedValuation ? String(selectedValuation.sample || 0) : '-'}`,
@@ -3855,6 +3858,33 @@ function autos_calculateMileageAdjustment(car) {
     const factor = Math.max(0.72, Math.min(1.18, rawFactor));
     const adjustmentPct = Math.round((factor - 1) * 1000) / 10;
     return { km, expectedKm, factor, adjustmentPct };
+}
+
+function autos_estimateFallbackValuation(car) {
+    const year = parseInt((car?.anio || '').toString(), 10);
+    const currentYear = new Date().getFullYear();
+    const age = Number.isFinite(year) ? Math.max(1, currentYear - year + 1) : 12;
+    const modelText = `${car?.marca || ''} ${car?.modelo || ''}`.toLowerCase();
+
+    let segmentMultiplier = 1;
+    if (/(koleos|taos|tiguan|rav4|xtrail|cx-5|suv)/i.test(modelText)) segmentMultiplier = 1.22;
+    else if (/(jetta|sentra|corolla|civic|mazda\s*3|versa|rio|yaris)/i.test(modelText)) segmentMultiplier = 0.96;
+    else if (/(pickup|hilux|l200|ranger|np300|frontier)/i.test(modelText)) segmentMultiplier = 1.28;
+
+    const baseNewMxn = 430000 * segmentMultiplier;
+    const depreciationFactor = Math.pow(0.905, Math.max(0, age - 1));
+    const midBase = Math.max(65000, Math.min(1200000, baseNewMxn * depreciationFactor));
+    const kmAdj = autos_calculateMileageAdjustment(car);
+    const mid = midBase * kmAdj.factor;
+    const low = mid * 0.84;
+    const high = mid * 1.16;
+
+    return {
+        low: Math.round(low),
+        mid: Math.round(mid),
+        high: Math.round(high),
+        kmAdj,
+    };
 }
 
 function autos_setValuationStatus(carId, status, error = '') {
@@ -3989,9 +4019,24 @@ async function autos_refreshCarValuationIfNeeded(car, options = {}) {
         if (autosState.selectedCarId === car.id) autos_renderSelectedCar();
     } catch (err) {
         console.warn('No se pudo actualizar valuacion del auto:', err);
+        const errMsg = String(err?.message || 'Error inesperado');
+        if (/forbidden|403/i.test(errMsg)) {
+            const est = autos_estimateFallbackValuation(car);
+            autosState.meta[dateKey] = today;
+            autosState.meta[autos_valuationMetaKey(car.id, 'mxn')] = String(est.mid);
+            autosState.meta[autos_valuationMetaKey(car.id, 'low')] = String(est.low);
+            autosState.meta[autos_valuationMetaKey(car.id, 'high')] = String(est.high);
+            autosState.meta[autos_valuationMetaKey(car.id, 'sample')] = '0';
+            autosState.meta[autos_valuationMetaKey(car.id, 'kmAdjPct')] = String(est.kmAdj.adjustmentPct);
+            autosState.meta[autos_valuationMetaKey(car.id, 'source')] = 'EstimadoLocal';
+            autos_setValuationStatus(car.id, 'ok', '');
+            meli_updateDebugInfo({ valuationPhase: 'valuation_fallback_estimate', valuationError: errMsg });
+            await autos_saveMeta();
+            return;
+        }
         autosState.meta[dateKey] = today;
-        autos_setValuationStatus(car.id, 'error', String(err?.message || 'Error inesperado'));
-        meli_updateDebugInfo({ valuationPhase: 'valuation_error', valuationError: String(err?.message || 'Error inesperado') });
+        autos_setValuationStatus(car.id, 'error', errMsg);
+        meli_updateDebugInfo({ valuationPhase: 'valuation_error', valuationError: errMsg });
         await autos_saveMeta();
     } finally {
         autosState.valuationInFlight.delete(car.id);
