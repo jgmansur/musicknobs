@@ -847,33 +847,70 @@ select.field-input { background-image: url("data:image/svg+xml,%3Csvg xmlns='htt
   color: var(--primary);
 }
 
-.estudio-card {
+.estudio-breakdown-note {
+  font-size: .68rem;
+  color: #4ade80;
+  font-weight: 600;
+  letter-spacing: .01em;
+}
+
+.estudio-entry-card {
+  border: 1px solid rgba(255,255,255,.09);
+  border-radius: 1rem;
+  padding: .85rem .9rem;
+  display: grid;
+  gap: .58rem;
+}
+
+.estudio-entry-top {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  gap: .6rem;
+  gap: .8rem;
 }
 
-.estudio-card .account-card-left {
-  flex: 1;
-  min-width: 0;
-  align-items: flex-start;
+.estudio-entry-title {
+  font-size: 1.02rem;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: .01em;
 }
 
-.estudio-card .account-info {
-  max-width: min(100%, 420px);
+.estudio-entry-meta {
+  font-size: .78rem;
+  line-height: 1.35;
+  color: var(--text-soft);
 }
 
-.estudio-card .account-type-label {
+.estudio-entry-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: .35rem .75rem;
+}
+
+.estudio-entry-notes {
+  font-size: .8rem;
+  color: var(--text-main);
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: .65rem;
+  padding: .45rem .55rem;
   line-height: 1.35;
 }
 
-.estudio-card .mini-btn {
+.estudio-entry-actions {
+  display: flex;
+  gap: .35rem;
+  flex-wrap: wrap;
+}
+
+.estudio-entry-actions .mini-btn {
   font-size: .72rem;
   padding: .26rem .56rem;
 }
 
 .estudio-card-right {
+  display: flex;
   margin-left: auto;
   flex-direction: column;
   align-items: flex-end;
@@ -883,6 +920,10 @@ select.field-input { background-image: url("data:image/svg+xml,%3Csvg xmlns='htt
 }
 
 @media (max-width: 560px) {
+  .estudio-entry-grid {
+    grid-template-columns: 1fr;
+  }
+
   .estudio-card-right {
     min-width: 106px;
     text-align: right;

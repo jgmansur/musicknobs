@@ -15,7 +15,7 @@ const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // 
 const SPREADSHEET_DEUDAS_ID = '1dKxhgqazskm15lx0f6FNCA0gpJ7i5glfxkusiH3b0Uk'; // Control de Deudas
 const SPREADSHEET_AUTOS_ID = SPREADSHEET_DEUDAS_ID; // Autos + Reparaciones live in same workbook
 const SPREADSHEET_ESTUDIO_ID = SPREADSHEET_DEUDAS_ID; // Estudio + Plugins in same workbook
-const APP_VERSION  = 'v7.0.2';
+const APP_VERSION  = 'v7.0.3';
 // Bump token keys to force re-auth with the new drive scope
 const TOKEN_KEY    = 'google_access_token_v4';
 const EXPIRY_KEY   = 'google_token_expiry_v4';
@@ -4334,7 +4334,7 @@ const ESTUDIO_INVENTARIO_HEADERS = [
 ];
 
 const ESTUDIO_PLUGIN_HEADERS = [
-    'id', 'name', 'marca', 'descripcion', 'precioUsd', 'site', 'licencia', 'serial', 'account', 'foto', 'fechaCompra', 'logMarker', 'currency',
+    'id', 'name', 'marca', 'descripcion', 'precioUsd', 'site', 'licencia', 'serial', 'account', 'foto', 'fechaCompra', 'logMarker', 'currency', 'categoria',
 ];
 
 const ESTUDIO_SEED_INVENTARIO = [
@@ -4438,7 +4438,7 @@ async function estudio_ensureSheets() {
 async function estudio_loadData() {
     const [inventarioRows, pluginRows] = await Promise.all([
         sheetsGet(SPREADSHEET_ESTUDIO_ID, 'EstudioInventario!A2:O').catch(() => []),
-        sheetsGet(SPREADSHEET_ESTUDIO_ID, 'EstudioPlugins!A2:M').catch(() => []),
+        sheetsGet(SPREADSHEET_ESTUDIO_ID, 'EstudioPlugins!A2:N').catch(() => []),
     ]);
 
     if (!inventarioRows.length && !pluginRows.length) {
@@ -4478,6 +4478,7 @@ async function estudio_loadData() {
         fechaCompra: normalizeDateString(r[10] || new Date().toLocaleDateString('en-CA')),
         logMarker: (r[11] || '').toString(),
         currency: parseCurrencyCode((r[12] || 'USD').toString().toUpperCase() === 'MXN' ? 'MXN' : 'USD'),
+        categoria: (r[13] || r[3] || '').toString(),
     })).filter((x) => x.id && x.name);
 
     estudioState.loaded = true;
@@ -4516,14 +4517,26 @@ async function estudio_seedInitialData() {
         fechaCompra: nowDate,
         logMarker: '',
         currency: 'USD',
+        categoria: (r[13] || r[2] || '').toString(),
     }));
     await sheetsUpdate(SPREADSHEET_ESTUDIO_ID, `EstudioInventario!A2:O${1 + inventario.length}`, inventario.map((x) => [
         x.id, x.name, x.cantidad, x.precioUsd, x.categoria, x.anioCompra, x.foto, x.marca, x.modelo, x.site,
         x.serial, x.account, x.notas, x.fechaCompra, x.logMarker,
     ]));
-    await sheetsUpdate(SPREADSHEET_ESTUDIO_ID, `EstudioPlugins!A2:M${1 + plugins.length}`, plugins.map((x) => [
-        x.id, x.name, x.marca, x.descripcion, x.precioUsd, x.site, x.licencia, x.serial, x.account, x.foto, x.fechaCompra, x.logMarker, x.currency,
+    await sheetsUpdate(SPREADSHEET_ESTUDIO_ID, `EstudioPlugins!A2:N${1 + plugins.length}`, plugins.map((x) => [
+        x.id, x.name, x.marca, x.descripcion, x.precioUsd, x.site, x.licencia, x.serial, x.account, x.foto, x.fechaCompra, x.logMarker, x.currency, x.categoria,
     ]));
+}
+
+function estudio_uniqueCategories(items, key) {
+    return [...new Set(items.map((x) => (x?.[key] || '').toString().trim()).filter(Boolean))]
+        .sort((a, b) => a.localeCompare(b, 'es', { sensitivity: 'base' }));
+}
+
+function estudio_renderDatalist(datalistId, categories) {
+    const dl = document.getElementById(datalistId);
+    if (!dl) return;
+    dl.innerHTML = categories.map((c) => `<option value="${c.replace(/"/g, '&quot;')}"></option>`).join('');
 }
 
 function estudio_render() {
@@ -4533,6 +4546,17 @@ function estudio_render() {
     const totalMxn = convertTransactionAmountToMxn(totalInventario, 'USD') + convertTransactionAmountToMxn(totalPlugins, 'USD');
     const totalEl = document.getElementById('estudio-total-spent');
     if (totalEl) totalEl.innerText = formatCurrency(totalMxn);
+    const breakdownEl = document.getElementById('estudio-breakdown-note');
+    if (breakdownEl) {
+        const inv = formatCurrency(convertTransactionAmountToMxn(totalInventario, 'USD'));
+        const plg = formatCurrency(convertTransactionAmountToMxn(totalPlugins, 'USD'));
+        breakdownEl.innerText = estudioState.activeSubtab === 'inventario'
+            ? `Inventario histórico: ${inv} · Plugins: ${plg}`
+            : `Plugins histórico: ${plg} · Inventario: ${inv}`;
+    }
+
+    estudio_renderDatalist('estudio-inventario-categories', estudio_uniqueCategories(estudioState.inventario, 'categoria'));
+    estudio_renderDatalist('estudio-plugin-categories', estudio_uniqueCategories(estudioState.plugins, 'categoria'));
 
     const invList = document.getElementById('estudio-inventario-list');
     const invSearchEl = document.getElementById('estudio-inventario-search');
@@ -4556,27 +4580,34 @@ function estudio_render() {
     if (invList) {
         invList.innerHTML = inventarioRows.map((item) => {
             const totalUsd = parseSheetValue(item.precioUsd) * Math.max(1, parseInt(item.cantidad, 10) || 1);
-            return `<div class="account-card glass-subtle estudio-card">
-                <div class="account-card-left">
-                    <span class="account-icon" style="background:rgba(56,189,248,.15);color:#38bdf8">🎛️</span>
-                    <div class="account-info" style="gap:.28rem;">
-                        <span class="account-name">${item.name}</span>
-                        <span class="account-type-label">${item.categoria || 'Sin categoria'} · Cantidad: ${item.cantidad || 1} · ${item.anioCompra || '-'}</span>
-                        <span class="account-type-label">Marca: ${item.marca || '-'} · Modelo: ${item.modelo || '-'}</span>
-                        <span class="account-type-label">Serial: ${item.serial || '-'} · Cuenta: ${item.account || '-'}</span>
-                        ${item.site ? `<a class="mini-btn" href="${item.site}" target="_blank" rel="noopener">Sitio</a>` : ''}
-                        <div style="display:flex;gap:.35rem;flex-wrap:wrap;">
-                            ${item.foto ? `<a class="mini-btn" href="${item.foto}" target="_blank" rel="noopener">Foto</a>` : ''}
-                            <button class="mini-btn" onclick="estudio_openInventarioSheet('${item.id}')">✏️ Editar</button>
-                            <button class="mini-btn mini-btn-danger" onclick="estudio_deleteInventario('${item.id}')">🗑️</button>
-                        </div>
+            return `<article class="glass-subtle estudio-entry-card">
+                <div class="estudio-entry-top">
+                    <div style="display:grid;gap:.25rem;min-width:0;">
+                        <span class="estudio-entry-title">🎛️ ${item.name}</span>
+                        <span class="estudio-entry-meta">${item.categoria || 'Sin categoria'} · Cantidad ${item.cantidad || 1} · ${item.anioCompra || '-'}</span>
+                    </div>
+                    <div class="estudio-card-right">
+                        <span class="account-balance text-danger">${formatCurrency(convertTransactionAmountToMxn(totalUsd, 'USD'))}</span>
+                        <span class="account-type-label">USD ${totalUsd.toFixed(2)}</span>
                     </div>
                 </div>
-                <div class="account-card-right estudio-card-right">
-                    <span class="account-balance text-danger">${formatCurrency(convertTransactionAmountToMxn(totalUsd, 'USD'))}</span>
-                    <span class="account-type-label">USD ${totalUsd.toFixed(2)}</span>
+
+                <div class="estudio-entry-grid">
+                    <span class="estudio-entry-meta"><strong>Marca:</strong> ${item.marca || '-'}</span>
+                    <span class="estudio-entry-meta"><strong>Modelo:</strong> ${item.modelo || '-'}</span>
+                    <span class="estudio-entry-meta"><strong>Serial:</strong> ${item.serial || '-'}</span>
+                    <span class="estudio-entry-meta"><strong>Cuenta:</strong> ${item.account || '-'}</span>
                 </div>
-            </div>`;
+
+                ${item.notas ? `<div class="estudio-entry-notes">${item.notas}</div>` : ''}
+
+                <div class="estudio-entry-actions">
+                    ${item.site ? `<a class="mini-btn" href="${item.site}" target="_blank" rel="noopener">Sitio</a>` : ''}
+                    ${item.foto ? `<a class="mini-btn" href="${item.foto}" target="_blank" rel="noopener">Foto</a>` : ''}
+                    <button class="mini-btn" onclick="estudio_openInventarioSheet('${item.id}')">✏️ Editar</button>
+                    <button class="mini-btn mini-btn-danger" onclick="estudio_deleteInventario('${item.id}')">🗑️</button>
+                </div>
+            </article>`;
         }).join('') || (invQuery ? '<div class="empty-state">Sin coincidencias en inventario</div>' : '<div class="empty-state">Sin equipo registrado</div>');
     }
 
@@ -4590,6 +4621,7 @@ function estudio_render() {
             const text = [
                 item.name,
                 item.marca,
+                item.categoria,
                 item.descripcion,
                 item.licencia,
                 item.serial,
@@ -4600,26 +4632,34 @@ function estudio_render() {
     if (plgList) {
         plgList.innerHTML = pluginRows.map((item) => {
             const price = parseSheetValue(item.precioUsd);
-            return `<div class="account-card glass-subtle estudio-card">
-                <div class="account-card-left">
-                    <span class="account-icon" style="background:rgba(251,191,36,.14);color:#fbbf24">🧩</span>
-                    <div class="account-info" style="gap:.28rem;">
-                        <span class="account-name">${item.name}</span>
-                        <span class="account-type-label">${item.marca || 'Sin marca'} · ${item.descripcion || 'Sin descripcion'}</span>
-                        <span class="account-type-label">Licencia: ${item.licencia || '-'} · Serial: ${item.serial || '-'} · Cuenta: ${item.account || '-'}</span>
-                        ${item.site ? `<a class="mini-btn" href="${item.site}" target="_blank" rel="noopener">Sitio</a>` : ''}
-                        <div style="display:flex;gap:.35rem;flex-wrap:wrap;">
-                            ${item.foto ? `<a class="mini-btn" href="${item.foto}" target="_blank" rel="noopener">Imagen</a>` : ''}
-                            <button class="mini-btn" onclick="estudio_openPluginSheet('${item.id}')">✏️ Editar</button>
-                            <button class="mini-btn mini-btn-danger" onclick="estudio_deletePlugin('${item.id}')">🗑️</button>
-                        </div>
+            return `<article class="glass-subtle estudio-entry-card">
+                <div class="estudio-entry-top">
+                    <div style="display:grid;gap:.25rem;min-width:0;">
+                        <span class="estudio-entry-title">🧩 ${item.name}</span>
+                        <span class="estudio-entry-meta">${item.marca || 'Sin marca'} · ${item.categoria || 'Sin categoria'}</span>
+                    </div>
+                    <div class="estudio-card-right">
+                        <span class="account-balance text-danger">${formatCurrency(convertTransactionAmountToMxn(price, 'USD'))}</span>
+                        <span class="account-type-label">USD ${price.toFixed(2)}</span>
                     </div>
                 </div>
-                <div class="account-card-right estudio-card-right">
-                    <span class="account-balance text-danger">${formatCurrency(convertTransactionAmountToMxn(price, 'USD'))}</span>
-                    <span class="account-type-label">USD ${price.toFixed(2)}</span>
+
+                <div class="estudio-entry-grid">
+                    <span class="estudio-entry-meta"><strong>Licencia:</strong> ${item.licencia || '-'}</span>
+                    <span class="estudio-entry-meta"><strong>Serial:</strong> ${item.serial || '-'}</span>
+                    <span class="estudio-entry-meta"><strong>Cuenta:</strong> ${item.account || '-'}</span>
+                    <span class="estudio-entry-meta"><strong>Tipo:</strong> ${item.descripcion || '-'}</span>
                 </div>
-            </div>`;
+
+                ${item.descripcion ? `<div class="estudio-entry-notes">${item.descripcion}</div>` : ''}
+
+                <div class="estudio-entry-actions">
+                    ${item.site ? `<a class="mini-btn" href="${item.site}" target="_blank" rel="noopener">Sitio</a>` : ''}
+                    ${item.foto ? `<a class="mini-btn" href="${item.foto}" target="_blank" rel="noopener">Imagen</a>` : ''}
+                    <button class="mini-btn" onclick="estudio_openPluginSheet('${item.id}')">✏️ Editar</button>
+                    <button class="mini-btn mini-btn-danger" onclick="estudio_deletePlugin('${item.id}')">🗑️</button>
+                </div>
+            </article>`;
         }).join('') || (plgQuery ? '<div class="empty-state">Sin coincidencias en plugins</div>' : '<div class="empty-state">Sin plugins registrados</div>');
     }
 }
@@ -4708,6 +4748,7 @@ function estudio_openPluginSheet(id) {
     document.getElementById('estudio-plugin-title').innerText = item ? 'Editar Plugin' : 'Nuevo Plugin';
     document.getElementById('estudio-plugin-name').value = item?.name || '';
     document.getElementById('estudio-plugin-brand').value = item?.marca || '';
+    document.getElementById('estudio-plugin-category').value = item?.categoria || '';
     document.getElementById('estudio-plugin-price').value = item?.precioUsd || '';
     document.getElementById('estudio-plugin-description').value = item?.descripcion || '';
     document.getElementById('estudio-plugin-site').value = item?.site || '';
@@ -4732,6 +4773,7 @@ async function estudio_savePlugin() {
         id,
         name: document.getElementById('estudio-plugin-name').value.trim(),
         marca: document.getElementById('estudio-plugin-brand').value.trim(),
+        categoria: document.getElementById('estudio-plugin-category').value.trim(),
         descripcion: document.getElementById('estudio-plugin-description').value.trim(),
         precioUsd: parseSheetValue(document.getElementById('estudio-plugin-price').value),
         site: document.getElementById('estudio-plugin-site').value.trim(),
@@ -4767,10 +4809,10 @@ async function estudio_savePlugin() {
 }
 
 async function estudio_savePluginsSheet() {
-    await sheetsClear(SPREADSHEET_ESTUDIO_ID, 'EstudioPlugins!A2:M');
+    await sheetsClear(SPREADSHEET_ESTUDIO_ID, 'EstudioPlugins!A2:N');
     if (!estudioState.plugins.length) return;
-    await sheetsUpdate(SPREADSHEET_ESTUDIO_ID, `EstudioPlugins!A2:M${1 + estudioState.plugins.length}`, estudioState.plugins.map((x) => [
-        x.id, x.name, x.marca, x.descripcion, x.precioUsd, x.site, x.licencia, x.serial, x.account, x.foto, x.fechaCompra, x.logMarker || '', x.currency || 'USD',
+    await sheetsUpdate(SPREADSHEET_ESTUDIO_ID, `EstudioPlugins!A2:N${1 + estudioState.plugins.length}`, estudioState.plugins.map((x) => [
+        x.id, x.name, x.marca, x.descripcion, x.precioUsd, x.site, x.licencia, x.serial, x.account, x.foto, x.fechaCompra, x.logMarker || '', x.currency || 'USD', x.categoria || '',
     ]));
 }
 
