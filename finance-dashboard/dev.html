@@ -551,11 +551,20 @@
               <input id="autos-car-emergencia" class="field-input" placeholder="Telefono emergencia">
               <input id="autos-car-llantas" class="field-input" placeholder="Tipo de llantas">
             </div>
-            <input id="autos-car-foto-file" type="file" class="field-input" style="margin-top:.45rem;" accept="image/*">
+            <div class="autos-file-row" style="margin-top:.45rem;">
+              <label for="autos-car-foto-file" class="secondary-btn autos-file-btn">📷 Seleccionar foto del auto</label>
+              <input id="autos-car-foto-file" type="file" class="autos-file-native" accept="image/*">
+            </div>
             <div id="autos-car-foto-feedback" class="diff-label"></div>
-            <input id="autos-car-tarjeta-frente-file" type="file" class="field-input" style="margin-top:.45rem;" accept="image/*,application/pdf">
+            <div class="autos-file-row" style="margin-top:.45rem;">
+              <label for="autos-car-tarjeta-frente-file" class="secondary-btn autos-file-btn">🪪 Tarjeta frontal (foto/PDF)</label>
+              <input id="autos-car-tarjeta-frente-file" type="file" class="autos-file-native" accept="image/*,application/pdf">
+            </div>
             <div id="autos-car-tarjeta-frente-feedback" class="diff-label"></div>
-            <input id="autos-car-tarjeta-atras-file" type="file" class="field-input" style="margin-top:.45rem;" accept="image/*,application/pdf">
+            <div class="autos-file-row" style="margin-top:.45rem;">
+              <label for="autos-car-tarjeta-atras-file" class="secondary-btn autos-file-btn">🪪 Tarjeta trasera (foto/PDF)</label>
+              <input id="autos-car-tarjeta-atras-file" type="file" class="autos-file-native" accept="image/*,application/pdf">
+            </div>
             <div id="autos-car-tarjeta-atras-feedback" class="diff-label"></div>
             <input id="autos-car-foto" class="field-input" style="margin-top:.6rem;" placeholder="URL foto del auto (opcional)">
             <input id="autos-car-tarjeta-frente" class="field-input" style="margin-top:.45rem;" placeholder="URL tarjeta circulacion frontal (opcional)">
@@ -581,9 +590,15 @@
               <input id="autos-repair-place" class="field-input" placeholder="Taller o lugar">
               <input id="autos-repair-date" type="date" class="field-input">
             </div>
-            <input id="autos-repair-photo-file" type="file" class="field-input" style="margin-top:.45rem;" accept="image/*" multiple>
+            <div class="autos-file-row" style="margin-top:.45rem;">
+              <label for="autos-repair-photo-file" class="secondary-btn autos-file-btn">🛠️ Agregar fotos de reparacion</label>
+              <input id="autos-repair-photo-file" type="file" class="autos-file-native" accept="image/*" multiple>
+            </div>
             <div id="autos-repair-photo-feedback" class="diff-label"></div>
-            <input id="autos-repair-receipt-file" type="file" class="field-input" style="margin-top:.45rem;" accept="image/*,application/pdf" multiple>
+            <div class="autos-file-row" style="margin-top:.45rem;">
+              <label for="autos-repair-receipt-file" class="secondary-btn autos-file-btn">🧾 Agregar recibos (foto/PDF)</label>
+              <input id="autos-repair-receipt-file" type="file" class="autos-file-native" accept="image/*,application/pdf" multiple>
+            </div>
             <div id="autos-repair-receipt-feedback" class="diff-label"></div>
             <textarea id="autos-repair-desc" class="field-input" rows="3" style="margin-top:.45rem;" placeholder="Descripcion"></textarea>
             <input id="autos-repair-photo" class="field-input" style="margin-top:.45rem;" placeholder="URL foto (opcional)">
