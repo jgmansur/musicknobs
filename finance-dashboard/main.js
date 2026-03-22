@@ -15,7 +15,7 @@ const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // 
 const SPREADSHEET_DEUDAS_ID = '1dKxhgqazskm15lx0f6FNCA0gpJ7i5glfxkusiH3b0Uk'; // Control de Deudas
 const SPREADSHEET_AUTOS_ID = SPREADSHEET_DEUDAS_ID; // Autos + Reparaciones live in same workbook
 const SPREADSHEET_ESTUDIO_ID = SPREADSHEET_DEUDAS_ID; // Estudio + Plugins in same workbook
-const APP_VERSION  = 'v7.0.10';
+const APP_VERSION  = 'v7.0.11';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_TOKEN_URL = 'https://api.mercadolibre.com/oauth/token';
@@ -369,10 +369,20 @@ async function meli_refreshAccessToken() {
 
 async function meli_handleOAuthCallbackIfPresent() {
     const url = new URL(window.location.href);
+    const oauthError = (url.searchParams.get('error') || '').trim();
+    const oauthErrorDesc = (url.searchParams.get('error_description') || '').trim();
     const code = (url.searchParams.get('code') || '').trim();
     const state = (url.searchParams.get('state') || '').trim();
     const verifier = (localStorage.getItem(MELI_PKCE_VERIFIER_KEY) || '').trim();
     const expectedState = (localStorage.getItem(MELI_OAUTH_STATE_KEY) || '').trim();
+    if (oauthError) {
+        meliAuthState.lastError = oauthErrorDesc || oauthError;
+        showToast(`⚠️ Mercado Libre: ${meliAuthState.lastError}`);
+        url.searchParams.delete('error');
+        url.searchParams.delete('error_description');
+        window.history.replaceState({}, '', `${url.pathname}${url.search}${url.hash}`);
+        return true;
+    }
     if (!code || !state || !state.startsWith('meli-')) return false;
     if (!verifier || !expectedState || state !== expectedState) {
         showToast('⚠️ No se pudo validar login de Mercado Libre');
@@ -386,7 +396,7 @@ async function meli_handleOAuthCallbackIfPresent() {
     } catch (err) {
         console.warn('Meli OAuth callback failed:', err);
         meliAuthState.lastError = String(err?.message || 'Error de OAuth');
-        showToast('⚠️ Mercado Libre no conecto; usando modo publico');
+        showToast(`⚠️ Mercado Libre no conecto: ${meliAuthState.lastError}`);
     } finally {
         localStorage.removeItem(MELI_PKCE_VERIFIER_KEY);
         localStorage.removeItem(MELI_OAUTH_STATE_KEY);
@@ -3595,9 +3605,19 @@ function autos_getValuationInfo(carId) {
 
 function autos_getValuationLabel(carId) {
     const info = autos_getValuationInfo(carId);
-    if (!info.mxn) return 'Calculando valor de mercado...';
+    if (!info.mxn) {
+        if (meli_isAccessTokenValid() || !!meliAuthState.refreshToken) return 'Calculando valor de mercado...';
+        return 'Conecta Mercado Libre para calcular';
+    }
     const dateTxt = info.date ? ` (${info.date})` : '';
     return `${formatCurrency(info.mxn)}${dateTxt}`;
+}
+
+function autos_getMeliConnectionLabel() {
+    if (meli_isAccessTokenValid()) return 'Mercado Libre conectado';
+    if (meliAuthState.refreshToken) return 'Mercado Libre conectado (renovando...)';
+    if (meliAuthState.lastError) return 'Mercado Libre: error de conexion';
+    return 'Mercado Libre por conectar';
 }
 
 function autos_buildValuationQuery(car) {
@@ -3629,10 +3649,11 @@ async function autos_refreshCarValuationIfNeeded(car, options = {}) {
     autosState.valuationInFlight.add(car.id);
     try {
         const meliToken = providedToken || await meli_ensureAccessToken(interactiveAuth);
+        if (!meliToken) return;
         await ensureUsdMxnRateForTransactions();
         const url = `https://api.mercadolibre.com/sites/MLM/search?category=MLM1744&limit=50&q=${encodeURIComponent(query)}`;
-        const headers = meliToken ? { Authorization: `Bearer ${meliToken}` } : undefined;
-        const res = await fetch(url, headers ? { headers } : undefined);
+        const headers = { Authorization: `Bearer ${meliToken}` };
+        const res = await fetch(url, { headers });
         if (!res.ok) throw new Error(`MLM valuation ${res.status}`);
         const data = await res.json();
         const results = Array.isArray(data?.results) ? data.results : [];
@@ -3675,6 +3696,7 @@ function autos_refreshAllDailyValuations() {
     const list = [...autosState.cars];
     const run = async () => {
         const token = await meli_ensureAccessToken(false);
+        if (!token) return;
         for (const car of list) {
             await autos_refreshCarValuationIfNeeded(car, { accessToken: token, interactiveAuth: false });
         }
@@ -4235,6 +4257,8 @@ function autos_renderSelectedCar() {
     const siniestros1Html = autos_phoneLinkOrText(car.reporteSiniestros1, 'Siniestros 1');
     const siniestros2Html = autos_phoneLinkOrText(car.reporteSiniestros2, 'Siniestros 2');
     const valuationLabel = autos_getValuationLabel(car.id);
+    const meliStatus = autos_getMeliConnectionLabel();
+    const meliConnected = meli_isAccessTokenValid() || !!meliAuthState.refreshToken;
 
     profileEl.innerHTML = `<div class="glass-subtle autos-profile-card autos-profile-clickable" onclick="autos_openCarDetail()" style="padding:.8rem;display:grid;grid-template-columns:96px minmax(0,1fr);gap:.7rem;align-items:start;">
         <img src="${car.fotoAuto || ''}" alt="Auto" style="width:96px;height:72px;object-fit:cover;border-radius:.75rem;background:rgba(255,255,255,.06);" onerror="this.style.display='none'" />
@@ -4244,10 +4268,12 @@ function autos_renderSelectedCar() {
             <span class="account-type-label">Propietario: ${car.propietario || '-'} · Seguro: ${car.tieneSeguro ? 'Si' : 'No'}</span>
             <span class="account-type-label">Poliza: ${car.polizaSeguro || '-'} · Llantas: ${car.tipoLlantas || '-'}</span>
             <span class="account-type-label">Valor hoy: ${valuationLabel}</span>
+            <span class="account-type-label" style="color:${meliConnected ? '#34d399' : '#fbbf24'};">${meliStatus}</span>
             <span class="account-type-label">Emergencia: ${emergenciaInteriorHtml} · ${emergenciaMetroHtml}</span>
             <span class="account-type-label">Siniestros: ${siniestros1Html} · ${siniestros2Html}</span>
             <div style="display:flex;gap:.35rem;flex-wrap:wrap;margin-top:.3rem;">
                 <button class="mini-btn" onclick="event.stopPropagation(); autos_openCarSheet('${car.id}')">✏️ Editar auto</button>
+                ${meliConnected ? '' : '<button class="mini-btn" onclick="event.stopPropagation(); autos_connectMercadoLibre()">🔐 Conectar ML</button>'}
             </div>
         </div>
     </div>
