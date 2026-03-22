@@ -14,7 +14,7 @@ const SPREADSHEET_LOG_ID   = '1pn1bsxj2LaoySXAVUvqfEJY1VR4R_T8NsTOqQnVW5Xw'; // 
 const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // Gastos Fijos
 const SPREADSHEET_DEUDAS_ID = '1dKxhgqazskm15lx0f6FNCA0gpJ7i5glfxkusiH3b0Uk'; // Control de Deudas
 const SPREADSHEET_AUTOS_ID = SPREADSHEET_DEUDAS_ID; // Autos + Reparaciones live in same workbook
-const APP_VERSION  = 'v6.1.6';
+const APP_VERSION  = 'v6.1.7';
 // Bump token keys to force re-auth with the new drive scope
 const TOKEN_KEY    = 'google_access_token_v4';
 const EXPIRY_KEY   = 'google_token_expiry_v4';
@@ -3356,6 +3356,14 @@ function autos_docPreview(url, label) {
     return `<a href="${url}" target="_blank" rel="noopener"><img src="${previewUrl}" alt="${label}" style="width:100%;height:140px;object-fit:cover;border-radius:.6rem;background:rgba(255,255,255,.05);" onerror="this.style.display='none'" /></a>`;
 }
 
+function autos_previewUrlForImage(url) {
+    const raw = (url || '').toString().trim();
+    if (!raw) return '';
+    const driveMatch = raw.match(/drive\.google\.com\/file\/d\/([^/]+)/i);
+    if (driveMatch) return `https://drive.google.com/thumbnail?id=${driveMatch[1]}&sz=w1200`;
+    return raw;
+}
+
 async function autos_saveMeta() {
     const entries = Object.entries(autosState.meta || {});
     await sheetsClear(SPREADSHEET_AUTOS_ID, 'AutosMeta!A2:B');
@@ -3401,10 +3409,23 @@ function autos_closeCarDetail() {
 function autos_openLicensePanel() {
     const img = document.getElementById('autos-license-image');
     const empty = document.getElementById('autos-license-empty');
+    const link = document.getElementById('autos-license-open-link');
     const url = (autosState.meta?.licenciaUrl || '').trim();
+    const previewUrl = autos_previewUrlForImage(url);
+    const isPdf = /\.pdf(\?|$)/i.test(url);
     if (img) {
-        img.src = url || '';
-        img.style.display = url ? 'block' : 'none';
+        img.src = previewUrl || '';
+        img.style.display = url && !isPdf ? 'block' : 'none';
+        if (url && !isPdf) {
+            img.onerror = () => {
+                img.style.display = 'none';
+                if (link) link.classList.remove('hidden');
+            };
+        }
+    }
+    if (link) {
+        link.href = url || '#';
+        link.classList.toggle('hidden', !url);
     }
     if (empty) empty.classList.toggle('hidden', !!url);
     document.getElementById('autos-license-panel')?.classList.remove('hidden');
