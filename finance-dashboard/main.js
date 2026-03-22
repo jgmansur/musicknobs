@@ -13,7 +13,7 @@ const SCOPES = 'https://www.googleapis.com/auth/spreadsheets https://www.googlea
 const SPREADSHEET_LOG_ID   = '1pn1bsxj2LaoySXAVUvqfEJY1VR4R_T8NsTOqQnVW5Xw'; // Control de Gastos
 const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // Gastos Fijos
 const SPREADSHEET_DEUDAS_ID = '1dKxhgqazskm15lx0f6FNCA0gpJ7i5glfxkusiH3b0Uk'; // Control de Deudas
-const APP_VERSION  = 'v5.1.0';
+const APP_VERSION  = 'v5.1.1';
 // Bump token keys to force re-auth with the new drive scope
 const TOKEN_KEY    = 'google_access_token_v4';
 const EXPIRY_KEY   = 'google_token_expiry_v4';
@@ -558,6 +558,7 @@ let balanceLogNetAnchor = (() => {
 let balanceAnchorNeedsMigration = false;
 let balanceRealtimeUnsub = null;
 let balanceRealtimeUid = null;
+let balanceSheetSyncQueue = Promise.resolve();
 
 function balance_getPaidFixedDeduction() {
     // v3.4.1: keep at 0; fixed payments now affect balance through
@@ -795,7 +796,8 @@ async function balance_saveToFirestore() {
     });
 }
 
-async function balance_saveAccounts() {
+async function balance_saveAccounts(opts = {}) {
+    const deferBackup = opts.deferBackup !== false;
     // 1. Update localStorage cache immediately (offline-first)
     localStorage.setItem('finance_accounts_v1', JSON.stringify(balanceAccounts));
     if (!accessToken) {
@@ -803,27 +805,48 @@ async function balance_saveAccounts() {
         return;
     }
     if (!_fbUid) await firebase_signIn(accessToken, { allowPopupFallback: true });
-    // 2. Write to Firestore (primary) and Sheets (backup) in parallel
-    const ops = [];
+
+    // 2. Firestore first (primary), then Sheets backup (deferred by default)
     if (_fbUid) {
-        ops.push({ name: 'Firestore', promise: balance_saveToFirestore() });
-    }
-    ops.push({
-        name: 'Sheets',
-        promise: balance_getOrCreateSheet().then(sid => balance_writeToSheet(sid)),
-    });
-    const results = await Promise.allSettled(ops.map(op => op.promise));
-    const labels = results.map((result, i) => {
-        if (result.status === 'rejected') {
-            const code = result.reason?.code || result.reason?.status || 'ERR';
-            const msg = debugShort(result.reason?.message || result.reason || 'error');
-            console.warn(`[${ops[i].name}] save failed:`, msg);
-            return `${ops[i].name}:ERR(${code})`;
+        try {
+            await balance_saveToFirestore();
+            debugUpdate({ save: `Firestore:OK | Sheets:${deferBackup ? 'SYNCING' : 'PENDING'}`, token: 'Si' });
+            const runSheetsBackup = () => balance_getOrCreateSheet().then(sid => balance_writeToSheet(sid));
+            if (deferBackup) {
+                balanceSheetSyncQueue = balanceSheetSyncQueue
+                    .then(() => runSheetsBackup())
+                    .then(() => debugUpdate({ save: 'Firestore:OK | Sheets:OK', token: 'Si' }))
+                    .catch((err) => {
+                        const code = err?.code || err?.status || 'ERR';
+                        console.warn('[Sheets] deferred save failed:', debugShort(err?.message || err));
+                        debugUpdate({ save: `Firestore:OK | Sheets:ERR(${code})`, token: 'Si' });
+                    });
+            } else {
+                await runSheetsBackup();
+                debugUpdate({ save: 'Firestore:OK | Sheets:OK', token: 'Si' });
+            }
+            return;
+        } catch (err) {
+            const code = err?.code || err?.status || 'ERR';
+            console.warn('[Firestore] save failed:', debugShort(err?.message || err));
+            // Fallback: if Firestore fails, force synchronous Sheets backup.
+            try {
+                const sid = await balance_getOrCreateSheet();
+                await balance_writeToSheet(sid);
+                debugUpdate({ save: `Firestore:ERR(${code}) | Sheets:OK`, token: 'Si' });
+                return;
+            } catch (sheetErr) {
+                const sheetCode = sheetErr?.code || sheetErr?.status || 'ERR';
+                debugUpdate({ save: `Firestore:ERR(${code}) | Sheets:ERR(${sheetCode})`, token: 'Si' });
+                throw sheetErr;
+            }
         }
-        return `${ops[i].name}:OK`;
-    });
-    if (!_fbUid) labels.unshift('Firestore:SKIP(no uid)');
-    debugUpdate({ save: labels.join(' | '), token: 'Si' });
+    }
+
+    // No Firebase UID: rely on Sheets only.
+    const sid = await balance_getOrCreateSheet();
+    await balance_writeToSheet(sid);
+    debugUpdate({ save: 'Firestore:SKIP(no uid) | Sheets:OK', token: 'Si' });
 }
 
 // ── Compute helpers ──────────────────────────────────────
@@ -1187,10 +1210,10 @@ async function balance_saveAccount() {
         }));
     }
     balance_resetDynamicAnchors();
-    await balance_saveAccounts();
-    await balance_refreshUsdMxnRate(true);
-    await balance_refreshBtcMxnRate(true);
-    await balance_refreshInvestmentRates(true);
+    await balance_saveAccounts({ deferBackup: true });
+    balance_refreshUsdMxnRate();
+    balance_refreshBtcMxnRate();
+    balance_refreshInvestmentRates();
     balance_renderPanel();
     balance_updateKpi();
     document.getElementById('add-account-form').classList.add('hidden');
