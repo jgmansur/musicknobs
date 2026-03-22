@@ -15,7 +15,7 @@ const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // 
 const SPREADSHEET_DEUDAS_ID = '1dKxhgqazskm15lx0f6FNCA0gpJ7i5glfxkusiH3b0Uk'; // Control de Deudas
 const SPREADSHEET_AUTOS_ID = SPREADSHEET_DEUDAS_ID; // Autos + Reparaciones live in same workbook
 const SPREADSHEET_ESTUDIO_ID = SPREADSHEET_DEUDAS_ID; // Estudio + Plugins in same workbook
-const APP_VERSION  = 'v7.0.25';
+const APP_VERSION  = 'v7.0.26';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -3370,14 +3370,20 @@ function planner_render() {
         return;
     }
 
-    const projectedAvailable = plannerState.totals.diff;
-    const fixedIncomeCount = plannerState.incomes.filter(i => !i.isBalanceSource).length;
+    const doneSet = new Set(plannerState.doneIncomeKeys || []);
+    const activeIncomeTotal = plannerState.incomes.reduce((s, income) => {
+        if (!income.isBalanceSource && doneSet.has(income.key)) return s;
+        return s + income.amount;
+    }, 0);
+    const projectedAvailable = activeIncomeTotal - plannerState.totals.assigned;
+    const fixedIncomeCount = plannerState.incomes
+        .filter(i => !i.isBalanceSource && !doneSet.has(i.key))
+        .length;
     summaryEl.innerText = fmt.format(projectedAvailable);
     summaryEl.classList.toggle('text-danger', projectedAvailable < 0);
     summaryEl.classList.toggle('text-success', projectedAvailable >= 0);
-    subEl.innerText = `${fixedIncomeCount} ingresos fijos + 1 balance disponible · ${plannerState.expenses.length} pagos pendientes · Asignado ${fmt.format(plannerState.totals.assigned)} de ${fmt.format(plannerState.totals.income)}`;
+    subEl.innerText = `${fixedIncomeCount} ingresos fijos activos + 1 balance disponible · ${plannerState.expenses.length} pagos pendientes · Asignado ${fmt.format(plannerState.totals.assigned)} de ${fmt.format(activeIncomeTotal)}`;
 
-    const doneSet = new Set(plannerState.doneIncomeKeys || []);
     const assignedTotalsByIncome = plannerState.incomes.map((_, idx) => {
         const expenses = plannerState.assignedByIncome[idx] || [];
         return expenses.reduce((s, e) => s + e.amount, 0);
