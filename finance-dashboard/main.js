@@ -15,7 +15,7 @@ const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // 
 const SPREADSHEET_DEUDAS_ID = '1dKxhgqazskm15lx0f6FNCA0gpJ7i5glfxkusiH3b0Uk'; // Control de Deudas
 const SPREADSHEET_AUTOS_ID = SPREADSHEET_DEUDAS_ID; // Autos + Reparaciones live in same workbook
 const SPREADSHEET_ESTUDIO_ID = SPREADSHEET_DEUDAS_ID; // Estudio + Plugins in same workbook
-const APP_VERSION  = 'v7.0.18';
+const APP_VERSION  = 'v7.0.19';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -3736,6 +3736,7 @@ function autos_renderMeliDebug() {
         ['valuation.kmAdjPct', selectedValuation ? String(selectedValuation.kmAdjustmentPct || 0) : '-'],
         ['valuation.debug.phase', info.valuationPhase || '-'],
         ['valuation.debug.httpStatus', String(info.valuationHttpStatus ?? '-')],
+        ['valuation.debug.url', info.valuationUrl || '-'],
         ['valuation.debug.results', String(info.valuationResultsCount ?? '-')],
         ['valuation.debug.prices', String(info.valuationPricesCount ?? '-')],
         ['valuation.debug.error', info.valuationError || '-'],
@@ -3784,6 +3785,7 @@ function autos_buildMeliDebugSnapshot() {
         `valuation.kmAdjPct=${selectedValuation ? String(selectedValuation.kmAdjustmentPct || 0) : '-'}`,
         `valuation.debug.phase=${info.valuationPhase || '-'}`,
         `valuation.debug.httpStatus=${String(info.valuationHttpStatus ?? '-')}`,
+        `valuation.debug.url=${info.valuationUrl || '-'}`,
         `valuation.debug.results=${String(info.valuationResultsCount ?? '-')}`,
         `valuation.debug.prices=${String(info.valuationPricesCount ?? '-')}`,
         `valuation.debug.error=${info.valuationError || '-'}`,
@@ -3900,33 +3902,47 @@ async function autos_refreshCarValuationIfNeeded(car, options = {}) {
         const meliToken = providedToken || await meli_ensureAccessToken(interactiveAuth);
         if (!meliToken) meli_updateDebugInfo({ valuationPhase: 'valuation_no_token' });
         await ensureUsdMxnRateForTransactions();
-        const url = `https://api.mercadolibre.com/sites/MLM/search?category=MLM1744&limit=50&q=${encodeURIComponent(query)}`;
+        const valuationUrls = [
+            `https://api.mercadolibre.com/sites/MLM/search?limit=50&q=${encodeURIComponent(query)}`,
+            `https://api.mercadolibre.com/sites/MLM/search?category=MLM1744&limit=50&q=${encodeURIComponent(query)}`,
+        ];
         let data = null;
-        let res = null;
         let lastError = '';
 
-        if (meliToken) {
+        const tryFetchValuation = async (url, useAuth) => {
+            const headers = useAuth && meliToken ? { Authorization: `Bearer ${meliToken}` } : undefined;
+            const phase = useAuth ? 'valuation_fetch_auth' : 'valuation_fetch_public';
+            const res = await fetch(url, headers ? { headers } : undefined);
+            meli_updateDebugInfo({ valuationPhase: phase, valuationHttpStatus: res.status, valuationUrl: url });
+            if (!res.ok) {
+                const payload = await res.json().catch(() => ({}));
+                const detail = payload?.message || payload?.error || payload?.cause || `MLM valuation ${res.status}`;
+                throw new Error(String(detail));
+            }
+            return res.json();
+        };
+
+        for (const url of valuationUrls) {
+            if (data) break;
+            if (meliToken) {
+                try {
+                    data = await tryFetchValuation(url, true);
+                } catch (err) {
+                    lastError = String(err?.message || err || 'Load failed');
+                    meli_updateDebugInfo({ valuationPhase: 'valuation_fetch_auth_error', valuationError: lastError });
+                }
+            }
+            if (data) break;
             try {
-                res = await fetch(url, { headers: { Authorization: `Bearer ${meliToken}` } });
-                meli_updateDebugInfo({ valuationHttpStatus: res.status, valuationPhase: 'valuation_fetch_auth' });
-                if (res.ok) data = await res.json();
+                data = await tryFetchValuation(url, false);
             } catch (err) {
                 lastError = String(err?.message || err || 'Load failed');
-                meli_updateDebugInfo({ valuationPhase: 'valuation_fetch_auth_error', valuationError: lastError });
+                meli_updateDebugInfo({ valuationPhase: 'valuation_fetch_public_error', valuationError: lastError });
             }
         }
 
         if (!data) {
-            try {
-                res = await fetch(url);
-                meli_updateDebugInfo({ valuationHttpStatus: res.status, valuationPhase: 'valuation_fetch_public' });
-                if (!res.ok) throw new Error(`MLM valuation ${res.status}`);
-                data = await res.json();
-            } catch (err) {
-                const publicErr = String(err?.message || err || 'Load failed');
-                if (!lastError) lastError = publicErr;
-                throw new Error(publicErr || lastError || 'MLM valuation failed');
-            }
+            throw new Error(lastError || 'MLM valuation failed');
         }
 
         const results = Array.isArray(data?.results) ? data.results : [];
