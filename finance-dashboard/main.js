@@ -15,7 +15,7 @@ const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // 
 const SPREADSHEET_DEUDAS_ID = '1dKxhgqazskm15lx0f6FNCA0gpJ7i5glfxkusiH3b0Uk'; // Control de Deudas
 const SPREADSHEET_AUTOS_ID = SPREADSHEET_DEUDAS_ID; // Autos + Reparaciones live in same workbook
 const SPREADSHEET_ESTUDIO_ID = SPREADSHEET_DEUDAS_ID; // Estudio + Plugins in same workbook
-const APP_VERSION  = 'v7.0.3';
+const APP_VERSION  = 'v7.0.4';
 // Bump token keys to force re-auth with the new drive scope
 const TOKEN_KEY    = 'google_access_token_v4';
 const EXPIRY_KEY   = 'google_token_expiry_v4';
@@ -4533,10 +4533,21 @@ function estudio_uniqueCategories(items, key) {
         .sort((a, b) => a.localeCompare(b, 'es', { sensitivity: 'base' }));
 }
 
-function estudio_renderDatalist(datalistId, categories) {
-    const dl = document.getElementById(datalistId);
-    if (!dl) return;
-    dl.innerHTML = categories.map((c) => `<option value="${c.replace(/"/g, '&quot;')}"></option>`).join('');
+function estudio_renderCategorySelect(selectId, categories, selected = '') {
+    const el = document.getElementById(selectId);
+    if (!el) return;
+    const safeSelected = (selected || '').toString().trim();
+    const all = safeSelected && !categories.includes(safeSelected)
+        ? [safeSelected, ...categories]
+        : categories;
+    el.innerHTML = [`<option value="">Sin categoria</option>`, ...all.map((c) => `<option value="${c.replace(/"/g, '&quot;')}">${c}</option>`)].join('');
+    el.value = safeSelected;
+}
+
+function estudio_detailCell(label, value) {
+    const text = (value || '').toString().trim();
+    if (!text) return '';
+    return `<span class="estudio-entry-meta"><strong>${label}:</strong> ${text}</span>`;
 }
 
 function estudio_render() {
@@ -4555,8 +4566,10 @@ function estudio_render() {
             : `Plugins histórico: ${plg} · Inventario: ${inv}`;
     }
 
-    estudio_renderDatalist('estudio-inventario-categories', estudio_uniqueCategories(estudioState.inventario, 'categoria'));
-    estudio_renderDatalist('estudio-plugin-categories', estudio_uniqueCategories(estudioState.plugins, 'categoria'));
+    const inventarioCategories = estudio_uniqueCategories(estudioState.inventario, 'categoria');
+    const pluginCategories = estudio_uniqueCategories(estudioState.plugins, 'categoria');
+    estudio_renderCategorySelect('estudio-inventario-category-pick', inventarioCategories, document.getElementById('estudio-inventario-category-pick')?.value || '');
+    estudio_renderCategorySelect('estudio-plugin-category-pick', pluginCategories, document.getElementById('estudio-plugin-category-pick')?.value || '');
 
     const invList = document.getElementById('estudio-inventario-list');
     const invSearchEl = document.getElementById('estudio-inventario-search');
@@ -4580,11 +4593,18 @@ function estudio_render() {
     if (invList) {
         invList.innerHTML = inventarioRows.map((item) => {
             const totalUsd = parseSheetValue(item.precioUsd) * Math.max(1, parseInt(item.cantidad, 10) || 1);
+            const invMeta = [
+                estudio_detailCell('Marca', item.marca),
+                estudio_detailCell('Modelo', item.modelo),
+                estudio_detailCell('Serial', item.serial),
+                estudio_detailCell('Cuenta', item.account),
+            ].filter(Boolean).join('');
+            const topMeta = [item.categoria, `Cantidad ${item.cantidad || 1}`, item.anioCompra].filter(Boolean).join(' · ');
             return `<article class="glass-subtle estudio-entry-card">
                 <div class="estudio-entry-top">
                     <div style="display:grid;gap:.25rem;min-width:0;">
                         <span class="estudio-entry-title">🎛️ ${item.name}</span>
-                        <span class="estudio-entry-meta">${item.categoria || 'Sin categoria'} · Cantidad ${item.cantidad || 1} · ${item.anioCompra || '-'}</span>
+                        ${topMeta ? `<span class="estudio-entry-meta">${topMeta}</span>` : ''}
                     </div>
                     <div class="estudio-card-right">
                         <span class="account-balance text-danger">${formatCurrency(convertTransactionAmountToMxn(totalUsd, 'USD'))}</span>
@@ -4592,12 +4612,7 @@ function estudio_render() {
                     </div>
                 </div>
 
-                <div class="estudio-entry-grid">
-                    <span class="estudio-entry-meta"><strong>Marca:</strong> ${item.marca || '-'}</span>
-                    <span class="estudio-entry-meta"><strong>Modelo:</strong> ${item.modelo || '-'}</span>
-                    <span class="estudio-entry-meta"><strong>Serial:</strong> ${item.serial || '-'}</span>
-                    <span class="estudio-entry-meta"><strong>Cuenta:</strong> ${item.account || '-'}</span>
-                </div>
+                ${invMeta ? `<div class="estudio-entry-grid">${invMeta}</div>` : ''}
 
                 ${item.notas ? `<div class="estudio-entry-notes">${item.notas}</div>` : ''}
 
@@ -4632,11 +4647,18 @@ function estudio_render() {
     if (plgList) {
         plgList.innerHTML = pluginRows.map((item) => {
             const price = parseSheetValue(item.precioUsd);
+            const plgMeta = [
+                estudio_detailCell('Licencia', item.licencia),
+                estudio_detailCell('Serial', item.serial),
+                estudio_detailCell('Cuenta', item.account),
+                estudio_detailCell('Tipo', item.descripcion),
+            ].filter(Boolean).join('');
+            const topMeta = [item.marca, item.categoria].filter(Boolean).join(' · ');
             return `<article class="glass-subtle estudio-entry-card">
                 <div class="estudio-entry-top">
                     <div style="display:grid;gap:.25rem;min-width:0;">
                         <span class="estudio-entry-title">🧩 ${item.name}</span>
-                        <span class="estudio-entry-meta">${item.marca || 'Sin marca'} · ${item.categoria || 'Sin categoria'}</span>
+                        ${topMeta ? `<span class="estudio-entry-meta">${topMeta}</span>` : ''}
                     </div>
                     <div class="estudio-card-right">
                         <span class="account-balance text-danger">${formatCurrency(convertTransactionAmountToMxn(price, 'USD'))}</span>
@@ -4644,12 +4666,7 @@ function estudio_render() {
                     </div>
                 </div>
 
-                <div class="estudio-entry-grid">
-                    <span class="estudio-entry-meta"><strong>Licencia:</strong> ${item.licencia || '-'}</span>
-                    <span class="estudio-entry-meta"><strong>Serial:</strong> ${item.serial || '-'}</span>
-                    <span class="estudio-entry-meta"><strong>Cuenta:</strong> ${item.account || '-'}</span>
-                    <span class="estudio-entry-meta"><strong>Tipo:</strong> ${item.descripcion || '-'}</span>
-                </div>
+                ${plgMeta ? `<div class="estudio-entry-grid">${plgMeta}</div>` : ''}
 
                 ${item.descripcion ? `<div class="estudio-entry-notes">${item.descripcion}</div>` : ''}
 
@@ -4666,12 +4683,14 @@ function estudio_render() {
 
 function estudio_openInventarioSheet(id) {
     const item = estudioState.inventario.find((x) => x.id === id) || null;
+    const categories = estudio_uniqueCategories(estudioState.inventario, 'categoria');
+    estudio_renderCategorySelect('estudio-inventario-category-pick', categories, item?.categoria || '');
     document.getElementById('estudio-inventario-edit-id').value = item?.id || '';
     document.getElementById('estudio-inventario-title').innerText = item ? 'Editar Equipo' : 'Nuevo Equipo';
     document.getElementById('estudio-inventario-name').value = item?.name || '';
     document.getElementById('estudio-inventario-cantidad').value = item?.cantidad || 1;
     document.getElementById('estudio-inventario-price').value = item?.precioUsd || '';
-    document.getElementById('estudio-inventario-category').value = item?.categoria || '';
+    document.getElementById('estudio-inventario-category-new').value = '';
     document.getElementById('estudio-inventario-year').value = item?.anioCompra || '';
     document.getElementById('estudio-inventario-brand').value = item?.marca || '';
     document.getElementById('estudio-inventario-model').value = item?.modelo || '';
@@ -4693,12 +4712,14 @@ async function estudio_saveInventario() {
     const existing = idx >= 0 ? estudioState.inventario[idx] : null;
     const isNew = idx === -1;
     const marker = isNew ? estudio_getInventarioMarker(id) : ((existing?.logMarker || '').toString().trim());
+    const inventarioCategory = (document.getElementById('estudio-inventario-category-new')?.value || '').trim()
+        || (document.getElementById('estudio-inventario-category-pick')?.value || '').trim();
     const item = {
         id,
         name: document.getElementById('estudio-inventario-name').value.trim(),
         cantidad: Math.max(1, parseInt(document.getElementById('estudio-inventario-cantidad').value, 10) || 1),
         precioUsd: parseSheetValue(document.getElementById('estudio-inventario-price').value),
-        categoria: document.getElementById('estudio-inventario-category').value.trim(),
+        categoria: inventarioCategory,
         anioCompra: document.getElementById('estudio-inventario-year').value.trim(),
         foto: document.getElementById('estudio-inventario-photo').value.trim(),
         marca: document.getElementById('estudio-inventario-brand').value.trim(),
@@ -4744,11 +4765,13 @@ async function estudio_saveInventarioSheet() {
 
 function estudio_openPluginSheet(id) {
     const item = estudioState.plugins.find((x) => x.id === id) || null;
+    const categories = estudio_uniqueCategories(estudioState.plugins, 'categoria');
+    estudio_renderCategorySelect('estudio-plugin-category-pick', categories, item?.categoria || '');
     document.getElementById('estudio-plugin-edit-id').value = item?.id || '';
     document.getElementById('estudio-plugin-title').innerText = item ? 'Editar Plugin' : 'Nuevo Plugin';
     document.getElementById('estudio-plugin-name').value = item?.name || '';
     document.getElementById('estudio-plugin-brand').value = item?.marca || '';
-    document.getElementById('estudio-plugin-category').value = item?.categoria || '';
+    document.getElementById('estudio-plugin-category-new').value = '';
     document.getElementById('estudio-plugin-price').value = item?.precioUsd || '';
     document.getElementById('estudio-plugin-description').value = item?.descripcion || '';
     document.getElementById('estudio-plugin-site').value = item?.site || '';
@@ -4769,11 +4792,13 @@ async function estudio_savePlugin() {
     const existing = idx >= 0 ? estudioState.plugins[idx] : null;
     const isNew = idx === -1;
     const marker = isNew ? estudio_getPluginMarker(id) : ((existing?.logMarker || '').toString().trim());
+    const pluginCategory = (document.getElementById('estudio-plugin-category-new')?.value || '').trim()
+        || (document.getElementById('estudio-plugin-category-pick')?.value || '').trim();
     const item = {
         id,
         name: document.getElementById('estudio-plugin-name').value.trim(),
         marca: document.getElementById('estudio-plugin-brand').value.trim(),
-        categoria: document.getElementById('estudio-plugin-category').value.trim(),
+        categoria: pluginCategory,
         descripcion: document.getElementById('estudio-plugin-description').value.trim(),
         precioUsd: parseSheetValue(document.getElementById('estudio-plugin-price').value),
         site: document.getElementById('estudio-plugin-site').value.trim(),
