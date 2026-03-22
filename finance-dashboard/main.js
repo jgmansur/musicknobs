@@ -15,7 +15,7 @@ const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // 
 const SPREADSHEET_DEUDAS_ID = '1dKxhgqazskm15lx0f6FNCA0gpJ7i5glfxkusiH3b0Uk'; // Control de Deudas
 const SPREADSHEET_AUTOS_ID = SPREADSHEET_DEUDAS_ID; // Autos + Reparaciones live in same workbook
 const SPREADSHEET_ESTUDIO_ID = SPREADSHEET_DEUDAS_ID; // Estudio + Plugins in same workbook
-const APP_VERSION  = 'v7.1.1';
+const APP_VERSION  = 'v7.1.2';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -4070,7 +4070,7 @@ function autos_openCarDetail() {
     const carPhotoSrc = autos_previewUrlForImage(carPhotoRaw);
     detailEl.innerHTML = `
         <div class="glass-subtle autos-detail-card" style="padding:.85rem;display:grid;gap:.55rem;">
-            <img src="${carPhotoSrc}" data-raw="${carPhotoRaw}" alt="Auto" style="width:100%;max-height:220px;object-fit:cover;border-radius:.75rem;background:rgba(255,255,255,.05);" onerror="autos_handleAutoImageError(this)" />
+            <img src="${carPhotoSrc}" data-raw="${carPhotoRaw}" alt="Auto" style="width:100%;max-height:220px;object-fit:cover;border-radius:.75rem;background:rgba(255,255,255,.05);" onerror="if(!this.dataset.triedProxy && /\.hei[cf](\?|$)/i.test(this.dataset.raw || '')){this.dataset.triedProxy='1';this.src='https://images.weserv.nl/?url='+encodeURIComponent((this.dataset.raw||'').replace(/^https?:\/\//i,''));}else{this.style.display='none';}" />
             <div class="autos-detail-title">${car.marca} ${car.modelo} (${car.anio || '-'})</div>
             <div class="autos-detail-row"><strong>Placa:</strong> <span>${car.placa || '-'}</span></div>
             <div class="autos-detail-row"><strong>VIN:</strong> <span>${car.vin || '-'}</span></div>
@@ -4646,7 +4646,7 @@ function autos_renderSelectedCar() {
     const carPhotoSrc = autos_previewUrlForImage(carPhotoRaw);
 
     profileEl.innerHTML = `<div class="glass-subtle autos-profile-card autos-profile-clickable" onclick="autos_openCarDetail()" style="padding:.8rem;display:grid;grid-template-columns:96px minmax(0,1fr);gap:.7rem;align-items:start;">
-        <img src="${carPhotoSrc}" data-raw="${carPhotoRaw}" alt="Auto" style="width:96px;height:72px;object-fit:cover;border-radius:.75rem;background:rgba(255,255,255,.06);" onerror="autos_handleAutoImageError(this)" />
+        <img src="${carPhotoSrc}" data-raw="${carPhotoRaw}" alt="Auto" style="width:96px;height:72px;object-fit:cover;border-radius:.75rem;background:rgba(255,255,255,.06);" onerror="if(!this.dataset.triedProxy && /\.hei[cf](\?|$)/i.test(this.dataset.raw || '')){this.dataset.triedProxy='1';this.src='https://images.weserv.nl/?url='+encodeURIComponent((this.dataset.raw||'').replace(/^https?:\/\//i,''));}else{this.style.display='none';}" />
         <div class="autos-profile-main" style="display:grid;gap:.2rem;min-width:0;">
             <span class="account-name">${car.marca} ${car.modelo} · ${car.anio || '-'}</span>
             <span class="account-type-label">Placa: ${car.placa || '-'} · VIN: ${car.vin || '-'}</span>
@@ -4750,18 +4750,6 @@ function autos_getCarSpent(carId) {
         .filter(r => r.carId === carId)
         .reduce((s, r) => s + convertTransactionAmountToMxn(r.costo, r.moneda), 0);
 }
-
-window.autos_handleAutoImageError = function(imgEl) {
-    if (!imgEl) return;
-    const raw = (imgEl.dataset.raw || '').toString().trim();
-    const triedProxy = imgEl.dataset.triedProxy === '1';
-    if (!triedProxy && raw && /\.hei[cf](\?|$)/i.test(raw)) {
-        imgEl.dataset.triedProxy = '1';
-        imgEl.src = `https://images.weserv.nl/?url=${encodeURIComponent(raw.replace(/^https?:\/\//i, ''))}`;
-        return;
-    }
-    imgEl.style.display = 'none';
-};
 
 window.autos_updateMileageAndRevalue = async function(carId) {
     const car = autosState.cars.find(c => c.id === carId);
