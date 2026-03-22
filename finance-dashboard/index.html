@@ -529,9 +529,18 @@
                 <span id="autos-selected-spent" class="bs-amount text-danger">$0.00</span>
               </div>
               <div class="autos-repair-filters" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.55rem;">
-                <input id="autos-repair-search" type="search" class="field-input" placeholder="Buscar reparaciones...">
-                <input id="autos-repair-date-from" type="date" class="field-input" title="Desde">
-                <input id="autos-repair-date-to" type="date" class="field-input" title="Hasta">
+                <label class="autos-filter-col">
+                  <span class="autos-filter-label">Buscar texto</span>
+                  <input id="autos-repair-search" type="search" class="field-input" placeholder="Taller, concepto...">
+                </label>
+                <label class="autos-filter-col">
+                  <span class="autos-filter-label">Fecha desde</span>
+                  <input id="autos-repair-date-from" type="date" class="field-input" title="Desde">
+                </label>
+                <label class="autos-filter-col">
+                  <span class="autos-filter-label">Fecha hasta</span>
+                  <input id="autos-repair-date-to" type="date" class="field-input" title="Hasta">
+                </label>
               </div>
               <div id="autos-repair-list" class="movimientos-list"></div>
               <button id="autos-repair-load-more" class="secondary-btn hidden" style="width:100%;">Cargar 10 mas</button>

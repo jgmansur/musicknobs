@@ -774,6 +774,19 @@ select.field-input { background-image: url("data:image/svg+xml,%3Csvg xmlns='htt
   align-items: center;
 }
 
+.autos-filter-col {
+  display: grid;
+  gap: .22rem;
+}
+
+.autos-filter-label {
+  font-size: .66rem;
+  letter-spacing: .03em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  font-weight: 700;
+}
+
 @media (max-width: 560px) {
   .autos-repair-filters {
     grid-template-columns: 1fr !important;

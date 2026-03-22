@@ -3247,16 +3247,20 @@ function autos_bindEvents() {
         autosState.repairVisibleCount = 10;
         autos_renderSelectedCar();
     });
-    document.getElementById('autos-repair-date-from')?.addEventListener('change', (e) => {
+    const onDateFromChange = (e) => {
         autosState.repairDateFrom = (e.target.value || '').trim();
         autosState.repairVisibleCount = 10;
         autos_renderSelectedCar();
-    });
-    document.getElementById('autos-repair-date-to')?.addEventListener('change', (e) => {
+    };
+    const onDateToChange = (e) => {
         autosState.repairDateTo = (e.target.value || '').trim();
         autosState.repairVisibleCount = 10;
         autos_renderSelectedCar();
-    });
+    };
+    document.getElementById('autos-repair-date-from')?.addEventListener('change', onDateFromChange);
+    document.getElementById('autos-repair-date-from')?.addEventListener('input', onDateFromChange);
+    document.getElementById('autos-repair-date-to')?.addEventListener('change', onDateToChange);
+    document.getElementById('autos-repair-date-to')?.addEventListener('input', onDateToChange);
     document.getElementById('autos-repair-load-more')?.addEventListener('click', () => {
         autosState.repairVisibleCount += 10;
         autos_renderSelectedCar();
