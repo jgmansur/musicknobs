@@ -4635,12 +4635,19 @@ async function autos_saveCar() {
         console.warn('No se pudo subir foto del auto:', e);
         showToast('⚠️ No se pudo subir archivo del auto, se guarda con URLs actuales');
     }
+    const prevCar = autosState.cars.find(c => c.id === id) || null;
+    const prevKm = autos_parseMileage(prevCar?.kilometraje);
+    const nextKm = autos_parseMileage(car.kilometraje);
+    const shouldForceValuation = !prevCar ? nextKm > 0 : prevKm !== nextKm;
+
     const idx = autosState.cars.findIndex(c => c.id === id);
     if (idx >= 0) autosState.cars[idx] = car;
     else autosState.cars.push(car);
     autosState.selectedCarId = car.id;
     await autos_saveCarsSheet();
     autos_closeCarSheet();
+    autos_render();
+    await autos_refreshCarValuationIfNeeded(car, { force: shouldForceValuation, interactiveAuth: false });
     autos_render();
     showToast('✅ Auto guardado');
 }
