@@ -14,7 +14,7 @@ const SPREADSHEET_LOG_ID   = '1pn1bsxj2LaoySXAVUvqfEJY1VR4R_T8NsTOqQnVW5Xw'; // 
 const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // Gastos Fijos
 const SPREADSHEET_DEUDAS_ID = '1dKxhgqazskm15lx0f6FNCA0gpJ7i5glfxkusiH3b0Uk'; // Control de Deudas
 const SPREADSHEET_AUTOS_ID = SPREADSHEET_DEUDAS_ID; // Autos + Reparaciones live in same workbook
-const APP_VERSION  = 'v6.1.2';
+const APP_VERSION  = 'v6.1.3';
 // Bump token keys to force re-auth with the new drive scope
 const TOKEN_KEY    = 'google_access_token_v4';
 const EXPIRY_KEY   = 'google_token_expiry_v4';
@@ -3634,15 +3634,6 @@ function autos_renderSelectedCar() {
     }
     selectedEl.innerText = `${car.marca} ${car.modelo}`;
 
-    const links = [
-        ['Tarjeta Frontal', car.tarjetaCirculacionFrente],
-        ['Tarjeta Trasera', car.tarjetaCirculacionAtras],
-        ['Tabla Pagos', car.tablaPagos],
-        ['Tabla Seguro', car.tablaPagosSeguro],
-        ['Foto Llantas', car.llantasFoto],
-        ['Certificado Polarizado', car.certificadoPolarizado],
-    ].filter(([, url]) => !!url);
-
     const emergenciaInteriorHtml = autos_phoneLinkOrText(car.emergenciaInterior, 'Interior');
     const emergenciaMetroHtml = autos_phoneLinkOrText(car.emergenciaMetro, 'Metro');
     const siniestros1Html = autos_phoneLinkOrText(car.reporteSiniestros1, 'Siniestros 1');
@@ -3661,8 +3652,7 @@ function autos_renderSelectedCar() {
                 <button class="mini-btn" onclick="event.stopPropagation(); autos_openCarSheet('${car.id}')">✏️ Editar auto</button>
             </div>
         </div>
-    </div>
-    <div style="display:flex;gap:.35rem;flex-wrap:wrap;margin-top:.5rem;">${links.map(([label, url]) => `<a class="mini-btn" href="${url}" target="_blank" rel="noopener">${label}</a>`).join('')}</div>`;
+    </div>`;
 
     const allRepairs = autosState.repairs.filter(r => r.carId === car.id).sort((a, b) => b.fecha.localeCompare(a.fecha));
     const q = autosState.repairSearch;
