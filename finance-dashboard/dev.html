@@ -500,7 +500,10 @@
               <div class="kpi-icon" style="background:rgba(34,197,94,.15);color:#22c55e"><i data-lucide="car-front"></i></div>
               <div class="kpi-data">
                 <span class="label">Control de Autos</span>
-                <h2 id="autos-total-spent" class="text-danger">$0.00</h2>
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:.45rem;">
+                  <h2 id="autos-total-spent" class="text-danger" style="margin:0;">$0.00</h2>
+                  <button id="autos-license-btn" class="icon-btn" title="Ver licencia (dejar presionado para subir)">🪪</button>
+                </div>
                 <span class="diff-label">Gasto acumulado historico</span>
               </div>
             </div>
@@ -525,10 +528,38 @@
                 <span class="bs-label">Total gastado en este auto</span>
                 <span id="autos-selected-spent" class="bs-amount text-danger">$0.00</span>
               </div>
+              <input id="autos-repair-search" type="search" class="field-input" placeholder="Buscar reparaciones por fecha o texto...">
               <div id="autos-repair-list" class="movimientos-list"></div>
+              <button id="autos-repair-load-more" class="secondary-btn hidden" style="width:100%;">Cargar 10 mas</button>
             </section>
           </div>
         </main>
+
+        <div id="autos-detail-panel" class="bottom-sheet hidden">
+          <div id="autos-detail-overlay" class="bottom-sheet-overlay"></div>
+          <div class="bottom-sheet-content glass">
+            <div class="sheet-handle"></div>
+            <div class="balance-panel-header">
+              <h3 id="autos-detail-title" class="balance-panel-title">Detalle del Auto</h3>
+              <button id="autos-detail-close" class="icon-btn">✕</button>
+            </div>
+            <div id="autos-detail-content"></div>
+          </div>
+        </div>
+
+        <div id="autos-license-panel" class="bottom-sheet hidden">
+          <div id="autos-license-overlay" class="bottom-sheet-overlay"></div>
+          <div class="bottom-sheet-content glass">
+            <div class="sheet-handle"></div>
+            <div class="balance-panel-header">
+              <h3 class="balance-panel-title">Licencia de Manejar</h3>
+              <button id="autos-license-close" class="icon-btn">✕</button>
+            </div>
+            <img id="autos-license-image" alt="Licencia" style="width:100%;max-height:68dvh;object-fit:contain;border-radius:.8rem;background:rgba(255,255,255,.04);" />
+            <div id="autos-license-empty" class="empty-state hidden" style="margin-top:1rem;">No hay licencia guardada</div>
+          </div>
+          <input id="autos-license-file" type="file" class="autos-file-native" accept="image/*,application/pdf">
+        </div>
 
         <div id="autos-car-sheet" class="bottom-sheet hidden">
           <div id="autos-car-sheet-overlay" class="bottom-sheet-overlay"></div>

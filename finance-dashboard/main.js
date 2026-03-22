@@ -14,7 +14,7 @@ const SPREADSHEET_LOG_ID   = '1pn1bsxj2LaoySXAVUvqfEJY1VR4R_T8NsTOqQnVW5Xw'; // 
 const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // Gastos Fijos
 const SPREADSHEET_DEUDAS_ID = '1dKxhgqazskm15lx0f6FNCA0gpJ7i5glfxkusiH3b0Uk'; // Control de Deudas
 const SPREADSHEET_AUTOS_ID = SPREADSHEET_DEUDAS_ID; // Autos + Reparaciones live in same workbook
-const APP_VERSION  = 'v6.1.0';
+const APP_VERSION  = 'v6.1.1';
 // Bump token keys to force re-auth with the new drive scope
 const TOKEN_KEY    = 'google_access_token_v4';
 const EXPIRY_KEY   = 'google_token_expiry_v4';
@@ -3186,6 +3186,11 @@ const autosState = {
     autosSheetId: null,
     repairsSheetId: null,
     selectedCarId: '',
+    repairSearch: '',
+    repairVisibleCount: 10,
+    meta: {},
+    licenseLongPressFired: false,
+    licenseLongPressTimer: null,
     loaded: false,
 };
 
@@ -3199,6 +3204,8 @@ const AUTOS_HEADERS = [
 const REPAIRS_HEADERS = [
     'id','carId','reparacion','costo','moneda','lugar','fecha','foto','recibo','descripcion','logMarker',
 ];
+
+const AUTOS_META_HEADERS = ['key', 'value'];
 
 const AUTOS_SEED = [
     {
@@ -3233,6 +3240,28 @@ function autos_bindEvents() {
     document.getElementById('autos-repair-sheet-overlay')?.addEventListener('click', autos_closeRepairSheet);
     document.getElementById('autos-car-save')?.addEventListener('click', autos_saveCar);
     document.getElementById('autos-repair-save')?.addEventListener('click', autos_saveRepair);
+    document.getElementById('autos-repair-search')?.addEventListener('input', (e) => {
+        autosState.repairSearch = (e.target.value || '').trim().toLowerCase();
+        autosState.repairVisibleCount = 10;
+        autos_renderSelectedCar();
+    });
+    document.getElementById('autos-repair-load-more')?.addEventListener('click', () => {
+        autosState.repairVisibleCount += 10;
+        autos_renderSelectedCar();
+    });
+    document.getElementById('autos-detail-overlay')?.addEventListener('click', autos_closeCarDetail);
+    document.getElementById('autos-detail-close')?.addEventListener('click', autos_closeCarDetail);
+    document.getElementById('autos-license-overlay')?.addEventListener('click', autos_closeLicensePanel);
+    document.getElementById('autos-license-close')?.addEventListener('click', autos_closeLicensePanel);
+    const licBtn = document.getElementById('autos-license-btn');
+    if (licBtn) {
+        licBtn.addEventListener('pointerdown', autos_licensePointerDown);
+        licBtn.addEventListener('pointerup', autos_licensePointerUp);
+        licBtn.addEventListener('pointerleave', autos_licensePointerUp);
+        licBtn.addEventListener('pointercancel', autos_licensePointerUp);
+        licBtn.addEventListener('click', autos_licenseClick);
+    }
+    document.getElementById('autos-license-file')?.addEventListener('change', autos_handleLicenseFile);
     document.getElementById('autos-car-foto-file')?.addEventListener('change', (e) => autos_updateFileFeedback('autos-car-foto-feedback', e.target.files));
     document.getElementById('autos-car-tarjeta-frente-file')?.addEventListener('change', (e) => autos_updateFileFeedback('autos-car-tarjeta-frente-feedback', e.target.files));
     document.getElementById('autos-car-tarjeta-atras-file')?.addEventListener('change', (e) => autos_updateFileFeedback('autos-car-tarjeta-atras-feedback', e.target.files));
@@ -3300,6 +3329,117 @@ function autos_phoneLinkOrText(raw, fallbackLabel = 'Tel') {
     return `<a href="tel:${tel}" class="autos-phone-link" title="Llamar ${value}">${value}</a>`;
 }
 
+function autos_docPreview(url, label) {
+    if (!url) return '<div class="empty-state">Sin archivo</div>';
+    const isPdf = /\.pdf(\?|$)/i.test(url);
+    if (isPdf) {
+        return `<a class="mini-btn" href="${url}" target="_blank" rel="noopener">Abrir ${label} PDF</a>`;
+    }
+    return `<a href="${url}" target="_blank" rel="noopener"><img src="${url}" alt="${label}" style="width:100%;height:140px;object-fit:cover;border-radius:.6rem;background:rgba(255,255,255,.05);" /></a>`;
+}
+
+async function autos_saveMeta() {
+    const entries = Object.entries(autosState.meta || {});
+    await sheetsClear(SPREADSHEET_AUTOS_ID, 'AutosMeta!A2:B');
+    if (!entries.length) return;
+    await sheetsUpdate(SPREADSHEET_AUTOS_ID, `AutosMeta!A2:B${entries.length + 1}`, entries.map(([k, v]) => [k, v]));
+}
+
+function autos_openCarDetail() {
+    const car = autosState.cars.find(c => c.id === autosState.selectedCarId);
+    if (!car) return;
+    const detailEl = document.getElementById('autos-detail-content');
+    if (!detailEl) return;
+    detailEl.innerHTML = `
+        <div class="glass-subtle" style="padding:.85rem;display:grid;gap:.4rem;">
+            <img src="${car.fotoAuto || ''}" alt="Auto" style="width:100%;max-height:220px;object-fit:cover;border-radius:.75rem;background:rgba(255,255,255,.05);" onerror="this.style.display='none'" />
+            <span class="account-name">${car.marca} ${car.modelo} (${car.anio || '-'})</span>
+            <span class="account-type-label">Placa: ${car.placa || '-'}</span>
+            <span class="account-type-label">VIN: ${car.vin || '-'}</span>
+            <span class="account-type-label">Propietario: ${car.propietario || '-'}</span>
+            <span class="account-type-label">Seguro: ${car.tieneSeguro ? 'Si' : 'No'} · Poliza: ${car.polizaSeguro || '-'}</span>
+            <span class="account-type-label">Emergencia interior: ${car.emergenciaInterior || '-'} · Metro: ${car.emergenciaMetro || '-'}</span>
+            <span class="account-type-label">Siniestros: ${car.reporteSiniestros1 || '-'} · ${car.reporteSiniestros2 || '-'}</span>
+            <span class="account-type-label">Tipo de llantas: ${car.tipoLlantas || '-'}</span>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.65rem;margin-top:.75rem;">
+            <div class="glass-subtle" style="padding:.55rem;">
+                <div class="diff-label" style="margin-bottom:.4rem;">Tarjeta circulación frontal</div>
+                ${autos_docPreview(car.tarjetaCirculacionFrente, 'Tarjeta frontal')}
+            </div>
+            <div class="glass-subtle" style="padding:.55rem;">
+                <div class="diff-label" style="margin-bottom:.4rem;">Tarjeta circulación trasera</div>
+                ${autos_docPreview(car.tarjetaCirculacionAtras, 'Tarjeta trasera')}
+            </div>
+        </div>`;
+    document.getElementById('autos-detail-title').innerText = `${car.marca} ${car.modelo}`;
+    document.getElementById('autos-detail-panel')?.classList.remove('hidden');
+}
+
+function autos_closeCarDetail() {
+    document.getElementById('autos-detail-panel')?.classList.add('hidden');
+}
+
+function autos_openLicensePanel() {
+    const img = document.getElementById('autos-license-image');
+    const empty = document.getElementById('autos-license-empty');
+    const url = (autosState.meta?.licenciaUrl || '').trim();
+    if (img) {
+        img.src = url || '';
+        img.style.display = url ? 'block' : 'none';
+    }
+    if (empty) empty.classList.toggle('hidden', !!url);
+    document.getElementById('autos-license-panel')?.classList.remove('hidden');
+}
+
+function autos_closeLicensePanel() {
+    document.getElementById('autos-license-panel')?.classList.add('hidden');
+}
+
+function autos_licensePointerDown() {
+    if (autosState.licenseLongPressTimer) clearTimeout(autosState.licenseLongPressTimer);
+    autosState.licenseLongPressFired = false;
+    autosState.licenseLongPressTimer = setTimeout(() => {
+        autosState.licenseLongPressFired = true;
+        document.getElementById('autos-license-file')?.click();
+    }, 650);
+}
+
+function autos_licensePointerUp() {
+    if (autosState.licenseLongPressTimer) {
+        clearTimeout(autosState.licenseLongPressTimer);
+        autosState.licenseLongPressTimer = null;
+    }
+}
+
+function autos_licenseClick() {
+    if (autosState.licenseLongPressFired) {
+        autosState.licenseLongPressFired = false;
+        return;
+    }
+    autos_openLicensePanel();
+}
+
+async function autos_handleLicenseFile(e) {
+    const input = e?.target;
+    if (!input || !input.files || !input.files.length) return;
+    try {
+        const folderId = await autos_ensureRecibosFolder();
+        const url = await driveUploadFile(input.files[0], folderId);
+        if (url) {
+            autosState.meta.licenciaUrl = url;
+            await autos_saveMeta();
+            autos_openLicensePanel();
+            showToast('✅ Licencia guardada');
+        }
+    } catch (err) {
+        console.warn('No se pudo guardar licencia:', err);
+        showToast('⚠️ No se pudo guardar licencia');
+    } finally {
+        input.value = '';
+    }
+}
+
 async function autos_cargarVista() {
     const listEl = document.getElementById('autos-car-list');
     if (listEl) listEl.innerHTML = '<div class="loading-spinner">⏳ Cargando autos...</div>';
@@ -3315,6 +3455,7 @@ async function autos_cargarVista() {
 async function autos_ensureSheets() {
     await autos_ensureSheet('Autos', AUTOS_HEADERS);
     await autos_ensureSheet('Reparaciones', REPAIRS_HEADERS);
+    await autos_ensureSheet('AutosMeta', AUTOS_META_HEADERS);
 }
 
 async function autos_ensureSheet(sheetName, headers) {
@@ -3347,9 +3488,10 @@ function autos_colLetter(n) {
 }
 
 async function autos_loadData() {
-    const [carsRows, repairsRows] = await Promise.all([
+    const [carsRows, repairsRows, metaRows] = await Promise.all([
         sheetsGet(SPREADSHEET_AUTOS_ID, 'Autos!A2:X').catch(() => []),
         sheetsGet(SPREADSHEET_AUTOS_ID, 'Reparaciones!A2:K').catch(() => []),
+        sheetsGet(SPREADSHEET_AUTOS_ID, 'AutosMeta!A2:B').catch(() => []),
     ]);
 
     if (!carsRows.length) {
@@ -3400,6 +3542,13 @@ async function autos_loadData() {
         logMarker: r[10] || '',
     })).filter(x => x.id && x.carId);
 
+    autosState.meta = {};
+    metaRows.forEach(r => {
+        const key = (r[0] || '').toString().trim();
+        if (!key) return;
+        autosState.meta[key] = (r[1] || '').toString();
+    });
+
     if (!autosState.selectedCarId || !autosState.cars.find(c => c.id === autosState.selectedCarId)) {
         autosState.selectedCarId = autosState.cars[0]?.id || '';
     }
@@ -3436,6 +3585,8 @@ function autos_render() {
     if (totalEl) totalEl.innerText = formatCurrency(total);
 
     const listEl = document.getElementById('autos-car-list');
+    const searchEl = document.getElementById('autos-repair-search');
+    if (searchEl && searchEl.value !== autosState.repairSearch) searchEl.value = autosState.repairSearch;
     if (listEl) {
         listEl.innerHTML = autosState.cars.map(car => {
             const spent = autos_getCarSpent(car.id);
@@ -3461,6 +3612,7 @@ function autos_render() {
 
 window.autos_selectCar = function(carId) {
     autosState.selectedCarId = carId;
+    autosState.repairVisibleCount = 10;
     autos_render();
 };
 
@@ -3492,7 +3644,7 @@ function autos_renderSelectedCar() {
     const siniestros1Html = autos_phoneLinkOrText(car.reporteSiniestros1, 'Siniestros 1');
     const siniestros2Html = autos_phoneLinkOrText(car.reporteSiniestros2, 'Siniestros 2');
 
-    profileEl.innerHTML = `<div class="glass-subtle autos-profile-card" style="padding:.8rem;display:grid;grid-template-columns:96px minmax(0,1fr);gap:.7rem;align-items:start;">
+    profileEl.innerHTML = `<div class="glass-subtle autos-profile-card autos-profile-clickable" onclick="autos_openCarDetail()" style="padding:.8rem;display:grid;grid-template-columns:96px minmax(0,1fr);gap:.7rem;align-items:start;">
         <img src="${car.fotoAuto || ''}" alt="Auto" style="width:96px;height:72px;object-fit:cover;border-radius:.75rem;background:rgba(255,255,255,.06);" onerror="this.style.display='none'" />
         <div class="autos-profile-main" style="display:grid;gap:.2rem;min-width:0;">
             <span class="account-name">${car.marca} ${car.modelo} · ${car.anio || '-'}</span>
@@ -3502,14 +3654,24 @@ function autos_renderSelectedCar() {
             <span class="account-type-label">Emergencia: ${emergenciaInteriorHtml} · ${emergenciaMetroHtml}</span>
             <span class="account-type-label">Siniestros: ${siniestros1Html} · ${siniestros2Html}</span>
             <div style="display:flex;gap:.35rem;flex-wrap:wrap;margin-top:.3rem;">
-                <button class="mini-btn" onclick="autos_openCarSheet('${car.id}')">✏️ Editar auto</button>
+                <button class="mini-btn" onclick="event.stopPropagation(); autos_openCarSheet('${car.id}')">✏️ Editar auto</button>
             </div>
         </div>
     </div>
     <div style="display:flex;gap:.35rem;flex-wrap:wrap;margin-top:.5rem;">${links.map(([label, url]) => `<a class="mini-btn" href="${url}" target="_blank" rel="noopener">${label}</a>`).join('')}</div>`;
 
-    const repairs = autosState.repairs.filter(r => r.carId === car.id).sort((a, b) => b.fecha.localeCompare(a.fecha));
-    repairsEl.innerHTML = repairs.map(r => {
+    const allRepairs = autosState.repairs.filter(r => r.carId === car.id).sort((a, b) => b.fecha.localeCompare(a.fecha));
+    const q = autosState.repairSearch;
+    const filteredRepairs = !q
+        ? allRepairs
+        : allRepairs.filter(r => {
+            const dateA = (r.fecha || '').toLowerCase();
+            const dateB = formatFecha(r.fecha).toLowerCase();
+            const text = `${r.reparacion} ${r.lugar} ${r.descripcion}`.toLowerCase();
+            return dateA.includes(q) || dateB.includes(q) || text.includes(q);
+        });
+    const visibleRepairs = filteredRepairs.slice(0, autosState.repairVisibleCount);
+    repairsEl.innerHTML = visibleRepairs.map(r => {
         const amount = convertTransactionAmountToMxn(r.costo, r.moneda);
         return `<div class="movimiento-card">
             <div class="mc-left">
@@ -3530,6 +3692,16 @@ function autos_renderSelectedCar() {
             </div>
         </div>`;
     }).join('') || '<div class="empty-state">Sin reparaciones registradas</div>';
+
+    const loadMoreBtn = document.getElementById('autos-repair-load-more');
+    if (loadMoreBtn) {
+        const hasMore = filteredRepairs.length > visibleRepairs.length;
+        loadMoreBtn.classList.toggle('hidden', !hasMore);
+        if (hasMore) {
+            const remaining = filteredRepairs.length - visibleRepairs.length;
+            loadMoreBtn.innerText = `Cargar más (${remaining})`;
+        }
+    }
 
     const selectedSpent = autos_getCarSpent(car.id);
     const selectedSpentEl = document.getElementById('autos-selected-spent');
@@ -3790,6 +3962,7 @@ window.autos_openCarSheet = autos_openCarSheet;
 window.autos_closeCarSheet = autos_closeCarSheet;
 window.autos_openRepairSheet = autos_openRepairSheet;
 window.autos_closeRepairSheet = autos_closeRepairSheet;
+window.autos_openCarDetail = autos_openCarDetail;
 
 // =============================================
 // UTILITIES
