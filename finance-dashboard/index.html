@@ -576,6 +576,37 @@
           <input id="autos-license-file" type="file" class="autos-file-native" accept="image/*,application/pdf">
         </div>
 
+        <div id="autos-license-crop-panel" class="bottom-sheet hidden">
+          <div id="autos-license-crop-overlay" class="bottom-sheet-overlay"></div>
+          <div class="bottom-sheet-content glass">
+            <div class="sheet-handle"></div>
+            <div class="balance-panel-header">
+              <h3 class="balance-panel-title">Ajustar licencia</h3>
+              <button id="autos-license-crop-close" class="icon-btn">✕</button>
+            </div>
+            <div class="diff-label" style="margin-bottom:.45rem;">Encuadra la credencial y guarda el recorte.</div>
+            <canvas id="autos-license-crop-canvas" class="autos-license-crop-canvas" width="1200" height="756"></canvas>
+            <div class="autos-license-crop-grid">
+              <label class="autos-filter-col">
+                <span class="autos-filter-label">Zoom</span>
+                <input id="autos-license-crop-zoom" type="range" min="1" max="3" step="0.01" value="1">
+              </label>
+              <label class="autos-filter-col">
+                <span class="autos-filter-label">Mover horizontal</span>
+                <input id="autos-license-crop-x" type="range" min="-100" max="100" step="1" value="0">
+              </label>
+              <label class="autos-filter-col">
+                <span class="autos-filter-label">Mover vertical</span>
+                <input id="autos-license-crop-y" type="range" min="-100" max="100" step="1" value="0">
+              </label>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:.55rem;margin-top:.8rem;">
+              <button id="autos-license-crop-cancel" class="secondary-btn">Cancelar</button>
+              <button id="autos-license-crop-apply" class="primary-btn">Usar recorte</button>
+            </div>
+          </div>
+        </div>
+
         <div id="autos-car-sheet" class="bottom-sheet hidden">
           <div id="autos-car-sheet-overlay" class="bottom-sheet-overlay"></div>
           <div class="bottom-sheet-content glass">

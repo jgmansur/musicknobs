@@ -806,6 +806,21 @@ select.field-input { background-image: url("data:image/svg+xml,%3Csvg xmlns='htt
   transform: scale(.995);
 }
 
+.autos-license-crop-canvas {
+  width: 100%;
+  max-height: 52dvh;
+  border-radius: .8rem;
+  border: 1px solid rgba(251,191,36,.35);
+  background: #0b1120;
+}
+
+.autos-license-crop-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: .45rem;
+  margin-top: .65rem;
+}
+
 .kpi-debt-muted {
   opacity: 0.45;
   filter: saturate(0.35);

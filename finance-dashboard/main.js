@@ -14,7 +14,7 @@ const SPREADSHEET_LOG_ID   = '1pn1bsxj2LaoySXAVUvqfEJY1VR4R_T8NsTOqQnVW5Xw'; // 
 const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // Gastos Fijos
 const SPREADSHEET_DEUDAS_ID = '1dKxhgqazskm15lx0f6FNCA0gpJ7i5glfxkusiH3b0Uk'; // Control de Deudas
 const SPREADSHEET_AUTOS_ID = SPREADSHEET_DEUDAS_ID; // Autos + Reparaciones live in same workbook
-const APP_VERSION  = 'v6.1.8';
+const APP_VERSION  = 'v6.1.9';
 // Bump token keys to force re-auth with the new drive scope
 const TOKEN_KEY    = 'google_access_token_v4';
 const EXPIRY_KEY   = 'google_token_expiry_v4';
@@ -3193,6 +3193,7 @@ const autosState = {
     meta: {},
     licenseLongPressFired: false,
     licenseLongPressTimer: null,
+    licenseCrop: null,
     loaded: false,
 };
 
@@ -3268,6 +3269,13 @@ function autos_bindEvents() {
     document.getElementById('autos-license-overlay')?.addEventListener('click', autos_closeLicensePanel);
     document.getElementById('autos-license-close')?.addEventListener('click', autos_closeLicensePanel);
     document.getElementById('autos-license-upload-btn')?.addEventListener('click', () => document.getElementById('autos-license-file')?.click());
+    document.getElementById('autos-license-crop-overlay')?.addEventListener('click', autos_closeLicenseCropPanel);
+    document.getElementById('autos-license-crop-close')?.addEventListener('click', autos_closeLicenseCropPanel);
+    document.getElementById('autos-license-crop-cancel')?.addEventListener('click', autos_closeLicenseCropPanel);
+    document.getElementById('autos-license-crop-apply')?.addEventListener('click', autos_applyLicenseCrop);
+    document.getElementById('autos-license-crop-zoom')?.addEventListener('input', autos_updateLicenseCropFromControls);
+    document.getElementById('autos-license-crop-x')?.addEventListener('input', autos_updateLicenseCropFromControls);
+    document.getElementById('autos-license-crop-y')?.addEventListener('input', autos_updateLicenseCropFromControls);
     const licCard = document.getElementById('autos-license-card');
     if (licCard) {
         licCard.addEventListener('pointerdown', autos_licensePointerDown);
@@ -3494,17 +3502,129 @@ function autos_licenseClick() {
     autos_openLicensePanel();
 }
 
+function autos_fileLooksLikeImage(file) {
+    if (!file) return false;
+    if ((file.type || '').toLowerCase().startsWith('image/')) return true;
+    return /\.(png|jpe?g|heic|heif|webp|gif|bmp)$/i.test(file.name || '');
+}
+
+function autos_fileToDataUrl(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+    });
+}
+
+function autos_loadImage(src) {
+    return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.onerror = reject;
+        img.src = src;
+    });
+}
+
+async function autos_uploadLicenseFile(file) {
+    const folderId = await autos_ensureRecibosFolder();
+    const url = await driveUploadFile(file, folderId);
+    if (!url) return;
+    autosState.meta.licenciaUrl = url;
+    await autos_saveMeta();
+    autos_openLicensePanel();
+    showToast('✅ Licencia guardada');
+}
+
+async function autos_openLicenseCropper(file) {
+    const dataUrl = await autos_fileToDataUrl(file);
+    const image = await autos_loadImage(dataUrl);
+    autosState.licenseCrop = {
+        image,
+        zoom: 1,
+        offsetX: 0,
+        offsetY: 0,
+    };
+    const zoomEl = document.getElementById('autos-license-crop-zoom');
+    const xEl = document.getElementById('autos-license-crop-x');
+    const yEl = document.getElementById('autos-license-crop-y');
+    if (zoomEl) zoomEl.value = '1';
+    if (xEl) xEl.value = '0';
+    if (yEl) yEl.value = '0';
+    document.getElementById('autos-license-crop-panel')?.classList.remove('hidden');
+    autos_renderLicenseCrop();
+}
+
+function autos_closeLicenseCropPanel() {
+    document.getElementById('autos-license-crop-panel')?.classList.add('hidden');
+    autosState.licenseCrop = null;
+}
+
+function autos_updateLicenseCropFromControls() {
+    const crop = autosState.licenseCrop;
+    if (!crop) return;
+    crop.zoom = Number(document.getElementById('autos-license-crop-zoom')?.value || 1);
+    crop.offsetX = Number(document.getElementById('autos-license-crop-x')?.value || 0);
+    crop.offsetY = Number(document.getElementById('autos-license-crop-y')?.value || 0);
+    autos_renderLicenseCrop();
+}
+
+function autos_renderLicenseCrop() {
+    const crop = autosState.licenseCrop;
+    const canvas = document.getElementById('autos-license-crop-canvas');
+    if (!crop || !canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    const cw = canvas.width;
+    const ch = canvas.height;
+    const img = crop.image;
+
+    ctx.clearRect(0, 0, cw, ch);
+    ctx.fillStyle = '#0b1120';
+    ctx.fillRect(0, 0, cw, ch);
+
+    const baseScale = Math.max(cw / img.width, ch / img.height);
+    const scale = baseScale * (crop.zoom || 1);
+    const drawW = img.width * scale;
+    const drawH = img.height * scale;
+    const freeX = Math.max(0, (drawW - cw) / 2);
+    const freeY = Math.max(0, (drawH - ch) / 2);
+    const dx = (cw - drawW) / 2 + (crop.offsetX / 100) * freeX;
+    const dy = (ch - drawH) / 2 + (crop.offsetY / 100) * freeY;
+
+    ctx.drawImage(img, dx, dy, drawW, drawH);
+    ctx.strokeStyle = 'rgba(251,191,36,.9)';
+    ctx.lineWidth = 4;
+    ctx.strokeRect(2, 2, cw - 4, ch - 4);
+}
+
+async function autos_applyLicenseCrop() {
+    const canvas = document.getElementById('autos-license-crop-canvas');
+    if (!canvas) return;
+    const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.92));
+    if (!blob) {
+        showToast('⚠️ No se pudo crear recorte');
+        return;
+    }
+    const file = new File([blob], `licencia-${Date.now()}.jpg`, { type: 'image/jpeg' });
+    try {
+        await autos_uploadLicenseFile(file);
+        autos_closeLicenseCropPanel();
+    } catch (err) {
+        console.warn('No se pudo guardar recorte:', err);
+        showToast('⚠️ No se pudo guardar licencia');
+    }
+}
+
 async function autos_handleLicenseFile(e) {
     const input = e?.target;
     if (!input || !input.files || !input.files.length) return;
+    const file = input.files[0];
     try {
-        const folderId = await autos_ensureRecibosFolder();
-        const url = await driveUploadFile(input.files[0], folderId);
-        if (url) {
-            autosState.meta.licenciaUrl = url;
-            await autos_saveMeta();
-            autos_openLicensePanel();
-            showToast('✅ Licencia guardada');
+        if (autos_fileLooksLikeImage(file)) {
+            await autos_openLicenseCropper(file);
+        } else {
+            await autos_uploadLicenseFile(file);
         }
     } catch (err) {
         console.warn('No se pudo guardar licencia:', err);
