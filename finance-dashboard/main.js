@@ -1666,12 +1666,18 @@ function processAndRender(logRows, fixedRows) {
     const hormigaKeywords = [
         'oxxo','coca','cigarros','snacks','gomitas','tiendita','starbucks','seven','7-eleven','extra',
         'dulces','chicles','golosinas','chocolate','tamarindos','cine','brincolines',
-        'restaurante','restaurant','comida fuera','comidas fuera','fuera de casa',
         'lerele','danny trova','dany trova'
+    ];
+    const imprevistoKeywords = [
+        'restaurante','restaurant','comida fuera','comidas fuera','fuera de casa',
+        'enfermedad','enfermo','medico','doctor','farmacia','medicina','medicinas','hospital',
+        'clinica','consulta','laboratorio','analisis'
     ];
     let hormigaTotal = 0, hormigaChartData = [];
     let hormigaGastos = []; // Guardaremos detalle para el panel
     let hormigaPrevTotal = 0; // Previous month hormiga total
+    let imprevistoTotal = 0;
+    let imprevistoPrevTotal = 0;
 
     const now = new Date();
     const currentMonth = now.getMonth();
@@ -1696,8 +1702,24 @@ function processAndRender(logRows, fixedRows) {
         const moneda   = parseCurrencyCode(row[7]);
         const monto    = convertTransactionAmountToMxn(parseSheetValue(row[3]), moneda);
         const fecha    = row[0] || '';
+        const tipo = (row[4] || '').toLowerCase();
+        if (tipo !== 'gasto') return;
+
+        const isAutoRepair = (row[5] || '').toString().toLowerCase().includes('auto - reparaciones') || concepto.includes('autolog#');
+        const isImprevisto = isAutoRepair || imprevistoKeywords.some(k => concepto.includes(k) || lugar.includes(k));
+        if (isImprevisto) {
+            const parsedDate = parseSheetDate(fecha);
+            if (parsedDate.getMonth() === currentMonth && parsedDate.getFullYear() === currentYear) {
+                imprevistoTotal += monto;
+            }
+            if (parsedDate.getMonth() === prevMonth && parsedDate.getFullYear() === prevYear) {
+                imprevistoPrevTotal += monto;
+            }
+            return;
+        }
+
         // FIX: use toLowerCase() so 'Gasto'/'gasto'/'GASTO' all match
-        if (hormigaKeywords.some(k => concepto.includes(k) || lugar.includes(k)) && (row[4] || '').toLowerCase() === 'gasto') {
+        if (hormigaKeywords.some(k => concepto.includes(k) || lugar.includes(k))) {
             const parsedDate = parseSheetDate(fecha);
             
             // SIEMPRE agregamos a la gráfica para tener historial completo
@@ -1761,6 +1783,12 @@ function processAndRender(logRows, fixedRows) {
     balance_updateKpi();
 
     document.getElementById('gasto-hormiga-total').innerText = formatCurrency(hormigaTotal);
+    const imprevEl = document.getElementById('gasto-imprevisto-diff');
+    if (imprevEl) {
+        const prevHint = imprevistoPrevTotal > 0 ? ` · mes ant ${formatCurrency(imprevistoPrevTotal)}` : '';
+        imprevEl.innerText = `Imprevistos: ${formatCurrency(imprevistoTotal)}${prevHint}`;
+        imprevEl.className = `diff-label ${imprevistoTotal > 0 ? 'text-danger' : ''}`;
+    }
     balance_setFixedTotalKpi(fixedTotal);
     balance_updateFixedCoverageKpi();
     document.getElementById('pago-status').innerText =
