@@ -15,7 +15,7 @@ const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // 
 const SPREADSHEET_DEUDAS_ID = '1dKxhgqazskm15lx0f6FNCA0gpJ7i5glfxkusiH3b0Uk'; // Control de Deudas
 const SPREADSHEET_AUTOS_ID = SPREADSHEET_DEUDAS_ID; // Autos + Reparaciones live in same workbook
 const SPREADSHEET_ESTUDIO_ID = SPREADSHEET_DEUDAS_ID; // Estudio + Plugins in same workbook
-const APP_VERSION  = 'v7.0.20';
+const APP_VERSION  = 'v7.0.21';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -3427,7 +3427,7 @@ const autosState = {
 };
 
 const AUTOS_HEADERS = [
-    'id','marca','modelo','anio','kilometraje','propietario','tieneSeguro','placa','vin','fotoAuto',
+    'id','marca','modelo','anio','valorFactura','kilometraje','propietario','tieneSeguro','placa','vin','fotoAuto',
     'contratoPrestamo','polizaSeguro','emergenciaInterior','emergenciaMetro','reporteSiniestros1','reporteSiniestros2',
     'tarjetaCirculacionFrente','tarjetaCirculacionAtras','pagoTenencia','vencimientoTenencia','tablaPagos','tablaPagosSeguro',
     'tipoLlantas','llantasFoto','certificadoPolarizado',
@@ -3442,7 +3442,7 @@ const AUTOS_META_HEADERS = ['key', 'value'];
 const AUTOS_SEED = [
     {
         id: `car-${Date.now()}-1`,
-        marca: 'Renault', modelo: 'Koleos', anio: '2009', kilometraje: '184500', propietario: 'Mariel de la Rosa G',
+        marca: 'Renault', modelo: 'Koleos', anio: '2009', valorFactura: '', kilometraje: '184500', propietario: 'Mariel de la Rosa G',
         tieneSeguro: false, placa: 'Z33-AFR', vin: 'VF1VY1GZ89C288675',
         fotoAuto: 'https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/szp3mFYNwh3181ZkC2gi/pub/BM0BuLh3wmZGqAYW2fiv.heic',
         contratoPrestamo: '', polizaSeguro: '', emergenciaInterior: '', emergenciaMetro: '', reporteSiniestros1: '', reporteSiniestros2: '',
@@ -3452,7 +3452,7 @@ const AUTOS_SEED = [
     },
     {
         id: `car-${Date.now()}-2`,
-        marca: 'VW', modelo: 'Taos', anio: '2025', kilometraje: '18750', propietario: 'Juan G Mansur G',
+        marca: 'VW', modelo: 'Taos', anio: '2025', valorFactura: '640000', kilometraje: '18750', propietario: 'Juan G Mansur G',
         tieneSeguro: true, placa: 'XMP-337-D', vin: '3VVKP6B23SM081860',
         fotoAuto: 'https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/szp3mFYNwh3181ZkC2gi/pub/DTZUJ2R1fmI3vJJQAeqJ.png',
         contratoPrestamo: 'Pagado de Contado', polizaSeguro: '3200937564', emergenciaInterior: '800-253-0553', emergenciaMetro: '55-3300-4534',
@@ -3725,6 +3725,7 @@ function autos_renderMeliDebug() {
         ['valuation.carId', selectedCar?.id || '-'],
         ['valuation.carName', selectedCar ? `${selectedCar.marca || '-'} ${selectedCar.modelo || '-'}`.trim() : '-'],
         ['valuation.year', selectedCar?.anio || '-'],
+        ['valuation.invoice', parseSheetValue(selectedCar?.valorFactura) > 0 ? String(Math.round(parseSheetValue(selectedCar?.valorFactura))) : '-'],
         ['valuation.km', selectedKm ? String(selectedKm) : '-'],
         ['valuation.query', selectedQuery || '-'],
         ['valuation.status', selectedValuation?.status || '-'],
@@ -3775,6 +3776,7 @@ function autos_buildMeliDebugSnapshot() {
         `valuation.carId=${selectedCar?.id || '-'}`,
         `valuation.carName=${selectedCar ? `${selectedCar.marca || '-'} ${selectedCar.modelo || '-'}`.trim() : '-'}`,
         `valuation.year=${selectedCar?.anio || '-'}`,
+        `valuation.invoice=${parseSheetValue(selectedCar?.valorFactura) > 0 ? String(Math.round(parseSheetValue(selectedCar?.valorFactura))) : '-'}`,
         `valuation.km=${selectedKm ? String(selectedKm) : '-'}`,
         `valuation.query=${selectedQuery || '-'}`,
         `valuation.status=${selectedValuation?.status || '-'}`,
@@ -3864,6 +3866,7 @@ function autos_estimateFallbackValuation(car) {
     const year = parseInt((car?.anio || '').toString(), 10);
     const currentYear = new Date().getFullYear();
     const age = Number.isFinite(year) ? Math.max(1, currentYear - year + 1) : 12;
+    const invoiceValue = parseSheetValue(car?.valorFactura);
     const modelText = `${car?.marca || ''} ${car?.modelo || ''}`.toLowerCase();
 
     let segmentMultiplier = 1;
@@ -3871,9 +3874,11 @@ function autos_estimateFallbackValuation(car) {
     else if (/(jetta|sentra|corolla|civic|mazda\s*3|versa|rio|yaris)/i.test(modelText)) segmentMultiplier = 0.96;
     else if (/(pickup|hilux|l200|ranger|np300|frontier)/i.test(modelText)) segmentMultiplier = 1.28;
 
-    const baseNewMxn = 430000 * segmentMultiplier;
+    const baseFromSegment = 430000 * segmentMultiplier;
+    const baseNewMxn = invoiceValue > 0 ? invoiceValue : baseFromSegment;
     const depreciationFactor = Math.pow(0.905, Math.max(0, age - 1));
-    const midBase = Math.max(65000, Math.min(1200000, baseNewMxn * depreciationFactor));
+    let midBase = Math.max(65000, Math.min(1200000, baseNewMxn * depreciationFactor));
+    if (invoiceValue > 0) midBase = Math.min(midBase, invoiceValue);
     const kmAdj = autos_calculateMileageAdjustment(car);
     const mid = midBase * kmAdj.factor;
     const low = mid * 0.84;
@@ -4068,6 +4073,7 @@ function autos_openCarDetail() {
             <div class="autos-detail-row"><strong>Placa:</strong> <span>${car.placa || '-'}</span></div>
             <div class="autos-detail-row"><strong>VIN:</strong> <span>${car.vin || '-'}</span></div>
             <div class="autos-detail-row"><strong>Kilometraje:</strong> <span>${autos_parseMileage(car.kilometraje) ? `${autos_parseMileage(car.kilometraje).toLocaleString('es-MX')} km` : '-'}</span></div>
+            <div class="autos-detail-row"><strong>Factura:</strong> <span>${parseSheetValue(car.valorFactura) > 0 ? formatCurrency(parseSheetValue(car.valorFactura)) : '-'}</span></div>
             <div class="autos-detail-row"><strong>Propietario:</strong> <span>${car.propietario || '-'}</span></div>
             <div class="autos-detail-row"><strong>Seguro:</strong> <span>${car.tieneSeguro ? 'Si' : 'No'} · Poliza ${car.polizaSeguro || '-'}</span></div>
             <div class="autos-detail-row"><strong>Valor hoy:</strong> <span>${autos_getValuationLabel(car.id)}</span></div>
@@ -4453,7 +4459,7 @@ function autos_colLetter(n) {
 
 async function autos_loadData() {
     const [carsRows, repairsRows, metaRows] = await Promise.all([
-        sheetsGet(SPREADSHEET_AUTOS_ID, 'Autos!A2:Y').catch(() => []),
+        sheetsGet(SPREADSHEET_AUTOS_ID, 'Autos!A2:Z').catch(() => []),
         sheetsGet(SPREADSHEET_AUTOS_ID, 'Reparaciones!A2:K').catch(() => []),
         sheetsGet(SPREADSHEET_AUTOS_ID, 'AutosMeta!A2:B').catch(() => []),
     ]);
@@ -4466,15 +4472,20 @@ async function autos_loadData() {
     autosState.cars = carsRows.map(r => {
         const boolAt5 = /^(true|false)$/i.test((r[5] || '').toString().trim());
         const boolAt6 = /^(true|false)$/i.test((r[6] || '').toString().trim());
-        const hasKilometrajeColumn = boolAt6 || (!boolAt5 && autos_parseMileage(r[4]) > 0);
-        const shift = hasKilometrajeColumn ? 1 : 0;
+        const boolAt7 = /^(true|false)$/i.test((r[7] || '').toString().trim());
+        const hasFacturaColumn = boolAt7;
+        const hasKilometrajeColumn = hasFacturaColumn || boolAt6 || (!boolAt5 && autos_parseMileage(r[4]) > 0);
+        const shift = (hasKilometrajeColumn ? 1 : 0) + (hasFacturaColumn ? 1 : 0);
+        const facturaIndex = hasFacturaColumn ? 4 : -1;
+        const kmIndex = hasFacturaColumn ? 5 : (hasKilometrajeColumn ? 4 : -1);
         return {
             rowNum: null,
             id: (r[0] || '').toString(),
             marca: r[1] || '',
             modelo: r[2] || '',
             anio: r[3] || '',
-            kilometraje: (hasKilometrajeColumn ? r[4] : '') || '',
+            valorFactura: (facturaIndex >= 0 ? r[facturaIndex] : '') || '',
+            kilometraje: (kmIndex >= 0 ? r[kmIndex] : '') || '',
             propietario: r[4 + shift] || '',
             tieneSeguro: parseBool(r[5 + shift]),
             placa: r[6 + shift] || '',
@@ -4539,8 +4550,8 @@ async function autos_seedInitialData() {
         { id: `rep-${Date.now()}-6`, carId: taos?.id || '', reparacion: 'Servicio de los 15000 kilometros', costo: 3075.01, moneda: 'MXN', lugar: 'Agencia VW Valle Victoria', fecha: '2026-01-24', foto: 'https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/szp3mFYNwh3181ZkC2gi/pub/soFtdoc1n0sFXUFKuyTq.jpg', recibo: '', descripcion: '', logMarker: '' },
     ].filter(r => r.carId);
 
-    await sheetsUpdate(SPREADSHEET_AUTOS_ID, `Autos!A2:Y${1 + cars.length}`, cars.map(c => [
-        c.id, c.marca, c.modelo, c.anio, c.kilometraje || '', c.propietario, c.tieneSeguro ? 'TRUE' : 'FALSE', c.placa, c.vin, c.fotoAuto,
+    await sheetsUpdate(SPREADSHEET_AUTOS_ID, `Autos!A2:Z${1 + cars.length}`, cars.map(c => [
+        c.id, c.marca, c.modelo, c.anio, c.valorFactura || '', c.kilometraje || '', c.propietario, c.tieneSeguro ? 'TRUE' : 'FALSE', c.placa, c.vin, c.fotoAuto,
         c.contratoPrestamo, c.polizaSeguro, c.emergenciaInterior, c.emergenciaMetro, c.reporteSiniestros1, c.reporteSiniestros2,
         c.tarjetaCirculacionFrente, c.tarjetaCirculacionAtras, c.pagoTenencia, c.vencimientoTenencia, c.tablaPagos, c.tablaPagosSeguro,
         c.tipoLlantas, c.llantasFoto, c.certificadoPolarizado,
@@ -4623,7 +4634,9 @@ function autos_renderSelectedCar() {
     const meliStatus = autos_getMeliConnectionLabel();
     const meliConnected = meli_isAccessTokenValid() || !!meliAuthState.refreshToken;
     const mileageNumber = autos_parseMileage(car.kilometraje);
+    const invoiceValue = parseSheetValue(car.valorFactura);
     const mileageLabel = mileageNumber ? `${mileageNumber.toLocaleString('es-MX')} km` : 'Sin kilometraje';
+    const invoiceLabel = invoiceValue > 0 ? formatCurrency(invoiceValue) : 'Sin factura';
     const kmAdjLabel = valuationInfo.status === 'ok' && valuationInfo.kmAdjustmentPct
         ? ` · ajuste KM ${valuationInfo.kmAdjustmentPct > 0 ? '+' : ''}${valuationInfo.kmAdjustmentPct}%`
         : '';
@@ -4634,6 +4647,7 @@ function autos_renderSelectedCar() {
             <span class="account-name">${car.marca} ${car.modelo} · ${car.anio || '-'}</span>
             <span class="account-type-label">Placa: ${car.placa || '-'} · VIN: ${car.vin || '-'}</span>
             <span class="account-type-label">Kilometraje: ${mileageLabel}</span>
+            <span class="account-type-label">Factura: ${invoiceLabel}</span>
             <span class="account-type-label">Propietario: ${car.propietario || '-'} · Seguro: ${car.tieneSeguro ? 'Si' : 'No'}</span>
             <span class="account-type-label">Poliza: ${car.polizaSeguro || '-'} · Llantas: ${car.tipoLlantas || '-'}</span>
             <span class="account-type-label">Valor hoy: ${valuationLabel}${kmAdjLabel}</span>
@@ -4764,6 +4778,7 @@ function autos_openCarSheet(carId) {
     document.getElementById('autos-car-marca').value = car?.marca || '';
     document.getElementById('autos-car-modelo').value = car?.modelo || '';
     document.getElementById('autos-car-anio').value = car?.anio || '';
+    document.getElementById('autos-car-factura').value = car?.valorFactura || '';
     document.getElementById('autos-car-kilometraje').value = car?.kilometraje || '';
     document.getElementById('autos-car-propietario').value = car?.propietario || '';
     document.getElementById('autos-car-seguro').value = car?.tieneSeguro ? '1' : '0';
@@ -4804,6 +4819,7 @@ async function autos_saveCar() {
         marca,
         modelo,
         anio: document.getElementById('autos-car-anio').value.trim(),
+        valorFactura: document.getElementById('autos-car-factura').value.trim(),
         kilometraje: document.getElementById('autos-car-kilometraje').value.trim(),
         propietario: document.getElementById('autos-car-propietario').value.trim(),
         tieneSeguro: document.getElementById('autos-car-seguro').value === '1',
@@ -4833,7 +4849,11 @@ async function autos_saveCar() {
     const prevCar = autosState.cars.find(c => c.id === id) || null;
     const prevKm = autos_parseMileage(prevCar?.kilometraje);
     const nextKm = autos_parseMileage(car.kilometraje);
-    const shouldForceValuation = !prevCar ? nextKm > 0 : prevKm !== nextKm;
+    const prevFactura = parseSheetValue(prevCar?.valorFactura);
+    const nextFactura = parseSheetValue(car.valorFactura);
+    const shouldForceValuation = !prevCar
+        ? (nextKm > 0 || nextFactura > 0)
+        : (prevKm !== nextKm || Math.abs(prevFactura - nextFactura) > 0.5);
 
     const idx = autosState.cars.findIndex(c => c.id === id);
     if (idx >= 0) autosState.cars[idx] = car;
@@ -4848,10 +4868,10 @@ async function autos_saveCar() {
 }
 
 async function autos_saveCarsSheet() {
-    await sheetsClear(SPREADSHEET_AUTOS_ID, 'Autos!A2:Y');
+    await sheetsClear(SPREADSHEET_AUTOS_ID, 'Autos!A2:Z');
     if (!autosState.cars.length) return;
-    await sheetsUpdate(SPREADSHEET_AUTOS_ID, `Autos!A2:Y${1 + autosState.cars.length}`, autosState.cars.map(c => [
-        c.id, c.marca, c.modelo, c.anio, c.kilometraje || '', c.propietario, c.tieneSeguro ? 'TRUE' : 'FALSE', c.placa, c.vin, c.fotoAuto,
+    await sheetsUpdate(SPREADSHEET_AUTOS_ID, `Autos!A2:Z${1 + autosState.cars.length}`, autosState.cars.map(c => [
+        c.id, c.marca, c.modelo, c.anio, c.valorFactura || '', c.kilometraje || '', c.propietario, c.tieneSeguro ? 'TRUE' : 'FALSE', c.placa, c.vin, c.fotoAuto,
         c.contratoPrestamo || '', c.polizaSeguro || '', c.emergenciaInterior || '', c.emergenciaMetro || '',
         c.reporteSiniestros1 || '', c.reporteSiniestros2 || '', c.tarjetaCirculacionFrente || '', c.tarjetaCirculacionAtras || '',
         c.pagoTenencia || '', c.vencimientoTenencia || '', c.tablaPagos || '', c.tablaPagosSeguro || '',
