@@ -17,6 +17,8 @@ const APP_VERSION  = 'v5.1.0';
 // Bump token keys to force re-auth with the new drive scope
 const TOKEN_KEY    = 'google_access_token_v4';
 const EXPIRY_KEY   = 'google_token_expiry_v4';
+const TOKEN_LIFETIME_FALLBACK_SEC = 3500;
+const TOKEN_REFRESH_MARGIN_MS = 5 * 60 * 1000;
 const ACCOUNTS_SHEET_KEY = 'finance_accounts_sheet_v1'; // localStorage key for the accounts spreadsheet ID
 
 // =============================================
@@ -150,6 +152,9 @@ async function firebase_signOut() {
 // =============================================
 let accessToken = null;
 let tokenClient = null;
+let tokenRefreshTimer = null;
+let tokenRequestInFlight = null;
+let tokenRequestInteractive = true;
 let currentTab  = 'dashboard';
 let tabInited   = { dashboard: false, gastos: false, fijos: false, deudas: false, plan: false };
 
@@ -222,12 +227,37 @@ if (_stored && _stored !== 'undefined' && _stored !== 'null' && Date.now() < _ex
     localStorage.removeItem(EXPIRY_KEY);
 }
 
+function clearAccessTokenCache() {
+    accessToken = null;
+    localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem(EXPIRY_KEY);
+    if (tokenRefreshTimer) {
+        clearTimeout(tokenRefreshTimer);
+        tokenRefreshTimer = null;
+    }
+}
+
+function scheduleTokenRefresh() {
+    if (tokenRefreshTimer) {
+        clearTimeout(tokenRefreshTimer);
+        tokenRefreshTimer = null;
+    }
+    if (!accessToken) return;
+    const expiryTs = parseInt(localStorage.getItem(EXPIRY_KEY) || '0', 10);
+    if (!expiryTs) return;
+    const delayMs = Math.max(10_000, expiryTs - Date.now() - TOKEN_REFRESH_MARGIN_MS);
+    tokenRefreshTimer = setTimeout(() => {
+        requestToken({ interactive: false }).catch(() => {});
+    }, delayMs);
+}
+
 // =============================================
 // DOM READY
 // =============================================
 document.addEventListener('DOMContentLoaded', () => {
     debugInitPanel();
     debugUpdate({ token: accessToken ? 'Si (cache)' : 'No' });
+    if (accessToken) scheduleTokenRefresh();
     createIcons({ icons: { RefreshCw, AlertTriangle, CalendarCheck, TrendingUp, LogOut, CreditCard } });
     const subtitle = document.querySelector('.subtitle');
     if (subtitle) subtitle.innerText = `Music Knobs | ${APP_VERSION}`;
@@ -286,6 +316,26 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     } else {
         showLoginModal();
+        const trySilent = () => {
+            if (!window.google?.accounts?.oauth2) return false;
+            requestToken({ interactive: false }).then(ok => {
+                if (!ok) return;
+                hideLoginModal();
+                firebase_restoreRedirectResult().then(() => {
+                    if (!_fbUid) debugUpdate({ auth: 'Google OK · Firebase pendiente' });
+                    balance_loadAccounts().then(() => balance_updateKpi());
+                    showTab('dashboard');
+                });
+            });
+            return true;
+        };
+        if (!trySilent()) {
+            let attempts = 0;
+            const iv = setInterval(() => {
+                attempts += 1;
+                if (trySilent() || attempts >= 15) clearInterval(iv);
+            }, 200);
+        }
     }
 });
 
@@ -1273,43 +1323,58 @@ function refreshCurrentTab() {
 // GOOGLE AUTH
 // =============================================
 function startGoogleLogin() {
-    if (window.google?.accounts?.oauth2) { requestToken(); return; }
+    if (window.google?.accounts?.oauth2) { requestToken({ interactive: true }); return; }
     const btn = document.getElementById('login-google-btn');
     btn.innerText = 'Cargando...'; btn.disabled = true;
     const iv = setInterval(() => {
         if (window.google?.accounts?.oauth2) {
             clearInterval(iv); btn.innerText = 'Iniciar Sesión con Google'; btn.disabled = false;
-            requestToken();
+            requestToken({ interactive: true });
         }
     }, 200);
     setTimeout(() => { clearInterval(iv); btn.innerText = 'Error: reintenta'; btn.disabled = false; }, 10000);
 }
 
-function requestToken() {
-    if (!tokenClient) {
-        tokenClient = google.accounts.oauth2.initTokenClient({
-            client_id: CLIENT_ID,
-            scope: SCOPES,
-            callback: (res) => {
-                if (res?.access_token) {
-                    accessToken = res.access_token;
-                    localStorage.setItem(TOKEN_KEY, accessToken);
-                    localStorage.setItem(EXPIRY_KEY, String(Date.now() + 3500 * 1000));
-                    debugUpdate({ token: 'Si (cache)', auth: 'Google OAuth OK' });
-                    hideLoginModal();
-                    // Recover redirect session if any; connect Firebase lazily on account save.
-                    firebase_restoreRedirectResult().then(() => {
-                        if (!_fbUid) debugUpdate({ auth: 'Google OK · Firebase pendiente' });
-                        balance_loadAccounts().then(() => balance_updateKpi());
-                    });
-                    showTab('dashboard');
-                } else {
-                    showLoginModal();
-                }
-            },
-        });
-    }
-    tokenClient.requestAccessToken();
+async function requestToken(options = {}) {
+    const interactive = options.interactive !== false;
+    if (tokenRequestInFlight) return tokenRequestInFlight;
+
+    tokenRequestInFlight = new Promise((resolve) => {
+        tokenRequestInteractive = interactive;
+        if (!tokenClient) {
+            tokenClient = google.accounts.oauth2.initTokenClient({
+                client_id: CLIENT_ID,
+                scope: SCOPES,
+                callback: (res) => {
+                    const ok = !!res?.access_token;
+                    if (ok) {
+                        accessToken = res.access_token;
+                        const expiresInSec = Number(res.expires_in) || TOKEN_LIFETIME_FALLBACK_SEC;
+                        localStorage.setItem(TOKEN_KEY, accessToken);
+                        localStorage.setItem(EXPIRY_KEY, String(Date.now() + expiresInSec * 1000));
+                        scheduleTokenRefresh();
+                        debugUpdate({ token: 'Si (cache)', auth: 'Google OAuth OK' });
+                        hideLoginModal();
+                        if (tokenRequestInteractive) {
+                            // Recover redirect session if any; connect Firebase lazily on account save.
+                            firebase_restoreRedirectResult().then(() => {
+                                if (!_fbUid) debugUpdate({ auth: 'Google OK · Firebase pendiente' });
+                                balance_loadAccounts().then(() => balance_updateKpi());
+                            });
+                            showTab('dashboard');
+                        }
+                    } else if (tokenRequestInteractive) {
+                        showLoginModal();
+                    }
+                    resolve(ok);
+                    tokenRequestInFlight = null;
+                },
+            });
+        }
+        tokenClient.requestAccessToken({ prompt: interactive ? 'consent' : '' });
+    });
+
+    return tokenRequestInFlight;
 }
 
 function showLoginModal() {
@@ -1328,31 +1393,58 @@ function hideLoginModal() {
 // =============================================
 
 function logout() {
-    accessToken = null;
-    localStorage.removeItem(TOKEN_KEY);
-    localStorage.removeItem(EXPIRY_KEY);
+    const tokenToRevoke = accessToken;
+    clearAccessTokenCache();
     firebase_signOut(); // clear Firebase auth state
     // Revoke Google token if possible
-    if (window.google?.accounts?.oauth2) {
-        google.accounts.oauth2.revoke(accessToken, () => { console.log('Token revoked') });
+    if (window.google?.accounts?.oauth2 && tokenToRevoke) {
+        google.accounts.oauth2.revoke(tokenToRevoke, () => { console.log('Token revoked') });
     }
     balance_stopRealtimeSync();
     debugUpdate({ auth: 'Sesion cerrada', uid: '-', token: 'No', load: '-', save: '-' });
     showLoginModal();
 }
 
+async function ensureValidAccessToken() {
+    const expiryTs = parseInt(localStorage.getItem(EXPIRY_KEY) || '0', 10);
+    if (accessToken && Date.now() < (expiryTs - 20_000)) return true;
+    if (window.google?.accounts?.oauth2) {
+        const ok = await requestToken({ interactive: false });
+        if (ok) return true;
+    }
+    clearAccessTokenCache();
+    return false;
+}
+
+async function authFetch(url, options = {}, retry401 = true) {
+    const valid = await ensureValidAccessToken();
+    if (!valid) throw { status: 401, message: 'No auth token' };
+    const headers = { ...(options.headers || {}), Authorization: `Bearer ${accessToken}` };
+    let res = await fetch(url, { ...options, headers });
+    if (res.status === 401 && retry401) {
+        const refreshed = await requestToken({ interactive: false });
+        if (!refreshed) {
+            clearAccessTokenCache();
+            throw { status: 401, message: await res.text() };
+        }
+        const retryHeaders = { ...(options.headers || {}), Authorization: `Bearer ${accessToken}` };
+        res = await fetch(url, { ...options, headers: retryHeaders });
+    }
+    return res;
+}
+
 async function sheetsGet(ssId, range) {
     const url = `https://sheets.googleapis.com/v4/spreadsheets/${ssId}/values/${encodeURIComponent(range)}?valueRenderOption=UNFORMATTED_VALUE`;
-    const r = await fetch(url, { headers: { Authorization: `Bearer ${accessToken}` } });
+    const r = await authFetch(url);
     if (!r.ok) throw { status: r.status, message: await r.text() };
     return (await r.json()).values || [];
 }
 
 async function sheetsAppend(ssId, range, values) {
     const url = `https://sheets.googleapis.com/v4/spreadsheets/${ssId}/values/${encodeURIComponent(range)}:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS`;
-    const r = await fetch(url, {
+    const r = await authFetch(url, {
         method: 'POST',
-        headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ values }),
     });
     if (!r.ok) throw { status: r.status, message: await r.text() };
@@ -1361,9 +1453,9 @@ async function sheetsAppend(ssId, range, values) {
 
 async function sheetsUpdate(ssId, range, values) {
     const url = `https://sheets.googleapis.com/v4/spreadsheets/${ssId}/values/${encodeURIComponent(range)}?valueInputOption=USER_ENTERED`;
-    const r = await fetch(url, {
+    const r = await authFetch(url, {
         method: 'PUT',
-        headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ values }),
     });
     if (!r.ok) throw { status: r.status, message: await r.text() };
@@ -1372,9 +1464,9 @@ async function sheetsUpdate(ssId, range, values) {
 
 async function sheetsDeleteRow(ssId, sheetId, rowIndex0) {
     const url = `https://sheets.googleapis.com/v4/spreadsheets/${ssId}:batchUpdate`;
-    const r = await fetch(url, {
+    const r = await authFetch(url, {
         method: 'POST',
-        headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ requests: [{ deleteDimension: { range: { sheetId, dimension: 'ROWS', startIndex: rowIndex0, endIndex: rowIndex0 + 1 } } }] }),
     });
     if (!r.ok) throw { status: r.status, message: await r.text() };
@@ -1383,7 +1475,7 @@ async function sheetsDeleteRow(ssId, sheetId, rowIndex0) {
 
 async function getSheetId(ssId, sheetName) {
     const url = `https://sheets.googleapis.com/v4/spreadsheets/${ssId}?fields=sheets.properties`;
-    const r = await fetch(url, { headers: { Authorization: `Bearer ${accessToken}` } });
+    const r = await authFetch(url);
     if (!r.ok) throw { status: r.status, message: await r.text() };
     const data = await r.json();
     const s = data.sheets?.find(s => s.properties.title === sheetName);
@@ -1392,9 +1484,9 @@ async function getSheetId(ssId, sheetName) {
 
 async function sheetsClear(ssId, range) {
     const url = `https://sheets.googleapis.com/v4/spreadsheets/${ssId}/values/${encodeURIComponent(range)}:clear`;
-    const r = await fetch(url, {
+    const r = await authFetch(url, {
         method: 'POST',
-        headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json' },
     });
     if (!r.ok) throw { status: r.status, message: await r.text() };
     return r.json();
@@ -1404,7 +1496,7 @@ async function sheetsClear(ssId, range) {
 async function driveFindFolder(name) {
     const q = encodeURIComponent(`name='${name}' and mimeType='application/vnd.google-apps.folder' and trashed=false`);
     const url = `https://www.googleapis.com/drive/v3/files?q=${q}&fields=files(id,name)`;
-    const r = await fetch(url, { headers: { Authorization: `Bearer ${accessToken}` } });
+    const r = await authFetch(url);
     if (!r.ok) return null;
     const data = await r.json();
     return data.files?.[0]?.id || null;
@@ -1416,7 +1508,7 @@ async function driveFindSpreadsheetByName(name, parentId = null) {
         `name='${name}' and mimeType='application/vnd.google-apps.spreadsheet' and trashed=false${parentFilter}`
     );
     const url = `https://www.googleapis.com/drive/v3/files?q=${q}&fields=files(id,name,createdTime)&orderBy=createdTime desc`;
-    const r = await fetch(url, { headers: { Authorization: `Bearer ${accessToken}` } });
+    const r = await authFetch(url);
     if (!r.ok) return null;
     const data = await r.json();
     return data.files?.[0]?.id || null;
@@ -1426,9 +1518,9 @@ async function driveCreateSpreadsheet(name, parentId) {
     const body = { name, mimeType: 'application/vnd.google-apps.spreadsheet' };
     if (parentId) body.parents = [parentId];
     const url = 'https://www.googleapis.com/drive/v3/files';
-    const r = await fetch(url, {
+    const r = await authFetch(url, {
         method: 'POST',
-        headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
     });
     if (!r.ok) throw { status: r.status, message: await r.text() };
@@ -1451,12 +1543,11 @@ async function driveUploadFile(file, folderId) {
         `\r\n--${boundary}--`
     ]);
 
-    const r = await fetch(
+    const r = await authFetch(
         `https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,webViewLink`,
         {
             method: 'POST',
             headers: {
-                Authorization: `Bearer ${accessToken}`,
                 'Content-Type': `multipart/related; boundary=${boundary}`,
             },
             body,
@@ -1468,9 +1559,9 @@ async function driveUploadFile(file, folderId) {
     }
     const res = await r.json();
     // Make file publicly readable (anyone with link)
-    await fetch(`https://www.googleapis.com/drive/v3/files/${res.id}/permissions`, {
+    await authFetch(`https://www.googleapis.com/drive/v3/files/${res.id}/permissions`, {
         method: 'POST',
-        headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ role: 'reader', type: 'anyone' }),
     });
     return res.webViewLink;
@@ -1478,18 +1569,15 @@ async function driveUploadFile(file, folderId) {
 
 async function driveDeleteFile(fileId) {
     if (!fileId) return;
-    await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}`, {
+    await authFetch(`https://www.googleapis.com/drive/v3/files/${fileId}`, {
         method: 'DELETE',
-        headers: { Authorization: `Bearer ${accessToken}` },
     });
 }
 
 function handleApiError(err, el) {
     console.error('API Error:', err);
     if (err.status === 401) {
-        localStorage.removeItem(TOKEN_KEY);
-        localStorage.removeItem(EXPIRY_KEY);
-        accessToken = null;
+        clearAccessTokenCache();
         showLoginModal();
     } else if (el) {
         el.innerHTML = '<div class="empty-state text-danger">⚠️ Error al cargar. Intenta de nuevo.</div>';
@@ -1513,7 +1601,8 @@ async function fetchAndProcess() {
     } catch (err) {
         if (err.status === 401) {
             status.innerText = 'Sesión expirada'; status.style.color = 'var(--accent-orange)';
-            localStorage.removeItem(TOKEN_KEY); accessToken = null; showLoginModal();
+            clearAccessTokenCache();
+            showLoginModal();
         } else {
             status.innerText = 'Error al cargar'; status.style.color = 'var(--accent-orange)';
         }
