@@ -525,7 +525,12 @@
                 <span class="bs-label">Total gastado en este auto</span>
                 <span id="autos-selected-spent" class="bs-amount text-danger">$0.00</span>
               </div>
-              <input id="autos-repair-search" type="search" class="field-input" placeholder="Buscar reparaciones por fecha o texto...">
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:.55rem;">
+                <input id="autos-repair-search" type="search" class="field-input" placeholder="Buscar reparaciones...">
+                <select id="autos-repair-date-filter" class="field-input">
+                  <option value="">Todas las fechas</option>
+                </select>
+              </div>
               <div id="autos-repair-list" class="movimientos-list"></div>
               <button id="autos-repair-load-more" class="secondary-btn hidden" style="width:100%;">Cargar 10 mas</button>
             </section>

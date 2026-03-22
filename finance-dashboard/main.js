@@ -14,7 +14,7 @@ const SPREADSHEET_LOG_ID   = '1pn1bsxj2LaoySXAVUvqfEJY1VR4R_T8NsTOqQnVW5Xw'; // 
 const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // Gastos Fijos
 const SPREADSHEET_DEUDAS_ID = '1dKxhgqazskm15lx0f6FNCA0gpJ7i5glfxkusiH3b0Uk'; // Control de Deudas
 const SPREADSHEET_AUTOS_ID = SPREADSHEET_DEUDAS_ID; // Autos + Reparaciones live in same workbook
-const APP_VERSION  = 'v6.1.3';
+const APP_VERSION  = 'v6.1.4';
 // Bump token keys to force re-auth with the new drive scope
 const TOKEN_KEY    = 'google_access_token_v4';
 const EXPIRY_KEY   = 'google_token_expiry_v4';
@@ -3187,6 +3187,7 @@ const autosState = {
     repairsSheetId: null,
     selectedCarId: '',
     repairSearch: '',
+    repairDateFilter: '',
     repairVisibleCount: 10,
     meta: {},
     licenseLongPressFired: false,
@@ -3242,6 +3243,11 @@ function autos_bindEvents() {
     document.getElementById('autos-repair-save')?.addEventListener('click', autos_saveRepair);
     document.getElementById('autos-repair-search')?.addEventListener('input', (e) => {
         autosState.repairSearch = (e.target.value || '').trim().toLowerCase();
+        autosState.repairVisibleCount = 10;
+        autos_renderSelectedCar();
+    });
+    document.getElementById('autos-repair-date-filter')?.addEventListener('change', (e) => {
+        autosState.repairDateFilter = (e.target.value || '').trim();
         autosState.repairVisibleCount = 10;
         autos_renderSelectedCar();
     });
@@ -3590,7 +3596,9 @@ function autos_render() {
 
     const listEl = document.getElementById('autos-car-list');
     const searchEl = document.getElementById('autos-repair-search');
+    const dateEl = document.getElementById('autos-repair-date-filter');
     if (searchEl && searchEl.value !== autosState.repairSearch) searchEl.value = autosState.repairSearch;
+    if (dateEl && dateEl.value !== autosState.repairDateFilter) dateEl.value = autosState.repairDateFilter;
     if (listEl) {
         listEl.innerHTML = autosState.cars.map(car => {
             const spent = autos_getCarSpent(car.id);
@@ -3665,14 +3673,29 @@ function autos_renderSelectedCar() {
     <div style="display:flex;gap:.35rem;flex-wrap:wrap;margin-top:.5rem;">${links.map(([label, url]) => `<a class="mini-btn" href="${url}" target="_blank" rel="noopener">${label}</a>`).join('')}</div>`;
 
     const allRepairs = autosState.repairs.filter(r => r.carId === car.id).sort((a, b) => b.fecha.localeCompare(a.fecha));
+    const uniqueDates = [...new Set(allRepairs.map(r => r.fecha).filter(Boolean))];
+    const dateFilterEl = document.getElementById('autos-repair-date-filter');
+    if (dateFilterEl) {
+        const options = ['<option value="">Todas las fechas</option>']
+            .concat(uniqueDates.map(d => `<option value="${d}">${formatFecha(d)}</option>`));
+        dateFilterEl.innerHTML = options.join('');
+        if (autosState.repairDateFilter && !uniqueDates.includes(autosState.repairDateFilter)) {
+            autosState.repairDateFilter = '';
+        }
+        dateFilterEl.value = autosState.repairDateFilter;
+    }
+
     const q = autosState.repairSearch;
+    const selectedDate = autosState.repairDateFilter;
     const filteredRepairs = !q
-        ? allRepairs
+        ? allRepairs.filter(r => !selectedDate || r.fecha === selectedDate)
         : allRepairs.filter(r => {
             const dateA = (r.fecha || '').toLowerCase();
             const dateB = formatFecha(r.fecha).toLowerCase();
             const text = `${r.reparacion} ${r.lugar} ${r.descripcion}`.toLowerCase();
-            return dateA.includes(q) || dateB.includes(q) || text.includes(q);
+            const textMatch = dateA.includes(q) || dateB.includes(q) || text.includes(q);
+            const dateMatch = !selectedDate || r.fecha === selectedDate;
+            return textMatch && dateMatch;
         });
     const visibleRepairs = filteredRepairs.slice(0, autosState.repairVisibleCount);
     repairsEl.innerHTML = visibleRepairs.map(r => {
