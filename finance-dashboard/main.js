@@ -15,7 +15,7 @@ const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // 
 const SPREADSHEET_DEUDAS_ID = '1dKxhgqazskm15lx0f6FNCA0gpJ7i5glfxkusiH3b0Uk'; // Control de Deudas
 const SPREADSHEET_AUTOS_ID = SPREADSHEET_DEUDAS_ID; // Autos + Reparaciones live in same workbook
 const SPREADSHEET_ESTUDIO_ID = SPREADSHEET_DEUDAS_ID; // Estudio + Plugins in same workbook
-const APP_VERSION  = 'v7.1.17';
+const APP_VERSION  = 'v7.1.18';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -6254,18 +6254,75 @@ function estudio_detailCell(label, value) {
     return `<span class="estudio-entry-meta"><strong>${label}:</strong> ${text}</span>`;
 }
 
+function estudio_parseYear(value) {
+    const text = (value || '').toString().trim();
+    if (!text) return 0;
+    const m = text.match(/(19|20)\d{2}/);
+    return m ? parseInt(m[0], 10) : 0;
+}
+
+function estudio_ageYears(item) {
+    const now = new Date();
+    const purchaseDate = normalizeDateString(item?.fechaCompra || '');
+    if (purchaseDate) {
+        const d = new Date(purchaseDate);
+        if (!Number.isNaN(d.getTime())) {
+            const months = (now.getFullYear() - d.getFullYear()) * 12 + (now.getMonth() - d.getMonth());
+            return Math.max(0, months / 12);
+        }
+    }
+    const y = estudio_parseYear(item?.anioCompra || '');
+    if (!y) return 0;
+    return Math.max(0, now.getFullYear() - y + 0.5);
+}
+
+function estudio_depreciationProfile(item, kind = 'inventario') {
+    const text = [item?.categoria, item?.name, item?.marca, item?.descripcion].map(x => (x || '').toString().toLowerCase()).join(' ');
+    if (kind === 'plugin') return { annualRate: 0.2, floor: 0.2, label: 'plugin/software' };
+    if (/(laptop|macbook|pc|computadora|imac|monitor|pantalla)/i.test(text)) return { annualRate: 0.3, floor: 0.15, label: 'computo' };
+    if (/(interface|preamp|preamplificador|controlador|mixer|mezcladora|convertidor|rack|outboard)/i.test(text)) return { annualRate: 0.16, floor: 0.25, label: 'equipo grabacion' };
+    if (/(microfono|mic|micrófono)/i.test(text)) return { annualRate: 0.12, floor: 0.3, label: 'microfonos' };
+    if (/(guitarra|bajo|piano|teclado|sintetizador|synth|instrumento|drum|bateria|batería|cello|violin|viol[ií]n)/i.test(text)) return { annualRate: 0.1, floor: 0.35, label: 'instrumentos' };
+    if (/(speaker|monitor audio|bocina|subwoofer|audifono|audífono|headphone)/i.test(text)) return { annualRate: 0.14, floor: 0.25, label: 'monitoreo' };
+    return { annualRate: 0.15, floor: 0.25, label: 'general estudio' };
+}
+
+function estudio_depreciatedMxn(item, amountMxn, kind = 'inventario') {
+    const profile = estudio_depreciationProfile(item, kind);
+    const years = estudio_ageYears(item);
+    const factor = Math.max(profile.floor, Math.pow(1 - profile.annualRate, years));
+    return Math.max(0, amountMxn * factor);
+}
+
 function estudio_render() {
     estudio_setSubtab(estudioState.activeSubtab);
-    const totalInventario = estudioState.inventario.reduce((sum, i) => sum + (parseSheetValue(i.precioUsd) * Math.max(1, parseInt(i.cantidad, 10) || 1)), 0);
-    const totalPlugins = estudioState.plugins.reduce((sum, p) => sum + parseSheetValue(p.precioUsd), 0);
-    const totalMxn = convertTransactionAmountToMxn(totalInventario, 'USD') + convertTransactionAmountToMxn(totalPlugins, 'USD');
+    const totalInventarioRawMxn = estudioState.inventario.reduce((sum, i) => {
+        const usd = parseSheetValue(i.precioUsd) * Math.max(1, parseInt(i.cantidad, 10) || 1);
+        return sum + convertTransactionAmountToMxn(usd, 'USD');
+    }, 0);
+    const totalPluginsRawMxn = estudioState.plugins.reduce((sum, p) => {
+        const price = parseSheetValue(p.precioUsd);
+        return sum + convertTransactionAmountToMxn(price, p.currency || 'USD');
+    }, 0);
+    const totalInventarioDepMxn = estudioState.inventario.reduce((sum, i) => {
+        const usd = parseSheetValue(i.precioUsd) * Math.max(1, parseInt(i.cantidad, 10) || 1);
+        const mxn = convertTransactionAmountToMxn(usd, 'USD');
+        return sum + estudio_depreciatedMxn(i, mxn, 'inventario');
+    }, 0);
+    const totalPluginsDepMxn = estudioState.plugins.reduce((sum, p) => {
+        const mxn = convertTransactionAmountToMxn(parseSheetValue(p.precioUsd), p.currency || 'USD');
+        return sum + estudio_depreciatedMxn(p, mxn, 'plugin');
+    }, 0);
+    const totalRawMxn = totalInventarioRawMxn + totalPluginsRawMxn;
+    const totalDepMxn = totalInventarioDepMxn + totalPluginsDepMxn;
     const totalEl = document.getElementById('estudio-total-spent');
-    if (totalEl) totalEl.innerText = formatCurrency(totalMxn);
+    if (totalEl) totalEl.innerHTML = `${formatCurrency(totalDepMxn)} <span style="font-size:.65em;font-weight:600;opacity:.72;">sin depreciar ${formatCurrency(totalRawMxn)}</span>`;
     const breakdownEl = document.getElementById('estudio-breakdown-note');
     if (breakdownEl) {
-        const inv = formatCurrency(convertTransactionAmountToMxn(totalInventario, 'USD'));
-        const plg = formatCurrency(convertTransactionAmountToMxn(totalPlugins, 'USD'));
-        breakdownEl.innerText = estudioState.activeSubtab === 'inventario' ? inv : plg;
+        const inv = formatCurrency(totalInventarioDepMxn);
+        const plg = formatCurrency(totalPluginsDepMxn);
+        const dep = formatCurrency(totalRawMxn - totalDepMxn);
+        breakdownEl.innerText = `${estudioState.activeSubtab === 'inventario' ? inv : plg} · depreciación estimada ${dep}`;
     }
 
     const inventarioCategories = estudio_uniqueCategories(estudioState.inventario, 'categoria');
