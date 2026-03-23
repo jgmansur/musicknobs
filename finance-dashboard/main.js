@@ -15,7 +15,7 @@ const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // 
 const SPREADSHEET_DEUDAS_ID = '1dKxhgqazskm15lx0f6FNCA0gpJ7i5glfxkusiH3b0Uk'; // Control de Deudas
 const SPREADSHEET_AUTOS_ID = SPREADSHEET_DEUDAS_ID; // Autos + Reparaciones live in same workbook
 const SPREADSHEET_ESTUDIO_ID = SPREADSHEET_DEUDAS_ID; // Estudio + Plugins in same workbook
-const APP_VERSION  = 'v7.3.2';
+const APP_VERSION  = 'v7.3.3';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -7749,7 +7749,7 @@ async function propiedades_uploadFirstFile(inputId) {
 // =============================================
 const DOCS_SHEET = 'DocumentosArchivador';
 const DOCS_PROFILE_SHEET = 'DocumentosPerfiles';
-const DOCS_HEADERS = ['id', 'member', 'title', 'type', 'tags', 'notes', 'url', 'sourceFolderId', 'driveFileId', 'createdAt', 'updatedAt'];
+const DOCS_HEADERS = ['id', 'member', 'title', 'type', 'tags', 'notes', 'expiryDate', 'url', 'sourceFolderId', 'driveFileId', 'createdAt', 'updatedAt'];
 const DOCS_PROFILE_HEADERS = ['member', 'name', 'birthDate', 'birthWeight', 'curp', 'passportMx', 'passportUs', 'visaUs', 'photoUrl', 'vaccinesJson', 'notes', 'updatedAt'];
 const DOCS_FAMILY_FOLDER_ID = '1sLw21FxRg8Siijq48mHVxfXO_uTIrNGT';
 const DOCS_PAPA_FOLDER_ID = '1_jxerzMTkMUymowu9SkQLBVyvn7fEwnX';
@@ -7782,6 +7782,7 @@ const DOCS_PROFILE_DEFAULTS = [
 const docsState = {
     items: [],
     profiles: [],
+    headers: DOCS_HEADERS.slice(),
     selectedMember: 'all',
     search: '',
     loaded: false,
@@ -7804,7 +7805,6 @@ function documentos_bindEvents() {
     });
     document.getElementById('docs-upload-camera')?.addEventListener('change', () => documentos_uploadFromInput('docs-upload-camera'));
     document.getElementById('docs-upload-file')?.addEventListener('change', () => documentos_uploadFromInput('docs-upload-file'));
-    document.getElementById('docs-upload-scan')?.addEventListener('change', documentos_uploadScanMulti);
     document.querySelectorAll('[data-doc-crop]').forEach((btn) => {
         btn.addEventListener('click', () => documentos_applyCropPreset(btn.dataset.docCrop || 'libre'));
     });
@@ -7878,19 +7878,28 @@ async function documentos_cargarVista() {
 }
 
 async function documentos_loadData() {
+    const head = await sheetsGet(SPREADSHEET_AUTOS_ID, `${DOCS_SHEET}!A1:AZ1`).catch(() => []);
+    const headers = (head[0] && head[0].length) ? head[0].map((x) => (x || '').toString().trim()) : DOCS_HEADERS.slice();
+    docsState.headers = headers;
+    const map = autos_headersToMap(headers);
+    const get = (row, key, fallback = '') => {
+        const idx = map[key];
+        return idx === undefined ? fallback : (row[idx] ?? fallback);
+    };
     const docsRows = await sheetsGet(SPREADSHEET_AUTOS_ID, `${DOCS_SHEET}!A2:AZ`).catch(() => []);
     docsState.items = docsRows.map((row) => ({
-        id: (row[0] || '').toString(),
-        member: (row[1] || 'yo').toString(),
-        title: (row[2] || '').toString(),
-        type: (row[3] || '').toString(),
-        tags: (row[4] || '').toString(),
-        notes: (row[5] || '').toString(),
-        url: (row[6] || '').toString(),
-        sourceFolderId: (row[7] || '').toString(),
-        driveFileId: (row[8] || '').toString(),
-        createdAt: (row[9] || '').toString(),
-        updatedAt: (row[10] || '').toString(),
+        id: (get(row, 'id', '') || '').toString(),
+        member: (get(row, 'member', 'yo') || 'yo').toString(),
+        title: (get(row, 'title', '') || '').toString(),
+        type: (get(row, 'type', '') || '').toString(),
+        tags: (get(row, 'tags', '') || '').toString(),
+        notes: (get(row, 'notes', '') || '').toString(),
+        expiryDate: (get(row, 'expiryDate', '') || '').toString(),
+        url: (get(row, 'url', '') || '').toString(),
+        sourceFolderId: (get(row, 'sourceFolderId', '') || '').toString(),
+        driveFileId: (get(row, 'driveFileId', '') || '').toString(),
+        createdAt: (get(row, 'createdAt', '') || '').toString(),
+        updatedAt: (get(row, 'updatedAt', '') || '').toString(),
     })).filter((x) => x.title);
 
     const profRows = await sheetsGet(SPREADSHEET_AUTOS_ID, `${DOCS_PROFILE_SHEET}!A2:AZ`).catch(() => []);
@@ -8186,6 +8195,7 @@ async function documentos_seedFromDrive() {
             type: documentos_guessTypeFromName(f.name || ''),
             tags: `${documentos_memberLabel(member)}, importado`,
             notes: f.path || '',
+            expiryDate: '',
             url: f.webViewLink || '',
             sourceFolderId: folderId,
             driveFileId: f.id || '',
@@ -8199,7 +8209,7 @@ async function documentos_seedFromDrive() {
     if (!docs.length) return;
     const letter = autos_colLetter(DOCS_HEADERS.length);
     await sheetsUpdate(SPREADSHEET_AUTOS_ID, `${DOCS_SHEET}!A2:${letter}${1 + docs.length}`, docs.map((d) => [
-        d.id, d.member, d.title, d.type, d.tags, d.notes, d.url, d.sourceFolderId, d.driveFileId, d.createdAt, d.updatedAt,
+        d.id, d.member, d.title, d.type, d.tags, d.notes, d.expiryDate || '', d.url, d.sourceFolderId, d.driveFileId, d.createdAt, d.updatedAt,
     ]));
 }
 
@@ -8262,6 +8272,7 @@ function documentos_render() {
             <article class="docs-card" data-doc-url="${d.url || ''}">
               <h4 class="docs-title">${d.title}</h4>
               <div class="docs-meta">${documentos_memberLabel(d.member)} · ${d.type || 'Documento'} · ${d.tags || 'sin etiquetas'}</div>
+              <div class="docs-meta">Vencimiento: ${d.expiryDate || 'no tiene vencimiento'}</div>
               <div class="docs-meta">${d.notes || ''}</div>
               <div class="docs-actions"><button type="button" class="mini-btn" data-doc-edit-id="${d.id}">✏️ Editar</button></div>
             </article>
@@ -8314,6 +8325,7 @@ function documentos_openSheet(id) {
     document.getElementById('docs-type-new').value = '';
     document.getElementById('docs-tags').value = doc?.tags || '';
     document.getElementById('docs-notes').value = doc?.notes || '';
+    document.getElementById('docs-expiry').value = doc?.expiryDate || '';
     document.getElementById('docs-url').value = doc?.url || '';
     document.getElementById('docs-file-feedback').innerText = '';
     documentos_showCropTools(false);
@@ -8353,33 +8365,6 @@ async function documentos_uploadFromInput(inputId) {
     }
 }
 
-async function documentos_uploadScanMulti() {
-    const input = document.getElementById('docs-upload-scan');
-    const files = input?.files;
-    if (!files || !files.length) return;
-    const list = [...files];
-    const links = [];
-    try {
-        for (let i = 0; i < list.length; i++) {
-            const file = list[i];
-            const url = await documentos_uploadFileDirect(file);
-            links.push(url);
-        }
-        if (links[0]) document.getElementById('docs-url').value = links[0];
-        if (links.length > 1) {
-            const notes = document.getElementById('docs-notes');
-            const extra = links.slice(1).map((u, i) => `Pagina extra ${i + 2}: ${u}`).join('\n');
-            notes.value = [notes.value || '', extra].filter(Boolean).join('\n');
-        }
-        document.getElementById('docs-file-feedback').innerText = `✅ Escaneo cargado (${links.length} pagina${links.length === 1 ? '' : 's'})`;
-    } catch (e) {
-        console.error('documentos_uploadScanMulti:', e);
-        document.getElementById('docs-file-feedback').innerText = '❌ Error al subir escaneo multipagina';
-    } finally {
-        input.value = '';
-    }
-}
-
 async function documentos_save() {
     const id = (document.getElementById('docs-edit-id').value || '').trim();
     const title = (document.getElementById('docs-title').value || '').trim();
@@ -8392,6 +8377,7 @@ async function documentos_save() {
         type: documentos_getSelectedType(),
         tags: (document.getElementById('docs-tags').value || '').trim(),
         notes: (document.getElementById('docs-notes').value || '').trim(),
+        expiryDate: (document.getElementById('docs-expiry').value || '').trim(),
         url: (document.getElementById('docs-url').value || '').trim(),
         sourceFolderId: '',
         driveFileId: documentos_parseDriveId((document.getElementById('docs-url').value || '').trim()),
@@ -8424,12 +8410,33 @@ async function documentos_delete() {
 }
 
 async function documentos_saveRows() {
-    const letter = autos_colLetter(DOCS_HEADERS.length);
-    await sheetsUpdate(SPREADSHEET_AUTOS_ID, `${DOCS_SHEET}!A1:${letter}1`, [DOCS_HEADERS]);
+    const mergedHeaders = [...(docsState.headers?.length ? docsState.headers : DOCS_HEADERS)];
+    DOCS_HEADERS.forEach((h) => {
+        if (!mergedHeaders.includes(h)) mergedHeaders.push(h);
+    });
+    docsState.headers = mergedHeaders;
+    const letter = autos_colLetter(mergedHeaders.length);
+    await sheetsUpdate(SPREADSHEET_AUTOS_ID, `${DOCS_SHEET}!A1:${letter}1`, [mergedHeaders]);
     const rows = docsState.items
         .slice()
         .sort((a, b) => a.title.localeCompare(b.title, 'es', { sensitivity: 'base' }))
-        .map((d) => [d.id, d.member, d.title, d.type, d.tags, d.notes, d.url, d.sourceFolderId, d.driveFileId, d.createdAt, d.updatedAt]);
+        .map((d) => {
+            const fields = {
+                id: d.id || '',
+                member: d.member || '',
+                title: d.title || '',
+                type: d.type || '',
+                tags: d.tags || '',
+                notes: d.notes || '',
+                expiryDate: d.expiryDate || '',
+                url: d.url || '',
+                sourceFolderId: d.sourceFolderId || '',
+                driveFileId: d.driveFileId || '',
+                createdAt: d.createdAt || '',
+                updatedAt: d.updatedAt || '',
+            };
+            return mergedHeaders.map((h) => fields[h] ?? '');
+        });
     if (rows.length) {
         await sheetsUpdate(SPREADSHEET_AUTOS_ID, `${DOCS_SHEET}!A2:${letter}${1 + rows.length}`, rows);
     }

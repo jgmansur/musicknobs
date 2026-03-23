@@ -13,7 +13,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <link rel="stylesheet" href="./style.css">
-    <script type="module" src="./main.js?v=7.3.2"></script>
+    <script type="module" src="./main.js?v=7.3.3"></script>
   </head>
   <body>
     <div id="app">
@@ -987,6 +987,7 @@
               <select id="docs-type-select" class="field-input"></select>
               <input id="docs-type-new" class="field-input" placeholder="Nueva categoria (opcional)">
               <input id="docs-tags" class="field-input" placeholder="Etiquetas separadas por coma">
+              <input id="docs-expiry" type="date" class="field-input" placeholder="Fecha de vencimiento">
             </div>
             <textarea id="docs-notes" class="field-input" rows="2" style="margin-top:.45rem;" placeholder="Notas"></textarea>
             <div class="autos-file-row" style="margin-top:.45rem;">
@@ -996,10 +997,6 @@
             <div class="autos-file-row" style="margin-top:.45rem;">
               <label for="docs-upload-file" class="secondary-btn autos-file-btn">📁 Galeria / Archivo</label>
               <input id="docs-upload-file" type="file" class="autos-file-native" accept="image/*,application/pdf">
-            </div>
-            <div class="autos-file-row" style="margin-top:.45rem;">
-              <label for="docs-upload-scan" class="secondary-btn autos-file-btn">📄 Escaneo multipagina</label>
-              <input id="docs-upload-scan" type="file" class="autos-file-native" accept="image/*,application/pdf" multiple capture="environment">
             </div>
             <div id="docs-crop-tools" class="hidden" style="display:grid;gap:.4rem;margin-top:.45rem;">
               <div class="diff-label">Recorte rapido antes de subir:</div>
