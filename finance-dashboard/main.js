@@ -1,4 +1,4 @@
-import { createIcons, RefreshCw, AlertTriangle, CalendarCheck, TrendingUp, LogOut, CreditCard, CarFront, Wrench, Home } from 'lucide';
+import { createIcons, RefreshCw, AlertTriangle, CalendarCheck, TrendingUp, LogOut, CreditCard, CarFront, Wrench, Home, Scissors } from 'lucide';
 import ApexCharts from 'apexcharts';
 import { initializeApp } from 'firebase/app';
 import { browserLocalPersistence, getAuth, GoogleAuthProvider, getRedirectResult, onAuthStateChanged, setPersistence, signInWithCredential, signInWithPopup, signInWithRedirect, signOut as fbSignOut } from 'firebase/auth';
@@ -15,7 +15,7 @@ const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // 
 const SPREADSHEET_DEUDAS_ID = '1dKxhgqazskm15lx0f6FNCA0gpJ7i5glfxkusiH3b0Uk'; // Control de Deudas
 const SPREADSHEET_AUTOS_ID = SPREADSHEET_DEUDAS_ID; // Autos + Reparaciones live in same workbook
 const SPREADSHEET_ESTUDIO_ID = SPREADSHEET_DEUDAS_ID; // Estudio + Plugins in same workbook
-const APP_VERSION  = 'v7.3.8';
+const APP_VERSION  = 'v7.4.0';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -162,7 +162,7 @@ let tokenRequestInFlight = null;
 let tokenRequestInteractive = true;
 let tokenRequestWatchdog = null;
 let currentTab  = 'dashboard';
-let tabInited   = { dashboard: false, gastos: false, fijos: false, deudas: false, plan: false, autos: false, propiedades: false, documentos: false, estudio: false };
+let tabInited   = { dashboard: false, gastos: false, fijos: false, deudas: false, plan: false, autos: false, propiedades: false, documentos: false, pelo: false, estudio: false };
 const MELI_ACCESS_TOKEN_KEY = 'meli_access_token_v1';
 const MELI_REFRESH_TOKEN_KEY = 'meli_refresh_token_v1';
 const MELI_EXPIRES_AT_KEY = 'meli_expires_at_v1';
@@ -491,7 +491,7 @@ document.addEventListener('DOMContentLoaded', () => {
     debugInitPanel();
     debugUpdate({ token: accessToken ? 'Si (cache)' : 'No' });
     if (accessToken) scheduleTokenRefresh();
-    createIcons({ icons: { RefreshCw, AlertTriangle, CalendarCheck, TrendingUp, LogOut, CreditCard, CarFront, Wrench, Home } });
+    createIcons({ icons: { RefreshCw, AlertTriangle, CalendarCheck, TrendingUp, LogOut, CreditCard, CarFront, Wrench, Home, Scissors } });
     const subtitle = document.querySelector('.subtitle');
     if (subtitle) subtitle.innerText = `Music Knobs | ${APP_VERSION}`;
 
@@ -517,6 +517,7 @@ document.addEventListener('DOMContentLoaded', () => {
     autos_bindEvents();
     propiedades_bindEvents();
     documentos_bindEvents();
+    pelo_bindEvents();
     estudio_bindEvents();
 
     document.getElementById('fixed-search-open')?.addEventListener('click', dashboard_openFixedSearch);
@@ -1566,6 +1567,7 @@ function showTab(name) {
         if (name === 'autos')     autos_cargarVista();
         if (name === 'propiedades') propiedades_cargarVista();
         if (name === 'documentos') documentos_cargarVista();
+        if (name === 'pelo')      pelo_cargarVista();
         if (name === 'estudio')   estudio_cargarVista();
     }
 }
@@ -8576,6 +8578,412 @@ async function documentos_saveProfile() {
     document.getElementById('docs-profile-sheet').classList.add('hidden');
     documentos_render();
     showToast('✅ Perfil guardado');
+}
+
+// =============================================
+// PELO MODULE
+// =============================================
+const HAIR_SHEET = 'PeloLog';
+const HAIR_META_SHEET = 'PeloMeta';
+const HAIR_HEADERS = ['id', 'member', 'date', 'stylist', 'amount', 'receiptUrl', 'frontUrl', 'sideUrl', 'backUrl', 'notes', 'rating', 'expenseMarker', 'expenseRowNum', 'createdAt', 'updatedAt'];
+const HAIR_META_HEADERS = ['key', 'value'];
+const HAIR_DEFAULT_MEMBERS = ['Juan', 'Hans'];
+const HAIR_PHOTOS_FOLDER_ID = '18ztCg2A_OM3T7VnBITKJ_cVI2Iw3TagE';
+
+const hairState = {
+    items: [],
+    members: [...HAIR_DEFAULT_MEMBERS],
+    selectedMember: HAIR_DEFAULT_MEMBERS[0],
+    loaded: false,
+    loading: false,
+};
+
+function pelo_bindEvents() {
+    document.getElementById('hair-btn-add-entry')?.addEventListener('click', () => pelo_openSheet(null));
+    document.getElementById('hair-btn-add-member')?.addEventListener('click', pelo_addMemberPrompt);
+    document.getElementById('hair-sheet-overlay')?.addEventListener('click', pelo_closeSheet);
+    document.getElementById('hair-save')?.addEventListener('click', pelo_save);
+    document.getElementById('hair-delete')?.addEventListener('click', pelo_delete);
+
+    const uploadBindings = [
+        ['hair-upload-receipt-camera', 'hair-receipt-url', 'receipt'],
+        ['hair-upload-receipt-gallery', 'hair-receipt-url', 'receipt'],
+        ['hair-upload-receipt-file', 'hair-receipt-url', 'receipt'],
+        ['hair-upload-front-camera', 'hair-front-url', 'photo'],
+        ['hair-upload-front-gallery', 'hair-front-url', 'photo'],
+        ['hair-upload-front-file', 'hair-front-url', 'photo'],
+        ['hair-upload-side-camera', 'hair-side-url', 'photo'],
+        ['hair-upload-side-gallery', 'hair-side-url', 'photo'],
+        ['hair-upload-side-file', 'hair-side-url', 'photo'],
+        ['hair-upload-back-camera', 'hair-back-url', 'photo'],
+        ['hair-upload-back-gallery', 'hair-back-url', 'photo'],
+        ['hair-upload-back-file', 'hair-back-url', 'photo'],
+    ];
+    uploadBindings.forEach(([inputId, targetInputId, kind]) => {
+        document.getElementById(inputId)?.addEventListener('change', () => pelo_uploadFileToInput(inputId, targetInputId, kind));
+    });
+
+    document.getElementById('hair-member-tabs')?.addEventListener('click', (e) => {
+        const btn = e.target.closest('[data-hair-member]');
+        if (!btn) return;
+        hairState.selectedMember = btn.dataset.hairMember || hairState.selectedMember;
+        pelo_render();
+    });
+
+    document.getElementById('hair-list')?.addEventListener('click', async (e) => {
+        const edit = e.target.closest('[data-hair-edit]');
+        if (edit) {
+            e.preventDefault();
+            e.stopPropagation();
+            pelo_openSheet(edit.dataset.hairEdit || '');
+            return;
+        }
+        const star = e.target.closest('[data-hair-star]');
+        if (star) {
+            e.preventDefault();
+            e.stopPropagation();
+            await pelo_setRating(star.dataset.hairStar || '', parseInt(star.dataset.hairValue || '0', 10) || 0);
+            return;
+        }
+        const link = e.target.closest('a[data-open-url]');
+        if (link) {
+            e.preventDefault();
+            e.stopPropagation();
+            const url = link.dataset.openUrl || '';
+            if (url) window.open(url, '_blank', 'noopener');
+        }
+    });
+}
+
+async function pelo_cargarVista() {
+    if (!accessToken || hairState.loading) return;
+    hairState.loading = true;
+    try {
+        await autos_ensureSheet(HAIR_SHEET, HAIR_HEADERS);
+        await autos_ensureSheet(HAIR_META_SHEET, HAIR_META_HEADERS);
+        await pelo_loadData();
+        pelo_render();
+    } catch (e) {
+        console.error('pelo_cargarVista:', e);
+        document.getElementById('hair-list').innerHTML = '<div class="empty-state text-danger">❌ Error cargando Pelo</div>';
+    } finally {
+        hairState.loading = false;
+    }
+}
+
+async function pelo_loadData() {
+    const head = await sheetsGet(SPREADSHEET_AUTOS_ID, `${HAIR_SHEET}!A1:AZ1`).catch(() => []);
+    const headers = (head[0] && head[0].length) ? head[0].map((x) => (x || '').toString().trim()) : HAIR_HEADERS.slice();
+    const map = autos_headersToMap(headers);
+    const get = (row, key, fallback = '') => {
+        const idx = map[key];
+        return idx === undefined ? fallback : (row[idx] ?? fallback);
+    };
+    const rows = await sheetsGet(SPREADSHEET_AUTOS_ID, `${HAIR_SHEET}!A2:AZ`).catch(() => []);
+    hairState.items = rows.map((row) => ({
+        id: (get(row, 'id', '') || '').toString(),
+        member: (get(row, 'member', '') || '').toString(),
+        date: (get(row, 'date', '') || '').toString(),
+        stylist: (get(row, 'stylist', '') || '').toString(),
+        amount: parseSheetValue(get(row, 'amount', 0)),
+        receiptUrl: (get(row, 'receiptUrl', '') || '').toString(),
+        frontUrl: (get(row, 'frontUrl', '') || '').toString(),
+        sideUrl: (get(row, 'sideUrl', '') || '').toString(),
+        backUrl: (get(row, 'backUrl', '') || '').toString(),
+        notes: (get(row, 'notes', '') || '').toString(),
+        rating: Math.max(0, Math.min(5, parseInt(get(row, 'rating', 0), 10) || 0)),
+        expenseMarker: (get(row, 'expenseMarker', '') || '').toString(),
+        expenseRowNum: parseInt(get(row, 'expenseRowNum', 0), 10) || 0,
+        createdAt: (get(row, 'createdAt', '') || '').toString(),
+        updatedAt: (get(row, 'updatedAt', '') || '').toString(),
+    })).filter((x) => x.id && x.member);
+
+    const metaRows = await sheetsGet(SPREADSHEET_AUTOS_ID, `${HAIR_META_SHEET}!A2:B`).catch(() => []);
+    const membersRaw = metaRows.find((r) => (r[0] || '').toString() === 'members')?.[1] || '';
+    let customMembers = [];
+    try {
+        const parsed = JSON.parse(membersRaw || '[]');
+        if (Array.isArray(parsed)) customMembers = parsed.map((x) => (x || '').toString().trim()).filter(Boolean);
+    } catch (_) {}
+    const fromEntries = [...new Set(hairState.items.map((x) => x.member).filter(Boolean))];
+    hairState.members = [...new Set([...HAIR_DEFAULT_MEMBERS, ...customMembers, ...fromEntries])];
+    if (!hairState.members.includes(hairState.selectedMember)) hairState.selectedMember = hairState.members[0] || HAIR_DEFAULT_MEMBERS[0];
+    hairState.loaded = true;
+}
+
+function pelo_sortEntries(items) {
+    const anyFav = items.some((x) => (x.rating || 0) > 0);
+    const toTs = (d) => {
+        const t = new Date(d || '').getTime();
+        return Number.isNaN(t) ? 0 : t;
+    };
+    const arr = [...items];
+    if (anyFav) {
+        arr.sort((a, b) => (b.rating || 0) - (a.rating || 0) || toTs(b.date) - toTs(a.date));
+        return arr;
+    }
+    arr.sort((a, b) => toTs(b.date) - toTs(a.date));
+    return arr;
+}
+
+function pelo_renderStars(id, rating) {
+    return [1, 2, 3, 4, 5].map((v) => `<button type="button" class="hair-star-btn ${(rating || 0) >= v ? 'active' : ''}" data-hair-star="${id}" data-hair-value="${v}">★</button>`).join('');
+}
+
+function pelo_render() {
+    const tabs = document.getElementById('hair-member-tabs');
+    const list = document.getElementById('hair-list');
+    const total = document.getElementById('hair-total');
+    const subtitle = document.getElementById('hair-subtitle');
+    if (!tabs || !list) return;
+
+    tabs.innerHTML = hairState.members.map((m) => `<button type="button" class="estudio-subtab-btn ${m === hairState.selectedMember ? 'active' : ''}" data-hair-member="${m}">${m}</button>`).join('');
+
+    let entries = hairState.items.filter((x) => x.member === hairState.selectedMember);
+    entries = pelo_sortEntries(entries);
+    if (total) total.innerText = String(entries.length);
+    if (subtitle) subtitle.innerText = entries.some((x) => (x.rating || 0) > 0) ? 'Favoritos primero, luego fecha' : 'Sin favoritos: orden por fecha';
+
+    list.innerHTML = entries.length
+        ? entries.map((e) => `
+            <article class="docs-card">
+              <div style="display:flex;justify-content:space-between;gap:.5rem;align-items:center;">
+                <h4 class="docs-title">${e.member} · ${formatFecha(e.date)}</h4>
+                <button type="button" class="mini-btn" data-hair-edit="${e.id}">✏️ Editar</button>
+              </div>
+              <div class="docs-meta">${e.stylist || 'Sin estilista'} · ${formatCurrency(e.amount || 0)}</div>
+              <div class="hair-stars">${pelo_renderStars(e.id, e.rating)}</div>
+              <div class="docs-meta">${e.notes || ''}</div>
+              <div class="docs-actions" style="justify-content:flex-start;gap:.35rem;flex-wrap:wrap;">
+                ${e.receiptUrl ? `<a class="mini-btn" data-open-url="${e.receiptUrl}" href="#">🧾 Recibo</a>` : ''}
+                ${e.frontUrl ? `<a class="mini-btn" data-open-url="${e.frontUrl}" href="#">📷 Frente</a>` : ''}
+                ${e.sideUrl ? `<a class="mini-btn" data-open-url="${e.sideUrl}" href="#">📷 Lado</a>` : ''}
+                ${e.backUrl ? `<a class="mini-btn" data-open-url="${e.backUrl}" href="#">📷 Atras</a>` : ''}
+              </div>
+            </article>
+          `).join('')
+        : '<div class="empty-state">Sin cortes registrados para este miembro</div>';
+}
+
+function pelo_fillMemberSelect(selected) {
+    const sel = document.getElementById('hair-member');
+    if (!sel) return;
+    sel.innerHTML = hairState.members.map((m) => `<option value="${m}" ${m === selected ? 'selected' : ''}>${m}</option>`).join('');
+}
+
+function pelo_openSheet(id) {
+    const row = id ? hairState.items.find((x) => x.id === id) : null;
+    document.getElementById('hair-edit-id').value = row?.id || '';
+    document.getElementById('hair-sheet-title').innerText = row ? 'Editar entrada de Pelo' : 'Nueva entrada de Pelo';
+    pelo_fillMemberSelect(row?.member || hairState.selectedMember);
+    document.getElementById('hair-date').value = row?.date || normalizeDateString(new Date().toLocaleDateString('en-CA'));
+    document.getElementById('hair-amount').value = row?.amount || '';
+    document.getElementById('hair-stylist').value = row?.stylist || '';
+    document.getElementById('hair-rating').value = String(row?.rating || 0);
+    document.getElementById('hair-notes').value = row?.notes || '';
+    document.getElementById('hair-receipt-url').value = row?.receiptUrl || '';
+    document.getElementById('hair-front-url').value = row?.frontUrl || '';
+    document.getElementById('hair-side-url').value = row?.sideUrl || '';
+    document.getElementById('hair-back-url').value = row?.backUrl || '';
+    document.getElementById('hair-file-feedback').innerText = '';
+    document.getElementById('hair-delete').classList.toggle('hidden', !row);
+    document.getElementById('hair-sheet').classList.remove('hidden');
+}
+
+function pelo_closeSheet() {
+    document.getElementById('hair-sheet').classList.add('hidden');
+}
+
+async function pelo_ensureReceiptsFolder() {
+    let folderId = await driveFindFolder('Jay App Recibos');
+    if (folderId) return folderId;
+    const r = await authFetch('https://www.googleapis.com/drive/v3/files', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: 'Jay App Recibos', mimeType: 'application/vnd.google-apps.folder' }),
+    });
+    if (!r.ok) throw new Error(`Folder create failed (${r.status})`);
+    folderId = (await r.json()).id;
+    return folderId;
+}
+
+async function pelo_uploadFileToInput(inputId, targetInputId, kind) {
+    const input = document.getElementById(inputId);
+    const file = input?.files?.[0];
+    if (!file) return;
+    try {
+        const folderId = kind === 'receipt' ? await pelo_ensureReceiptsFolder() : HAIR_PHOTOS_FOLDER_ID;
+        const url = await driveUploadFile(file, folderId);
+        document.getElementById(targetInputId).value = url;
+        document.getElementById('hair-file-feedback').innerText = `✅ Archivo cargado: ${file.name}`;
+    } catch (e) {
+        console.error('pelo_uploadFileToInput:', e);
+        document.getElementById('hair-file-feedback').innerText = '❌ Error al subir archivo';
+    } finally {
+        input.value = '';
+    }
+}
+
+function pelo_buildMarker(id) {
+    return `[PELO:${id}]`;
+}
+
+async function pelo_syncExpense(entry) {
+    const marker = entry.expenseMarker || pelo_buildMarker(entry.id);
+    const rows = await sheetsGet(SPREADSHEET_LOG_ID, 'Hoja 1!A2:H').catch(() => []);
+    const idx = rows.findIndex((r) => ((r[2] || '').toString()).includes(marker));
+    const conceptoBase = `Corte de Pelo ${entry.stylist ? `- ${entry.stylist}` : ''}`.trim();
+    const values = [[
+        entry.date || normalizeDateString(new Date().toLocaleDateString('en-CA')),
+        `Pelo ${entry.member}`,
+        `${conceptoBase} ${marker}`.trim(),
+        Math.abs(parseSheetValue(entry.amount || 0)),
+        'Gasto',
+        'Regular',
+        (entry.receiptUrl || '').trim(),
+        'MXN',
+    ]];
+
+    if (idx !== -1) {
+        const rowNum = idx + 2;
+        await sheetsUpdate(SPREADSHEET_LOG_ID, `Hoja 1!A${rowNum}:H${rowNum}`, values);
+        return { marker, rowNum };
+    }
+
+    const appendRes = await sheetsAppend(SPREADSHEET_LOG_ID, 'Hoja 1!A:H', values);
+    const range = appendRes?.updates?.updatedRange || '';
+    const m = range.match(/![A-Z]+(\d+):/);
+    const rowNum = m ? parseInt(m[1], 10) : 0;
+    return { marker, rowNum };
+}
+
+async function pelo_removeExpenseByMarker(marker) {
+    if (!marker) return;
+    const rows = await sheetsGet(SPREADSHEET_LOG_ID, 'Hoja 1!A2:H').catch(() => []);
+    const indexes = [];
+    for (let i = 0; i < rows.length; i++) {
+        const concepto = (rows[i][2] || '').toString();
+        if (concepto.includes(marker)) indexes.push(i + 1);
+    }
+    if (!indexes.length) return;
+    const sheetId = await getSheetId(SPREADSHEET_LOG_ID, 'Hoja 1');
+    for (let i = indexes.length - 1; i >= 0; i--) {
+        await sheetsDeleteRow(SPREADSHEET_LOG_ID, sheetId, indexes[i]);
+    }
+}
+
+async function pelo_save() {
+    const id = (document.getElementById('hair-edit-id').value || '').trim() || `hair-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+    const member = (document.getElementById('hair-member').value || '').trim();
+    const date = (document.getElementById('hair-date').value || '').trim();
+    const amount = parseSheetValue(document.getElementById('hair-amount').value || 0);
+    if (!member || !date || amount <= 0) {
+        alert('Completa miembro, fecha y monto mayor a 0');
+        return;
+    }
+
+    const existing = hairState.items.find((x) => x.id === id);
+    const now = normalizeDateString(new Date().toLocaleDateString('en-CA'));
+    const payload = {
+        id,
+        member,
+        date,
+        stylist: (document.getElementById('hair-stylist').value || '').trim(),
+        amount,
+        receiptUrl: (document.getElementById('hair-receipt-url').value || '').trim(),
+        frontUrl: (document.getElementById('hair-front-url').value || '').trim(),
+        sideUrl: (document.getElementById('hair-side-url').value || '').trim(),
+        backUrl: (document.getElementById('hair-back-url').value || '').trim(),
+        notes: (document.getElementById('hair-notes').value || '').trim(),
+        rating: Math.max(0, Math.min(5, parseInt(document.getElementById('hair-rating').value || '0', 10) || 0)),
+        expenseMarker: existing?.expenseMarker || pelo_buildMarker(id),
+        expenseRowNum: existing?.expenseRowNum || 0,
+        createdAt: existing?.createdAt || now,
+        updatedAt: now,
+    };
+
+    const sync = await pelo_syncExpense(payload);
+    payload.expenseMarker = sync.marker;
+    payload.expenseRowNum = sync.rowNum || payload.expenseRowNum;
+
+    const idx = hairState.items.findIndex((x) => x.id === id);
+    if (idx === -1) hairState.items.push(payload);
+    else hairState.items[idx] = payload;
+
+    if (!hairState.members.includes(member)) hairState.members.push(member);
+    await pelo_saveMembersMeta();
+    await pelo_saveRows();
+    pelo_closeSheet();
+    pelo_render();
+    showToast('✅ Entrada de Pelo guardada y sincronizada');
+}
+
+async function pelo_delete() {
+    const id = (document.getElementById('hair-edit-id').value || '').trim();
+    if (!id) return;
+    const row = hairState.items.find((x) => x.id === id);
+    if (!row) return;
+    if (!confirm('¿Eliminar esta entrada de Pelo?')) return;
+    await pelo_removeExpenseByMarker(row.expenseMarker || pelo_buildMarker(row.id));
+    hairState.items = hairState.items.filter((x) => x.id !== id);
+    await pelo_saveRows();
+    pelo_closeSheet();
+    pelo_render();
+    showToast('🗑️ Entrada eliminada');
+}
+
+async function pelo_setRating(id, rating) {
+    const idx = hairState.items.findIndex((x) => x.id === id);
+    if (idx === -1) return;
+    hairState.items[idx].rating = Math.max(0, Math.min(5, rating));
+    hairState.items[idx].updatedAt = normalizeDateString(new Date().toLocaleDateString('en-CA'));
+    await pelo_saveRows();
+    pelo_render();
+}
+
+async function pelo_saveRows() {
+    const letter = autos_colLetter(HAIR_HEADERS.length);
+    await sheetsUpdate(SPREADSHEET_AUTOS_ID, `${HAIR_SHEET}!A1:${letter}1`, [HAIR_HEADERS]);
+    const rows = hairState.items.map((x) => [
+        x.id,
+        x.member,
+        x.date,
+        x.stylist,
+        Math.abs(parseSheetValue(x.amount || 0)),
+        x.receiptUrl || '',
+        x.frontUrl || '',
+        x.sideUrl || '',
+        x.backUrl || '',
+        x.notes || '',
+        x.rating || 0,
+        x.expenseMarker || '',
+        x.expenseRowNum || 0,
+        x.createdAt || '',
+        x.updatedAt || '',
+    ]);
+    if (rows.length) {
+        await sheetsUpdate(SPREADSHEET_AUTOS_ID, `${HAIR_SHEET}!A2:${letter}${1 + rows.length}`, rows);
+    }
+    await sheetsClear(SPREADSHEET_AUTOS_ID, `${HAIR_SHEET}!A${2 + rows.length}:AZ`);
+}
+
+async function pelo_saveMembersMeta() {
+    const members = [...new Set(hairState.members.map((x) => (x || '').trim()).filter(Boolean))];
+    hairState.members = members;
+    await sheetsUpdate(SPREADSHEET_AUTOS_ID, `${HAIR_META_SHEET}!A1:B1`, [HAIR_META_HEADERS]);
+    await sheetsUpdate(SPREADSHEET_AUTOS_ID, `${HAIR_META_SHEET}!A2:B2`, [['members', JSON.stringify(members)]]);
+    await sheetsClear(SPREADSHEET_AUTOS_ID, `${HAIR_META_SHEET}!A3:B`);
+}
+
+async function pelo_addMemberPrompt() {
+    const name = prompt('Nombre del nuevo miembro de Pelo:');
+    if (!name) return;
+    const clean = name.trim();
+    if (!clean) return;
+    if (!hairState.members.includes(clean)) hairState.members.push(clean);
+    hairState.selectedMember = clean;
+    await pelo_saveMembersMeta();
+    pelo_render();
 }
 
 // =============================================
