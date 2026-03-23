@@ -13,7 +13,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <link rel="stylesheet" href="./style.css">
-    <script type="module" src="./main.js?v=7.2.5"></script>
+    <script type="module" src="./main.js?v=7.2.6"></script>
   </head>
   <body>
     <div id="app">
@@ -844,7 +844,7 @@
             <input id="prop-edit-id" type="hidden">
             <input id="prop-sync-month" type="hidden">
 
-            <div class="prop-sheet-card">
+            <div class="prop-sheet-card" data-section="general">
               <div class="field-label">🏠 Editar Propiedad</div>
               <div style="display:grid;grid-template-columns:1fr 1fr;gap:.55rem;">
                 <input id="prop-nombre" class="field-input" placeholder="Nombre de la propiedad">
@@ -869,7 +869,7 @@
               <textarea id="prop-fuente" class="field-input" rows="2" style="margin-top:.5rem;" placeholder="Cómo se estimó la valoración"></textarea>
             </div>
 
-            <div class="prop-sheet-card">
+            <div class="prop-sheet-card" data-section="docs">
               <div class="field-label">📁 Documentos y Enlaces</div>
               <div class="autos-file-row" style="margin-top:.45rem;">
                 <label for="prop-upload-foto" class="secondary-btn autos-file-btn">🏠 Subir foto propiedad</label>
@@ -908,7 +908,7 @@
               <input id="prop-doc3-url" class="field-input" style="margin-top:.45rem;" placeholder="URL doc extra 3">
             </div>
 
-            <div class="prop-sheet-card">
+            <div class="prop-sheet-card" data-section="owners">
               <label class="field-label">👥 Editar Dueños y Porcentajes</label>
               <div id="prop-owners-list" class="prop-dyn-list"></div>
               <div style="display:flex;gap:.5rem;align-items:center;justify-content:space-between;margin-top:.35rem;">
@@ -917,13 +917,13 @@
               </div>
             </div>
 
-            <div class="prop-sheet-card">
+            <div class="prop-sheet-card" data-section="deudas">
               <label class="field-label">💳 Deudas de la Propiedad</label>
               <div id="prop-deudas-list" class="prop-dyn-list prop-dyn-list-money"></div>
               <button id="prop-add-deuda" type="button" class="mini-btn" style="margin-top:.35rem;">+ Agregar deuda</button>
             </div>
 
-            <div class="prop-sheet-card">
+            <div class="prop-sheet-card" data-section="ingresos">
               <label class="field-label">💵 Ingresos de la Propiedad (mensual)</label>
               <div id="prop-ingresos-list" class="prop-dyn-list prop-dyn-list-money"></div>
               <button id="prop-add-ingreso" type="button" class="mini-btn" style="margin-top:.35rem;">+ Agregar ingreso</button>

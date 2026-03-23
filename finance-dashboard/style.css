@@ -1252,6 +1252,25 @@ select.field-input { background-image: url("data:image/svg+xml,%3Csvg xmlns='htt
   padding: .42rem .52rem;
 }
 
+.prop-detail-block {
+  display: grid;
+  gap: .55rem;
+  background: rgba(255,255,255,.02);
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: .8rem;
+  padding: .65rem;
+}
+
+.prop-detail-head {
+  margin: 0;
+  align-items: center;
+}
+
+.prop-detail-head h3 {
+  margin: 0;
+  font-size: .92rem;
+}
+
 @media (max-width: 720px) {
   .prop-dyn-row {
     grid-template-columns: 1fr;

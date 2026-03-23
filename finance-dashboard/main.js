@@ -15,7 +15,7 @@ const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // 
 const SPREADSHEET_DEUDAS_ID = '1dKxhgqazskm15lx0f6FNCA0gpJ7i5glfxkusiH3b0Uk'; // Control de Deudas
 const SPREADSHEET_AUTOS_ID = SPREADSHEET_DEUDAS_ID; // Autos + Reparaciones live in same workbook
 const SPREADSHEET_ESTUDIO_ID = SPREADSHEET_DEUDAS_ID; // Estudio + Plugins in same workbook
-const APP_VERSION  = 'v7.2.5';
+const APP_VERSION  = 'v7.2.6';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -6830,7 +6830,7 @@ function propiedades_bindEvents() {
 
     document.getElementById('prop-open-sheet')?.addEventListener('click', () => {
         const selected = propiedades_getSelected();
-        propiedades_openSheet(selected?.id || null);
+        propiedades_openSheet(selected?.id || null, 'general');
     });
 
     document.getElementById('prop-add-owner')?.addEventListener('click', () => {
@@ -7093,51 +7093,58 @@ function propiedades_render() {
             <div class="estudio-entry-title">${selected.nombre}</div>
             <div class="estudio-entry-meta">${selected.tipo || 'Propiedad'} · ${selected.zona || 'Zona pendiente'} · ${selected.metrosConstruccion || 0}m² construcción · ${selected.metrosTerreno || 0}m² terreno</div>
           </div>
-          <button id="prop-edit-selected" class="mini-btn">✏️ Editar</button>
         </div>
 
-        <div class="estudio-entry-grid">
-          <div class="plan-bucket-row"><span>Valor compra</span><strong>${formatCurrency(parseSheetValue(selected.valorCompra))}</strong></div>
-          <div class="plan-bucket-row"><span>Valor catastral</span><strong>${formatCurrency(parseSheetValue(selected.valorCatastral))}</strong></div>
-          <div class="plan-bucket-row"><span>Valor comercial</span><strong>${formatCurrency(propiedades_valorComercialCalculado(selected))}</strong></div>
-          <div class="plan-bucket-row"><span>Valor investigado</span><strong>${formatCurrency(parseSheetValue(selected.valorInvestigado))}</strong></div>
-          <div class="plan-bucket-row"><span>Predial mensual</span><strong class="text-danger">-${formatCurrency(parseSheetValue(selected.predialMensual))}</strong></div>
-          <div class="plan-bucket-row"><span>Mantenimiento mensual</span><strong class="text-danger">-${formatCurrency(parseSheetValue(selected.mantenimientoMensual))}</strong></div>
-          <div class="plan-bucket-row"><span>Deuda total</span><strong class="text-danger">-${formatCurrency(debtTotal)}</strong></div>
-          <div class="plan-bucket-row"><span>Ingreso total</span><strong class="text-success">+${formatCurrency(ingresoTotal)}</strong></div>
-          <div class="plan-bucket-row"><span>Mi porcentaje</span><strong>${miPorcentaje.toFixed(2)}%</strong></div>
-          <div class="plan-bucket-row"><span>Mi parte ingreso</span><strong class="text-success">+${formatCurrency(miIngreso)}</strong></div>
+        <div class="prop-detail-block">
+          <div class="section-header prop-detail-head"><h3>🏠 Datos y Valuación</h3><button class="mini-btn" data-prop-edit-section="general">✏️ Editar</button></div>
+          <div class="estudio-entry-grid">
+            <div class="plan-bucket-row"><span>Valor compra</span><strong>${formatCurrency(parseSheetValue(selected.valorCompra))}</strong></div>
+            <div class="plan-bucket-row"><span>Valor catastral</span><strong>${formatCurrency(parseSheetValue(selected.valorCatastral))}</strong></div>
+            <div class="plan-bucket-row"><span>Valor comercial</span><strong>${formatCurrency(propiedades_valorComercialCalculado(selected))}</strong></div>
+            <div class="plan-bucket-row"><span>Valor investigado</span><strong>${formatCurrency(parseSheetValue(selected.valorInvestigado))}</strong></div>
+            <div class="plan-bucket-row"><span>Predial mensual</span><strong class="text-danger">-${formatCurrency(parseSheetValue(selected.predialMensual))}</strong></div>
+            <div class="plan-bucket-row"><span>Mantenimiento mensual</span><strong class="text-danger">-${formatCurrency(parseSheetValue(selected.mantenimientoMensual))}</strong></div>
+            <div class="plan-bucket-row"><span>Deuda total</span><strong class="text-danger">-${formatCurrency(debtTotal)}</strong></div>
+            <div class="plan-bucket-row"><span>Ingreso total</span><strong class="text-success">+${formatCurrency(ingresoTotal)}</strong></div>
+            <div class="plan-bucket-row"><span>Mi porcentaje</span><strong>${miPorcentaje.toFixed(2)}%</strong></div>
+            <div class="plan-bucket-row"><span>Mi parte ingreso</span><strong class="text-success">+${formatCurrency(miIngreso)}</strong></div>
+          </div>
+          <div class="estudio-entry-notes">${selected.fuenteValoracion || 'Placeholder local (sin API externa). La valoración automática se basa en zona + m2 de construcción + m2 de terreno y puede variar.'}</div>
         </div>
 
-        <div class="estudio-entry-notes">${selected.fuenteValoracion || 'Placeholder local (sin API externa). La valoración automática se basa en zona + m2 de construcción + m2 de terreno y puede variar.'}</div>
-
-        ${selected.fotoUrl ? `<a href="${selected.fotoUrl}" target="_blank" rel="noopener">${propiedades_docPreview(selected.fotoUrl, selected.nombre)}</a>` : '<div class="empty-state" style="padding:.6rem 0;">Sin foto de propiedad</div>'}
-
-        <div class="plan-buckets">
-          <div class="bs-label" style="margin-bottom:.35rem;">Dueños y porcentaje</div>
-          ${ownerRows}
+        <div class="prop-detail-block">
+          <div class="section-header prop-detail-head"><h3>👥 Dueños y Porcentajes</h3><button class="mini-btn" data-prop-edit-section="owners">✏️ Editar</button></div>
+          <div class="plan-buckets">${ownerRows}</div>
         </div>
 
-        <div class="plan-expenses-list">
-          <div class="bs-label" style="margin-bottom:.35rem;">Deudas de la propiedad (sincronizadas en pestaña Deudas)</div>
-          ${debtsRows}
+        <div class="prop-detail-block">
+          <div class="section-header prop-detail-head"><h3>💳 Deudas de la Propiedad</h3><button class="mini-btn" data-prop-edit-section="deudas">✏️ Editar</button></div>
+          <div class="plan-expenses-list">${debtsRows}</div>
         </div>
 
-        <div class="plan-expenses-list">
-          <div class="bs-label" style="margin-bottom:.35rem;">Ingresos de la propiedad</div>
-          ${incomeRows}
+        <div class="prop-detail-block">
+          <div class="section-header prop-detail-head"><h3>💵 Ingresos de la Propiedad</h3><button class="mini-btn" data-prop-edit-section="ingresos">✏️ Editar</button></div>
+          <div class="plan-expenses-list">${incomeRows}</div>
         </div>
 
-        <div class="plan-expenses-list">
-          <div class="bs-label" style="margin-bottom:.35rem;">Enlaces y documentos</div>
-          ${selected.link1 ? `<a class="recibo-link" href="${selected.link1}" target="_blank" rel="noopener">🔗 Link 1</a>` : ''}
-          ${selected.link2 ? `<a class="recibo-link" href="${selected.link2}" target="_blank" rel="noopener">🔗 Link 2</a>` : ''}
-          ${docsRows}
+        <div class="prop-detail-block">
+          <div class="section-header prop-detail-head"><h3>📁 Documentos y Enlaces</h3><button class="mini-btn" data-prop-edit-section="docs">✏️ Editar</button></div>
+          ${selected.fotoUrl ? `<a href="${selected.fotoUrl}" target="_blank" rel="noopener">${propiedades_docPreview(selected.fotoUrl, selected.nombre)}</a>` : '<div class="empty-state" style="padding:.6rem 0;">Sin foto de propiedad</div>'}
+          <div class="plan-expenses-list">
+            ${selected.link1 ? `<a class="recibo-link" href="${selected.link1}" target="_blank" rel="noopener">🔗 Link 1</a>` : ''}
+            ${selected.link2 ? `<a class="recibo-link" href="${selected.link2}" target="_blank" rel="noopener">🔗 Link 2</a>` : ''}
+            ${docsRows}
+          </div>
         </div>
       </div>
     `;
 
-    document.getElementById('prop-edit-selected')?.addEventListener('click', () => propiedades_openSheet(selected.id));
+    detailEl.querySelectorAll('[data-prop-edit-section]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+            const section = btn.dataset.propEditSection || 'general';
+            propiedades_openSheet(selected.id, section);
+        });
+    });
 }
 
 function propiedades_docPreview(url, label) {
@@ -7232,11 +7239,29 @@ function propiedades_collectMoneyFromUI(kind) {
     }).filter((x) => x.concepto && x.monto > 0);
 }
 
-function propiedades_openSheet(id) {
+function propiedades_setSheetSection(section = 'all') {
+    const cards = [...document.querySelectorAll('#prop-sheet .prop-sheet-card')];
+    cards.forEach((card) => {
+        const cardSection = card.dataset.section || '';
+        const show = section === 'all' || !section || cardSection === section;
+        card.classList.toggle('hidden', !show);
+    });
+}
+
+function propiedades_openSheet(id, section = 'all') {
     const item = id ? propiedadesState.items.find((x) => x.id === id) : null;
     const nowMonth = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`;
     document.getElementById('prop-edit-id').value = item?.id || '';
-    document.getElementById('prop-sheet-title').innerText = item ? 'Editar propiedad' : 'Nueva propiedad';
+    const sectionLabel = {
+        all: 'Propiedad',
+        general: 'Datos y valuación',
+        docs: 'Documentos y enlaces',
+        owners: 'Dueños y porcentajes',
+        deudas: 'Deudas',
+        ingresos: 'Ingresos',
+    };
+    const titlePrefix = item ? 'Editar' : 'Nueva';
+    document.getElementById('prop-sheet-title').innerText = `${titlePrefix} ${sectionLabel[section] || 'Propiedad'}`;
     document.getElementById('prop-nombre').value = item?.nombre || '';
     document.getElementById('prop-tipo').value = item?.tipo || 'Casa';
     document.getElementById('prop-zona').value = item?.zona || '';
@@ -7272,6 +7297,7 @@ function propiedades_openSheet(id) {
     propiedades_updateOwnersTotal();
     document.getElementById('prop-sync-month').value = nowMonth;
 
+    propiedades_setSheetSection(section);
     document.getElementById('prop-delete')?.classList.toggle('hidden', !item);
     document.getElementById('prop-sheet').classList.remove('hidden');
 }
