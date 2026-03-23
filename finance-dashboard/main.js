@@ -15,7 +15,7 @@ const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // 
 const SPREADSHEET_DEUDAS_ID = '1dKxhgqazskm15lx0f6FNCA0gpJ7i5glfxkusiH3b0Uk'; // Control de Deudas
 const SPREADSHEET_AUTOS_ID = SPREADSHEET_DEUDAS_ID; // Autos + Reparaciones live in same workbook
 const SPREADSHEET_ESTUDIO_ID = SPREADSHEET_DEUDAS_ID; // Estudio + Plugins in same workbook
-const APP_VERSION  = 'v7.4.2';
+const APP_VERSION  = 'v7.4.3';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -8641,7 +8641,7 @@ function pelo_bindEvents() {
             await pelo_setRating(star.dataset.hairStar || '', parseInt(star.dataset.hairValue || '0', 10) || 0);
             return;
         }
-        const link = e.target.closest('a[data-open-url]');
+        const link = e.target.closest('[data-open-url]');
         if (link) {
             e.preventDefault();
             e.stopPropagation();
@@ -8743,8 +8743,13 @@ function pelo_render() {
     list.innerHTML = entries.length
         ? entries.map((e) => `
             <article class="docs-card">
-              <div style="display:flex;justify-content:space-between;gap:.5rem;align-items:center;">
-                <h4 class="docs-title">${e.member} · ${formatFecha(e.date)}</h4>
+              <div class="hair-entry-head">
+                <div class="hair-entry-main">
+                  ${e.frontUrl || e.sideUrl
+                      ? `<img class="hair-thumb" src="${e.frontUrl || e.sideUrl}" alt="Foto de corte" data-open-url="${e.frontUrl || e.sideUrl}">`
+                      : '<div class="hair-thumb hair-thumb-empty">✂️</div>'}
+                  <h4 class="docs-title">${e.member} · ${formatFecha(e.date)}</h4>
+                </div>
                 <button type="button" class="mini-btn" data-hair-edit="${e.id}">✏️ Editar</button>
               </div>
               <div class="docs-meta">${e.stylist || 'Sin estilista'} · ${formatCurrency(e.amount || 0)}</div>

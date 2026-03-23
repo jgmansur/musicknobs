@@ -1332,6 +1332,39 @@ select.field-input { background-image: url("data:image/svg+xml,%3Csvg xmlns='htt
   background: rgba(251,191,36,.12);
 }
 
+.hair-entry-head {
+  display: flex;
+  justify-content: space-between;
+  gap: .5rem;
+  align-items: center;
+}
+
+.hair-entry-main {
+  display: flex;
+  align-items: center;
+  gap: .55rem;
+  min-width: 0;
+}
+
+.hair-thumb {
+  width: 40px;
+  height: 40px;
+  border-radius: .55rem;
+  object-fit: cover;
+  border: 1px solid rgba(255,255,255,.15);
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.hair-thumb-empty {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255,255,255,.06);
+  color: var(--text-soft);
+  font-size: .95rem;
+}
+
 .docs-profile {
   border: 1px solid rgba(255,255,255,.08);
   border-radius: .8rem;
