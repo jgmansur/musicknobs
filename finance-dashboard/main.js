@@ -15,7 +15,7 @@ const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // 
 const SPREADSHEET_DEUDAS_ID = '1dKxhgqazskm15lx0f6FNCA0gpJ7i5glfxkusiH3b0Uk'; // Control de Deudas
 const SPREADSHEET_AUTOS_ID = SPREADSHEET_DEUDAS_ID; // Autos + Reparaciones live in same workbook
 const SPREADSHEET_ESTUDIO_ID = SPREADSHEET_DEUDAS_ID; // Estudio + Plugins in same workbook
-const APP_VERSION  = 'v7.2.8';
+const APP_VERSION  = 'v7.2.9';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -7039,10 +7039,7 @@ function propiedades_render() {
     if (!tabsEl || !detailEl) return;
 
     const totalValor = propiedadesState.items.reduce((sum, p) => sum + propiedades_valorComercialCalculado(p), 0);
-    const totalValorMiParte = propiedadesState.items.reduce((sum, p) => {
-        const pct = Math.max(0, Math.min(100, parseSheetValue(p.miPorcentaje || 100)));
-        return sum + (propiedades_valorComercialCalculado(p) * (pct / 100));
-    }, 0);
+    const totalValorMiParte = propiedadesState.items.reduce((sum, p) => sum + (propiedades_valorComercialCalculado(p) * (propiedades_miParticipacionPct(p) / 100)), 0);
     const totalDeuda = propiedadesState.items.reduce((sum, p) => sum + propiedades_totalDeuda(p), 0);
     const totalFijos = propiedadesState.items.reduce((sum, p) => sum + Math.max(0, parseSheetValue(p.predialMensual)) + Math.max(0, parseSheetValue(p.mantenimientoMensual)), 0);
     const totalIngresos = propiedadesState.items.reduce((sum, p) => sum + propiedades_ingresoMiParte(p), 0);
@@ -7065,7 +7062,7 @@ function propiedades_render() {
     const debtTotal = propiedades_totalDeuda(selected);
     const ingresoTotal = propiedades_totalIngreso(selected);
     const miIngreso = propiedades_ingresoMiParte(selected);
-    const miPorcentaje = Math.max(0, Math.min(100, parseSheetValue(selected.miPorcentaje || '100')));
+    const miPorcentaje = propiedades_miParticipacionPct(selected);
     const owners = Array.isArray(selected.owners) ? selected.owners : [];
     const ownerRows = owners.length
         ? owners.map((o) => {
@@ -7300,7 +7297,6 @@ function propiedades_openSheet(id, section = 'all') {
     document.getElementById('prop-fuente').value = item?.fuenteValoracion || 'Placeholder local (sin API)';
     document.getElementById('prop-predial').value = item?.predialMensual || '';
     document.getElementById('prop-mantenimiento').value = item?.mantenimientoMensual || '';
-    document.getElementById('prop-mi-porcentaje').value = item?.miPorcentaje || '100';
     document.getElementById('prop-foto-url').value = item?.fotoUrl || '';
     document.getElementById('prop-link1').value = item?.link1 || '';
     document.getElementById('prop-link2').value = item?.link2 || '';
@@ -7372,6 +7368,23 @@ function propiedades_estimarValorComercial(input) {
     return Math.round(base * zoneFactor);
 }
 
+function propiedades_isYoOwnerName(name) {
+    const normalized = (name || '').toString().trim().toLowerCase();
+    return normalized === 'yo' || normalized === 'mi' || normalized === 'mio' || normalized === 'mía' || normalized === 'mia';
+}
+
+function propiedades_miParticipacionPct(item) {
+    const owners = Array.isArray(item?.owners) ? item.owners : [];
+    const yoOwner = owners.find((o) => propiedades_isYoOwnerName(o?.name));
+    if (yoOwner) {
+        return Math.max(0, Math.min(100, parseSheetValue(yoOwner.percent || 0)));
+    }
+    if (owners.length) {
+        return Math.max(0, Math.min(100, parseSheetValue(owners[0]?.percent || 0)));
+    }
+    return Math.max(0, Math.min(100, parseSheetValue(item?.miPorcentaje || 100)));
+}
+
 function propiedades_valorComercialCalculado(item) {
     const manual = Math.max(0, parseSheetValue(item.valorComercial));
     if (manual > 0) return manual;
@@ -7387,7 +7400,7 @@ function propiedades_totalIngreso(item) {
 }
 
 function propiedades_ingresoMiParte(item) {
-    const pct = Math.max(0, Math.min(100, parseSheetValue(item.miPorcentaje || 100)));
+    const pct = propiedades_miParticipacionPct(item);
     return propiedades_totalIngreso(item) * (pct / 100);
 }
 
@@ -7411,6 +7424,7 @@ async function propiedades_save() {
         }
         const deudas = propiedades_collectMoneyFromUI('deuda');
         const ingresos = propiedades_collectMoneyFromUI('ingreso');
+        const existing = propiedadesState.items.find((x) => x.id === editId);
         const payload = {
             id: editId || `prop-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
             nombre,
@@ -7425,7 +7439,7 @@ async function propiedades_save() {
             fuenteValoracion: (document.getElementById('prop-fuente').value || '').trim() || 'Placeholder local (sin API)',
             predialMensual: (document.getElementById('prop-predial').value || '').trim(),
             mantenimientoMensual: (document.getElementById('prop-mantenimiento').value || '').trim(),
-            miPorcentaje: (document.getElementById('prop-mi-porcentaje').value || '100').trim(),
+            miPorcentaje: String(propiedades_miParticipacionPct({ owners, miPorcentaje: existing?.miPorcentaje || 0 })),
             fotoUrl: (document.getElementById('prop-foto-url').value || '').trim(),
             link1: (document.getElementById('prop-link1').value || '').trim(),
             link2: (document.getElementById('prop-link2').value || '').trim(),
@@ -7538,7 +7552,7 @@ async function propiedades_syncPropertyRemotes(item) {
         monthStart,
     });
 
-    const miPct = Math.max(0, Math.min(100, parseSheetValue(item.miPorcentaje || 100)));
+    const miPct = propiedades_miParticipacionPct(item);
     const ingresos = (item.ingresos || []).filter((x) => (x.concepto || '').trim() && parseSheetValue(x.monto) > 0);
     await propiedades_removeFijosByPrefix(`[PROP-FIX:${item.id}:ingreso`);
     for (let i = 0; i < ingresos.length; i++) {
