@@ -15,7 +15,7 @@ const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // 
 const SPREADSHEET_DEUDAS_ID = '1dKxhgqazskm15lx0f6FNCA0gpJ7i5glfxkusiH3b0Uk'; // Control de Deudas
 const SPREADSHEET_AUTOS_ID = SPREADSHEET_DEUDAS_ID; // Autos + Reparaciones live in same workbook
 const SPREADSHEET_ESTUDIO_ID = SPREADSHEET_DEUDAS_ID; // Estudio + Plugins in same workbook
-const APP_VERSION  = 'v7.1.16';
+const APP_VERSION  = 'v7.1.17';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -4349,7 +4349,8 @@ function autos_estimateFallbackValuation(car) {
     let midBase = Math.max(65000, Math.min(1200000, baseNewMxn * depreciationFactor));
     if (invoiceValue > 0) midBase = Math.min(midBase, invoiceValue);
     const kmAdj = autos_calculateMileageAdjustment(car);
-    const mid = midBase * kmAdj.factor;
+    const calibrationOffsetMxn = 10000;
+    const mid = Math.max(55000, (midBase * kmAdj.factor) - calibrationOffsetMxn);
     const low = mid * 0.84;
     const high = mid * 1.16;
 
