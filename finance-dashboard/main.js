@@ -15,7 +15,7 @@ const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // 
 const SPREADSHEET_DEUDAS_ID = '1dKxhgqazskm15lx0f6FNCA0gpJ7i5glfxkusiH3b0Uk'; // Control de Deudas
 const SPREADSHEET_AUTOS_ID = SPREADSHEET_DEUDAS_ID; // Autos + Reparaciones live in same workbook
 const SPREADSHEET_ESTUDIO_ID = SPREADSHEET_DEUDAS_ID; // Estudio + Plugins in same workbook
-const APP_VERSION  = 'v7.1.20';
+const APP_VERSION  = 'v7.1.21';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -6320,10 +6320,13 @@ function estudio_render() {
     if (totalEl) totalEl.innerHTML = `${formatCurrency(totalDepMxn)} <span style="font-size:.65em;font-weight:600;opacity:.72;">sin depreciar ${formatCurrency(totalRawMxn)}</span>`;
     const breakdownEl = document.getElementById('estudio-breakdown-note');
     if (breakdownEl) {
-        const inv = formatCurrency(totalInventarioDepMxn);
-        const plg = formatCurrency(totalPluginsDepMxn);
-        const dep = formatCurrency(totalRawMxn - totalDepMxn);
-        breakdownEl.innerText = `${estudioState.activeSubtab === 'inventario' ? inv : plg} · depreciación estimada ${dep}`;
+        const isInv = estudioState.activeSubtab === 'inventario';
+        const depreciatedValue = isInv ? totalInventarioDepMxn : totalPluginsDepMxn;
+        const depreciationAmount = isInv
+            ? Math.max(0, totalInventarioRawMxn - totalInventarioDepMxn)
+            : Math.max(0, totalPluginsRawMxn - totalPluginsDepMxn);
+        const scope = isInv ? 'inventario' : 'plugins';
+        breakdownEl.innerText = `Valor depreciado ${scope}: ${formatCurrency(depreciatedValue)} · depreciación estimada ${formatCurrency(depreciationAmount)}`;
     }
 
     const inventarioCategories = estudio_uniqueCategories(estudioState.inventario, 'categoria');
