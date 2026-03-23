@@ -15,7 +15,7 @@ const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // 
 const SPREADSHEET_DEUDAS_ID = '1dKxhgqazskm15lx0f6FNCA0gpJ7i5glfxkusiH3b0Uk'; // Control de Deudas
 const SPREADSHEET_AUTOS_ID = SPREADSHEET_DEUDAS_ID; // Autos + Reparaciones live in same workbook
 const SPREADSHEET_ESTUDIO_ID = SPREADSHEET_DEUDAS_ID; // Estudio + Plugins in same workbook
-const APP_VERSION  = 'v7.4.3';
+const APP_VERSION  = 'v7.4.4';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -1081,20 +1081,28 @@ async function balance_saveAccounts(opts = {}) {
 
 // ── Compute helpers ──────────────────────────────────────
 function balance_getTotal() {
-    // Skip accounts marked as hidden (savings, reserves, etc.)
-    const base = balanceAccounts
-        .filter(a => !a.hidden)
-        .reduce((sum, a) => {
-            const balanceMxn = balance_convertToMxn(Math.abs(a.balance || 0), a.currency);
-            if (a.type === 'credit') {
-                const deuda = -balanceMxn;
-                const limiteVisible = a.creditLimitVisible
-                    ? balance_convertToMxn(Math.abs(a.creditLimit || 0), a.currency)
-                    : 0;
-                return sum + deuda + limiteVisible;
+    const base = balanceAccounts.reduce((sum, a) => {
+        const balanceMxn = balance_convertToMxn(Math.abs(a.balance || 0), a.currency);
+
+        if (a.type === 'credit') {
+            if (a.hidden) return sum;
+            const deuda = -balanceMxn;
+            const limiteVisible = a.creditLimitVisible
+                ? balance_convertToMxn(Math.abs(a.creditLimit || 0), a.currency)
+                : 0;
+            return sum + deuda + limiteVisible;
+        }
+
+        if (a.type === 'invest') {
+            if (a.hidden) {
+                return sum - balanceMxn;
             }
-            return sum + (a.balance < 0 ? -balanceMxn : balanceMxn);
-        }, 0);
+            return sum;
+        }
+
+        if (a.hidden) return sum;
+        return sum + (a.balance < 0 ? -balanceMxn : balanceMxn);
+    }, 0);
     const debtImpact = debtVisibleInBalance ? deudas_getTotalAmount() : 0;
     return base - balance_getPaidFixedDeduction() + balance_getLogNetAdjustment() - debtImpact;
 }
@@ -1439,7 +1447,6 @@ async function balance_saveAccount() {
             bitcoinInitialMxn: (type === 'invest' && investmentType === 'bitcoin') ? bitcoinInitialMxn : 0,
         }));
     }
-    balance_resetDynamicAnchors();
     await balance_saveAccounts({ deferBackup: true });
     balance_refreshUsdMxnRate();
     balance_refreshBtcMxnRate();
@@ -1455,7 +1462,6 @@ async function balance_saveAccount() {
 async function balance_deleteAccount(id) {
     if (!confirm('\u00bfEliminar esta cuenta?')) return;
     balanceAccounts = balanceAccounts.filter(a => a.id !== id);
-    balance_resetDynamicAnchors();
     await balance_saveAccounts();
     balance_renderPanel();
     balance_updateKpi();
