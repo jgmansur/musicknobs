@@ -15,7 +15,7 @@ const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // 
 const SPREADSHEET_DEUDAS_ID = '1dKxhgqazskm15lx0f6FNCA0gpJ7i5glfxkusiH3b0Uk'; // Control de Deudas
 const SPREADSHEET_AUTOS_ID = SPREADSHEET_DEUDAS_ID; // Autos + Reparaciones live in same workbook
 const SPREADSHEET_ESTUDIO_ID = SPREADSHEET_DEUDAS_ID; // Estudio + Plugins in same workbook
-const APP_VERSION  = 'v7.1.7';
+const APP_VERSION  = 'v7.1.8';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -4798,6 +4798,9 @@ async function autos_loadData() {
         const hasFacturaColumn = boolAt7;
         const hasKilometrajeColumn = hasFacturaColumn || boolAt6 || (!boolAt5 && autos_parseMileage(r[4]) > 0);
         const shift = (hasKilometrajeColumn ? 1 : 0) + (hasFacturaColumn ? 1 : 0);
+        const looksLikeDate = /^\d{4}-\d{2}-\d{2}$/.test((r[11 + shift] || '').toString().trim());
+        const hasPolicyExtraColumns = r.length >= AUTOS_HEADERS.length || looksLikeDate || autos_parseMileage(r[12 + shift]) > 0;
+        const policyShift = hasPolicyExtraColumns ? 2 : 0;
         const facturaIndex = hasFacturaColumn ? 4 : -1;
         const kmIndex = hasFacturaColumn ? 5 : (hasKilometrajeColumn ? 4 : -1);
         return {
@@ -4815,23 +4818,23 @@ async function autos_loadData() {
             fotoAuto: r[8 + shift] || '',
             contratoPrestamo: r[9 + shift] || '',
             polizaSeguro: r[10 + shift] || '',
-            vencimientoPoliza: r[11 + shift] || '',
-            proximaRevisionKm: r[12 + shift] || '',
-            emergenciaInterior: r[13 + shift] || '',
-            emergenciaMetro: r[14 + shift] || '',
-            reporteSiniestros1: r[15 + shift] || '',
-            reporteSiniestros2: r[16 + shift] || '',
-            tarjetaCirculacionFrente: r[17 + shift] || '',
-            tarjetaCirculacionAtras: r[18 + shift] || '',
-            pagoTenencia: r[19 + shift] || '',
-            vencimientoTenencia: r[20 + shift] || '',
-            tablaPagos: r[21 + shift] || '',
-            tablaPagosSeguro: r[22 + shift] || '',
-            tipoLlantas: r[23 + shift] || '',
-            llantasFoto: r[24 + shift] || '',
-            certificadoPolarizado: r[25 + shift] || '',
-            facturaArchivo: r[26 + shift] || '',
-            polizaArchivo: r[27 + shift] || '',
+            vencimientoPoliza: hasPolicyExtraColumns ? (r[11 + shift] || '') : '',
+            proximaRevisionKm: hasPolicyExtraColumns ? (r[12 + shift] || '') : '',
+            emergenciaInterior: r[11 + shift + policyShift] || '',
+            emergenciaMetro: r[12 + shift + policyShift] || '',
+            reporteSiniestros1: r[13 + shift + policyShift] || '',
+            reporteSiniestros2: r[14 + shift + policyShift] || '',
+            tarjetaCirculacionFrente: r[15 + shift + policyShift] || '',
+            tarjetaCirculacionAtras: r[16 + shift + policyShift] || '',
+            pagoTenencia: r[17 + shift + policyShift] || '',
+            vencimientoTenencia: r[18 + shift + policyShift] || '',
+            tablaPagos: r[19 + shift + policyShift] || '',
+            tablaPagosSeguro: r[20 + shift + policyShift] || '',
+            tipoLlantas: r[21 + shift + policyShift] || '',
+            llantasFoto: r[22 + shift + policyShift] || '',
+            certificadoPolarizado: r[23 + shift + policyShift] || '',
+            facturaArchivo: r[24 + shift + policyShift] || '',
+            polizaArchivo: r[25 + shift + policyShift] || '',
         };
     }).filter(c => c.id && !/buik/i.test(`${c.marca} ${c.modelo}`));
 

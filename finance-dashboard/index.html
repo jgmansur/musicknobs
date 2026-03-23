@@ -13,7 +13,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <link rel="stylesheet" href="./style.css">
-    <script type="module" src="./main.js?v=7.1.7"></script>
+    <script type="module" src="./main.js?v=7.1.8"></script>
   </head>
   <body>
     <div id="app">
@@ -642,13 +642,14 @@
               <input id="autos-car-propietario" class="field-input" placeholder="Propietario">
               <select id="autos-car-seguro" class="field-input"><option value="1">Con seguro</option><option value="0">Sin seguro</option></select>
               <input id="autos-car-poliza" class="field-input" placeholder="No. Poliza">
-              <input id="autos-car-vencimiento-poliza" type="date" class="field-input" placeholder="Vencimiento poliza">
+              <input id="autos-car-vencimiento-poliza" type="date" class="field-input" title="Vencimiento de póliza del seguro" placeholder="Vencimiento de póliza">
               <input id="autos-car-proxima-revision-km" type="number" inputmode="numeric" class="field-input" placeholder="Próxima revisión (km)">
               <input id="autos-car-placa" class="field-input" placeholder="Placa">
               <input id="autos-car-vin" class="field-input" placeholder="VIN">
               <input id="autos-car-emergencia" class="field-input" placeholder="Telefono emergencia">
               <input id="autos-car-llantas" class="field-input" placeholder="Tipo de llantas">
             </div>
+            <div class="diff-label" style="margin-top:.35rem;">📅 Vencimiento póliza: selecciona la fecha en el calendario</div>
             <div class="autos-file-row" style="margin-top:.45rem;">
               <label for="autos-car-foto-file" class="secondary-btn autos-file-btn">📷 Seleccionar foto del auto</label>
               <input id="autos-car-foto-file" type="file" class="autos-file-native" accept="image/*">
