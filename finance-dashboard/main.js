@@ -15,7 +15,7 @@ const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // 
 const SPREADSHEET_DEUDAS_ID = '1dKxhgqazskm15lx0f6FNCA0gpJ7i5glfxkusiH3b0Uk'; // Control de Deudas
 const SPREADSHEET_AUTOS_ID = SPREADSHEET_DEUDAS_ID; // Autos + Reparaciones live in same workbook
 const SPREADSHEET_ESTUDIO_ID = SPREADSHEET_DEUDAS_ID; // Estudio + Plugins in same workbook
-const APP_VERSION  = 'v7.3.3';
+const APP_VERSION  = 'v7.3.4';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -7760,9 +7760,9 @@ const DOCS_MEMBERS = [
     { id: 'mariel', label: 'Mariel' },
     { id: 'roby', label: 'Roby' },
     { id: 'hans', label: 'Hans' },
-    { id: 'papa', label: 'Papa' },
-    { id: 'mama', label: 'Mama' },
-    { id: 'hermano', label: 'Hermano' },
+    { id: 'papa', label: 'Papá' },
+    { id: 'mama', label: 'Mamá' },
+    { id: 'hermano', label: 'Xero' },
     { id: 'mascotas', label: 'Mascotas' },
     { id: 'miscelaneo', label: 'Miscelaneo' },
 ];
@@ -8223,7 +8223,15 @@ async function documentos_seedProfiles() {
 }
 
 function documentos_getActiveProfileMember() {
-    return docsState.selectedMember === 'all' ? 'miscelaneo' : docsState.selectedMember;
+    return docsState.selectedMember === 'all' ? '' : docsState.selectedMember;
+}
+
+function documentos_formatBirthDate(dateStr) {
+    if (!dateStr) return '';
+    const d = new Date(dateStr);
+    if (Number.isNaN(d.getTime())) return dateStr;
+    const out = d.toLocaleDateString('es-MX', { day: 'numeric', month: 'long', year: 'numeric' });
+    return out.replace(/ de ([a-záéíóúñ]+)/i, (_, m) => ` de ${m.charAt(0).toUpperCase()}${m.slice(1)}`);
 }
 
 function documentos_calcAge(dateStr) {
@@ -8279,6 +8287,37 @@ function documentos_render() {
           `).join('')
         : '<div class="empty-state">Sin documentos en este filtro</div>';
 
+    const profileEditBtn = document.getElementById('docs-profile-edit');
+    if (docsState.selectedMember === 'all') {
+        if (profileEditBtn) profileEditBtn.disabled = true;
+        const members = DOCS_MEMBERS.filter((m) => m.id !== 'all').map((m) => {
+            const p = docsState.profiles.find((x) => x.member === m.id) || DOCS_PROFILE_DEFAULTS.find((x) => x.member === m.id) || { member: m.id, name: m.label, photoUrl: '' };
+            return { id: m.id, label: m.label, name: p.name || m.label, photoUrl: p.photoUrl || '' };
+        });
+        profileEl.innerHTML = `
+          <div class="docs-profile">
+            <div class="docs-meta">Selecciona un miembro por foto para ver su perfil:</div>
+            <div class="docs-avatar-strip">
+              ${members.map((m) => {
+                  const isMisc = m.id === 'miscelaneo';
+                  const avatar = isMisc
+                      ? '<div class="docs-avatar-icon">📄</div>'
+                      : `<img class="docs-avatar-img" src="${m.photoUrl || 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=120&h=120&fit=crop'}" alt="${m.name}">`;
+                  return `<button type="button" class="docs-avatar-btn" data-doc-pick-member="${m.id}">${avatar}<span>${m.label}</span></button>`;
+              }).join('')}
+            </div>
+          </div>
+        `;
+        profileEl.querySelectorAll('[data-doc-pick-member]').forEach((btn) => {
+            btn.addEventListener('click', () => {
+                docsState.selectedMember = btn.dataset.docPickMember || 'all';
+                documentos_render();
+            });
+        });
+        return;
+    }
+
+    if (profileEditBtn) profileEditBtn.disabled = false;
     const profile = docsState.profiles.find((p) => p.member === documentos_getActiveProfileMember()) || null;
     if (!profile) {
         profileEl.innerHTML = '<div class="empty-state">Sin perfil disponible</div>';
@@ -8291,7 +8330,7 @@ function documentos_render() {
         : '<div class="docs-meta">Sin vacunas registradas</div>';
     const photo = profile.photoUrl || 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=200&h=200&fit=crop';
     const infoRows = [];
-    if (profile.birthDate) infoRows.push(`<div class="docs-meta">Nacimiento: ${profile.birthDate}</div>`);
+    if (profile.birthDate) infoRows.push(`<div class="docs-meta">Nacimiento: ${documentos_formatBirthDate(profile.birthDate)}</div>`);
     if (profile.birthWeight) infoRows.push(`<div class="docs-meta">Peso al nacer: ${profile.birthWeight}</div>`);
     if (profile.curp) infoRows.push(`<div class="docs-copy" data-copy="${profile.curp}">CURP: ${profile.curp} (click para copiar)</div>`);
     if (profile.passportMx) infoRows.push(`<div class="docs-copy" data-copy="${profile.passportMx}">Pasaporte MX: ${profile.passportMx} (click para copiar)</div>`);

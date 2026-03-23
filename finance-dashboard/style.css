@@ -1337,6 +1337,46 @@ select.field-input { background-image: url("data:image/svg+xml,%3Csvg xmlns='htt
   color: #93c5fd;
 }
 
+.docs-avatar-strip {
+  display: flex;
+  gap: .6rem;
+  overflow-x: auto;
+  padding-bottom: .2rem;
+}
+
+.docs-avatar-btn {
+  border: 1px solid rgba(255,255,255,.1);
+  background: rgba(255,255,255,.03);
+  border-radius: 999px;
+  width: 74px;
+  min-width: 74px;
+  height: 98px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: .35rem;
+  color: var(--text-main);
+  font-size: .68rem;
+}
+
+.docs-avatar-img,
+.docs-avatar-icon {
+  width: 46px;
+  height: 46px;
+  border-radius: 999px;
+  object-fit: cover;
+  border: 1px solid rgba(255,255,255,.15);
+}
+
+.docs-avatar-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255,255,255,.08);
+  font-size: 1.1rem;
+}
+
 .checkbox-item {
   display: flex;
   align-items: center;
