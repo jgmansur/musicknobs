@@ -15,7 +15,7 @@ const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // 
 const SPREADSHEET_DEUDAS_ID = '1dKxhgqazskm15lx0f6FNCA0gpJ7i5glfxkusiH3b0Uk'; // Control de Deudas
 const SPREADSHEET_AUTOS_ID = SPREADSHEET_DEUDAS_ID; // Autos + Reparaciones live in same workbook
 const SPREADSHEET_ESTUDIO_ID = SPREADSHEET_DEUDAS_ID; // Estudio + Plugins in same workbook
-const APP_VERSION  = 'v7.2.9';
+const APP_VERSION  = 'v7.2.10';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -7034,6 +7034,7 @@ function propiedades_render() {
     const totalEl = document.getElementById('prop-total-valor');
     const totalGlobalEl = document.getElementById('prop-total-valor-total');
     const deudaEl = document.getElementById('prop-total-deudas');
+    const deudaGlobalEl = document.getElementById('prop-total-deudas-total');
     const fijosEl = document.getElementById('prop-total-fijos');
     const ingresoEl = document.getElementById('prop-total-ingresos');
     if (!tabsEl || !detailEl) return;
@@ -7041,11 +7042,13 @@ function propiedades_render() {
     const totalValor = propiedadesState.items.reduce((sum, p) => sum + propiedades_valorComercialCalculado(p), 0);
     const totalValorMiParte = propiedadesState.items.reduce((sum, p) => sum + (propiedades_valorComercialCalculado(p) * (propiedades_miParticipacionPct(p) / 100)), 0);
     const totalDeuda = propiedadesState.items.reduce((sum, p) => sum + propiedades_totalDeuda(p), 0);
+    const totalDeudaMiParte = propiedadesState.items.reduce((sum, p) => sum + propiedades_deudaMiParte(p), 0);
     const totalFijos = propiedadesState.items.reduce((sum, p) => sum + Math.max(0, parseSheetValue(p.predialMensual)) + Math.max(0, parseSheetValue(p.mantenimientoMensual)), 0);
     const totalIngresos = propiedadesState.items.reduce((sum, p) => sum + propiedades_ingresoMiParte(p), 0);
     if (totalEl) totalEl.innerText = formatCurrency(totalValorMiParte);
     if (totalGlobalEl) totalGlobalEl.innerText = `Total global: ${formatCurrency(totalValor)}`;
-    if (deudaEl) deudaEl.innerText = totalDeuda > 0 ? `-${formatCurrency(totalDeuda)}` : formatCurrency(0);
+    if (deudaEl) deudaEl.innerText = totalDeudaMiParte > 0 ? `-${formatCurrency(totalDeudaMiParte)}` : formatCurrency(0);
+    if (deudaGlobalEl) deudaGlobalEl.innerText = `Total global: ${formatCurrency(totalDeuda)}`;
     if (fijosEl) fijosEl.innerText = formatCurrency(totalFijos);
     if (ingresoEl) ingresoEl.innerText = `+${formatCurrency(totalIngresos)}`;
 
@@ -7060,6 +7063,7 @@ function propiedades_render() {
         return;
     }
     const debtTotal = propiedades_totalDeuda(selected);
+    const miDeuda = propiedades_deudaMiParte(selected);
     const ingresoTotal = propiedades_totalIngreso(selected);
     const miIngreso = propiedades_ingresoMiParte(selected);
     const miPorcentaje = propiedades_miParticipacionPct(selected);
@@ -7073,10 +7077,18 @@ function propiedades_render() {
         }).join('')
         : '<div class="empty-state" style="padding:.6rem 0;">Sin dueños capturados</div>';
     const debtsRows = (selected.deudas || []).length
-        ? selected.deudas.map((d) => `<div class="plan-expense-row"><div><div class="plan-expense-title">${d.concepto || 'Deuda'}</div></div><div class="plan-expense-amount text-danger">-${formatCurrency(parseSheetValue(d.monto))}</div></div>`).join('')
+        ? selected.deudas.map((d) => {
+            const total = Math.max(0, parseSheetValue(d.monto));
+            const mine = total * (miPorcentaje / 100);
+            return `<div class="plan-expense-row"><div><div class="plan-expense-title">${d.concepto || 'Deuda'}</div><div class="diff-label">Total: ${formatCurrency(total)}</div></div><div class="plan-expense-amount text-danger">-${formatCurrency(mine)}</div></div>`;
+        }).join('')
         : '<div class="empty-state" style="padding:.6rem 0;">Sin deudas de propiedad</div>';
     const incomeRows = (selected.ingresos || []).length
-        ? selected.ingresos.map((d) => `<div class="plan-expense-row"><div><div class="plan-expense-title">${d.concepto || 'Ingreso'}</div></div><div class="plan-expense-amount text-success">+${formatCurrency(parseSheetValue(d.monto))}</div></div>`).join('')
+        ? selected.ingresos.map((d) => {
+            const total = Math.max(0, parseSheetValue(d.monto));
+            const mine = total * (miPorcentaje / 100);
+            return `<div class="plan-expense-row"><div><div class="plan-expense-title">${d.concepto || 'Ingreso'}</div><div class="diff-label">Total: ${formatCurrency(total)}</div></div><div class="plan-expense-amount text-success">+${formatCurrency(mine)}</div></div>`;
+        }).join('')
         : '<div class="empty-state" style="padding:.6rem 0;">Sin ingresos de propiedad</div>';
 
     const docs = [
@@ -7108,6 +7120,7 @@ function propiedades_render() {
             <div class="plan-bucket-row"><span>Valor investigado</span><strong>${formatCurrency(parseSheetValue(selected.valorInvestigado))}</strong></div>
             <div class="plan-bucket-row"><span>Predial mensual</span><strong class="text-danger">-${formatCurrency(parseSheetValue(selected.predialMensual))}</strong></div>
             <div class="plan-bucket-row"><span>Mantenimiento mensual</span><strong class="text-danger">-${formatCurrency(parseSheetValue(selected.mantenimientoMensual))}</strong></div>
+            <div class="plan-bucket-row"><span>Mi parte deuda</span><strong class="text-danger">-${formatCurrency(miDeuda)}</strong></div>
             <div class="plan-bucket-row"><span>Deuda total</span><strong class="text-danger">-${formatCurrency(debtTotal)}</strong></div>
             <div class="plan-bucket-row"><span>Ingreso total</span><strong class="text-success">+${formatCurrency(ingresoTotal)}</strong></div>
             <div class="plan-bucket-row"><span>Mi porcentaje</span><strong>${miPorcentaje.toFixed(2)}%</strong></div>
@@ -7395,6 +7408,11 @@ function propiedades_totalDeuda(item) {
     return (item.deudas || []).reduce((sum, d) => sum + Math.max(0, parseSheetValue(d.monto)), 0);
 }
 
+function propiedades_deudaMiParte(item) {
+    const pct = propiedades_miParticipacionPct(item);
+    return propiedades_totalDeuda(item) * (pct / 100);
+}
+
 function propiedades_totalIngreso(item) {
     return (item.ingresos || []).reduce((sum, d) => sum + Math.max(0, parseSheetValue(d.monto)), 0);
 }
@@ -7589,11 +7607,12 @@ async function propiedades_getDeudasSheetName() {
 async function propiedades_syncDeudas(item) {
     await propiedades_removeDeudasByPrefix(`[PROP-DEBT:${item.id}:`);
     const sheetName = await propiedades_getDeudasSheetName();
+    const miPct = propiedades_miParticipacionPct(item);
     const deudas = (item.deudas || []).filter((d) => parseSheetValue(d.monto) > 0 && (d.concepto || '').trim());
     if (!deudas.length) return;
     const rows = deudas.map((d, idx) => [
-        `${item.nombre} - ${d.concepto} [PROP-DEBT:${item.id}:${idx + 1}]`,
-        Math.abs(parseSheetValue(d.monto)),
+        `${item.nombre} - ${d.concepto} (mi parte) [PROP-DEBT:${item.id}:${idx + 1}]`,
+        Math.abs(parseSheetValue(d.monto)) * (miPct / 100),
     ]);
     await sheetsAppend(SPREADSHEET_DEUDAS_ID, `${sheetName}!A:B`, rows);
 }
