@@ -15,7 +15,7 @@ const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // 
 const SPREADSHEET_DEUDAS_ID = '1dKxhgqazskm15lx0f6FNCA0gpJ7i5glfxkusiH3b0Uk'; // Control de Deudas
 const SPREADSHEET_AUTOS_ID = SPREADSHEET_DEUDAS_ID; // Autos + Reparaciones live in same workbook
 const SPREADSHEET_ESTUDIO_ID = SPREADSHEET_DEUDAS_ID; // Estudio + Plugins in same workbook
-const APP_VERSION  = 'v7.3.1';
+const APP_VERSION  = 'v7.3.2';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -7763,16 +7763,20 @@ const DOCS_MEMBERS = [
     { id: 'papa', label: 'Papa' },
     { id: 'mama', label: 'Mama' },
     { id: 'hermano', label: 'Hermano' },
+    { id: 'mascotas', label: 'Mascotas' },
+    { id: 'miscelaneo', label: 'Miscelaneo' },
 ];
 
 const DOCS_PROFILE_DEFAULTS = [
-    { member: 'yo', name: 'Juan G Mansur Gonzalez', birthDate: '', birthWeight: '', curp: '', passportMx: '', passportUs: '', visaUs: '', photoUrl: '', vaccinesJson: '[]', notes: '' },
-    { member: 'mariel', name: 'Mariel de la Rosa', birthDate: '', birthWeight: '', curp: '', passportMx: '', passportUs: '', visaUs: '', photoUrl: '', vaccinesJson: '[]', notes: '' },
-    { member: 'roby', name: 'Roby Mansur de la Rosa', birthDate: '', birthWeight: '', curp: '', passportMx: '', passportUs: '', visaUs: '', photoUrl: '', vaccinesJson: JSON.stringify([{ key: 'BCG', done: true }, { key: 'Hepatitis B', done: true }, { key: 'Pentavalente', done: true }, { key: 'Triple viral', done: true }, { key: 'Influenza', done: true }]), notes: 'Cartilla registrada en documentos.' },
-    { member: 'hans', name: 'Hans Mansur de la Rosa', birthDate: '', birthWeight: '', curp: '', passportMx: '', passportUs: '', visaUs: '', photoUrl: '', vaccinesJson: JSON.stringify([{ key: 'BCG', done: true }, { key: 'Hepatitis B', done: true }, { key: 'Pentavalente', done: true }, { key: 'Triple viral', done: true }, { key: 'Influenza', done: true }]), notes: 'Vacunacion base marcada como completa.' },
-    { member: 'papa', name: 'Juan Guillermo Mansur Arzola', birthDate: '', birthWeight: '', curp: '', passportMx: '', passportUs: '', visaUs: '', photoUrl: '', vaccinesJson: '[]', notes: '' },
-    { member: 'mama', name: 'Eva Lucila Gonzalez Cruz', birthDate: '', birthWeight: '', curp: '', passportMx: '', passportUs: '', visaUs: '', photoUrl: '', vaccinesJson: '[]', notes: '' },
-    { member: 'hermano', name: 'Jeronimo Jose Mansur Gonzalez', birthDate: '', birthWeight: '', curp: '', passportMx: '', passportUs: '', visaUs: '', photoUrl: '', vaccinesJson: '[]', notes: '' },
+    { member: 'yo', name: 'Juan G Mansur Gonzalez', birthDate: '1979-05-08', birthWeight: '', curp: 'MAGJ790508HTSNNN05', passportMx: 'N08029798', passportUs: '642824469', visaUs: '', photoUrl: '', vaccinesJson: '[]', notes: '' },
+    { member: 'mariel', name: 'Mariel de la Rosa Guajardo', birthDate: '1982-06-18', birthWeight: '', curp: 'ROGM820618MNLSJR01', passportMx: 'G29636637', passportUs: '', visaUs: 'G528207', photoUrl: '', vaccinesJson: '[]', notes: '' },
+    { member: 'roby', name: 'Roberta Mansur de la Rosa', birthDate: '2016-08-28', birthWeight: '', curp: 'MARR160828MTSNSBA0', passportMx: 'N08029896', passportUs: 'A35067257', visaUs: '', photoUrl: '', vaccinesJson: JSON.stringify([{ key: 'BCG', done: true }, { key: 'Hepatitis B', done: true }, { key: 'Pentavalente', done: true }, { key: 'Triple viral', done: true }, { key: 'Influenza', done: true }]), notes: 'Cartilla registrada en documentos.' },
+    { member: 'hans', name: 'Hans Mansur de la Rosa', birthDate: '2018-08-27', birthWeight: '', curp: 'MARH180827HTSNSNA2', passportMx: 'N08029869', passportUs: 'A36277749', visaUs: '', photoUrl: '', vaccinesJson: JSON.stringify([{ key: 'BCG', done: true }, { key: 'Hepatitis B', done: true }, { key: 'Pentavalente', done: true }, { key: 'Triple viral', done: true }, { key: 'Influenza', done: true }]), notes: 'Vacunacion base marcada como completa.' },
+    { member: 'papa', name: 'Juan Guillermo Mansur Arzola', birthDate: '1949-12-11', birthWeight: '', curp: 'MAAJ491211HTSNRN07', passportMx: '', passportUs: '', visaUs: '', photoUrl: '', vaccinesJson: '[]', notes: '' },
+    { member: 'mama', name: 'Eva Lucila Gonzalez Cruz', birthDate: '1957-04-04', birthWeight: '', curp: 'GOCE570404MTSNRV01', passportMx: '', passportUs: '', visaUs: '', photoUrl: '', vaccinesJson: '[]', notes: '' },
+    { member: 'hermano', name: 'Jeronimo Jose Mansur Gonzalez', birthDate: '1983-04-20', birthWeight: '', curp: 'MAGJ830420HTSNNR07', passportMx: '', passportUs: '', visaUs: '', photoUrl: '', vaccinesJson: '[]', notes: '' },
+    { member: 'mascotas', name: 'Mascotas', birthDate: '', birthWeight: '', curp: '', passportMx: '', passportUs: '', visaUs: '', photoUrl: '', vaccinesJson: '[]', notes: 'Documentos de Tocho, Pachanga y otras mascotas.' },
+    { member: 'miscelaneo', name: 'Documentos Miscelaneo', birthDate: '', birthWeight: '', curp: '', passportMx: '', passportUs: '', visaUs: '', photoUrl: '', vaccinesJson: '[]', notes: 'Documentos importantes sin titular especifico.' },
 ];
 
 const docsState = {
@@ -7862,6 +7866,8 @@ async function documentos_cargarVista() {
             await documentos_seedProfiles();
             await documentos_loadData();
         }
+        const upgraded = await documentos_upgradeData();
+        if (upgraded) await documentos_loadData();
         documentos_render();
     } catch (e) {
         console.error('documentos_cargarVista:', e);
@@ -7904,12 +7910,61 @@ async function documentos_loadData() {
     })).filter((x) => x.member);
 }
 
+async function documentos_upgradeData() {
+    let docsChanged = false;
+    let profilesChanged = false;
+
+    const validMembers = new Set(DOCS_MEMBERS.map((m) => m.id));
+    docsState.items = docsState.items.map((d) => {
+        const inferred = documentos_guessMemberFromName(`${d.title} ${d.notes}`);
+        const member = validMembers.has(d.member) ? d.member : inferred;
+        if (member !== d.member) docsChanged = true;
+        if (inferred === 'mascotas' && d.member !== 'mascotas') {
+            docsChanged = true;
+            return { ...d, member: 'mascotas' };
+        }
+        return member !== d.member ? { ...d, member } : d;
+    });
+
+    const byMember = new Map(docsState.profiles.map((p) => [p.member, p]));
+    DOCS_PROFILE_DEFAULTS.forEach((def) => {
+        const current = byMember.get(def.member);
+        if (!current) {
+            docsState.profiles.push({ ...def, updatedAt: normalizeDateString(new Date().toLocaleDateString('en-CA')) });
+            profilesChanged = true;
+            return;
+        }
+        const merged = { ...current };
+        ['name', 'birthDate', 'birthWeight', 'curp', 'passportMx', 'passportUs', 'visaUs', 'photoUrl', 'vaccinesJson', 'notes'].forEach((k) => {
+            if (!(merged[k] || '').toString().trim() && (def[k] || '').toString().trim()) {
+                merged[k] = def[k];
+                profilesChanged = true;
+            }
+        });
+        byMember.set(def.member, merged);
+    });
+    if (profilesChanged) {
+        docsState.profiles = [...byMember.values()];
+    }
+
+    if (docsChanged) await documentos_saveRows();
+    if (profilesChanged) {
+        const letter = autos_colLetter(DOCS_PROFILE_HEADERS.length);
+        await sheetsUpdate(SPREADSHEET_AUTOS_ID, `${DOCS_PROFILE_SHEET}!A1:${letter}1`, [DOCS_PROFILE_HEADERS]);
+        const rows = docsState.profiles.map((p) => [p.member, p.name, p.birthDate, p.birthWeight, p.curp, p.passportMx, p.passportUs, p.visaUs, p.photoUrl, p.vaccinesJson, p.notes, p.updatedAt || normalizeDateString(new Date().toLocaleDateString('en-CA'))]);
+        if (rows.length) await sheetsUpdate(SPREADSHEET_AUTOS_ID, `${DOCS_PROFILE_SHEET}!A2:${letter}${1 + rows.length}`, rows);
+        await sheetsClear(SPREADSHEET_AUTOS_ID, `${DOCS_PROFILE_SHEET}!A${2 + rows.length}:AZ`);
+    }
+    return docsChanged || profilesChanged;
+}
+
 function documentos_memberLabel(id) {
     return DOCS_MEMBERS.find((x) => x.id === id)?.label || id;
 }
 
 function documentos_guessMemberFromName(name) {
     const n = (name || '').toLowerCase();
+    if (n.includes('tocho') || n.includes('pachanga') || n.includes('pedigree') || n.includes('mascota')) return 'mascotas';
     if (n.includes('mariel')) return 'mariel';
     if (n.includes('roberta') || n.includes('roby')) return 'roby';
     if (n.includes('hans')) return 'hans';
@@ -7917,7 +7972,7 @@ function documentos_guessMemberFromName(name) {
     if (n.includes('hermano') || n.includes('xero') || n.includes('jeronimo') || n.includes('jota')) return 'hermano';
     if (n.includes('papa') || n.includes('arzola') || n.includes('dr. juan') || n.includes('juan mansur arzola')) return 'papa';
     if (n.includes('juan g mansur') || n.includes('mansur glz') || n.includes('social security')) return 'yo';
-    return 'yo';
+    return 'miscelaneo';
 }
 
 function documentos_guessTypeFromName(name) {
@@ -8158,7 +8213,7 @@ async function documentos_seedProfiles() {
 }
 
 function documentos_getActiveProfileMember() {
-    return docsState.selectedMember === 'all' ? 'yo' : docsState.selectedMember;
+    return docsState.selectedMember === 'all' ? 'miscelaneo' : docsState.selectedMember;
 }
 
 function documentos_calcAge(dateStr) {
@@ -8224,6 +8279,15 @@ function documentos_render() {
         ? vacunas.map((v) => `<div class="docs-meta">${v.done ? '✅' : '⬜️'} ${v.key || ''}</div>`).join('')
         : '<div class="docs-meta">Sin vacunas registradas</div>';
     const photo = profile.photoUrl || 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=200&h=200&fit=crop';
+    const infoRows = [];
+    if (profile.birthDate) infoRows.push(`<div class="docs-meta">Nacimiento: ${profile.birthDate}</div>`);
+    if (profile.birthWeight) infoRows.push(`<div class="docs-meta">Peso al nacer: ${profile.birthWeight}</div>`);
+    if (profile.curp) infoRows.push(`<div class="docs-copy" data-copy="${profile.curp}">CURP: ${profile.curp} (click para copiar)</div>`);
+    if (profile.passportMx) infoRows.push(`<div class="docs-copy" data-copy="${profile.passportMx}">Pasaporte MX: ${profile.passportMx} (click para copiar)</div>`);
+    if (profile.passportUs) infoRows.push(`<div class="docs-copy" data-copy="${profile.passportUs}">Pasaporte USA: ${profile.passportUs} (click para copiar)</div>`);
+    if (profile.visaUs) infoRows.push(`<div class="docs-copy" data-copy="${profile.visaUs}">Visa USA: ${profile.visaUs} (click para copiar)</div>`);
+    const vacunasSection = Array.isArray(vacunas) && vacunas.length ? `<div class="field-label">Vacunacion</div>${vacunasHtml}` : '';
+    const notesRow = profile.notes ? `<div class="docs-meta">${profile.notes}</div>` : '';
     profileEl.innerHTML = `
       <div class="docs-profile">
         <div class="docs-profile-top">
@@ -8233,15 +8297,9 @@ function documentos_render() {
             <div class="docs-meta">${documentos_memberLabel(profile.member)} · ${documentos_calcAge(profile.birthDate)}</div>
           </div>
         </div>
-        <div class="docs-meta">Nacimiento: ${profile.birthDate || '-'}</div>
-        <div class="docs-meta">Peso al nacer: ${profile.birthWeight || '-'}</div>
-        <div class="docs-copy" data-copy="${profile.curp || ''}">CURP: ${profile.curp || '-'} (click para copiar)</div>
-        <div class="docs-copy" data-copy="${profile.passportMx || ''}">Pasaporte MX: ${profile.passportMx || '-'} (click para copiar)</div>
-        <div class="docs-copy" data-copy="${profile.passportUs || ''}">Pasaporte USA: ${profile.passportUs || '-'} (click para copiar)</div>
-        <div class="docs-copy" data-copy="${profile.visaUs || ''}">Visa USA: ${profile.visaUs || '-'} (click para copiar)</div>
-        <div class="field-label">Vacunacion</div>
-        ${vacunasHtml}
-        <div class="docs-meta">${profile.notes || ''}</div>
+        ${infoRows.join('')}
+        ${vacunasSection}
+        ${notesRow}
       </div>
     `;
 }
