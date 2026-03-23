@@ -12,7 +12,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <script type="module" crossorigin src="./assets/index-DRo7GRze.js"></script>
+    <script type="module" crossorigin src="./assets/index-SaWJuLuv.js"></script>
     <link rel="stylesheet" crossorigin href="./assets/index-DRyOt-pj.css">
   </head>
   <body>
@@ -949,33 +949,25 @@
                 <span id="docs-subtitle" class="diff-label">Archivador familiar</span>
               </div>
             </div>
-            <div class="kpi-card glass">
-              <div class="kpi-icon" style="background:rgba(59,130,246,.14);color:#3b82f6"><i data-lucide="credit-card"></i></div>
-              <div class="kpi-data">
-                <span class="label">Perfil activo</span>
-                <h2 id="docs-active-member" class="text-main">Todos</h2>
-                <span class="diff-label">Click para copiar datos sensibles</span>
-              </div>
-            </div>
           </section>
 
           <div class="main-content-row">
-            <section class="glass" style="display:grid;gap:.65rem;align-content:start;">
-              <div class="section-header" style="display:flex;justify-content:space-between;align-items:center;gap:.5rem;">
-                <h3>Archivador</h3>
-                <button id="docs-btn-add" class="secondary-btn" style="padding:.45rem .7rem;">+ Documento</button>
-              </div>
-              <div id="docs-member-tabs" class="estudio-subtabs" style="display:flex;overflow:auto;max-width:100%;"></div>
-              <input id="docs-search" type="search" class="field-input" placeholder="Buscar por nombre, tipo, etiqueta...">
-              <div id="docs-list" class="accounts-list"></div>
-            </section>
-
             <section class="glass" style="display:grid;gap:.7rem;align-content:start;">
               <div class="section-header" style="display:flex;justify-content:space-between;align-items:center;gap:.5rem;">
                 <h3>Perfil Familiar</h3>
                 <button id="docs-profile-edit" class="mini-btn">✏️ Editar perfil</button>
               </div>
+              <div id="docs-member-tabs" class="estudio-subtabs" style="display:flex;overflow:auto;max-width:100%;"></div>
               <div id="docs-profile-card"></div>
+            </section>
+
+            <section class="glass" style="display:grid;gap:.65rem;align-content:start;">
+              <div class="section-header" style="display:flex;justify-content:space-between;align-items:center;gap:.5rem;">
+                <h3>Archivador</h3>
+                <button id="docs-btn-add" class="secondary-btn" style="padding:.45rem .7rem;">+ Documento</button>
+              </div>
+              <input id="docs-search" type="search" class="field-input" placeholder="Buscar por nombre, tipo, etiqueta...">
+              <div id="docs-list" class="accounts-list"></div>
             </section>
           </div>
         </main>
@@ -992,7 +984,8 @@
             <select id="docs-member" class="field-input"></select>
             <input id="docs-title" class="field-input" style="margin-top:.45rem;" placeholder="Nombre del documento">
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:.55rem;margin-top:.45rem;">
-              <input id="docs-type" class="field-input" placeholder="Tipo (Pasaporte, CURP...)">
+              <select id="docs-type-select" class="field-input"></select>
+              <input id="docs-type-new" class="field-input" placeholder="Nueva categoria (opcional)">
               <input id="docs-tags" class="field-input" placeholder="Etiquetas separadas por coma">
             </div>
             <textarea id="docs-notes" class="field-input" rows="2" style="margin-top:.45rem;" placeholder="Notas"></textarea>
@@ -1003,6 +996,21 @@
             <div class="autos-file-row" style="margin-top:.45rem;">
               <label for="docs-upload-file" class="secondary-btn autos-file-btn">📁 Galeria / Archivo</label>
               <input id="docs-upload-file" type="file" class="autos-file-native" accept="image/*,application/pdf">
+            </div>
+            <div class="autos-file-row" style="margin-top:.45rem;">
+              <label for="docs-upload-scan" class="secondary-btn autos-file-btn">📄 Escaneo multipagina</label>
+              <input id="docs-upload-scan" type="file" class="autos-file-native" accept="image/*,application/pdf" multiple capture="environment">
+            </div>
+            <div id="docs-crop-tools" class="hidden" style="display:grid;gap:.4rem;margin-top:.45rem;">
+              <div class="diff-label">Recorte rapido antes de subir:</div>
+              <div style="display:flex;gap:.35rem;flex-wrap:wrap;">
+                <button type="button" class="mini-btn" data-doc-crop="carta">Carta</button>
+                <button type="button" class="mini-btn" data-doc-crop="oficio">Oficio</button>
+                <button type="button" class="mini-btn" data-doc-crop="credencial">Credencial</button>
+                <button type="button" class="mini-btn" data-doc-crop="libre">Libre</button>
+                <button type="button" id="docs-crop-upload" class="mini-btn">⬆️ Subir recorte</button>
+              </div>
+              <img id="docs-crop-preview" alt="Preview recorte" style="width:100%;max-height:200px;object-fit:contain;border-radius:.6rem;background:rgba(255,255,255,.04);">
             </div>
             <div id="docs-file-feedback" class="diff-label" style="margin-top:.4rem;"></div>
             <input id="docs-url" class="field-input" style="margin-top:.45rem;" placeholder="URL en Drive">
@@ -1030,6 +1038,24 @@
               <input id="docs-profile-visa" class="field-input" placeholder="Visa USA">
             </div>
             <input id="docs-profile-photo" class="field-input" style="margin-top:.45rem;" placeholder="URL foto">
+            <div class="autos-file-row" style="margin-top:.45rem;">
+              <label for="docs-profile-upload-camera" class="secondary-btn autos-file-btn">📷 Foto camara</label>
+              <input id="docs-profile-upload-camera" type="file" class="autos-file-native" accept="image/*" capture="environment">
+            </div>
+            <div class="autos-file-row" style="margin-top:.45rem;">
+              <label for="docs-profile-upload-gallery" class="secondary-btn autos-file-btn">🖼️ Foto galeria</label>
+              <input id="docs-profile-upload-gallery" type="file" class="autos-file-native" accept="image/*">
+            </div>
+            <div class="autos-file-row" style="margin-top:.45rem;">
+              <label for="docs-profile-upload-file" class="secondary-btn autos-file-btn">📁 Foto archivo</label>
+              <input id="docs-profile-upload-file" type="file" class="autos-file-native" accept="image/*">
+            </div>
+            <div id="docs-profile-crop-tools" class="hidden" style="display:grid;gap:.4rem;margin-top:.45rem;">
+              <div class="diff-label">Recorte cuadrado de perfil:</div>
+              <button type="button" id="docs-profile-crop-upload" class="mini-btn" style="justify-self:start;">⬆️ Subir foto recortada</button>
+              <img id="docs-profile-crop-preview" alt="Preview foto perfil" style="width:100%;max-height:200px;object-fit:contain;border-radius:.6rem;background:rgba(255,255,255,.04);">
+            </div>
+            <div id="docs-profile-file-feedback" class="diff-label" style="margin-top:.35rem;"></div>
             <textarea id="docs-profile-notes" class="field-input" rows="2" style="margin-top:.45rem;" placeholder="Notas"></textarea>
             <div class="field-label" style="margin-top:.5rem;">Vacunacion (hijos)</div>
             <label class="checkbox-item"><input id="docs-vac-bcg" type="checkbox"> BCG</label>

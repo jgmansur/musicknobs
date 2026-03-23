@@ -15,7 +15,7 @@ const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // 
 const SPREADSHEET_DEUDAS_ID = '1dKxhgqazskm15lx0f6FNCA0gpJ7i5glfxkusiH3b0Uk'; // Control de Deudas
 const SPREADSHEET_AUTOS_ID = SPREADSHEET_DEUDAS_ID; // Autos + Reparaciones live in same workbook
 const SPREADSHEET_ESTUDIO_ID = SPREADSHEET_DEUDAS_ID; // Estudio + Plugins in same workbook
-const APP_VERSION  = 'v7.3.0';
+const APP_VERSION  = 'v7.3.1';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -7782,6 +7782,11 @@ const docsState = {
     search: '',
     loaded: false,
     loading: false,
+    pendingImageFile: null,
+    pendingCropPreset: 'libre',
+    pendingCroppedFile: null,
+    profilePendingImageFile: null,
+    profilePendingCroppedFile: null,
 };
 
 function documentos_bindEvents() {
@@ -7795,9 +7800,18 @@ function documentos_bindEvents() {
     });
     document.getElementById('docs-upload-camera')?.addEventListener('change', () => documentos_uploadFromInput('docs-upload-camera'));
     document.getElementById('docs-upload-file')?.addEventListener('change', () => documentos_uploadFromInput('docs-upload-file'));
+    document.getElementById('docs-upload-scan')?.addEventListener('change', documentos_uploadScanMulti);
+    document.querySelectorAll('[data-doc-crop]').forEach((btn) => {
+        btn.addEventListener('click', () => documentos_applyCropPreset(btn.dataset.docCrop || 'libre'));
+    });
+    document.getElementById('docs-crop-upload')?.addEventListener('click', documentos_uploadPreparedImage);
     document.getElementById('docs-profile-edit')?.addEventListener('click', documentos_openProfileSheet);
     document.getElementById('docs-profile-sheet-overlay')?.addEventListener('click', () => document.getElementById('docs-profile-sheet').classList.add('hidden'));
     document.getElementById('docs-profile-save')?.addEventListener('click', documentos_saveProfile);
+    document.getElementById('docs-profile-upload-camera')?.addEventListener('change', () => documentos_prepareProfilePhotoCropFromInput('docs-profile-upload-camera'));
+    document.getElementById('docs-profile-upload-gallery')?.addEventListener('change', () => documentos_prepareProfilePhotoCropFromInput('docs-profile-upload-gallery'));
+    document.getElementById('docs-profile-upload-file')?.addEventListener('change', () => documentos_prepareProfilePhotoCropFromInput('docs-profile-upload-file'));
+    document.getElementById('docs-profile-crop-upload')?.addEventListener('click', documentos_uploadPreparedProfilePhoto);
 
     document.getElementById('docs-list')?.addEventListener('click', (e) => {
         const editBtn = e.target.closest('[data-doc-edit-id]');
@@ -7824,6 +7838,12 @@ function documentos_bindEvents() {
         } catch {
             showToast('⚠️ No se pudo copiar');
         }
+    });
+
+    document.getElementById('docs-type-new')?.addEventListener('input', () => {
+        const val = (document.getElementById('docs-type-new').value || '').trim();
+        const sel = document.getElementById('docs-type-select');
+        if (sel && val) sel.value = '__new__';
     });
 }
 
@@ -7926,6 +7946,176 @@ function documentos_parseDriveId(url) {
     return m2 ? m2[1] : '';
 }
 
+function documentos_collectTypeOptions() {
+    const preset = ['Documento', 'Pasaporte', 'CURP', 'Acta', 'Visa', 'INE', 'Certificado', 'Poliza', 'Cartilla'];
+    const dynamic = [...new Set(docsState.items.map((x) => (x.type || '').trim()).filter(Boolean))];
+    return [...new Set([...preset, ...dynamic])].sort((a, b) => a.localeCompare(b, 'es', { sensitivity: 'base' }));
+}
+
+function documentos_fillTypeSelect(selectedType = '') {
+    const sel = document.getElementById('docs-type-select');
+    if (!sel) return;
+    const options = documentos_collectTypeOptions();
+    const has = options.includes(selectedType);
+    sel.innerHTML = [
+        ...options.map((t) => `<option value="${t}">${t}</option>`),
+        '<option value="__new__">+ Nueva categoria...</option>',
+    ].join('');
+    sel.value = selectedType ? (has ? selectedType : '__new__') : 'Documento';
+}
+
+function documentos_getSelectedType() {
+    const sel = document.getElementById('docs-type-select');
+    const fresh = (document.getElementById('docs-type-new')?.value || '').trim();
+    if (!sel) return fresh || 'Documento';
+    if (sel.value === '__new__') return fresh || 'Documento';
+    return (sel.value || '').trim() || fresh || 'Documento';
+}
+
+function documentos_showCropTools(show) {
+    const box = document.getElementById('docs-crop-tools');
+    if (!box) return;
+    box.classList.toggle('hidden', !show);
+}
+
+async function documentos_prepareImageForCrop(file) {
+    docsState.pendingImageFile = file;
+    docsState.pendingCroppedFile = null;
+    docsState.pendingCropPreset = 'libre';
+    const reader = new FileReader();
+    reader.onload = () => {
+        const img = document.getElementById('docs-crop-preview');
+        if (img) img.src = String(reader.result || '');
+        documentos_showCropTools(true);
+        document.getElementById('docs-file-feedback').innerText = 'Ajusta recorte y presiona "Subir recorte"';
+    };
+    reader.readAsDataURL(file);
+}
+
+async function documentos_cropFileToPreset(file, preset) {
+    if (!file || preset === 'libre') return file;
+    const ratioMap = { carta: 8.5 / 11, oficio: 8.5 / 13, credencial: 85.6 / 54 };
+    const targetRatio = ratioMap[preset];
+    if (!targetRatio) return file;
+    const bitmap = await createImageBitmap(file);
+    const srcRatio = bitmap.width / bitmap.height;
+    let sx = 0; let sy = 0; let sw = bitmap.width; let sh = bitmap.height;
+    if (srcRatio > targetRatio) {
+        sw = Math.round(bitmap.height * targetRatio);
+        sx = Math.round((bitmap.width - sw) / 2);
+    } else {
+        sh = Math.round(bitmap.width / targetRatio);
+        sy = Math.round((bitmap.height - sh) / 2);
+    }
+    const canvas = document.createElement('canvas');
+    canvas.width = sw;
+    canvas.height = sh;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(bitmap, sx, sy, sw, sh, 0, 0, sw, sh);
+    const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/jpeg', 0.95));
+    if (!blob) return file;
+    return new File([blob], file.name.replace(/\.[^.]+$/, '') + `_${preset}.jpg`, { type: 'image/jpeg' });
+}
+
+async function documentos_cropFileSquare(file) {
+    if (!file) return file;
+    const bitmap = await createImageBitmap(file);
+    const size = Math.min(bitmap.width, bitmap.height);
+    const sx = Math.round((bitmap.width - size) / 2);
+    const sy = Math.round((bitmap.height - size) / 2);
+    const canvas = document.createElement('canvas');
+    canvas.width = size;
+    canvas.height = size;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(bitmap, sx, sy, size, size, 0, 0, size, size);
+    const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/jpeg', 0.95));
+    if (!blob) return file;
+    return new File([blob], file.name.replace(/\.[^.]+$/, '') + '_square.jpg', { type: 'image/jpeg' });
+}
+
+async function documentos_applyCropPreset(preset) {
+    const file = docsState.pendingImageFile;
+    if (!file) return;
+    docsState.pendingCropPreset = preset;
+    try {
+        const cropped = await documentos_cropFileToPreset(file, preset);
+        docsState.pendingCroppedFile = cropped;
+        const img = document.getElementById('docs-crop-preview');
+        if (img) img.src = URL.createObjectURL(cropped);
+        document.getElementById('docs-file-feedback').innerText = `Recorte aplicado: ${preset}. Listo para subir.`;
+    } catch (e) {
+        console.error('documentos_applyCropPreset:', e);
+        document.getElementById('docs-file-feedback').innerText = '❌ No se pudo aplicar recorte';
+    }
+}
+
+async function documentos_uploadFileDirect(file) {
+    const member = (document.getElementById('docs-member')?.value || 'yo').toString();
+    const folderId = (member === 'papa' || member === 'mama' || member === 'hermano') ? DOCS_PAPA_FOLDER_ID : DOCS_FAMILY_FOLDER_ID;
+    const url = await driveUploadFile(file, folderId);
+    document.getElementById('docs-url').value = url;
+    const title = document.getElementById('docs-title');
+    if (title && !title.value.trim()) title.value = documentos_stripExt(file.name);
+    return url;
+}
+
+async function documentos_uploadPreparedImage() {
+    const file = docsState.pendingCroppedFile || docsState.pendingImageFile;
+    if (!file) return;
+    try {
+        await documentos_uploadFileDirect(file);
+        document.getElementById('docs-file-feedback').innerText = `✅ Cargado con recorte ${docsState.pendingCropPreset}`;
+        documentos_showCropTools(false);
+        docsState.pendingImageFile = null;
+        docsState.pendingCroppedFile = null;
+    } catch (e) {
+        console.error('documentos_uploadPreparedImage:', e);
+        document.getElementById('docs-file-feedback').innerText = '❌ Error al subir archivo recortado';
+    }
+}
+
+function documentos_showProfileCropTools(show) {
+    const box = document.getElementById('docs-profile-crop-tools');
+    if (!box) return;
+    box.classList.toggle('hidden', !show);
+}
+
+async function documentos_prepareProfilePhotoCropFromInput(inputId) {
+    const input = document.getElementById(inputId);
+    const file = input?.files?.[0];
+    if (!file) return;
+    docsState.profilePendingImageFile = file;
+    docsState.profilePendingCroppedFile = null;
+    const reader = new FileReader();
+    reader.onload = async () => {
+        const img = document.getElementById('docs-profile-crop-preview');
+        if (img) img.src = String(reader.result || '');
+        documentos_showProfileCropTools(true);
+        const cropped = await documentos_cropFileSquare(file);
+        docsState.profilePendingCroppedFile = cropped;
+        if (img) img.src = URL.createObjectURL(cropped);
+        document.getElementById('docs-profile-file-feedback').innerText = 'Recorte cuadrado listo. Presiona "Subir foto recortada".';
+    };
+    reader.readAsDataURL(file);
+    input.value = '';
+}
+
+async function documentos_uploadPreparedProfilePhoto() {
+    const file = docsState.profilePendingCroppedFile || docsState.profilePendingImageFile;
+    if (!file) return;
+    try {
+        const url = await documentos_uploadFileDirect(file);
+        document.getElementById('docs-profile-photo').value = url;
+        document.getElementById('docs-profile-file-feedback').innerText = '✅ Foto de perfil cargada';
+        documentos_showProfileCropTools(false);
+        docsState.profilePendingImageFile = null;
+        docsState.profilePendingCroppedFile = null;
+    } catch (e) {
+        console.error('documentos_uploadPreparedProfilePhoto:', e);
+        document.getElementById('docs-profile-file-feedback').innerText = '❌ Error al subir foto de perfil';
+    }
+}
+
 async function documentos_seedFromDrive() {
     const now = normalizeDateString(new Date().toLocaleDateString('en-CA'));
     const [familyFiles, papaFiles] = await Promise.all([
@@ -7987,7 +8177,6 @@ function documentos_render() {
     const tabsEl = document.getElementById('docs-member-tabs');
     const totalEl = document.getElementById('docs-total');
     const subEl = document.getElementById('docs-subtitle');
-    const activeEl = document.getElementById('docs-active-member');
     const profileEl = document.getElementById('docs-profile-card');
     if (!listEl || !tabsEl || !profileEl) return;
 
@@ -8013,8 +8202,6 @@ function documentos_render() {
 
     if (totalEl) totalEl.innerText = String(filtered.length);
     if (subEl) subEl.innerText = docsState.selectedMember === 'all' ? 'Busqueda global' : `Filtrado por ${documentos_memberLabel(docsState.selectedMember)}`;
-    if (activeEl) activeEl.innerText = documentos_memberLabel(docsState.selectedMember);
-
     listEl.innerHTML = filtered.length
         ? filtered.map((d) => `
             <article class="docs-card" data-doc-url="${d.url || ''}">
@@ -8065,11 +8252,15 @@ function documentos_openSheet(id) {
     document.getElementById('docs-sheet-title').innerText = doc ? 'Editar documento' : 'Nuevo documento';
     documentos_fillMemberSelect(document.getElementById('docs-member'), doc?.member || (docsState.selectedMember === 'all' ? 'yo' : docsState.selectedMember));
     document.getElementById('docs-title').value = doc?.title || '';
-    document.getElementById('docs-type').value = doc?.type || '';
+    documentos_fillTypeSelect(doc?.type || 'Documento');
+    document.getElementById('docs-type-new').value = '';
     document.getElementById('docs-tags').value = doc?.tags || '';
     document.getElementById('docs-notes').value = doc?.notes || '';
     document.getElementById('docs-url').value = doc?.url || '';
     document.getElementById('docs-file-feedback').innerText = '';
+    documentos_showCropTools(false);
+    docsState.pendingImageFile = null;
+    docsState.pendingCroppedFile = null;
     document.getElementById('docs-delete').classList.toggle('hidden', !doc);
     document.getElementById('docs-sheet').classList.remove('hidden');
 }
@@ -8088,17 +8279,44 @@ async function documentos_uploadFromInput(inputId) {
     const input = document.getElementById(inputId);
     const file = input?.files?.[0];
     if (!file) return;
-    const member = (document.getElementById('docs-member')?.value || 'yo').toString();
-    const folderId = (member === 'papa' || member === 'mama' || member === 'hermano') ? DOCS_PAPA_FOLDER_ID : DOCS_FAMILY_FOLDER_ID;
     try {
-        const url = await driveUploadFile(file, folderId);
-        document.getElementById('docs-url').value = url;
-        const title = document.getElementById('docs-title');
-        if (title && !title.value.trim()) title.value = documentos_stripExt(file.name);
-        document.getElementById('docs-file-feedback').innerText = `✅ Cargado: ${file.name}`;
+        if ((file.type || '').startsWith('image/')) {
+            await documentos_prepareImageForCrop(file);
+        } else {
+            await documentos_uploadFileDirect(file);
+            document.getElementById('docs-file-feedback').innerText = `✅ Cargado: ${file.name}`;
+            documentos_showCropTools(false);
+        }
     } catch (e) {
         console.error('documentos_uploadFromInput:', e);
         document.getElementById('docs-file-feedback').innerText = '❌ Error al subir archivo';
+    } finally {
+        input.value = '';
+    }
+}
+
+async function documentos_uploadScanMulti() {
+    const input = document.getElementById('docs-upload-scan');
+    const files = input?.files;
+    if (!files || !files.length) return;
+    const list = [...files];
+    const links = [];
+    try {
+        for (let i = 0; i < list.length; i++) {
+            const file = list[i];
+            const url = await documentos_uploadFileDirect(file);
+            links.push(url);
+        }
+        if (links[0]) document.getElementById('docs-url').value = links[0];
+        if (links.length > 1) {
+            const notes = document.getElementById('docs-notes');
+            const extra = links.slice(1).map((u, i) => `Pagina extra ${i + 2}: ${u}`).join('\n');
+            notes.value = [notes.value || '', extra].filter(Boolean).join('\n');
+        }
+        document.getElementById('docs-file-feedback').innerText = `✅ Escaneo cargado (${links.length} pagina${links.length === 1 ? '' : 's'})`;
+    } catch (e) {
+        console.error('documentos_uploadScanMulti:', e);
+        document.getElementById('docs-file-feedback').innerText = '❌ Error al subir escaneo multipagina';
     } finally {
         input.value = '';
     }
@@ -8113,7 +8331,7 @@ async function documentos_save() {
         id: id || `doc-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
         member: document.getElementById('docs-member').value || 'yo',
         title,
-        type: (document.getElementById('docs-type').value || '').trim(),
+        type: documentos_getSelectedType(),
         tags: (document.getElementById('docs-tags').value || '').trim(),
         notes: (document.getElementById('docs-notes').value || '').trim(),
         url: (document.getElementById('docs-url').value || '').trim(),
@@ -8135,6 +8353,11 @@ async function documentos_delete() {
     const id = (document.getElementById('docs-edit-id').value || '').trim();
     if (!id) return;
     if (!confirm('¿Eliminar esta entrada del archivador?')) return;
+    const target = docsState.items.find((x) => x.id === id);
+    const driveId = target?.driveFileId || documentos_parseDriveId(target?.url || '');
+    if (driveId) {
+        try { await driveDeleteFile(driveId); } catch (e) { console.warn('No se pudo borrar archivo Drive:', e); }
+    }
     docsState.items = docsState.items.filter((x) => x.id !== id);
     await documentos_saveRows();
     documentos_closeSheet();
@@ -8176,6 +8399,10 @@ function documentos_openProfileSheet() {
     document.getElementById('docs-vac-pentavalente').checked = has('Pentavalente');
     document.getElementById('docs-vac-tripleviral').checked = has('Triple viral');
     document.getElementById('docs-vac-influenza').checked = has('Influenza');
+    document.getElementById('docs-profile-file-feedback').innerText = '';
+    documentos_showProfileCropTools(false);
+    docsState.profilePendingImageFile = null;
+    docsState.profilePendingCroppedFile = null;
     document.getElementById('docs-profile-sheet').classList.remove('hidden');
 }
 
