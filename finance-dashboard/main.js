@@ -15,7 +15,7 @@ const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // 
 const SPREADSHEET_DEUDAS_ID = '1dKxhgqazskm15lx0f6FNCA0gpJ7i5glfxkusiH3b0Uk'; // Control de Deudas
 const SPREADSHEET_AUTOS_ID = SPREADSHEET_DEUDAS_ID; // Autos + Reparaciones live in same workbook
 const SPREADSHEET_ESTUDIO_ID = SPREADSHEET_DEUDAS_ID; // Estudio + Plugins in same workbook
-const APP_VERSION  = 'v7.1.18';
+const APP_VERSION  = 'v7.1.19';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -6263,17 +6263,18 @@ function estudio_parseYear(value) {
 
 function estudio_ageYears(item) {
     const now = new Date();
+    let ageFromDate = 0;
     const purchaseDate = normalizeDateString(item?.fechaCompra || '');
     if (purchaseDate) {
         const d = new Date(purchaseDate);
         if (!Number.isNaN(d.getTime())) {
             const months = (now.getFullYear() - d.getFullYear()) * 12 + (now.getMonth() - d.getMonth());
-            return Math.max(0, months / 12);
+            ageFromDate = Math.max(0, months / 12);
         }
     }
     const y = estudio_parseYear(item?.anioCompra || '');
-    if (!y) return 0;
-    return Math.max(0, now.getFullYear() - y + 0.5);
+    const ageFromYear = y ? Math.max(0, now.getFullYear() - y + 0.5) : 0;
+    return Math.max(ageFromDate, ageFromYear);
 }
 
 function estudio_depreciationProfile(item, kind = 'inventario') {
