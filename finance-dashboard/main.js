@@ -15,7 +15,7 @@ const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // 
 const SPREADSHEET_DEUDAS_ID = '1dKxhgqazskm15lx0f6FNCA0gpJ7i5glfxkusiH3b0Uk'; // Control de Deudas
 const SPREADSHEET_AUTOS_ID = SPREADSHEET_DEUDAS_ID; // Autos + Reparaciones live in same workbook
 const SPREADSHEET_ESTUDIO_ID = SPREADSHEET_DEUDAS_ID; // Estudio + Plugins in same workbook
-const APP_VERSION  = 'v7.2.6';
+const APP_VERSION  = 'v7.2.7';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -6835,6 +6835,7 @@ function propiedades_bindEvents() {
 
     document.getElementById('prop-add-owner')?.addEventListener('click', () => {
         propiedades_addOwnerRow();
+        propiedades_rebalanceOwnersEqual();
         propiedades_updateOwnersTotal();
     });
     document.getElementById('prop-add-deuda')?.addEventListener('click', () => propiedades_addMoneyRow('deuda'));
@@ -7095,8 +7096,8 @@ function propiedades_render() {
           </div>
         </div>
 
-        <div class="prop-detail-block">
-          <div class="section-header prop-detail-head"><h3>🏠 Datos y Valuación</h3><button class="mini-btn" data-prop-edit-section="general">✏️ Editar</button></div>
+        <div class="prop-detail-block" data-prop-edit-section="general">
+          <div class="section-header prop-detail-head"><h3>🏠 Datos y Valuación</h3></div>
           <div class="estudio-entry-grid">
             <div class="plan-bucket-row"><span>Valor compra</span><strong>${formatCurrency(parseSheetValue(selected.valorCompra))}</strong></div>
             <div class="plan-bucket-row"><span>Valor catastral</span><strong>${formatCurrency(parseSheetValue(selected.valorCatastral))}</strong></div>
@@ -7112,23 +7113,23 @@ function propiedades_render() {
           <div class="estudio-entry-notes">${selected.fuenteValoracion || 'Placeholder local (sin API externa). La valoración automática se basa en zona + m2 de construcción + m2 de terreno y puede variar.'}</div>
         </div>
 
-        <div class="prop-detail-block">
-          <div class="section-header prop-detail-head"><h3>👥 Dueños y Porcentajes</h3><button class="mini-btn" data-prop-edit-section="owners">✏️ Editar</button></div>
+        <div class="prop-detail-block" data-prop-edit-section="owners">
+          <div class="section-header prop-detail-head"><h3>👥 Dueños y Porcentajes</h3></div>
           <div class="plan-buckets">${ownerRows}</div>
         </div>
 
-        <div class="prop-detail-block">
-          <div class="section-header prop-detail-head"><h3>💳 Deudas de la Propiedad</h3><button class="mini-btn" data-prop-edit-section="deudas">✏️ Editar</button></div>
+        <div class="prop-detail-block" data-prop-edit-section="deudas">
+          <div class="section-header prop-detail-head"><h3>💳 Deudas de la Propiedad</h3></div>
           <div class="plan-expenses-list">${debtsRows}</div>
         </div>
 
-        <div class="prop-detail-block">
-          <div class="section-header prop-detail-head"><h3>💵 Ingresos de la Propiedad</h3><button class="mini-btn" data-prop-edit-section="ingresos">✏️ Editar</button></div>
+        <div class="prop-detail-block" data-prop-edit-section="ingresos">
+          <div class="section-header prop-detail-head"><h3>💵 Ingresos de la Propiedad</h3></div>
           <div class="plan-expenses-list">${incomeRows}</div>
         </div>
 
-        <div class="prop-detail-block">
-          <div class="section-header prop-detail-head"><h3>📁 Documentos y Enlaces</h3><button class="mini-btn" data-prop-edit-section="docs">✏️ Editar</button></div>
+        <div class="prop-detail-block" data-prop-edit-section="docs">
+          <div class="section-header prop-detail-head"><h3>📁 Documentos y Enlaces</h3></div>
           ${selected.fotoUrl ? `<a href="${selected.fotoUrl}" target="_blank" rel="noopener">${propiedades_docPreview(selected.fotoUrl, selected.nombre)}</a>` : '<div class="empty-state" style="padding:.6rem 0;">Sin foto de propiedad</div>'}
           <div class="plan-expenses-list">
             ${selected.link1 ? `<a class="recibo-link" href="${selected.link1}" target="_blank" rel="noopener">🔗 Link 1</a>` : ''}
@@ -7139,9 +7140,10 @@ function propiedades_render() {
       </div>
     `;
 
-    detailEl.querySelectorAll('[data-prop-edit-section]').forEach((btn) => {
-        btn.addEventListener('click', () => {
-            const section = btn.dataset.propEditSection || 'general';
+    detailEl.querySelectorAll('.prop-detail-block[data-prop-edit-section]').forEach((block) => {
+        block.addEventListener('click', (e) => {
+            if (e.target.closest('a, button, input, textarea, select, label')) return;
+            const section = block.dataset.propEditSection || 'general';
             propiedades_openSheet(selected.id, section);
         });
     });
@@ -7182,6 +7184,24 @@ function propiedades_addOwnerRow(owner = { name: '', percent: '' }) {
     const list = document.getElementById('prop-owners-list');
     if (!list) return;
     list.appendChild(propiedades_renderOwnerRow(owner));
+}
+
+function propiedades_rebalanceOwnersEqual() {
+    const list = document.getElementById('prop-owners-list');
+    if (!list) return;
+    const rows = [...list.querySelectorAll('.prop-dyn-row')];
+    if (!rows.length) return;
+    const per = Math.floor((10000 / rows.length)) / 100;
+    let assigned = 0;
+    rows.forEach((row, idx) => {
+        const input = row.querySelector('[data-role="owner-percent"]');
+        if (!(input instanceof HTMLInputElement)) return;
+        const value = idx === rows.length - 1
+            ? Math.max(0, Number((100 - assigned).toFixed(2)))
+            : per;
+        input.value = Number(value.toFixed(2)).toString();
+        assigned += value;
+    });
 }
 
 function propiedades_addMoneyRow(kind, item = { concepto: '', monto: '' }) {
