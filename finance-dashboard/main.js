@@ -15,7 +15,7 @@ const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // 
 const SPREADSHEET_DEUDAS_ID = '1dKxhgqazskm15lx0f6FNCA0gpJ7i5glfxkusiH3b0Uk'; // Control de Deudas
 const SPREADSHEET_AUTOS_ID = SPREADSHEET_DEUDAS_ID; // Autos + Reparaciones live in same workbook
 const SPREADSHEET_ESTUDIO_ID = SPREADSHEET_DEUDAS_ID; // Estudio + Plugins in same workbook
-const APP_VERSION  = 'v7.3.6';
+const APP_VERSION  = 'v7.3.7';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -7938,6 +7938,13 @@ function documentos_resolveDocUrl(doc) {
     return documentos_buildUrlFromId(doc?.driveFileId || documentos_parseDriveId(doc?.url || ''));
 }
 
+function documentos_resolveExpiryLabel(doc) {
+    const raw = (doc?.expiryDate || '').toString().trim();
+    if (!raw) return '';
+    if (documentos_isLikelyUrl(raw)) return '';
+    return raw;
+}
+
 function documentos_normalizeDocRow(doc) {
     const out = { ...doc };
     if (!out.url && documentos_isLikelyUrl(out.expiryDate)) {
@@ -7969,6 +7976,10 @@ async function documentos_upgradeData() {
     docsState.items = docsState.items.map((d) => {
         const normalized = documentos_normalizeDocRow(d);
         if (normalized.url !== d.url || normalized.expiryDate !== d.expiryDate || normalized.sourceFolderId !== d.sourceFolderId || normalized.driveFileId !== d.driveFileId) {
+            docsChanged = true;
+        }
+        if (documentos_isLikelyUrl((normalized.expiryDate || '').toString())) {
+            normalized.expiryDate = '';
             docsChanged = true;
         }
         const inferred = documentos_guessMemberFromName(`${d.title} ${d.notes}`);
@@ -8316,11 +8327,13 @@ function documentos_render() {
     listEl.innerHTML = filtered.length
         ? filtered.map((d) => {
             const finalUrl = documentos_resolveDocUrl(d);
+            const expiryLabel = documentos_resolveExpiryLabel(d);
+            const expiryRow = expiryLabel ? `<div class="docs-meta">Vencimiento: ${expiryLabel}</div>` : '';
             return `
             <article class="docs-card" data-doc-url="${finalUrl || ''}">
               <h4 class="docs-title">${d.title}</h4>
               <div class="docs-meta">${documentos_memberLabel(d.member)} · ${d.type || 'Documento'} · ${d.tags || 'sin etiquetas'}</div>
-              <div class="docs-meta">Vencimiento: ${d.expiryDate || 'no tiene vencimiento'}</div>
+              ${expiryRow}
               <div class="docs-meta">${d.notes || ''}</div>
               <div class="docs-actions"><button type="button" class="mini-btn" data-doc-edit-id="${d.id}">✏️ Editar</button></div>
             </article>
