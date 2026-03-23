@@ -15,7 +15,7 @@ const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // 
 const SPREADSHEET_DEUDAS_ID = '1dKxhgqazskm15lx0f6FNCA0gpJ7i5glfxkusiH3b0Uk'; // Control de Deudas
 const SPREADSHEET_AUTOS_ID = SPREADSHEET_DEUDAS_ID; // Autos + Reparaciones live in same workbook
 const SPREADSHEET_ESTUDIO_ID = SPREADSHEET_DEUDAS_ID; // Estudio + Plugins in same workbook
-const APP_VERSION  = 'v7.0.27';
+const APP_VERSION  = 'v7.0.28';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -3379,7 +3379,9 @@ function planner_render() {
         .slice(1)
         .reduce((s, v) => s + v, 0);
     const balanceIncome = plannerState.incomes.find(i => i.isBalanceSource);
+    const balanceCurrent = balanceIncome?.amount || 0;
     const balanceAvailableNet = Math.max(0, (balanceIncome?.amount || 0) - reservedForOtherIncomes);
+    const projectedBalanceFinal = balanceCurrent - plannerState.totals.assigned;
     const activeIncomeTotal = plannerState.incomes.reduce((s, income) => {
         if (!income.isBalanceSource && doneSet.has(income.key)) return s;
         return s + income.amount;
@@ -3388,10 +3390,10 @@ function planner_render() {
     const fixedIncomeCount = plannerState.incomes
         .filter(i => !i.isBalanceSource && !doneSet.has(i.key))
         .length;
-    summaryEl.innerText = fmt.format(balanceAvailableNet);
-    summaryEl.classList.toggle('text-danger', balanceAvailableNet < 0);
-    summaryEl.classList.toggle('text-success', balanceAvailableNet >= 0);
-    subEl.innerText = `${fixedIncomeCount} ingresos fijos activos + 1 balance disponible · ${plannerState.expenses.length} pagos pendientes · Asignado ${fmt.format(plannerState.totals.assigned)} de ${fmt.format(activeIncomeTotal)}`;
+    summaryEl.innerText = fmt.format(projectedBalanceFinal);
+    summaryEl.classList.toggle('text-danger', projectedBalanceFinal < 0);
+    summaryEl.classList.toggle('text-success', projectedBalanceFinal >= 0);
+    subEl.innerText = `Balance proyectado final (balance actual - pagos pendientes) · ${fixedIncomeCount} ingresos fijos activos · Asignado ${fmt.format(plannerState.totals.assigned)} de ${fmt.format(activeIncomeTotal)}`;
 
     groupsEl.innerHTML = plannerState.incomes.map((income, idx) => {
         if (!income.isBalanceSource && doneSet.has(income.key)) return '';
