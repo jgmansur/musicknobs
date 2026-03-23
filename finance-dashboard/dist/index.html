@@ -12,8 +12,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <script type="module" crossorigin src="./assets/index-CLS3gjiX.js"></script>
-    <link rel="stylesheet" crossorigin href="./assets/index-qhP4LBJO.css">
+    <script type="module" crossorigin src="./assets/index-DRo7GRze.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-DRyOt-pj.css">
   </head>
   <body>
     <div id="app">
@@ -936,7 +936,114 @@
       </div>
 
       <!-- ══════════════════════════════════
-           VIEW: ESTUDIO (Tab 8)
+           VIEW: DOCUMENTOS (Tab 8)
+           ══════════════════════════════════ -->
+      <div id="view-documentos" class="view">
+        <main class="dashboard-grid">
+          <section class="kpi-row">
+            <div class="kpi-card glass">
+              <div class="kpi-icon" style="background:rgba(34,197,94,.15);color:#22c55e"><i data-lucide="calendar-check"></i></div>
+              <div class="kpi-data">
+                <span class="label">Documentos encontrados</span>
+                <h2 id="docs-total" class="text-success">0</h2>
+                <span id="docs-subtitle" class="diff-label">Archivador familiar</span>
+              </div>
+            </div>
+            <div class="kpi-card glass">
+              <div class="kpi-icon" style="background:rgba(59,130,246,.14);color:#3b82f6"><i data-lucide="credit-card"></i></div>
+              <div class="kpi-data">
+                <span class="label">Perfil activo</span>
+                <h2 id="docs-active-member" class="text-main">Todos</h2>
+                <span class="diff-label">Click para copiar datos sensibles</span>
+              </div>
+            </div>
+          </section>
+
+          <div class="main-content-row">
+            <section class="glass" style="display:grid;gap:.65rem;align-content:start;">
+              <div class="section-header" style="display:flex;justify-content:space-between;align-items:center;gap:.5rem;">
+                <h3>Archivador</h3>
+                <button id="docs-btn-add" class="secondary-btn" style="padding:.45rem .7rem;">+ Documento</button>
+              </div>
+              <div id="docs-member-tabs" class="estudio-subtabs" style="display:flex;overflow:auto;max-width:100%;"></div>
+              <input id="docs-search" type="search" class="field-input" placeholder="Buscar por nombre, tipo, etiqueta...">
+              <div id="docs-list" class="accounts-list"></div>
+            </section>
+
+            <section class="glass" style="display:grid;gap:.7rem;align-content:start;">
+              <div class="section-header" style="display:flex;justify-content:space-between;align-items:center;gap:.5rem;">
+                <h3>Perfil Familiar</h3>
+                <button id="docs-profile-edit" class="mini-btn">✏️ Editar perfil</button>
+              </div>
+              <div id="docs-profile-card"></div>
+            </section>
+          </div>
+        </main>
+
+        <div id="docs-sheet" class="bottom-sheet hidden">
+          <div id="docs-sheet-overlay" class="bottom-sheet-overlay"></div>
+          <div class="bottom-sheet-content glass">
+            <div class="sheet-handle"></div>
+            <div class="balance-panel-header">
+              <h3 id="docs-sheet-title" class="balance-panel-title">Nuevo documento</h3>
+              <button class="icon-btn" onclick="document.getElementById('docs-sheet').classList.add('hidden')">✕</button>
+            </div>
+            <input id="docs-edit-id" type="hidden">
+            <select id="docs-member" class="field-input"></select>
+            <input id="docs-title" class="field-input" style="margin-top:.45rem;" placeholder="Nombre del documento">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:.55rem;margin-top:.45rem;">
+              <input id="docs-type" class="field-input" placeholder="Tipo (Pasaporte, CURP...)">
+              <input id="docs-tags" class="field-input" placeholder="Etiquetas separadas por coma">
+            </div>
+            <textarea id="docs-notes" class="field-input" rows="2" style="margin-top:.45rem;" placeholder="Notas"></textarea>
+            <div class="autos-file-row" style="margin-top:.45rem;">
+              <label for="docs-upload-camera" class="secondary-btn autos-file-btn">📷 Camara</label>
+              <input id="docs-upload-camera" type="file" class="autos-file-native" accept="image/*" capture="environment">
+            </div>
+            <div class="autos-file-row" style="margin-top:.45rem;">
+              <label for="docs-upload-file" class="secondary-btn autos-file-btn">📁 Galeria / Archivo</label>
+              <input id="docs-upload-file" type="file" class="autos-file-native" accept="image/*,application/pdf">
+            </div>
+            <div id="docs-file-feedback" class="diff-label" style="margin-top:.4rem;"></div>
+            <input id="docs-url" class="field-input" style="margin-top:.45rem;" placeholder="URL en Drive">
+            <button id="docs-delete" class="mini-btn mini-btn-danger hidden" style="margin-top:.7rem;width:100%;">🗑️ Eliminar entrada</button>
+            <button id="docs-save" class="primary-btn" style="margin-top:.6rem;width:100%;">Guardar documento</button>
+          </div>
+        </div>
+
+        <div id="docs-profile-sheet" class="bottom-sheet hidden">
+          <div id="docs-profile-sheet-overlay" class="bottom-sheet-overlay"></div>
+          <div class="bottom-sheet-content glass">
+            <div class="sheet-handle"></div>
+            <div class="balance-panel-header">
+              <h3 class="balance-panel-title">Editar perfil familiar</h3>
+              <button class="icon-btn" onclick="document.getElementById('docs-profile-sheet').classList.add('hidden')">✕</button>
+            </div>
+            <select id="docs-profile-member" class="field-input"></select>
+            <input id="docs-profile-name" class="field-input" style="margin-top:.45rem;" placeholder="Nombre completo">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:.55rem;margin-top:.45rem;">
+              <input id="docs-profile-birth" type="date" class="field-input" placeholder="Fecha nacimiento">
+              <input id="docs-profile-weight" class="field-input" placeholder="Peso al nacer">
+              <input id="docs-profile-curp" class="field-input" placeholder="CURP">
+              <input id="docs-profile-passport-mx" class="field-input" placeholder="Pasaporte mexicano">
+              <input id="docs-profile-passport-us" class="field-input" placeholder="Pasaporte americano">
+              <input id="docs-profile-visa" class="field-input" placeholder="Visa USA">
+            </div>
+            <input id="docs-profile-photo" class="field-input" style="margin-top:.45rem;" placeholder="URL foto">
+            <textarea id="docs-profile-notes" class="field-input" rows="2" style="margin-top:.45rem;" placeholder="Notas"></textarea>
+            <div class="field-label" style="margin-top:.5rem;">Vacunacion (hijos)</div>
+            <label class="checkbox-item"><input id="docs-vac-bcg" type="checkbox"> BCG</label>
+            <label class="checkbox-item"><input id="docs-vac-hepb" type="checkbox"> Hepatitis B</label>
+            <label class="checkbox-item"><input id="docs-vac-pentavalente" type="checkbox"> Pentavalente</label>
+            <label class="checkbox-item"><input id="docs-vac-tripleviral" type="checkbox"> Triple viral</label>
+            <label class="checkbox-item"><input id="docs-vac-influenza" type="checkbox"> Influenza</label>
+            <button id="docs-profile-save" class="primary-btn" style="margin-top:.8rem;width:100%;">Guardar perfil</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════════════
+           VIEW: ESTUDIO (Tab 9)
            ══════════════════════════════════ -->
       <div id="view-estudio" class="view">
         <main class="dashboard-grid">
@@ -1151,6 +1258,10 @@
         <button class="tab" id="tab-propiedades" data-tab="propiedades">
           <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 10.5L12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/><path d="M9 21v-6h6v6"/></svg>
           <span class="tab-label">Propiedades</span>
+        </button>
+        <button class="tab" id="tab-documentos" data-tab="documentos">
+          <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h6"/></svg>
+          <span class="tab-label">Documentos</span>
         </button>
       </nav>
 
