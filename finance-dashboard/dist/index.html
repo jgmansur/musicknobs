@@ -12,8 +12,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <script type="module" crossorigin src="./assets/index-DgVWZlB_.js"></script>
-    <link rel="stylesheet" crossorigin href="./assets/index-CBBZpJe7.css">
+    <script type="module" crossorigin src="./assets/index-Tlg29SiO.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-BgrDGXGY.css">
   </head>
   <body>
     <div id="app">
@@ -903,14 +903,20 @@
             <input id="prop-doc3-nombre" class="field-input" style="margin-top:.45rem;" placeholder="Nombre doc extra 3">
             <input id="prop-doc3-url" class="field-input" style="margin-top:.45rem;" placeholder="URL doc extra 3">
 
-            <label class="field-label" style="margin-top:.55rem;">Dueños (%): una línea por dueño → Nombre|Porcentaje</label>
-            <textarea id="prop-owners" class="field-input" rows="3" placeholder="Juan|50&#10;Mama|30&#10;Hermano|20"></textarea>
+            <label class="field-label" style="margin-top:.55rem;">Dueños y porcentaje</label>
+            <div id="prop-owners-list" class="prop-dyn-list"></div>
+            <div style="display:flex;gap:.5rem;align-items:center;justify-content:space-between;margin-top:.35rem;">
+              <button id="prop-add-owner" type="button" class="mini-btn">+ Agregar dueño</button>
+              <span id="prop-owners-total" class="diff-label">Total dueños: 0%</span>
+            </div>
 
-            <label class="field-label" style="margin-top:.55rem;">Deudas de la propiedad: Concepto|Monto</label>
-            <textarea id="prop-deudas" class="field-input" rows="3" placeholder="Hipoteca Banco X|2500000&#10;Prestamo Remodelacion|180000"></textarea>
+            <label class="field-label" style="margin-top:.55rem;">Deudas de la propiedad</label>
+            <div id="prop-deudas-list" class="prop-dyn-list"></div>
+            <button id="prop-add-deuda" type="button" class="mini-btn" style="margin-top:.35rem;">+ Agregar deuda</button>
 
-            <label class="field-label" style="margin-top:.55rem;">Ingresos de la propiedad: Concepto|Monto mensual</label>
-            <textarea id="prop-ingresos" class="field-input" rows="3" placeholder="Renta principal|15000"></textarea>
+            <label class="field-label" style="margin-top:.55rem;">Ingresos de la propiedad (mensual)</label>
+            <div id="prop-ingresos-list" class="prop-dyn-list"></div>
+            <button id="prop-add-ingreso" type="button" class="mini-btn" style="margin-top:.35rem;">+ Agregar ingreso</button>
 
             <div id="prop-file-feedback" class="diff-label" style="margin-top:.5rem;"></div>
             <button id="prop-delete" class="mini-btn mini-btn-danger hidden" style="margin-top:.7rem;width:100%;">🗑️ Eliminar propiedad</button>

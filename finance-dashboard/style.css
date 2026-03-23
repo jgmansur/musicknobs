@@ -1218,3 +1218,21 @@ select.field-input { background-image: url("data:image/svg+xml,%3Csvg xmlns='htt
 #prop-detail .recibo-link {
   padding: .28rem 0;
 }
+
+.prop-dyn-list {
+  display: grid;
+  gap: .45rem;
+}
+
+.prop-dyn-row {
+  display: grid;
+  grid-template-columns: 1fr .55fr auto;
+  gap: .45rem;
+  align-items: center;
+}
+
+@media (max-width: 720px) {
+  .prop-dyn-row {
+    grid-template-columns: 1fr;
+  }
+}

@@ -15,7 +15,7 @@ const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // 
 const SPREADSHEET_DEUDAS_ID = '1dKxhgqazskm15lx0f6FNCA0gpJ7i5glfxkusiH3b0Uk'; // Control de Deudas
 const SPREADSHEET_AUTOS_ID = SPREADSHEET_DEUDAS_ID; // Autos + Reparaciones live in same workbook
 const SPREADSHEET_ESTUDIO_ID = SPREADSHEET_DEUDAS_ID; // Estudio + Plugins in same workbook
-const APP_VERSION  = 'v7.2.3';
+const APP_VERSION  = 'v7.2.4';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -6832,6 +6832,36 @@ function propiedades_bindEvents() {
         const selected = propiedades_getSelected();
         propiedades_openSheet(selected?.id || null);
     });
+
+    document.getElementById('prop-add-owner')?.addEventListener('click', () => {
+        propiedades_addOwnerRow();
+        propiedades_updateOwnersTotal();
+    });
+    document.getElementById('prop-add-deuda')?.addEventListener('click', () => propiedades_addMoneyRow('deuda'));
+    document.getElementById('prop-add-ingreso')?.addEventListener('click', () => propiedades_addMoneyRow('ingreso'));
+
+    document.getElementById('prop-owners-list')?.addEventListener('click', (e) => {
+        const btn = e.target.closest('[data-remove-owner]');
+        if (!btn) return;
+        btn.closest('.prop-dyn-row')?.remove();
+        propiedades_updateOwnersTotal();
+    });
+    document.getElementById('prop-deudas-list')?.addEventListener('click', (e) => {
+        const btn = e.target.closest('[data-remove-deuda]');
+        if (!btn) return;
+        btn.closest('.prop-dyn-row')?.remove();
+    });
+    document.getElementById('prop-ingresos-list')?.addEventListener('click', (e) => {
+        const btn = e.target.closest('[data-remove-ingreso]');
+        if (!btn) return;
+        btn.closest('.prop-dyn-row')?.remove();
+    });
+
+    document.getElementById('prop-owners-list')?.addEventListener('input', (e) => {
+        const input = e.target;
+        if (!(input instanceof HTMLInputElement)) return;
+        if (input.dataset.role === 'owner-percent') propiedades_updateOwnersTotal();
+    });
 }
 
 async function propiedades_cargarVista() {
@@ -7117,6 +7147,91 @@ function propiedades_docPreview(url, label) {
     return `<img src="${img}" alt="${label}" style="width:100%;max-height:220px;object-fit:cover;border-radius:.65rem;background:rgba(255,255,255,.05);" />`;
 }
 
+function propiedades_renderOwnerRow(owner = { name: '', percent: '' }) {
+    const row = document.createElement('div');
+    row.className = 'prop-dyn-row';
+    row.innerHTML = `
+      <input class="field-input" data-role="owner-name" placeholder="Nombre dueño" value="${(owner.name || '').toString().replace(/"/g, '&quot;')}">
+      <input class="field-input" data-role="owner-percent" type="number" step="0.01" placeholder="%" value="${owner.percent ?? ''}">
+      <button type="button" class="mini-btn mini-btn-danger" data-remove-owner>🗑</button>
+    `;
+    return row;
+}
+
+function propiedades_renderMoneyRow(kind, item = { concepto: '', monto: '' }) {
+    const removeAttr = kind === 'deuda' ? 'data-remove-deuda' : 'data-remove-ingreso';
+    const conceptoPh = kind === 'deuda' ? 'Concepto deuda' : 'Concepto ingreso';
+    const row = document.createElement('div');
+    row.className = 'prop-dyn-row';
+    row.innerHTML = `
+      <input class="field-input" data-role="money-concepto" placeholder="${conceptoPh}" value="${(item.concepto || '').toString().replace(/"/g, '&quot;')}">
+      <input class="field-input" data-role="money-monto" type="number" step="0.01" placeholder="Monto" value="${item.monto ?? ''}">
+      <button type="button" class="mini-btn mini-btn-danger" ${removeAttr}>🗑</button>
+    `;
+    return row;
+}
+
+function propiedades_addOwnerRow(owner = { name: '', percent: '' }) {
+    const list = document.getElementById('prop-owners-list');
+    if (!list) return;
+    list.appendChild(propiedades_renderOwnerRow(owner));
+}
+
+function propiedades_addMoneyRow(kind, item = { concepto: '', monto: '' }) {
+    const listId = kind === 'deuda' ? 'prop-deudas-list' : 'prop-ingresos-list';
+    const list = document.getElementById(listId);
+    if (!list) return;
+    list.appendChild(propiedades_renderMoneyRow(kind, item));
+}
+
+function propiedades_clearDynamicRows() {
+    ['prop-owners-list', 'prop-deudas-list', 'prop-ingresos-list'].forEach((id) => {
+        const el = document.getElementById(id);
+        if (el) el.innerHTML = '';
+    });
+}
+
+function propiedades_updateOwnersTotal() {
+    const totalEl = document.getElementById('prop-owners-total');
+    const owners = propiedades_collectOwnersFromUI();
+    const total = owners.reduce((sum, x) => sum + Math.max(0, parseSheetValue(x.percent)), 0);
+    if (!totalEl) return;
+    totalEl.innerText = `Total dueños: ${total.toFixed(2)}%`;
+    totalEl.classList.toggle('text-danger', total > 100.001);
+    totalEl.classList.toggle('text-success', total > 0 && total <= 100.001);
+}
+
+function propiedades_collectOwnersFromUI() {
+    const list = document.getElementById('prop-owners-list');
+    if (!list) {
+        const legacy = document.getElementById('prop-owners');
+        return propiedades_parseOwnerLines(legacy?.value || '');
+    }
+    const rows = [...list.querySelectorAll('.prop-dyn-row')];
+    const owners = rows.map((row) => {
+        const name = (row.querySelector('[data-role="owner-name"]')?.value || '').trim();
+        const percent = Math.max(0, parseSheetValue(row.querySelector('[data-role="owner-percent"]')?.value || 0));
+        return { name, percent };
+    }).filter((x) => x.name);
+    if (!owners.length) return [{ name: 'Yo', percent: 100 }];
+    return owners;
+}
+
+function propiedades_collectMoneyFromUI(kind) {
+    const listId = kind === 'deuda' ? 'prop-deudas-list' : 'prop-ingresos-list';
+    const list = document.getElementById(listId);
+    if (!list) {
+        const legacyId = kind === 'deuda' ? 'prop-deudas' : 'prop-ingresos';
+        return propiedades_parseMoneyLines(document.getElementById(legacyId)?.value || '');
+    }
+    const rows = [...list.querySelectorAll('.prop-dyn-row')];
+    return rows.map((row) => {
+        const concepto = (row.querySelector('[data-role="money-concepto"]')?.value || '').trim();
+        const monto = Math.max(0, parseSheetValue(row.querySelector('[data-role="money-monto"]')?.value || 0));
+        return { concepto, monto };
+    }).filter((x) => x.concepto && x.monto > 0);
+}
+
 function propiedades_openSheet(id) {
     const item = id ? propiedadesState.items.find((x) => x.id === id) : null;
     const nowMonth = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`;
@@ -7147,12 +7262,14 @@ function propiedades_openSheet(id) {
     document.getElementById('prop-doc3-nombre').value = item?.docExtra3Nombre || 'Documento extra 3';
     document.getElementById('prop-doc3-url').value = item?.docExtra3Url || '';
 
-    const ownerLines = (item?.owners || []).map((x) => `${x.name || ''}|${parseSheetValue(x.percent)}`).join('\n');
-    const debtLines = (item?.deudas || []).map((x) => `${x.concepto || ''}|${parseSheetValue(x.monto)}`).join('\n');
-    const incomeLines = (item?.ingresos || []).map((x) => `${x.concepto || ''}|${parseSheetValue(x.monto)}`).join('\n');
-    document.getElementById('prop-owners').value = ownerLines;
-    document.getElementById('prop-deudas').value = debtLines;
-    document.getElementById('prop-ingresos').value = incomeLines;
+    propiedades_clearDynamicRows();
+    const owners = (item?.owners || []).length ? item.owners : [{ name: 'Yo', percent: 100 }];
+    owners.forEach((x) => propiedades_addOwnerRow({ name: x.name || '', percent: parseSheetValue(x.percent) }));
+    (item?.deudas || []).forEach((x) => propiedades_addMoneyRow('deuda', { concepto: x.concepto || '', monto: parseSheetValue(x.monto) }));
+    (item?.ingresos || []).forEach((x) => propiedades_addMoneyRow('ingreso', { concepto: x.concepto || '', monto: parseSheetValue(x.monto) }));
+    if (!(item?.deudas || []).length) propiedades_addMoneyRow('deuda');
+    if (!(item?.ingresos || []).length) propiedades_addMoneyRow('ingreso');
+    propiedades_updateOwnersTotal();
     document.getElementById('prop-sync-month').value = nowMonth;
 
     document.getElementById('prop-delete')?.classList.toggle('hidden', !item);
@@ -7234,9 +7351,14 @@ async function propiedades_save() {
     btn.disabled = true;
     btn.innerText = 'Guardando...';
     try {
-        const owners = propiedades_parseOwnerLines(document.getElementById('prop-owners').value);
-        const deudas = propiedades_parseMoneyLines(document.getElementById('prop-deudas').value);
-        const ingresos = propiedades_parseMoneyLines(document.getElementById('prop-ingresos').value);
+        const owners = propiedades_collectOwnersFromUI();
+        const ownersTotal = owners.reduce((sum, x) => sum + Math.max(0, parseSheetValue(x.percent)), 0);
+        if (ownersTotal > 100.001) {
+            alert('La suma de porcentajes de dueños no puede ser mayor a 100%.');
+            return;
+        }
+        const deudas = propiedades_collectMoneyFromUI('deuda');
+        const ingresos = propiedades_collectMoneyFromUI('ingreso');
         const payload = {
             id: editId || `prop-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
             nombre,
