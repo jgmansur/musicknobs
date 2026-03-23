@@ -15,7 +15,7 @@ const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // 
 const SPREADSHEET_DEUDAS_ID = '1dKxhgqazskm15lx0f6FNCA0gpJ7i5glfxkusiH3b0Uk'; // Control de Deudas
 const SPREADSHEET_AUTOS_ID = SPREADSHEET_DEUDAS_ID; // Autos + Reparaciones live in same workbook
 const SPREADSHEET_ESTUDIO_ID = SPREADSHEET_DEUDAS_ID; // Estudio + Plugins in same workbook
-const APP_VERSION  = 'v7.2.7';
+const APP_VERSION  = 'v7.2.8';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -7032,16 +7032,22 @@ function propiedades_render() {
     const tabsEl = document.getElementById('prop-tabs');
     const detailEl = document.getElementById('prop-detail');
     const totalEl = document.getElementById('prop-total-valor');
+    const totalGlobalEl = document.getElementById('prop-total-valor-total');
     const deudaEl = document.getElementById('prop-total-deudas');
     const fijosEl = document.getElementById('prop-total-fijos');
     const ingresoEl = document.getElementById('prop-total-ingresos');
     if (!tabsEl || !detailEl) return;
 
     const totalValor = propiedadesState.items.reduce((sum, p) => sum + propiedades_valorComercialCalculado(p), 0);
+    const totalValorMiParte = propiedadesState.items.reduce((sum, p) => {
+        const pct = Math.max(0, Math.min(100, parseSheetValue(p.miPorcentaje || 100)));
+        return sum + (propiedades_valorComercialCalculado(p) * (pct / 100));
+    }, 0);
     const totalDeuda = propiedadesState.items.reduce((sum, p) => sum + propiedades_totalDeuda(p), 0);
     const totalFijos = propiedadesState.items.reduce((sum, p) => sum + Math.max(0, parseSheetValue(p.predialMensual)) + Math.max(0, parseSheetValue(p.mantenimientoMensual)), 0);
     const totalIngresos = propiedadesState.items.reduce((sum, p) => sum + propiedades_ingresoMiParte(p), 0);
-    if (totalEl) totalEl.innerText = formatCurrency(totalValor);
+    if (totalEl) totalEl.innerText = formatCurrency(totalValorMiParte);
+    if (totalGlobalEl) totalGlobalEl.innerText = `Total global: ${formatCurrency(totalValor)}`;
     if (deudaEl) deudaEl.innerText = totalDeuda > 0 ? `-${formatCurrency(totalDeuda)}` : formatCurrency(0);
     if (fijosEl) fijosEl.innerText = formatCurrency(totalFijos);
     if (ingresoEl) ingresoEl.innerText = `+${formatCurrency(totalIngresos)}`;
