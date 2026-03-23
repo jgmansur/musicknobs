@@ -15,7 +15,7 @@ const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // 
 const SPREADSHEET_DEUDAS_ID = '1dKxhgqazskm15lx0f6FNCA0gpJ7i5glfxkusiH3b0Uk'; // Control de Deudas
 const SPREADSHEET_AUTOS_ID = SPREADSHEET_DEUDAS_ID; // Autos + Reparaciones live in same workbook
 const SPREADSHEET_ESTUDIO_ID = SPREADSHEET_DEUDAS_ID; // Estudio + Plugins in same workbook
-const APP_VERSION  = 'v7.1.0';
+const APP_VERSION  = 'v7.1.1';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -476,6 +476,8 @@ window.autos_connectMercadoLibre = () => {
 window.autos_openMeliDebug = autos_openMeliDebug;
 window.autos_closeMeliDebug = autos_closeMeliDebug;
 window.autos_copyMeliDebug = autos_copyMeliDebug;
+window.autos_handleCarImageLoad = autos_handleCarImageLoad;
+window.autos_handleCarImageError = autos_handleCarImageError;
 
 // =============================================
 // DOM READY
@@ -3574,8 +3576,11 @@ const autosState = {
     licenseCropPinchBaseDist: 0,
     licenseCropPinchBaseZoom: 1,
     valuationInFlight: new Set(),
+    imageDebug: {},
     loaded: false,
 };
+
+const AUTOS_IMAGE_PLACEHOLDER = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 72'%3E%3Crect width='96' height='72' fill='%23111827'/%3E%3Cpath d='M8 58l18-18 10 10 16-20 36 28H8z' fill='%23334155'/%3E%3Ccircle cx='30' cy='24' r='8' fill='%23475569'/%3E%3C/svg%3E";
 
 const AUTOS_HEADERS = [
     'id','marca','modelo','anio','valorFactura','kilometraje','propietario','tieneSeguro','placa','vin','fotoAuto',
@@ -3762,6 +3767,81 @@ function autos_previewUrlForImage(url) {
     return raw;
 }
 
+function autos_imagePreviewCandidates(url) {
+    const raw = (url || '').toString().trim();
+    if (!raw) return [];
+    const driveId = autos_extractDriveFileId(raw);
+    const out = [];
+    const add = (value) => {
+        const item = (value || '').toString().trim();
+        if (!item || out.includes(item)) return;
+        out.push(item);
+    };
+    if (driveId) {
+        add(`https://drive.google.com/thumbnail?id=${driveId}&sz=w1600`);
+        add(`https://drive.google.com/uc?export=view&id=${driveId}`);
+    }
+    if (/\.hei[cf](\?|$)/i.test(raw)) {
+        const noProto = raw.replace(/^https?:\/\//i, '');
+        add(`https://images.weserv.nl/?url=${encodeURIComponent(noProto)}`);
+    }
+    add(raw);
+    return out;
+}
+
+function autos_getImageDebug(carId) {
+    return autosState.imageDebug[carId] || {};
+}
+
+function autos_patchImageDebug(carId, patch) {
+    if (!carId) return;
+    autosState.imageDebug[carId] = {
+        ...(autosState.imageDebug[carId] || {}),
+        ...patch,
+        updatedAt: new Date().toISOString(),
+    };
+}
+
+function autos_handleCarImageLoad(imgEl, carId, slot) {
+    if (!imgEl || !carId) return;
+    autos_patchImageDebug(carId, {
+        lastEvent: 'load',
+        lastSlot: slot || '-',
+        lastSrc: imgEl.currentSrc || imgEl.src || '-',
+        rawUrl: imgEl.dataset.raw || '-',
+        candidatesCount: autos_imagePreviewCandidates(imgEl.dataset.raw || '').length,
+        currentTry: parseInt(imgEl.dataset.tryIdx || '0', 10) || 0,
+    });
+}
+
+function autos_handleCarImageError(imgEl, carId, slot) {
+    if (!imgEl || !carId) return;
+    const raw = (imgEl.dataset.raw || '').toString().trim();
+    const candidates = autos_imagePreviewCandidates(raw);
+    const currentTry = parseInt(imgEl.dataset.tryIdx || '0', 10) || 0;
+    const nextTry = currentTry + 1;
+    autos_patchImageDebug(carId, {
+        lastEvent: 'error',
+        lastSlot: slot || '-',
+        lastErrorSrc: imgEl.currentSrc || imgEl.src || '-',
+        rawUrl: raw || '-',
+        candidatesCount: candidates.length,
+        currentTry,
+    });
+    if (nextTry < candidates.length) {
+        imgEl.dataset.tryIdx = String(nextTry);
+        imgEl.src = candidates[nextTry];
+        return;
+    }
+    imgEl.src = AUTOS_IMAGE_PLACEHOLDER;
+    imgEl.style.objectFit = 'contain';
+    imgEl.style.opacity = '.72';
+    autos_patchImageDebug(carId, {
+        fallbackApplied: 'placeholder',
+        finalTriedSrc: imgEl.currentSrc || imgEl.src || '-',
+    });
+}
+
 function autos_extractDriveFileId(url) {
     const raw = (url || '').toString();
     let m = raw.match(/drive\.google\.com\/file\/d\/([^/]+)/i);
@@ -3853,6 +3933,7 @@ function autos_renderMeliDebug() {
     const selectedValuation = selectedCar ? autos_getValuationInfo(selectedCar.id) : null;
     const selectedKm = selectedCar ? autos_parseMileage(selectedCar.kilometraje) : 0;
     const selectedQuery = selectedCar ? autos_buildValuationQuery(selectedCar) : '';
+    const imageDbg = selectedCar ? autos_getImageDebug(selectedCar.id) : {};
     const rows = [
         ['appVersion', APP_VERSION],
         ['meliClientId', MELI_CLIENT_ID],
@@ -3896,6 +3977,15 @@ function autos_renderMeliDebug() {
         ['valuation.debug.error', info.valuationError || '-'],
         ['valuation.debug.force', String(info.valuationForce ?? '-')],
         ['valuation.debug.interactiveAuth', String(info.valuationInteractiveAuth ?? '-')],
+        ['image.rawUrl', imageDbg.rawUrl || '-'],
+        ['image.candidatesCount', String(imageDbg.candidatesCount ?? '-')],
+        ['image.lastEvent', imageDbg.lastEvent || '-'],
+        ['image.lastSlot', imageDbg.lastSlot || '-'],
+        ['image.lastSrc', imageDbg.lastSrc || '-'],
+        ['image.lastErrorSrc', imageDbg.lastErrorSrc || '-'],
+        ['image.currentTry', String(imageDbg.currentTry ?? '-')],
+        ['image.fallbackApplied', imageDbg.fallbackApplied || '-'],
+        ['image.updatedAt', imageDbg.updatedAt || '-'],
     ];
     bodyEl.innerHTML = rows.map(([k, v]) => `<div class="autos-debug-row"><span>${k}</span><strong>${String(v)}</strong></div>`).join('');
 }
@@ -3906,6 +3996,7 @@ function autos_buildMeliDebugSnapshot() {
     const selectedValuation = selectedCar ? autos_getValuationInfo(selectedCar.id) : null;
     const selectedKm = selectedCar ? autos_parseMileage(selectedCar.kilometraje) : 0;
     const selectedQuery = selectedCar ? autos_buildValuationQuery(selectedCar) : '';
+    const imageDbg = selectedCar ? autos_getImageDebug(selectedCar.id) : {};
     const nowIso = new Date().toISOString();
     const expiresInSec = meliAuthState.expiresAt ? Math.floor((meliAuthState.expiresAt - Date.now()) / 1000) : 0;
     const lines = [
@@ -3947,6 +4038,15 @@ function autos_buildMeliDebugSnapshot() {
         `valuation.debug.error=${info.valuationError || '-'}`,
         `valuation.debug.force=${String(info.valuationForce ?? '-')}`,
         `valuation.debug.interactiveAuth=${String(info.valuationInteractiveAuth ?? '-')}`,
+        `image.rawUrl=${imageDbg.rawUrl || '-'}`,
+        `image.candidatesCount=${String(imageDbg.candidatesCount ?? '-')}`,
+        `image.lastEvent=${imageDbg.lastEvent || '-'}`,
+        `image.lastSlot=${imageDbg.lastSlot || '-'}`,
+        `image.lastSrc=${imageDbg.lastSrc || '-'}`,
+        `image.lastErrorSrc=${imageDbg.lastErrorSrc || '-'}`,
+        `image.currentTry=${String(imageDbg.currentTry ?? '-')}`,
+        `image.fallbackApplied=${imageDbg.fallbackApplied || '-'}`,
+        `image.updatedAt=${imageDbg.updatedAt || '-'}`,
     ];
     return lines.join('\n');
 }
@@ -4217,9 +4317,17 @@ function autos_openCarDetail() {
     if (!car) return;
     const detailEl = document.getElementById('autos-detail-content');
     if (!detailEl) return;
+    const photoRaw = (car.fotoAuto || '').toString().trim();
+    const photoCandidates = autos_imagePreviewCandidates(photoRaw);
+    const photoSrc = photoCandidates[0] || AUTOS_IMAGE_PLACEHOLDER;
+    autos_patchImageDebug(car.id, {
+        openDetailSrc: photoSrc,
+        rawUrl: photoRaw || '-',
+        candidatesCount: photoCandidates.length,
+    });
     detailEl.innerHTML = `
         <div class="glass-subtle autos-detail-card" style="padding:.85rem;display:grid;gap:.55rem;">
-            <img src="${car.fotoAuto || ''}" alt="Auto" style="width:100%;max-height:220px;object-fit:cover;border-radius:.75rem;background:rgba(255,255,255,.05);" onerror="this.style.display='none'" />
+            <img src="${photoSrc}" data-raw="${photoRaw}" data-try-idx="0" alt="Auto" style="width:100%;max-height:220px;object-fit:cover;border-radius:.75rem;background:rgba(255,255,255,.05);" onload="autos_handleCarImageLoad(this,'${car.id}','detail')" onerror="autos_handleCarImageError(this,'${car.id}','detail')" />
             <div class="autos-detail-title">${car.marca} ${car.modelo} (${car.anio || '-'})</div>
             <div class="autos-detail-row"><strong>Placa:</strong> <span>${car.placa || '-'}</span></div>
             <div class="autos-detail-row"><strong>VIN:</strong> <span>${car.vin || '-'}</span></div>
@@ -4791,9 +4899,17 @@ function autos_renderSelectedCar() {
     const kmAdjLabel = valuationInfo.status === 'ok' && valuationInfo.kmAdjustmentPct
         ? ` · ajuste KM ${valuationInfo.kmAdjustmentPct > 0 ? '+' : ''}${valuationInfo.kmAdjustmentPct}%`
         : '';
+    const photoRaw = (car.fotoAuto || '').toString().trim();
+    const photoCandidates = autos_imagePreviewCandidates(photoRaw);
+    const photoSrc = photoCandidates[0] || AUTOS_IMAGE_PLACEHOLDER;
+    autos_patchImageDebug(car.id, {
+        renderProfileSrc: photoSrc,
+        rawUrl: photoRaw || '-',
+        candidatesCount: photoCandidates.length,
+    });
 
     profileEl.innerHTML = `<div class="glass-subtle autos-profile-card autos-profile-clickable" onclick="autos_openCarDetail()" style="padding:.8rem;display:grid;grid-template-columns:96px minmax(0,1fr);gap:.7rem;align-items:start;">
-        <img src="${car.fotoAuto || ''}" alt="Auto" style="width:96px;height:72px;object-fit:cover;border-radius:.75rem;background:rgba(255,255,255,.06);" onerror="this.style.display='none'" />
+        <img src="${photoSrc}" data-raw="${photoRaw}" data-try-idx="0" alt="Auto" style="width:96px;height:72px;object-fit:cover;border-radius:.75rem;background:rgba(255,255,255,.06);" onload="autos_handleCarImageLoad(this,'${car.id}','card')" onerror="autos_handleCarImageError(this,'${car.id}','card')" />
         <div class="autos-profile-main" style="display:grid;gap:.2rem;min-width:0;">
             <span class="account-name">${car.marca} ${car.modelo} · ${car.anio || '-'}</span>
             <span class="account-type-label">Placa: ${car.placa || '-'} · VIN: ${car.vin || '-'}</span>
