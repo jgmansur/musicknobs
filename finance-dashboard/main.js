@@ -15,7 +15,7 @@ const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // 
 const SPREADSHEET_DEUDAS_ID = '1dKxhgqazskm15lx0f6FNCA0gpJ7i5glfxkusiH3b0Uk'; // Control de Deudas
 const SPREADSHEET_AUTOS_ID = SPREADSHEET_DEUDAS_ID; // Autos + Reparaciones live in same workbook
 const SPREADSHEET_ESTUDIO_ID = SPREADSHEET_DEUDAS_ID; // Estudio + Plugins in same workbook
-const APP_VERSION  = 'v7.1.11';
+const APP_VERSION  = 'v7.1.13';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -3631,6 +3631,58 @@ const AUTOS_SEED = [
     },
 ];
 
+const AUTOS_CSV_PATCH_META_KEY = 'autos_csv_patch_version';
+const AUTOS_CSV_PATCH_VERSION = 'v7.1.13';
+
+const AUTOS_KOLEOS_DEFAULT = {
+    marca: 'Renault',
+    modelo: 'Koleos',
+    anio: '2009',
+    valorFactura: '',
+    kilometraje: '184500',
+    propietario: 'Mariel de la Rosa G',
+    tieneSeguro: false,
+    placa: 'Z33-AFR',
+    vin: 'VF1VY1GZ89C288675',
+    fotoAuto: 'https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/szp3mFYNwh3181ZkC2gi/pub/F9YQEIUejXrdhA3hNaWu.jpeg',
+    contratoPrestamo: '',
+    polizaSeguro: '',
+    vencimientoPoliza: '',
+    proximaRevisionKm: '',
+    emergenciaInterior: '',
+    emergenciaMetro: '',
+    reporteSiniestros1: '',
+    reporteSiniestros2: '',
+    tarjetaCirculacionFrente: '',
+    tarjetaCirculacionAtras: '',
+    pagoTenencia: '',
+    vencimientoTenencia: '',
+    tablaPagos: '',
+    tablaPagosSeguro: '',
+    tipoLlantas: '',
+    llantasFoto: '',
+    certificadoPolarizado: '',
+    facturaArchivo: '',
+    polizaArchivo: '',
+    extraDoc1Nombre: '',
+    extraDoc1Url: '',
+    extraDoc2Nombre: '',
+    extraDoc2Url: '',
+};
+
+const AUTOS_CSV_REPAIRS = {
+    koleos: [
+        { reparacion: 'Mantenimiento General', costo: 11077, moneda: 'MXN', lugar: 'Clinica Automotriz', fecha: '2023-06-01', foto: 'https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/szp3mFYNwh3181ZkC2gi/pub/5dwETdURu7am5EzkjTmG.jpg', recibo: 'https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/szp3mFYNwh3181ZkC2gi/pub/PZav1SE91pYI3iwt8kbA.jpg', descripcion: 'Varios' },
+        { reparacion: 'Compra de llanta delantera derecha', costo: 2600, moneda: 'MXN', lugar: 'Llamtimax San Miguel', fecha: '2024-11-08', foto: 'https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/szp3mFYNwh3181ZkC2gi/pub/pZngCtrPH3Uo6BfQasJN.jpg', recibo: '', descripcion: '' },
+        { reparacion: 'Cambio aceite y filtro', costo: 1200, moneda: 'MXN', lugar: 'Llantimax San Miguel', fecha: '2024-11-08', foto: 'https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/szp3mFYNwh3181ZkC2gi/pub/5F7jCRQQEgFrXEpkZ59N.jpg', recibo: '', descripcion: '' },
+        { reparacion: 'Cotizacion para cambiar bujes', costo: 0, moneda: 'MXN', lugar: 'Llantimax', fecha: '2024-11-13', foto: 'https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/szp3mFYNwh3181ZkC2gi/pub/nxr0ypGXKlrG1GB6YTKn.jpeg', recibo: '', descripcion: 'Esta es una cotizacion y esta pendiente de hacerse. Cotizado en Nov 2024' },
+        { reparacion: 'Foco y grapas', costo: 350, moneda: 'MXN', lugar: 'Llantimax', fecha: '2024-11-13', foto: 'https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/szp3mFYNwh3181ZkC2gi/pub/sUxGylvznY3dQvCOTZUQ.jpg', recibo: '', descripcion: '' },
+    ],
+    taos: [
+        { reparacion: 'Servicio de los 15000 kilometros', costo: 3075.01, moneda: 'MXN', lugar: 'Agencia VW Valle Victoria', fecha: '2026-01-24', foto: 'https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/szp3mFYNwh3181ZkC2gi/pub/soFtdoc1n0sFXUFKuyTq.jpg', recibo: '', descripcion: '' },
+    ],
+};
+
 function autos_bindEvents() {
     document.getElementById('autos-btn-add-car')?.addEventListener('click', () => autos_openCarSheet(null));
     document.getElementById('autos-btn-add-repair')?.addEventListener('click', () => autos_openRepairSheet(null));
@@ -5063,6 +5115,7 @@ async function autos_cargarVista() {
     try {
         await autos_ensureSheets();
         await autos_loadData();
+        await autos_applyCsvConsistencyPatch();
         autos_render();
         autos_refreshAllDailyValuations();
     } catch (e) {
@@ -5183,6 +5236,90 @@ function autos_carToRowByHeaders(car, headers) {
         extraDoc2Url: car.extraDoc2Url || '',
     };
     return (headers || AUTOS_HEADERS).map(h => fields[h] ?? '');
+}
+
+function autos_normalizeText(value) {
+    return (value || '')
+        .toString()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, ' ')
+        .trim();
+}
+
+function autos_matchRepairBySignature(repair, target) {
+    const sameDate = (repair.fecha || '') === (target.fecha || '');
+    const nameA = autos_normalizeText(repair.reparacion);
+    const nameB = autos_normalizeText(target.reparacion);
+    const nameMatch = nameA === nameB || nameA.includes(nameB) || nameB.includes(nameA);
+    return sameDate && nameMatch;
+}
+
+async function autos_applyCsvConsistencyPatch() {
+    if (autosState.meta[AUTOS_CSV_PATCH_META_KEY] === AUTOS_CSV_PATCH_VERSION) return false;
+
+    let changedCars = false;
+    let changedRepairs = false;
+
+    let koleos = autosState.cars.find(c => /koleos/i.test(`${c.marca} ${c.modelo}`))
+        || autosState.cars.find(c => (c.placa || '').toString().trim().toUpperCase() === 'Z33-AFR');
+    if (!koleos) {
+        koleos = {
+            id: `car-koleos-${Date.now()}`,
+            ...AUTOS_KOLEOS_DEFAULT,
+        };
+        autosState.cars.push(koleos);
+        changedCars = true;
+    } else {
+        if (!koleos.fotoAuto) { koleos.fotoAuto = AUTOS_KOLEOS_DEFAULT.fotoAuto; changedCars = true; }
+        if (!koleos.placa) { koleos.placa = AUTOS_KOLEOS_DEFAULT.placa; changedCars = true; }
+        if (!koleos.vin) { koleos.vin = AUTOS_KOLEOS_DEFAULT.vin; changedCars = true; }
+    }
+
+    const taos = autosState.cars.find(c => /taos/i.test(`${c.marca} ${c.modelo}`));
+
+    const upsertRepairs = (carId, rows) => {
+        if (!carId) return;
+        rows.forEach(row => {
+            const found = autosState.repairs.find(r => r.carId === carId && autos_matchRepairBySignature(r, row));
+            if (!found) {
+                autosState.repairs.push({
+                    id: `rep-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+                    carId,
+                    reparacion: row.reparacion,
+                    costo: row.costo,
+                    moneda: row.moneda || 'MXN',
+                    lugar: row.lugar || '',
+                    fecha: row.fecha,
+                    foto: row.foto || '',
+                    recibo: row.recibo || '',
+                    descripcion: row.descripcion || '',
+                    logMarker: '',
+                });
+                changedRepairs = true;
+                return;
+            }
+            let changed = false;
+            if ((!found.lugar || !found.lugar.trim()) && row.lugar) { found.lugar = row.lugar; changed = true; }
+            if ((!found.foto || !found.foto.trim()) && row.foto) { found.foto = row.foto; changed = true; }
+            if ((!found.recibo || !found.recibo.trim()) && row.recibo) { found.recibo = row.recibo; changed = true; }
+            if ((!found.descripcion || !found.descripcion.trim()) && row.descripcion) { found.descripcion = row.descripcion; changed = true; }
+            if ((!Number(found.costo) || Number(found.costo) === 0) && Number(row.costo) > 0) { found.costo = row.costo; changed = true; }
+            if ((!found.moneda || !found.moneda.trim()) && row.moneda) { found.moneda = row.moneda; changed = true; }
+            if (changed) changedRepairs = true;
+        });
+    };
+
+    upsertRepairs(koleos?.id || '', AUTOS_CSV_REPAIRS.koleos);
+    upsertRepairs(taos?.id || '', AUTOS_CSV_REPAIRS.taos);
+
+    if (changedCars) await autos_saveCarsSheet();
+    if (changedRepairs) await autos_saveRepairsSheet();
+
+    autosState.meta[AUTOS_CSV_PATCH_META_KEY] = AUTOS_CSV_PATCH_VERSION;
+    await autos_saveMeta();
+    return changedCars || changedRepairs;
 }
 
 async function autos_loadData() {
