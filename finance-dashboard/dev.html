@@ -10,7 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="./style.css">
     <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <script type="module" src="./main.js?v=7.2.4"></script>
+    <script type="module" src="./main.js?v=7.2.5"></script>
   </head>
   <body>
     <div id="app">
@@ -841,79 +841,90 @@
             <input id="prop-edit-id" type="hidden">
             <input id="prop-sync-month" type="hidden">
 
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:.55rem;">
-              <input id="prop-nombre" class="field-input" placeholder="Nombre de la propiedad">
-              <select id="prop-tipo" class="field-input">
-                <option value="Casa">Casa</option>
-                <option value="Departamento">Departamento</option>
-                <option value="Terreno">Terreno</option>
-                <option value="Local">Local</option>
-                <option value="Otro">Otro</option>
-              </select>
-              <input id="prop-zona" class="field-input" placeholder="Zona / Colonia / Ciudad">
-              <input id="prop-mi-porcentaje" type="number" step="0.01" class="field-input" placeholder="Mi porcentaje (%)">
-              <input id="prop-m2-construccion" type="number" step="0.01" class="field-input" placeholder="m² construcción">
-              <input id="prop-m2-terreno" type="number" step="0.01" class="field-input" placeholder="m² terreno">
-              <input id="prop-valor-compra" type="number" step="0.01" class="field-input" placeholder="Valor compra (MXN)">
-              <input id="prop-valor-catastral" type="number" step="0.01" class="field-input" placeholder="Valor catastral (MXN)">
-              <input id="prop-valor-comercial" type="number" step="0.01" class="field-input" placeholder="Valor comercial (manual)">
-              <input id="prop-valor-investigado" type="number" step="0.01" class="field-input" placeholder="Valor investigado (MXN)">
-              <input id="prop-predial" type="number" step="0.01" class="field-input" placeholder="Predial mensual (MXN)">
-              <input id="prop-mantenimiento" type="number" step="0.01" class="field-input" placeholder="Mantenimiento mensual (MXN)">
+            <div class="prop-sheet-card">
+              <div class="field-label">🏠 Editar Propiedad</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:.55rem;">
+                <input id="prop-nombre" class="field-input" placeholder="Nombre de la propiedad">
+                <select id="prop-tipo" class="field-input">
+                  <option value="Casa">Casa</option>
+                  <option value="Departamento">Departamento</option>
+                  <option value="Terreno">Terreno</option>
+                  <option value="Local">Local</option>
+                  <option value="Otro">Otro</option>
+                </select>
+                <input id="prop-zona" class="field-input" placeholder="Zona / Colonia / Ciudad">
+                <input id="prop-mi-porcentaje" type="number" step="0.01" class="field-input" placeholder="Mi porcentaje (%)">
+                <input id="prop-m2-construccion" type="number" step="0.01" class="field-input" placeholder="m² construcción">
+                <input id="prop-m2-terreno" type="number" step="0.01" class="field-input" placeholder="m² terreno">
+                <input id="prop-valor-compra" type="number" step="0.01" class="field-input" placeholder="Valor compra (MXN)">
+                <input id="prop-valor-catastral" type="number" step="0.01" class="field-input" placeholder="Valor catastral (MXN)">
+                <input id="prop-valor-comercial" type="number" step="0.01" class="field-input" placeholder="Valor comercial (manual)">
+                <input id="prop-valor-investigado" type="number" step="0.01" class="field-input" placeholder="Valor investigado (MXN)">
+                <input id="prop-predial" type="number" step="0.01" class="field-input" placeholder="Predial mensual (MXN)">
+                <input id="prop-mantenimiento" type="number" step="0.01" class="field-input" placeholder="Mantenimiento mensual (MXN)">
+              </div>
+              <textarea id="prop-fuente" class="field-input" rows="2" style="margin-top:.5rem;" placeholder="Cómo se estimó la valoración"></textarea>
             </div>
 
-            <textarea id="prop-fuente" class="field-input" rows="2" style="margin-top:.5rem;" placeholder="Cómo se estimó la valoración"></textarea>
+            <div class="prop-sheet-card">
+              <div class="field-label">📁 Documentos y Enlaces</div>
+              <div class="autos-file-row" style="margin-top:.45rem;">
+                <label for="prop-upload-foto" class="secondary-btn autos-file-btn">🏠 Subir foto propiedad</label>
+                <input id="prop-upload-foto" type="file" class="autos-file-native" accept="image/*,application/pdf">
+              </div>
+              <input id="prop-foto-url" class="field-input" style="margin-top:.45rem;" placeholder="URL foto propiedad (opcional)">
+              <input id="prop-link1" class="field-input" style="margin-top:.45rem;" placeholder="Link asociado 1 (venta, portal, etc)">
+              <input id="prop-link2" class="field-input" style="margin-top:.45rem;" placeholder="Link asociado 2 (opcional)">
 
-            <div class="autos-file-row" style="margin-top:.45rem;">
-              <label for="prop-upload-foto" class="secondary-btn autos-file-btn">🏠 Subir foto propiedad</label>
-              <input id="prop-upload-foto" type="file" class="autos-file-native" accept="image/*,application/pdf">
-            </div>
-            <input id="prop-foto-url" class="field-input" style="margin-top:.45rem;" placeholder="URL foto propiedad (opcional)">
-            <input id="prop-link1" class="field-input" style="margin-top:.45rem;" placeholder="Link asociado 1 (venta, portal, etc)">
-            <input id="prop-link2" class="field-input" style="margin-top:.45rem;" placeholder="Link asociado 2 (opcional)">
+              <div class="autos-file-row" style="margin-top:.45rem;">
+                <label for="prop-upload-escritura" class="secondary-btn autos-file-btn">📄 Subir escritura (foto/PDF)</label>
+                <input id="prop-upload-escritura" type="file" class="autos-file-native" accept="image/*,application/pdf">
+              </div>
+              <input id="prop-escritura-nombre" class="field-input" style="margin-top:.45rem;" placeholder="Nombre documento escritura">
+              <input id="prop-escritura-url" class="field-input" style="margin-top:.45rem;" placeholder="URL escritura">
 
-            <div class="autos-file-row" style="margin-top:.45rem;">
-              <label for="prop-upload-escritura" class="secondary-btn autos-file-btn">📄 Subir escritura (foto/PDF)</label>
-              <input id="prop-upload-escritura" type="file" class="autos-file-native" accept="image/*,application/pdf">
-            </div>
-            <input id="prop-escritura-nombre" class="field-input" style="margin-top:.45rem;" placeholder="Nombre documento escritura">
-            <input id="prop-escritura-url" class="field-input" style="margin-top:.45rem;" placeholder="URL escritura">
+              <div class="autos-file-row" style="margin-top:.45rem;">
+                <label for="prop-upload-extra1" class="secondary-btn autos-file-btn">📎 Documento extra 1</label>
+                <input id="prop-upload-extra1" type="file" class="autos-file-native" accept="image/*,application/pdf">
+              </div>
+              <input id="prop-doc1-nombre" class="field-input" style="margin-top:.45rem;" placeholder="Nombre doc extra 1">
+              <input id="prop-doc1-url" class="field-input" style="margin-top:.45rem;" placeholder="URL doc extra 1">
 
-            <div class="autos-file-row" style="margin-top:.45rem;">
-              <label for="prop-upload-extra1" class="secondary-btn autos-file-btn">📎 Documento extra 1</label>
-              <input id="prop-upload-extra1" type="file" class="autos-file-native" accept="image/*,application/pdf">
-            </div>
-            <input id="prop-doc1-nombre" class="field-input" style="margin-top:.45rem;" placeholder="Nombre doc extra 1">
-            <input id="prop-doc1-url" class="field-input" style="margin-top:.45rem;" placeholder="URL doc extra 1">
+              <div class="autos-file-row" style="margin-top:.45rem;">
+                <label for="prop-upload-extra2" class="secondary-btn autos-file-btn">📎 Documento extra 2</label>
+                <input id="prop-upload-extra2" type="file" class="autos-file-native" accept="image/*,application/pdf">
+              </div>
+              <input id="prop-doc2-nombre" class="field-input" style="margin-top:.45rem;" placeholder="Nombre doc extra 2">
+              <input id="prop-doc2-url" class="field-input" style="margin-top:.45rem;" placeholder="URL doc extra 2">
 
-            <div class="autos-file-row" style="margin-top:.45rem;">
-              <label for="prop-upload-extra2" class="secondary-btn autos-file-btn">📎 Documento extra 2</label>
-              <input id="prop-upload-extra2" type="file" class="autos-file-native" accept="image/*,application/pdf">
-            </div>
-            <input id="prop-doc2-nombre" class="field-input" style="margin-top:.45rem;" placeholder="Nombre doc extra 2">
-            <input id="prop-doc2-url" class="field-input" style="margin-top:.45rem;" placeholder="URL doc extra 2">
-
-            <div class="autos-file-row" style="margin-top:.45rem;">
-              <label for="prop-upload-extra3" class="secondary-btn autos-file-btn">📎 Documento extra 3</label>
-              <input id="prop-upload-extra3" type="file" class="autos-file-native" accept="image/*,application/pdf">
-            </div>
-            <input id="prop-doc3-nombre" class="field-input" style="margin-top:.45rem;" placeholder="Nombre doc extra 3">
-            <input id="prop-doc3-url" class="field-input" style="margin-top:.45rem;" placeholder="URL doc extra 3">
-
-            <label class="field-label" style="margin-top:.55rem;">Dueños y porcentaje</label>
-            <div id="prop-owners-list" class="prop-dyn-list"></div>
-            <div style="display:flex;gap:.5rem;align-items:center;justify-content:space-between;margin-top:.35rem;">
-              <button id="prop-add-owner" type="button" class="mini-btn">+ Agregar dueño</button>
-              <span id="prop-owners-total" class="diff-label">Total dueños: 0%</span>
+              <div class="autos-file-row" style="margin-top:.45rem;">
+                <label for="prop-upload-extra3" class="secondary-btn autos-file-btn">📎 Documento extra 3</label>
+                <input id="prop-upload-extra3" type="file" class="autos-file-native" accept="image/*,application/pdf">
+              </div>
+              <input id="prop-doc3-nombre" class="field-input" style="margin-top:.45rem;" placeholder="Nombre doc extra 3">
+              <input id="prop-doc3-url" class="field-input" style="margin-top:.45rem;" placeholder="URL doc extra 3">
             </div>
 
-            <label class="field-label" style="margin-top:.55rem;">Deudas de la propiedad</label>
-            <div id="prop-deudas-list" class="prop-dyn-list"></div>
-            <button id="prop-add-deuda" type="button" class="mini-btn" style="margin-top:.35rem;">+ Agregar deuda</button>
+            <div class="prop-sheet-card">
+              <label class="field-label">👥 Editar Dueños y Porcentajes</label>
+              <div id="prop-owners-list" class="prop-dyn-list"></div>
+              <div style="display:flex;gap:.5rem;align-items:center;justify-content:space-between;margin-top:.35rem;">
+                <button id="prop-add-owner" type="button" class="mini-btn">+ Agregar dueño</button>
+                <span id="prop-owners-total" class="diff-label">Total dueños: 0%</span>
+              </div>
+            </div>
 
-            <label class="field-label" style="margin-top:.55rem;">Ingresos de la propiedad (mensual)</label>
-            <div id="prop-ingresos-list" class="prop-dyn-list"></div>
-            <button id="prop-add-ingreso" type="button" class="mini-btn" style="margin-top:.35rem;">+ Agregar ingreso</button>
+            <div class="prop-sheet-card">
+              <label class="field-label">💳 Deudas de la Propiedad</label>
+              <div id="prop-deudas-list" class="prop-dyn-list prop-dyn-list-money"></div>
+              <button id="prop-add-deuda" type="button" class="mini-btn" style="margin-top:.35rem;">+ Agregar deuda</button>
+            </div>
+
+            <div class="prop-sheet-card">
+              <label class="field-label">💵 Ingresos de la Propiedad (mensual)</label>
+              <div id="prop-ingresos-list" class="prop-dyn-list prop-dyn-list-money"></div>
+              <button id="prop-add-ingreso" type="button" class="mini-btn" style="margin-top:.35rem;">+ Agregar ingreso</button>
+            </div>
 
             <div id="prop-file-feedback" class="diff-label" style="margin-top:.5rem;"></div>
             <button id="prop-delete" class="mini-btn mini-btn-danger hidden" style="margin-top:.7rem;width:100%;">🗑️ Eliminar propiedad</button>

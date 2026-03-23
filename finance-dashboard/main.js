@@ -15,7 +15,7 @@ const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // 
 const SPREADSHEET_DEUDAS_ID = '1dKxhgqazskm15lx0f6FNCA0gpJ7i5glfxkusiH3b0Uk'; // Control de Deudas
 const SPREADSHEET_AUTOS_ID = SPREADSHEET_DEUDAS_ID; // Autos + Reparaciones live in same workbook
 const SPREADSHEET_ESTUDIO_ID = SPREADSHEET_DEUDAS_ID; // Estudio + Plugins in same workbook
-const APP_VERSION  = 'v7.2.4';
+const APP_VERSION  = 'v7.2.5';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -7149,7 +7149,7 @@ function propiedades_docPreview(url, label) {
 
 function propiedades_renderOwnerRow(owner = { name: '', percent: '' }) {
     const row = document.createElement('div');
-    row.className = 'prop-dyn-row';
+    row.className = 'prop-dyn-row prop-owner-row';
     row.innerHTML = `
       <input class="field-input" data-role="owner-name" placeholder="Nombre dueño" value="${(owner.name || '').toString().replace(/"/g, '&quot;')}">
       <input class="field-input" data-role="owner-percent" type="number" step="0.01" placeholder="%" value="${owner.percent ?? ''}">
@@ -7162,7 +7162,7 @@ function propiedades_renderMoneyRow(kind, item = { concepto: '', monto: '' }) {
     const removeAttr = kind === 'deuda' ? 'data-remove-deuda' : 'data-remove-ingreso';
     const conceptoPh = kind === 'deuda' ? 'Concepto deuda' : 'Concepto ingreso';
     const row = document.createElement('div');
-    row.className = 'prop-dyn-row';
+    row.className = `prop-dyn-row prop-money-row prop-money-row-${kind}`;
     row.innerHTML = `
       <input class="field-input" data-role="money-concepto" placeholder="${conceptoPh}" value="${(item.concepto || '').toString().replace(/"/g, '&quot;')}">
       <input class="field-input" data-role="money-monto" type="number" step="0.01" placeholder="Monto" value="${item.monto ?? ''}">
@@ -7485,15 +7485,24 @@ async function propiedades_syncPropertyRemotes(item) {
         day,
         monthStart,
     });
-    await propiedades_upsertFijoByMarker(item, 'ingreso', {
-        monto: Math.max(0, propiedades_ingresoMiParte(item)),
-        tipo: 'ingreso',
-        concepto: `Propiedad: ${item.nombre} - Ingreso (mi parte)`,
-        categoria: 'Propiedades, Ingreso',
-        budgetCategory: 'Mantenimiento y Pago de Servicios',
-        day,
-        monthStart,
-    });
+
+    const miPct = Math.max(0, Math.min(100, parseSheetValue(item.miPorcentaje || 100)));
+    const ingresos = (item.ingresos || []).filter((x) => (x.concepto || '').trim() && parseSheetValue(x.monto) > 0);
+    await propiedades_removeFijosByPrefix(`[PROP-FIX:${item.id}:ingreso`);
+    for (let i = 0; i < ingresos.length; i++) {
+        const ingreso = ingresos[i];
+        const conceptoLimpio = (ingreso.concepto || '').toString().trim() || `Ingreso ${i + 1}`;
+        const miParte = Math.max(0, parseSheetValue(ingreso.monto)) * (miPct / 100);
+        await propiedades_upsertFijoByMarker(item, `ingreso:${i + 1}`, {
+            monto: miParte,
+            tipo: 'ingreso',
+            concepto: `Propiedad: ${item.nombre} - ${conceptoLimpio} (mi parte)`,
+            categoria: 'Propiedades, Ingreso',
+            budgetCategory: 'Mantenimiento y Pago de Servicios',
+            day,
+            monthStart,
+        });
+    }
 }
 
 async function propiedades_removePropertyRemotes(propertyId) {
