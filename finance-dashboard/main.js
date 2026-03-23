@@ -15,7 +15,7 @@ const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // 
 const SPREADSHEET_DEUDAS_ID = '1dKxhgqazskm15lx0f6FNCA0gpJ7i5glfxkusiH3b0Uk'; // Control de Deudas
 const SPREADSHEET_AUTOS_ID = SPREADSHEET_DEUDAS_ID; // Autos + Reparaciones live in same workbook
 const SPREADSHEET_ESTUDIO_ID = SPREADSHEET_DEUDAS_ID; // Estudio + Plugins in same workbook
-const APP_VERSION  = 'v7.1.6';
+const APP_VERSION  = 'v7.1.7';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -3629,6 +3629,7 @@ function autos_bindEvents() {
     document.getElementById('autos-car-sheet-overlay')?.addEventListener('click', autos_closeCarSheet);
     document.getElementById('autos-repair-sheet-overlay')?.addEventListener('click', autos_closeRepairSheet);
     document.getElementById('autos-car-save')?.addEventListener('click', autos_saveCar);
+    document.getElementById('autos-car-delete')?.addEventListener('click', autos_deleteCarFromSheet);
     document.getElementById('autos-repair-save')?.addEventListener('click', autos_saveRepair);
     document.getElementById('autos-repair-search')?.addEventListener('input', (e) => {
         autosState.repairSearch = (e.target.value || '').trim().toLowerCase();
@@ -3689,6 +3690,61 @@ function autos_bindEvents() {
     document.getElementById('autos-car-poliza-file')?.addEventListener('change', (e) => autos_updateFileFeedback('autos-car-poliza-feedback', e.target.files));
     document.getElementById('autos-repair-photo-file')?.addEventListener('change', (e) => autos_updateFileFeedback('autos-repair-photo-feedback', e.target.files));
     document.getElementById('autos-repair-receipt-file')?.addEventListener('change', (e) => autos_updateFileFeedback('autos-repair-receipt-feedback', e.target.files));
+}
+
+async function autos_deleteCarFromSheet() {
+    const carId = (document.getElementById('autos-car-edit-id')?.value || '').trim();
+    if (!carId) return;
+    await autos_deleteCarById(carId);
+}
+
+async function autos_deleteCarById(carId) {
+    const car = autosState.cars.find(c => c.id === carId);
+    if (!car) return;
+    const linkedRepairs = autosState.repairs.filter(r => r.carId === carId);
+    const warnRepairs = linkedRepairs.length ? `\n\nTambién se eliminarán ${linkedRepairs.length} reparación(es) asociadas.` : '';
+    if (!confirm(`¿Eliminar el auto ${car.marca} ${car.modelo}?${warnRepairs}`)) return;
+
+    autosState.cars = autosState.cars.filter(c => c.id !== carId);
+    autosState.repairs = autosState.repairs.filter(r => r.carId !== carId);
+
+    await autos_saveCarsSheet();
+    await autos_saveRepairsSheet();
+
+    if (linkedRepairs.length) {
+        try {
+            const markers = new Set(linkedRepairs.map(r => r.logMarker || autos_getLogMarker(r.id)).filter(Boolean));
+            if (markers.size) {
+                const logRows = await sheetsGet(SPREADSHEET_LOG_ID, 'Hoja 1!A2:H').catch(() => []);
+                const deleteRows = [];
+                for (let i = 0; i < logRows.length; i++) {
+                    const concepto = (logRows[i]?.[2] || '').toString();
+                    for (const marker of markers) {
+                        if (concepto.includes(marker)) {
+                            deleteRows.push(i + 1);
+                            break;
+                        }
+                    }
+                }
+                if (deleteRows.length) {
+                    const logSheetId = await getSheetId(SPREADSHEET_LOG_ID, 'Hoja 1');
+                    for (const row0 of deleteRows.sort((a, b) => b - a)) {
+                        await sheetsDeleteRow(SPREADSHEET_LOG_ID, logSheetId, row0);
+                    }
+                    tabInited.gastos = false;
+                }
+            }
+        } catch (e) {
+            console.warn('No se pudo limpiar sincronizacion de reparaciones eliminadas:', e);
+        }
+    }
+
+    if (autosState.selectedCarId === carId) {
+        autosState.selectedCarId = autosState.cars[0]?.id || '';
+    }
+    autos_closeCarSheet();
+    autos_render();
+    showToast('🗑️ Auto eliminado');
 }
 
 function autos_updateFileFeedback(elId, files) {
@@ -5059,8 +5115,10 @@ window.autos_updateMileageAndRevalue = async function(carId) {
 
 function autos_openCarSheet(carId) {
     const car = autosState.cars.find(c => c.id === carId) || null;
+    const deleteBtn = document.getElementById('autos-car-delete');
     document.getElementById('autos-car-edit-id').value = car?.id || '';
     document.getElementById('autos-car-title').innerText = car ? 'Editar Auto' : 'Nuevo Auto';
+    if (deleteBtn) deleteBtn.classList.toggle('hidden', !car);
     document.getElementById('autos-car-marca').value = car?.marca || '';
     document.getElementById('autos-car-modelo').value = car?.modelo || '';
     document.getElementById('autos-car-anio').value = car?.anio || '';
