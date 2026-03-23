@@ -15,7 +15,7 @@ const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // 
 const SPREADSHEET_DEUDAS_ID = '1dKxhgqazskm15lx0f6FNCA0gpJ7i5glfxkusiH3b0Uk'; // Control de Deudas
 const SPREADSHEET_AUTOS_ID = SPREADSHEET_DEUDAS_ID; // Autos + Reparaciones live in same workbook
 const SPREADSHEET_ESTUDIO_ID = SPREADSHEET_DEUDAS_ID; // Estudio + Plugins in same workbook
-const APP_VERSION  = 'v7.1.9';
+const APP_VERSION  = 'v7.1.10';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -3583,6 +3583,7 @@ const autosState = {
     docCropPinchBaseZoom: 1,
     valuationInFlight: new Set(),
     imageDebug: {},
+    driveImageObjectUrls: {},
     loaded: false,
 };
 
@@ -3891,6 +3892,21 @@ function autos_patchImageDebug(carId, patch) {
     };
 }
 
+async function autos_fetchDriveImageObjectUrl(rawUrl) {
+    const driveId = autos_extractDriveFileId(rawUrl);
+    if (!driveId) return '';
+    const cached = autosState.driveImageObjectUrls[driveId] || '';
+    if (cached) return cached;
+    const res = await authFetch(`https://www.googleapis.com/drive/v3/files/${driveId}?alt=media`);
+    if (!res.ok) throw new Error(`drive_media_${res.status}`);
+    const blob = await res.blob();
+    const type = (blob?.type || '').toLowerCase();
+    if (!type.startsWith('image/')) throw new Error('drive_media_not_image');
+    const objectUrl = URL.createObjectURL(blob);
+    autosState.driveImageObjectUrls[driveId] = objectUrl;
+    return objectUrl;
+}
+
 function autos_handleCarImageLoad(imgEl, carId, slot) {
     if (!imgEl || !carId) return;
     autos_patchImageDebug(carId, {
@@ -3903,7 +3919,7 @@ function autos_handleCarImageLoad(imgEl, carId, slot) {
     });
 }
 
-function autos_handleCarImageError(imgEl, carId, slot) {
+async function autos_handleCarImageError(imgEl, carId, slot) {
     if (!imgEl || !carId) return;
     const raw = (imgEl.dataset.raw || '').toString().trim();
     const candidates = autos_imagePreviewCandidates(raw);
@@ -3922,6 +3938,29 @@ function autos_handleCarImageError(imgEl, carId, slot) {
         imgEl.src = candidates[nextTry];
         return;
     }
+
+    const driveId = autos_extractDriveFileId(raw);
+    const triedDriveAuth = imgEl.dataset.triedDriveAuth === '1';
+    if (driveId && !triedDriveAuth) {
+        imgEl.dataset.triedDriveAuth = '1';
+        try {
+            const authUrl = await autos_fetchDriveImageObjectUrl(raw);
+            if (authUrl) {
+                autos_patchImageDebug(carId, {
+                    driveAuthAttempt: 'ok',
+                    driveAuthSrc: authUrl,
+                });
+                imgEl.src = authUrl;
+                return;
+            }
+        } catch (err) {
+            autos_patchImageDebug(carId, {
+                driveAuthAttempt: 'error',
+                driveAuthError: String(err?.message || err || 'drive_auth_failed'),
+            });
+        }
+    }
+
     imgEl.src = AUTOS_IMAGE_PLACEHOLDER;
     imgEl.style.objectFit = 'contain';
     imgEl.style.opacity = '.72';
@@ -5081,7 +5120,13 @@ async function autos_loadData() {
         const hasKilometrajeColumn = hasFacturaColumn || boolAt6 || (!boolAt5 && autos_parseMileage(r[4]) > 0);
         const shift = (hasKilometrajeColumn ? 1 : 0) + (hasFacturaColumn ? 1 : 0);
         const looksLikeDate = /^\d{4}-\d{2}-\d{2}$/.test((r[11 + shift] || '').toString().trim());
-        const hasPolicyExtraColumns = r.length >= AUTOS_HEADERS.length || looksLikeDate || autos_parseMileage(r[12 + shift]) > 0;
+        const revisionKmRaw = (r[12 + shift] || '').toString().trim();
+        const revisionKmParsed = autos_parseMileage(revisionKmRaw);
+        const revisionKmLooksValid = !!revisionKmRaw
+            && /^[\d.,\s]+$/.test(revisionKmRaw)
+            && revisionKmParsed > 0
+            && revisionKmParsed < 1000000;
+        const hasPolicyExtraColumns = r.length >= AUTOS_HEADERS.length || looksLikeDate || revisionKmLooksValid;
         const policyShift = hasPolicyExtraColumns ? 2 : 0;
         const facturaIndex = hasFacturaColumn ? 4 : -1;
         const kmIndex = hasFacturaColumn ? 5 : (hasKilometrajeColumn ? 4 : -1);
