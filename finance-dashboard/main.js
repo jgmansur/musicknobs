@@ -15,7 +15,7 @@ const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // 
 const SPREADSHEET_DEUDAS_ID = '1dKxhgqazskm15lx0f6FNCA0gpJ7i5glfxkusiH3b0Uk'; // Control de Deudas
 const SPREADSHEET_AUTOS_ID = SPREADSHEET_DEUDAS_ID; // Autos + Reparaciones live in same workbook
 const SPREADSHEET_ESTUDIO_ID = SPREADSHEET_DEUDAS_ID; // Estudio + Plugins in same workbook
-const APP_VERSION  = 'v7.1.4';
+const APP_VERSION  = 'v7.1.5';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -3586,7 +3586,7 @@ const AUTOS_HEADERS = [
     'id','marca','modelo','anio','valorFactura','kilometraje','propietario','tieneSeguro','placa','vin','fotoAuto',
     'contratoPrestamo','polizaSeguro','emergenciaInterior','emergenciaMetro','reporteSiniestros1','reporteSiniestros2',
     'tarjetaCirculacionFrente','tarjetaCirculacionAtras','pagoTenencia','vencimientoTenencia','tablaPagos','tablaPagosSeguro',
-    'tipoLlantas','llantasFoto','certificadoPolarizado',
+    'tipoLlantas','llantasFoto','certificadoPolarizado','facturaArchivo','polizaArchivo',
 ];
 
 const REPAIRS_HEADERS = [
@@ -3605,6 +3605,7 @@ const AUTOS_SEED = [
         tarjetaCirculacionFrente: 'https://drive.google.com/file/d/1BagSehQCUq-IwWs3goG4AkZMYNWY1_sM/view?usp=drivesdk',
         tarjetaCirculacionAtras: 'https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/szp3mFYNwh3181ZkC2gi/pub/cCRD09DOS9SVxj93tNOS.heic',
         pagoTenencia: '', vencimientoTenencia: '', tablaPagos: '', tablaPagosSeguro: '', tipoLlantas: '', llantasFoto: '', certificadoPolarizado: '',
+        facturaArchivo: '', polizaArchivo: '',
     },
     {
         id: `car-${Date.now()}-2`,
@@ -3618,6 +3619,7 @@ const AUTOS_SEED = [
         pagoTenencia: '', vencimientoTenencia: '2024-08-21', tablaPagos: '', tablaPagosSeguro: '',
         tipoLlantas: '215/55R17', llantasFoto: 'https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/szp3mFYNwh3181ZkC2gi/pub/luR7swl89aB8lYMTQxLC.HEIC',
         certificadoPolarizado: 'https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/szp3mFYNwh3181ZkC2gi/pub/3aPTU0nLybzPaXODiZEF.png',
+        facturaArchivo: '', polizaArchivo: '',
     },
 ];
 
@@ -3683,6 +3685,8 @@ function autos_bindEvents() {
     document.getElementById('autos-car-foto-file')?.addEventListener('change', (e) => autos_updateFileFeedback('autos-car-foto-feedback', e.target.files));
     document.getElementById('autos-car-tarjeta-frente-file')?.addEventListener('change', (e) => autos_updateFileFeedback('autos-car-tarjeta-frente-feedback', e.target.files));
     document.getElementById('autos-car-tarjeta-atras-file')?.addEventListener('change', (e) => autos_updateFileFeedback('autos-car-tarjeta-atras-feedback', e.target.files));
+    document.getElementById('autos-car-factura-file')?.addEventListener('change', (e) => autos_updateFileFeedback('autos-car-factura-feedback', e.target.files));
+    document.getElementById('autos-car-poliza-file')?.addEventListener('change', (e) => autos_updateFileFeedback('autos-car-poliza-feedback', e.target.files));
     document.getElementById('autos-repair-photo-file')?.addEventListener('change', (e) => autos_updateFileFeedback('autos-repair-photo-feedback', e.target.files));
     document.getElementById('autos-repair-receipt-file')?.addEventListener('change', (e) => autos_updateFileFeedback('autos-repair-receipt-feedback', e.target.files));
 }
@@ -4333,8 +4337,10 @@ function autos_openCarDetail() {
             <div class="autos-detail-row"><strong>VIN:</strong> <span>${car.vin || '-'}</span></div>
             <div class="autos-detail-row"><strong>Kilometraje:</strong> <span>${autos_parseMileage(car.kilometraje) ? `${autos_parseMileage(car.kilometraje).toLocaleString('es-MX')} km` : '-'}</span></div>
             <div class="autos-detail-row"><strong>Factura:</strong> <span>${parseSheetValue(car.valorFactura) > 0 ? formatCurrency(parseSheetValue(car.valorFactura)) : '-'}</span></div>
+            <div class="autos-detail-row"><strong>Archivo factura:</strong> <span>${car.facturaArchivo ? `<a href="${car.facturaArchivo}" target="_blank" rel="noopener">Abrir original</a>` : '-'}</span></div>
             <div class="autos-detail-row"><strong>Propietario:</strong> <span>${car.propietario || '-'}</span></div>
             <div class="autos-detail-row"><strong>Seguro:</strong> <span>${car.tieneSeguro ? 'Si' : 'No'} · Poliza ${car.polizaSeguro || '-'}</span></div>
+            <div class="autos-detail-row"><strong>Archivo poliza:</strong> <span>${car.polizaArchivo ? `<a href="${car.polizaArchivo}" target="_blank" rel="noopener">Abrir original</a>` : '-'}</span></div>
             <div class="autos-detail-row"><strong>Valor hoy:</strong> <span>${autos_getValuationLabel(car.id)}</span></div>
             <div class="autos-detail-row"><strong>Emergencia:</strong> <span>${autos_phoneLinkOrText(car.emergenciaInterior, 'Interior')} · ${autos_phoneLinkOrText(car.emergenciaMetro, 'Metro')}</span></div>
             <div class="autos-detail-row"><strong>Siniestros:</strong> <span>${autos_phoneLinkOrText(car.reporteSiniestros1, 'Siniestros 1')} · ${autos_phoneLinkOrText(car.reporteSiniestros2, 'Siniestros 2')}</span></div>
@@ -4718,7 +4724,7 @@ function autos_colLetter(n) {
 
 async function autos_loadData() {
     const [carsRows, repairsRows, metaRows] = await Promise.all([
-        sheetsGet(SPREADSHEET_AUTOS_ID, 'Autos!A2:Z').catch(() => []),
+        sheetsGet(SPREADSHEET_AUTOS_ID, 'Autos!A2:AB').catch(() => []),
         sheetsGet(SPREADSHEET_AUTOS_ID, 'Reparaciones!A2:K').catch(() => []),
         sheetsGet(SPREADSHEET_AUTOS_ID, 'AutosMeta!A2:B').catch(() => []),
     ]);
@@ -4765,6 +4771,8 @@ async function autos_loadData() {
             tipoLlantas: r[21 + shift] || '',
             llantasFoto: r[22 + shift] || '',
             certificadoPolarizado: r[23 + shift] || '',
+            facturaArchivo: r[24 + shift] || '',
+            polizaArchivo: r[25 + shift] || '',
         };
     }).filter(c => c.id && !/buik/i.test(`${c.marca} ${c.modelo}`));
 
@@ -4809,11 +4817,11 @@ async function autos_seedInitialData() {
         { id: `rep-${Date.now()}-6`, carId: taos?.id || '', reparacion: 'Servicio de los 15000 kilometros', costo: 3075.01, moneda: 'MXN', lugar: 'Agencia VW Valle Victoria', fecha: '2026-01-24', foto: 'https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/szp3mFYNwh3181ZkC2gi/pub/soFtdoc1n0sFXUFKuyTq.jpg', recibo: '', descripcion: '', logMarker: '' },
     ].filter(r => r.carId);
 
-    await sheetsUpdate(SPREADSHEET_AUTOS_ID, `Autos!A2:Z${1 + cars.length}`, cars.map(c => [
+    await sheetsUpdate(SPREADSHEET_AUTOS_ID, `Autos!A2:AB${1 + cars.length}`, cars.map(c => [
         c.id, c.marca, c.modelo, c.anio, c.valorFactura || '', c.kilometraje || '', c.propietario, c.tieneSeguro ? 'TRUE' : 'FALSE', c.placa, c.vin, c.fotoAuto,
         c.contratoPrestamo, c.polizaSeguro, c.emergenciaInterior, c.emergenciaMetro, c.reporteSiniestros1, c.reporteSiniestros2,
         c.tarjetaCirculacionFrente, c.tarjetaCirculacionAtras, c.pagoTenencia, c.vencimientoTenencia, c.tablaPagos, c.tablaPagosSeguro,
-        c.tipoLlantas, c.llantasFoto, c.certificadoPolarizado,
+        c.tipoLlantas, c.llantasFoto, c.certificadoPolarizado, c.facturaArchivo || '', c.polizaArchivo || '',
     ]));
     await sheetsUpdate(SPREADSHEET_AUTOS_ID, `Reparaciones!A2:K${1 + repairs.length}`, repairs.map(r => [
         r.id, r.carId, r.reparacion, r.costo, r.moneda, r.lugar, r.fecha, r.foto, r.recibo, r.descripcion, r.logMarker,
@@ -4876,6 +4884,8 @@ function autos_renderSelectedCar() {
     selectedEl.innerText = `${car.marca} ${car.modelo}`;
 
     const links = [
+        ['Factura original', car.facturaArchivo],
+        ['Poliza original', car.polizaArchivo],
         ['Tarjeta Frontal', car.tarjetaCirculacionFrente],
         ['Tarjeta Trasera', car.tarjetaCirculacionAtras],
         ['Tabla Pagos', car.tablaPagos],
@@ -4917,6 +4927,7 @@ function autos_renderSelectedCar() {
             <span class="account-type-label">Factura: ${invoiceLabel}</span>
             <span class="account-type-label">Propietario: ${car.propietario || '-'} · Seguro: ${car.tieneSeguro ? 'Si' : 'No'}</span>
             <span class="account-type-label">Poliza: ${car.polizaSeguro || '-'} · Llantas: ${car.tipoLlantas || '-'}</span>
+            <span class="account-type-label">Archivos: Factura ${car.facturaArchivo ? '✅' : '—'} · Poliza ${car.polizaArchivo ? '✅' : '—'}</span>
             <span class="account-type-label">Valor hoy: ${valuationLabel}${kmAdjLabel}</span>
             <span class="account-type-label" style="color:${meliConnected ? '#34d399' : '#fbbf24'};">${meliStatus}</span>
             <span class="account-type-label">Emergencia: ${emergenciaInteriorHtml} · ${emergenciaMetroHtml}</span>
@@ -4924,6 +4935,8 @@ function autos_renderSelectedCar() {
             <div style="display:flex;gap:.35rem;flex-wrap:wrap;margin-top:.3rem;">
                 <button class="mini-btn" onclick="event.stopPropagation(); autos_openCarSheet('${car.id}')">✏️ Editar auto</button>
                 <button class="mini-btn" onclick="event.stopPropagation(); autos_updateMileageAndRevalue('${car.id}')">🛣️ Actualizar KM + valuacion</button>
+                ${car.facturaArchivo ? `<a class="mini-btn" href="${car.facturaArchivo}" target="_blank" rel="noopener" onclick="event.stopPropagation();">📄 Ver factura original</a>` : ''}
+                ${car.polizaArchivo ? `<a class="mini-btn" href="${car.polizaArchivo}" target="_blank" rel="noopener" onclick="event.stopPropagation();">🛡️ Ver poliza original</a>` : ''}
                 ${meliConnected ? '' : '<button class="mini-btn" onclick="event.stopPropagation(); autos_connectMercadoLibre()">🔐 Conectar ML</button>'}
                 <button class="mini-btn" onclick="event.stopPropagation(); autos_openMeliDebug()">🐞 Debug ML</button>
             </div>
@@ -5052,18 +5065,26 @@ function autos_openCarSheet(carId) {
     document.getElementById('autos-car-placa').value = car?.placa || '';
     document.getElementById('autos-car-vin').value = car?.vin || '';
     document.getElementById('autos-car-foto').value = car?.fotoAuto || '';
+    document.getElementById('autos-car-factura-archivo').value = car?.facturaArchivo || '';
     document.getElementById('autos-car-poliza').value = car?.polizaSeguro || '';
+    document.getElementById('autos-car-poliza-archivo').value = car?.polizaArchivo || '';
     document.getElementById('autos-car-emergencia').value = car?.emergenciaInterior || '';
     document.getElementById('autos-car-llantas').value = car?.tipoLlantas || '';
     document.getElementById('autos-car-tarjeta-frente').value = car?.tarjetaCirculacionFrente || '';
     document.getElementById('autos-car-tarjeta-atras').value = car?.tarjetaCirculacionAtras || '';
     const carFile = document.getElementById('autos-car-foto-file');
+    const facturaFile = document.getElementById('autos-car-factura-file');
+    const polizaFile = document.getElementById('autos-car-poliza-file');
     const tarjetaFrenteFile = document.getElementById('autos-car-tarjeta-frente-file');
     const tarjetaAtrasFile = document.getElementById('autos-car-tarjeta-atras-file');
     if (carFile) carFile.value = '';
+    if (facturaFile) facturaFile.value = '';
+    if (polizaFile) polizaFile.value = '';
     if (tarjetaFrenteFile) tarjetaFrenteFile.value = '';
     if (tarjetaAtrasFile) tarjetaAtrasFile.value = '';
     autos_updateFileFeedback('autos-car-foto-feedback', null);
+    autos_updateFileFeedback('autos-car-factura-feedback', null);
+    autos_updateFileFeedback('autos-car-poliza-feedback', null);
     autos_updateFileFeedback('autos-car-tarjeta-frente-feedback', null);
     autos_updateFileFeedback('autos-car-tarjeta-atras-feedback', null);
     document.getElementById('autos-car-sheet').classList.remove('hidden');
@@ -5093,8 +5114,10 @@ async function autos_saveCar() {
         placa: document.getElementById('autos-car-placa').value.trim(),
         vin: document.getElementById('autos-car-vin').value.trim(),
         fotoAuto: document.getElementById('autos-car-foto').value.trim(),
+        facturaArchivo: document.getElementById('autos-car-factura-archivo').value.trim(),
         contratoPrestamo: '',
         polizaSeguro: document.getElementById('autos-car-poliza').value.trim(),
+        polizaArchivo: document.getElementById('autos-car-poliza-archivo').value.trim(),
         emergenciaInterior: document.getElementById('autos-car-emergencia').value.trim(),
         emergenciaMetro: '', reporteSiniestros1: '', reporteSiniestros2: '',
         tarjetaCirculacionFrente: document.getElementById('autos-car-tarjeta-frente').value.trim(),
@@ -5105,6 +5128,10 @@ async function autos_saveCar() {
     try {
         const uploadedPhoto = await autos_uploadFirstFile('autos-car-foto-file');
         if (uploadedPhoto) car.fotoAuto = uploadedPhoto;
+        const uploadedFactura = await autos_uploadFirstFile('autos-car-factura-file');
+        if (uploadedFactura) car.facturaArchivo = uploadedFactura;
+        const uploadedPoliza = await autos_uploadFirstFile('autos-car-poliza-file');
+        if (uploadedPoliza) car.polizaArchivo = uploadedPoliza;
         const uploadedTarjetaFrente = await autos_uploadFirstFile('autos-car-tarjeta-frente-file');
         if (uploadedTarjetaFrente) car.tarjetaCirculacionFrente = uploadedTarjetaFrente;
         const uploadedTarjetaAtras = await autos_uploadFirstFile('autos-car-tarjeta-atras-file');
@@ -5135,14 +5162,14 @@ async function autos_saveCar() {
 }
 
 async function autos_saveCarsSheet() {
-    await sheetsClear(SPREADSHEET_AUTOS_ID, 'Autos!A2:Z');
+    await sheetsClear(SPREADSHEET_AUTOS_ID, 'Autos!A2:AB');
     if (!autosState.cars.length) return;
-    await sheetsUpdate(SPREADSHEET_AUTOS_ID, `Autos!A2:Z${1 + autosState.cars.length}`, autosState.cars.map(c => [
+    await sheetsUpdate(SPREADSHEET_AUTOS_ID, `Autos!A2:AB${1 + autosState.cars.length}`, autosState.cars.map(c => [
         c.id, c.marca, c.modelo, c.anio, c.valorFactura || '', c.kilometraje || '', c.propietario, c.tieneSeguro ? 'TRUE' : 'FALSE', c.placa, c.vin, c.fotoAuto,
         c.contratoPrestamo || '', c.polizaSeguro || '', c.emergenciaInterior || '', c.emergenciaMetro || '',
         c.reporteSiniestros1 || '', c.reporteSiniestros2 || '', c.tarjetaCirculacionFrente || '', c.tarjetaCirculacionAtras || '',
         c.pagoTenencia || '', c.vencimientoTenencia || '', c.tablaPagos || '', c.tablaPagosSeguro || '',
-        c.tipoLlantas || '', c.llantasFoto || '', c.certificadoPolarizado || '',
+        c.tipoLlantas || '', c.llantasFoto || '', c.certificadoPolarizado || '', c.facturaArchivo || '', c.polizaArchivo || '',
     ]));
 }
 
