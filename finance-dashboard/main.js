@@ -15,7 +15,7 @@ const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // 
 const SPREADSHEET_DEUDAS_ID = '1dKxhgqazskm15lx0f6FNCA0gpJ7i5glfxkusiH3b0Uk'; // Control de Deudas
 const SPREADSHEET_AUTOS_ID = SPREADSHEET_DEUDAS_ID; // Autos + Reparaciones live in same workbook
 const SPREADSHEET_ESTUDIO_ID = SPREADSHEET_DEUDAS_ID; // Estudio + Plugins in same workbook
-const APP_VERSION  = 'v7.4.4';
+const APP_VERSION  = 'v7.4.5';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -586,6 +586,7 @@ const FX_CACHE_KEY = 'usd_mxn_rate_cache_v1';
 const BTC_CACHE_KEY = 'btc_mxn_rate_cache_v1';
 const INVEST_RATE_CACHE_KEY = 'investment_rate_cache_v1';
 const DEBT_VISIBLE_KEY = 'debt_visible_in_balance_v1';
+const ACCOUNT_LOG_ANCHOR_KEY = 'balance_account_log_anchor_v1';
 
 let balanceUsdMxnRate = (() => {
     try {
@@ -789,6 +790,17 @@ let balanceAnchorNeedsMigration = false;
 let balanceRealtimeUnsub = null;
 let balanceRealtimeUid = null;
 let balanceSheetSyncQueue = Promise.resolve();
+let balanceAccountLogTotals = {};
+let balanceAccountLogAnchor = (() => {
+    try {
+        const raw = localStorage.getItem(ACCOUNT_LOG_ANCHOR_KEY);
+        if (!raw) return {};
+        const parsed = JSON.parse(raw);
+        return (parsed && typeof parsed === 'object') ? parsed : {};
+    } catch {
+        return {};
+    }
+})();
 
 function balance_getPaidFixedDeduction() {
     // v3.4.1: keep at 0; fixed payments now affect balance through
@@ -808,16 +820,96 @@ function balance_resetDynamicAnchors() {
     localStorage.setItem('balance_log_anchor_v1', String(balanceLogNetAnchor));
 }
 
+function balance_normalizePaymentKey(value) {
+    return (value || '')
+        .toString()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, ' ')
+        .trim();
+}
+
+function balance_getAccountMatchKeys(acc) {
+    const keys = new Set();
+    const add = (value) => {
+        const k = balance_normalizePaymentKey(value);
+        if (k) keys.add(k);
+    };
+    add(acc.name);
+    if (acc.type === 'cash') add('efectivo');
+    if (acc.type === 'invest') {
+        add('inversion');
+        add('inversiones');
+        add('inversión');
+        if (acc.investmentType === 'cetes') add('cetes');
+        if (acc.investmentType === 'mifel') add('mifel');
+        if (acc.investmentType === 'bitcoin') {
+            add('bitcoin');
+            add('btc');
+        }
+    }
+    return [...keys];
+}
+
+function balance_getAccountIdByPayment(formaPago) {
+    const key = balance_normalizePaymentKey(formaPago);
+    if (!key) return null;
+    let partialMatchId = null;
+    for (const acc of balanceAccounts) {
+        const keys = balance_getAccountMatchKeys(acc);
+        if (keys.includes(key)) return acc.id;
+        if (!partialMatchId && keys.some((k) => k.length >= 4 && (key.includes(k) || k.includes(key)))) {
+            partialMatchId = acc.id;
+        }
+    }
+    return partialMatchId;
+}
+
+function balance_syncAccountLogAnchors() {
+    if (!balanceAccountLogAnchor || typeof balanceAccountLogAnchor !== 'object') {
+        balanceAccountLogAnchor = {};
+    }
+    let changed = false;
+    balanceAccounts.forEach((acc) => {
+        const idKey = String(acc.id);
+        if (!Number.isFinite(Number(balanceAccountLogAnchor[idKey]))) {
+            balanceAccountLogAnchor[idKey] = Number(balanceAccountLogTotals[idKey] || 0);
+            changed = true;
+        }
+    });
+    if (changed) {
+        localStorage.setItem(ACCOUNT_LOG_ANCHOR_KEY, JSON.stringify(balanceAccountLogAnchor));
+    }
+}
+
+function balance_getAccountLogAdjustmentMxn(acc) {
+    const idKey = String(acc.id);
+    const total = Number(balanceAccountLogTotals[idKey] || 0);
+    const anchor = Number(balanceAccountLogAnchor[idKey]);
+    if (!Number.isFinite(anchor)) return 0;
+    return total - anchor;
+}
+
 function balance_updateLogNetFromRows(logRows) {
+    const nextTotalsByAccount = {};
     balanceLogNetTotal = (logRows || []).reduce((sum, row) => {
         const tipo = (row[4] || '').toString().trim().toLowerCase();
         const montoRaw = Math.abs(parseSheetValue(row[3]));
         const moneda = parseCurrencyCode(row[7]);
         const monto = convertTransactionAmountToMxn(montoRaw, moneda);
+        const accountId = balance_getAccountIdByPayment(row[5] || '');
+        if (accountId !== null) {
+            const idKey = String(accountId);
+            const signed = tipo === 'ingreso' ? monto : (tipo === 'gasto' ? -monto : 0);
+            nextTotalsByAccount[idKey] = Number(nextTotalsByAccount[idKey] || 0) + signed;
+        }
         if (tipo === 'ingreso') return sum + monto;
         if (tipo === 'gasto') return sum - monto;
         return sum;
     }, 0);
+    balanceAccountLogTotals = nextTotalsByAccount;
+    balance_syncAccountLogAnchors();
     if (balanceLogNetAnchor === null) {
         balanceLogNetAnchor = balanceLogNetTotal;
         localStorage.setItem('balance_log_anchor_v1', String(balanceLogNetAnchor));
@@ -852,6 +944,10 @@ function balance_startRealtimeSync() {
         const data = snap.data() || {};
         const nextAccounts = (data.accounts || []).map(balance_normalizeAccount);
         balanceAccounts = nextAccounts;
+        if (data.accountLogAnchor && typeof data.accountLogAnchor === 'object') {
+            balanceAccountLogAnchor = data.accountLogAnchor;
+            localStorage.setItem(ACCOUNT_LOG_ANCHOR_KEY, JSON.stringify(balanceAccountLogAnchor));
+        }
         const cloudAnchor = Number(data.logNetAnchor);
         if (Number.isFinite(cloudAnchor)) {
             balanceLogNetAnchor = cloudAnchor;
@@ -931,6 +1027,10 @@ async function balance_loadAccounts() {
                     balanceAnchorNeedsMigration = false;
                 } else {
                     balanceAnchorNeedsMigration = true;
+                }
+                if (data.accountLogAnchor && typeof data.accountLogAnchor === 'object') {
+                    balanceAccountLogAnchor = data.accountLogAnchor;
+                    localStorage.setItem(ACCOUNT_LOG_ANCHOR_KEY, JSON.stringify(balanceAccountLogAnchor));
                 }
                 // Update localStorage cache
                 localStorage.setItem('finance_accounts_v1', JSON.stringify(balanceAccounts));
@@ -1022,6 +1122,7 @@ async function balance_saveToFirestore() {
             bitcoinInitialMxn: Number(a.bitcoinInitialMxn) || 0,
         })),
         logNetAnchor: balanceLogNetAnchor === null ? null : Number(balanceLogNetAnchor),
+        accountLogAnchor: balanceAccountLogAnchor,
         lastUpdated: serverTimestamp(),
     });
 }
@@ -1080,37 +1181,33 @@ async function balance_saveAccounts(opts = {}) {
 }
 
 // ── Compute helpers ──────────────────────────────────────
+function balance_getAccountSignedMxn(acc) {
+    const baseSigned = acc.type === 'credit' ? -Math.abs(acc.balance || 0) : Number(acc.balance || 0);
+    const baseSignedMxn = balance_convertToMxn(Math.abs(baseSigned), acc.currency) * (baseSigned < 0 ? -1 : 1);
+    return baseSignedMxn + balance_getAccountLogAdjustmentMxn(acc);
+}
+
 function balance_getTotal() {
-    const base = balanceAccounts.reduce((sum, a) => {
-        const balanceMxn = balance_convertToMxn(Math.abs(a.balance || 0), a.currency);
-
-        if (a.type === 'credit') {
-            if (a.hidden) return sum;
-            const deuda = -balanceMxn;
-            const limiteVisible = a.creditLimitVisible
-                ? balance_convertToMxn(Math.abs(a.creditLimit || 0), a.currency)
-                : 0;
-            return sum + deuda + limiteVisible;
-        }
-
-        if (a.type === 'invest') {
-            if (a.hidden) {
-                return sum - balanceMxn;
+    const base = balanceAccounts
+        .filter(a => !a.hidden)
+        .reduce((sum, a) => {
+            const signedMxn = balance_getAccountSignedMxn(a);
+            if (a.type === 'credit') {
+                const limiteVisible = a.creditLimitVisible
+                    ? balance_convertToMxn(Math.abs(a.creditLimit || 0), a.currency)
+                    : 0;
+                return sum + signedMxn + limiteVisible;
             }
-            return sum;
-        }
-
-        if (a.hidden) return sum;
-        return sum + (a.balance < 0 ? -balanceMxn : balanceMxn);
-    }, 0);
+            return sum + signedMxn;
+        }, 0);
     const debtImpact = debtVisibleInBalance ? deudas_getTotalAmount() : 0;
-    return base - balance_getPaidFixedDeduction() + balance_getLogNetAdjustment() - debtImpact;
+    return base - balance_getPaidFixedDeduction() - debtImpact;
 }
 
 function balance_getInvestmentSummary() {
     const items = balanceAccounts.filter(a => a.type === 'invest');
     const rows = items.map(acc => {
-        const principalMxn = balance_convertToMxn(Math.abs(acc.balance || 0), acc.currency);
+        const principalMxn = Math.abs(balance_getAccountSignedMxn(acc));
         if (acc.investmentType === 'bitcoin') {
             const currentMxn = principalMxn;
             const initialMxn = Math.max(0, Number(acc.bitcoinInitialMxn) || 0);
@@ -1131,7 +1228,6 @@ function balance_updateKpi() {
     const total = balance_getTotal();
     const real  = total - balancePendingFixed;
     const paidDeduction = balance_getPaidFixedDeduction();
-    const logAdjustment = balance_getLogNetAdjustment();
     const el  = document.getElementById('balance-total');
     const lbl = document.getElementById('balance-real-label');
     if (el) {
@@ -1139,10 +1235,9 @@ function balance_updateKpi() {
         el.innerHTML = `${formatCurrency(total)}<span id="balance-total-income-pending" class="kpi-inline-note">${incomingText}</span>`;
     }
     if (lbl) {
-        if (balancePendingFixed > 0 || paidDeduction > 0 || logAdjustment !== 0) {
+        if (balancePendingFixed > 0 || paidDeduction > 0) {
             const parts = [];
             if (paidDeduction > 0) parts.push(`pagados: ${formatCurrency(paidDeduction)}`);
-            if (logAdjustment !== 0) parts.push(`movs: ${logAdjustment >= 0 ? '+' : ''}${formatCurrency(logAdjustment)}`);
             if (balancePendingFixed > 0) parts.push(`pendientes: ${formatCurrency(balancePendingFixed)}`);
             lbl.innerText = `Real: ${formatCurrency(real)} (${parts.join(' | ')})`;
         } else {
@@ -1187,14 +1282,13 @@ function balance_renderPanel() {
     const total = balance_getTotal();
     const real  = total - balancePendingFixed;
     const paidDeduction = balance_getPaidFixedDeduction();
-    const logAdjustment = balance_getLogNetAdjustment();
     document.getElementById('bs-total').innerText = formatCurrency(total);
     const bsReal = document.getElementById('bs-real');
     bsReal.innerText   = formatCurrency(real);
     bsReal.className   = 'bs-amount ' + (real >= 0 ? 'text-success' : 'text-danger');
     document.getElementById('bs-pending-label').innerText =
-        (balancePendingFixed > 0 || paidDeduction > 0 || logAdjustment !== 0)
-            ? `${paidDeduction > 0 ? `menos ${formatCurrency(paidDeduction)} pagados` : 'sin pagados'}${logAdjustment !== 0 ? ` · movs ${logAdjustment >= 0 ? '+' : ''}${formatCurrency(logAdjustment)}` : ''}${balancePendingFixed > 0 ? ` · menos ${formatCurrency(balancePendingFixed)} pendientes` : ''}`
+        (balancePendingFixed > 0 || paidDeduction > 0)
+            ? `${paidDeduction > 0 ? `menos ${formatCurrency(paidDeduction)} pagados` : 'sin pagados'}${balancePendingFixed > 0 ? ` · menos ${formatCurrency(balancePendingFixed)} pendientes` : ''}`
             : 'sin fijos pendientes';
 
     const list = document.getElementById('accounts-list');
@@ -1202,7 +1296,7 @@ function balance_renderPanel() {
         const icon   = ACCOUNT_ICONS[acc.type]  || '🏦';
         const color  = acc.hidden ? '#475569' : (ACCOUNT_COLORS[acc.type] || '#3b82f6');
         const signed = acc.type === 'credit' ? -Math.abs(acc.balance) : +acc.balance;
-        const signedMxn = balance_convertToMxn(Math.abs(signed), acc.currency) * (signed < 0 ? -1 : 1);
+        const signedMxn = balance_getAccountSignedMxn(acc);
         const creditLimit = Math.abs(acc.creditLimit || 0);
         const creditLimitMxn = balance_convertToMxn(creditLimit, acc.currency);
         const fxHint = acc.currency === 'USD'
