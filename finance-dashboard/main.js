@@ -15,7 +15,7 @@ const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // 
 const SPREADSHEET_DEUDAS_ID = '1dKxhgqazskm15lx0f6FNCA0gpJ7i5glfxkusiH3b0Uk'; // Control de Deudas
 const SPREADSHEET_AUTOS_ID = SPREADSHEET_DEUDAS_ID; // Autos + Reparaciones live in same workbook
 const SPREADSHEET_ESTUDIO_ID = SPREADSHEET_DEUDAS_ID; // Estudio + Plugins in same workbook
-const APP_VERSION  = 'v7.1.8';
+const APP_VERSION  = 'v7.1.9';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -3575,6 +3575,12 @@ const autosState = {
     licenseCropDragLast: null,
     licenseCropPinchBaseDist: 0,
     licenseCropPinchBaseZoom: 1,
+    docCrop: null,
+    docCropMode: 'carta',
+    docCropPointers: new Map(),
+    docCropDragLast: null,
+    docCropPinchBaseDist: 0,
+    docCropPinchBaseZoom: 1,
     valuationInFlight: new Set(),
     imageDebug: {},
     loaded: false,
@@ -3674,6 +3680,22 @@ function autos_bindEvents() {
         cropCanvas.addEventListener('pointercancel', autos_cropPointerUp);
         cropCanvas.addEventListener('pointerleave', autos_cropPointerUp);
     }
+    document.getElementById('autos-doc-crop-overlay')?.addEventListener('click', autos_cancelDocCropPanel);
+    document.getElementById('autos-doc-crop-close')?.addEventListener('click', autos_cancelDocCropPanel);
+    document.getElementById('autos-doc-crop-cancel')?.addEventListener('click', autos_cancelDocCropPanel);
+    document.getElementById('autos-doc-crop-apply')?.addEventListener('click', autos_applyDocCrop);
+    document.getElementById('autos-doc-crop-zoom')?.addEventListener('input', autos_updateDocCropFromControls);
+    document.getElementById('autos-doc-crop-x')?.addEventListener('input', autos_updateDocCropFromControls);
+    document.getElementById('autos-doc-crop-y')?.addEventListener('input', autos_updateDocCropFromControls);
+    document.getElementById('autos-doc-crop-size')?.addEventListener('change', autos_updateDocCropMode);
+    const docCropCanvas = document.getElementById('autos-doc-crop-canvas');
+    if (docCropCanvas) {
+        docCropCanvas.addEventListener('pointerdown', autos_docCropPointerDown);
+        docCropCanvas.addEventListener('pointermove', autos_docCropPointerMove);
+        docCropCanvas.addEventListener('pointerup', autos_docCropPointerUp);
+        docCropCanvas.addEventListener('pointercancel', autos_docCropPointerUp);
+        docCropCanvas.addEventListener('pointerleave', autos_docCropPointerUp);
+    }
     const licCard = document.getElementById('autos-license-card');
     if (licCard) {
         licCard.addEventListener('pointerdown', autos_licensePointerDown);
@@ -3771,11 +3793,18 @@ async function autos_ensureRecibosFolder() {
     return folderId;
 }
 
-async function autos_uploadFirstFile(inputId) {
+async function autos_uploadFirstFile(inputId, options = {}) {
     const input = document.getElementById(inputId);
     if (!input || !input.files || !input.files.length) return '';
     const folderId = await autos_ensureRecibosFolder();
-    const file = input.files[0];
+    let file = input.files[0];
+    if (options.enableCrop && autos_fileLooksLikeImage(file)) {
+        const cropped = await autos_openDocCropper(file, {
+            title: options.cropTitle || 'Recortar documento',
+            mode: options.cropMode || 'libre',
+        });
+        if (cropped) file = cropped;
+    }
     return driveUploadFile(file, folderId);
 }
 
@@ -4711,6 +4740,259 @@ async function autos_applyLicenseCrop() {
     }
 }
 
+function autos_docCropPreset(mode) {
+    const key = (mode || 'libre').toString();
+    if (key === 'carta') return { ratio: 8.5 / 11, width: 1700, height: 2200 };
+    if (key === 'oficio') return { ratio: 8.5 / 13, width: 1700, height: 2600 };
+    return { ratio: null, width: 1800, height: 1800 };
+}
+
+function autos_getDocCropFrame(cw, ch, mode) {
+    const preset = autos_docCropPreset(mode);
+    const margin = 24;
+    if (!preset.ratio) {
+        return { x: margin, y: margin, w: Math.max(10, cw - margin * 2), h: Math.max(10, ch - margin * 2) };
+    }
+    const availW = Math.max(10, cw - margin * 2);
+    const availH = Math.max(10, ch - margin * 2);
+    let w = availW;
+    let h = w / preset.ratio;
+    if (h > availH) {
+        h = availH;
+        w = h * preset.ratio;
+    }
+    return {
+        x: (cw - w) / 2,
+        y: (ch - h) / 2,
+        w,
+        h,
+    };
+}
+
+function autos_drawDocCropScene(ctx, crop, cw, ch) {
+    const { dx, dy, drawW, drawH } = autos_getLicenseCropDrawBox(crop, cw, ch);
+    const frame = autos_getDocCropFrame(cw, ch, autosState.docCropMode);
+    ctx.clearRect(0, 0, cw, ch);
+    ctx.fillStyle = '#0b1120';
+    ctx.fillRect(0, 0, cw, ch);
+    ctx.drawImage(crop.image, dx, dy, drawW, drawH);
+
+    ctx.save();
+    ctx.fillStyle = 'rgba(2, 6, 23, 0.48)';
+    ctx.beginPath();
+    ctx.rect(0, 0, cw, ch);
+    ctx.rect(frame.x, frame.y, frame.w, frame.h);
+    ctx.fill('evenodd');
+    ctx.restore();
+
+    ctx.strokeStyle = 'rgba(251,191,36,.95)';
+    ctx.lineWidth = 3;
+    ctx.strokeRect(frame.x, frame.y, frame.w, frame.h);
+}
+
+function autos_closeDocCropPanelInternal() {
+    document.getElementById('autos-doc-crop-panel')?.classList.add('hidden');
+    autosState.docCrop = null;
+    autosState.docCropPointers = new Map();
+    autosState.docCropDragLast = null;
+    autosState.docCropPinchBaseDist = 0;
+    autosState.docCropPinchBaseZoom = 1;
+    autosState.docCropMode = 'carta';
+}
+
+function autos_finishDocCrop(resultFile) {
+    const crop = autosState.docCrop;
+    const resolve = crop?.resolve;
+    autos_closeDocCropPanelInternal();
+    if (resolve) resolve(resultFile || null);
+}
+
+function autos_cancelDocCropPanel() {
+    const original = autosState.docCrop?.originalFile || null;
+    autos_finishDocCrop(original);
+}
+
+async function autos_openDocCropper(file, options = {}) {
+    const dataUrl = await autos_fileToDataUrl(file);
+    const image = await autos_loadImage(dataUrl);
+    const mode = (options.mode || 'carta').toString();
+    const title = (options.title || 'Recortar documento').toString();
+
+    return new Promise((resolve) => {
+        autosState.docCrop = {
+            image,
+            zoom: 1,
+            offsetX: 0,
+            offsetY: 0,
+            originalFile: file,
+            resolve,
+        };
+        autosState.docCropMode = mode;
+        autosState.docCropPointers = new Map();
+        autosState.docCropDragLast = null;
+        autosState.docCropPinchBaseDist = 0;
+        autosState.docCropPinchBaseZoom = 1;
+
+        const titleEl = document.getElementById('autos-doc-crop-title');
+        if (titleEl) titleEl.innerText = title;
+        const sizeEl = document.getElementById('autos-doc-crop-size');
+        if (sizeEl) sizeEl.value = mode;
+        const zoomEl = document.getElementById('autos-doc-crop-zoom');
+        const xEl = document.getElementById('autos-doc-crop-x');
+        const yEl = document.getElementById('autos-doc-crop-y');
+        if (zoomEl) zoomEl.value = '1';
+        if (xEl) xEl.value = '0';
+        if (yEl) yEl.value = '0';
+        document.getElementById('autos-doc-crop-panel')?.classList.remove('hidden');
+        autos_renderDocCrop();
+    });
+}
+
+function autos_updateDocCropFromControls() {
+    const crop = autosState.docCrop;
+    if (!crop) return;
+    crop.zoom = autos_clamp(Number(document.getElementById('autos-doc-crop-zoom')?.value || 1), 1, 3);
+    crop.offsetX = autos_clamp(Number(document.getElementById('autos-doc-crop-x')?.value || 0), -100, 100);
+    crop.offsetY = autos_clamp(Number(document.getElementById('autos-doc-crop-y')?.value || 0), -100, 100);
+    autos_renderDocCrop();
+}
+
+function autos_updateDocCropMode() {
+    autosState.docCropMode = (document.getElementById('autos-doc-crop-size')?.value || 'carta').toString();
+    autos_renderDocCrop();
+}
+
+function autos_syncDocCropControls() {
+    const crop = autosState.docCrop;
+    if (!crop) return;
+    const zoomEl = document.getElementById('autos-doc-crop-zoom');
+    const xEl = document.getElementById('autos-doc-crop-x');
+    const yEl = document.getElementById('autos-doc-crop-y');
+    if (zoomEl) zoomEl.value = String(crop.zoom);
+    if (xEl) xEl.value = String(crop.offsetX);
+    if (yEl) yEl.value = String(crop.offsetY);
+}
+
+function autos_docCropPointerDown(e) {
+    const crop = autosState.docCrop;
+    const canvas = document.getElementById('autos-doc-crop-canvas');
+    if (!crop || !canvas) return;
+    canvas.setPointerCapture(e.pointerId);
+    const p = autos_canvasPoint(e, canvas);
+    autosState.docCropPointers.set(e.pointerId, p);
+    if (autosState.docCropPointers.size === 1) autosState.docCropDragLast = p;
+    if (autosState.docCropPointers.size >= 2) {
+        const pts = [...autosState.docCropPointers.values()].slice(0, 2);
+        autosState.docCropPinchBaseDist = autos_distance(pts[0], pts[1]) || 1;
+        autosState.docCropPinchBaseZoom = crop.zoom;
+    }
+}
+
+function autos_docCropPointerMove(e) {
+    const crop = autosState.docCrop;
+    const canvas = document.getElementById('autos-doc-crop-canvas');
+    if (!crop || !canvas) return;
+    if (!autosState.docCropPointers.has(e.pointerId)) return;
+    const p = autos_canvasPoint(e, canvas);
+    autosState.docCropPointers.set(e.pointerId, p);
+
+    if (autosState.docCropPointers.size === 1 && autosState.docCropDragLast) {
+        const prev = autosState.docCropDragLast;
+        const dx = p.x - prev.x;
+        const dy = p.y - prev.y;
+        const draw = autos_getLicenseCropDrawBox(crop, canvas.width, canvas.height);
+        const freeX = Math.max(1, (draw.drawW - canvas.width) / 2);
+        const freeY = Math.max(1, (draw.drawH - canvas.height) / 2);
+        crop.offsetX = autos_clamp(crop.offsetX + (dx / freeX) * 100, -100, 100);
+        crop.offsetY = autos_clamp(crop.offsetY + (dy / freeY) * 100, -100, 100);
+        autosState.docCropDragLast = p;
+        autos_syncDocCropControls();
+        autos_renderDocCrop();
+        return;
+    }
+
+    if (autosState.docCropPointers.size >= 2) {
+        const pts = [...autosState.docCropPointers.values()].slice(0, 2);
+        const dist = autos_distance(pts[0], pts[1]) || 1;
+        const baseDist = autosState.docCropPinchBaseDist || dist;
+        const baseZoom = autosState.docCropPinchBaseZoom || crop.zoom;
+        crop.zoom = autos_clamp(baseZoom * (dist / baseDist), 1, 3);
+        autos_syncDocCropControls();
+        autos_renderDocCrop();
+    }
+}
+
+function autos_docCropPointerUp(e) {
+    autosState.docCropPointers.delete(e.pointerId);
+    if (autosState.docCropPointers.size === 1) {
+        autosState.docCropDragLast = [...autosState.docCropPointers.values()][0];
+    } else {
+        autosState.docCropDragLast = null;
+    }
+    if (autosState.docCropPointers.size < 2) autosState.docCropPinchBaseDist = 0;
+}
+
+function autos_renderDocCrop() {
+    const crop = autosState.docCrop;
+    const canvas = document.getElementById('autos-doc-crop-canvas');
+    if (!crop || !canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    autos_drawDocCropScene(ctx, crop, canvas.width, canvas.height);
+}
+
+function autos_docCropOutputSize(mode, frame) {
+    const preset = autos_docCropPreset(mode);
+    if (preset.ratio) return { width: preset.width, height: preset.height };
+    const ratio = Math.max(0.2, frame.w / Math.max(1, frame.h));
+    const maxWidth = 1800;
+    const width = maxWidth;
+    const height = Math.max(400, Math.round(width / ratio));
+    return { width, height };
+}
+
+async function autos_applyDocCrop() {
+    const crop = autosState.docCrop;
+    const canvas = document.getElementById('autos-doc-crop-canvas');
+    if (!crop || !canvas) return;
+
+    const mode = autosState.docCropMode || 'carta';
+    const frame = autos_getDocCropFrame(canvas.width, canvas.height, mode);
+    const draw = autos_getLicenseCropDrawBox(crop, canvas.width, canvas.height);
+    const img = crop.image;
+
+    const sx = autos_clamp(((frame.x - draw.dx) / draw.drawW) * img.width, 0, img.width);
+    const sy = autos_clamp(((frame.y - draw.dy) / draw.drawH) * img.height, 0, img.height);
+    const ex = autos_clamp((((frame.x + frame.w) - draw.dx) / draw.drawW) * img.width, 0, img.width);
+    const ey = autos_clamp((((frame.y + frame.h) - draw.dy) / draw.drawH) * img.height, 0, img.height);
+    const sw = Math.max(4, ex - sx);
+    const sh = Math.max(4, ey - sy);
+
+    const outSize = autos_docCropOutputSize(mode, frame);
+    const outCanvas = document.createElement('canvas');
+    outCanvas.width = outSize.width;
+    outCanvas.height = outSize.height;
+    const outCtx = outCanvas.getContext('2d');
+    if (!outCtx) {
+        showToast('⚠️ No se pudo crear recorte');
+        return;
+    }
+
+    outCtx.fillStyle = '#ffffff';
+    outCtx.fillRect(0, 0, outCanvas.width, outCanvas.height);
+    outCtx.drawImage(img, sx, sy, sw, sh, 0, 0, outCanvas.width, outCanvas.height);
+
+    const blob = await new Promise(resolve => outCanvas.toBlob(resolve, 'image/jpeg', 0.92));
+    if (!blob) {
+        showToast('⚠️ No se pudo crear recorte');
+        return;
+    }
+
+    const safeName = (crop.originalFile?.name || `doc-${Date.now()}`).replace(/\.[^.]+$/, '');
+    const file = new File([blob], `${safeName}-crop.jpg`, { type: 'image/jpeg' });
+    autos_finishDocCrop(file);
+}
+
 async function autos_handleLicenseFile(e) {
     const input = e?.target;
     if (!input || !input.files || !input.files.length) return;
@@ -5199,9 +5481,9 @@ async function autos_saveCar() {
     try {
         const uploadedPhoto = await autos_uploadFirstFile('autos-car-foto-file');
         if (uploadedPhoto) car.fotoAuto = uploadedPhoto;
-        const uploadedFactura = await autos_uploadFirstFile('autos-car-factura-file');
+        const uploadedFactura = await autos_uploadFirstFile('autos-car-factura-file', { enableCrop: true, cropTitle: 'Recortar factura', cropMode: 'carta' });
         if (uploadedFactura) car.facturaArchivo = uploadedFactura;
-        const uploadedPoliza = await autos_uploadFirstFile('autos-car-poliza-file');
+        const uploadedPoliza = await autos_uploadFirstFile('autos-car-poliza-file', { enableCrop: true, cropTitle: 'Recortar póliza', cropMode: 'oficio' });
         if (uploadedPoliza) car.polizaArchivo = uploadedPoliza;
         const uploadedTarjetaFrente = await autos_uploadFirstFile('autos-car-tarjeta-frente-file');
         if (uploadedTarjetaFrente) car.tarjetaCirculacionFrente = uploadedTarjetaFrente;

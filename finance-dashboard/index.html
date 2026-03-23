@@ -13,7 +13,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <link rel="stylesheet" href="./style.css">
-    <script type="module" src="./main.js?v=7.1.8"></script>
+    <script type="module" src="./main.js?v=7.1.9"></script>
   </head>
   <body>
     <div id="app">
@@ -620,6 +620,45 @@
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:.55rem;margin-top:.8rem;">
               <button id="autos-license-crop-cancel" class="secondary-btn">Cancelar</button>
               <button id="autos-license-crop-apply" class="primary-btn">Usar recorte</button>
+            </div>
+          </div>
+        </div>
+
+        <div id="autos-doc-crop-panel" class="bottom-sheet hidden">
+          <div id="autos-doc-crop-overlay" class="bottom-sheet-overlay"></div>
+          <div class="bottom-sheet-content glass">
+            <div class="sheet-handle"></div>
+            <div class="balance-panel-header">
+              <h3 id="autos-doc-crop-title" class="balance-panel-title">Recortar documento</h3>
+              <button id="autos-doc-crop-close" class="icon-btn">✕</button>
+            </div>
+            <div class="diff-label" style="margin-bottom:.45rem;">Ajusta el encuadre y elige tamaño: carta, oficio o libre.</div>
+            <canvas id="autos-doc-crop-canvas" class="autos-license-crop-canvas" width="1200" height="1560"></canvas>
+            <div class="autos-license-crop-grid">
+              <label class="autos-filter-col">
+                <span class="autos-filter-label">Tamaño</span>
+                <select id="autos-doc-crop-size" class="field-input">
+                  <option value="carta">Carta</option>
+                  <option value="oficio">Oficio</option>
+                  <option value="libre">Libre</option>
+                </select>
+              </label>
+              <label class="autos-filter-col">
+                <span class="autos-filter-label">Zoom</span>
+                <input id="autos-doc-crop-zoom" type="range" min="1" max="3" step="0.01" value="1">
+              </label>
+              <label class="autos-filter-col">
+                <span class="autos-filter-label">Mover horizontal</span>
+                <input id="autos-doc-crop-x" type="range" min="-100" max="100" step="1" value="0">
+              </label>
+              <label class="autos-filter-col">
+                <span class="autos-filter-label">Mover vertical</span>
+                <input id="autos-doc-crop-y" type="range" min="-100" max="100" step="1" value="0">
+              </label>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:.55rem;margin-top:.8rem;">
+              <button id="autos-doc-crop-cancel" class="secondary-btn">Usar original</button>
+              <button id="autos-doc-crop-apply" class="primary-btn">Usar recorte</button>
             </div>
           </div>
         </div>
