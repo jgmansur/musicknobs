@@ -15,7 +15,7 @@ const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // 
 const SPREADSHEET_DEUDAS_ID = '1dKxhgqazskm15lx0f6FNCA0gpJ7i5glfxkusiH3b0Uk'; // Control de Deudas
 const SPREADSHEET_AUTOS_ID = SPREADSHEET_DEUDAS_ID; // Autos + Reparaciones live in same workbook
 const SPREADSHEET_ESTUDIO_ID = SPREADSHEET_DEUDAS_ID; // Estudio + Plugins in same workbook
-const APP_VERSION  = 'v7.1.13';
+const APP_VERSION  = 'v7.1.14';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -4510,25 +4510,32 @@ function autos_openCarDetail() {
     });
     const extra1Name = (car.extraDoc1Nombre || '').toString().trim() || 'Documento extra 1';
     const extra2Name = (car.extraDoc2Nombre || '').toString().trim() || 'Documento extra 2';
+    const detailRows = [];
+    if (car.placa) detailRows.push(`<div class="autos-detail-row"><strong>Placa:</strong> <span>${car.placa}</span></div>`);
+    if (car.vin) detailRows.push(`<div class="autos-detail-row"><strong>VIN:</strong> <span>${car.vin}</span></div>`);
+    if (autos_parseMileage(car.kilometraje)) detailRows.push(`<div class="autos-detail-row"><strong>Kilometraje:</strong> <span>${autos_parseMileage(car.kilometraje).toLocaleString('es-MX')} km</span></div>`);
+    if (autos_parseMileage(car.proximaRevisionKm)) detailRows.push(`<div class="autos-detail-row"><strong>Próxima revisión:</strong> <span>${autos_parseMileage(car.proximaRevisionKm).toLocaleString('es-MX')} km</span></div>`);
+    if (parseSheetValue(car.valorFactura) > 0) detailRows.push(`<div class="autos-detail-row"><strong>Factura:</strong> <span>${formatCurrency(parseSheetValue(car.valorFactura))}</span></div>`);
+    if (car.facturaArchivo) detailRows.push(`<div class="autos-detail-row"><strong>Archivo factura:</strong> <span><a href="${car.facturaArchivo}" target="_blank" rel="noopener">Abrir original</a></span></div>`);
+    if (car.propietario) detailRows.push(`<div class="autos-detail-row"><strong>Propietario:</strong> <span>${car.propietario}</span></div>`);
+    const seguroParts = [car.tieneSeguro ? 'Si' : 'No'];
+    if (car.polizaSeguro) seguroParts.push(`Poliza ${car.polizaSeguro}`);
+    if (car.vencimientoPoliza) seguroParts.push(`Vence ${car.vencimientoPoliza}`);
+    detailRows.push(`<div class="autos-detail-row"><strong>Seguro:</strong> <span>${seguroParts.join(' · ')}</span></div>`);
+    if (car.polizaArchivo) detailRows.push(`<div class="autos-detail-row"><strong>Archivo poliza:</strong> <span><a href="${car.polizaArchivo}" target="_blank" rel="noopener">Abrir original</a></span></div>`);
+    if (car.extraDoc1Url) detailRows.push(`<div class="autos-detail-row"><strong>${extra1Name}:</strong> <span><a href="${car.extraDoc1Url}" target="_blank" rel="noopener">Abrir original</a></span></div>`);
+    if (car.extraDoc2Url) detailRows.push(`<div class="autos-detail-row"><strong>${extra2Name}:</strong> <span><a href="${car.extraDoc2Url}" target="_blank" rel="noopener">Abrir original</a></span></div>`);
+    detailRows.push(`<div class="autos-detail-row"><strong>Valor hoy:</strong> <span>${autos_getValuationLabel(car.id)}</span></div>`);
+    const hasEmergency = !!((car.emergenciaInterior || '').trim() || (car.emergenciaMetro || '').trim());
+    if (hasEmergency) detailRows.push(`<div class="autos-detail-row"><strong>Emergencia:</strong> <span>${autos_phoneLinkOrText(car.emergenciaInterior, 'Interior')} · ${autos_phoneLinkOrText(car.emergenciaMetro, 'Metro')}</span></div>`);
+    const hasClaims = !!((car.reporteSiniestros1 || '').trim() || (car.reporteSiniestros2 || '').trim());
+    if (hasClaims) detailRows.push(`<div class="autos-detail-row"><strong>Siniestros:</strong> <span>${autos_phoneLinkOrText(car.reporteSiniestros1, 'Siniestros 1')} · ${autos_phoneLinkOrText(car.reporteSiniestros2, 'Siniestros 2')}</span></div>`);
+    if (car.tipoLlantas) detailRows.push(`<div class="autos-detail-row"><strong>Llantas:</strong> <span>${car.tipoLlantas}</span></div>`);
     detailEl.innerHTML = `
         <div class="glass-subtle autos-detail-card" style="padding:.85rem;display:grid;gap:.55rem;">
             <img src="${photoSrc}" data-raw="${photoRaw}" data-try-idx="0" alt="Auto" style="width:100%;max-height:220px;object-fit:cover;border-radius:.75rem;background:rgba(255,255,255,.05);" onload="autos_handleCarImageLoad(this,'${car.id}','detail')" onerror="autos_handleCarImageError(this,'${car.id}','detail')" />
             <div class="autos-detail-title">${car.marca} ${car.modelo} (${car.anio || '-'})</div>
-            <div class="autos-detail-row"><strong>Placa:</strong> <span>${car.placa || '-'}</span></div>
-            <div class="autos-detail-row"><strong>VIN:</strong> <span>${car.vin || '-'}</span></div>
-            <div class="autos-detail-row"><strong>Kilometraje:</strong> <span>${autos_parseMileage(car.kilometraje) ? `${autos_parseMileage(car.kilometraje).toLocaleString('es-MX')} km` : '-'}</span></div>
-            <div class="autos-detail-row"><strong>Próxima revisión:</strong> <span>${autos_parseMileage(car.proximaRevisionKm) ? `${autos_parseMileage(car.proximaRevisionKm).toLocaleString('es-MX')} km` : '-'}</span></div>
-            <div class="autos-detail-row"><strong>Factura:</strong> <span>${parseSheetValue(car.valorFactura) > 0 ? formatCurrency(parseSheetValue(car.valorFactura)) : '-'}</span></div>
-            <div class="autos-detail-row"><strong>Archivo factura:</strong> <span>${car.facturaArchivo ? `<a href="${car.facturaArchivo}" target="_blank" rel="noopener">Abrir original</a>` : '-'}</span></div>
-            <div class="autos-detail-row"><strong>Propietario:</strong> <span>${car.propietario || '-'}</span></div>
-            <div class="autos-detail-row"><strong>Seguro:</strong> <span>${car.tieneSeguro ? 'Si' : 'No'} · Poliza ${car.polizaSeguro || '-'} · Vence ${car.vencimientoPoliza || '-'}</span></div>
-            <div class="autos-detail-row"><strong>Archivo poliza:</strong> <span>${car.polizaArchivo ? `<a href="${car.polizaArchivo}" target="_blank" rel="noopener">Abrir original</a>` : '-'}</span></div>
-            <div class="autos-detail-row"><strong>${extra1Name}:</strong> <span>${car.extraDoc1Url ? `<a href="${car.extraDoc1Url}" target="_blank" rel="noopener">Abrir original</a>` : '-'}</span></div>
-            <div class="autos-detail-row"><strong>${extra2Name}:</strong> <span>${car.extraDoc2Url ? `<a href="${car.extraDoc2Url}" target="_blank" rel="noopener">Abrir original</a>` : '-'}</span></div>
-            <div class="autos-detail-row"><strong>Valor hoy:</strong> <span>${autos_getValuationLabel(car.id)}</span></div>
-            <div class="autos-detail-row"><strong>Emergencia:</strong> <span>${autos_phoneLinkOrText(car.emergenciaInterior, 'Interior')} · ${autos_phoneLinkOrText(car.emergenciaMetro, 'Metro')}</span></div>
-            <div class="autos-detail-row"><strong>Siniestros:</strong> <span>${autos_phoneLinkOrText(car.reporteSiniestros1, 'Siniestros 1')} · ${autos_phoneLinkOrText(car.reporteSiniestros2, 'Siniestros 2')}</span></div>
-            <div class="autos-detail-row"><strong>Llantas:</strong> <span>${car.tipoLlantas || '-'}</span></div>
+            ${detailRows.join('')}
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:.65rem;margin-top:.75rem;">
             <div class="glass-subtle" style="padding:.55rem;">
@@ -5524,21 +5531,34 @@ function autos_renderSelectedCar() {
         candidatesCount: photoCandidates.length,
     });
 
+    const seguroParts = [car.tieneSeguro ? 'Si' : 'No'];
+    if (car.polizaSeguro) seguroParts.push(`Poliza ${car.polizaSeguro}`);
+    if (car.vencimientoPoliza) seguroParts.push(`Vence ${car.vencimientoPoliza}`);
+    const infoLines = [];
+    if (car.placa || car.vin) infoLines.push(`<span class="account-type-label">${car.placa ? `Placa: ${car.placa}` : ''}${car.placa && car.vin ? ' · ' : ''}${car.vin ? `VIN: ${car.vin}` : ''}</span>`);
+    if (mileageNumber) infoLines.push(`<span class="account-type-label">Kilometraje: ${mileageLabel}</span>`);
+    if (nextRevisionKm) infoLines.push(`<span class="account-type-label">Próxima revisión: ${nextRevisionLabel}</span>`);
+    if (invoiceValue > 0) infoLines.push(`<span class="account-type-label">Factura: ${invoiceLabel}</span>`);
+    if (car.propietario) infoLines.push(`<span class="account-type-label">Propietario: ${car.propietario}</span>`);
+    infoLines.push(`<span class="account-type-label">Seguro: ${seguroParts.join(' · ')}${car.tipoLlantas ? ` · Llantas: ${car.tipoLlantas}` : ''}</span>`);
+    const docsParts = [];
+    if (car.facturaArchivo) docsParts.push('Factura ✅');
+    if (car.polizaArchivo) docsParts.push('Poliza ✅');
+    if (car.extraDoc1Url) docsParts.push(`${extra1Name} ✅`);
+    if (car.extraDoc2Url) docsParts.push(`${extra2Name} ✅`);
+    if (docsParts.length) infoLines.push(`<span class="account-type-label">Archivos: ${docsParts.join(' · ')}</span>`);
+    infoLines.push(`<span class="account-type-label">Valor hoy: ${valuationLabel}${kmAdjLabel}</span>`);
+    infoLines.push(`<span class="account-type-label" style="color:${meliConnected ? '#34d399' : '#fbbf24'};">${meliStatus}</span>`);
+    const hasEmergency = !!((car.emergenciaInterior || '').trim() || (car.emergenciaMetro || '').trim());
+    if (hasEmergency) infoLines.push(`<span class="account-type-label">Emergencia: ${emergenciaInteriorHtml} · ${emergenciaMetroHtml}</span>`);
+    const hasClaims = !!((car.reporteSiniestros1 || '').trim() || (car.reporteSiniestros2 || '').trim());
+    if (hasClaims) infoLines.push(`<span class="account-type-label">Siniestros: ${siniestros1Html} · ${siniestros2Html}</span>`);
+
     profileEl.innerHTML = `<div class="glass-subtle autos-profile-card autos-profile-clickable" onclick="autos_openCarDetail()" style="padding:.8rem;display:grid;grid-template-columns:96px minmax(0,1fr);gap:.7rem;align-items:start;">
         <img src="${photoSrc}" data-raw="${photoRaw}" data-try-idx="0" alt="Auto" style="width:96px;height:72px;object-fit:cover;border-radius:.75rem;background:rgba(255,255,255,.06);" onload="autos_handleCarImageLoad(this,'${car.id}','card')" onerror="autos_handleCarImageError(this,'${car.id}','card')" />
         <div class="autos-profile-main" style="display:grid;gap:.2rem;min-width:0;">
             <span class="account-name">${car.marca} ${car.modelo} · ${car.anio || '-'}</span>
-            <span class="account-type-label">Placa: ${car.placa || '-'} · VIN: ${car.vin || '-'}</span>
-            <span class="account-type-label">Kilometraje: ${mileageLabel}</span>
-            <span class="account-type-label">Próxima revisión: ${nextRevisionLabel}</span>
-            <span class="account-type-label">Factura: ${invoiceLabel}</span>
-            <span class="account-type-label">Propietario: ${car.propietario || '-'} · Seguro: ${car.tieneSeguro ? 'Si' : 'No'}</span>
-            <span class="account-type-label">Poliza: ${car.polizaSeguro || '-'} · Vence: ${car.vencimientoPoliza || '-'} · Llantas: ${car.tipoLlantas || '-'}</span>
-            <span class="account-type-label">Archivos: Factura ${car.facturaArchivo ? '✅' : '—'} · Poliza ${car.polizaArchivo ? '✅' : '—'} · ${extra1Name} ${car.extraDoc1Url ? '✅' : '—'} · ${extra2Name} ${car.extraDoc2Url ? '✅' : '—'}</span>
-            <span class="account-type-label">Valor hoy: ${valuationLabel}${kmAdjLabel}</span>
-            <span class="account-type-label" style="color:${meliConnected ? '#34d399' : '#fbbf24'};">${meliStatus}</span>
-            <span class="account-type-label">Emergencia: ${emergenciaInteriorHtml} · ${emergenciaMetroHtml}</span>
-            <span class="account-type-label">Siniestros: ${siniestros1Html} · ${siniestros2Html}</span>
+            ${infoLines.join('')}
             <div style="display:flex;gap:.35rem;flex-wrap:wrap;margin-top:.3rem;">
                 <button class="mini-btn" onclick="event.stopPropagation(); autos_openCarSheet('${car.id}')">✏️ Editar auto</button>
                 <button class="mini-btn" onclick="event.stopPropagation(); autos_updateMileageAndRevalue('${car.id}')">🛣️ Actualizar KM + valuacion</button>
