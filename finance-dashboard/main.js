@@ -15,7 +15,7 @@ const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // 
 const SPREADSHEET_DEUDAS_ID = '1dKxhgqazskm15lx0f6FNCA0gpJ7i5glfxkusiH3b0Uk'; // Control de Deudas
 const SPREADSHEET_AUTOS_ID = SPREADSHEET_DEUDAS_ID; // Autos + Reparaciones live in same workbook
 const SPREADSHEET_ESTUDIO_ID = SPREADSHEET_DEUDAS_ID; // Estudio + Plugins in same workbook
-const APP_VERSION  = 'v7.1.19';
+const APP_VERSION  = 'v7.1.20';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -6352,7 +6352,11 @@ function estudio_render() {
         });
     if (invList) {
         invList.innerHTML = inventarioRows.map((item) => {
-            const totalUsd = parseSheetValue(item.precioUsd) * Math.max(1, parseInt(item.cantidad, 10) || 1);
+            const qty = Math.max(1, parseInt(item.cantidad, 10) || 1);
+            const totalUsd = parseSheetValue(item.precioUsd) * qty;
+            const totalMxn = convertTransactionAmountToMxn(totalUsd, 'USD');
+            const depMxn = estudio_depreciatedMxn(item, totalMxn, 'inventario');
+            const depUnitMxn = depMxn / qty;
             const invMeta = [
                 estudio_detailCell('Marca', item.marca),
                 estudio_detailCell('Modelo', item.modelo),
@@ -6367,8 +6371,10 @@ function estudio_render() {
                         ${topMeta ? `<span class="estudio-entry-meta">${topMeta}</span>` : ''}
                     </div>
                     <div class="estudio-card-right">
-                        <span class="account-balance text-danger">${formatCurrency(convertTransactionAmountToMxn(totalUsd, 'USD'))}</span>
+                        <span class="account-balance text-danger">${formatCurrency(totalMxn)}</span>
                         <span class="account-type-label">USD ${totalUsd.toFixed(2)}</span>
+                        <span class="account-type-label" style="color:#34d399;">Venta sugerida: ${formatCurrency(depMxn)}</span>
+                        ${qty > 1 ? `<span class="account-type-label" style="opacity:.8;">Por unidad: ${formatCurrency(depUnitMxn)}</span>` : ''}
                     </div>
                 </div>
 
