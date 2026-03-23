@@ -15,7 +15,7 @@ const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // 
 const SPREADSHEET_DEUDAS_ID = '1dKxhgqazskm15lx0f6FNCA0gpJ7i5glfxkusiH3b0Uk'; // Control de Deudas
 const SPREADSHEET_AUTOS_ID = SPREADSHEET_DEUDAS_ID; // Autos + Reparaciones live in same workbook
 const SPREADSHEET_ESTUDIO_ID = SPREADSHEET_DEUDAS_ID; // Estudio + Plugins in same workbook
-const APP_VERSION  = 'v7.4.1';
+const APP_VERSION  = 'v7.4.2';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -8607,26 +8607,17 @@ function pelo_bindEvents() {
 
     const uploadBindings = [
         ['hair-upload-receipt-camera', 'hair-receipt-url', 'receipt'],
-        ['hair-upload-receipt-gallery', 'hair-receipt-url', 'receipt'],
         ['hair-upload-receipt-file', 'hair-receipt-url', 'receipt'],
         ['hair-upload-front-camera', 'hair-front-url', 'photo'],
-        ['hair-upload-front-gallery', 'hair-front-url', 'photo'],
         ['hair-upload-front-file', 'hair-front-url', 'photo'],
         ['hair-upload-side-camera', 'hair-side-url', 'photo'],
-        ['hair-upload-side-gallery', 'hair-side-url', 'photo'],
         ['hair-upload-side-file', 'hair-side-url', 'photo'],
         ['hair-upload-back-camera', 'hair-back-url', 'photo'],
-        ['hair-upload-back-gallery', 'hair-back-url', 'photo'],
         ['hair-upload-back-file', 'hair-back-url', 'photo'],
     ];
     uploadBindings.forEach(([inputId, targetInputId, kind]) => {
         document.getElementById(inputId)?.addEventListener('change', () => pelo_uploadFileToInput(inputId, targetInputId, kind));
     });
-
-    document.getElementById('hair-pick-receipt')?.addEventListener('click', () => pelo_pickUploadSource('hair-upload-receipt', 'recibo'));
-    document.getElementById('hair-pick-front')?.addEventListener('click', () => pelo_pickUploadSource('hair-upload-front', 'foto frente'));
-    document.getElementById('hair-pick-side')?.addEventListener('click', () => pelo_pickUploadSource('hair-upload-side', 'foto lado'));
-    document.getElementById('hair-pick-back')?.addEventListener('click', () => pelo_pickUploadSource('hair-upload-back', 'foto atras'));
 
     document.getElementById('hair-member-tabs')?.addEventListener('click', (e) => {
         const btn = e.target.closest('[data-hair-member]');
@@ -8826,22 +8817,6 @@ async function pelo_uploadFileToInput(inputId, targetInputId, kind) {
     } finally {
         input.value = '';
     }
-}
-
-function pelo_pickUploadSource(baseInputId, label) {
-    const raw = (prompt(`Subir ${label}: escribe 1 (camara), 2 (galeria) o 3 (archivo)`, '2') || '').trim().toLowerCase();
-    if (!raw) return;
-    let source = '';
-    if (['1', 'c', 'camara', 'camera'].includes(raw)) source = 'camera';
-    else if (['2', 'g', 'galeria', 'gallery'].includes(raw)) source = 'gallery';
-    else if (['3', 'a', 'archivo', 'file'].includes(raw)) source = 'file';
-    else {
-        alert('Opcion invalida. Usa 1, 2 o 3.');
-        return;
-    }
-    const input = document.getElementById(`${baseInputId}-${source}`);
-    if (!input) return;
-    input.click();
 }
 
 function pelo_buildMarker(id) {
