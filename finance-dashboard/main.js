@@ -15,7 +15,7 @@ const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // 
 const SPREADSHEET_DEUDAS_ID = '1dKxhgqazskm15lx0f6FNCA0gpJ7i5glfxkusiH3b0Uk'; // Control de Deudas
 const SPREADSHEET_AUTOS_ID = SPREADSHEET_DEUDAS_ID; // Autos + Reparaciones live in same workbook
 const SPREADSHEET_ESTUDIO_ID = SPREADSHEET_DEUDAS_ID; // Estudio + Plugins in same workbook
-const APP_VERSION  = 'v7.2.10';
+const APP_VERSION  = 'v7.3.0';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -162,7 +162,7 @@ let tokenRequestInFlight = null;
 let tokenRequestInteractive = true;
 let tokenRequestWatchdog = null;
 let currentTab  = 'dashboard';
-let tabInited   = { dashboard: false, gastos: false, fijos: false, deudas: false, plan: false, autos: false, propiedades: false, estudio: false };
+let tabInited   = { dashboard: false, gastos: false, fijos: false, deudas: false, plan: false, autos: false, propiedades: false, documentos: false, estudio: false };
 const MELI_ACCESS_TOKEN_KEY = 'meli_access_token_v1';
 const MELI_REFRESH_TOKEN_KEY = 'meli_refresh_token_v1';
 const MELI_EXPIRES_AT_KEY = 'meli_expires_at_v1';
@@ -516,6 +516,7 @@ document.addEventListener('DOMContentLoaded', () => {
     deudas_bindEvents();
     autos_bindEvents();
     propiedades_bindEvents();
+    documentos_bindEvents();
     estudio_bindEvents();
 
     document.getElementById('fixed-search-open')?.addEventListener('click', dashboard_openFixedSearch);
@@ -1564,6 +1565,7 @@ function showTab(name) {
         if (name === 'plan')      planner_cargarVista();
         if (name === 'autos')     autos_cargarVista();
         if (name === 'propiedades') propiedades_cargarVista();
+        if (name === 'documentos') documentos_cargarVista();
         if (name === 'estudio')   estudio_cargarVista();
     }
 }
@@ -1854,6 +1856,39 @@ async function driveDeleteFile(fileId) {
     await authFetch(`https://www.googleapis.com/drive/v3/files/${fileId}`, {
         method: 'DELETE',
     });
+}
+
+async function driveListFolderFilesRecursive(folderId) {
+    const out = [];
+    const queue = [{ id: folderId, path: '' }];
+    while (queue.length) {
+        const current = queue.shift();
+        let pageToken = '';
+        do {
+            const q = encodeURIComponent(`'${current.id}' in parents and trashed=false`);
+            const tokenParam = pageToken ? `&pageToken=${encodeURIComponent(pageToken)}` : '';
+            const url = `https://www.googleapis.com/drive/v3/files?q=${q}&fields=nextPageToken,files(id,name,mimeType,webViewLink)&pageSize=1000${tokenParam}`;
+            const r = await authFetch(url);
+            if (!r.ok) break;
+            const data = await r.json();
+            const files = Array.isArray(data.files) ? data.files : [];
+            files.forEach((f) => {
+                if (f.mimeType === 'application/vnd.google-apps.folder') {
+                    queue.push({ id: f.id, path: `${current.path}${f.name}/` });
+                    return;
+                }
+                out.push({
+                    id: f.id,
+                    name: f.name || '',
+                    path: `${current.path}${f.name || ''}`,
+                    mimeType: f.mimeType || '',
+                    webViewLink: f.webViewLink || '',
+                });
+            });
+            pageToken = data.nextPageToken || '';
+        } while (pageToken);
+    }
+    return out;
 }
 
 function handleApiError(err, el) {
@@ -7707,6 +7742,478 @@ async function propiedades_uploadFirstFile(inputId) {
     if (feedback) feedback.innerText = `✅ Archivo cargado: ${first.name}`;
     input.value = '';
     return link;
+}
+
+// =============================================
+// DOCUMENTOS MODULE
+// =============================================
+const DOCS_SHEET = 'DocumentosArchivador';
+const DOCS_PROFILE_SHEET = 'DocumentosPerfiles';
+const DOCS_HEADERS = ['id', 'member', 'title', 'type', 'tags', 'notes', 'url', 'sourceFolderId', 'driveFileId', 'createdAt', 'updatedAt'];
+const DOCS_PROFILE_HEADERS = ['member', 'name', 'birthDate', 'birthWeight', 'curp', 'passportMx', 'passportUs', 'visaUs', 'photoUrl', 'vaccinesJson', 'notes', 'updatedAt'];
+const DOCS_FAMILY_FOLDER_ID = '1sLw21FxRg8Siijq48mHVxfXO_uTIrNGT';
+const DOCS_PAPA_FOLDER_ID = '1_jxerzMTkMUymowu9SkQLBVyvn7fEwnX';
+
+const DOCS_MEMBERS = [
+    { id: 'all', label: 'Todos' },
+    { id: 'yo', label: 'Juan' },
+    { id: 'mariel', label: 'Mariel' },
+    { id: 'roby', label: 'Roby' },
+    { id: 'hans', label: 'Hans' },
+    { id: 'papa', label: 'Papa' },
+    { id: 'mama', label: 'Mama' },
+    { id: 'hermano', label: 'Hermano' },
+];
+
+const DOCS_PROFILE_DEFAULTS = [
+    { member: 'yo', name: 'Juan G Mansur Gonzalez', birthDate: '', birthWeight: '', curp: '', passportMx: '', passportUs: '', visaUs: '', photoUrl: '', vaccinesJson: '[]', notes: '' },
+    { member: 'mariel', name: 'Mariel de la Rosa', birthDate: '', birthWeight: '', curp: '', passportMx: '', passportUs: '', visaUs: '', photoUrl: '', vaccinesJson: '[]', notes: '' },
+    { member: 'roby', name: 'Roby Mansur de la Rosa', birthDate: '', birthWeight: '', curp: '', passportMx: '', passportUs: '', visaUs: '', photoUrl: '', vaccinesJson: JSON.stringify([{ key: 'BCG', done: true }, { key: 'Hepatitis B', done: true }, { key: 'Pentavalente', done: true }, { key: 'Triple viral', done: true }, { key: 'Influenza', done: true }]), notes: 'Cartilla registrada en documentos.' },
+    { member: 'hans', name: 'Hans Mansur de la Rosa', birthDate: '', birthWeight: '', curp: '', passportMx: '', passportUs: '', visaUs: '', photoUrl: '', vaccinesJson: JSON.stringify([{ key: 'BCG', done: true }, { key: 'Hepatitis B', done: true }, { key: 'Pentavalente', done: true }, { key: 'Triple viral', done: true }, { key: 'Influenza', done: true }]), notes: 'Vacunacion base marcada como completa.' },
+    { member: 'papa', name: 'Juan Guillermo Mansur Arzola', birthDate: '', birthWeight: '', curp: '', passportMx: '', passportUs: '', visaUs: '', photoUrl: '', vaccinesJson: '[]', notes: '' },
+    { member: 'mama', name: 'Eva Lucila Gonzalez Cruz', birthDate: '', birthWeight: '', curp: '', passportMx: '', passportUs: '', visaUs: '', photoUrl: '', vaccinesJson: '[]', notes: '' },
+    { member: 'hermano', name: 'Jeronimo Jose Mansur Gonzalez', birthDate: '', birthWeight: '', curp: '', passportMx: '', passportUs: '', visaUs: '', photoUrl: '', vaccinesJson: '[]', notes: '' },
+];
+
+const docsState = {
+    items: [],
+    profiles: [],
+    selectedMember: 'all',
+    search: '',
+    loaded: false,
+    loading: false,
+};
+
+function documentos_bindEvents() {
+    document.getElementById('docs-btn-add')?.addEventListener('click', () => documentos_openSheet(null));
+    document.getElementById('docs-sheet-overlay')?.addEventListener('click', documentos_closeSheet);
+    document.getElementById('docs-save')?.addEventListener('click', documentos_save);
+    document.getElementById('docs-delete')?.addEventListener('click', documentos_delete);
+    document.getElementById('docs-search')?.addEventListener('input', (e) => {
+        docsState.search = (e.target.value || '').toLowerCase().trim();
+        documentos_render();
+    });
+    document.getElementById('docs-upload-camera')?.addEventListener('change', () => documentos_uploadFromInput('docs-upload-camera'));
+    document.getElementById('docs-upload-file')?.addEventListener('change', () => documentos_uploadFromInput('docs-upload-file'));
+    document.getElementById('docs-profile-edit')?.addEventListener('click', documentos_openProfileSheet);
+    document.getElementById('docs-profile-sheet-overlay')?.addEventListener('click', () => document.getElementById('docs-profile-sheet').classList.add('hidden'));
+    document.getElementById('docs-profile-save')?.addEventListener('click', documentos_saveProfile);
+
+    document.getElementById('docs-list')?.addEventListener('click', (e) => {
+        const editBtn = e.target.closest('[data-doc-edit-id]');
+        if (editBtn) {
+            e.preventDefault();
+            e.stopPropagation();
+            documentos_openSheet(editBtn.dataset.docEditId);
+            return;
+        }
+        const card = e.target.closest('[data-doc-url]');
+        if (!card) return;
+        const url = card.dataset.docUrl || '';
+        if (url) window.open(url, '_blank', 'noopener');
+    });
+
+    document.getElementById('docs-profile-card')?.addEventListener('click', async (e) => {
+        const target = e.target.closest('[data-copy]');
+        if (!target) return;
+        const val = (target.dataset.copy || '').trim();
+        if (!val) return;
+        try {
+            await navigator.clipboard.writeText(val);
+            showToast('📋 Copiado');
+        } catch {
+            showToast('⚠️ No se pudo copiar');
+        }
+    });
+}
+
+async function documentos_cargarVista() {
+    if (!accessToken || docsState.loading) return;
+    docsState.loading = true;
+    try {
+        await autos_ensureSheet(DOCS_SHEET, DOCS_HEADERS);
+        await autos_ensureSheet(DOCS_PROFILE_SHEET, DOCS_PROFILE_HEADERS);
+        await documentos_loadData();
+        if (!docsState.items.length) {
+            await documentos_seedFromDrive();
+            await documentos_loadData();
+        }
+        if (!docsState.profiles.length) {
+            await documentos_seedProfiles();
+            await documentos_loadData();
+        }
+        documentos_render();
+    } catch (e) {
+        console.error('documentos_cargarVista:', e);
+        document.getElementById('docs-list').innerHTML = '<div class="empty-state text-danger">❌ Error cargando documentos</div>';
+    } finally {
+        docsState.loading = false;
+    }
+}
+
+async function documentos_loadData() {
+    const docsRows = await sheetsGet(SPREADSHEET_AUTOS_ID, `${DOCS_SHEET}!A2:AZ`).catch(() => []);
+    docsState.items = docsRows.map((row) => ({
+        id: (row[0] || '').toString(),
+        member: (row[1] || 'yo').toString(),
+        title: (row[2] || '').toString(),
+        type: (row[3] || '').toString(),
+        tags: (row[4] || '').toString(),
+        notes: (row[5] || '').toString(),
+        url: (row[6] || '').toString(),
+        sourceFolderId: (row[7] || '').toString(),
+        driveFileId: (row[8] || '').toString(),
+        createdAt: (row[9] || '').toString(),
+        updatedAt: (row[10] || '').toString(),
+    })).filter((x) => x.title);
+
+    const profRows = await sheetsGet(SPREADSHEET_AUTOS_ID, `${DOCS_PROFILE_SHEET}!A2:AZ`).catch(() => []);
+    docsState.profiles = profRows.map((row) => ({
+        member: (row[0] || '').toString(),
+        name: (row[1] || '').toString(),
+        birthDate: (row[2] || '').toString(),
+        birthWeight: (row[3] || '').toString(),
+        curp: (row[4] || '').toString(),
+        passportMx: (row[5] || '').toString(),
+        passportUs: (row[6] || '').toString(),
+        visaUs: (row[7] || '').toString(),
+        photoUrl: (row[8] || '').toString(),
+        vaccinesJson: (row[9] || '[]').toString(),
+        notes: (row[10] || '').toString(),
+        updatedAt: (row[11] || '').toString(),
+    })).filter((x) => x.member);
+}
+
+function documentos_memberLabel(id) {
+    return DOCS_MEMBERS.find((x) => x.id === id)?.label || id;
+}
+
+function documentos_guessMemberFromName(name) {
+    const n = (name || '').toLowerCase();
+    if (n.includes('mariel')) return 'mariel';
+    if (n.includes('roberta') || n.includes('roby')) return 'roby';
+    if (n.includes('hans')) return 'hans';
+    if (n.includes('mama') || n.includes('eva')) return 'mama';
+    if (n.includes('hermano') || n.includes('xero') || n.includes('jeronimo') || n.includes('jota')) return 'hermano';
+    if (n.includes('papa') || n.includes('arzola') || n.includes('dr. juan') || n.includes('juan mansur arzola')) return 'papa';
+    if (n.includes('juan g mansur') || n.includes('mansur glz') || n.includes('social security')) return 'yo';
+    return 'yo';
+}
+
+function documentos_guessTypeFromName(name) {
+    const n = (name || '').toLowerCase();
+    if (n.includes('pasaporte')) return 'Pasaporte';
+    if (n.includes('curp')) return 'CURP';
+    if (n.includes('acta')) return 'Acta';
+    if (n.includes('visa')) return 'Visa';
+    if (n.includes('poliza')) return 'Poliza';
+    if (n.includes('cartilla')) return 'Cartilla';
+    if (n.includes('certificado')) return 'Certificado';
+    if (n.includes('ine')) return 'INE';
+    if (n.includes('titulo') || n.includes('titulo')) return 'Titulo';
+    return 'Documento';
+}
+
+function documentos_stripExt(filename) {
+    return (filename || '').replace(/\.[^.]+$/, '');
+}
+
+function documentos_parseDriveId(url) {
+    const raw = (url || '').toString();
+    const m1 = raw.match(/\/d\/([a-zA-Z0-9_-]+)/);
+    if (m1) return m1[1];
+    const m2 = raw.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+    return m2 ? m2[1] : '';
+}
+
+async function documentos_seedFromDrive() {
+    const now = normalizeDateString(new Date().toLocaleDateString('en-CA'));
+    const [familyFiles, papaFiles] = await Promise.all([
+        driveListFolderFilesRecursive(DOCS_FAMILY_FOLDER_ID).catch(() => []),
+        driveListFolderFilesRecursive(DOCS_PAPA_FOLDER_ID).catch(() => []),
+    ]);
+    const toDoc = (f, folderId) => {
+        const member = documentos_guessMemberFromName(f.path || f.name || '');
+        return {
+            id: `doc-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+            member,
+            title: documentos_stripExt(f.name || ''),
+            type: documentos_guessTypeFromName(f.name || ''),
+            tags: `${documentos_memberLabel(member)}, importado`,
+            notes: f.path || '',
+            url: f.webViewLink || '',
+            sourceFolderId: folderId,
+            driveFileId: f.id || '',
+            createdAt: now,
+            updatedAt: now,
+        };
+    };
+    const docs = [...familyFiles.map((f) => toDoc(f, DOCS_FAMILY_FOLDER_ID)), ...papaFiles.map((f) => toDoc(f, DOCS_PAPA_FOLDER_ID))]
+        .filter((x) => x.title)
+        .sort((a, b) => a.title.localeCompare(b.title, 'es', { sensitivity: 'base' }));
+    if (!docs.length) return;
+    const letter = autos_colLetter(DOCS_HEADERS.length);
+    await sheetsUpdate(SPREADSHEET_AUTOS_ID, `${DOCS_SHEET}!A2:${letter}${1 + docs.length}`, docs.map((d) => [
+        d.id, d.member, d.title, d.type, d.tags, d.notes, d.url, d.sourceFolderId, d.driveFileId, d.createdAt, d.updatedAt,
+    ]));
+}
+
+async function documentos_seedProfiles() {
+    const now = normalizeDateString(new Date().toLocaleDateString('en-CA'));
+    const rows = DOCS_PROFILE_DEFAULTS.map((p) => [
+        p.member, p.name, p.birthDate, p.birthWeight, p.curp, p.passportMx, p.passportUs, p.visaUs, p.photoUrl, p.vaccinesJson, p.notes, now,
+    ]);
+    const letter = autos_colLetter(DOCS_PROFILE_HEADERS.length);
+    await sheetsUpdate(SPREADSHEET_AUTOS_ID, `${DOCS_PROFILE_SHEET}!A2:${letter}${1 + rows.length}`, rows);
+}
+
+function documentos_getActiveProfileMember() {
+    return docsState.selectedMember === 'all' ? 'yo' : docsState.selectedMember;
+}
+
+function documentos_calcAge(dateStr) {
+    if (!dateStr) return '';
+    const d = new Date(dateStr);
+    if (Number.isNaN(d.getTime())) return '';
+    const now = new Date();
+    let age = now.getFullYear() - d.getFullYear();
+    const m = now.getMonth() - d.getMonth();
+    if (m < 0 || (m === 0 && now.getDate() < d.getDate())) age -= 1;
+    return age >= 0 ? `${age} anos` : '';
+}
+
+function documentos_render() {
+    const listEl = document.getElementById('docs-list');
+    const tabsEl = document.getElementById('docs-member-tabs');
+    const totalEl = document.getElementById('docs-total');
+    const subEl = document.getElementById('docs-subtitle');
+    const activeEl = document.getElementById('docs-active-member');
+    const profileEl = document.getElementById('docs-profile-card');
+    if (!listEl || !tabsEl || !profileEl) return;
+
+    tabsEl.innerHTML = DOCS_MEMBERS.map((m) => {
+        const active = m.id === docsState.selectedMember ? 'active' : '';
+        return `<button class="estudio-subtab-btn ${active}" type="button" data-doc-member="${m.id}">${m.label}</button>`;
+    }).join('');
+    tabsEl.querySelectorAll('[data-doc-member]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+            docsState.selectedMember = btn.dataset.docMember || 'all';
+            documentos_render();
+        });
+    });
+
+    const filtered = docsState.items
+        .filter((d) => docsState.selectedMember === 'all' || d.member === docsState.selectedMember)
+        .filter((d) => {
+            if (!docsState.search) return true;
+            const hay = `${d.title} ${d.type} ${d.tags} ${d.notes}`.toLowerCase();
+            return hay.includes(docsState.search);
+        })
+        .sort((a, b) => a.title.localeCompare(b.title, 'es', { sensitivity: 'base' }));
+
+    if (totalEl) totalEl.innerText = String(filtered.length);
+    if (subEl) subEl.innerText = docsState.selectedMember === 'all' ? 'Busqueda global' : `Filtrado por ${documentos_memberLabel(docsState.selectedMember)}`;
+    if (activeEl) activeEl.innerText = documentos_memberLabel(docsState.selectedMember);
+
+    listEl.innerHTML = filtered.length
+        ? filtered.map((d) => `
+            <article class="docs-card" data-doc-url="${d.url || ''}">
+              <h4 class="docs-title">${d.title}</h4>
+              <div class="docs-meta">${documentos_memberLabel(d.member)} · ${d.type || 'Documento'} · ${d.tags || 'sin etiquetas'}</div>
+              <div class="docs-meta">${d.notes || ''}</div>
+              <div class="docs-actions"><button type="button" class="mini-btn" data-doc-edit-id="${d.id}">✏️ Editar</button></div>
+            </article>
+          `).join('')
+        : '<div class="empty-state">Sin documentos en este filtro</div>';
+
+    const profile = docsState.profiles.find((p) => p.member === documentos_getActiveProfileMember()) || null;
+    if (!profile) {
+        profileEl.innerHTML = '<div class="empty-state">Sin perfil disponible</div>';
+        return;
+    }
+    let vacunas = [];
+    try { vacunas = JSON.parse(profile.vaccinesJson || '[]'); } catch { vacunas = []; }
+    const vacunasHtml = Array.isArray(vacunas) && vacunas.length
+        ? vacunas.map((v) => `<div class="docs-meta">${v.done ? '✅' : '⬜️'} ${v.key || ''}</div>`).join('')
+        : '<div class="docs-meta">Sin vacunas registradas</div>';
+    const photo = profile.photoUrl || 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=200&h=200&fit=crop';
+    profileEl.innerHTML = `
+      <div class="docs-profile">
+        <div class="docs-profile-top">
+          <img class="docs-profile-photo" src="${photo}" alt="${profile.name}">
+          <div>
+            <div class="docs-title">${profile.name || documentos_memberLabel(profile.member)}</div>
+            <div class="docs-meta">${documentos_memberLabel(profile.member)} · ${documentos_calcAge(profile.birthDate)}</div>
+          </div>
+        </div>
+        <div class="docs-meta">Nacimiento: ${profile.birthDate || '-'}</div>
+        <div class="docs-meta">Peso al nacer: ${profile.birthWeight || '-'}</div>
+        <div class="docs-copy" data-copy="${profile.curp || ''}">CURP: ${profile.curp || '-'} (click para copiar)</div>
+        <div class="docs-copy" data-copy="${profile.passportMx || ''}">Pasaporte MX: ${profile.passportMx || '-'} (click para copiar)</div>
+        <div class="docs-copy" data-copy="${profile.passportUs || ''}">Pasaporte USA: ${profile.passportUs || '-'} (click para copiar)</div>
+        <div class="docs-copy" data-copy="${profile.visaUs || ''}">Visa USA: ${profile.visaUs || '-'} (click para copiar)</div>
+        <div class="field-label">Vacunacion</div>
+        ${vacunasHtml}
+        <div class="docs-meta">${profile.notes || ''}</div>
+      </div>
+    `;
+}
+
+function documentos_openSheet(id) {
+    const doc = id ? docsState.items.find((x) => x.id === id) : null;
+    document.getElementById('docs-edit-id').value = doc?.id || '';
+    document.getElementById('docs-sheet-title').innerText = doc ? 'Editar documento' : 'Nuevo documento';
+    documentos_fillMemberSelect(document.getElementById('docs-member'), doc?.member || (docsState.selectedMember === 'all' ? 'yo' : docsState.selectedMember));
+    document.getElementById('docs-title').value = doc?.title || '';
+    document.getElementById('docs-type').value = doc?.type || '';
+    document.getElementById('docs-tags').value = doc?.tags || '';
+    document.getElementById('docs-notes').value = doc?.notes || '';
+    document.getElementById('docs-url').value = doc?.url || '';
+    document.getElementById('docs-file-feedback').innerText = '';
+    document.getElementById('docs-delete').classList.toggle('hidden', !doc);
+    document.getElementById('docs-sheet').classList.remove('hidden');
+}
+
+function documentos_closeSheet() {
+    document.getElementById('docs-sheet').classList.add('hidden');
+}
+
+function documentos_fillMemberSelect(selectEl, selected) {
+    if (!selectEl) return;
+    const options = DOCS_MEMBERS.filter((m) => m.id !== 'all');
+    selectEl.innerHTML = options.map((m) => `<option value="${m.id}" ${m.id === selected ? 'selected' : ''}>${m.label}</option>`).join('');
+}
+
+async function documentos_uploadFromInput(inputId) {
+    const input = document.getElementById(inputId);
+    const file = input?.files?.[0];
+    if (!file) return;
+    const member = (document.getElementById('docs-member')?.value || 'yo').toString();
+    const folderId = (member === 'papa' || member === 'mama' || member === 'hermano') ? DOCS_PAPA_FOLDER_ID : DOCS_FAMILY_FOLDER_ID;
+    try {
+        const url = await driveUploadFile(file, folderId);
+        document.getElementById('docs-url').value = url;
+        const title = document.getElementById('docs-title');
+        if (title && !title.value.trim()) title.value = documentos_stripExt(file.name);
+        document.getElementById('docs-file-feedback').innerText = `✅ Cargado: ${file.name}`;
+    } catch (e) {
+        console.error('documentos_uploadFromInput:', e);
+        document.getElementById('docs-file-feedback').innerText = '❌ Error al subir archivo';
+    } finally {
+        input.value = '';
+    }
+}
+
+async function documentos_save() {
+    const id = (document.getElementById('docs-edit-id').value || '').trim();
+    const title = (document.getElementById('docs-title').value || '').trim();
+    if (!title) return alert('Agrega nombre del documento');
+    const now = normalizeDateString(new Date().toLocaleDateString('en-CA'));
+    const payload = {
+        id: id || `doc-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+        member: document.getElementById('docs-member').value || 'yo',
+        title,
+        type: (document.getElementById('docs-type').value || '').trim(),
+        tags: (document.getElementById('docs-tags').value || '').trim(),
+        notes: (document.getElementById('docs-notes').value || '').trim(),
+        url: (document.getElementById('docs-url').value || '').trim(),
+        sourceFolderId: '',
+        driveFileId: documentos_parseDriveId((document.getElementById('docs-url').value || '').trim()),
+        createdAt: now,
+        updatedAt: now,
+    };
+    const idx = docsState.items.findIndex((x) => x.id === payload.id);
+    if (idx === -1) docsState.items.push(payload);
+    else docsState.items[idx] = { ...docsState.items[idx], ...payload, createdAt: docsState.items[idx].createdAt || now };
+    await documentos_saveRows();
+    documentos_closeSheet();
+    documentos_render();
+    showToast('✅ Documento guardado');
+}
+
+async function documentos_delete() {
+    const id = (document.getElementById('docs-edit-id').value || '').trim();
+    if (!id) return;
+    if (!confirm('¿Eliminar esta entrada del archivador?')) return;
+    docsState.items = docsState.items.filter((x) => x.id !== id);
+    await documentos_saveRows();
+    documentos_closeSheet();
+    documentos_render();
+    showToast('🗑️ Entrada eliminada');
+}
+
+async function documentos_saveRows() {
+    const letter = autos_colLetter(DOCS_HEADERS.length);
+    await sheetsUpdate(SPREADSHEET_AUTOS_ID, `${DOCS_SHEET}!A1:${letter}1`, [DOCS_HEADERS]);
+    const rows = docsState.items
+        .slice()
+        .sort((a, b) => a.title.localeCompare(b.title, 'es', { sensitivity: 'base' }))
+        .map((d) => [d.id, d.member, d.title, d.type, d.tags, d.notes, d.url, d.sourceFolderId, d.driveFileId, d.createdAt, d.updatedAt]);
+    if (rows.length) {
+        await sheetsUpdate(SPREADSHEET_AUTOS_ID, `${DOCS_SHEET}!A2:${letter}${1 + rows.length}`, rows);
+    }
+    await sheetsClear(SPREADSHEET_AUTOS_ID, `${DOCS_SHEET}!A${2 + rows.length}:AZ`);
+}
+
+function documentos_openProfileSheet() {
+    const member = documentos_getActiveProfileMember();
+    const profile = docsState.profiles.find((p) => p.member === member) || DOCS_PROFILE_DEFAULTS.find((p) => p.member === member) || DOCS_PROFILE_DEFAULTS[0];
+    documentos_fillMemberSelect(document.getElementById('docs-profile-member'), member);
+    document.getElementById('docs-profile-name').value = profile.name || '';
+    document.getElementById('docs-profile-birth').value = profile.birthDate || '';
+    document.getElementById('docs-profile-weight').value = profile.birthWeight || '';
+    document.getElementById('docs-profile-curp').value = profile.curp || '';
+    document.getElementById('docs-profile-passport-mx').value = profile.passportMx || '';
+    document.getElementById('docs-profile-passport-us').value = profile.passportUs || '';
+    document.getElementById('docs-profile-visa').value = profile.visaUs || '';
+    document.getElementById('docs-profile-photo').value = profile.photoUrl || '';
+    document.getElementById('docs-profile-notes').value = profile.notes || '';
+    let vacunas = [];
+    try { vacunas = JSON.parse(profile.vaccinesJson || '[]'); } catch { vacunas = []; }
+    const has = (key) => vacunas.some((x) => (x.key || '') === key && x.done);
+    document.getElementById('docs-vac-bcg').checked = has('BCG');
+    document.getElementById('docs-vac-hepb').checked = has('Hepatitis B');
+    document.getElementById('docs-vac-pentavalente').checked = has('Pentavalente');
+    document.getElementById('docs-vac-tripleviral').checked = has('Triple viral');
+    document.getElementById('docs-vac-influenza').checked = has('Influenza');
+    document.getElementById('docs-profile-sheet').classList.remove('hidden');
+}
+
+async function documentos_saveProfile() {
+    const member = document.getElementById('docs-profile-member').value || 'yo';
+    const now = normalizeDateString(new Date().toLocaleDateString('en-CA'));
+    const vacunas = [
+        { key: 'BCG', done: document.getElementById('docs-vac-bcg').checked },
+        { key: 'Hepatitis B', done: document.getElementById('docs-vac-hepb').checked },
+        { key: 'Pentavalente', done: document.getElementById('docs-vac-pentavalente').checked },
+        { key: 'Triple viral', done: document.getElementById('docs-vac-tripleviral').checked },
+        { key: 'Influenza', done: document.getElementById('docs-vac-influenza').checked },
+    ];
+    const payload = {
+        member,
+        name: (document.getElementById('docs-profile-name').value || '').trim(),
+        birthDate: (document.getElementById('docs-profile-birth').value || '').trim(),
+        birthWeight: (document.getElementById('docs-profile-weight').value || '').trim(),
+        curp: (document.getElementById('docs-profile-curp').value || '').trim(),
+        passportMx: (document.getElementById('docs-profile-passport-mx').value || '').trim(),
+        passportUs: (document.getElementById('docs-profile-passport-us').value || '').trim(),
+        visaUs: (document.getElementById('docs-profile-visa').value || '').trim(),
+        photoUrl: (document.getElementById('docs-profile-photo').value || '').trim(),
+        vaccinesJson: JSON.stringify(vacunas),
+        notes: (document.getElementById('docs-profile-notes').value || '').trim(),
+        updatedAt: now,
+    };
+    const idx = docsState.profiles.findIndex((x) => x.member === member);
+    if (idx === -1) docsState.profiles.push(payload);
+    else docsState.profiles[idx] = payload;
+    const letter = autos_colLetter(DOCS_PROFILE_HEADERS.length);
+    await sheetsUpdate(SPREADSHEET_AUTOS_ID, `${DOCS_PROFILE_SHEET}!A1:${letter}1`, [DOCS_PROFILE_HEADERS]);
+    const rows = docsState.profiles.map((p) => [p.member, p.name, p.birthDate, p.birthWeight, p.curp, p.passportMx, p.passportUs, p.visaUs, p.photoUrl, p.vaccinesJson, p.notes, p.updatedAt]);
+    if (rows.length) await sheetsUpdate(SPREADSHEET_AUTOS_ID, `${DOCS_PROFILE_SHEET}!A2:${letter}${1 + rows.length}`, rows);
+    await sheetsClear(SPREADSHEET_AUTOS_ID, `${DOCS_PROFILE_SHEET}!A${2 + rows.length}:AZ`);
+    document.getElementById('docs-profile-sheet').classList.add('hidden');
+    documentos_render();
+    showToast('✅ Perfil guardado');
 }
 
 // =============================================

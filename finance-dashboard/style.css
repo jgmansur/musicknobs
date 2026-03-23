@@ -1278,6 +1278,73 @@ select.field-input { background-image: url("data:image/svg+xml,%3Csvg xmlns='htt
   font-size: .92rem;
 }
 
+/* =============================================
+   DOCUMENTOS
+   ============================================= */
+.docs-card {
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: .8rem;
+  background: rgba(255,255,255,.03);
+  padding: .65rem;
+  display: grid;
+  gap: .4rem;
+}
+
+.docs-title {
+  margin: 0;
+  font-size: .9rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.docs-meta {
+  font-size: .78rem;
+  color: var(--text-muted);
+}
+
+.docs-actions {
+  display: flex;
+  gap: .45rem;
+  justify-content: flex-end;
+}
+
+.docs-profile {
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: .8rem;
+  padding: .75rem;
+  background: rgba(255,255,255,.03);
+  display: grid;
+  gap: .5rem;
+}
+
+.docs-profile-top {
+  display: flex;
+  gap: .65rem;
+  align-items: center;
+}
+
+.docs-profile-photo {
+  width: 54px;
+  height: 54px;
+  border-radius: 999px;
+  object-fit: cover;
+  border: 1px solid rgba(255,255,255,.12);
+}
+
+.docs-copy {
+  cursor: pointer;
+  font-size: .8rem;
+  color: #93c5fd;
+}
+
+.checkbox-item {
+  display: flex;
+  align-items: center;
+  gap: .45rem;
+  font-size: .82rem;
+  color: var(--text-main);
+}
+
 @media (max-width: 720px) {
   .prop-dyn-row {
     grid-template-columns: 1fr;
