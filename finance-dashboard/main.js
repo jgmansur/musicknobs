@@ -15,7 +15,7 @@ const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // 
 const SPREADSHEET_DEUDAS_ID = '1dKxhgqazskm15lx0f6FNCA0gpJ7i5glfxkusiH3b0Uk'; // Control de Deudas
 const SPREADSHEET_AUTOS_ID = SPREADSHEET_DEUDAS_ID; // Autos + Reparaciones live in same workbook
 const SPREADSHEET_ESTUDIO_ID = SPREADSHEET_DEUDAS_ID; // Estudio + Plugins in same workbook
-const APP_VERSION  = 'v7.1.14';
+const APP_VERSION  = 'v7.1.15';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -478,6 +478,8 @@ window.autos_closeMeliDebug = autos_closeMeliDebug;
 window.autos_copyMeliDebug = autos_copyMeliDebug;
 window.autos_handleCarImageLoad = autos_handleCarImageLoad;
 window.autos_handleCarImageError = autos_handleCarImageError;
+window.autos_handleDocPreviewLoad = autos_handleDocPreviewLoad;
+window.autos_handleDocPreviewError = autos_handleDocPreviewError;
 
 // =============================================
 // DOM READY
@@ -3894,14 +3896,47 @@ function autos_phoneLinkOrText(raw, fallbackLabel = 'Tel') {
 
 function autos_docPreview(url, label) {
     if (!url) return '<div class="empty-state">Sin archivo</div>';
-    const driveMatch = url.match(/drive\.google\.com\/file\/d\/([^/]+)/i);
-    const drivePreview = driveMatch ? `https://drive.google.com/thumbnail?id=${driveMatch[1]}&sz=w1200` : '';
     const isPdf = /\.pdf(\?|$)/i.test(url);
     if (isPdf) {
         return `<a class="mini-btn" href="${url}" target="_blank" rel="noopener">Abrir ${label} PDF</a>`;
     }
-    const previewUrl = drivePreview || url;
-    return `<a href="${url}" target="_blank" rel="noopener"><img src="${previewUrl}" alt="${label}" style="width:100%;height:140px;object-fit:cover;border-radius:.6rem;background:rgba(255,255,255,.05);" onerror="this.style.display='none'" /></a>`;
+    const candidates = autos_imagePreviewCandidates(url);
+    const previewUrl = candidates[0] || url;
+    return `<a href="${url}" target="_blank" rel="noopener"><img src="${previewUrl}" data-raw="${url}" data-try-idx="0" alt="${label}" style="width:100%;height:140px;object-fit:cover;border-radius:.6rem;background:rgba(255,255,255,.05);" onload="autos_handleDocPreviewLoad(this)" onerror="autos_handleDocPreviewError(this)" /></a>`;
+}
+
+function autos_handleDocPreviewLoad(imgEl) {
+    if (!imgEl) return;
+    imgEl.style.display = 'block';
+    imgEl.style.opacity = '1';
+}
+
+async function autos_handleDocPreviewError(imgEl) {
+    if (!imgEl) return;
+    const raw = (imgEl.dataset.raw || '').toString().trim();
+    const candidates = autos_imagePreviewCandidates(raw);
+    const currentTry = parseInt(imgEl.dataset.tryIdx || '0', 10) || 0;
+    const nextTry = currentTry + 1;
+    if (nextTry < candidates.length) {
+        imgEl.dataset.tryIdx = String(nextTry);
+        imgEl.src = candidates[nextTry];
+        return;
+    }
+    const driveId = autos_extractDriveFileId(raw);
+    const triedDriveAuth = imgEl.dataset.triedDriveAuth === '1';
+    if (driveId && !triedDriveAuth) {
+        imgEl.dataset.triedDriveAuth = '1';
+        try {
+            const authUrl = await autos_fetchDriveImageObjectUrl(raw);
+            if (authUrl) {
+                imgEl.src = authUrl;
+                return;
+            }
+        } catch (_) {}
+    }
+    imgEl.src = AUTOS_IMAGE_PLACEHOLDER;
+    imgEl.style.objectFit = 'contain';
+    imgEl.style.opacity = '.72';
 }
 
 function autos_previewUrlForImage(url) {
@@ -4847,6 +4882,7 @@ async function autos_applyLicenseCrop() {
 
 function autos_docCropPreset(mode) {
     const key = (mode || 'libre').toString();
+    if (key === 'credencial') return { ratio: 1.586, width: 1600, height: 1009 };
     if (key === 'carta') return { ratio: 8.5 / 11, width: 1700, height: 2200 };
     if (key === 'oficio') return { ratio: 8.5 / 13, width: 1700, height: 2600 };
     return { ratio: null, width: 1800, height: 1800 };
@@ -5784,9 +5820,9 @@ async function autos_saveCar() {
         if (uploadedExtra1) car.extraDoc1Url = uploadedExtra1;
         const uploadedExtra2 = await autos_uploadFirstFile('autos-car-extra2-file', { enableCrop: true, cropTitle: 'Recortar documento extra 2', cropMode: 'libre' });
         if (uploadedExtra2) car.extraDoc2Url = uploadedExtra2;
-        const uploadedTarjetaFrente = await autos_uploadFirstFile('autos-car-tarjeta-frente-file');
+        const uploadedTarjetaFrente = await autos_uploadFirstFile('autos-car-tarjeta-frente-file', { enableCrop: true, cropTitle: 'Recortar tarjeta de circulación (frente)', cropMode: 'credencial' });
         if (uploadedTarjetaFrente) car.tarjetaCirculacionFrente = uploadedTarjetaFrente;
-        const uploadedTarjetaAtras = await autos_uploadFirstFile('autos-car-tarjeta-atras-file');
+        const uploadedTarjetaAtras = await autos_uploadFirstFile('autos-car-tarjeta-atras-file', { enableCrop: true, cropTitle: 'Recortar tarjeta de circulación (atrás)', cropMode: 'credencial' });
         if (uploadedTarjetaAtras) car.tarjetaCirculacionAtras = uploadedTarjetaAtras;
     } catch (e) {
         console.warn('No se pudo subir foto del auto:', e);
