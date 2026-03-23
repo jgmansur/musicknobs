@@ -15,7 +15,7 @@ const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // 
 const SPREADSHEET_DEUDAS_ID = '1dKxhgqazskm15lx0f6FNCA0gpJ7i5glfxkusiH3b0Uk'; // Control de Deudas
 const SPREADSHEET_AUTOS_ID = SPREADSHEET_DEUDAS_ID; // Autos + Reparaciones live in same workbook
 const SPREADSHEET_ESTUDIO_ID = SPREADSHEET_DEUDAS_ID; // Estudio + Plugins in same workbook
-const APP_VERSION  = 'v7.1.10';
+const APP_VERSION  = 'v7.1.11';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -3584,6 +3584,7 @@ const autosState = {
     valuationInFlight: new Set(),
     imageDebug: {},
     driveImageObjectUrls: {},
+    autosHeaders: [],
     loaded: false,
 };
 
@@ -3593,7 +3594,7 @@ const AUTOS_HEADERS = [
     'id','marca','modelo','anio','valorFactura','kilometraje','propietario','tieneSeguro','placa','vin','fotoAuto',
     'contratoPrestamo','polizaSeguro','vencimientoPoliza','proximaRevisionKm','emergenciaInterior','emergenciaMetro','reporteSiniestros1','reporteSiniestros2',
     'tarjetaCirculacionFrente','tarjetaCirculacionAtras','pagoTenencia','vencimientoTenencia','tablaPagos','tablaPagosSeguro',
-    'tipoLlantas','llantasFoto','certificadoPolarizado','facturaArchivo','polizaArchivo',
+    'tipoLlantas','llantasFoto','certificadoPolarizado','facturaArchivo','polizaArchivo','extraDoc1Nombre','extraDoc1Url','extraDoc2Nombre','extraDoc2Url',
 ];
 
 const REPAIRS_HEADERS = [
@@ -3612,7 +3613,7 @@ const AUTOS_SEED = [
         tarjetaCirculacionFrente: 'https://drive.google.com/file/d/1BagSehQCUq-IwWs3goG4AkZMYNWY1_sM/view?usp=drivesdk',
         tarjetaCirculacionAtras: 'https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/szp3mFYNwh3181ZkC2gi/pub/cCRD09DOS9SVxj93tNOS.heic',
         pagoTenencia: '', vencimientoTenencia: '', tablaPagos: '', tablaPagosSeguro: '', tipoLlantas: '', llantasFoto: '', certificadoPolarizado: '',
-        facturaArchivo: '', polizaArchivo: '',
+        facturaArchivo: '', polizaArchivo: '', extraDoc1Nombre: '', extraDoc1Url: '', extraDoc2Nombre: '', extraDoc2Url: '',
     },
     {
         id: `car-${Date.now()}-2`,
@@ -3626,7 +3627,7 @@ const AUTOS_SEED = [
         pagoTenencia: '', vencimientoTenencia: '2024-08-21', tablaPagos: '', tablaPagosSeguro: '',
         tipoLlantas: '215/55R17', llantasFoto: 'https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/szp3mFYNwh3181ZkC2gi/pub/luR7swl89aB8lYMTQxLC.HEIC',
         certificadoPolarizado: 'https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/szp3mFYNwh3181ZkC2gi/pub/3aPTU0nLybzPaXODiZEF.png',
-        facturaArchivo: '', polizaArchivo: '',
+        facturaArchivo: '', polizaArchivo: '', extraDoc1Nombre: '', extraDoc1Url: '', extraDoc2Nombre: '', extraDoc2Url: '',
     },
 ];
 
@@ -3711,6 +3712,8 @@ function autos_bindEvents() {
     document.getElementById('autos-car-tarjeta-atras-file')?.addEventListener('change', (e) => autos_updateFileFeedback('autos-car-tarjeta-atras-feedback', e.target.files));
     document.getElementById('autos-car-factura-file')?.addEventListener('change', (e) => autos_updateFileFeedback('autos-car-factura-feedback', e.target.files));
     document.getElementById('autos-car-poliza-file')?.addEventListener('change', (e) => autos_updateFileFeedback('autos-car-poliza-feedback', e.target.files));
+    document.getElementById('autos-car-extra1-file')?.addEventListener('change', (e) => autos_updateFileFeedback('autos-car-extra1-feedback', e.target.files));
+    document.getElementById('autos-car-extra2-file')?.addEventListener('change', (e) => autos_updateFileFeedback('autos-car-extra2-feedback', e.target.files));
     document.getElementById('autos-repair-photo-file')?.addEventListener('change', (e) => autos_updateFileFeedback('autos-repair-photo-feedback', e.target.files));
     document.getElementById('autos-repair-receipt-file')?.addEventListener('change', (e) => autos_updateFileFeedback('autos-repair-receipt-feedback', e.target.files));
 }
@@ -4453,6 +4456,8 @@ function autos_openCarDetail() {
         rawUrl: photoRaw || '-',
         candidatesCount: photoCandidates.length,
     });
+    const extra1Name = (car.extraDoc1Nombre || '').toString().trim() || 'Documento extra 1';
+    const extra2Name = (car.extraDoc2Nombre || '').toString().trim() || 'Documento extra 2';
     detailEl.innerHTML = `
         <div class="glass-subtle autos-detail-card" style="padding:.85rem;display:grid;gap:.55rem;">
             <img src="${photoSrc}" data-raw="${photoRaw}" data-try-idx="0" alt="Auto" style="width:100%;max-height:220px;object-fit:cover;border-radius:.75rem;background:rgba(255,255,255,.05);" onload="autos_handleCarImageLoad(this,'${car.id}','detail')" onerror="autos_handleCarImageError(this,'${car.id}','detail')" />
@@ -4466,6 +4471,8 @@ function autos_openCarDetail() {
             <div class="autos-detail-row"><strong>Propietario:</strong> <span>${car.propietario || '-'}</span></div>
             <div class="autos-detail-row"><strong>Seguro:</strong> <span>${car.tieneSeguro ? 'Si' : 'No'} · Poliza ${car.polizaSeguro || '-'} · Vence ${car.vencimientoPoliza || '-'}</span></div>
             <div class="autos-detail-row"><strong>Archivo poliza:</strong> <span>${car.polizaArchivo ? `<a href="${car.polizaArchivo}" target="_blank" rel="noopener">Abrir original</a>` : '-'}</span></div>
+            <div class="autos-detail-row"><strong>${extra1Name}:</strong> <span>${car.extraDoc1Url ? `<a href="${car.extraDoc1Url}" target="_blank" rel="noopener">Abrir original</a>` : '-'}</span></div>
+            <div class="autos-detail-row"><strong>${extra2Name}:</strong> <span>${car.extraDoc2Url ? `<a href="${car.extraDoc2Url}" target="_blank" rel="noopener">Abrir original</a>` : '-'}</span></div>
             <div class="autos-detail-row"><strong>Valor hoy:</strong> <span>${autos_getValuationLabel(car.id)}</span></div>
             <div class="autos-detail-row"><strong>Emergencia:</strong> <span>${autos_phoneLinkOrText(car.emergenciaInterior, 'Interior')} · ${autos_phoneLinkOrText(car.emergenciaMetro, 'Metro')}</span></div>
             <div class="autos-detail-row"><strong>Siniestros:</strong> <span>${autos_phoneLinkOrText(car.reporteSiniestros1, 'Siniestros 1')} · ${autos_phoneLinkOrText(car.reporteSiniestros2, 'Siniestros 2')}</span></div>
@@ -5080,10 +5087,32 @@ async function autos_ensureSheet(sheetName, headers) {
             body: JSON.stringify({ requests: [{ addSheet: { properties: { title: sheetName } } }] }),
         });
     }
-    const letter = autos_colLetter(headers.length);
-    const head = await sheetsGet(SPREADSHEET_AUTOS_ID, `${sheetName}!A1:${letter}1`).catch(() => []);
+    const head = await sheetsGet(SPREADSHEET_AUTOS_ID, `${sheetName}!A1:AZ1`).catch(() => []);
     const currentHeaders = (head[0] || []).map(x => (x || '').toString().trim());
-    const needsHeaderUpdate = !head.length || !head[0]?.[0] || headers.some((h, i) => (currentHeaders[i] || '') !== h);
+    if (!head.length || !head[0]?.[0]) {
+        const letter = autos_colLetter(headers.length);
+        await sheetsUpdate(SPREADSHEET_AUTOS_ID, `${sheetName}!A1:${letter}1`, [headers]);
+        return;
+    }
+
+    if (sheetName === 'Autos') {
+        const merged = [...currentHeaders.filter(Boolean)];
+        let changed = false;
+        headers.forEach(h => {
+            if (!merged.includes(h)) {
+                merged.push(h);
+                changed = true;
+            }
+        });
+        if (changed) {
+            const letter = autos_colLetter(merged.length);
+            await sheetsUpdate(SPREADSHEET_AUTOS_ID, `${sheetName}!A1:${letter}1`, [merged]);
+        }
+        return;
+    }
+
+    const letter = autos_colLetter(headers.length);
+    const needsHeaderUpdate = headers.some((h, i) => (currentHeaders[i] || '') !== h);
     if (needsHeaderUpdate) {
         await sheetsUpdate(SPREADSHEET_AUTOS_ID, `${sheetName}!A1:${letter}1`, [headers]);
     }
@@ -5100,9 +5129,71 @@ function autos_colLetter(n) {
     return s || 'A';
 }
 
+function autos_headersToMap(headers) {
+    const map = {};
+    (headers || []).forEach((h, i) => {
+        const key = (h || '').toString().trim();
+        if (!key) return;
+        if (map[key] === undefined) map[key] = i;
+    });
+    return map;
+}
+
+function autos_getCell(row, map, key, fallback = '') {
+    const idx = map[key];
+    if (idx === undefined) return fallback;
+    return row[idx] ?? fallback;
+}
+
+function autos_carToRowByHeaders(car, headers) {
+    const fields = {
+        id: car.id || '',
+        marca: car.marca || '',
+        modelo: car.modelo || '',
+        anio: car.anio || '',
+        valorFactura: car.valorFactura || '',
+        kilometraje: car.kilometraje || '',
+        propietario: car.propietario || '',
+        tieneSeguro: car.tieneSeguro ? 'TRUE' : 'FALSE',
+        placa: car.placa || '',
+        vin: car.vin || '',
+        fotoAuto: car.fotoAuto || '',
+        contratoPrestamo: car.contratoPrestamo || '',
+        polizaSeguro: car.polizaSeguro || '',
+        vencimientoPoliza: car.vencimientoPoliza || '',
+        proximaRevisionKm: car.proximaRevisionKm || '',
+        emergenciaInterior: car.emergenciaInterior || '',
+        emergenciaMetro: car.emergenciaMetro || '',
+        reporteSiniestros1: car.reporteSiniestros1 || '',
+        reporteSiniestros2: car.reporteSiniestros2 || '',
+        tarjetaCirculacionFrente: car.tarjetaCirculacionFrente || '',
+        tarjetaCirculacionAtras: car.tarjetaCirculacionAtras || '',
+        pagoTenencia: car.pagoTenencia || '',
+        vencimientoTenencia: car.vencimientoTenencia || '',
+        tablaPagos: car.tablaPagos || '',
+        tablaPagosSeguro: car.tablaPagosSeguro || '',
+        tipoLlantas: car.tipoLlantas || '',
+        llantasFoto: car.llantasFoto || '',
+        certificadoPolarizado: car.certificadoPolarizado || '',
+        facturaArchivo: car.facturaArchivo || '',
+        polizaArchivo: car.polizaArchivo || '',
+        extraDoc1Nombre: car.extraDoc1Nombre || '',
+        extraDoc1Url: car.extraDoc1Url || '',
+        extraDoc2Nombre: car.extraDoc2Nombre || '',
+        extraDoc2Url: car.extraDoc2Url || '',
+    };
+    return (headers || AUTOS_HEADERS).map(h => fields[h] ?? '');
+}
+
 async function autos_loadData() {
+    const headerRow = await sheetsGet(SPREADSHEET_AUTOS_ID, 'Autos!A1:AZ1').catch(() => []);
+    const autosHeaders = (headerRow[0] || []).map(x => (x || '').toString().trim()).filter(Boolean);
+    const effectiveHeaders = autosHeaders.length ? autosHeaders : [...AUTOS_HEADERS];
+    autosState.autosHeaders = effectiveHeaders;
+    const carsLetter = autos_colLetter(effectiveHeaders.length);
+
     const [carsRows, repairsRows, metaRows] = await Promise.all([
-        sheetsGet(SPREADSHEET_AUTOS_ID, 'Autos!A2:AD').catch(() => []),
+        sheetsGet(SPREADSHEET_AUTOS_ID, `Autos!A2:${carsLetter}`).catch(() => []),
         sheetsGet(SPREADSHEET_AUTOS_ID, 'Reparaciones!A2:K').catch(() => []),
         sheetsGet(SPREADSHEET_AUTOS_ID, 'AutosMeta!A2:B').catch(() => []),
     ]);
@@ -5112,58 +5203,44 @@ async function autos_loadData() {
         return autos_loadData();
     }
 
-    autosState.cars = carsRows.map(r => {
-        const boolAt5 = /^(true|false)$/i.test((r[5] || '').toString().trim());
-        const boolAt6 = /^(true|false)$/i.test((r[6] || '').toString().trim());
-        const boolAt7 = /^(true|false)$/i.test((r[7] || '').toString().trim());
-        const hasFacturaColumn = boolAt7;
-        const hasKilometrajeColumn = hasFacturaColumn || boolAt6 || (!boolAt5 && autos_parseMileage(r[4]) > 0);
-        const shift = (hasKilometrajeColumn ? 1 : 0) + (hasFacturaColumn ? 1 : 0);
-        const looksLikeDate = /^\d{4}-\d{2}-\d{2}$/.test((r[11 + shift] || '').toString().trim());
-        const revisionKmRaw = (r[12 + shift] || '').toString().trim();
-        const revisionKmParsed = autos_parseMileage(revisionKmRaw);
-        const revisionKmLooksValid = !!revisionKmRaw
-            && /^[\d.,\s]+$/.test(revisionKmRaw)
-            && revisionKmParsed > 0
-            && revisionKmParsed < 1000000;
-        const hasPolicyExtraColumns = r.length >= AUTOS_HEADERS.length || looksLikeDate || revisionKmLooksValid;
-        const policyShift = hasPolicyExtraColumns ? 2 : 0;
-        const facturaIndex = hasFacturaColumn ? 4 : -1;
-        const kmIndex = hasFacturaColumn ? 5 : (hasKilometrajeColumn ? 4 : -1);
-        return {
-            rowNum: null,
-            id: (r[0] || '').toString(),
-            marca: r[1] || '',
-            modelo: r[2] || '',
-            anio: r[3] || '',
-            valorFactura: (facturaIndex >= 0 ? r[facturaIndex] : '') || '',
-            kilometraje: (kmIndex >= 0 ? r[kmIndex] : '') || '',
-            propietario: r[4 + shift] || '',
-            tieneSeguro: parseBool(r[5 + shift]),
-            placa: r[6 + shift] || '',
-            vin: r[7 + shift] || '',
-            fotoAuto: r[8 + shift] || '',
-            contratoPrestamo: r[9 + shift] || '',
-            polizaSeguro: r[10 + shift] || '',
-            vencimientoPoliza: hasPolicyExtraColumns ? (r[11 + shift] || '') : '',
-            proximaRevisionKm: hasPolicyExtraColumns ? (r[12 + shift] || '') : '',
-            emergenciaInterior: r[11 + shift + policyShift] || '',
-            emergenciaMetro: r[12 + shift + policyShift] || '',
-            reporteSiniestros1: r[13 + shift + policyShift] || '',
-            reporteSiniestros2: r[14 + shift + policyShift] || '',
-            tarjetaCirculacionFrente: r[15 + shift + policyShift] || '',
-            tarjetaCirculacionAtras: r[16 + shift + policyShift] || '',
-            pagoTenencia: r[17 + shift + policyShift] || '',
-            vencimientoTenencia: r[18 + shift + policyShift] || '',
-            tablaPagos: r[19 + shift + policyShift] || '',
-            tablaPagosSeguro: r[20 + shift + policyShift] || '',
-            tipoLlantas: r[21 + shift + policyShift] || '',
-            llantasFoto: r[22 + shift + policyShift] || '',
-            certificadoPolarizado: r[23 + shift + policyShift] || '',
-            facturaArchivo: r[24 + shift + policyShift] || '',
-            polizaArchivo: r[25 + shift + policyShift] || '',
-        };
-    }).filter(c => c.id && !/buik/i.test(`${c.marca} ${c.modelo}`));
+    const map = autos_headersToMap(effectiveHeaders);
+    autosState.cars = carsRows.map(r => ({
+        rowNum: null,
+        id: (autos_getCell(r, map, 'id', '') || '').toString(),
+        marca: autos_getCell(r, map, 'marca', ''),
+        modelo: autos_getCell(r, map, 'modelo', ''),
+        anio: autos_getCell(r, map, 'anio', ''),
+        valorFactura: autos_getCell(r, map, 'valorFactura', ''),
+        kilometraje: autos_getCell(r, map, 'kilometraje', ''),
+        propietario: autos_getCell(r, map, 'propietario', ''),
+        tieneSeguro: parseBool(autos_getCell(r, map, 'tieneSeguro', false)),
+        placa: autos_getCell(r, map, 'placa', ''),
+        vin: autos_getCell(r, map, 'vin', ''),
+        fotoAuto: autos_getCell(r, map, 'fotoAuto', ''),
+        contratoPrestamo: autos_getCell(r, map, 'contratoPrestamo', ''),
+        polizaSeguro: autos_getCell(r, map, 'polizaSeguro', ''),
+        vencimientoPoliza: autos_getCell(r, map, 'vencimientoPoliza', ''),
+        proximaRevisionKm: autos_getCell(r, map, 'proximaRevisionKm', ''),
+        emergenciaInterior: autos_getCell(r, map, 'emergenciaInterior', ''),
+        emergenciaMetro: autos_getCell(r, map, 'emergenciaMetro', ''),
+        reporteSiniestros1: autos_getCell(r, map, 'reporteSiniestros1', ''),
+        reporteSiniestros2: autos_getCell(r, map, 'reporteSiniestros2', ''),
+        tarjetaCirculacionFrente: autos_getCell(r, map, 'tarjetaCirculacionFrente', ''),
+        tarjetaCirculacionAtras: autos_getCell(r, map, 'tarjetaCirculacionAtras', ''),
+        pagoTenencia: autos_getCell(r, map, 'pagoTenencia', ''),
+        vencimientoTenencia: autos_getCell(r, map, 'vencimientoTenencia', ''),
+        tablaPagos: autos_getCell(r, map, 'tablaPagos', ''),
+        tablaPagosSeguro: autos_getCell(r, map, 'tablaPagosSeguro', ''),
+        tipoLlantas: autos_getCell(r, map, 'tipoLlantas', ''),
+        llantasFoto: autos_getCell(r, map, 'llantasFoto', ''),
+        certificadoPolarizado: autos_getCell(r, map, 'certificadoPolarizado', ''),
+        facturaArchivo: autos_getCell(r, map, 'facturaArchivo', ''),
+        polizaArchivo: autos_getCell(r, map, 'polizaArchivo', ''),
+        extraDoc1Nombre: autos_getCell(r, map, 'extraDoc1Nombre', ''),
+        extraDoc1Url: autos_getCell(r, map, 'extraDoc1Url', ''),
+        extraDoc2Nombre: autos_getCell(r, map, 'extraDoc2Nombre', ''),
+        extraDoc2Url: autos_getCell(r, map, 'extraDoc2Url', ''),
+    })).filter(c => c.id && !/buik/i.test(`${c.marca} ${c.modelo}`));
 
     autosState.repairs = repairsRows.map(r => ({
         rowNum: null,
@@ -5206,12 +5283,9 @@ async function autos_seedInitialData() {
         { id: `rep-${Date.now()}-6`, carId: taos?.id || '', reparacion: 'Servicio de los 15000 kilometros', costo: 3075.01, moneda: 'MXN', lugar: 'Agencia VW Valle Victoria', fecha: '2026-01-24', foto: 'https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/szp3mFYNwh3181ZkC2gi/pub/soFtdoc1n0sFXUFKuyTq.jpg', recibo: '', descripcion: '', logMarker: '' },
     ].filter(r => r.carId);
 
-    await sheetsUpdate(SPREADSHEET_AUTOS_ID, `Autos!A2:AD${1 + cars.length}`, cars.map(c => [
-        c.id, c.marca, c.modelo, c.anio, c.valorFactura || '', c.kilometraje || '', c.propietario, c.tieneSeguro ? 'TRUE' : 'FALSE', c.placa, c.vin, c.fotoAuto,
-        c.contratoPrestamo, c.polizaSeguro, c.vencimientoPoliza || '', c.proximaRevisionKm || '', c.emergenciaInterior, c.emergenciaMetro, c.reporteSiniestros1, c.reporteSiniestros2,
-        c.tarjetaCirculacionFrente, c.tarjetaCirculacionAtras, c.pagoTenencia, c.vencimientoTenencia, c.tablaPagos, c.tablaPagosSeguro,
-        c.tipoLlantas, c.llantasFoto, c.certificadoPolarizado, c.facturaArchivo || '', c.polizaArchivo || '',
-    ]));
+    const headers = autosState.autosHeaders?.length ? autosState.autosHeaders : AUTOS_HEADERS;
+    const letter = autos_colLetter(headers.length);
+    await sheetsUpdate(SPREADSHEET_AUTOS_ID, `Autos!A2:${letter}${1 + cars.length}`, cars.map(c => autos_carToRowByHeaders(c, headers)));
     await sheetsUpdate(SPREADSHEET_AUTOS_ID, `Reparaciones!A2:K${1 + repairs.length}`, repairs.map(r => [
         r.id, r.carId, r.reparacion, r.costo, r.moneda, r.lugar, r.fecha, r.foto, r.recibo, r.descripcion, r.logMarker,
     ]));
@@ -5272,9 +5346,13 @@ function autos_renderSelectedCar() {
     }
     selectedEl.innerText = `${car.marca} ${car.modelo}`;
 
+    const extra1Name = (car.extraDoc1Nombre || '').toString().trim() || 'Documento extra 1';
+    const extra2Name = (car.extraDoc2Nombre || '').toString().trim() || 'Documento extra 2';
     const links = [
         ['Factura original', car.facturaArchivo],
         ['Poliza original', car.polizaArchivo],
+        [extra1Name, car.extraDoc1Url],
+        [extra2Name, car.extraDoc2Url],
         ['Tarjeta Frontal', car.tarjetaCirculacionFrente],
         ['Tarjeta Trasera', car.tarjetaCirculacionAtras],
         ['Tabla Pagos', car.tablaPagos],
@@ -5319,7 +5397,7 @@ function autos_renderSelectedCar() {
             <span class="account-type-label">Factura: ${invoiceLabel}</span>
             <span class="account-type-label">Propietario: ${car.propietario || '-'} · Seguro: ${car.tieneSeguro ? 'Si' : 'No'}</span>
             <span class="account-type-label">Poliza: ${car.polizaSeguro || '-'} · Vence: ${car.vencimientoPoliza || '-'} · Llantas: ${car.tipoLlantas || '-'}</span>
-            <span class="account-type-label">Archivos: Factura ${car.facturaArchivo ? '✅' : '—'} · Poliza ${car.polizaArchivo ? '✅' : '—'}</span>
+            <span class="account-type-label">Archivos: Factura ${car.facturaArchivo ? '✅' : '—'} · Poliza ${car.polizaArchivo ? '✅' : '—'} · ${extra1Name} ${car.extraDoc1Url ? '✅' : '—'} · ${extra2Name} ${car.extraDoc2Url ? '✅' : '—'}</span>
             <span class="account-type-label">Valor hoy: ${valuationLabel}${kmAdjLabel}</span>
             <span class="account-type-label" style="color:${meliConnected ? '#34d399' : '#fbbf24'};">${meliStatus}</span>
             <span class="account-type-label">Emergencia: ${emergenciaInteriorHtml} · ${emergenciaMetroHtml}</span>
@@ -5329,6 +5407,8 @@ function autos_renderSelectedCar() {
                 <button class="mini-btn" onclick="event.stopPropagation(); autos_updateMileageAndRevalue('${car.id}')">🛣️ Actualizar KM + valuacion</button>
                 ${car.facturaArchivo ? `<a class="mini-btn" href="${car.facturaArchivo}" target="_blank" rel="noopener" onclick="event.stopPropagation();">📄 Ver factura original</a>` : ''}
                 ${car.polizaArchivo ? `<a class="mini-btn" href="${car.polizaArchivo}" target="_blank" rel="noopener" onclick="event.stopPropagation();">🛡️ Ver poliza original</a>` : ''}
+                ${car.extraDoc1Url ? `<a class="mini-btn" href="${car.extraDoc1Url}" target="_blank" rel="noopener" onclick="event.stopPropagation();">📎 ${extra1Name}</a>` : ''}
+                ${car.extraDoc2Url ? `<a class="mini-btn" href="${car.extraDoc2Url}" target="_blank" rel="noopener" onclick="event.stopPropagation();">📎 ${extra2Name}</a>` : ''}
                 ${meliConnected ? '' : '<button class="mini-btn" onclick="event.stopPropagation(); autos_connectMercadoLibre()">🔐 Conectar ML</button>'}
                 <button class="mini-btn" onclick="event.stopPropagation(); autos_openMeliDebug()">🐞 Debug ML</button>
             </div>
@@ -5464,6 +5544,10 @@ function autos_openCarSheet(carId) {
     document.getElementById('autos-car-vencimiento-poliza').value = car?.vencimientoPoliza || '';
     document.getElementById('autos-car-proxima-revision-km').value = car?.proximaRevisionKm || '';
     document.getElementById('autos-car-poliza-archivo').value = car?.polizaArchivo || '';
+    document.getElementById('autos-car-extra1-name').value = car?.extraDoc1Nombre || '';
+    document.getElementById('autos-car-extra1-url').value = car?.extraDoc1Url || '';
+    document.getElementById('autos-car-extra2-name').value = car?.extraDoc2Nombre || '';
+    document.getElementById('autos-car-extra2-url').value = car?.extraDoc2Url || '';
     document.getElementById('autos-car-emergencia').value = car?.emergenciaInterior || '';
     document.getElementById('autos-car-llantas').value = car?.tipoLlantas || '';
     document.getElementById('autos-car-tarjeta-frente').value = car?.tarjetaCirculacionFrente || '';
@@ -5471,16 +5555,22 @@ function autos_openCarSheet(carId) {
     const carFile = document.getElementById('autos-car-foto-file');
     const facturaFile = document.getElementById('autos-car-factura-file');
     const polizaFile = document.getElementById('autos-car-poliza-file');
+    const extra1File = document.getElementById('autos-car-extra1-file');
+    const extra2File = document.getElementById('autos-car-extra2-file');
     const tarjetaFrenteFile = document.getElementById('autos-car-tarjeta-frente-file');
     const tarjetaAtrasFile = document.getElementById('autos-car-tarjeta-atras-file');
     if (carFile) carFile.value = '';
     if (facturaFile) facturaFile.value = '';
     if (polizaFile) polizaFile.value = '';
+    if (extra1File) extra1File.value = '';
+    if (extra2File) extra2File.value = '';
     if (tarjetaFrenteFile) tarjetaFrenteFile.value = '';
     if (tarjetaAtrasFile) tarjetaAtrasFile.value = '';
     autos_updateFileFeedback('autos-car-foto-feedback', null);
     autos_updateFileFeedback('autos-car-factura-feedback', null);
     autos_updateFileFeedback('autos-car-poliza-feedback', null);
+    autos_updateFileFeedback('autos-car-extra1-feedback', null);
+    autos_updateFileFeedback('autos-car-extra2-feedback', null);
     autos_updateFileFeedback('autos-car-tarjeta-frente-feedback', null);
     autos_updateFileFeedback('autos-car-tarjeta-atras-feedback', null);
     document.getElementById('autos-car-sheet').classList.remove('hidden');
@@ -5498,7 +5588,9 @@ async function autos_saveCar() {
         showToast('⚠️ Captura marca/modelo valido (Buik excluido)');
         return;
     }
+    const prevCar = autosState.cars.find(c => c.id === id) || null;
     const car = {
+        ...(prevCar || {}),
         id,
         marca,
         modelo,
@@ -5511,17 +5603,18 @@ async function autos_saveCar() {
         vin: document.getElementById('autos-car-vin').value.trim(),
         fotoAuto: document.getElementById('autos-car-foto').value.trim(),
         facturaArchivo: document.getElementById('autos-car-factura-archivo').value.trim(),
-        contratoPrestamo: '',
         polizaSeguro: document.getElementById('autos-car-poliza').value.trim(),
         vencimientoPoliza: document.getElementById('autos-car-vencimiento-poliza').value.trim(),
         proximaRevisionKm: document.getElementById('autos-car-proxima-revision-km').value.trim(),
         polizaArchivo: document.getElementById('autos-car-poliza-archivo').value.trim(),
+        extraDoc1Nombre: document.getElementById('autos-car-extra1-name').value.trim(),
+        extraDoc1Url: document.getElementById('autos-car-extra1-url').value.trim(),
+        extraDoc2Nombre: document.getElementById('autos-car-extra2-name').value.trim(),
+        extraDoc2Url: document.getElementById('autos-car-extra2-url').value.trim(),
         emergenciaInterior: document.getElementById('autos-car-emergencia').value.trim(),
-        emergenciaMetro: '', reporteSiniestros1: '', reporteSiniestros2: '',
         tarjetaCirculacionFrente: document.getElementById('autos-car-tarjeta-frente').value.trim(),
         tarjetaCirculacionAtras: document.getElementById('autos-car-tarjeta-atras').value.trim(),
-        pagoTenencia: '', vencimientoTenencia: '', tablaPagos: '', tablaPagosSeguro: '',
-        tipoLlantas: document.getElementById('autos-car-llantas').value.trim(), llantasFoto: '', certificadoPolarizado: '',
+        tipoLlantas: document.getElementById('autos-car-llantas').value.trim(),
     };
     try {
         const uploadedPhoto = await autos_uploadFirstFile('autos-car-foto-file');
@@ -5530,6 +5623,10 @@ async function autos_saveCar() {
         if (uploadedFactura) car.facturaArchivo = uploadedFactura;
         const uploadedPoliza = await autos_uploadFirstFile('autos-car-poliza-file', { enableCrop: true, cropTitle: 'Recortar póliza', cropMode: 'oficio' });
         if (uploadedPoliza) car.polizaArchivo = uploadedPoliza;
+        const uploadedExtra1 = await autos_uploadFirstFile('autos-car-extra1-file', { enableCrop: true, cropTitle: 'Recortar documento extra 1', cropMode: 'libre' });
+        if (uploadedExtra1) car.extraDoc1Url = uploadedExtra1;
+        const uploadedExtra2 = await autos_uploadFirstFile('autos-car-extra2-file', { enableCrop: true, cropTitle: 'Recortar documento extra 2', cropMode: 'libre' });
+        if (uploadedExtra2) car.extraDoc2Url = uploadedExtra2;
         const uploadedTarjetaFrente = await autos_uploadFirstFile('autos-car-tarjeta-frente-file');
         if (uploadedTarjetaFrente) car.tarjetaCirculacionFrente = uploadedTarjetaFrente;
         const uploadedTarjetaAtras = await autos_uploadFirstFile('autos-car-tarjeta-atras-file');
@@ -5538,7 +5635,6 @@ async function autos_saveCar() {
         console.warn('No se pudo subir foto del auto:', e);
         showToast('⚠️ No se pudo subir archivo del auto, se guarda con URLs actuales');
     }
-    const prevCar = autosState.cars.find(c => c.id === id) || null;
     const prevKm = autos_parseMileage(prevCar?.kilometraje);
     const nextKm = autos_parseMileage(car.kilometraje);
     const prevFactura = parseSheetValue(prevCar?.valorFactura);
@@ -5560,15 +5656,11 @@ async function autos_saveCar() {
 }
 
 async function autos_saveCarsSheet() {
-    await sheetsClear(SPREADSHEET_AUTOS_ID, 'Autos!A2:AD');
+    const headers = autosState.autosHeaders?.length ? autosState.autosHeaders : AUTOS_HEADERS;
+    const letter = autos_colLetter(headers.length);
+    await sheetsClear(SPREADSHEET_AUTOS_ID, `Autos!A2:${letter}`);
     if (!autosState.cars.length) return;
-    await sheetsUpdate(SPREADSHEET_AUTOS_ID, `Autos!A2:AD${1 + autosState.cars.length}`, autosState.cars.map(c => [
-        c.id, c.marca, c.modelo, c.anio, c.valorFactura || '', c.kilometraje || '', c.propietario, c.tieneSeguro ? 'TRUE' : 'FALSE', c.placa, c.vin, c.fotoAuto,
-        c.contratoPrestamo || '', c.polizaSeguro || '', c.vencimientoPoliza || '', c.proximaRevisionKm || '', c.emergenciaInterior || '', c.emergenciaMetro || '',
-        c.reporteSiniestros1 || '', c.reporteSiniestros2 || '', c.tarjetaCirculacionFrente || '', c.tarjetaCirculacionAtras || '',
-        c.pagoTenencia || '', c.vencimientoTenencia || '', c.tablaPagos || '', c.tablaPagosSeguro || '',
-        c.tipoLlantas || '', c.llantasFoto || '', c.certificadoPolarizado || '', c.facturaArchivo || '', c.polizaArchivo || '',
-    ]));
+    await sheetsUpdate(SPREADSHEET_AUTOS_ID, `Autos!A2:${letter}${1 + autosState.cars.length}`, autosState.cars.map(c => autos_carToRowByHeaders(c, headers)));
 }
 
 function autos_openRepairSheet(repairId) {

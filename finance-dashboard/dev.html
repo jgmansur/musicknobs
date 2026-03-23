@@ -10,7 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="./style.css">
     <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <script type="module" src="./main.js?v=7.1.10"></script>
+    <script type="module" src="./main.js?v=7.1.11"></script>
   </head>
   <body>
     <div id="app">
@@ -702,6 +702,16 @@
             </div>
             <div id="autos-car-poliza-feedback" class="diff-label"></div>
             <div class="autos-file-row" style="margin-top:.45rem;">
+              <label for="autos-car-extra1-file" class="secondary-btn autos-file-btn">📎 Documento extra 1</label>
+              <input id="autos-car-extra1-file" type="file" class="autos-file-native" accept="image/*,application/pdf">
+            </div>
+            <div id="autos-car-extra1-feedback" class="diff-label"></div>
+            <div class="autos-file-row" style="margin-top:.45rem;">
+              <label for="autos-car-extra2-file" class="secondary-btn autos-file-btn">📎 Documento extra 2</label>
+              <input id="autos-car-extra2-file" type="file" class="autos-file-native" accept="image/*,application/pdf">
+            </div>
+            <div id="autos-car-extra2-feedback" class="diff-label"></div>
+            <div class="autos-file-row" style="margin-top:.45rem;">
               <label for="autos-car-tarjeta-frente-file" class="secondary-btn autos-file-btn">🪪 Tarjeta frontal (foto/PDF)</label>
               <input id="autos-car-tarjeta-frente-file" type="file" class="autos-file-native" accept="image/*,application/pdf">
             </div>
@@ -714,6 +724,10 @@
             <input id="autos-car-foto" class="field-input" style="margin-top:.6rem;" placeholder="URL foto del auto (opcional)">
             <input id="autos-car-factura-archivo" class="field-input" style="margin-top:.45rem;" placeholder="URL archivo factura (opcional)">
             <input id="autos-car-poliza-archivo" class="field-input" style="margin-top:.45rem;" placeholder="URL archivo poliza (opcional)">
+            <input id="autos-car-extra1-name" class="field-input" style="margin-top:.45rem;" placeholder="Nombre documento extra 1 (ej. Certificado polarizado)">
+            <input id="autos-car-extra1-url" class="field-input" style="margin-top:.45rem;" placeholder="URL documento extra 1 (opcional)">
+            <input id="autos-car-extra2-name" class="field-input" style="margin-top:.45rem;" placeholder="Nombre documento extra 2 (opcional)">
+            <input id="autos-car-extra2-url" class="field-input" style="margin-top:.45rem;" placeholder="URL documento extra 2 (opcional)">
             <input id="autos-car-tarjeta-frente" class="field-input" style="margin-top:.45rem;" placeholder="URL tarjeta circulacion frontal (opcional)">
             <input id="autos-car-tarjeta-atras" class="field-input" style="margin-top:.45rem;" placeholder="URL tarjeta circulacion trasera (opcional)">
             <button id="autos-car-delete" class="mini-btn mini-btn-danger hidden" style="margin-top:.8rem;width:100%;">🗑️ Eliminar Auto</button>
