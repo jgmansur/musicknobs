@@ -15,7 +15,7 @@ const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // 
 const SPREADSHEET_DEUDAS_ID = '1dKxhgqazskm15lx0f6FNCA0gpJ7i5glfxkusiH3b0Uk'; // Control de Deudas
 const SPREADSHEET_AUTOS_ID = SPREADSHEET_DEUDAS_ID; // Autos + Reparaciones live in same workbook
 const SPREADSHEET_ESTUDIO_ID = SPREADSHEET_DEUDAS_ID; // Estudio + Plugins in same workbook
-const APP_VERSION  = 'v7.4.0';
+const APP_VERSION  = 'v7.4.1';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -8623,6 +8623,11 @@ function pelo_bindEvents() {
         document.getElementById(inputId)?.addEventListener('change', () => pelo_uploadFileToInput(inputId, targetInputId, kind));
     });
 
+    document.getElementById('hair-pick-receipt')?.addEventListener('click', () => pelo_pickUploadSource('hair-upload-receipt', 'recibo'));
+    document.getElementById('hair-pick-front')?.addEventListener('click', () => pelo_pickUploadSource('hair-upload-front', 'foto frente'));
+    document.getElementById('hair-pick-side')?.addEventListener('click', () => pelo_pickUploadSource('hair-upload-side', 'foto lado'));
+    document.getElementById('hair-pick-back')?.addEventListener('click', () => pelo_pickUploadSource('hair-upload-back', 'foto atras'));
+
     document.getElementById('hair-member-tabs')?.addEventListener('click', (e) => {
         const btn = e.target.closest('[data-hair-member]');
         if (!btn) return;
@@ -8779,7 +8784,6 @@ function pelo_openSheet(id) {
     document.getElementById('hair-date').value = row?.date || normalizeDateString(new Date().toLocaleDateString('en-CA'));
     document.getElementById('hair-amount').value = row?.amount || '';
     document.getElementById('hair-stylist').value = row?.stylist || '';
-    document.getElementById('hair-rating').value = String(row?.rating || 0);
     document.getElementById('hair-notes').value = row?.notes || '';
     document.getElementById('hair-receipt-url').value = row?.receiptUrl || '';
     document.getElementById('hair-front-url').value = row?.frontUrl || '';
@@ -8822,6 +8826,22 @@ async function pelo_uploadFileToInput(inputId, targetInputId, kind) {
     } finally {
         input.value = '';
     }
+}
+
+function pelo_pickUploadSource(baseInputId, label) {
+    const raw = (prompt(`Subir ${label}: escribe 1 (camara), 2 (galeria) o 3 (archivo)`, '2') || '').trim().toLowerCase();
+    if (!raw) return;
+    let source = '';
+    if (['1', 'c', 'camara', 'camera'].includes(raw)) source = 'camera';
+    else if (['2', 'g', 'galeria', 'gallery'].includes(raw)) source = 'gallery';
+    else if (['3', 'a', 'archivo', 'file'].includes(raw)) source = 'file';
+    else {
+        alert('Opcion invalida. Usa 1, 2 o 3.');
+        return;
+    }
+    const input = document.getElementById(`${baseInputId}-${source}`);
+    if (!input) return;
+    input.click();
 }
 
 function pelo_buildMarker(id) {
@@ -8895,7 +8915,7 @@ async function pelo_save() {
         sideUrl: (document.getElementById('hair-side-url').value || '').trim(),
         backUrl: (document.getElementById('hair-back-url').value || '').trim(),
         notes: (document.getElementById('hair-notes').value || '').trim(),
-        rating: Math.max(0, Math.min(5, parseInt(document.getElementById('hair-rating').value || '0', 10) || 0)),
+        rating: existing?.rating || 0,
         expenseMarker: existing?.expenseMarker || pelo_buildMarker(id),
         expenseRowNum: existing?.expenseRowNum || 0,
         createdAt: existing?.createdAt || now,

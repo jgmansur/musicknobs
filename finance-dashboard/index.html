@@ -13,7 +13,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <link rel="stylesheet" href="./style.css">
-    <script type="module" src="./main.js?v=7.4.0"></script>
+    <script type="module" src="./main.js?v=7.4.1"></script>
   </head>
   <body>
     <div id="app">
@@ -1119,69 +1119,38 @@
               <input id="hair-date" type="date" class="field-input">
               <input id="hair-amount" type="number" step="0.01" class="field-input" placeholder="Monto pagado">
               <input id="hair-stylist" class="field-input" placeholder="Nombre estilista">
-              <select id="hair-rating" class="field-input">
-                <option value="0">Sin estrellas</option>
-                <option value="1">⭐ 1</option>
-                <option value="2">⭐⭐ 2</option>
-                <option value="3">⭐⭐⭐ 3</option>
-                <option value="4">⭐⭐⭐⭐ 4</option>
-                <option value="5">⭐⭐⭐⭐⭐ 5</option>
-              </select>
+              <input class="field-input" value="Favoritos: usa ⭐ en cada tarjeta" readonly>
             </div>
             <textarea id="hair-notes" class="field-input" rows="2" style="margin-top:.45rem;" placeholder="Notas del corte"></textarea>
 
             <div class="autos-file-row" style="margin-top:.45rem;">
-              <label for="hair-upload-receipt-camera" class="secondary-btn autos-file-btn">🧾 Recibo camara</label>
+              <button id="hair-pick-receipt" type="button" class="secondary-btn autos-file-btn">🧾 Subir recibo</button>
               <input id="hair-upload-receipt-camera" type="file" class="autos-file-native" accept="image/*" capture="environment">
-            </div>
-            <div class="autos-file-row" style="margin-top:.45rem;">
-              <label for="hair-upload-receipt-gallery" class="secondary-btn autos-file-btn">🧾 Recibo galeria</label>
               <input id="hair-upload-receipt-gallery" type="file" class="autos-file-native" accept="image/*">
-            </div>
-            <div class="autos-file-row" style="margin-top:.45rem;">
-              <label for="hair-upload-receipt-file" class="secondary-btn autos-file-btn">🧾 Recibo archivo</label>
               <input id="hair-upload-receipt-file" type="file" class="autos-file-native" accept="image/*,application/pdf">
             </div>
             <input id="hair-receipt-url" class="field-input" style="margin-top:.45rem;" placeholder="URL recibo">
 
             <div class="autos-file-row" style="margin-top:.45rem;">
-              <label for="hair-upload-front-camera" class="secondary-btn autos-file-btn">📷 Frente camara</label>
+              <button id="hair-pick-front" type="button" class="secondary-btn autos-file-btn">📷 Subir foto frente</button>
               <input id="hair-upload-front-camera" type="file" class="autos-file-native" accept="image/*" capture="environment">
-            </div>
-            <div class="autos-file-row" style="margin-top:.45rem;">
-              <label for="hair-upload-front-gallery" class="secondary-btn autos-file-btn">📷 Frente galeria</label>
               <input id="hair-upload-front-gallery" type="file" class="autos-file-native" accept="image/*">
-            </div>
-            <div class="autos-file-row" style="margin-top:.45rem;">
-              <label for="hair-upload-front-file" class="secondary-btn autos-file-btn">📷 Frente archivo</label>
               <input id="hair-upload-front-file" type="file" class="autos-file-native" accept="image/*,application/pdf">
             </div>
             <input id="hair-front-url" class="field-input" style="margin-top:.45rem;" placeholder="URL foto frente">
 
             <div class="autos-file-row" style="margin-top:.45rem;">
-              <label for="hair-upload-side-camera" class="secondary-btn autos-file-btn">📷 Lado camara</label>
+              <button id="hair-pick-side" type="button" class="secondary-btn autos-file-btn">📷 Subir foto lado</button>
               <input id="hair-upload-side-camera" type="file" class="autos-file-native" accept="image/*" capture="environment">
-            </div>
-            <div class="autos-file-row" style="margin-top:.45rem;">
-              <label for="hair-upload-side-gallery" class="secondary-btn autos-file-btn">📷 Lado galeria</label>
               <input id="hair-upload-side-gallery" type="file" class="autos-file-native" accept="image/*">
-            </div>
-            <div class="autos-file-row" style="margin-top:.45rem;">
-              <label for="hair-upload-side-file" class="secondary-btn autos-file-btn">📷 Lado archivo</label>
               <input id="hair-upload-side-file" type="file" class="autos-file-native" accept="image/*,application/pdf">
             </div>
             <input id="hair-side-url" class="field-input" style="margin-top:.45rem;" placeholder="URL foto lado">
 
             <div class="autos-file-row" style="margin-top:.45rem;">
-              <label for="hair-upload-back-camera" class="secondary-btn autos-file-btn">📷 Atras camara</label>
+              <button id="hair-pick-back" type="button" class="secondary-btn autos-file-btn">📷 Subir foto atras</button>
               <input id="hair-upload-back-camera" type="file" class="autos-file-native" accept="image/*" capture="environment">
-            </div>
-            <div class="autos-file-row" style="margin-top:.45rem;">
-              <label for="hair-upload-back-gallery" class="secondary-btn autos-file-btn">📷 Atras galeria</label>
               <input id="hair-upload-back-gallery" type="file" class="autos-file-native" accept="image/*">
-            </div>
-            <div class="autos-file-row" style="margin-top:.45rem;">
-              <label for="hair-upload-back-file" class="secondary-btn autos-file-btn">📷 Atras archivo</label>
               <input id="hair-upload-back-file" type="file" class="autos-file-native" accept="image/*,application/pdf">
             </div>
             <input id="hair-back-url" class="field-input" style="margin-top:.45rem;" placeholder="URL foto atras">
