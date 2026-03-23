@@ -10,7 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="./style.css">
     <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <script type="module" src="./main.js?v=7.2.2"></script>
+    <script type="module" src="./main.js?v=7.2.3"></script>
   </head>
   <body>
     <div id="app">
@@ -772,7 +772,152 @@
       </div>
 
       <!-- ══════════════════════════════════
-           VIEW: ESTUDIO (Tab 7)
+           VIEW: PROPIEDADES (Tab 7)
+           ══════════════════════════════════ -->
+      <div id="view-propiedades" class="view">
+        <main class="dashboard-grid">
+          <section class="kpi-row">
+            <div class="kpi-card glass">
+              <div class="kpi-icon" style="background:rgba(59,130,246,.15);color:#3b82f6"><i data-lucide="home"></i></div>
+              <div class="kpi-data">
+                <span class="label">Valor Comercial Total</span>
+                <h2 id="prop-total-valor" class="text-success">$0.00</h2>
+                <span class="diff-label">Valor actualizado (placeholder)</span>
+              </div>
+            </div>
+            <div class="kpi-card glass">
+              <div class="kpi-icon" style="background:rgba(239,68,68,.15);color:#ef4444"><i data-lucide="credit-card"></i></div>
+              <div class="kpi-data">
+                <span class="label">Deuda Propiedades</span>
+                <h2 id="prop-total-deudas" class="text-danger">$0.00</h2>
+                <span class="diff-label">Sincroniza con Deudas</span>
+              </div>
+            </div>
+            <div class="kpi-card glass">
+              <div class="kpi-icon" style="background:rgba(14,165,233,.14);color:#0ea5e9"><i data-lucide="calendar-check"></i></div>
+              <div class="kpi-data">
+                <span class="label">Fijos Propiedades</span>
+                <h2 id="prop-total-fijos" class="text-danger">$0.00</h2>
+                <span class="diff-label">Predial + mantenimiento</span>
+              </div>
+            </div>
+            <div class="kpi-card glass">
+              <div class="kpi-icon" style="background:rgba(34,197,94,.14);color:#22c55e"><i data-lucide="trending-up"></i></div>
+              <div class="kpi-data">
+                <span class="label">Ingreso mi parte</span>
+                <h2 id="prop-total-ingresos" class="text-success">$0.00</h2>
+                <span class="diff-label">Sincroniza con gastos fijos</span>
+              </div>
+            </div>
+          </section>
+
+          <div class="main-content-row">
+            <section class="glass" style="display:grid;gap:.65rem;align-content:start;">
+              <div class="section-header" style="display:flex;justify-content:space-between;align-items:center;gap:.5rem;">
+                <h3>Mis Propiedades</h3>
+                <button id="prop-btn-add" class="secondary-btn" style="padding:.45rem .7rem;">+ Propiedad</button>
+              </div>
+              <div id="prop-tabs" class="estudio-subtabs" style="display:flex;overflow:auto;max-width:100%;"></div>
+              <button id="prop-open-sheet" class="mini-btn" style="width:100%;">Editar propiedad seleccionada</button>
+            </section>
+
+            <section class="glass" style="display:grid;gap:.7rem;">
+              <div class="section-header" style="display:flex;justify-content:space-between;align-items:center;">
+                <h3>Detalle de Propiedad</h3>
+              </div>
+              <div id="prop-detail"></div>
+            </section>
+          </div>
+        </main>
+
+        <div id="prop-sheet" class="bottom-sheet hidden">
+          <div id="prop-sheet-overlay" class="bottom-sheet-overlay"></div>
+          <div class="bottom-sheet-content glass">
+            <div class="sheet-handle"></div>
+            <div class="balance-panel-header">
+              <h3 id="prop-sheet-title" class="balance-panel-title">Nueva propiedad</h3>
+              <button class="icon-btn" onclick="document.getElementById('prop-sheet').classList.add('hidden')">✕</button>
+            </div>
+            <input id="prop-edit-id" type="hidden">
+            <input id="prop-sync-month" type="hidden">
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:.55rem;">
+              <input id="prop-nombre" class="field-input" placeholder="Nombre de la propiedad">
+              <select id="prop-tipo" class="field-input">
+                <option value="Casa">Casa</option>
+                <option value="Departamento">Departamento</option>
+                <option value="Terreno">Terreno</option>
+                <option value="Local">Local</option>
+                <option value="Otro">Otro</option>
+              </select>
+              <input id="prop-zona" class="field-input" placeholder="Zona / Colonia / Ciudad">
+              <input id="prop-mi-porcentaje" type="number" step="0.01" class="field-input" placeholder="Mi porcentaje (%)">
+              <input id="prop-m2-construccion" type="number" step="0.01" class="field-input" placeholder="m² construcción">
+              <input id="prop-m2-terreno" type="number" step="0.01" class="field-input" placeholder="m² terreno">
+              <input id="prop-valor-compra" type="number" step="0.01" class="field-input" placeholder="Valor compra (MXN)">
+              <input id="prop-valor-catastral" type="number" step="0.01" class="field-input" placeholder="Valor catastral (MXN)">
+              <input id="prop-valor-comercial" type="number" step="0.01" class="field-input" placeholder="Valor comercial (manual)">
+              <input id="prop-valor-investigado" type="number" step="0.01" class="field-input" placeholder="Valor investigado (MXN)">
+              <input id="prop-predial" type="number" step="0.01" class="field-input" placeholder="Predial mensual (MXN)">
+              <input id="prop-mantenimiento" type="number" step="0.01" class="field-input" placeholder="Mantenimiento mensual (MXN)">
+            </div>
+
+            <textarea id="prop-fuente" class="field-input" rows="2" style="margin-top:.5rem;" placeholder="Cómo se estimó la valoración"></textarea>
+
+            <div class="autos-file-row" style="margin-top:.45rem;">
+              <label for="prop-upload-foto" class="secondary-btn autos-file-btn">🏠 Subir foto propiedad</label>
+              <input id="prop-upload-foto" type="file" class="autos-file-native" accept="image/*,application/pdf">
+            </div>
+            <input id="prop-foto-url" class="field-input" style="margin-top:.45rem;" placeholder="URL foto propiedad (opcional)">
+            <input id="prop-link1" class="field-input" style="margin-top:.45rem;" placeholder="Link asociado 1 (venta, portal, etc)">
+            <input id="prop-link2" class="field-input" style="margin-top:.45rem;" placeholder="Link asociado 2 (opcional)">
+
+            <div class="autos-file-row" style="margin-top:.45rem;">
+              <label for="prop-upload-escritura" class="secondary-btn autos-file-btn">📄 Subir escritura (foto/PDF)</label>
+              <input id="prop-upload-escritura" type="file" class="autos-file-native" accept="image/*,application/pdf">
+            </div>
+            <input id="prop-escritura-nombre" class="field-input" style="margin-top:.45rem;" placeholder="Nombre documento escritura">
+            <input id="prop-escritura-url" class="field-input" style="margin-top:.45rem;" placeholder="URL escritura">
+
+            <div class="autos-file-row" style="margin-top:.45rem;">
+              <label for="prop-upload-extra1" class="secondary-btn autos-file-btn">📎 Documento extra 1</label>
+              <input id="prop-upload-extra1" type="file" class="autos-file-native" accept="image/*,application/pdf">
+            </div>
+            <input id="prop-doc1-nombre" class="field-input" style="margin-top:.45rem;" placeholder="Nombre doc extra 1">
+            <input id="prop-doc1-url" class="field-input" style="margin-top:.45rem;" placeholder="URL doc extra 1">
+
+            <div class="autos-file-row" style="margin-top:.45rem;">
+              <label for="prop-upload-extra2" class="secondary-btn autos-file-btn">📎 Documento extra 2</label>
+              <input id="prop-upload-extra2" type="file" class="autos-file-native" accept="image/*,application/pdf">
+            </div>
+            <input id="prop-doc2-nombre" class="field-input" style="margin-top:.45rem;" placeholder="Nombre doc extra 2">
+            <input id="prop-doc2-url" class="field-input" style="margin-top:.45rem;" placeholder="URL doc extra 2">
+
+            <div class="autos-file-row" style="margin-top:.45rem;">
+              <label for="prop-upload-extra3" class="secondary-btn autos-file-btn">📎 Documento extra 3</label>
+              <input id="prop-upload-extra3" type="file" class="autos-file-native" accept="image/*,application/pdf">
+            </div>
+            <input id="prop-doc3-nombre" class="field-input" style="margin-top:.45rem;" placeholder="Nombre doc extra 3">
+            <input id="prop-doc3-url" class="field-input" style="margin-top:.45rem;" placeholder="URL doc extra 3">
+
+            <label class="field-label" style="margin-top:.55rem;">Dueños (%): una línea por dueño → Nombre|Porcentaje</label>
+            <textarea id="prop-owners" class="field-input" rows="3" placeholder="Juan|50&#10;Mama|30&#10;Hermano|20"></textarea>
+
+            <label class="field-label" style="margin-top:.55rem;">Deudas de la propiedad: Concepto|Monto</label>
+            <textarea id="prop-deudas" class="field-input" rows="3" placeholder="Hipoteca Banco X|2500000&#10;Prestamo Remodelacion|180000"></textarea>
+
+            <label class="field-label" style="margin-top:.55rem;">Ingresos de la propiedad: Concepto|Monto mensual</label>
+            <textarea id="prop-ingresos" class="field-input" rows="3" placeholder="Renta principal|15000"></textarea>
+
+            <div id="prop-file-feedback" class="diff-label" style="margin-top:.5rem;"></div>
+            <button id="prop-delete" class="mini-btn mini-btn-danger hidden" style="margin-top:.7rem;width:100%;">🗑️ Eliminar propiedad</button>
+            <button id="prop-save" class="primary-btn" style="margin-top:.6rem;width:100%;">Guardar propiedad</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════════════
+           VIEW: ESTUDIO (Tab 8)
            ══════════════════════════════════ -->
       <div id="view-estudio" class="view">
         <main class="dashboard-grid">
@@ -983,6 +1128,10 @@
         <button class="tab" id="tab-estudio" data-tab="estudio">
           <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 4h12v3H6z"/><path d="M5 7h14l-1.2 11.2a2 2 0 0 1-2 1.8H8.2a2 2 0 0 1-2-1.8z"/><path d="M10 10v6M14 10v6"/></svg>
           <span class="tab-label">Estudio</span>
+        </button>
+        <button class="tab" id="tab-propiedades" data-tab="propiedades">
+          <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 10.5L12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/><path d="M9 21v-6h6v6"/></svg>
+          <span class="tab-label">Propiedades</span>
         </button>
       </nav>
 

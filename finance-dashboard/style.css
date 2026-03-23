@@ -1199,3 +1199,22 @@ select.field-input { background-image: url("data:image/svg+xml,%3Csvg xmlns='htt
   font-weight: 700;
   color: var(--text-main);
 }
+
+/* =============================================
+   PROPIEDADES
+   ============================================= */
+.propiedades-card .plan-expense-row {
+  border-bottom: 1px solid rgba(255,255,255,.06);
+}
+
+.propiedades-card .plan-expense-row:last-child {
+  border-bottom: none;
+}
+
+#prop-tabs .estudio-subtab-btn {
+  white-space: nowrap;
+}
+
+#prop-detail .recibo-link {
+  padding: .28rem 0;
+}

@@ -1,4 +1,4 @@
-import { createIcons, RefreshCw, AlertTriangle, CalendarCheck, TrendingUp, LogOut, CreditCard, CarFront, Wrench } from 'lucide';
+import { createIcons, RefreshCw, AlertTriangle, CalendarCheck, TrendingUp, LogOut, CreditCard, CarFront, Wrench, Home } from 'lucide';
 import ApexCharts from 'apexcharts';
 import { initializeApp } from 'firebase/app';
 import { browserLocalPersistence, getAuth, GoogleAuthProvider, getRedirectResult, onAuthStateChanged, setPersistence, signInWithCredential, signInWithPopup, signInWithRedirect, signOut as fbSignOut } from 'firebase/auth';
@@ -15,7 +15,7 @@ const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // 
 const SPREADSHEET_DEUDAS_ID = '1dKxhgqazskm15lx0f6FNCA0gpJ7i5glfxkusiH3b0Uk'; // Control de Deudas
 const SPREADSHEET_AUTOS_ID = SPREADSHEET_DEUDAS_ID; // Autos + Reparaciones live in same workbook
 const SPREADSHEET_ESTUDIO_ID = SPREADSHEET_DEUDAS_ID; // Estudio + Plugins in same workbook
-const APP_VERSION  = 'v7.2.2';
+const APP_VERSION  = 'v7.2.3';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -162,7 +162,7 @@ let tokenRequestInFlight = null;
 let tokenRequestInteractive = true;
 let tokenRequestWatchdog = null;
 let currentTab  = 'dashboard';
-let tabInited   = { dashboard: false, gastos: false, fijos: false, deudas: false, plan: false, autos: false, estudio: false };
+let tabInited   = { dashboard: false, gastos: false, fijos: false, deudas: false, plan: false, autos: false, propiedades: false, estudio: false };
 const MELI_ACCESS_TOKEN_KEY = 'meli_access_token_v1';
 const MELI_REFRESH_TOKEN_KEY = 'meli_refresh_token_v1';
 const MELI_EXPIRES_AT_KEY = 'meli_expires_at_v1';
@@ -491,7 +491,7 @@ document.addEventListener('DOMContentLoaded', () => {
     debugInitPanel();
     debugUpdate({ token: accessToken ? 'Si (cache)' : 'No' });
     if (accessToken) scheduleTokenRefresh();
-    createIcons({ icons: { RefreshCw, AlertTriangle, CalendarCheck, TrendingUp, LogOut, CreditCard, CarFront, Wrench } });
+    createIcons({ icons: { RefreshCw, AlertTriangle, CalendarCheck, TrendingUp, LogOut, CreditCard, CarFront, Wrench, Home } });
     const subtitle = document.querySelector('.subtitle');
     if (subtitle) subtitle.innerText = `Music Knobs | ${APP_VERSION}`;
 
@@ -515,6 +515,7 @@ document.addEventListener('DOMContentLoaded', () => {
     fijos_bindEvents();
     deudas_bindEvents();
     autos_bindEvents();
+    propiedades_bindEvents();
     estudio_bindEvents();
 
     document.getElementById('fixed-search-open')?.addEventListener('click', dashboard_openFixedSearch);
@@ -1562,6 +1563,7 @@ function showTab(name) {
         if (name === 'deudas')    deudas_cargarDatos();
         if (name === 'plan')      planner_cargarVista();
         if (name === 'autos')     autos_cargarVista();
+        if (name === 'propiedades') propiedades_cargarVista();
         if (name === 'estudio')   estudio_cargarVista();
     }
 }
@@ -6754,6 +6756,742 @@ window.estudio_openInventarioSheet = estudio_openInventarioSheet;
 window.estudio_closeInventarioSheet = estudio_closeInventarioSheet;
 window.estudio_openPluginSheet = estudio_openPluginSheet;
 window.estudio_closePluginSheet = estudio_closePluginSheet;
+
+// =============================================
+// PROPIEDADES MODULE
+// =============================================
+const PROPIEDADES_HEADERS = [
+    'id', 'nombre', 'tipo', 'zona', 'metrosConstruccion', 'metrosTerreno',
+    'valorCompra', 'valorCatastral', 'valorComercial', 'valorInvestigado', 'fuenteValoracion',
+    'predialMensual', 'mantenimientoMensual', 'miPorcentaje',
+    'fotoUrl', 'link1', 'link2',
+    'escrituraNombre', 'escrituraUrl',
+    'docExtra1Nombre', 'docExtra1Url',
+    'docExtra2Nombre', 'docExtra2Url',
+    'docExtra3Nombre', 'docExtra3Url',
+    'ownersJson', 'deudasJson', 'ingresosJson',
+    'updatedAt',
+];
+
+const PROPIEDADES_SEED_NAMES = [
+    'Casa Galeria',
+    'Casa Mexico',
+    'Casa Victoria Mama',
+    'Casa Laureles',
+    'Casa Departamento Victoria',
+    'Terreno Malanquin',
+    'Terreno Teocaltiche',
+];
+
+const propiedadesState = {
+    items: [],
+    selectedId: '',
+    loading: false,
+    loaded: false,
+    headers: PROPIEDADES_HEADERS.slice(),
+    fixedSheetName: 'Hoja 1',
+    deudasSheetName: 'Deudas',
+    folderId: null,
+};
+
+function propiedades_bindEvents() {
+    document.getElementById('prop-btn-add')?.addEventListener('click', () => propiedades_openSheet(null));
+    document.getElementById('prop-sheet-overlay')?.addEventListener('click', propiedades_closeSheet);
+    document.getElementById('prop-save')?.addEventListener('click', propiedades_save);
+    document.getElementById('prop-delete')?.addEventListener('click', propiedades_deleteFromSheet);
+
+    document.getElementById('prop-tabs')?.addEventListener('click', (e) => {
+        const btn = e.target.closest('[data-prop-id]');
+        if (!btn) return;
+        propiedadesState.selectedId = btn.dataset.propId || '';
+        propiedades_render();
+    });
+
+    document.getElementById('prop-upload-foto')?.addEventListener('change', async () => {
+        const url = await propiedades_uploadFirstFile('prop-upload-foto');
+        if (url) document.getElementById('prop-foto-url').value = url;
+    });
+    document.getElementById('prop-upload-escritura')?.addEventListener('change', async () => {
+        const url = await propiedades_uploadFirstFile('prop-upload-escritura');
+        if (url) document.getElementById('prop-escritura-url').value = url;
+    });
+    document.getElementById('prop-upload-extra1')?.addEventListener('change', async () => {
+        const url = await propiedades_uploadFirstFile('prop-upload-extra1');
+        if (url) document.getElementById('prop-doc1-url').value = url;
+    });
+    document.getElementById('prop-upload-extra2')?.addEventListener('change', async () => {
+        const url = await propiedades_uploadFirstFile('prop-upload-extra2');
+        if (url) document.getElementById('prop-doc2-url').value = url;
+    });
+    document.getElementById('prop-upload-extra3')?.addEventListener('change', async () => {
+        const url = await propiedades_uploadFirstFile('prop-upload-extra3');
+        if (url) document.getElementById('prop-doc3-url').value = url;
+    });
+
+    document.getElementById('prop-open-sheet')?.addEventListener('click', () => {
+        const selected = propiedades_getSelected();
+        propiedades_openSheet(selected?.id || null);
+    });
+}
+
+async function propiedades_cargarVista() {
+    if (!accessToken || propiedadesState.loading) return;
+    propiedadesState.loading = true;
+    try {
+        await autos_ensureSheet('Propiedades', PROPIEDADES_HEADERS);
+        await propiedades_loadData();
+        if (!propiedadesState.items.length) {
+            await propiedades_seedInitialData();
+            await propiedades_loadData();
+        }
+        if (!propiedadesState.selectedId && propiedadesState.items.length) {
+            propiedadesState.selectedId = propiedadesState.items[0].id;
+        }
+        propiedades_render();
+    } catch (e) {
+        console.error('propiedades_cargarVista:', e);
+        const detail = document.getElementById('prop-detail');
+        if (detail) detail.innerHTML = '<div class="empty-state text-danger">❌ No se pudieron cargar propiedades</div>';
+    } finally {
+        propiedadesState.loading = false;
+    }
+}
+
+async function propiedades_loadData() {
+    const head = await sheetsGet(SPREADSHEET_AUTOS_ID, 'Propiedades!A1:AZ1').catch(() => []);
+    const headers = (head[0] && head[0].length) ? head[0].map((x) => (x || '').toString().trim()) : PROPIEDADES_HEADERS.slice();
+    propiedadesState.headers = headers;
+    const rows = await sheetsGet(SPREADSHEET_AUTOS_ID, 'Propiedades!A2:AZ').catch(() => []);
+    const map = autos_headersToMap(headers);
+    propiedadesState.items = rows
+        .map((row) => propiedades_rowToItem(row, map))
+        .filter((x) => x.nombre);
+    propiedadesState.loaded = true;
+}
+
+async function propiedades_seedInitialData() {
+    const now = normalizeDateString(new Date().toLocaleDateString('en-CA'));
+    const seeded = PROPIEDADES_SEED_NAMES.map((name, idx) => ({
+        id: `prop-${Date.now()}-${idx + 1}`,
+        nombre: name,
+        tipo: name.toLowerCase().includes('terreno') ? 'Terreno' : 'Casa',
+        zona: '',
+        metrosConstruccion: '',
+        metrosTerreno: '',
+        valorCompra: '',
+        valorCatastral: '',
+        valorComercial: '',
+        valorInvestigado: '',
+        fuenteValoracion: 'Placeholder local (sin API)',
+        predialMensual: '',
+        mantenimientoMensual: '',
+        miPorcentaje: '100',
+        fotoUrl: '',
+        link1: '',
+        link2: '',
+        escrituraNombre: 'Escrituras',
+        escrituraUrl: '',
+        docExtra1Nombre: 'Documento extra 1',
+        docExtra1Url: '',
+        docExtra2Nombre: 'Documento extra 2',
+        docExtra2Url: '',
+        docExtra3Nombre: 'Documento extra 3',
+        docExtra3Url: '',
+        ownersJson: JSON.stringify([{ name: 'Yo', percent: 100 }]),
+        deudasJson: JSON.stringify([]),
+        ingresosJson: JSON.stringify([]),
+        updatedAt: now,
+    }));
+    const letter = autos_colLetter(PROPIEDADES_HEADERS.length);
+    await sheetsUpdate(
+        SPREADSHEET_AUTOS_ID,
+        `Propiedades!A2:${letter}${1 + seeded.length}`,
+        seeded.map((item) => propiedades_itemToRow(item, PROPIEDADES_HEADERS))
+    );
+}
+
+function propiedades_getCell(row, map, key, fallback = '') {
+    const idx = map[key];
+    if (idx === undefined) return fallback;
+    return row[idx] ?? fallback;
+}
+
+function propiedades_rowToItem(row, map) {
+    const parseJson = (raw, fallback) => {
+        try {
+            const parsed = JSON.parse((raw || '').toString());
+            return Array.isArray(parsed) ? parsed : fallback;
+        } catch (_) {
+            return fallback;
+        }
+    };
+    return {
+        id: (propiedades_getCell(row, map, 'id', '') || `prop-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`).toString(),
+        nombre: (propiedades_getCell(row, map, 'nombre', '') || '').toString(),
+        tipo: (propiedades_getCell(row, map, 'tipo', 'Casa') || 'Casa').toString(),
+        zona: (propiedades_getCell(row, map, 'zona', '') || '').toString(),
+        metrosConstruccion: (propiedades_getCell(row, map, 'metrosConstruccion', '') || '').toString(),
+        metrosTerreno: (propiedades_getCell(row, map, 'metrosTerreno', '') || '').toString(),
+        valorCompra: (propiedades_getCell(row, map, 'valorCompra', '') || '').toString(),
+        valorCatastral: (propiedades_getCell(row, map, 'valorCatastral', '') || '').toString(),
+        valorComercial: (propiedades_getCell(row, map, 'valorComercial', '') || '').toString(),
+        valorInvestigado: (propiedades_getCell(row, map, 'valorInvestigado', '') || '').toString(),
+        fuenteValoracion: (propiedades_getCell(row, map, 'fuenteValoracion', 'Placeholder local (sin API)') || 'Placeholder local (sin API)').toString(),
+        predialMensual: (propiedades_getCell(row, map, 'predialMensual', '') || '').toString(),
+        mantenimientoMensual: (propiedades_getCell(row, map, 'mantenimientoMensual', '') || '').toString(),
+        miPorcentaje: (propiedades_getCell(row, map, 'miPorcentaje', '100') || '100').toString(),
+        fotoUrl: (propiedades_getCell(row, map, 'fotoUrl', '') || '').toString(),
+        link1: (propiedades_getCell(row, map, 'link1', '') || '').toString(),
+        link2: (propiedades_getCell(row, map, 'link2', '') || '').toString(),
+        escrituraNombre: (propiedades_getCell(row, map, 'escrituraNombre', 'Escrituras') || 'Escrituras').toString(),
+        escrituraUrl: (propiedades_getCell(row, map, 'escrituraUrl', '') || '').toString(),
+        docExtra1Nombre: (propiedades_getCell(row, map, 'docExtra1Nombre', 'Documento extra 1') || 'Documento extra 1').toString(),
+        docExtra1Url: (propiedades_getCell(row, map, 'docExtra1Url', '') || '').toString(),
+        docExtra2Nombre: (propiedades_getCell(row, map, 'docExtra2Nombre', 'Documento extra 2') || 'Documento extra 2').toString(),
+        docExtra2Url: (propiedades_getCell(row, map, 'docExtra2Url', '') || '').toString(),
+        docExtra3Nombre: (propiedades_getCell(row, map, 'docExtra3Nombre', 'Documento extra 3') || 'Documento extra 3').toString(),
+        docExtra3Url: (propiedades_getCell(row, map, 'docExtra3Url', '') || '').toString(),
+        owners: parseJson(propiedades_getCell(row, map, 'ownersJson', '[]'), []),
+        deudas: parseJson(propiedades_getCell(row, map, 'deudasJson', '[]'), []),
+        ingresos: parseJson(propiedades_getCell(row, map, 'ingresosJson', '[]'), []),
+        updatedAt: (propiedades_getCell(row, map, 'updatedAt', '') || '').toString(),
+    };
+}
+
+function propiedades_itemToRow(item, headers) {
+    const fields = {
+        id: item.id || '',
+        nombre: item.nombre || '',
+        tipo: item.tipo || 'Casa',
+        zona: item.zona || '',
+        metrosConstruccion: item.metrosConstruccion || '',
+        metrosTerreno: item.metrosTerreno || '',
+        valorCompra: item.valorCompra || '',
+        valorCatastral: item.valorCatastral || '',
+        valorComercial: item.valorComercial || '',
+        valorInvestigado: item.valorInvestigado || '',
+        fuenteValoracion: item.fuenteValoracion || 'Placeholder local (sin API)',
+        predialMensual: item.predialMensual || '',
+        mantenimientoMensual: item.mantenimientoMensual || '',
+        miPorcentaje: item.miPorcentaje || '100',
+        fotoUrl: item.fotoUrl || '',
+        link1: item.link1 || '',
+        link2: item.link2 || '',
+        escrituraNombre: item.escrituraNombre || 'Escrituras',
+        escrituraUrl: item.escrituraUrl || '',
+        docExtra1Nombre: item.docExtra1Nombre || 'Documento extra 1',
+        docExtra1Url: item.docExtra1Url || '',
+        docExtra2Nombre: item.docExtra2Nombre || 'Documento extra 2',
+        docExtra2Url: item.docExtra2Url || '',
+        docExtra3Nombre: item.docExtra3Nombre || 'Documento extra 3',
+        docExtra3Url: item.docExtra3Url || '',
+        ownersJson: JSON.stringify(Array.isArray(item.owners) ? item.owners : []),
+        deudasJson: JSON.stringify(Array.isArray(item.deudas) ? item.deudas : []),
+        ingresosJson: JSON.stringify(Array.isArray(item.ingresos) ? item.ingresos : []),
+        updatedAt: item.updatedAt || normalizeDateString(new Date().toLocaleDateString('en-CA')),
+    };
+    return headers.map((h) => fields[h] ?? '');
+}
+
+function propiedades_getSelected() {
+    return propiedadesState.items.find((x) => x.id === propiedadesState.selectedId) || propiedadesState.items[0] || null;
+}
+
+function propiedades_render() {
+    const tabsEl = document.getElementById('prop-tabs');
+    const detailEl = document.getElementById('prop-detail');
+    const totalEl = document.getElementById('prop-total-valor');
+    const deudaEl = document.getElementById('prop-total-deudas');
+    const fijosEl = document.getElementById('prop-total-fijos');
+    const ingresoEl = document.getElementById('prop-total-ingresos');
+    if (!tabsEl || !detailEl) return;
+
+    const totalValor = propiedadesState.items.reduce((sum, p) => sum + propiedades_valorComercialCalculado(p), 0);
+    const totalDeuda = propiedadesState.items.reduce((sum, p) => sum + propiedades_totalDeuda(p), 0);
+    const totalFijos = propiedadesState.items.reduce((sum, p) => sum + Math.max(0, parseSheetValue(p.predialMensual)) + Math.max(0, parseSheetValue(p.mantenimientoMensual)), 0);
+    const totalIngresos = propiedadesState.items.reduce((sum, p) => sum + propiedades_ingresoMiParte(p), 0);
+    if (totalEl) totalEl.innerText = formatCurrency(totalValor);
+    if (deudaEl) deudaEl.innerText = totalDeuda > 0 ? `-${formatCurrency(totalDeuda)}` : formatCurrency(0);
+    if (fijosEl) fijosEl.innerText = formatCurrency(totalFijos);
+    if (ingresoEl) ingresoEl.innerText = `+${formatCurrency(totalIngresos)}`;
+
+    tabsEl.innerHTML = propiedadesState.items.map((p) => {
+        const active = p.id === propiedadesState.selectedId ? 'active' : '';
+        return `<button class="estudio-subtab-btn ${active}" data-prop-id="${p.id}" type="button">${p.nombre}</button>`;
+    }).join('');
+
+    const selected = propiedades_getSelected();
+    if (!selected) {
+        detailEl.innerHTML = '<div class="empty-state">Sin propiedades registradas</div>';
+        return;
+    }
+    const debtTotal = propiedades_totalDeuda(selected);
+    const ingresoTotal = propiedades_totalIngreso(selected);
+    const miIngreso = propiedades_ingresoMiParte(selected);
+    const miPorcentaje = Math.max(0, Math.min(100, parseSheetValue(selected.miPorcentaje || '100')));
+    const owners = Array.isArray(selected.owners) ? selected.owners : [];
+    const ownerRows = owners.length
+        ? owners.map((o) => {
+            const percent = Math.max(0, parseSheetValue(o.percent));
+            const debtPart = debtTotal * (percent / 100);
+            const ingresoPart = ingresoTotal * (percent / 100);
+            return `<div class="plan-bucket-row"><span>${o.name || 'Sin nombre'} (${percent.toFixed(2)}%)</span><strong>Deuda: ${formatCurrency(debtPart)} · Ingreso: ${formatCurrency(ingresoPart)}</strong></div>`;
+        }).join('')
+        : '<div class="empty-state" style="padding:.6rem 0;">Sin dueños capturados</div>';
+    const debtsRows = (selected.deudas || []).length
+        ? selected.deudas.map((d) => `<div class="plan-expense-row"><div><div class="plan-expense-title">${d.concepto || 'Deuda'}</div></div><div class="plan-expense-amount text-danger">-${formatCurrency(parseSheetValue(d.monto))}</div></div>`).join('')
+        : '<div class="empty-state" style="padding:.6rem 0;">Sin deudas de propiedad</div>';
+    const incomeRows = (selected.ingresos || []).length
+        ? selected.ingresos.map((d) => `<div class="plan-expense-row"><div><div class="plan-expense-title">${d.concepto || 'Ingreso'}</div></div><div class="plan-expense-amount text-success">+${formatCurrency(parseSheetValue(d.monto))}</div></div>`).join('')
+        : '<div class="empty-state" style="padding:.6rem 0;">Sin ingresos de propiedad</div>';
+
+    const docs = [
+        { name: selected.escrituraNombre || 'Escrituras', url: selected.escrituraUrl || '' },
+        { name: selected.docExtra1Nombre || 'Documento extra 1', url: selected.docExtra1Url || '' },
+        { name: selected.docExtra2Nombre || 'Documento extra 2', url: selected.docExtra2Url || '' },
+        { name: selected.docExtra3Nombre || 'Documento extra 3', url: selected.docExtra3Url || '' },
+    ];
+    const docsRows = docs
+        .map((d) => d.url ? `<a class="recibo-link" href="${d.url}" target="_blank" rel="noopener">📎 ${d.name}</a>` : '')
+        .filter(Boolean)
+        .join('') || '<div class="empty-state" style="padding:.6rem 0;">Sin documentos cargados</div>';
+
+    detailEl.innerHTML = `
+      <div class="estudio-entry-card propiedades-card">
+        <div class="estudio-entry-top">
+          <div>
+            <div class="estudio-entry-title">${selected.nombre}</div>
+            <div class="estudio-entry-meta">${selected.tipo || 'Propiedad'} · ${selected.zona || 'Zona pendiente'} · ${selected.metrosConstruccion || 0}m² construcción · ${selected.metrosTerreno || 0}m² terreno</div>
+          </div>
+          <button id="prop-edit-selected" class="mini-btn">✏️ Editar</button>
+        </div>
+
+        <div class="estudio-entry-grid">
+          <div class="plan-bucket-row"><span>Valor compra</span><strong>${formatCurrency(parseSheetValue(selected.valorCompra))}</strong></div>
+          <div class="plan-bucket-row"><span>Valor catastral</span><strong>${formatCurrency(parseSheetValue(selected.valorCatastral))}</strong></div>
+          <div class="plan-bucket-row"><span>Valor comercial</span><strong>${formatCurrency(propiedades_valorComercialCalculado(selected))}</strong></div>
+          <div class="plan-bucket-row"><span>Valor investigado</span><strong>${formatCurrency(parseSheetValue(selected.valorInvestigado))}</strong></div>
+          <div class="plan-bucket-row"><span>Predial mensual</span><strong class="text-danger">-${formatCurrency(parseSheetValue(selected.predialMensual))}</strong></div>
+          <div class="plan-bucket-row"><span>Mantenimiento mensual</span><strong class="text-danger">-${formatCurrency(parseSheetValue(selected.mantenimientoMensual))}</strong></div>
+          <div class="plan-bucket-row"><span>Deuda total</span><strong class="text-danger">-${formatCurrency(debtTotal)}</strong></div>
+          <div class="plan-bucket-row"><span>Ingreso total</span><strong class="text-success">+${formatCurrency(ingresoTotal)}</strong></div>
+          <div class="plan-bucket-row"><span>Mi porcentaje</span><strong>${miPorcentaje.toFixed(2)}%</strong></div>
+          <div class="plan-bucket-row"><span>Mi parte ingreso</span><strong class="text-success">+${formatCurrency(miIngreso)}</strong></div>
+        </div>
+
+        <div class="estudio-entry-notes">${selected.fuenteValoracion || 'Placeholder local (sin API externa). La valoración automática se basa en zona + m2 de construcción + m2 de terreno y puede variar.'}</div>
+
+        ${selected.fotoUrl ? `<a href="${selected.fotoUrl}" target="_blank" rel="noopener">${propiedades_docPreview(selected.fotoUrl, selected.nombre)}</a>` : '<div class="empty-state" style="padding:.6rem 0;">Sin foto de propiedad</div>'}
+
+        <div class="plan-buckets">
+          <div class="bs-label" style="margin-bottom:.35rem;">Dueños y porcentaje</div>
+          ${ownerRows}
+        </div>
+
+        <div class="plan-expenses-list">
+          <div class="bs-label" style="margin-bottom:.35rem;">Deudas de la propiedad (sincronizadas en pestaña Deudas)</div>
+          ${debtsRows}
+        </div>
+
+        <div class="plan-expenses-list">
+          <div class="bs-label" style="margin-bottom:.35rem;">Ingresos de la propiedad</div>
+          ${incomeRows}
+        </div>
+
+        <div class="plan-expenses-list">
+          <div class="bs-label" style="margin-bottom:.35rem;">Enlaces y documentos</div>
+          ${selected.link1 ? `<a class="recibo-link" href="${selected.link1}" target="_blank" rel="noopener">🔗 Link 1</a>` : ''}
+          ${selected.link2 ? `<a class="recibo-link" href="${selected.link2}" target="_blank" rel="noopener">🔗 Link 2</a>` : ''}
+          ${docsRows}
+        </div>
+      </div>
+    `;
+
+    document.getElementById('prop-edit-selected')?.addEventListener('click', () => propiedades_openSheet(selected.id));
+}
+
+function propiedades_docPreview(url, label) {
+    const raw = (url || '').toString().trim();
+    if (!raw) return '';
+    const img = autos_previewUrlForImage(raw);
+    return `<img src="${img}" alt="${label}" style="width:100%;max-height:220px;object-fit:cover;border-radius:.65rem;background:rgba(255,255,255,.05);" />`;
+}
+
+function propiedades_openSheet(id) {
+    const item = id ? propiedadesState.items.find((x) => x.id === id) : null;
+    const nowMonth = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`;
+    document.getElementById('prop-edit-id').value = item?.id || '';
+    document.getElementById('prop-sheet-title').innerText = item ? 'Editar propiedad' : 'Nueva propiedad';
+    document.getElementById('prop-nombre').value = item?.nombre || '';
+    document.getElementById('prop-tipo').value = item?.tipo || 'Casa';
+    document.getElementById('prop-zona').value = item?.zona || '';
+    document.getElementById('prop-m2-construccion').value = item?.metrosConstruccion || '';
+    document.getElementById('prop-m2-terreno').value = item?.metrosTerreno || '';
+    document.getElementById('prop-valor-compra').value = item?.valorCompra || '';
+    document.getElementById('prop-valor-catastral').value = item?.valorCatastral || '';
+    document.getElementById('prop-valor-comercial').value = item?.valorComercial || '';
+    document.getElementById('prop-valor-investigado').value = item?.valorInvestigado || '';
+    document.getElementById('prop-fuente').value = item?.fuenteValoracion || 'Placeholder local (sin API)';
+    document.getElementById('prop-predial').value = item?.predialMensual || '';
+    document.getElementById('prop-mantenimiento').value = item?.mantenimientoMensual || '';
+    document.getElementById('prop-mi-porcentaje').value = item?.miPorcentaje || '100';
+    document.getElementById('prop-foto-url').value = item?.fotoUrl || '';
+    document.getElementById('prop-link1').value = item?.link1 || '';
+    document.getElementById('prop-link2').value = item?.link2 || '';
+    document.getElementById('prop-escritura-nombre').value = item?.escrituraNombre || 'Escrituras';
+    document.getElementById('prop-escritura-url').value = item?.escrituraUrl || '';
+    document.getElementById('prop-doc1-nombre').value = item?.docExtra1Nombre || 'Documento extra 1';
+    document.getElementById('prop-doc1-url').value = item?.docExtra1Url || '';
+    document.getElementById('prop-doc2-nombre').value = item?.docExtra2Nombre || 'Documento extra 2';
+    document.getElementById('prop-doc2-url').value = item?.docExtra2Url || '';
+    document.getElementById('prop-doc3-nombre').value = item?.docExtra3Nombre || 'Documento extra 3';
+    document.getElementById('prop-doc3-url').value = item?.docExtra3Url || '';
+
+    const ownerLines = (item?.owners || []).map((x) => `${x.name || ''}|${parseSheetValue(x.percent)}`).join('\n');
+    const debtLines = (item?.deudas || []).map((x) => `${x.concepto || ''}|${parseSheetValue(x.monto)}`).join('\n');
+    const incomeLines = (item?.ingresos || []).map((x) => `${x.concepto || ''}|${parseSheetValue(x.monto)}`).join('\n');
+    document.getElementById('prop-owners').value = ownerLines;
+    document.getElementById('prop-deudas').value = debtLines;
+    document.getElementById('prop-ingresos').value = incomeLines;
+    document.getElementById('prop-sync-month').value = nowMonth;
+
+    document.getElementById('prop-delete')?.classList.toggle('hidden', !item);
+    document.getElementById('prop-sheet').classList.remove('hidden');
+}
+
+function propiedades_closeSheet() {
+    document.getElementById('prop-sheet').classList.add('hidden');
+}
+
+function propiedades_parseOwnerLines(raw) {
+    const lines = (raw || '').split('\n').map((x) => x.trim()).filter(Boolean);
+    const owners = lines.map((line) => {
+        const parts = line.split('|');
+        return {
+            name: (parts[0] || '').trim(),
+            percent: Math.max(0, parseSheetValue(parts[1] || 0)),
+        };
+    }).filter((x) => x.name);
+    if (!owners.length) return [{ name: 'Yo', percent: 100 }];
+    return owners;
+}
+
+function propiedades_parseMoneyLines(raw) {
+    return (raw || '')
+        .split('\n')
+        .map((x) => x.trim())
+        .filter(Boolean)
+        .map((line) => {
+            const parts = line.split('|');
+            return {
+                concepto: (parts[0] || '').trim(),
+                monto: Math.max(0, parseSheetValue(parts[1] || 0)),
+            };
+        })
+        .filter((x) => x.concepto && x.monto > 0);
+}
+
+function propiedades_estimarValorComercial(input) {
+    const compra = Math.max(0, parseSheetValue(input.valorCompra));
+    const m2c = Math.max(0, parseSheetValue(input.metrosConstruccion));
+    const m2t = Math.max(0, parseSheetValue(input.metrosTerreno));
+    const zona = (input.zona || '').toString().toLowerCase();
+    let zoneFactor = 1;
+    if (zona.includes('premium') || zona.includes('centro') || zona.includes('victoria')) zoneFactor = 1.15;
+    if (zona.includes('terreno') || zona.includes('rural')) zoneFactor = 0.92;
+    const base = compra + (m2c * 8200) + (m2t * 2900);
+    return Math.round(base * zoneFactor);
+}
+
+function propiedades_valorComercialCalculado(item) {
+    const manual = Math.max(0, parseSheetValue(item.valorComercial));
+    if (manual > 0) return manual;
+    return propiedades_estimarValorComercial(item);
+}
+
+function propiedades_totalDeuda(item) {
+    return (item.deudas || []).reduce((sum, d) => sum + Math.max(0, parseSheetValue(d.monto)), 0);
+}
+
+function propiedades_totalIngreso(item) {
+    return (item.ingresos || []).reduce((sum, d) => sum + Math.max(0, parseSheetValue(d.monto)), 0);
+}
+
+function propiedades_ingresoMiParte(item) {
+    const pct = Math.max(0, Math.min(100, parseSheetValue(item.miPorcentaje || 100)));
+    return propiedades_totalIngreso(item) * (pct / 100);
+}
+
+async function propiedades_save() {
+    const btn = document.getElementById('prop-save');
+    const editId = (document.getElementById('prop-edit-id').value || '').trim();
+    const nombre = (document.getElementById('prop-nombre').value || '').trim();
+    if (!nombre) {
+        alert('Agrega el nombre de la propiedad');
+        return;
+    }
+
+    btn.disabled = true;
+    btn.innerText = 'Guardando...';
+    try {
+        const owners = propiedades_parseOwnerLines(document.getElementById('prop-owners').value);
+        const deudas = propiedades_parseMoneyLines(document.getElementById('prop-deudas').value);
+        const ingresos = propiedades_parseMoneyLines(document.getElementById('prop-ingresos').value);
+        const payload = {
+            id: editId || `prop-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+            nombre,
+            tipo: document.getElementById('prop-tipo').value || 'Casa',
+            zona: (document.getElementById('prop-zona').value || '').trim(),
+            metrosConstruccion: (document.getElementById('prop-m2-construccion').value || '').trim(),
+            metrosTerreno: (document.getElementById('prop-m2-terreno').value || '').trim(),
+            valorCompra: (document.getElementById('prop-valor-compra').value || '').trim(),
+            valorCatastral: (document.getElementById('prop-valor-catastral').value || '').trim(),
+            valorComercial: (document.getElementById('prop-valor-comercial').value || '').trim(),
+            valorInvestigado: (document.getElementById('prop-valor-investigado').value || '').trim(),
+            fuenteValoracion: (document.getElementById('prop-fuente').value || '').trim() || 'Placeholder local (sin API)',
+            predialMensual: (document.getElementById('prop-predial').value || '').trim(),
+            mantenimientoMensual: (document.getElementById('prop-mantenimiento').value || '').trim(),
+            miPorcentaje: (document.getElementById('prop-mi-porcentaje').value || '100').trim(),
+            fotoUrl: (document.getElementById('prop-foto-url').value || '').trim(),
+            link1: (document.getElementById('prop-link1').value || '').trim(),
+            link2: (document.getElementById('prop-link2').value || '').trim(),
+            escrituraNombre: (document.getElementById('prop-escritura-nombre').value || 'Escrituras').trim(),
+            escrituraUrl: (document.getElementById('prop-escritura-url').value || '').trim(),
+            docExtra1Nombre: (document.getElementById('prop-doc1-nombre').value || 'Documento extra 1').trim(),
+            docExtra1Url: (document.getElementById('prop-doc1-url').value || '').trim(),
+            docExtra2Nombre: (document.getElementById('prop-doc2-nombre').value || 'Documento extra 2').trim(),
+            docExtra2Url: (document.getElementById('prop-doc2-url').value || '').trim(),
+            docExtra3Nombre: (document.getElementById('prop-doc3-nombre').value || 'Documento extra 3').trim(),
+            docExtra3Url: (document.getElementById('prop-doc3-url').value || '').trim(),
+            owners,
+            deudas,
+            ingresos,
+            updatedAt: normalizeDateString(new Date().toLocaleDateString('en-CA')),
+        };
+
+        const idx = propiedadesState.items.findIndex((x) => x.id === payload.id);
+        if (idx === -1) propiedadesState.items.push(payload);
+        else propiedadesState.items[idx] = payload;
+        propiedadesState.selectedId = payload.id;
+
+        await propiedades_saveSheet();
+        await propiedades_syncPropertyRemotes(payload);
+        tabInited.fijos = false;
+        tabInited.deudas = false;
+        deudasState.loaded = false;
+        planner_refreshIfReady();
+        if (currentTab === 'fijos') fijos_cargarDatos();
+        if (currentTab === 'deudas') deudas_cargarDatos();
+        propiedades_closeSheet();
+        propiedades_render();
+        showToast('✅ Propiedad guardada y sincronizada');
+    } catch (e) {
+        console.error('propiedades_save:', e);
+        alert('❌ Error al guardar propiedad');
+    } finally {
+        btn.disabled = false;
+        btn.innerText = 'Guardar propiedad';
+    }
+}
+
+async function propiedades_saveSheet() {
+    const headers = propiedadesState.headers?.length ? propiedadesState.headers : PROPIEDADES_HEADERS;
+    const merged = [...headers.filter(Boolean)];
+    PROPIEDADES_HEADERS.forEach((h) => {
+        if (!merged.includes(h)) merged.push(h);
+    });
+    propiedadesState.headers = merged;
+    const letter = autos_colLetter(merged.length);
+    await sheetsUpdate(SPREADSHEET_AUTOS_ID, `Propiedades!A1:${letter}1`, [merged]);
+    if (!propiedadesState.items.length) {
+        await sheetsClear(SPREADSHEET_AUTOS_ID, 'Propiedades!A2:AZ');
+        return;
+    }
+    await sheetsUpdate(
+        SPREADSHEET_AUTOS_ID,
+        `Propiedades!A2:${letter}${1 + propiedadesState.items.length}`,
+        propiedadesState.items.map((item) => propiedades_itemToRow(item, merged))
+    );
+    await sheetsClear(SPREADSHEET_AUTOS_ID, `Propiedades!A${2 + propiedadesState.items.length}:AZ`);
+}
+
+async function propiedades_deleteFromSheet() {
+    const id = (document.getElementById('prop-edit-id').value || '').trim();
+    if (!id) return;
+    const item = propiedadesState.items.find((x) => x.id === id);
+    if (!item) return;
+    if (!confirm('¿Eliminar esta propiedad y sus remotos?')) return;
+    propiedadesState.items = propiedadesState.items.filter((x) => x.id !== id);
+    if (propiedadesState.selectedId === id) propiedadesState.selectedId = propiedadesState.items[0]?.id || '';
+    try {
+        await propiedades_saveSheet();
+        await propiedades_removePropertyRemotes(id);
+        tabInited.fijos = false;
+        tabInited.deudas = false;
+        deudasState.loaded = false;
+        planner_refreshIfReady();
+        if (currentTab === 'fijos') fijos_cargarDatos();
+        if (currentTab === 'deudas') deudas_cargarDatos();
+        propiedades_closeSheet();
+        propiedades_render();
+        showToast('🗑️ Propiedad eliminada');
+    } catch (e) {
+        console.error('propiedades_deleteFromSheet:', e);
+        alert('❌ Error al eliminar propiedad');
+    }
+}
+
+async function propiedades_syncPropertyRemotes(item) {
+    await propiedades_syncDeudas(item);
+    const day = Math.max(1, Math.min(31, new Date().getDate()));
+    const monthStart = parseStartMonth(document.getElementById('prop-sync-month')?.value || '');
+    await propiedades_upsertFijoByMarker(item, 'predial', {
+        monto: Math.max(0, parseSheetValue(item.predialMensual)),
+        tipo: 'gasto',
+        concepto: `Propiedad: ${item.nombre} - Predial`,
+        categoria: 'Propiedades, Predial',
+        budgetCategory: 'Mantenimiento y Pago de Servicios',
+        day,
+        monthStart,
+    });
+    await propiedades_upsertFijoByMarker(item, 'mantenimiento', {
+        monto: Math.max(0, parseSheetValue(item.mantenimientoMensual)),
+        tipo: 'gasto',
+        concepto: `Propiedad: ${item.nombre} - Mantenimiento`,
+        categoria: 'Propiedades, Mantenimiento',
+        budgetCategory: 'Mantenimiento y Pago de Servicios',
+        day,
+        monthStart,
+    });
+    await propiedades_upsertFijoByMarker(item, 'ingreso', {
+        monto: Math.max(0, propiedades_ingresoMiParte(item)),
+        tipo: 'ingreso',
+        concepto: `Propiedad: ${item.nombre} - Ingreso (mi parte)`,
+        categoria: 'Propiedades, Ingreso',
+        budgetCategory: 'Mantenimiento y Pago de Servicios',
+        day,
+        monthStart,
+    });
+}
+
+async function propiedades_removePropertyRemotes(propertyId) {
+    await propiedades_removeDeudasByPrefix(`[PROP-DEBT:${propertyId}:`);
+    await propiedades_removeFijosByPrefix(`[PROP-FIX:${propertyId}:`);
+}
+
+async function propiedades_getDeudasSheetName() {
+    try {
+        await sheetsGet(SPREADSHEET_DEUDAS_ID, 'Deudas!A1:A1');
+        propiedadesState.deudasSheetName = 'Deudas';
+    } catch (_) {
+        propiedadesState.deudasSheetName = 'Hoja 1';
+    }
+    return propiedadesState.deudasSheetName;
+}
+
+async function propiedades_syncDeudas(item) {
+    await propiedades_removeDeudasByPrefix(`[PROP-DEBT:${item.id}:`);
+    const sheetName = await propiedades_getDeudasSheetName();
+    const deudas = (item.deudas || []).filter((d) => parseSheetValue(d.monto) > 0 && (d.concepto || '').trim());
+    if (!deudas.length) return;
+    const rows = deudas.map((d, idx) => [
+        `${item.nombre} - ${d.concepto} [PROP-DEBT:${item.id}:${idx + 1}]`,
+        Math.abs(parseSheetValue(d.monto)),
+    ]);
+    await sheetsAppend(SPREADSHEET_DEUDAS_ID, `${sheetName}!A:B`, rows);
+}
+
+async function propiedades_removeDeudasByPrefix(prefix) {
+    const sheetName = await propiedades_getDeudasSheetName();
+    const rows = await sheetsGet(SPREADSHEET_DEUDAS_ID, `${sheetName}!A2:B`).catch(() => []);
+    if (!rows.length) return;
+    const rowIndexes = [];
+    for (let i = 0; i < rows.length; i++) {
+        const concepto = (rows[i][0] || '').toString();
+        if (concepto.includes(prefix)) rowIndexes.push(i + 1);
+    }
+    if (!rowIndexes.length) return;
+    const sheetId = await getSheetId(SPREADSHEET_DEUDAS_ID, sheetName);
+    for (let i = rowIndexes.length - 1; i >= 0; i--) {
+        await sheetsDeleteRow(SPREADSHEET_DEUDAS_ID, sheetId, rowIndexes[i]);
+    }
+}
+
+async function propiedades_upsertFijoByMarker(item, key, config) {
+    const marker = `[PROP-FIX:${item.id}:${key}]`;
+    const rows = await sheetsGet(SPREADSHEET_FIXED_ID, `${propiedadesState.fixedSheetName}!A2:N`).catch(() => []);
+    const foundIdx = rows.findIndex((row) => ((row[1] || '').toString()).includes(marker));
+    const monto = Math.max(0, parseSheetValue(config.monto));
+    const rowData = [
+        String(Math.max(1, Math.min(31, parseDayOfMonth(config.day)))),
+        `${config.concepto} ${marker}`,
+        config.tipo === 'gasto' ? monto : '',
+        config.tipo === 'ingreso' ? monto : '',
+        config.categoria || 'Propiedades',
+        'FALSE',
+        1,
+        serializePaymentStates([false]),
+        'mensual',
+        config.monthStart || parseStartMonth(''),
+        'yo',
+        config.budgetCategory || 'Mantenimiento y Pago de Servicios',
+        'MXN',
+        serializePaymentStates([false]),
+    ];
+    if (monto <= 0) {
+        if (foundIdx !== -1) {
+            const sheetId = await getSheetId(SPREADSHEET_FIXED_ID, propiedadesState.fixedSheetName);
+            await sheetsDeleteRow(SPREADSHEET_FIXED_ID, sheetId, foundIdx + 1);
+        }
+        return;
+    }
+    if (foundIdx === -1) {
+        await sheetsAppend(SPREADSHEET_FIXED_ID, `${propiedadesState.fixedSheetName}!A:N`, [rowData]);
+        return;
+    }
+    const rowNum = foundIdx + 2;
+    await sheetsUpdate(SPREADSHEET_FIXED_ID, `${propiedadesState.fixedSheetName}!A${rowNum}:N${rowNum}`, [rowData]);
+}
+
+async function propiedades_removeFijosByPrefix(prefix) {
+    const rows = await sheetsGet(SPREADSHEET_FIXED_ID, `${propiedadesState.fixedSheetName}!A2:N`).catch(() => []);
+    if (!rows.length) return;
+    const rowIndexes = [];
+    for (let i = 0; i < rows.length; i++) {
+        const concepto = (rows[i][1] || '').toString();
+        if (concepto.includes(prefix)) rowIndexes.push(i + 1);
+    }
+    if (!rowIndexes.length) return;
+    const sheetId = await getSheetId(SPREADSHEET_FIXED_ID, propiedadesState.fixedSheetName);
+    for (let i = rowIndexes.length - 1; i >= 0; i--) {
+        await sheetsDeleteRow(SPREADSHEET_FIXED_ID, sheetId, rowIndexes[i]);
+    }
+}
+
+async function propiedades_ensureFolder() {
+    if (propiedadesState.folderId) return propiedadesState.folderId;
+    const found = await driveFindFolder('FinanceDashboard_PropiedadesDocs');
+    if (found) {
+        propiedadesState.folderId = found;
+        return found;
+    }
+    const created = await driveCreateFolder('FinanceDashboard_PropiedadesDocs');
+    propiedadesState.folderId = created;
+    return created;
+}
+
+async function propiedades_uploadFirstFile(inputId) {
+    const input = document.getElementById(inputId);
+    const files = input?.files;
+    if (!files || !files.length) return '';
+    const first = files[0];
+    const folderId = await propiedades_ensureFolder();
+    const link = await driveUploadFile(first, folderId);
+    const feedback = document.getElementById('prop-file-feedback');
+    if (feedback) feedback.innerText = `✅ Archivo cargado: ${first.name}`;
+    input.value = '';
+    return link;
+}
 
 // =============================================
 // UTILITIES
