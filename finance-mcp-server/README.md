@@ -1,0 +1,86 @@
+# Finance MCP Server
+
+Read-only server for your Finance Dashboard data.
+
+It includes:
+- HTTP API (for hosting on Fly.io)
+- MCP stdio server (for Gemini/desktop MCP clients)
+- AI mirror sync to a centralized Google Sheet
+
+## 1) Install
+
+```bash
+npm install
+```
+
+## 2) Configure env
+
+Copy `.env.example` to `.env` and set values:
+
+- `GOOGLE_SERVICE_ACCOUNT_JSON` (or base64 variant)
+- `SPREADSHEET_LOG_ID`
+- `SPREADSHEET_AUTOS_ID`
+- `SPREADSHEET_FIXED_ID` (optional in current MVP)
+- `SPREADSHEET_ACCOUNTS_ID` (optional but recommended)
+- `SPREADSHEET_AI_MIRROR_ID` (optional; auto-create if missing)
+- `AI_MIRROR_SHEET_NAME` (optional)
+- `AI_MIRROR_SHARE_EMAIL` (optional; auto-share mirror sheet)
+- `API_TOKEN`
+
+Share your target Google Sheets with your Service Account email.
+
+## 3) Run locally
+
+HTTP API:
+
+```bash
+npm run dev:http
+```
+
+MCP (stdio):
+
+```bash
+npm run dev:mcp
+```
+
+## Available MCP tools
+
+- `get_profile_field`
+- `get_finance_summary`
+- `get_expenses_by_account`
+- `get_investments_snapshot`
+- `search_documents`
+- `sync_ai_mirror`
+
+## 4) Deploy to Fly.io
+
+```bash
+fly launch --copy-config --name finance-mcp-server
+fly secrets set API_TOKEN="<strong-token>"
+fly secrets set GOOGLE_SERVICE_ACCOUNT_JSON='{"type":"service_account",...}'
+fly secrets set SPREADSHEET_LOG_ID="..."
+fly secrets set SPREADSHEET_AUTOS_ID="..."
+fly secrets set SPREADSHEET_ACCOUNTS_ID="..."
+fly deploy
+```
+
+## 5) Example API calls
+
+```bash
+curl -H "Authorization: Bearer $API_TOKEN" "https://<your-app>.fly.dev/api/finance/summary?from=2026-01-01&to=2026-12-31"
+curl -H "Authorization: Bearer $API_TOKEN" "https://<your-app>.fly.dev/api/profile/field?member=yo&field=curp"
+curl -X POST -H "Authorization: Bearer $API_TOKEN" "https://<your-app>.fly.dev/api/ai-mirror/sync"
+```
+
+## AI Mirror behavior
+
+- Sync copies all tabs from source spreadsheets into one mirror spreadsheet.
+- Mirror tab names use `<source>__<tab>` (example: `autos__DocumentosArchivador`).
+- Future columns and fields are copied automatically because each source tab is mirrored as raw table data.
+- New tabs in source spreadsheets are also picked up automatically on the next sync.
+
+## Security notes
+
+- Keep this server read-only for now.
+- Never commit service account JSON.
+- Rotate `API_TOKEN` periodically.

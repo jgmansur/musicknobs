@@ -1,0 +1,25 @@
+{
+  "name": "finance-mcp-server",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev:http": "tsx src/http.ts",
+    "dev:mcp": "tsx src/mcp-stdio.ts",
+    "build": "tsc -p tsconfig.json",
+    "start:http": "node dist/http.js",
+    "start:mcp": "node dist/mcp-stdio.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.17.3",
+    "dotenv": "^16.4.5",
+    "fastify": "^5.0.0",
+    "googleapis": "^144.0.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^22.7.5",
+    "tsx": "^4.19.1",
+    "typescript": "^5.6.3"
+  }
+}

@@ -15,7 +15,7 @@ const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // 
 const SPREADSHEET_DEUDAS_ID = '1dKxhgqazskm15lx0f6FNCA0gpJ7i5glfxkusiH3b0Uk'; // Control de Deudas
 const SPREADSHEET_AUTOS_ID = SPREADSHEET_DEUDAS_ID; // Autos + Reparaciones live in same workbook
 const SPREADSHEET_ESTUDIO_ID = SPREADSHEET_DEUDAS_ID; // Estudio + Plugins in same workbook
-const APP_VERSION  = 'v7.4.6';
+const APP_VERSION  = 'v7.5.0';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -25,6 +25,11 @@ const EXPIRY_KEY   = 'google_token_expiry_v4';
 const TOKEN_LIFETIME_FALLBACK_SEC = 3500;
 const TOKEN_REFRESH_MARGIN_MS = 5 * 60 * 1000;
 const ACCOUNTS_SHEET_KEY = 'finance_accounts_sheet_v1'; // localStorage key for the accounts spreadsheet ID
+const AI_MIRROR_SYNC_URL = 'https://finance-mcp-server.fly.dev/api/ai-mirror/sync';
+const AI_MIRROR_TOKEN_KEY = 'finance_ai_mirror_api_token_v1';
+const AI_MIRROR_LAST_SYNC_KEY = 'finance_ai_mirror_last_sync_v1';
+const AI_MIRROR_SYNC_DEBOUNCE_MS = 15_000;
+const AI_MIRROR_SYNC_MAX_WAIT_MS = 5 * 60_000;
 
 // =============================================
 // FIREBASE
@@ -530,6 +535,11 @@ document.addEventListener('DOMContentLoaded', () => {
             renderFixedTable();
         });
     }
+
+    document.getElementById('ai-mirror-sync-btn')?.addEventListener('click', () => {
+        aiMirror_syncNow({ manual: true, reason: 'manual' });
+    });
+    aiMirror_initStatus();
 
     // Hormiga Panel events
     document.getElementById('kpi-hormiga-card')?.addEventListener('click', hormiga_openPanel);
@@ -1774,6 +1784,134 @@ function hideLoginModal() {
     const b = document.getElementById('modal-backdrop'); if (b) b.style.display = 'none';
 }
 
+let aiMirrorSyncTimer = null;
+let aiMirrorSyncInFlight = false;
+let aiMirrorSyncBatchStartedAt = 0;
+
+function aiMirror_getToken({ interactive = false } = {}) {
+    let token = (localStorage.getItem(AI_MIRROR_TOKEN_KEY) || '').trim();
+    if (token) return token;
+    if (!interactive) return '';
+    token = (prompt('Pega el API token de Finance AI Mirror', '') || '').trim();
+    if (!token) return '';
+    localStorage.setItem(AI_MIRROR_TOKEN_KEY, token);
+    return token;
+}
+
+function aiMirror_setStatus(text, kind = '') {
+    const el = document.getElementById('ai-mirror-sync-status');
+    if (!el) return;
+    el.innerText = text;
+    const next = ['diff-label'];
+    if (kind === 'ok') next.push('text-success');
+    if (kind === 'warn' || kind === 'error') next.push('text-danger');
+    el.className = next.join(' ');
+}
+
+function aiMirror_formatNowTime() {
+    return new Date().toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
+}
+
+async function aiMirror_syncNow({ manual = false, reason = 'manual' } = {}) {
+    if (aiMirrorSyncInFlight) return false;
+    let token = aiMirror_getToken({ interactive: manual });
+    if (!token) {
+        aiMirror_setStatus('Configura token para sincronizar AI', 'warn');
+        if (manual) showToast('⚠️ Falta token de AI Mirror');
+        return false;
+    }
+
+    aiMirrorSyncInFlight = true;
+    const btn = document.getElementById('ai-mirror-sync-btn');
+    const prevBtnText = btn ? btn.innerText : '';
+    if (btn) {
+        btn.disabled = true;
+        btn.innerText = '⏳ Sincronizando AI...';
+    }
+    aiMirror_setStatus('Sincronizando copia maestra AI...', '');
+
+    const runFetch = async (tok) => {
+        const r = await fetch(AI_MIRROR_SYNC_URL, {
+            method: 'POST',
+            headers: { Authorization: `Bearer ${tok}` },
+        });
+        if (!r.ok) throw { status: r.status, message: await r.text() };
+        return r.json();
+    };
+
+    try {
+        await runFetch(token);
+        localStorage.setItem(AI_MIRROR_LAST_SYNC_KEY, new Date().toISOString());
+        aiMirror_setStatus(`AI sync ✓ ${aiMirror_formatNowTime()} (${reason})`, 'ok');
+        return true;
+    } catch (e) {
+        if (manual && e?.status === 401) {
+            const refreshed = (prompt('Token inválido. Pega el token nuevo de AI Mirror', '') || '').trim();
+            if (refreshed) {
+                localStorage.setItem(AI_MIRROR_TOKEN_KEY, refreshed);
+                try {
+                    await runFetch(refreshed);
+                    localStorage.setItem(AI_MIRROR_LAST_SYNC_KEY, new Date().toISOString());
+                    aiMirror_setStatus(`AI sync ✓ ${aiMirror_formatNowTime()} (manual)`, 'ok');
+                    showToast('✅ Copia maestra AI actualizada');
+                    return true;
+                } catch (retryErr) {
+                    console.warn('AI mirror retry failed:', retryErr);
+                }
+            }
+        }
+        console.warn('AI mirror sync failed:', e);
+        aiMirror_setStatus('Error al sincronizar AI mirror', 'error');
+        if (manual) showToast('❌ Error al sincronizar copia maestra AI');
+        return false;
+    } finally {
+        aiMirrorSyncInFlight = false;
+        if (btn) {
+            btn.disabled = false;
+            btn.innerText = prevBtnText || '♻️ Actualizar copia maestra AI';
+        }
+    }
+}
+
+function aiMirror_scheduleSync(reason = 'cambio') {
+    if (!aiMirror_getToken({ interactive: false })) return;
+    const now = Date.now();
+    if (!aiMirrorSyncBatchStartedAt) aiMirrorSyncBatchStartedAt = now;
+
+    if (aiMirrorSyncTimer) clearTimeout(aiMirrorSyncTimer);
+
+    const batchAge = now - aiMirrorSyncBatchStartedAt;
+    const waitMs = batchAge >= AI_MIRROR_SYNC_MAX_WAIT_MS
+        ? 0
+        : Math.min(AI_MIRROR_SYNC_DEBOUNCE_MS, AI_MIRROR_SYNC_MAX_WAIT_MS - batchAge);
+
+    aiMirror_setStatus('Cambio detectado: sync AI pendiente...', '');
+    aiMirrorSyncTimer = setTimeout(async () => {
+        aiMirrorSyncTimer = null;
+        aiMirrorSyncBatchStartedAt = 0;
+        await aiMirror_syncNow({ manual: false, reason });
+    }, waitMs);
+}
+
+function aiMirror_initStatus() {
+    const token = aiMirror_getToken({ interactive: false });
+    const last = localStorage.getItem(AI_MIRROR_LAST_SYNC_KEY);
+    if (!token) {
+        aiMirror_setStatus('Configura token para activar sync AI', 'warn');
+        return;
+    }
+    if (!last) {
+        aiMirror_setStatus('Auto-sync AI activo (aun sin primer sync)', '');
+        return;
+    }
+    const d = new Date(last);
+    if (Number.isNaN(d.getTime())) {
+        aiMirror_setStatus('Auto-sync AI activo', '');
+        return;
+    }
+    aiMirror_setStatus(`Ultimo sync AI: ${d.toLocaleString('es-MX')}`, 'ok');
+}
+
 // =============================================
 // SHEETS API HELPERS
 // =============================================
@@ -1834,7 +1972,9 @@ async function sheetsAppend(ssId, range, values) {
         body: JSON.stringify({ values }),
     });
     if (!r.ok) throw { status: r.status, message: await r.text() };
-    return r.json();
+    const data = await r.json();
+    aiMirror_scheduleSync('sheets_append');
+    return data;
 }
 
 async function sheetsUpdate(ssId, range, values) {
@@ -1845,7 +1985,9 @@ async function sheetsUpdate(ssId, range, values) {
         body: JSON.stringify({ values }),
     });
     if (!r.ok) throw { status: r.status, message: await r.text() };
-    return r.json();
+    const data = await r.json();
+    aiMirror_scheduleSync('sheets_update');
+    return data;
 }
 
 async function sheetsDeleteRow(ssId, sheetId, rowIndex0) {
@@ -1856,7 +1998,9 @@ async function sheetsDeleteRow(ssId, sheetId, rowIndex0) {
         body: JSON.stringify({ requests: [{ deleteDimension: { range: { sheetId, dimension: 'ROWS', startIndex: rowIndex0, endIndex: rowIndex0 + 1 } } }] }),
     });
     if (!r.ok) throw { status: r.status, message: await r.text() };
-    return r.json();
+    const data = await r.json();
+    aiMirror_scheduleSync('sheets_delete_row');
+    return data;
 }
 
 async function getSheetId(ssId, sheetName) {
@@ -1875,7 +2019,9 @@ async function sheetsClear(ssId, range) {
         headers: { 'Content-Type': 'application/json' },
     });
     if (!r.ok) throw { status: r.status, message: await r.text() };
-    return r.json();
+    const data = await r.json();
+    aiMirror_scheduleSync('sheets_clear');
+    return data;
 }
 
 // ── Drive API helpers ─────────────────────────────────────
