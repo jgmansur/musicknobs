@@ -15,7 +15,7 @@ const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // 
 const SPREADSHEET_DEUDAS_ID = '1dKxhgqazskm15lx0f6FNCA0gpJ7i5glfxkusiH3b0Uk'; // Control de Deudas
 const SPREADSHEET_AUTOS_ID = SPREADSHEET_DEUDAS_ID; // Autos + Reparaciones live in same workbook
 const SPREADSHEET_ESTUDIO_ID = SPREADSHEET_DEUDAS_ID; // Estudio + Plugins in same workbook
-const APP_VERSION  = 'v7.3.3';
+const APP_VERSION  = 'v7.3.5';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -7887,7 +7887,7 @@ async function documentos_loadData() {
         return idx === undefined ? fallback : (row[idx] ?? fallback);
     };
     const docsRows = await sheetsGet(SPREADSHEET_AUTOS_ID, `${DOCS_SHEET}!A2:AZ`).catch(() => []);
-    docsState.items = docsRows.map((row) => ({
+    docsState.items = docsRows.map((row) => documentos_normalizeDocRow({
         id: (get(row, 'id', '') || '').toString(),
         member: (get(row, 'member', 'yo') || 'yo').toString(),
         title: (get(row, 'title', '') || '').toString(),
@@ -7919,20 +7919,66 @@ async function documentos_loadData() {
     })).filter((x) => x.member);
 }
 
+function documentos_isLikelyUrl(value) {
+    const v = (value || '').toString().trim().toLowerCase();
+    return v.startsWith('http://') || v.startsWith('https://') || v.includes('drive.google.com');
+}
+
+function documentos_buildUrlFromId(fileId) {
+    const id = (fileId || '').toString().trim();
+    if (!id) return '';
+    return `https://drive.google.com/file/d/${id}/view`;
+}
+
+function documentos_resolveDocUrl(doc) {
+    if (documentos_isLikelyUrl(doc?.url)) return doc.url;
+    if (documentos_isLikelyUrl(doc?.expiryDate)) return doc.expiryDate;
+    if (documentos_isLikelyUrl(doc?.sourceFolderId)) return doc.sourceFolderId;
+    if (documentos_isLikelyUrl(doc?.driveFileId)) return doc.driveFileId;
+    return documentos_buildUrlFromId(doc?.driveFileId || documentos_parseDriveId(doc?.url || ''));
+}
+
+function documentos_normalizeDocRow(doc) {
+    const out = { ...doc };
+    if (!out.url && documentos_isLikelyUrl(out.expiryDate)) {
+        out.url = out.expiryDate;
+        out.expiryDate = '';
+    }
+    if (!out.url && documentos_isLikelyUrl(out.sourceFolderId)) {
+        out.url = out.sourceFolderId;
+        out.sourceFolderId = '';
+    }
+    if (!out.url && documentos_isLikelyUrl(out.driveFileId)) {
+        out.url = out.driveFileId;
+        out.driveFileId = documentos_parseDriveId(out.driveFileId);
+    }
+    out.url = documentos_resolveDocUrl(out);
+    if (!out.driveFileId) out.driveFileId = documentos_parseDriveId(out.url);
+    return out;
+}
+
 async function documentos_upgradeData() {
     let docsChanged = false;
     let profilesChanged = false;
 
+    const canonicalHeaders = DOCS_HEADERS.length === docsState.headers.length
+        && DOCS_HEADERS.every((h, i) => docsState.headers[i] === h);
+    if (!canonicalHeaders) docsChanged = true;
+
     const validMembers = new Set(DOCS_MEMBERS.map((m) => m.id));
     docsState.items = docsState.items.map((d) => {
+        const normalized = documentos_normalizeDocRow(d);
+        if (normalized.url !== d.url || normalized.expiryDate !== d.expiryDate || normalized.sourceFolderId !== d.sourceFolderId || normalized.driveFileId !== d.driveFileId) {
+            docsChanged = true;
+        }
         const inferred = documentos_guessMemberFromName(`${d.title} ${d.notes}`);
         const member = validMembers.has(d.member) ? d.member : inferred;
         if (member !== d.member) docsChanged = true;
         if (inferred === 'mascotas' && d.member !== 'mascotas') {
             docsChanged = true;
-            return { ...d, member: 'mascotas' };
+            return { ...normalized, member: 'mascotas' };
         }
-        return member !== d.member ? { ...d, member } : d;
+        return member !== d.member ? { ...normalized, member } : normalized;
     });
 
     const byMember = new Map(docsState.profiles.map((p) => [p.member, p]));
@@ -8268,15 +8314,18 @@ function documentos_render() {
     if (totalEl) totalEl.innerText = String(filtered.length);
     if (subEl) subEl.innerText = docsState.selectedMember === 'all' ? 'Busqueda global' : `Filtrado por ${documentos_memberLabel(docsState.selectedMember)}`;
     listEl.innerHTML = filtered.length
-        ? filtered.map((d) => `
-            <article class="docs-card" data-doc-url="${d.url || ''}">
+        ? filtered.map((d) => {
+            const finalUrl = documentos_resolveDocUrl(d);
+            return `
+            <article class="docs-card" data-doc-url="${finalUrl || ''}">
               <h4 class="docs-title">${d.title}</h4>
               <div class="docs-meta">${documentos_memberLabel(d.member)} · ${d.type || 'Documento'} · ${d.tags || 'sin etiquetas'}</div>
               <div class="docs-meta">Vencimiento: ${d.expiryDate || 'no tiene vencimiento'}</div>
               <div class="docs-meta">${d.notes || ''}</div>
               <div class="docs-actions"><button type="button" class="mini-btn" data-doc-edit-id="${d.id}">✏️ Editar</button></div>
             </article>
-          `).join('')
+          `;
+        }).join('')
         : '<div class="empty-state">Sin documentos en este filtro</div>';
 
     const profile = docsState.profiles.find((p) => p.member === documentos_getActiveProfileMember()) || null;
@@ -8326,7 +8375,7 @@ function documentos_openSheet(id) {
     document.getElementById('docs-tags').value = doc?.tags || '';
     document.getElementById('docs-notes').value = doc?.notes || '';
     document.getElementById('docs-expiry').value = doc?.expiryDate || '';
-    document.getElementById('docs-url').value = doc?.url || '';
+    document.getElementById('docs-url').value = documentos_resolveDocUrl(doc) || '';
     document.getElementById('docs-file-feedback').innerText = '';
     documentos_showCropTools(false);
     docsState.pendingImageFile = null;
@@ -8398,7 +8447,7 @@ async function documentos_delete() {
     if (!id) return;
     if (!confirm('¿Eliminar esta entrada del archivador?')) return;
     const target = docsState.items.find((x) => x.id === id);
-    const driveId = target?.driveFileId || documentos_parseDriveId(target?.url || '');
+    const driveId = target?.driveFileId || documentos_parseDriveId(documentos_resolveDocUrl(target) || '');
     if (driveId) {
         try { await driveDeleteFile(driveId); } catch (e) { console.warn('No se pudo borrar archivo Drive:', e); }
     }
@@ -8410,13 +8459,10 @@ async function documentos_delete() {
 }
 
 async function documentos_saveRows() {
-    const mergedHeaders = [...(docsState.headers?.length ? docsState.headers : DOCS_HEADERS)];
-    DOCS_HEADERS.forEach((h) => {
-        if (!mergedHeaders.includes(h)) mergedHeaders.push(h);
-    });
-    docsState.headers = mergedHeaders;
-    const letter = autos_colLetter(mergedHeaders.length);
-    await sheetsUpdate(SPREADSHEET_AUTOS_ID, `${DOCS_SHEET}!A1:${letter}1`, [mergedHeaders]);
+    const canonicalHeaders = DOCS_HEADERS.slice();
+    docsState.headers = canonicalHeaders;
+    const letter = autos_colLetter(canonicalHeaders.length);
+    await sheetsUpdate(SPREADSHEET_AUTOS_ID, `${DOCS_SHEET}!A1:${letter}1`, [canonicalHeaders]);
     const rows = docsState.items
         .slice()
         .sort((a, b) => a.title.localeCompare(b.title, 'es', { sensitivity: 'base' }))
@@ -8435,7 +8481,7 @@ async function documentos_saveRows() {
                 createdAt: d.createdAt || '',
                 updatedAt: d.updatedAt || '',
             };
-            return mergedHeaders.map((h) => fields[h] ?? '');
+            return canonicalHeaders.map((h) => fields[h] ?? '');
         });
     if (rows.length) {
         await sheetsUpdate(SPREADSHEET_AUTOS_ID, `${DOCS_SHEET}!A2:${letter}${1 + rows.length}`, rows);
