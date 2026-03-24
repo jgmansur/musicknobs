@@ -1,4 +1,5 @@
 import { config } from "./config.js";
+import { getFixedStatus } from "./data.js";
 import {
   createSpreadsheet,
   findSpreadsheetByName,
@@ -125,6 +126,44 @@ export async function syncAiMirror() {
   ];
   await sheetsClear(mirror.id, `${metadataTab}!A1:B200`);
   await sheetsUpdate(mirror.id, `${metadataTab}!A1`, metadataRows);
+
+  const fixedStatusTab = "ai__fixed_status";
+  if (!existingTabs.has(fixedStatusTab)) {
+    await sheetsBatchUpdate(mirror.id, [{ addSheet: { properties: { title: fixedStatusTab } } }]);
+  }
+  const fixedStatus = await getFixedStatus();
+  const fixedRows: string[][] = [
+    [
+      "month",
+      "rowNum",
+      "concepto",
+      "tipo",
+      "monto",
+      "pagosMes",
+      "pagosHechos",
+      "pagosPendientes",
+      "montoPendiente",
+      "dueThisMonth",
+      "periodicidad",
+      "startMonth",
+    ],
+    ...fixedStatus.rows.map((r) => [
+      fixedStatus.month,
+      String(r.rowNum),
+      r.concepto,
+      r.tipo,
+      String(r.monto),
+      String(r.pagosMes),
+      String(r.pagosHechos),
+      String(r.pagosPendientes),
+      String(r.montoPendiente),
+      r.dueThisMonth ? "TRUE" : "FALSE",
+      r.periodicidad,
+      r.startMonth,
+    ]),
+  ];
+  await sheetsClear(mirror.id, `${fixedStatusTab}!A1:Z3000`);
+  await sheetsUpdate(mirror.id, `${fixedStatusTab}!A1`, fixedRows);
 
   return {
     ok: true,

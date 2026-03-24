@@ -48,6 +48,7 @@ npm run dev:mcp
 - `get_profile_field`
 - `get_finance_summary`
 - `get_expenses_by_account`
+- `get_fixed_status`
 - `get_investments_snapshot`
 - `search_documents`
 - `sync_ai_mirror`
@@ -68,6 +69,7 @@ fly deploy
 
 ```bash
 curl -H "Authorization: Bearer $API_TOKEN" "https://<your-app>.fly.dev/api/finance/summary?from=2026-01-01&to=2026-12-31"
+curl -H "Authorization: Bearer $API_TOKEN" "https://<your-app>.fly.dev/api/fixed/status?month=2026-03"
 curl -H "Authorization: Bearer $API_TOKEN" "https://<your-app>.fly.dev/api/profile/field?member=yo&field=curp"
 curl -X POST -H "Authorization: Bearer $API_TOKEN" "https://<your-app>.fly.dev/api/ai-mirror/sync"
 ```
@@ -78,6 +80,7 @@ curl -X POST -H "Authorization: Bearer $API_TOKEN" "https://<your-app>.fly.dev/a
 - Mirror tab names use `<source>__<tab>` (example: `autos__DocumentosArchivador`).
 - Future columns and fields are copied automatically because each source tab is mirrored as raw table data.
 - New tabs in source spreadsheets are also picked up automatically on the next sync.
+- Includes derived tab `ai__fixed_status` with pending split-payment amounts for accurate AI debt context.
 
 ## Security notes
 

@@ -54,6 +54,20 @@ type AccountRow = {
   investmentType: string;
 };
 
+type FixedStatusRow = {
+  rowNum: number;
+  concepto: string;
+  tipo: "gasto" | "ingreso";
+  monto: number;
+  pagosMes: number;
+  pagosHechos: number;
+  pagosPendientes: number;
+  montoPendiente: number;
+  dueThisMonth: boolean;
+  periodicidad: "mensual" | "bimestral";
+  startMonth: string;
+};
+
 function toHeaderMap(headers: string[]) {
   const map = new Map<string, number>();
   headers.forEach((h, i) => map.set((h || "").trim(), i));
@@ -64,6 +78,51 @@ function getCell(row: string[], map: Map<string, number>, key: string): string {
   const idx = map.get(key);
   if (idx === undefined) return "";
   return (row[idx] || "").toString();
+}
+
+function parsePaymentsTotal(value: unknown): number {
+  const n = Math.trunc(parseNumber(value));
+  return Number.isFinite(n) && n > 0 ? n : 1;
+}
+
+function parseBool(value: unknown): boolean {
+  if (typeof value === "boolean") return value;
+  const raw = String(value ?? "").trim().toLowerCase();
+  return raw === "true" || raw === "1" || raw === "si";
+}
+
+function parsePaymentStates(raw: unknown, total: number, legacyPaid = false): boolean[] {
+  const count = parsePaymentsTotal(total);
+  if (!raw && legacyPaid) return new Array(count).fill(true);
+  const chars = String(raw || "")
+    .replace(/[^01]/g, "")
+    .slice(0, count)
+    .split("");
+  const states = new Array(count).fill(false);
+  for (let i = 0; i < chars.length; i++) states[i] = chars[i] === "1";
+  return states;
+}
+
+function parseFixedPeriodicity(value: unknown): "mensual" | "bimestral" {
+  return String(value || "").trim().toLowerCase() === "bimestral" ? "bimestral" : "mensual";
+}
+
+function parseStartMonth(value: unknown, fallbackYm: string): string {
+  const raw = String(value || "").trim();
+  return /^\d{4}-\d{2}$/.test(raw) ? raw : fallbackYm;
+}
+
+function monthDiff(fromYm: string, toYm: string): number {
+  const [fy, fm] = fromYm.split("-").map(Number);
+  const [ty, tm] = toYm.split("-").map(Number);
+  return (ty - fy) * 12 + (tm - fm);
+}
+
+function isFixedDueThisMonth(periodicity: "mensual" | "bimestral", startMonth: string, nowMonth: string): boolean {
+  if (periodicity !== "bimestral") return true;
+  const diff = monthDiff(startMonth, nowMonth);
+  if (diff < 0) return false;
+  return diff % 2 === 0;
 }
 
 export async function getExpenses(from?: string, to?: string): Promise<ExpenseRow[]> {
@@ -164,7 +223,7 @@ export async function findProfileField(member: string | undefined, field: keyof 
 }
 
 export async function getFinanceSummary(from?: string, to?: string) {
-  const [expenses, accounts] = await Promise.all([getExpenses(from, to), getAccounts()]);
+  const [expenses, accounts, fixedStatus] = await Promise.all([getExpenses(from, to), getAccounts(), getFixedStatus()]);
   const ingresos = expenses.filter((e) => e.tipo === "Ingreso").reduce((s, e) => s + e.monto, 0);
   const gastos = expenses.filter((e) => e.tipo === "Gasto").reduce((s, e) => s + e.monto, 0);
   const porCuenta = expenses.reduce<Record<string, { ingresos: number; gastos: number; neto: number }>>((acc, row) => {
@@ -189,7 +248,57 @@ export async function getFinanceSummary(from?: string, to?: string) {
     gastos,
     neto: ingresos - gastos,
     cuentas: accounts,
+    fixedPendingTotal: fixedStatus.pendingTotal,
+    fixedPendingByConcept: fixedStatus.rows,
     porCuenta,
+  };
+}
+
+export async function getFixedStatus(referenceYm?: string): Promise<{ month: string; pendingTotal: number; rows: FixedStatusRow[] }> {
+  const rawRows = await sheetsGet(config.spreadsheets.fixed, "Hoja 1!A2:N");
+  const now = new Date();
+  const currentYm = referenceYm || `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+
+  const rows = rawRows.map((row, idx) => {
+    const gRaw = parseNumber(row[2]);
+    const nRaw = parseNumber(row[3]);
+    const monto = Math.abs(gRaw || nRaw);
+    const tipo: "gasto" | "ingreso" = gRaw > 0 ? "gasto" : "ingreso";
+    const pagosMes = parsePaymentsTotal(row[6]);
+    const paidLegacy = parseBool(row[5]);
+    const pagosEstado = parsePaymentStates(row[7], pagosMes, paidLegacy);
+    const pagosHechos = pagosEstado.filter(Boolean).length;
+    const pagosPendientes = Math.max(0, pagosMes - pagosHechos);
+    const periodicidad = parseFixedPeriodicity(row[8]);
+    const startMonth = parseStartMonth(row[9], currentYm);
+    const dueThisMonth = isFixedDueThisMonth(periodicidad, startMonth, currentYm);
+    const partAmount = monto / pagosMes;
+    const montoPendiente = dueThisMonth ? partAmount * pagosPendientes : 0;
+
+    return {
+      rowNum: idx + 2,
+      concepto: String(row[1] || "").trim(),
+      tipo,
+      monto,
+      pagosMes,
+      pagosHechos,
+      pagosPendientes,
+      montoPendiente,
+      dueThisMonth,
+      periodicidad,
+      startMonth,
+    } as FixedStatusRow;
+  });
+
+  const gastoRows = rows
+    .filter((r) => r.tipo === "gasto" && r.dueThisMonth)
+    .sort((a, b) => b.montoPendiente - a.montoPendiente);
+  const pendingTotal = gastoRows.reduce((sum, r) => sum + r.montoPendiente, 0);
+
+  return {
+    month: currentYm,
+    pendingTotal,
+    rows: gastoRows,
   };
 }
 

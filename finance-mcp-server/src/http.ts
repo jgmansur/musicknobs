@@ -5,6 +5,7 @@ import { assertConfig, config } from "./config.js";
 import {
   findProfileField,
   getExpensesByAccount,
+  getFixedStatus,
   getFinanceSummary,
   getInvestmentsSnapshot,
   searchDocuments,
@@ -65,6 +66,15 @@ app.get("/api/finance/by-account", async (req, reply) => {
 });
 
 app.get("/api/investments", async () => getInvestmentsSnapshot());
+
+app.get("/api/fixed/status", async (req, reply) => {
+  const schema = z.object({
+    month: z.string().regex(/^\d{4}-\d{2}$/).optional(),
+  });
+  const parsed = schema.safeParse(req.query);
+  if (!parsed.success) return reply.code(400).send({ error: parsed.error.flatten() });
+  return getFixedStatus(parsed.data.month);
+});
 
 app.get("/api/documents/search", async (req, reply) => {
   const schema = z.object({

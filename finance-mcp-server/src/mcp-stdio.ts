@@ -5,6 +5,7 @@ import { assertConfig } from "./config.js";
 import {
   findProfileField,
   getExpensesByAccount,
+  getFixedStatus,
   getFinanceSummary,
   getInvestmentsSnapshot,
   searchDocuments,
@@ -59,6 +60,17 @@ server.tool(
   },
   async ({ account, from, to }) => {
     const result = await getExpensesByAccount(account, from, to);
+    return { content: [{ type: "text", text: safeJson(result) }] };
+  },
+);
+
+server.tool(
+  "get_fixed_status",
+  {
+    month: z.string().regex(/^\d{4}-\d{2}$/).optional(),
+  },
+  async ({ month }) => {
+    const result = await getFixedStatus(month);
     return { content: [{ type: "text", text: safeJson(result) }] };
   },
 );
