@@ -2295,7 +2295,8 @@ function processAndRender(logRows, fixedRows) {
         const partAmount = Math.abs(monto) / (pagosMes || 1);
         const paidAmount = partAmount * Math.max(0, pagosHechos);
         const pendingAmount = partAmount * Math.max(0, pagosMes - pagosHechos);
-        return { rowNum: i + 2, concepto, categoria, monto, montoOriginal, moneda, tipo, isPaid, pagosMes, pagosEstado, waivedEstado, pagosHechos, paidAmount, pendingAmount, periodicidad, inicioMes, isDueThisMonth, pagador: parseFixedPayer(row[10]), budgetCategory: parseBudgetCategory(row[11]) };
+        const formaPago = parseFixedFormaPago(row[10]);
+        return { rowNum: i + 2, concepto, categoria, monto, montoOriginal, moneda, tipo, isPaid, pagosMes, pagosEstado, waivedEstado, pagosHechos, paidAmount, pendingAmount, periodicidad, inicioMes, isDueThisMonth, pagador: parseFixedPayer(row[10]), formaPago, budgetCategory: parseBudgetCategory(row[11]) };
     }).filter(e => e.concepto);
 
     // KPI: count partial progress for fixed expenses
@@ -3040,6 +3041,7 @@ async function fijos_cargarDatos() {
                 inicioMes,
                 isDueThisMonth,
                 pagador: parseFixedPayer(row[10]),
+                formaPago: parseFixedFormaPago(row[10]),
                 budgetCategory: parseBudgetCategory(row[11]),
             };
         }).filter(i => i.concepto).sort((a, b) => a.diaMes - b.diaMes);
@@ -3245,7 +3247,7 @@ window.fijos_togglePagoPart = async function(id, partIndex, options = {}) {
             const concepto = `${item.concepto} (${partIndex + 1}/${item.pagosMes})`;
             const monto    = partAmountOriginal;
             const tipo     = item.tipo === 'ingreso' ? 'Ingreso' : 'Gasto';
-            const forma    = item.categoria || 'General';
+            const forma    = item.formaPago || '';
             await sheetsAppend(
                 SPREADSHEET_LOG_ID,
                 'Hoja 1!A:H',
@@ -3311,7 +3313,7 @@ function fijos_abrirSheet(item) {
     document.getElementById('f-pagos-mes').value = '1';
     document.getElementById('f-periodicidad').value = 'mensual';
     document.getElementById('f-inicio-mes').value = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}`;
-    document.getElementById('f-pagador').value = 'yo';
+    document.getElementById('f-forma-pago').value = '';
     document.getElementById('f-currency').value = 'MXN';
     document.getElementById('f-budget-cat').value = BUDGET_BUCKETS[0];
     document.getElementById('f-fecha').value = String(hoy.getDate());
@@ -3328,7 +3330,7 @@ function fijos_abrirSheet(item) {
         document.getElementById('f-pagos-mes').value = String(item.pagosMes || 1);
         document.getElementById('f-periodicidad').value = item.periodicidad || 'mensual';
         document.getElementById('f-inicio-mes').value = item.inicioMes || `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}`;
-        document.getElementById('f-pagador').value = item.pagador || 'yo';
+        document.getElementById('f-forma-pago').value = item.formaPago || '';
         document.getElementById('f-currency').value = item.moneda || 'MXN';
         document.getElementById('f-budget-cat').value = parseBudgetCategory(item.budgetCategory);
         item.categoria.split(', ').forEach(c => { const cb = document.querySelector(`.f-cat-chk[value="${c}"]`); if (cb) cb.checked = true; });
@@ -3357,7 +3359,8 @@ async function fijos_guardar() {
     const pagosMes = parsePaymentsTotal(document.getElementById('f-pagos-mes').value);
     const periodicidad = parseFixedPeriodicity(document.getElementById('f-periodicidad').value);
     const inicioMes = parseStartMonth(document.getElementById('f-inicio-mes').value);
-    const pagador = parseFixedPayer(document.getElementById('f-pagador').value);
+    const formaPagoVal = document.getElementById('f-forma-pago').value;
+    const pagador = parseFixedPayer(formaPagoVal);
     const moneda = parseCurrencyCode(document.getElementById('f-currency').value);
     const budgetCategory = parseBudgetCategory(document.getElementById('f-budget-cat').value);
     const editId  = document.getElementById('f-edit-id').value;
@@ -3389,7 +3392,7 @@ async function fijos_guardar() {
                 serializePaymentStates(nextStates),
                 periodicidad,
                 inicioMes,
-                pagador,
+                formaPagoVal,
                 budgetCategory,
                 moneda,
                 serializePaymentStates(nextWaived),
@@ -3407,7 +3410,7 @@ async function fijos_guardar() {
                 serializePaymentStates(new Array(pagosMes).fill(false)),
                 periodicidad,
                 inicioMes,
-                pagador,
+                formaPagoVal,
                 budgetCategory,
                 moneda,
                 serializePaymentStates(new Array(pagosMes).fill(false)),
@@ -9904,8 +9907,21 @@ function isFixedDueThisMonth(periodicity, startMonth, nowMonth) {
 }
 
 function parseFixedPayer(val) {
+    // Deriva pagador desde el nuevo campo formaPago o valores legacy (yo/esposa)
     const raw = (val || '').toString().trim().toLowerCase();
-    return raw === 'esposa' ? 'esposa' : 'yo';
+    if (raw === 'esposa') return 'esposa';
+    if (raw === 'cuenta mariel') return 'esposa';
+    return 'yo';
+}
+
+function parseFixedFormaPago(val) {
+    const raw = (val || '').toString().trim();
+    // Migración retrocompatible: valores legacy del Sheet
+    if (raw.toLowerCase() === 'esposa') return 'Cuenta Mariel';
+    if (raw.toLowerCase() === 'yo') return '';
+    // Valores nuevos: devolver tal cual si es una cuenta válida
+    const valid = ['Santander', 'BBVA', 'Cuenta Mariel', 'Efectivo', 'Transferencia'];
+    return valid.includes(raw) ? raw : '';
 }
 
 function parseBudgetCategory(val) {
