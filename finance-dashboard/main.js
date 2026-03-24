@@ -3907,7 +3907,7 @@ const AUTOS_HEADERS = [
 ];
 
 const REPAIRS_HEADERS = [
-    'id','carId','reparacion','costo','moneda','lugar','fecha','foto','recibo','descripcion','logMarker',
+    'id','carId','reparacion','costo','moneda','lugar','fecha','foto','recibo','descripcion','logMarker','formaPago',
 ];
 
 const AUTOS_META_HEADERS = ['key', 'value'];
@@ -6180,6 +6180,7 @@ function autos_openRepairSheet(repairId) {
     document.getElementById('autos-repair-photo').value = repair?.foto || '';
     document.getElementById('autos-repair-receipt').value = repair?.recibo || '';
     document.getElementById('autos-repair-desc').value = repair?.descripcion || '';
+    document.getElementById('autos-repair-forma-pago').value = repair?.formaPago || '';
     const photoFile = document.getElementById('autos-repair-photo-file');
     const receiptFile = document.getElementById('autos-repair-receipt-file');
     if (photoFile) photoFile.value = '';
@@ -6207,6 +6208,7 @@ async function autos_saveRepair() {
         recibo: document.getElementById('autos-repair-receipt').value.trim(),
         descripcion: document.getElementById('autos-repair-desc').value.trim(),
         logMarker: autos_getLogMarker(id),
+        formaPago: document.getElementById('autos-repair-forma-pago').value.trim(),
     };
     if (!repair.carId || !repair.reparacion) {
         showToast('⚠️ Selecciona auto y reparacion');
@@ -6236,10 +6238,10 @@ async function autos_saveRepair() {
 }
 
 async function autos_saveRepairsSheet() {
-    await sheetsClear(SPREADSHEET_AUTOS_ID, 'Reparaciones!A2:K');
+    await sheetsClear(SPREADSHEET_AUTOS_ID, 'Reparaciones!A2:L');
     if (!autosState.repairs.length) return;
-    await sheetsUpdate(SPREADSHEET_AUTOS_ID, `Reparaciones!A2:K${1 + autosState.repairs.length}`, autosState.repairs.map(r => [
-        r.id, r.carId, r.reparacion, r.costo, r.moneda, r.lugar, r.fecha, r.foto, r.recibo, r.descripcion, r.logMarker || autos_getLogMarker(r.id),
+    await sheetsUpdate(SPREADSHEET_AUTOS_ID, `Reparaciones!A2:L${1 + autosState.repairs.length}`, autosState.repairs.map(r => [
+        r.id, r.carId, r.reparacion, r.costo, r.moneda, r.lugar, r.fecha, r.foto, r.recibo, r.descripcion, r.logMarker || autos_getLogMarker(r.id), r.formaPago || '',
     ]));
 }
 
@@ -6278,12 +6280,13 @@ async function autos_syncRepairToLog(repair) {
         'Auto - Reparaciones',
         repair.recibo || repair.foto || '',
         repair.moneda || 'MXN',
+        repair.formaPago || '',
     ];
     if (found !== -1) {
         const rowNum = found + 2;
-        await sheetsUpdate(SPREADSHEET_LOG_ID, `Hoja 1!A${rowNum}:H${rowNum}`, [row]);
+        await sheetsUpdate(SPREADSHEET_LOG_ID, `Hoja 1!A${rowNum}:I${rowNum}`, [row]);
     } else {
-        await sheetsAppend(SPREADSHEET_LOG_ID, 'Hoja 1!A:H', [row]);
+        await sheetsAppend(SPREADSHEET_LOG_ID, 'Hoja 1!A:I', [row]);
     }
 }
 
@@ -6335,11 +6338,11 @@ const estudioState = {
 
 const ESTUDIO_INVENTARIO_HEADERS = [
     'id', 'name', 'cantidad', 'precioUsd', 'categoria', 'anioCompra', 'foto', 'marca', 'modelo', 'site',
-    'serial', 'account', 'notas', 'fechaCompra', 'logMarker',
+    'serial', 'account', 'notas', 'fechaCompra', 'logMarker', 'formaPago',
 ];
 
 const ESTUDIO_PLUGIN_HEADERS = [
-    'id', 'name', 'marca', 'descripcion', 'precioUsd', 'site', 'licencia', 'serial', 'account', 'foto', 'fechaCompra', 'logMarker', 'currency', 'categoria',
+    'id', 'name', 'marca', 'descripcion', 'precioUsd', 'site', 'licencia', 'serial', 'account', 'foto', 'fechaCompra', 'logMarker', 'currency', 'categoria', 'formaPago',
 ];
 
 const ESTUDIO_SEED_INVENTARIO = [
@@ -6448,8 +6451,8 @@ async function estudio_ensureSheets() {
 
 async function estudio_loadData() {
     const [inventarioRows, pluginRows] = await Promise.all([
-        sheetsGet(SPREADSHEET_ESTUDIO_ID, 'EstudioInventario!A2:O').catch(() => []),
-        sheetsGet(SPREADSHEET_ESTUDIO_ID, 'EstudioPlugins!A2:N').catch(() => []),
+        sheetsGet(SPREADSHEET_ESTUDIO_ID, 'EstudioInventario!A2:P').catch(() => []),
+        sheetsGet(SPREADSHEET_ESTUDIO_ID, 'EstudioPlugins!A2:O').catch(() => []),
     ]);
 
     if (!inventarioRows.length && !pluginRows.length) {
@@ -6473,6 +6476,7 @@ async function estudio_loadData() {
         notas: (r[12] || '').toString(),
         fechaCompra: normalizeDateString(r[13] || new Date().toLocaleDateString('en-CA')),
         logMarker: (r[14] || '').toString(),
+        formaPago: (r[15] || '').toString(),
     })).filter((x) => x.id && x.name);
 
     estudioState.plugins = pluginRows.map((r) => ({
@@ -6490,6 +6494,7 @@ async function estudio_loadData() {
         logMarker: (r[11] || '').toString(),
         currency: parseCurrencyCode((r[12] || 'USD').toString().toUpperCase() === 'MXN' ? 'MXN' : 'USD'),
         categoria: (r[13] || r[3] || '').toString(),
+        formaPago: (r[14] || '').toString(),
     })).filter((x) => x.id && x.name);
 
     estudioState.loaded = true;
@@ -6775,6 +6780,7 @@ function estudio_openInventarioSheet(id) {
     document.getElementById('estudio-inventario-serial').value = item?.serial || '';
     document.getElementById('estudio-inventario-account').value = item?.account || '';
     document.getElementById('estudio-inventario-notes').value = item?.notas || '';
+    document.getElementById('estudio-inventario-forma-pago').value = item?.formaPago || '';
     document.getElementById('estudio-inventario-sheet').classList.remove('hidden');
 }
 
@@ -6806,6 +6812,7 @@ async function estudio_saveInventario() {
         notas: document.getElementById('estudio-inventario-notes').value.trim(),
         fechaCompra: normalizeDateString(new Date().toLocaleDateString('en-CA')),
         logMarker: marker,
+        formaPago: document.getElementById('estudio-inventario-forma-pago').value.trim(),
     };
     if (!item.name) {
         showToast('⚠️ Captura nombre del equipo');
@@ -6831,11 +6838,11 @@ async function estudio_saveInventario() {
 }
 
 async function estudio_saveInventarioSheet() {
-    await sheetsClear(SPREADSHEET_ESTUDIO_ID, 'EstudioInventario!A2:O');
+    await sheetsClear(SPREADSHEET_ESTUDIO_ID, 'EstudioInventario!A2:P');
     if (!estudioState.inventario.length) return;
-    await sheetsUpdate(SPREADSHEET_ESTUDIO_ID, `EstudioInventario!A2:O${1 + estudioState.inventario.length}`, estudioState.inventario.map((x) => [
+    await sheetsUpdate(SPREADSHEET_ESTUDIO_ID, `EstudioInventario!A2:P${1 + estudioState.inventario.length}`, estudioState.inventario.map((x) => [
         x.id, x.name, x.cantidad, x.precioUsd, x.categoria, x.anioCompra, x.foto, x.marca, x.modelo, x.site,
-        x.serial, x.account, x.notas, x.fechaCompra, x.logMarker || '',
+        x.serial, x.account, x.notas, x.fechaCompra, x.logMarker || '', x.formaPago || '',
     ]));
 }
 
@@ -6855,6 +6862,7 @@ function estudio_openPluginSheet(id) {
     document.getElementById('estudio-plugin-serial').value = item?.serial || '';
     document.getElementById('estudio-plugin-account').value = item?.account || '';
     document.getElementById('estudio-plugin-photo').value = item?.foto || '';
+    document.getElementById('estudio-plugin-forma-pago').value = item?.formaPago || '';
     document.getElementById('estudio-plugin-sheet').classList.remove('hidden');
 }
 
@@ -6885,6 +6893,7 @@ async function estudio_savePlugin() {
         fechaCompra: normalizeDateString(new Date().toLocaleDateString('en-CA')),
         logMarker: marker,
         currency: 'USD',
+        formaPago: document.getElementById('estudio-plugin-forma-pago').value.trim(),
     };
     if (!item.name) {
         showToast('⚠️ Captura nombre del plugin');
@@ -6910,10 +6919,10 @@ async function estudio_savePlugin() {
 }
 
 async function estudio_savePluginsSheet() {
-    await sheetsClear(SPREADSHEET_ESTUDIO_ID, 'EstudioPlugins!A2:N');
+    await sheetsClear(SPREADSHEET_ESTUDIO_ID, 'EstudioPlugins!A2:O');
     if (!estudioState.plugins.length) return;
-    await sheetsUpdate(SPREADSHEET_ESTUDIO_ID, `EstudioPlugins!A2:N${1 + estudioState.plugins.length}`, estudioState.plugins.map((x) => [
-        x.id, x.name, x.marca, x.descripcion, x.precioUsd, x.site, x.licencia, x.serial, x.account, x.foto, x.fechaCompra, x.logMarker || '', x.currency || 'USD', x.categoria || '',
+    await sheetsUpdate(SPREADSHEET_ESTUDIO_ID, `EstudioPlugins!A2:O${1 + estudioState.plugins.length}`, estudioState.plugins.map((x) => [
+        x.id, x.name, x.marca, x.descripcion, x.precioUsd, x.site, x.licencia, x.serial, x.account, x.foto, x.fechaCompra, x.logMarker || '', x.currency || 'USD', x.categoria || '', x.formaPago || '',
     ]));
 }
 
@@ -6955,12 +6964,13 @@ async function estudio_syncInventarioToLog(item, options = {}) {
         'Estudio',
         item.foto || item.site || '',
         'USD',
+        item.formaPago || '',
     ];
     if (found !== -1) {
         const rowNum = found + 2;
-        await sheetsUpdate(SPREADSHEET_LOG_ID, `Hoja 1!A${rowNum}:H${rowNum}`, [row]);
+        await sheetsUpdate(SPREADSHEET_LOG_ID, `Hoja 1!A${rowNum}:I${rowNum}`, [row]);
     } else {
-        await sheetsAppend(SPREADSHEET_LOG_ID, 'Hoja 1!A:H', [row]);
+        await sheetsAppend(SPREADSHEET_LOG_ID, 'Hoja 1!A:I', [row]);
     }
 }
 
@@ -6994,12 +7004,13 @@ async function estudio_syncPluginToLog(item, options = {}) {
         'Estudio',
         item.site || item.foto || '',
         item.currency || 'USD',
+        item.formaPago || '',
     ];
     if (found !== -1) {
         const rowNum = found + 2;
-        await sheetsUpdate(SPREADSHEET_LOG_ID, `Hoja 1!A${rowNum}:H${rowNum}`, [row]);
+        await sheetsUpdate(SPREADSHEET_LOG_ID, `Hoja 1!A${rowNum}:I${rowNum}`, [row]);
     } else {
-        await sheetsAppend(SPREADSHEET_LOG_ID, 'Hoja 1!A:H', [row]);
+        await sheetsAppend(SPREADSHEET_LOG_ID, 'Hoja 1!A:I', [row]);
     }
 }
 
@@ -8853,7 +8864,7 @@ async function documentos_saveProfile() {
 // =============================================
 const HAIR_SHEET = 'PeloLog';
 const HAIR_META_SHEET = 'PeloMeta';
-const HAIR_HEADERS = ['id', 'member', 'date', 'stylist', 'amount', 'receiptUrl', 'frontUrl', 'sideUrl', 'backUrl', 'notes', 'rating', 'expenseMarker', 'expenseRowNum', 'createdAt', 'updatedAt'];
+const HAIR_HEADERS = ['id', 'member', 'date', 'stylist', 'amount', 'receiptUrl', 'frontUrl', 'sideUrl', 'backUrl', 'notes', 'rating', 'expenseMarker', 'expenseRowNum', 'createdAt', 'updatedAt', 'formaPago'];
 const HAIR_META_HEADERS = ['key', 'value'];
 const HAIR_DEFAULT_MEMBERS = ['Juan', 'Hans'];
 const HAIR_PHOTOS_FOLDER_ID = '18ztCg2A_OM3T7VnBITKJ_cVI2Iw3TagE';
@@ -8960,6 +8971,7 @@ async function pelo_loadData() {
         expenseRowNum: parseInt(get(row, 'expenseRowNum', 0), 10) || 0,
         createdAt: (get(row, 'createdAt', '') || '').toString(),
         updatedAt: (get(row, 'updatedAt', '') || '').toString(),
+        formaPago: (get(row, 'formaPago', '') || '').toString(),
     })).filter((x) => x.id && x.member);
 
     const metaRows = await sheetsGet(SPREADSHEET_AUTOS_ID, `${HAIR_META_SHEET}!A2:B`).catch(() => []);
@@ -9053,6 +9065,7 @@ function pelo_openSheet(id) {
     document.getElementById('hair-front-url').value = row?.frontUrl || '';
     document.getElementById('hair-side-url').value = row?.sideUrl || '';
     document.getElementById('hair-back-url').value = row?.backUrl || '';
+    document.getElementById('hair-forma-pago').value = row?.formaPago || '';
     document.getElementById('hair-file-feedback').innerText = '';
     document.getElementById('hair-delete').classList.toggle('hidden', !row);
     document.getElementById('hair-sheet').classList.remove('hidden');
@@ -9098,7 +9111,7 @@ function pelo_buildMarker(id) {
 
 async function pelo_syncExpense(entry) {
     const marker = entry.expenseMarker || pelo_buildMarker(entry.id);
-    const rows = await sheetsGet(SPREADSHEET_LOG_ID, 'Hoja 1!A2:H').catch(() => []);
+    const rows = await sheetsGet(SPREADSHEET_LOG_ID, 'Hoja 1!A2:I').catch(() => []);
     const idx = rows.findIndex((r) => ((r[2] || '').toString()).includes(marker));
     const conceptoBase = `Corte de Pelo ${entry.stylist ? `- ${entry.stylist}` : ''}`.trim();
     const values = [[
@@ -9110,15 +9123,16 @@ async function pelo_syncExpense(entry) {
         'Regular',
         (entry.receiptUrl || '').trim(),
         'MXN',
+        entry.formaPago || '',
     ]];
 
     if (idx !== -1) {
         const rowNum = idx + 2;
-        await sheetsUpdate(SPREADSHEET_LOG_ID, `Hoja 1!A${rowNum}:H${rowNum}`, values);
+        await sheetsUpdate(SPREADSHEET_LOG_ID, `Hoja 1!A${rowNum}:I${rowNum}`, values);
         return { marker, rowNum };
     }
 
-    const appendRes = await sheetsAppend(SPREADSHEET_LOG_ID, 'Hoja 1!A:H', values);
+    const appendRes = await sheetsAppend(SPREADSHEET_LOG_ID, 'Hoja 1!A:I', values);
     const range = appendRes?.updates?.updatedRange || '';
     const m = range.match(/![A-Z]+(\d+):/);
     const rowNum = m ? parseInt(m[1], 10) : 0;
@@ -9168,6 +9182,7 @@ async function pelo_save() {
         expenseRowNum: existing?.expenseRowNum || 0,
         createdAt: existing?.createdAt || now,
         updatedAt: now,
+        formaPago: (document.getElementById('hair-forma-pago').value || '').trim(),
     };
 
     const sync = await pelo_syncExpense(payload);
@@ -9228,6 +9243,7 @@ async function pelo_saveRows() {
         x.expenseRowNum || 0,
         x.createdAt || '',
         x.updatedAt || '',
+        x.formaPago || '',
     ]);
     if (rows.length) {
         await sheetsUpdate(SPREADSHEET_AUTOS_ID, `${HAIR_SHEET}!A2:${letter}${1 + rows.length}`, rows);
