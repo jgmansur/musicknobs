@@ -9444,10 +9444,8 @@ function prompts_renderFavorites() {
 
     grid.innerHTML = favs.map((item) => {
         const title = prompts_escapeHtml(item.title || 'Prompt');
-        const icon = prompts_escapeHtml((item.title || 'P').trim().slice(0, 1).toUpperCase());
         return `
           <button type="button" class="prompts-fav-chip" data-prompt-fav-copy="${item.id}" title="Copiar ${title}">
-            <span class="prompts-fav-icon">${icon}</span>
             <span class="prompts-fav-name">${title}</span>
           </button>
         `;
