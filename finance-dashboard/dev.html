@@ -10,7 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="./style.css">
     <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <script type="module" src="./main.js?v=7.5.1"></script>
+    <script type="module" src="./main.js?v=7.5.2"></script>
   </head>
   <body>
     <div id="app">
@@ -1206,6 +1206,14 @@
 
             <div id="prompts-list" class="accounts-list"></div>
           </section>
+
+          <section class="glass" style="display:grid;gap:.65rem;">
+            <div class="section-header" style="display:flex;justify-content:space-between;align-items:center;gap:.6rem;flex-wrap:wrap;">
+              <h3>Favoritos rapidos</h3>
+              <span class="diff-label">Top 6 prompts favoritos</span>
+            </div>
+            <div id="prompts-fav-grid" class="prompts-fav-grid"></div>
+          </section>
         </main>
 
         <div id="prompts-sheet" class="bottom-sheet hidden">
@@ -1219,7 +1227,14 @@
             <input id="prompts-edit-id" type="hidden">
             <input id="prompts-title" class="field-input" placeholder="Titulo del prompt">
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:.55rem;margin-top:.45rem;">
-              <input id="prompts-platform" class="field-input" placeholder="Plataforma objetivo (ej. X, Gemini, ChatGPT)">
+              <select id="prompts-platform" class="field-input">
+                <option value="Gemini">Gemini</option>
+                <option value="ChatGPT">ChatGPT</option>
+                <option value="NotebookLM">NotebookLM</option>
+                <option value="Claude">Claude</option>
+                <option value="Skill">Skill</option>
+                <option value="Todas">Todas</option>
+              </select>
               <input id="prompts-tags" class="field-input" placeholder="Tags separados por coma">
               <select id="prompts-status" class="field-input">
                 <option value="draft">draft</option>

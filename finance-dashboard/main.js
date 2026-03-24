@@ -15,7 +15,7 @@ const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // 
 const SPREADSHEET_DEUDAS_ID = '1dKxhgqazskm15lx0f6FNCA0gpJ7i5glfxkusiH3b0Uk'; // Control de Deudas
 const SPREADSHEET_AUTOS_ID = SPREADSHEET_DEUDAS_ID; // Autos + Reparaciones live in same workbook
 const SPREADSHEET_ESTUDIO_ID = SPREADSHEET_DEUDAS_ID; // Estudio + Plugins in same workbook
-const APP_VERSION  = 'v7.5.1';
+const APP_VERSION  = 'v7.5.2';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -9294,6 +9294,12 @@ function prompts_bindEvents() {
             await prompts_deleteById(del.dataset.promptDel || '');
         }
     });
+
+    document.getElementById('prompts-fav-grid')?.addEventListener('click', async (e) => {
+        const chip = e.target.closest('[data-prompt-fav-copy]');
+        if (!chip) return;
+        await prompts_copy(chip.dataset.promptFavCopy || '');
+    });
 }
 
 async function prompts_cargarVista() {
@@ -9394,6 +9400,8 @@ function prompts_render() {
     if (totalEl) totalEl.innerText = String(rows.length);
     if (subtitleEl) subtitleEl.innerText = rows.length ? `Mostrando ${rows.length} prompts` : 'Sin prompts aun';
 
+    prompts_renderFavorites();
+
     listEl.innerHTML = rows.length
         ? rows.map((item) => {
             const snippet = prompts_escapeHtml((item.content || '').slice(0, 220));
@@ -9422,13 +9430,51 @@ function prompts_render() {
         : '<div class="empty-state">Sin prompts para mostrar</div>';
 }
 
+function prompts_renderFavorites() {
+    const grid = document.getElementById('prompts-fav-grid');
+    if (!grid) return;
+    const favs = promptsState.items
+        .filter((x) => x.favorite)
+        .sort((a, b) => (b.useCount || 0) - (a.useCount || 0) || prompts_toTs(b.updatedAt) - prompts_toTs(a.updatedAt))
+        .slice(0, 6);
+    if (!favs.length) {
+        grid.innerHTML = '<div class="empty-state">Marca prompts con ⭐ para verlos aqui</div>';
+        return;
+    }
+
+    grid.innerHTML = favs.map((item) => {
+        const title = prompts_escapeHtml(item.title || 'Prompt');
+        const icon = prompts_escapeHtml((item.title || 'P').trim().slice(0, 1).toUpperCase());
+        return `
+          <button type="button" class="prompts-fav-chip" data-prompt-fav-copy="${item.id}" title="Copiar ${title}">
+            <span class="prompts-fav-icon">${icon}</span>
+            <span class="prompts-fav-name">${title}</span>
+          </button>
+        `;
+    }).join('');
+}
+
+function prompts_setPlatformValue(value) {
+    const sel = document.getElementById('prompts-platform');
+    if (!sel) return;
+    const normalized = (value || '').trim() || 'Gemini';
+    const hasOption = [...sel.options].some((o) => o.value === normalized);
+    if (!hasOption) {
+        const opt = document.createElement('option');
+        opt.value = normalized;
+        opt.textContent = normalized;
+        sel.appendChild(opt);
+    }
+    sel.value = normalized;
+}
+
 function prompts_openSheet(id) {
     const row = id ? promptsState.items.find((x) => x.id === id) : null;
     document.getElementById('prompts-edit-id').value = row?.id || '';
     document.getElementById('prompts-sheet-title').innerText = row ? 'Editar prompt' : 'Nuevo prompt';
     document.getElementById('prompts-title').value = row?.title || '';
     document.getElementById('prompts-content').value = row?.content || '';
-    document.getElementById('prompts-platform').value = row?.platform || '';
+    prompts_setPlatformValue(row?.platform || 'Gemini');
     document.getElementById('prompts-tags').value = row?.tags || '';
     document.getElementById('prompts-status').value = row?.status || 'draft';
     document.getElementById('prompts-meta').innerText = row

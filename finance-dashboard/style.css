@@ -1385,6 +1385,44 @@ select.field-input { background-image: url("data:image/svg+xml,%3Csvg xmlns='htt
   gap: .5rem;
 }
 
+.prompts-fav-grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: .5rem;
+}
+
+.prompts-fav-chip {
+  border: 1px solid var(--glass-border);
+  background: rgba(255,255,255,.04);
+  border-radius: .8rem;
+  padding: .45rem .35rem;
+  display: grid;
+  gap: .32rem;
+  justify-items: center;
+  cursor: pointer;
+}
+
+.prompts-fav-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  background: rgba(59,130,246,.2);
+  color: #93c5fd;
+}
+
+.prompts-fav-name {
+  font-size: .66rem;
+  color: var(--text-soft);
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .docs-profile {
   border: 1px solid rgba(255,255,255,.08);
   border-radius: .8rem;
@@ -1443,5 +1481,8 @@ select.field-input { background-image: url("data:image/svg+xml,%3Csvg xmlns='htt
   }
   .prompts-toolbar {
     grid-template-columns: 1fr;
+  }
+  .prompts-fav-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
