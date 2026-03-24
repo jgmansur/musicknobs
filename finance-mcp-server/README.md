@@ -51,6 +51,7 @@ npm run dev:mcp
 - `get_fixed_status`
 - `get_investments_snapshot`
 - `search_documents`
+- `search_prompts`
 - `sync_ai_mirror`
 
 ## 4) Deploy to Fly.io
@@ -71,6 +72,7 @@ fly deploy
 curl -H "Authorization: Bearer $API_TOKEN" "https://<your-app>.fly.dev/api/finance/summary?from=2026-01-01&to=2026-12-31"
 curl -H "Authorization: Bearer $API_TOKEN" "https://<your-app>.fly.dev/api/fixed/status?month=2026-03"
 curl -H "Authorization: Bearer $API_TOKEN" "https://<your-app>.fly.dev/api/profile/field?member=yo&field=curp"
+curl -H "Authorization: Bearer $API_TOKEN" "https://<your-app>.fly.dev/api/prompts/search?query=lanzamiento&platform=X"
 curl -X POST -H "Authorization: Bearer $API_TOKEN" "https://<your-app>.fly.dev/api/ai-mirror/sync"
 ```
 

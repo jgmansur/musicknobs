@@ -12,8 +12,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <script type="module" crossorigin src="./assets/index-wSvujgGf.js"></script>
-    <link rel="stylesheet" crossorigin href="./assets/index-BoMwc2Ez.css">
+    <script type="module" crossorigin src="./assets/index-C3dfAb-B.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-DkNgfJ-2.css">
   </head>
   <body>
     <div id="app">
@@ -1175,7 +1175,76 @@
       </div>
 
       <!-- ══════════════════════════════════
-           VIEW: ESTUDIO (Tab 10)
+           VIEW: PROMPTS (Tab 10)
+           ══════════════════════════════════ -->
+      <div id="view-prompts" class="view">
+        <main class="dashboard-grid">
+          <section class="kpi-row">
+            <div class="kpi-card glass">
+              <div class="kpi-icon" style="background:rgba(59,130,246,.16);color:#60a5fa">🧠</div>
+              <div class="kpi-data">
+                <span class="label">Prompt Vault</span>
+                <h2 id="prompts-total">0</h2>
+                <span id="prompts-subtitle" class="diff-label">Log con busqueda, plataforma y fechas</span>
+              </div>
+            </div>
+          </section>
+
+          <section class="glass" style="display:grid;gap:.7rem;">
+            <div class="section-header" style="display:flex;justify-content:space-between;align-items:center;gap:.6rem;flex-wrap:wrap;">
+              <h3>Prompts</h3>
+              <button id="prompts-btn-add" class="secondary-btn" style="padding:.45rem .7rem;">+ Prompt</button>
+            </div>
+
+            <div class="prompts-toolbar">
+              <input id="prompts-search" class="field-input" type="search" placeholder="Buscar por titulo, contenido o tags...">
+              <select id="prompts-filter-platform" class="field-input"></select>
+              <select id="prompts-filter-size" class="field-input">
+                <option value="all">Tamano: todos</option>
+                <option value="small">Corto</option>
+                <option value="long">Largo</option>
+              </select>
+              <select id="prompts-sort" class="field-input">
+                <option value="updatedDesc">Editados recientes</option>
+                <option value="createdDesc">Agregados recientes</option>
+                <option value="usedDesc">Mas usados</option>
+                <option value="alphaAsc">A-Z</option>
+              </select>
+            </div>
+
+            <div id="prompts-list" class="accounts-list"></div>
+          </section>
+        </main>
+
+        <div id="prompts-sheet" class="bottom-sheet hidden">
+          <div id="prompts-sheet-overlay" class="bottom-sheet-overlay"></div>
+          <div class="bottom-sheet-content glass">
+            <div class="sheet-handle"></div>
+            <div class="balance-panel-header">
+              <h3 id="prompts-sheet-title" class="balance-panel-title">Nuevo prompt</h3>
+              <button class="icon-btn" onclick="document.getElementById('prompts-sheet').classList.add('hidden')">✕</button>
+            </div>
+            <input id="prompts-edit-id" type="hidden">
+            <input id="prompts-title" class="field-input" placeholder="Titulo del prompt">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:.55rem;margin-top:.45rem;">
+              <input id="prompts-platform" class="field-input" placeholder="Plataforma objetivo (ej. X, Gemini, ChatGPT)">
+              <select id="prompts-size" class="field-input">
+                <option value="small">Corto</option>
+                <option value="long">Largo</option>
+              </select>
+              <input id="prompts-tags" class="field-input" placeholder="Tags separados por coma">
+              <input id="prompts-status" class="field-input" placeholder="Estado (draft, listo, prueba)">
+            </div>
+            <textarea id="prompts-content" class="field-input" rows="8" style="margin-top:.45rem;" placeholder="Escribe aqui el prompt completo..."></textarea>
+            <div class="diff-label" id="prompts-meta" style="margin-top:.5rem;"></div>
+            <button id="prompts-delete" class="mini-btn mini-btn-danger hidden" style="margin-top:.7rem;width:100%;">🗑️ Eliminar prompt</button>
+            <button id="prompts-save" class="primary-btn" style="margin-top:.6rem;width:100%;">Guardar prompt</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════════════
+           VIEW: ESTUDIO (Tab 11)
            ══════════════════════════════════ -->
       <div id="view-estudio" class="view">
         <main class="dashboard-grid">
@@ -1398,6 +1467,10 @@
         <button class="tab" id="tab-pelo" data-tab="pelo">
           <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 8c1-1 1.5-2.3.7-3.1-.8-.8-2.1-.3-3.1.7L8 10l6 6 4-4-4-4z"/><path d="M2 22l6-6"/><path d="M7 11l6 6"/></svg>
           <span class="tab-label">Pelo</span>
+        </button>
+        <button class="tab" id="tab-prompts" data-tab="prompts">
+          <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 5h16v14H4z"/><path d="M8 9h8M8 13h8M8 17h5"/></svg>
+          <span class="tab-label">Prompts</span>
         </button>
       </nav>
 

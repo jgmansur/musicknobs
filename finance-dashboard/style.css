@@ -1379,6 +1379,12 @@ select.field-input { background-image: url("data:image/svg+xml,%3Csvg xmlns='htt
   width: 100%;
 }
 
+.prompts-toolbar {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 1fr 1fr;
+  gap: .5rem;
+}
+
 .docs-profile {
   border: 1px solid rgba(255,255,255,.08);
   border-radius: .8rem;
@@ -1433,6 +1439,9 @@ select.field-input { background-image: url("data:image/svg+xml,%3Csvg xmlns='htt
 
 @media (max-width: 720px) {
   .prop-dyn-row {
+    grid-template-columns: 1fr;
+  }
+  .prompts-toolbar {
     grid-template-columns: 1fr;
   }
 }

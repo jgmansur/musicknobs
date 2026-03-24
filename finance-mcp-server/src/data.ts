@@ -4,6 +4,7 @@ import { inDateRange, normalizeText, parseNumber } from "./utils.js";
 
 const DOCS_SHEET = "DocumentosArchivador";
 const DOCS_PROFILE_SHEET = "DocumentosPerfiles";
+const PROMPTS_SHEET = "PromptVault";
 const ACCOUNTS_SHEET_FALLBACK_NAME = "Finance Dashboard - Cuentas";
 
 let discoveredAccountsSheetId: string | null = null;
@@ -52,6 +53,21 @@ type AccountRow = {
   hidden: boolean;
   currency: string;
   investmentType: string;
+};
+
+type PromptRow = {
+  id: string;
+  title: string;
+  content: string;
+  platform: string;
+  size: "small" | "long";
+  tags: string;
+  status: string;
+  favorite: boolean;
+  useCount: number;
+  lastUsedAt: string;
+  createdAt: string;
+  updatedAt: string;
 };
 
 type FixedStatusRow = {
@@ -183,6 +199,54 @@ export async function getDocumentoRows(): Promise<DocumentoRow[]> {
     expiryDate: getCell(row, map, "expiryDate"),
     url: getCell(row, map, "url") || getCell(row, map, "driveUrl"),
   }));
+}
+
+export async function getPromptRows(): Promise<PromptRow[]> {
+  const [head, rows] = await Promise.all([
+    sheetsGet(config.spreadsheets.autos, `${PROMPTS_SHEET}!A1:AZ1`).catch(() => []),
+    sheetsGet(config.spreadsheets.autos, `${PROMPTS_SHEET}!A2:AZ`).catch(() => []),
+  ]);
+  const headers = (head[0] || []).map((h) => h.trim());
+  if (!headers.length) return [];
+  const map = toHeaderMap(headers);
+  return rows
+    .map((row) => {
+      const size: PromptRow["size"] = getCell(row, map, "size") === "long" ? "long" : "small";
+      return {
+      id: getCell(row, map, "id"),
+      title: getCell(row, map, "title"),
+      content: getCell(row, map, "content"),
+      platform: getCell(row, map, "platform"),
+      size,
+      tags: getCell(row, map, "tags"),
+      status: getCell(row, map, "status"),
+      favorite: ["true", "1"].includes(getCell(row, map, "favorite").toLowerCase()),
+      useCount: parseNumber(getCell(row, map, "useCount")),
+      lastUsedAt: getCell(row, map, "lastUsedAt"),
+      createdAt: getCell(row, map, "createdAt"),
+      updatedAt: getCell(row, map, "updatedAt"),
+      };
+    })
+    .filter((p) => p.id && p.title);
+}
+
+export async function searchPrompts(query: string, platform?: string) {
+  const q = normalizeText(query || "");
+  const p = normalizeText(platform || "");
+  const prompts = await getPromptRows();
+  const rows = prompts.filter((item) => {
+    if (p && normalizeText(item.platform) !== p) return false;
+    if (!q) return true;
+    const hay = normalizeText(`${item.title} ${item.content} ${item.tags} ${item.platform} ${item.status}`);
+    return hay.includes(q);
+  });
+  rows.sort((a, b) => Number(b.favorite) - Number(a.favorite) || parseNumber(b.useCount) - parseNumber(a.useCount));
+  return {
+    query,
+    platform: platform || null,
+    count: rows.length,
+    rows: rows.slice(0, 200),
+  };
 }
 
 export async function getAccounts(): Promise<AccountRow[]> {

@@ -8,6 +8,7 @@ import {
   getFixedStatus,
   getFinanceSummary,
   getInvestmentsSnapshot,
+  searchPrompts,
   searchDocuments,
 } from "./data.js";
 import { syncAiMirror } from "./mirror.js";
@@ -88,6 +89,18 @@ server.tool(
   },
   async ({ query, member }) => {
     const result = await searchDocuments(query, member);
+    return { content: [{ type: "text", text: safeJson(result) }] };
+  },
+);
+
+server.tool(
+  "search_prompts",
+  {
+    query: z.string().optional(),
+    platform: z.string().optional(),
+  },
+  async ({ query, platform }) => {
+    const result = await searchPrompts(query || "", platform);
     return { content: [{ type: "text", text: safeJson(result) }] };
   },
 );

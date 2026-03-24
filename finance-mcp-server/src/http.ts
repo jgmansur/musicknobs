@@ -8,6 +8,7 @@ import {
   getFixedStatus,
   getFinanceSummary,
   getInvestmentsSnapshot,
+  searchPrompts,
   searchDocuments,
 } from "./data.js";
 import { syncAiMirror } from "./mirror.js";
@@ -84,6 +85,16 @@ app.get("/api/documents/search", async (req, reply) => {
   const parsed = schema.safeParse(req.query);
   if (!parsed.success) return reply.code(400).send({ error: parsed.error.flatten() });
   return searchDocuments(parsed.data.query, parsed.data.member);
+});
+
+app.get("/api/prompts/search", async (req, reply) => {
+  const schema = z.object({
+    query: z.string().optional().default(""),
+    platform: z.string().optional(),
+  });
+  const parsed = schema.safeParse(req.query);
+  if (!parsed.success) return reply.code(400).send({ error: parsed.error.flatten() });
+  return searchPrompts(parsed.data.query, parsed.data.platform);
 });
 
 app.post("/api/ai-mirror/sync", async (_req, reply) => {

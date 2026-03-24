@@ -15,7 +15,7 @@ const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // 
 const SPREADSHEET_DEUDAS_ID = '1dKxhgqazskm15lx0f6FNCA0gpJ7i5glfxkusiH3b0Uk'; // Control de Deudas
 const SPREADSHEET_AUTOS_ID = SPREADSHEET_DEUDAS_ID; // Autos + Reparaciones live in same workbook
 const SPREADSHEET_ESTUDIO_ID = SPREADSHEET_DEUDAS_ID; // Estudio + Plugins in same workbook
-const APP_VERSION  = 'v7.5.0';
+const APP_VERSION  = 'v7.5.1';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -167,7 +167,7 @@ let tokenRequestInFlight = null;
 let tokenRequestInteractive = true;
 let tokenRequestWatchdog = null;
 let currentTab  = 'dashboard';
-let tabInited   = { dashboard: false, gastos: false, fijos: false, deudas: false, plan: false, autos: false, propiedades: false, documentos: false, pelo: false, estudio: false };
+let tabInited   = { dashboard: false, gastos: false, fijos: false, deudas: false, plan: false, autos: false, propiedades: false, documentos: false, pelo: false, prompts: false, estudio: false };
 const MELI_ACCESS_TOKEN_KEY = 'meli_access_token_v1';
 const MELI_REFRESH_TOKEN_KEY = 'meli_refresh_token_v1';
 const MELI_EXPIRES_AT_KEY = 'meli_expires_at_v1';
@@ -523,6 +523,7 @@ document.addEventListener('DOMContentLoaded', () => {
     propiedades_bindEvents();
     documentos_bindEvents();
     pelo_bindEvents();
+    prompts_bindEvents();
     estudio_bindEvents();
 
     document.getElementById('fixed-search-open')?.addEventListener('click', dashboard_openFixedSearch);
@@ -1678,6 +1679,7 @@ function showTab(name) {
         if (name === 'propiedades') propiedades_cargarVista();
         if (name === 'documentos') documentos_cargarVista();
         if (name === 'pelo')      pelo_cargarVista();
+        if (name === 'prompts')   prompts_cargarVista();
         if (name === 'estudio')   estudio_cargarVista();
     }
 }
@@ -9230,6 +9232,343 @@ async function pelo_addMemberPrompt() {
     hairState.selectedMember = clean;
     await pelo_saveMembersMeta();
     pelo_render();
+}
+
+// =============================================
+// PROMPTS MODULE
+// =============================================
+const PROMPTS_SHEET = 'PromptVault';
+const PROMPTS_HEADERS = ['id', 'title', 'content', 'platform', 'size', 'tags', 'status', 'favorite', 'useCount', 'lastUsedAt', 'createdAt', 'updatedAt'];
+
+const promptsState = {
+    items: [],
+    loaded: false,
+    loading: false,
+    search: '',
+    filterPlatform: 'all',
+    filterSize: 'all',
+    sort: 'updatedDesc',
+};
+
+function prompts_bindEvents() {
+    document.getElementById('prompts-btn-add')?.addEventListener('click', () => prompts_openSheet(null));
+    document.getElementById('prompts-sheet-overlay')?.addEventListener('click', prompts_closeSheet);
+    document.getElementById('prompts-save')?.addEventListener('click', prompts_save);
+    document.getElementById('prompts-delete')?.addEventListener('click', prompts_delete);
+
+    document.getElementById('prompts-search')?.addEventListener('input', (e) => {
+        promptsState.search = (e.target.value || '').toString().toLowerCase().trim();
+        prompts_render();
+    });
+    document.getElementById('prompts-filter-platform')?.addEventListener('change', (e) => {
+        promptsState.filterPlatform = (e.target.value || 'all').toString();
+        prompts_render();
+    });
+    document.getElementById('prompts-filter-size')?.addEventListener('change', (e) => {
+        promptsState.filterSize = (e.target.value || 'all').toString();
+        prompts_render();
+    });
+    document.getElementById('prompts-sort')?.addEventListener('change', (e) => {
+        promptsState.sort = (e.target.value || 'updatedDesc').toString();
+        prompts_render();
+    });
+
+    document.getElementById('prompts-list')?.addEventListener('click', async (e) => {
+        const edit = e.target.closest('[data-prompt-edit]');
+        if (edit) {
+            prompts_openSheet(edit.dataset.promptEdit || '');
+            return;
+        }
+        const copy = e.target.closest('[data-prompt-copy]');
+        if (copy) {
+            await prompts_copy(copy.dataset.promptCopy || '');
+            return;
+        }
+        const used = e.target.closest('[data-prompt-used]');
+        if (used) {
+            await prompts_markUsed(used.dataset.promptUsed || '');
+            return;
+        }
+        const fav = e.target.closest('[data-prompt-fav]');
+        if (fav) {
+            await prompts_toggleFavorite(fav.dataset.promptFav || '');
+            return;
+        }
+        const del = e.target.closest('[data-prompt-del]');
+        if (del) {
+            await prompts_deleteById(del.dataset.promptDel || '');
+        }
+    });
+}
+
+async function prompts_cargarVista() {
+    if (!accessToken || promptsState.loading) return;
+    promptsState.loading = true;
+    try {
+        await autos_ensureSheet(PROMPTS_SHEET, PROMPTS_HEADERS);
+        await prompts_loadData();
+        prompts_render();
+    } catch (e) {
+        console.error('prompts_cargarVista:', e);
+        const list = document.getElementById('prompts-list');
+        if (list) list.innerHTML = '<div class="empty-state text-danger">❌ Error cargando Prompt Vault</div>';
+    } finally {
+        promptsState.loading = false;
+    }
+}
+
+async function prompts_loadData() {
+    const head = await sheetsGet(SPREADSHEET_AUTOS_ID, `${PROMPTS_SHEET}!A1:AZ1`).catch(() => []);
+    const headers = (head[0] && head[0].length) ? head[0].map((x) => (x || '').toString().trim()) : PROMPTS_HEADERS.slice();
+    const map = autos_headersToMap(headers);
+    const get = (row, key, fallback = '') => {
+        const idx = map[key];
+        return idx === undefined ? fallback : (row[idx] ?? fallback);
+    };
+    const rows = await sheetsGet(SPREADSHEET_AUTOS_ID, `${PROMPTS_SHEET}!A2:AZ`).catch(() => []);
+    promptsState.items = rows.map((row) => ({
+        id: (get(row, 'id', '') || '').toString(),
+        title: (get(row, 'title', '') || '').toString(),
+        content: (get(row, 'content', '') || '').toString(),
+        platform: (get(row, 'platform', '') || '').toString(),
+        size: ((get(row, 'size', 'small') || 'small').toString() === 'long') ? 'long' : 'small',
+        tags: (get(row, 'tags', '') || '').toString(),
+        status: (get(row, 'status', '') || '').toString(),
+        favorite: parseBool(get(row, 'favorite', false)),
+        useCount: parseInt(get(row, 'useCount', 0), 10) || 0,
+        lastUsedAt: (get(row, 'lastUsedAt', '') || '').toString(),
+        createdAt: (get(row, 'createdAt', '') || '').toString(),
+        updatedAt: (get(row, 'updatedAt', '') || '').toString(),
+    })).filter((x) => x.id && x.title);
+    promptsState.loaded = true;
+}
+
+function prompts_escapeHtml(value) {
+    return (value || '').toString()
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+function prompts_toTs(dateStr) {
+    const t = new Date(dateStr || '').getTime();
+    return Number.isNaN(t) ? 0 : t;
+}
+
+function prompts_getFiltered() {
+    const q = promptsState.search;
+    const platform = promptsState.filterPlatform;
+    const size = promptsState.filterSize;
+
+    let list = promptsState.items.filter((item) => {
+        const hay = `${item.title} ${item.content} ${item.tags} ${item.platform} ${item.status}`.toLowerCase();
+        if (q && !hay.includes(q)) return false;
+        if (platform !== 'all' && (item.platform || '').toLowerCase() !== platform.toLowerCase()) return false;
+        if (size !== 'all' && item.size !== size) return false;
+        return true;
+    });
+
+    const sort = promptsState.sort;
+    if (sort === 'alphaAsc') {
+        list.sort((a, b) => a.title.localeCompare(b.title, 'es', { sensitivity: 'base' }));
+    } else if (sort === 'createdDesc') {
+        list.sort((a, b) => prompts_toTs(b.createdAt) - prompts_toTs(a.createdAt));
+    } else if (sort === 'usedDesc') {
+        list.sort((a, b) => (b.useCount || 0) - (a.useCount || 0) || prompts_toTs(b.updatedAt) - prompts_toTs(a.updatedAt));
+    } else {
+        list.sort((a, b) => prompts_toTs(b.updatedAt) - prompts_toTs(a.updatedAt));
+    }
+
+    list.sort((a, b) => Number(b.favorite) - Number(a.favorite) || 0);
+    return list;
+}
+
+function prompts_render() {
+    const listEl = document.getElementById('prompts-list');
+    const totalEl = document.getElementById('prompts-total');
+    const subtitleEl = document.getElementById('prompts-subtitle');
+    const platformSel = document.getElementById('prompts-filter-platform');
+    if (!listEl) return;
+
+    const platforms = [...new Set(promptsState.items.map((x) => (x.platform || '').trim()).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'es'));
+    const selected = promptsState.filterPlatform;
+    if (platformSel) {
+        platformSel.innerHTML = `<option value="all">Plataforma: todas</option>${platforms.map((p) => `<option value="${prompts_escapeHtml(p)}" ${selected === p ? 'selected' : ''}>${prompts_escapeHtml(p)}</option>`).join('')}`;
+    }
+
+    const rows = prompts_getFiltered();
+    if (totalEl) totalEl.innerText = String(rows.length);
+    if (subtitleEl) subtitleEl.innerText = rows.length ? `Mostrando ${rows.length} prompts` : 'Sin prompts aun';
+
+    listEl.innerHTML = rows.length
+        ? rows.map((item) => {
+            const snippet = prompts_escapeHtml((item.content || '').slice(0, 220));
+            const created = item.createdAt ? formatFecha(item.createdAt) : '-';
+            const updated = item.updatedAt ? formatFecha(item.updatedAt) : '-';
+            const used = item.lastUsedAt ? formatFecha(item.lastUsedAt) : '-';
+            return `
+            <article class="docs-card">
+              <div style="display:flex;justify-content:space-between;gap:.5rem;align-items:center;">
+                <h4 class="docs-title">${prompts_escapeHtml(item.title)}</h4>
+                <button type="button" class="mini-btn" data-prompt-fav="${item.id}">${item.favorite ? '⭐' : '☆'}</button>
+              </div>
+              <div class="docs-meta">${prompts_escapeHtml(item.platform || 'Sin plataforma')} · ${(item.size === 'long') ? 'Largo' : 'Corto'} · ${prompts_escapeHtml(item.status || 'sin estado')}</div>
+              <div class="docs-meta">${snippet}${(item.content || '').length > 220 ? '…' : ''}</div>
+              <div class="docs-meta">Tags: ${prompts_escapeHtml(item.tags || '—')}</div>
+              <div class="docs-meta">Agregado: ${created} · Editado: ${updated} · Ultimo uso: ${used} · Usos: ${item.useCount || 0}</div>
+              <div class="docs-actions" style="justify-content:flex-start;gap:.35rem;flex-wrap:wrap;">
+                <button type="button" class="mini-btn" data-prompt-copy="${item.id}">📋 Copiar</button>
+                <button type="button" class="mini-btn" data-prompt-used="${item.id}">✅ Marcar uso</button>
+                <button type="button" class="mini-btn" data-prompt-edit="${item.id}">✏️ Editar</button>
+                <button type="button" class="mini-btn mini-btn-danger" data-prompt-del="${item.id}">🗑️</button>
+              </div>
+            </article>
+          `;
+        }).join('')
+        : '<div class="empty-state">Sin prompts para mostrar</div>';
+}
+
+function prompts_openSheet(id) {
+    const row = id ? promptsState.items.find((x) => x.id === id) : null;
+    document.getElementById('prompts-edit-id').value = row?.id || '';
+    document.getElementById('prompts-sheet-title').innerText = row ? 'Editar prompt' : 'Nuevo prompt';
+    document.getElementById('prompts-title').value = row?.title || '';
+    document.getElementById('prompts-content').value = row?.content || '';
+    document.getElementById('prompts-platform').value = row?.platform || '';
+    document.getElementById('prompts-size').value = row?.size || 'small';
+    document.getElementById('prompts-tags').value = row?.tags || '';
+    document.getElementById('prompts-status').value = row?.status || '';
+    document.getElementById('prompts-meta').innerText = row
+        ? `Agregado: ${row.createdAt || '-'} · Editado: ${row.updatedAt || '-'} · Usos: ${row.useCount || 0}`
+        : 'Completa titulo, contenido y plataforma para guardar';
+    document.getElementById('prompts-delete').classList.toggle('hidden', !row);
+    document.getElementById('prompts-sheet').classList.remove('hidden');
+}
+
+function prompts_closeSheet() {
+    document.getElementById('prompts-sheet').classList.add('hidden');
+}
+
+async function prompts_save() {
+    const id = (document.getElementById('prompts-edit-id').value || '').trim() || `prompt-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+    const title = (document.getElementById('prompts-title').value || '').trim();
+    const content = (document.getElementById('prompts-content').value || '').trim();
+    const platform = (document.getElementById('prompts-platform').value || '').trim();
+    if (!title || !content || !platform) {
+        alert('Completa titulo, contenido y plataforma');
+        return;
+    }
+
+    const existing = promptsState.items.find((x) => x.id === id);
+    const now = normalizeDateString(new Date().toLocaleDateString('en-CA'));
+    const payload = {
+        id,
+        title,
+        content,
+        platform,
+        size: ((document.getElementById('prompts-size').value || 'small') === 'long') ? 'long' : 'small',
+        tags: (document.getElementById('prompts-tags').value || '').trim(),
+        status: (document.getElementById('prompts-status').value || '').trim(),
+        favorite: !!existing?.favorite,
+        useCount: existing?.useCount || 0,
+        lastUsedAt: existing?.lastUsedAt || '',
+        createdAt: existing?.createdAt || now,
+        updatedAt: now,
+    };
+
+    const idx = promptsState.items.findIndex((x) => x.id === id);
+    if (idx === -1) promptsState.items.push(payload);
+    else promptsState.items[idx] = payload;
+
+    await prompts_saveRows();
+    prompts_closeSheet();
+    prompts_render();
+    showToast('✅ Prompt guardado');
+}
+
+async function prompts_delete() {
+    const id = (document.getElementById('prompts-edit-id').value || '').trim();
+    if (!id) return;
+    await prompts_deleteById(id);
+}
+
+async function prompts_deleteById(id) {
+    if (!id) return;
+    if (!confirm('¿Eliminar este prompt?')) return;
+    promptsState.items = promptsState.items.filter((x) => x.id !== id);
+    await prompts_saveRows();
+    prompts_closeSheet();
+    prompts_render();
+    showToast('🗑️ Prompt eliminado');
+}
+
+async function prompts_toggleFavorite(id) {
+    const idx = promptsState.items.findIndex((x) => x.id === id);
+    if (idx === -1) return;
+    promptsState.items[idx].favorite = !promptsState.items[idx].favorite;
+    promptsState.items[idx].updatedAt = normalizeDateString(new Date().toLocaleDateString('en-CA'));
+    await prompts_saveRows();
+    prompts_render();
+}
+
+async function prompts_markUsed(id) {
+    const idx = promptsState.items.findIndex((x) => x.id === id);
+    if (idx === -1) return;
+    promptsState.items[idx].useCount = (promptsState.items[idx].useCount || 0) + 1;
+    promptsState.items[idx].lastUsedAt = normalizeDateString(new Date().toLocaleDateString('en-CA'));
+    promptsState.items[idx].updatedAt = promptsState.items[idx].lastUsedAt;
+    await prompts_saveRows();
+    prompts_render();
+}
+
+async function prompts_copy(id) {
+    const row = promptsState.items.find((x) => x.id === id);
+    if (!row) return;
+    try {
+        if (navigator?.clipboard?.writeText) {
+            await navigator.clipboard.writeText(row.content || '');
+        } else {
+            const ta = document.createElement('textarea');
+            ta.value = row.content || '';
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand('copy');
+            ta.remove();
+        }
+        await prompts_markUsed(id);
+        showToast('📋 Prompt copiado');
+    } catch (e) {
+        console.error('prompts_copy:', e);
+        showToast('❌ No se pudo copiar el prompt');
+    }
+}
+
+async function prompts_saveRows() {
+    const letter = autos_colLetter(PROMPTS_HEADERS.length);
+    await sheetsUpdate(SPREADSHEET_AUTOS_ID, `${PROMPTS_SHEET}!A1:${letter}1`, [PROMPTS_HEADERS]);
+    const rows = promptsState.items
+        .slice()
+        .sort((a, b) => prompts_toTs(b.updatedAt) - prompts_toTs(a.updatedAt))
+        .map((x) => [
+            x.id,
+            x.title || '',
+            x.content || '',
+            x.platform || '',
+            x.size || 'small',
+            x.tags || '',
+            x.status || '',
+            x.favorite ? 'TRUE' : 'FALSE',
+            x.useCount || 0,
+            x.lastUsedAt || '',
+            x.createdAt || '',
+            x.updatedAt || '',
+        ]);
+    if (rows.length) {
+        await sheetsUpdate(SPREADSHEET_AUTOS_ID, `${PROMPTS_SHEET}!A2:${letter}${1 + rows.length}`, rows);
+    }
+    await sheetsClear(SPREADSHEET_AUTOS_ID, `${PROMPTS_SHEET}!A${2 + rows.length}:AZ`);
 }
 
 // =============================================
