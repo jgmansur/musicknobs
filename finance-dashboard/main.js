@@ -2237,7 +2237,7 @@ function processAndRender(logRows, fixedRows) {
         const tipo = (row[4] || '').toLowerCase();
         if (tipo !== 'gasto') return;
 
-        const isAutoRepair = (row[5] || '').toString().toLowerCase().includes('auto - reparaciones') || concepto.includes('autolog#');
+        const isAutoRepair = (row[5] || '').toString().toLowerCase().includes('auto - reparaciones') || concepto.includes('autolog#') || lugar.startsWith('auto ');
         const isImprevisto = isAutoRepair || imprevistoKeywords.some(k => concepto.includes(k) || lugar.includes(k));
         if (isImprevisto) {
             const parsedDate = parseSheetDate(fecha);
@@ -6277,16 +6277,15 @@ async function autos_syncRepairToLog(repair) {
         concepto,
         monto,
         'Gasto',
-        'Auto - Reparaciones',
+        repair.formaPago || '',
         repair.recibo || repair.foto || '',
         repair.moneda || 'MXN',
-        repair.formaPago || '',
     ];
     if (found !== -1) {
         const rowNum = found + 2;
-        await sheetsUpdate(SPREADSHEET_LOG_ID, `Hoja 1!A${rowNum}:I${rowNum}`, [row]);
+        await sheetsUpdate(SPREADSHEET_LOG_ID, `Hoja 1!A${rowNum}:H${rowNum}`, [row]);
     } else {
-        await sheetsAppend(SPREADSHEET_LOG_ID, 'Hoja 1!A:I', [row]);
+        await sheetsAppend(SPREADSHEET_LOG_ID, 'Hoja 1!A:H', [row]);
     }
 }
 
@@ -6961,16 +6960,15 @@ async function estudio_syncInventarioToLog(item, options = {}) {
         `${item.name} (${item.categoria || 'Equipo'}) [${marker}]`,
         monto,
         'Gasto',
-        'Estudio',
+        item.formaPago || '',
         item.foto || item.site || '',
         'USD',
-        item.formaPago || '',
     ];
     if (found !== -1) {
         const rowNum = found + 2;
-        await sheetsUpdate(SPREADSHEET_LOG_ID, `Hoja 1!A${rowNum}:I${rowNum}`, [row]);
+        await sheetsUpdate(SPREADSHEET_LOG_ID, `Hoja 1!A${rowNum}:H${rowNum}`, [row]);
     } else {
-        await sheetsAppend(SPREADSHEET_LOG_ID, 'Hoja 1!A:I', [row]);
+        await sheetsAppend(SPREADSHEET_LOG_ID, 'Hoja 1!A:H', [row]);
     }
 }
 
@@ -7001,16 +6999,15 @@ async function estudio_syncPluginToLog(item, options = {}) {
         `${item.name} (${item.marca || 'Plugin'}) [${marker}]`,
         monto,
         'Gasto',
-        'Estudio',
+        item.formaPago || '',
         item.site || item.foto || '',
         item.currency || 'USD',
-        item.formaPago || '',
     ];
     if (found !== -1) {
         const rowNum = found + 2;
-        await sheetsUpdate(SPREADSHEET_LOG_ID, `Hoja 1!A${rowNum}:I${rowNum}`, [row]);
+        await sheetsUpdate(SPREADSHEET_LOG_ID, `Hoja 1!A${rowNum}:H${rowNum}`, [row]);
     } else {
-        await sheetsAppend(SPREADSHEET_LOG_ID, 'Hoja 1!A:I', [row]);
+        await sheetsAppend(SPREADSHEET_LOG_ID, 'Hoja 1!A:H', [row]);
     }
 }
 
@@ -9111,7 +9108,7 @@ function pelo_buildMarker(id) {
 
 async function pelo_syncExpense(entry) {
     const marker = entry.expenseMarker || pelo_buildMarker(entry.id);
-    const rows = await sheetsGet(SPREADSHEET_LOG_ID, 'Hoja 1!A2:I').catch(() => []);
+    const rows = await sheetsGet(SPREADSHEET_LOG_ID, 'Hoja 1!A2:H').catch(() => []);
     const idx = rows.findIndex((r) => ((r[2] || '').toString()).includes(marker));
     const conceptoBase = `Corte de Pelo ${entry.stylist ? `- ${entry.stylist}` : ''}`.trim();
     const values = [[
@@ -9120,19 +9117,18 @@ async function pelo_syncExpense(entry) {
         `${conceptoBase} ${marker}`.trim(),
         Math.abs(parseSheetValue(entry.amount || 0)),
         'Gasto',
-        'Regular',
+        entry.formaPago || '',
         (entry.receiptUrl || '').trim(),
         'MXN',
-        entry.formaPago || '',
     ]];
 
     if (idx !== -1) {
         const rowNum = idx + 2;
-        await sheetsUpdate(SPREADSHEET_LOG_ID, `Hoja 1!A${rowNum}:I${rowNum}`, values);
+        await sheetsUpdate(SPREADSHEET_LOG_ID, `Hoja 1!A${rowNum}:H${rowNum}`, values);
         return { marker, rowNum };
     }
 
-    const appendRes = await sheetsAppend(SPREADSHEET_LOG_ID, 'Hoja 1!A:I', values);
+    const appendRes = await sheetsAppend(SPREADSHEET_LOG_ID, 'Hoja 1!A:H', values);
     const range = appendRes?.updates?.updatedRange || '';
     const m = range.match(/![A-Z]+(\d+):/);
     const rowNum = m ? parseInt(m[1], 10) : 0;
