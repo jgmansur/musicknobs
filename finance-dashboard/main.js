@@ -553,19 +553,29 @@ document.addEventListener('DOMContentLoaded', () => {
     // Balance panel
     balance_init();
 
+    // Helper para obtener tab inicial desde el hash de la URL
+    function getInitialTabFromHash() {
+        const hash = (window.location.hash || '').replace('#', '').toLowerCase();
+        const validTabs = ['dashboard', 'gastos', 'fijos', 'deudas', 'plan', 'autos', 'estudio', 'propiedades', 'documentos', 'pelo', 'prompts'];
+        return validTabs.includes(hash) ? hash : 'dashboard';
+    }
+
+    // Escuchar cambios de hash manuales (p.ej. desde la barra de direcciones)
+    window.addEventListener('hashchange', () => {
+        const hash = getInitialTabFromHash();
+        if (hash !== currentTab) showTab(hash);
+    });
+
     // Boot
     if (accessToken) {
         hideLoginModal();
-        // Recover Firebase redirect auth if present; avoid token-credential sign-in here
-        // because some environments return invalid audience for GIS access tokens.
         firebase_restoreRedirectResult().then(() => {
             if (!_fbUid) debugUpdate({ auth: 'Firebase pendiente (se conecta al guardar cuentas)' });
             balance_loadAccounts().then(() => balance_updateKpi());
-            showTab('dashboard');
+            showTab(getInitialTabFromHash());
         });
     } else {
         showLoginModal();
-        // One silent attempt only; do not block interactive login.
         if (window.google?.accounts?.oauth2) {
             requestToken({ interactive: false }).then(ok => {
                 if (!ok) return;
@@ -573,7 +583,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 firebase_restoreRedirectResult().then(() => {
                     if (!_fbUid) debugUpdate({ auth: 'Google OK · Firebase pendiente' });
                     balance_loadAccounts().then(() => balance_updateKpi());
-                    showTab('dashboard');
+                    showTab(getInitialTabFromHash());
                 });
             });
         }
@@ -1661,7 +1671,14 @@ function balance_refreshCreditFields() {
 // TAB NAVIGATION
 // =============================================
 function showTab(name) {
+    if (currentTab === name && tabInited[name]) return;
     currentTab = name;
+    
+    // Actualizar URL hash sin recargar (para que el link sea compartible)
+    if (window.location.hash !== `#${name}`) {
+        window.history.replaceState(null, null, `#${name}`);
+    }
+
     document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
     const view = document.getElementById(`view-${name}`);
     if (view) view.classList.add('active');
