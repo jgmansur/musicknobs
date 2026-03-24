@@ -10262,10 +10262,6 @@ window.deudas_abrirSplit = function(id) {
     document.getElementById('d-split-rate-wrap').classList.add('hidden');
     document.getElementById('d-split-rate').value = '';
     
-    // Set default date to today for d-split-start-date
-    const today = new Date();
-    document.getElementById('d-split-start-date').value = today.toISOString().split('T')[0];
-    
     // Listeners para re-calcular (si no existen)
     const formInputs = ['d-split-payments', 'd-split-frequency', 'd-split-compound', 'd-split-rate'];
     formInputs.forEach(fid => {
@@ -10339,11 +10335,7 @@ window.deudas_convertirAGastosFijos = async function() {
     
     try {
         let rows = [];
-        
-        // Leer la fecha inicial seleccionada por el usuario
-        const dateRaw = document.getElementById('d-split-start-date').value;
-        const d = dateRaw ? new Date(dateRaw + 'T12:00:00') : new Date(); // Usar mediodía para evitar desfases de TimeZone
-        
+        let d = new Date();
         let currentMonth = d.getMonth() + 1;
         let currentYear = d.getFullYear();
         
