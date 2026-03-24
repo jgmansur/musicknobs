@@ -11,6 +11,7 @@
     "start:mcp": "node dist/mcp-stdio.js"
   },
   "dependencies": {
+    "@fastify/cors": "^10.0.1",
     "@modelcontextprotocol/sdk": "^1.17.3",
     "dotenv": "^16.4.5",
     "fastify": "^5.0.0",

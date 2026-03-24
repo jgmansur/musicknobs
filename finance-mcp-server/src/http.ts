@@ -1,4 +1,5 @@
 import Fastify from "fastify";
+import cors from "@fastify/cors";
 import { z } from "zod";
 import { assertConfig, config } from "./config.js";
 import {
@@ -13,6 +14,12 @@ import { syncAiMirror } from "./mirror.js";
 assertConfig();
 
 const app = Fastify({ logger: true });
+
+await app.register(cors, {
+  origin: true,
+  methods: ["GET", "POST", "OPTIONS"],
+  allowedHeaders: ["Authorization", "Content-Type"],
+});
 
 app.addHook("onRequest", async (req, reply) => {
   if (req.url === "/health") return;
