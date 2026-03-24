@@ -9239,6 +9239,8 @@ async function pelo_addMemberPrompt() {
 // =============================================
 const PROMPTS_SHEET = 'PromptVault';
 const PROMPTS_HEADERS = ['id', 'title', 'content', 'platform', 'tags', 'status', 'favorite', 'favoriteRank', 'useCount', 'lastUsedAt', 'createdAt', 'updatedAt'];
+const PROMPTS_MAX_FAVORITES = 15;
+const PROMPTS_EXTERNAL_FAVORITES = 5;
 
 const promptsState = {
     items: [],
@@ -9287,6 +9289,11 @@ function prompts_bindEvents() {
         const fav = e.target.closest('[data-prompt-fav]');
         if (fav) {
             await prompts_toggleFavorite(fav.dataset.promptFav || '');
+            return;
+        }
+        const top = e.target.closest('[data-prompt-top]');
+        if (top) {
+            await prompts_sendToTop(top.dataset.promptTop || '');
             return;
         }
         const del = e.target.closest('[data-prompt-del]');
@@ -9451,10 +9458,33 @@ async function prompts_moveFavorite(id, delta) {
 async function prompts_promoteFavorite(id) {
     const favs = prompts_getFavoritesOrdered();
     const idx = favs.findIndex((x) => x.id === id);
-    if (idx === -1 || idx < 6) return;
+    if (idx === -1 || idx < PROMPTS_EXTERNAL_FAVORITES) return;
     const [item] = favs.splice(idx, 1);
-    favs.splice(5, 0, item);
+    favs.splice(PROMPTS_EXTERNAL_FAVORITES - 1, 0, item);
     await prompts_rebuildFavoriteOrder(favs);
+}
+
+async function prompts_sendToTop(id) {
+    if (!id) return;
+    const current = promptsState.items.find((x) => x.id === id);
+    if (!current) return;
+
+    if (!current.favorite) {
+        const favCount = promptsState.items.filter((x) => x.favorite).length;
+        if (favCount >= PROMPTS_MAX_FAVORITES) {
+            showToast(`⚠️ Maximo ${PROMPTS_MAX_FAVORITES} favoritos`);
+            return;
+        }
+        current.favorite = true;
+    }
+
+    const favs = prompts_getFavoritesOrdered();
+    const idx = favs.findIndex((x) => x.id === id);
+    if (idx === -1) return;
+    const [item] = favs.splice(idx, 1);
+    favs.unshift(item);
+    await prompts_rebuildFavoriteOrder(favs);
+    showToast('⬆️ Prompt al tope');
 }
 
 function prompts_render() {
@@ -9495,6 +9525,7 @@ function prompts_render() {
               <div class="docs-actions" style="justify-content:flex-start;gap:.35rem;flex-wrap:wrap;">
                 <button type="button" class="mini-btn" data-prompt-copy="${item.id}">📋 Copiar</button>
                 <button type="button" class="mini-btn" data-prompt-used="${item.id}">✅ Marcar uso</button>
+                <button type="button" class="mini-btn" data-prompt-top="${item.id}">⬆️ Al tope</button>
                 <button type="button" class="mini-btn" data-prompt-edit="${item.id}">✏️ Editar</button>
                 <button type="button" class="mini-btn mini-btn-danger" data-prompt-del="${item.id}">🗑️</button>
               </div>
@@ -9507,7 +9538,7 @@ function prompts_render() {
 function prompts_renderFavorites() {
     const grid = document.getElementById('prompts-fav-grid');
     if (!grid) return;
-    const favs = prompts_getFavoritesOrdered().slice(0, 6);
+    const favs = prompts_getFavoritesOrdered().slice(0, PROMPTS_EXTERNAL_FAVORITES);
     if (!favs.length) {
         grid.innerHTML = '<div class="empty-state">Marca prompts con ⭐ para verlos aqui</div>';
         return;
@@ -9536,15 +9567,15 @@ function prompts_renderFavoritesSheet() {
     const list = document.getElementById('prompts-fav-sheet-list');
     if (!list) return;
     const favs = prompts_getFavoritesOrdered();
-    const extra = favs.slice(6, 16);
-    const rows = [...favs.slice(0, 6), ...extra];
+    const extra = favs.slice(PROMPTS_EXTERNAL_FAVORITES, PROMPTS_MAX_FAVORITES);
+    const rows = [...favs.slice(0, PROMPTS_EXTERNAL_FAVORITES), ...extra];
     if (!rows.length) {
         list.innerHTML = '<div class="empty-state">Sin favoritos para gestionar</div>';
         return;
     }
     list.innerHTML = rows.map((item, idx) => {
-        const isTop = idx < 6;
-        const label = isTop ? `En tarjeta (#${idx + 1})` : `Extra favorito (${idx - 5}/10)`;
+        const isTop = idx < PROMPTS_EXTERNAL_FAVORITES;
+        const label = isTop ? `En tarjeta (#${idx + 1})` : `Extra favorito (${idx - (PROMPTS_EXTERNAL_FAVORITES - 1)}/${PROMPTS_MAX_FAVORITES - PROMPTS_EXTERNAL_FAVORITES})`;
         return `
           <article class="docs-card">
             <div style="display:flex;justify-content:space-between;gap:.5rem;align-items:center;">
@@ -9653,6 +9684,14 @@ async function prompts_deleteById(id) {
 async function prompts_toggleFavorite(id) {
     const idx = promptsState.items.findIndex((x) => x.id === id);
     if (idx === -1) return;
+    const willEnable = !promptsState.items[idx].favorite;
+    if (willEnable) {
+        const favCount = promptsState.items.filter((x) => x.favorite).length;
+        if (favCount >= PROMPTS_MAX_FAVORITES) {
+            showToast(`⚠️ Maximo ${PROMPTS_MAX_FAVORITES} favoritos`);
+            return;
+        }
+    }
     promptsState.items[idx].favorite = !promptsState.items[idx].favorite;
     if (!promptsState.items[idx].favorite) promptsState.items[idx].favoriteRank = 0;
     if (promptsState.items[idx].favorite && !promptsState.items[idx].favoriteRank) {
