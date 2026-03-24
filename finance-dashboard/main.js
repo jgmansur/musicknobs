@@ -9238,7 +9238,7 @@ async function pelo_addMemberPrompt() {
 // PROMPTS MODULE
 // =============================================
 const PROMPTS_SHEET = 'PromptVault';
-const PROMPTS_HEADERS = ['id', 'title', 'content', 'platform', 'tags', 'status', 'favorite', 'useCount', 'lastUsedAt', 'createdAt', 'updatedAt'];
+const PROMPTS_HEADERS = ['id', 'title', 'content', 'platform', 'tags', 'status', 'favorite', 'favoriteRank', 'useCount', 'lastUsedAt', 'createdAt', 'updatedAt'];
 
 const promptsState = {
     items: [],
@@ -9300,6 +9300,33 @@ function prompts_bindEvents() {
         if (!chip) return;
         await prompts_copy(chip.dataset.promptFavCopy || '');
     });
+
+    document.getElementById('prompts-fav-section')?.addEventListener('click', (e) => {
+        if (e.target.closest('[data-prompt-fav-copy]')) return;
+        prompts_openFavSheet();
+    });
+    document.getElementById('prompts-fav-sheet-overlay')?.addEventListener('click', prompts_closeFavSheet);
+    document.getElementById('prompts-fav-sheet-list')?.addEventListener('click', async (e) => {
+        const copy = e.target.closest('[data-prompt-fsheet-copy]');
+        if (copy) {
+            await prompts_copy(copy.dataset.promptFsheetCopy || '');
+            return;
+        }
+        const up = e.target.closest('[data-prompt-fsheet-up]');
+        if (up) {
+            await prompts_moveFavorite(up.dataset.promptFsheetUp || '', -1);
+            return;
+        }
+        const down = e.target.closest('[data-prompt-fsheet-down]');
+        if (down) {
+            await prompts_moveFavorite(down.dataset.promptFsheetDown || '', 1);
+            return;
+        }
+        const promote = e.target.closest('[data-prompt-fsheet-promote]');
+        if (promote) {
+            await prompts_promoteFavorite(promote.dataset.promptFsheetPromote || '');
+        }
+    });
 }
 
 async function prompts_cargarVista() {
@@ -9335,6 +9362,7 @@ async function prompts_loadData() {
         tags: (get(row, 'tags', '') || '').toString(),
         status: (get(row, 'status', '') || '').toString(),
         favorite: parseBool(get(row, 'favorite', false)),
+        favoriteRank: Math.max(0, parseInt(get(row, 'favoriteRank', 0), 10) || 0),
         useCount: parseInt(get(row, 'useCount', 0), 10) || 0,
         lastUsedAt: (get(row, 'lastUsedAt', '') || '').toString(),
         createdAt: (get(row, 'createdAt', '') || '').toString(),
@@ -9381,6 +9409,52 @@ function prompts_getFiltered() {
 
     list.sort((a, b) => Number(b.favorite) - Number(a.favorite) || 0);
     return list;
+}
+
+function prompts_getFavoritesOrdered() {
+    return promptsState.items
+        .filter((x) => x.favorite)
+        .slice()
+        .sort((a, b) => {
+            const ar = a.favoriteRank || 0;
+            const br = b.favoriteRank || 0;
+            if (ar > 0 && br > 0) return ar - br;
+            if (ar > 0) return -1;
+            if (br > 0) return 1;
+            return (b.useCount || 0) - (a.useCount || 0) || prompts_toTs(b.updatedAt) - prompts_toTs(a.updatedAt);
+        });
+}
+
+async function prompts_rebuildFavoriteOrder(orderedFavs) {
+    promptsState.items = promptsState.items.map((item) => {
+        const idx = orderedFavs.findIndex((x) => x.id === item.id);
+        if (idx === -1) return { ...item, favoriteRank: 0 };
+        return { ...item, favoriteRank: idx + 1 };
+    });
+    await prompts_saveRows();
+    prompts_render();
+    prompts_renderFavoritesSheet();
+}
+
+async function prompts_moveFavorite(id, delta) {
+    const favs = prompts_getFavoritesOrdered();
+    const idx = favs.findIndex((x) => x.id === id);
+    if (idx === -1) return;
+    const target = idx + delta;
+    if (target < 0 || target >= favs.length) return;
+    const tmp = favs[idx];
+    favs[idx] = favs[target];
+    favs[target] = tmp;
+    await prompts_rebuildFavoriteOrder(favs);
+}
+
+async function prompts_promoteFavorite(id) {
+    const favs = prompts_getFavoritesOrdered();
+    const idx = favs.findIndex((x) => x.id === id);
+    if (idx === -1 || idx < 6) return;
+    const [item] = favs.splice(idx, 1);
+    favs.splice(5, 0, item);
+    await prompts_rebuildFavoriteOrder(favs);
 }
 
 function prompts_render() {
@@ -9433,10 +9507,7 @@ function prompts_render() {
 function prompts_renderFavorites() {
     const grid = document.getElementById('prompts-fav-grid');
     if (!grid) return;
-    const favs = promptsState.items
-        .filter((x) => x.favorite)
-        .sort((a, b) => (b.useCount || 0) - (a.useCount || 0) || prompts_toTs(b.updatedAt) - prompts_toTs(a.updatedAt))
-        .slice(0, 6);
+    const favs = prompts_getFavoritesOrdered().slice(0, 6);
     if (!favs.length) {
         grid.innerHTML = '<div class="empty-state">Marca prompts con ⭐ para verlos aqui</div>';
         return;
@@ -9448,6 +9519,46 @@ function prompts_renderFavorites() {
           <button type="button" class="prompts-fav-chip" data-prompt-fav-copy="${item.id}" title="Copiar ${title}">
             <span class="prompts-fav-name">${title}</span>
           </button>
+        `;
+    }).join('');
+}
+
+function prompts_openFavSheet() {
+    prompts_renderFavoritesSheet();
+    document.getElementById('prompts-fav-sheet')?.classList.remove('hidden');
+}
+
+function prompts_closeFavSheet() {
+    document.getElementById('prompts-fav-sheet')?.classList.add('hidden');
+}
+
+function prompts_renderFavoritesSheet() {
+    const list = document.getElementById('prompts-fav-sheet-list');
+    if (!list) return;
+    const favs = prompts_getFavoritesOrdered();
+    const extra = favs.slice(6, 16);
+    const rows = [...favs.slice(0, 6), ...extra];
+    if (!rows.length) {
+        list.innerHTML = '<div class="empty-state">Sin favoritos para gestionar</div>';
+        return;
+    }
+    list.innerHTML = rows.map((item, idx) => {
+        const isTop = idx < 6;
+        const label = isTop ? `En tarjeta (#${idx + 1})` : `Extra favorito (${idx - 5}/10)`;
+        return `
+          <article class="docs-card">
+            <div style="display:flex;justify-content:space-between;gap:.5rem;align-items:center;">
+              <h4 class="docs-title">${prompts_escapeHtml(item.title)}</h4>
+              <span class="diff-label">${label}</span>
+            </div>
+            <div class="docs-meta">${prompts_escapeHtml(item.platform || 'Sin plataforma')} · usos: ${item.useCount || 0}</div>
+            <div class="docs-actions" style="justify-content:flex-start;gap:.35rem;flex-wrap:wrap;">
+              <button type="button" class="mini-btn" data-prompt-fsheet-copy="${item.id}">📋 Copiar</button>
+              <button type="button" class="mini-btn" data-prompt-fsheet-up="${item.id}">⬆️</button>
+              <button type="button" class="mini-btn" data-prompt-fsheet-down="${item.id}">⬇️</button>
+              ${!isTop ? `<button type="button" class="mini-btn" data-prompt-fsheet-promote="${item.id}">⭐ Subir a tarjeta</button>` : ''}
+            </div>
+          </article>
         `;
     }).join('');
 }
@@ -9506,6 +9617,7 @@ async function prompts_save() {
         tags: (document.getElementById('prompts-tags').value || '').trim(),
         status: (document.getElementById('prompts-status').value || 'draft').trim(),
         favorite: !!existing?.favorite,
+        favoriteRank: existing?.favoriteRank || 0,
         useCount: existing?.useCount || 0,
         lastUsedAt: existing?.lastUsedAt || '',
         createdAt: existing?.createdAt || now,
@@ -9542,6 +9654,11 @@ async function prompts_toggleFavorite(id) {
     const idx = promptsState.items.findIndex((x) => x.id === id);
     if (idx === -1) return;
     promptsState.items[idx].favorite = !promptsState.items[idx].favorite;
+    if (!promptsState.items[idx].favorite) promptsState.items[idx].favoriteRank = 0;
+    if (promptsState.items[idx].favorite && !promptsState.items[idx].favoriteRank) {
+        const maxRank = promptsState.items.reduce((m, x) => Math.max(m, x.favoriteRank || 0), 0);
+        promptsState.items[idx].favoriteRank = maxRank + 1;
+    }
     promptsState.items[idx].updatedAt = normalizeDateString(new Date().toLocaleDateString('en-CA'));
     await prompts_saveRows();
     prompts_render();
@@ -9593,6 +9710,7 @@ async function prompts_saveRows() {
             x.tags || '',
             x.status || '',
             x.favorite ? 'TRUE' : 'FALSE',
+            x.favoriteRank || 0,
             x.useCount || 0,
             x.lastUsedAt || '',
             x.createdAt || '',

@@ -1190,7 +1190,7 @@
             </div>
           </section>
 
-          <section class="glass prompts-fav-section" style="display:grid;gap:.65rem;">
+          <section id="prompts-fav-section" class="glass prompts-fav-section" style="display:grid;gap:.65rem;">
             <div class="section-header" style="display:flex;justify-content:space-between;align-items:center;gap:.6rem;flex-wrap:wrap;">
               <h3>Favoritos rapidos</h3>
               <span class="diff-label">Top 6 prompts favoritos</span>
@@ -1249,6 +1249,19 @@
             <div class="diff-label" id="prompts-meta" style="margin-top:.5rem;"></div>
             <button id="prompts-delete" class="mini-btn mini-btn-danger hidden" style="margin-top:.7rem;width:100%;">🗑️ Eliminar prompt</button>
             <button id="prompts-save" class="primary-btn" style="margin-top:.6rem;width:100%;">Guardar prompt</button>
+          </div>
+        </div>
+
+        <div id="prompts-fav-sheet" class="bottom-sheet hidden">
+          <div id="prompts-fav-sheet-overlay" class="bottom-sheet-overlay"></div>
+          <div class="bottom-sheet-content glass">
+            <div class="sheet-handle"></div>
+            <div class="balance-panel-header">
+              <h3 class="balance-panel-title">Gestionar favoritos</h3>
+              <button class="icon-btn" onclick="document.getElementById('prompts-fav-sheet').classList.add('hidden')">✕</button>
+            </div>
+            <div class="diff-label" style="margin-bottom:.45rem;">Los primeros 6 salen en la tarjeta rapida. Aqui puedes reordenar y subir favoritos.</div>
+            <div id="prompts-fav-sheet-list" class="accounts-list"></div>
           </div>
         </div>
       </div>
