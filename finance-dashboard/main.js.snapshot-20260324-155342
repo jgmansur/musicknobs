@@ -15,7 +15,7 @@ const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // 
 const SPREADSHEET_DEUDAS_ID = '1dKxhgqazskm15lx0f6FNCA0gpJ7i5glfxkusiH3b0Uk'; // Control de Deudas
 const SPREADSHEET_AUTOS_ID = SPREADSHEET_DEUDAS_ID; // Autos + Reparaciones live in same workbook
 const SPREADSHEET_ESTUDIO_ID = SPREADSHEET_DEUDAS_ID; // Estudio + Plugins in same workbook
-const APP_VERSION  = 'v7.6.0';
+const APP_VERSION  = 'v7.5.2';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -2237,7 +2237,7 @@ function processAndRender(logRows, fixedRows) {
         const tipo = (row[4] || '').toLowerCase();
         if (tipo !== 'gasto') return;
 
-        const isAutoRepair = (row[5] || '').toString().toLowerCase().includes('auto - reparaciones') || concepto.includes('autolog#') || lugar.startsWith('auto ');
+        const isAutoRepair = (row[5] || '').toString().toLowerCase().includes('auto - reparaciones') || concepto.includes('autolog#');
         const isImprevisto = isAutoRepair || imprevistoKeywords.some(k => concepto.includes(k) || lugar.includes(k));
         if (isImprevisto) {
             const parsedDate = parseSheetDate(fecha);
@@ -2295,8 +2295,7 @@ function processAndRender(logRows, fixedRows) {
         const partAmount = Math.abs(monto) / (pagosMes || 1);
         const paidAmount = partAmount * Math.max(0, pagosHechos);
         const pendingAmount = partAmount * Math.max(0, pagosMes - pagosHechos);
-        const formaPago = parseFixedFormaPago(row[10]);
-        return { rowNum: i + 2, concepto, categoria, monto, montoOriginal, moneda, tipo, isPaid, pagosMes, pagosEstado, waivedEstado, pagosHechos, paidAmount, pendingAmount, periodicidad, inicioMes, isDueThisMonth, pagador: parseFixedPayer(row[10]), formaPago, budgetCategory: parseBudgetCategory(row[11]) };
+        return { rowNum: i + 2, concepto, categoria, monto, montoOriginal, moneda, tipo, isPaid, pagosMes, pagosEstado, waivedEstado, pagosHechos, paidAmount, pendingAmount, periodicidad, inicioMes, isDueThisMonth, pagador: parseFixedPayer(row[10]), budgetCategory: parseBudgetCategory(row[11]) };
     }).filter(e => e.concepto);
 
     // KPI: count partial progress for fixed expenses
@@ -2989,17 +2988,17 @@ async function fijos_cargarDatos() {
             await sheetsUpdate(
                 SPREADSHEET_FIXED_ID,
                 `Hoja 1!F2:F${lastRow}`,
-                rows.map((r) => [parseFixedPeriodicity(r[8]) === 'Cuota de Deuda' ? (r[5] || 'FALSE') : 'FALSE'])
+                rows.map(() => ['FALSE'])
             ).catch(e => console.warn('Reset mensual falló:', e));
             await sheetsUpdate(
                 SPREADSHEET_FIXED_ID,
                 `Hoja 1!H2:H${lastRow}`,
-                rows.map(r => [parseFixedPeriodicity(r[8]) === 'Cuota de Deuda' ? (r[7] || serializePaymentStates(new Array(parsePaymentsTotal(r[6])).fill(false))) : serializePaymentStates(new Array(parsePaymentsTotal(r[6])).fill(false))])
+                rows.map(r => [serializePaymentStates(new Array(parsePaymentsTotal(r[6])).fill(false))])
             ).catch(e => console.warn('Reset mensual estado pagos falló:', e));
             await sheetsUpdate(
                 SPREADSHEET_FIXED_ID,
                 `Hoja 1!N2:N${lastRow}`,
-                rows.map(r => [parseFixedPeriodicity(r[8]) === 'Cuota de Deuda' ? (r[13] || serializePaymentStates(new Array(parsePaymentsTotal(r[6])).fill(false))) : serializePaymentStates(new Array(parsePaymentsTotal(r[6])).fill(false))])
+                rows.map(r => [serializePaymentStates(new Array(parsePaymentsTotal(r[6])).fill(false))])
             ).catch(e => console.warn('Reset mensual waived falló:', e));
         }
         // Always store current month
@@ -3041,7 +3040,6 @@ async function fijos_cargarDatos() {
                 inicioMes,
                 isDueThisMonth,
                 pagador: parseFixedPayer(row[10]),
-                formaPago: parseFixedFormaPago(row[10]),
                 budgetCategory: parseBudgetCategory(row[11]),
             };
         }).filter(i => i.concepto).sort((a, b) => a.diaMes - b.diaMes);
@@ -3247,35 +3245,12 @@ window.fijos_togglePagoPart = async function(id, partIndex, options = {}) {
             const concepto = `${item.concepto} (${partIndex + 1}/${item.pagosMes})`;
             const monto    = partAmountOriginal;
             const tipo     = item.tipo === 'ingreso' ? 'Ingreso' : 'Gasto';
-            const forma    = item.formaPago || '';
+            const forma    = item.categoria || 'General';
             await sheetsAppend(
                 SPREADSHEET_LOG_ID,
                 'Hoja 1!A:H',
                 [[fecha, lugar, concepto, monto, tipo, forma, '', item.moneda || 'MXN']]
             );
-            
-            // INTEGRACIÓN: Restar de la Deuda Original
-            if (item.periodicidad === 'Cuota de Deuda') {
-                const baseConcept = item.concepto.replace(/\s*\(\d+\/\d+\)$/, '').trim();
-                const deuda = deudasState.allItems.find(d => d.concepto === baseConcept);
-                if (deuda) {
-                    const newMonto = Math.max(0, deuda.monto - monto);
-                    let sheetName = 'Deudas';
-                    try {
-                        await sheetsGet(SPREADSHEET_DEUDAS_ID, 'Deudas!A1:A1');
-                    } catch(e) {
-                        sheetName = 'Hoja 1';
-                    }
-                    await sheetsUpdate(SPREADSHEET_DEUDAS_ID, `${sheetName}!B${deuda.id}`, [[newMonto]]);
-                    deuda.monto = newMonto;
-                    if (window.deudas_renderLista) window.deudas_renderLista();
-                    if (newMonto === 0 && !deuda.hidden && window.deudas_toggleHidden) {
-                        await window.deudas_toggleHidden(deuda.id);
-                    }
-                    showToast(`📉 Deuda reducida: restan $${newMonto.toFixed(2)}`);
-                }
-            }
-            
             tabInited.gastos = false;
             showToast('✅ Pago registrado en Control de Gastos');
         } else if (!nowPartPaid && !wasPartWaived) {
@@ -3296,26 +3271,6 @@ window.fijos_togglePagoPart = async function(id, partIndex, options = {}) {
                     await sheetsDeleteRow(SPREADSHEET_LOG_ID, logSheetId, foundRowIndex);
                     tabInited.gastos = false;
                     showToast('\uD83D\uDDD1\uFE0F Pago eliminado de Control de Gastos');
-                    
-                    // INTEGRACIÓN: Restaurar saldo a la Deuda Original
-                    if (item.periodicidad === 'Cuota de Deuda') {
-                        const baseConcept = item.concepto.replace(/\s*\(\d+\/\d+\)$/, '').trim();
-                        const deuda = deudasState.allItems.find(d => d.concepto === baseConcept);
-                        if (deuda) {
-                            const newMonto = deuda.monto + partAmountOriginal;
-                            let sheetName = 'Deudas';
-                            try {
-                                await sheetsGet(SPREADSHEET_DEUDAS_ID, 'Deudas!A1:A1');
-                            } catch(e) {
-                                sheetName = 'Hoja 1';
-                            }
-                            await sheetsUpdate(SPREADSHEET_DEUDAS_ID, `${sheetName}!B${deuda.id}`, [[newMonto]]);
-                            deuda.monto = newMonto;
-                            if (window.deudas_renderLista) window.deudas_renderLista();
-                            showToast(`📈 Saldo restaurado a deuda: $${newMonto.toFixed(2)}`);
-                        }
-                    }
-                    
                 } else {
                     showToast('\u2139\uFE0F Sin registro para eliminar en Control de Gastos');
                 }
@@ -3356,7 +3311,7 @@ function fijos_abrirSheet(item) {
     document.getElementById('f-pagos-mes').value = '1';
     document.getElementById('f-periodicidad').value = 'mensual';
     document.getElementById('f-inicio-mes').value = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}`;
-    document.getElementById('f-forma-pago').value = '';
+    document.getElementById('f-pagador').value = 'yo';
     document.getElementById('f-currency').value = 'MXN';
     document.getElementById('f-budget-cat').value = BUDGET_BUCKETS[0];
     document.getElementById('f-fecha').value = String(hoy.getDate());
@@ -3373,7 +3328,7 @@ function fijos_abrirSheet(item) {
         document.getElementById('f-pagos-mes').value = String(item.pagosMes || 1);
         document.getElementById('f-periodicidad').value = item.periodicidad || 'mensual';
         document.getElementById('f-inicio-mes').value = item.inicioMes || `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}`;
-        document.getElementById('f-forma-pago').value = item.formaPago || '';
+        document.getElementById('f-pagador').value = item.pagador || 'yo';
         document.getElementById('f-currency').value = item.moneda || 'MXN';
         document.getElementById('f-budget-cat').value = parseBudgetCategory(item.budgetCategory);
         item.categoria.split(', ').forEach(c => { const cb = document.querySelector(`.f-cat-chk[value="${c}"]`); if (cb) cb.checked = true; });
@@ -3402,8 +3357,7 @@ async function fijos_guardar() {
     const pagosMes = parsePaymentsTotal(document.getElementById('f-pagos-mes').value);
     const periodicidad = parseFixedPeriodicity(document.getElementById('f-periodicidad').value);
     const inicioMes = parseStartMonth(document.getElementById('f-inicio-mes').value);
-    const formaPagoVal = document.getElementById('f-forma-pago').value;
-    const pagador = parseFixedPayer(formaPagoVal);
+    const pagador = parseFixedPayer(document.getElementById('f-pagador').value);
     const moneda = parseCurrencyCode(document.getElementById('f-currency').value);
     const budgetCategory = parseBudgetCategory(document.getElementById('f-budget-cat').value);
     const editId  = document.getElementById('f-edit-id').value;
@@ -3435,7 +3389,7 @@ async function fijos_guardar() {
                 serializePaymentStates(nextStates),
                 periodicidad,
                 inicioMes,
-                formaPagoVal,
+                pagador,
                 budgetCategory,
                 moneda,
                 serializePaymentStates(nextWaived),
@@ -3453,7 +3407,7 @@ async function fijos_guardar() {
                 serializePaymentStates(new Array(pagosMes).fill(false)),
                 periodicidad,
                 inicioMes,
-                formaPagoVal,
+                pagador,
                 budgetCategory,
                 moneda,
                 serializePaymentStates(new Array(pagosMes).fill(false)),
@@ -3950,7 +3904,7 @@ const AUTOS_HEADERS = [
 ];
 
 const REPAIRS_HEADERS = [
-    'id','carId','reparacion','costo','moneda','lugar','fecha','foto','recibo','descripcion','logMarker','formaPago',
+    'id','carId','reparacion','costo','moneda','lugar','fecha','foto','recibo','descripcion','logMarker',
 ];
 
 const AUTOS_META_HEADERS = ['key', 'value'];
@@ -6223,7 +6177,6 @@ function autos_openRepairSheet(repairId) {
     document.getElementById('autos-repair-photo').value = repair?.foto || '';
     document.getElementById('autos-repair-receipt').value = repair?.recibo || '';
     document.getElementById('autos-repair-desc').value = repair?.descripcion || '';
-    document.getElementById('autos-repair-forma-pago').value = repair?.formaPago || '';
     const photoFile = document.getElementById('autos-repair-photo-file');
     const receiptFile = document.getElementById('autos-repair-receipt-file');
     if (photoFile) photoFile.value = '';
@@ -6251,7 +6204,6 @@ async function autos_saveRepair() {
         recibo: document.getElementById('autos-repair-receipt').value.trim(),
         descripcion: document.getElementById('autos-repair-desc').value.trim(),
         logMarker: autos_getLogMarker(id),
-        formaPago: document.getElementById('autos-repair-forma-pago').value.trim(),
     };
     if (!repair.carId || !repair.reparacion) {
         showToast('⚠️ Selecciona auto y reparacion');
@@ -6281,10 +6233,10 @@ async function autos_saveRepair() {
 }
 
 async function autos_saveRepairsSheet() {
-    await sheetsClear(SPREADSHEET_AUTOS_ID, 'Reparaciones!A2:L');
+    await sheetsClear(SPREADSHEET_AUTOS_ID, 'Reparaciones!A2:K');
     if (!autosState.repairs.length) return;
-    await sheetsUpdate(SPREADSHEET_AUTOS_ID, `Reparaciones!A2:L${1 + autosState.repairs.length}`, autosState.repairs.map(r => [
-        r.id, r.carId, r.reparacion, r.costo, r.moneda, r.lugar, r.fecha, r.foto, r.recibo, r.descripcion, r.logMarker || autos_getLogMarker(r.id), r.formaPago || '',
+    await sheetsUpdate(SPREADSHEET_AUTOS_ID, `Reparaciones!A2:K${1 + autosState.repairs.length}`, autosState.repairs.map(r => [
+        r.id, r.carId, r.reparacion, r.costo, r.moneda, r.lugar, r.fecha, r.foto, r.recibo, r.descripcion, r.logMarker || autos_getLogMarker(r.id),
     ]));
 }
 
@@ -6320,7 +6272,7 @@ async function autos_syncRepairToLog(repair) {
         concepto,
         monto,
         'Gasto',
-        repair.formaPago || '',
+        'Auto - Reparaciones',
         repair.recibo || repair.foto || '',
         repair.moneda || 'MXN',
     ];
@@ -6380,11 +6332,11 @@ const estudioState = {
 
 const ESTUDIO_INVENTARIO_HEADERS = [
     'id', 'name', 'cantidad', 'precioUsd', 'categoria', 'anioCompra', 'foto', 'marca', 'modelo', 'site',
-    'serial', 'account', 'notas', 'fechaCompra', 'logMarker', 'formaPago',
+    'serial', 'account', 'notas', 'fechaCompra', 'logMarker',
 ];
 
 const ESTUDIO_PLUGIN_HEADERS = [
-    'id', 'name', 'marca', 'descripcion', 'precioUsd', 'site', 'licencia', 'serial', 'account', 'foto', 'fechaCompra', 'logMarker', 'currency', 'categoria', 'formaPago',
+    'id', 'name', 'marca', 'descripcion', 'precioUsd', 'site', 'licencia', 'serial', 'account', 'foto', 'fechaCompra', 'logMarker', 'currency', 'categoria',
 ];
 
 const ESTUDIO_SEED_INVENTARIO = [
@@ -6493,8 +6445,8 @@ async function estudio_ensureSheets() {
 
 async function estudio_loadData() {
     const [inventarioRows, pluginRows] = await Promise.all([
-        sheetsGet(SPREADSHEET_ESTUDIO_ID, 'EstudioInventario!A2:P').catch(() => []),
-        sheetsGet(SPREADSHEET_ESTUDIO_ID, 'EstudioPlugins!A2:O').catch(() => []),
+        sheetsGet(SPREADSHEET_ESTUDIO_ID, 'EstudioInventario!A2:O').catch(() => []),
+        sheetsGet(SPREADSHEET_ESTUDIO_ID, 'EstudioPlugins!A2:N').catch(() => []),
     ]);
 
     if (!inventarioRows.length && !pluginRows.length) {
@@ -6518,7 +6470,6 @@ async function estudio_loadData() {
         notas: (r[12] || '').toString(),
         fechaCompra: normalizeDateString(r[13] || new Date().toLocaleDateString('en-CA')),
         logMarker: (r[14] || '').toString(),
-        formaPago: (r[15] || '').toString(),
     })).filter((x) => x.id && x.name);
 
     estudioState.plugins = pluginRows.map((r) => ({
@@ -6536,7 +6487,6 @@ async function estudio_loadData() {
         logMarker: (r[11] || '').toString(),
         currency: parseCurrencyCode((r[12] || 'USD').toString().toUpperCase() === 'MXN' ? 'MXN' : 'USD'),
         categoria: (r[13] || r[3] || '').toString(),
-        formaPago: (r[14] || '').toString(),
     })).filter((x) => x.id && x.name);
 
     estudioState.loaded = true;
@@ -6822,7 +6772,6 @@ function estudio_openInventarioSheet(id) {
     document.getElementById('estudio-inventario-serial').value = item?.serial || '';
     document.getElementById('estudio-inventario-account').value = item?.account || '';
     document.getElementById('estudio-inventario-notes').value = item?.notas || '';
-    document.getElementById('estudio-inventario-forma-pago').value = item?.formaPago || '';
     document.getElementById('estudio-inventario-sheet').classList.remove('hidden');
 }
 
@@ -6854,7 +6803,6 @@ async function estudio_saveInventario() {
         notas: document.getElementById('estudio-inventario-notes').value.trim(),
         fechaCompra: normalizeDateString(new Date().toLocaleDateString('en-CA')),
         logMarker: marker,
-        formaPago: document.getElementById('estudio-inventario-forma-pago').value.trim(),
     };
     if (!item.name) {
         showToast('⚠️ Captura nombre del equipo');
@@ -6880,11 +6828,11 @@ async function estudio_saveInventario() {
 }
 
 async function estudio_saveInventarioSheet() {
-    await sheetsClear(SPREADSHEET_ESTUDIO_ID, 'EstudioInventario!A2:P');
+    await sheetsClear(SPREADSHEET_ESTUDIO_ID, 'EstudioInventario!A2:O');
     if (!estudioState.inventario.length) return;
-    await sheetsUpdate(SPREADSHEET_ESTUDIO_ID, `EstudioInventario!A2:P${1 + estudioState.inventario.length}`, estudioState.inventario.map((x) => [
+    await sheetsUpdate(SPREADSHEET_ESTUDIO_ID, `EstudioInventario!A2:O${1 + estudioState.inventario.length}`, estudioState.inventario.map((x) => [
         x.id, x.name, x.cantidad, x.precioUsd, x.categoria, x.anioCompra, x.foto, x.marca, x.modelo, x.site,
-        x.serial, x.account, x.notas, x.fechaCompra, x.logMarker || '', x.formaPago || '',
+        x.serial, x.account, x.notas, x.fechaCompra, x.logMarker || '',
     ]));
 }
 
@@ -6904,7 +6852,6 @@ function estudio_openPluginSheet(id) {
     document.getElementById('estudio-plugin-serial').value = item?.serial || '';
     document.getElementById('estudio-plugin-account').value = item?.account || '';
     document.getElementById('estudio-plugin-photo').value = item?.foto || '';
-    document.getElementById('estudio-plugin-forma-pago').value = item?.formaPago || '';
     document.getElementById('estudio-plugin-sheet').classList.remove('hidden');
 }
 
@@ -6935,7 +6882,6 @@ async function estudio_savePlugin() {
         fechaCompra: normalizeDateString(new Date().toLocaleDateString('en-CA')),
         logMarker: marker,
         currency: 'USD',
-        formaPago: document.getElementById('estudio-plugin-forma-pago').value.trim(),
     };
     if (!item.name) {
         showToast('⚠️ Captura nombre del plugin');
@@ -6961,10 +6907,10 @@ async function estudio_savePlugin() {
 }
 
 async function estudio_savePluginsSheet() {
-    await sheetsClear(SPREADSHEET_ESTUDIO_ID, 'EstudioPlugins!A2:O');
+    await sheetsClear(SPREADSHEET_ESTUDIO_ID, 'EstudioPlugins!A2:N');
     if (!estudioState.plugins.length) return;
-    await sheetsUpdate(SPREADSHEET_ESTUDIO_ID, `EstudioPlugins!A2:O${1 + estudioState.plugins.length}`, estudioState.plugins.map((x) => [
-        x.id, x.name, x.marca, x.descripcion, x.precioUsd, x.site, x.licencia, x.serial, x.account, x.foto, x.fechaCompra, x.logMarker || '', x.currency || 'USD', x.categoria || '', x.formaPago || '',
+    await sheetsUpdate(SPREADSHEET_ESTUDIO_ID, `EstudioPlugins!A2:N${1 + estudioState.plugins.length}`, estudioState.plugins.map((x) => [
+        x.id, x.name, x.marca, x.descripcion, x.precioUsd, x.site, x.licencia, x.serial, x.account, x.foto, x.fechaCompra, x.logMarker || '', x.currency || 'USD', x.categoria || '',
     ]));
 }
 
@@ -7003,7 +6949,7 @@ async function estudio_syncInventarioToLog(item, options = {}) {
         `${item.name} (${item.categoria || 'Equipo'}) [${marker}]`,
         monto,
         'Gasto',
-        item.formaPago || '',
+        'Estudio',
         item.foto || item.site || '',
         'USD',
     ];
@@ -7042,7 +6988,7 @@ async function estudio_syncPluginToLog(item, options = {}) {
         `${item.name} (${item.marca || 'Plugin'}) [${marker}]`,
         monto,
         'Gasto',
-        item.formaPago || '',
+        'Estudio',
         item.site || item.foto || '',
         item.currency || 'USD',
     ];
@@ -8904,7 +8850,7 @@ async function documentos_saveProfile() {
 // =============================================
 const HAIR_SHEET = 'PeloLog';
 const HAIR_META_SHEET = 'PeloMeta';
-const HAIR_HEADERS = ['id', 'member', 'date', 'stylist', 'amount', 'receiptUrl', 'frontUrl', 'sideUrl', 'backUrl', 'notes', 'rating', 'expenseMarker', 'expenseRowNum', 'createdAt', 'updatedAt', 'formaPago'];
+const HAIR_HEADERS = ['id', 'member', 'date', 'stylist', 'amount', 'receiptUrl', 'frontUrl', 'sideUrl', 'backUrl', 'notes', 'rating', 'expenseMarker', 'expenseRowNum', 'createdAt', 'updatedAt'];
 const HAIR_META_HEADERS = ['key', 'value'];
 const HAIR_DEFAULT_MEMBERS = ['Juan', 'Hans'];
 const HAIR_PHOTOS_FOLDER_ID = '18ztCg2A_OM3T7VnBITKJ_cVI2Iw3TagE';
@@ -9011,7 +8957,6 @@ async function pelo_loadData() {
         expenseRowNum: parseInt(get(row, 'expenseRowNum', 0), 10) || 0,
         createdAt: (get(row, 'createdAt', '') || '').toString(),
         updatedAt: (get(row, 'updatedAt', '') || '').toString(),
-        formaPago: (get(row, 'formaPago', '') || '').toString(),
     })).filter((x) => x.id && x.member);
 
     const metaRows = await sheetsGet(SPREADSHEET_AUTOS_ID, `${HAIR_META_SHEET}!A2:B`).catch(() => []);
@@ -9105,7 +9050,6 @@ function pelo_openSheet(id) {
     document.getElementById('hair-front-url').value = row?.frontUrl || '';
     document.getElementById('hair-side-url').value = row?.sideUrl || '';
     document.getElementById('hair-back-url').value = row?.backUrl || '';
-    document.getElementById('hair-forma-pago').value = row?.formaPago || '';
     document.getElementById('hair-file-feedback').innerText = '';
     document.getElementById('hair-delete').classList.toggle('hidden', !row);
     document.getElementById('hair-sheet').classList.remove('hidden');
@@ -9160,7 +9104,7 @@ async function pelo_syncExpense(entry) {
         `${conceptoBase} ${marker}`.trim(),
         Math.abs(parseSheetValue(entry.amount || 0)),
         'Gasto',
-        entry.formaPago || '',
+        'Regular',
         (entry.receiptUrl || '').trim(),
         'MXN',
     ]];
@@ -9221,7 +9165,6 @@ async function pelo_save() {
         expenseRowNum: existing?.expenseRowNum || 0,
         createdAt: existing?.createdAt || now,
         updatedAt: now,
-        formaPago: (document.getElementById('hair-forma-pago').value || '').trim(),
     };
 
     const sync = await pelo_syncExpense(payload);
@@ -9282,7 +9225,6 @@ async function pelo_saveRows() {
         x.expenseRowNum || 0,
         x.createdAt || '',
         x.updatedAt || '',
-        x.formaPago || '',
     ]);
     if (rows.length) {
         await sheetsUpdate(SPREADSHEET_AUTOS_ID, `${HAIR_SHEET}!A2:${letter}${1 + rows.length}`, rows);
@@ -9955,31 +9897,15 @@ function monthDiff(fromYm, toYm) {
 }
 
 function isFixedDueThisMonth(periodicity, startMonth, nowMonth) {
-    const diff = monthDiff(startMonth, nowMonth);
-    if (periodicity === 'Cuota de Deuda') {
-        return diff >= 0;
-    }
     if (periodicity !== 'bimestral') return true;
+    const diff = monthDiff(startMonth, nowMonth);
     if (diff < 0) return false;
     return diff % 2 === 0;
 }
 
 function parseFixedPayer(val) {
-    // Deriva pagador desde el nuevo campo formaPago o valores legacy (yo/esposa)
     const raw = (val || '').toString().trim().toLowerCase();
-    if (raw === 'esposa') return 'esposa';
-    if (raw === 'cuenta mariel') return 'esposa';
-    return 'yo';
-}
-
-function parseFixedFormaPago(val) {
-    const raw = (val || '').toString().trim();
-    // Migración retrocompatible: valores legacy del Sheet
-    if (raw.toLowerCase() === 'esposa') return 'Cuenta Mariel';
-    if (raw.toLowerCase() === 'yo') return '';
-    // Valores nuevos: devolver tal cual si es una cuenta válida
-    const valid = ['Santander', 'BBVA', 'Cuenta Mariel', 'Efectivo', 'Transferencia'];
-    return valid.includes(raw) ? raw : '';
+    return raw === 'esposa' ? 'esposa' : 'yo';
 }
 
 function parseBudgetCategory(val) {
@@ -10054,7 +9980,7 @@ let deudasState = {
 };
 
 function deudas_getTotalAmount() {
-    return deudasState.allItems.reduce((s, i) => s + (i.hidden ? 0 : (i.monto || 0)), 0);
+    return deudasState.allItems.reduce((s, i) => s + (i.monto || 0), 0);
 }
 
 function deudas_updateKpiCard() {
@@ -10124,16 +10050,15 @@ async function deudas_cargarDatos() {
     try {
         let rows = [];
         try {
-            rows = await sheetsGet(SPREADSHEET_DEUDAS_ID, 'Deudas!A2:C');
+            rows = await sheetsGet(SPREADSHEET_DEUDAS_ID, 'Deudas!A2:B');
         } catch(e) {
-            rows = await sheetsGet(SPREADSHEET_DEUDAS_ID, 'Hoja 1!A2:C');
+            rows = await sheetsGet(SPREADSHEET_DEUDAS_ID, 'Hoja 1!A2:B');
         }
         
         deudasState.allItems = rows.map((row, i) => ({
             id: i + 2,
             concepto: row[0] || '',
-            monto: parseSheetValue(row[1]),
-            hidden: (row[2] || '').toString().toUpperCase() === 'TRUE',
+            monto: parseSheetValue(row[1])
         })).filter(i => i.concepto);
         deudasState.loaded = true;
         
@@ -10155,20 +10080,15 @@ function deudas_renderLista() {
     }
     
     el.innerHTML = deudasState.allItems.map(item => {
-        if (!item.hidden) total += item.monto;
-        const eyeIcon = item.hidden ? '🙈' : '👁️';
-        const opacity = item.hidden ? 'opacity:.45;' : '';
-        const strikethrough = item.hidden ? 'text-decoration:line-through;' : '';
+        total += item.monto;
         return `
-        <div class="movimiento-card" style="${opacity}">
+        <div class="movimiento-card">
           <div class="mc-left">
-            <span class="mc-lugar" style="font-size:1.05rem; font-weight: 600;${strikethrough}">${item.concepto}</span>
+            <span class="mc-lugar" style="font-size:1.05rem; font-weight: 600;">${item.concepto}</span>
           </div>
           <div class="mc-right" style="align-items:flex-end;gap:.5rem">
-            <span class="mc-monto text-danger" style="font-size:1.1rem;font-weight:700;${strikethrough}">-${formatCurrency(item.monto)}</span>
+            <span class="mc-monto text-danger" style="font-size:1.1rem;font-weight:700">-${formatCurrency(item.monto)}</span>
             <div style="display:flex;gap:.4rem;margin-top:.2rem">
-              <button class="mini-btn icon-btn-sm" onclick="deudas_toggleHidden(${item.id})" title="${item.hidden ? 'Mostrar en balance' : 'Ocultar del balance'}" style="font-size: 1.1rem; padding: 4px;">${eyeIcon}</button>
-              <button class="mini-btn icon-btn-sm" onclick="deudas_abrirSplit(${item.id})" title="Dividir en Cuotas Fijas" style="font-size: 1.1rem; padding: 4px;">✂️</button>
               <button class="mini-btn icon-btn-sm" onclick="deudas_editar(${item.id})" style="font-size: 1.1rem; padding: 4px;">✏️</button>
               <button class="mini-btn mini-btn-danger icon-btn-sm" onclick="deudas_borrar(${item.id})" style="font-size: 1.1rem; padding: 4px;">🗑️</button>
             </div>
@@ -10207,27 +10127,6 @@ window.deudas_borrar = async function(id) {
     }
 };
 
-window.deudas_toggleHidden = async function(id) {
-    const item = deudasState.allItems.find(i => i.id === id);
-    if (!item) return;
-    const newVal = !item.hidden;
-    try {
-        let sheetName = 'Deudas';
-        try {
-            await sheetsGet(SPREADSHEET_DEUDAS_ID, 'Deudas!A1:A1');
-        } catch(e) {
-            sheetName = 'Hoja 1';
-        }
-        await sheetsUpdate(SPREADSHEET_DEUDAS_ID, `${sheetName}!C${id}`, [[newVal ? 'TRUE' : 'FALSE']]);
-        item.hidden = newVal;
-        deudas_renderLista();
-        showToast(newVal ? '🙈 Deuda oculta del balance' : '👁️ Deuda visible en balance');
-    } catch(e) {
-        console.error(e);
-        showToast('❌ Error al actualizar visibilidad');
-    }
-};
-
 function deudas_abrirSheet(item) {
     const sheet = document.getElementById('d-sheet');
     document.getElementById('d-edit-id').value = '';
@@ -10243,176 +10142,6 @@ function deudas_abrirSheet(item) {
     }
     sheet.classList.remove('hidden');
 }
-
-// ══════════════════════════════════
-// Dividir Deuda / Cuotas
-// ══════════════════════════════════
-window.deudas_abrirSplit = function(id) {
-    const item = deudasState.allItems.find(i => i.id === id);
-    if (!item) return;
-    
-    document.getElementById('d-split-id').value = item.id;
-    document.getElementById('d-split-monto').value = `${item.concepto} - ${formatCurrency(item.monto)}`;
-    document.getElementById('d-split-monto').dataset.monto = item.monto;
-    
-    // reset values
-    document.getElementById('d-split-payments').value = 12;
-    document.getElementById('d-split-frequency').value = 'mensual';
-    document.getElementById('d-split-compound').checked = false;
-    document.getElementById('d-split-rate-wrap').classList.add('hidden');
-    document.getElementById('d-split-rate').value = '';
-    
-    // Listeners para re-calcular (si no existen)
-    const formInputs = ['d-split-payments', 'd-split-frequency', 'd-split-compound', 'd-split-rate'];
-    formInputs.forEach(fid => {
-        const el = document.getElementById(fid);
-        // Evitar multiples listeners con onchange
-        el.oninput = deudas_calcularSplit;
-        el.onchange = deudas_calcularSplit;
-    });
-    
-    document.getElementById('d-split-compound').addEventListener('change', (e) => {
-        const wrap = document.getElementById('d-split-rate-wrap');
-        if (e.target.checked) wrap.classList.remove('hidden');
-        else wrap.classList.add('hidden');
-        deudas_calcularSplit();
-    });
-
-    document.getElementById('d-split-btn-convert').onclick = deudas_convertirAGastosFijos;
-    
-    deudas_calcularSplit();
-    
-    const sheet = document.getElementById('d-split-sheet');
-    sheet.classList.remove('hidden');
-};
-
-window.deudas_cerrarSplit = function() {
-    document.getElementById('d-split-sheet').classList.add('hidden');
-};
-
-function deudas_calcularSplit() {
-    const monto = parseFloat(document.getElementById('d-split-monto').dataset.monto);
-    const n = parseInt(document.getElementById('d-split-payments').value) || 1;
-    const freq = document.getElementById('d-split-frequency').value;
-    const isCompound = document.getElementById('d-split-compound').checked;
-    let rateAnual = parseFloat(document.getElementById('d-split-rate').value) || 0;
-    
-    let pago = 0;
-    if (!isCompound || rateAnual === 0) {
-        pago = monto / n;
-    } else {
-        // Compound interest: PMT = P * r * (1 + r)^n / ((1 + r)^n - 1)
-        let freqDiv = 12; // mensual
-        if (freq === 'semanal') freqDiv = 52;
-        if (freq === 'quincenal') freqDiv = 24;
-        if (freq === 'bimestral') freqDiv = 6;
-        if (freq === 'semestral') freqDiv = 2;
-        
-        let r = (rateAnual / 100) / freqDiv;
-        pago = monto * r * Math.pow(1 + r, n) / (Math.pow(1 + r, n) - 1);
-    }
-    
-    document.getElementById('d-split-preview').innerText = formatCurrency(pago);
-    document.getElementById('d-split-preview').dataset.pagoCalc = pago;
-    return pago;
-}
-
-window.deudas_convertirAGastosFijos = async function() {
-    const btn = document.getElementById('d-split-btn-convert');
-    const deudaId = parseInt(document.getElementById('d-split-id').value);
-    const deudaObj = deudasState.allItems.find(i => i.id === deudaId);
-    if (!deudaObj) return;
-
-    const n = parseInt(document.getElementById('d-split-payments').value) || 1;
-    const freq = document.getElementById('d-split-frequency').value;
-    const pagoCalc = parseFloat(document.getElementById('d-split-preview').dataset.pagoCalc);
-    const formaPago = document.getElementById('d-split-account').value; // puede ser vacio
-    
-    if (!confirm(`¿Convertir esta deuda en ${n} pagos de ${formatCurrency(pagoCalc)}? Se inyectarán directamente en Gastos Fijos.`)) return;
-    
-    btn.disabled = true;
-    btn.innerText = 'Convirtiendo...';
-    
-    try {
-        let rows = [];
-        let d = new Date();
-        let currentMonth = d.getMonth() + 1;
-        let currentYear = d.getFullYear();
-        
-        for (let i = 1; i <= n; i++) {
-            // Calcular Mes de Inicio (YYYY-MM)
-            let mStr = `${currentYear}-${String(currentMonth).padStart(2, '0')}`;
-            
-            // Calcular Día sugerido
-            let diaSugerido = d.getDate();
-            if (freq === 'semanal') {
-                diaSugerido = ((i - 1) % 4) * 7 + 1; // 1, 8, 15, 22 aprox
-                if (i % 4 === 0) { currentMonth++; }
-            } else if (freq === 'quincenal') {
-                diaSugerido = (i % 2 === 1) ? 15 : 30;
-                if (i % 2 === 0) { currentMonth++; }
-            } else if (freq === 'mensual') {
-                currentMonth++;
-            } else if (freq === 'bimestral') {
-                currentMonth += 2;
-            } else if (freq === 'semestral') {
-                currentMonth += 6;
-            }
-            
-            // Roll over years
-            while (currentMonth > 12) {
-                currentMonth -= 12;
-                currentYear++;
-            }
-            
-            // Construir Fila para Gastos Fijos
-            // JSON especial en Columna N (waived) para guardar metadata vinculante
-            const metadata = serializePaymentStates([{
-                "w": false, "deudaTarget": deudaId
-            }]);
-            
-            // CatStr = Deudas (para agrupar fácil en filtros de fijos)
-            rows.push([
-                String(diaSugerido), // A: Fecha
-                `${deudaObj.concepto} (${i}/${n})`, // B: Concepto
-                pagoCalc.toFixed(2), // C: Gasto
-                '', // D: Ingreso
-                'Deudas', // E: Categoria
-                'FALSE', // F: 
-                1, // G: pagosMes
-                serializePaymentStates([false]), // H
-                'Cuota de Deuda', // I: Periodicidad especial
-                mStr, // J: inicioMes
-                formaPago, // K: formaPago / pagador
-                '', // L: budgetCat
-                'MXN', // M: Moneda
-                metadata // N: waived states extended
-            ]);
-        }
-        
-        // Push masivo a Fijos
-        await sheetsAppend(SPREADSHEET_FIXED_ID, 'Hoja 1!A:N', rows);
-        
-        // Hide de balance la deuda original (opcional, pero buena práctica si ya va a estar en fijos)
-        if (!deudaObj.hidden) {
-            await deudas_toggleHidden(deudaId);
-        }
-        
-        showToast(`✅ ${n} cuotas agregadas a Gastos Fijos`);
-        deudas_cerrarSplit();
-        if (window.fijos_cargarDatos) window.fijos_cargarDatos(); // refrescar
-    } catch(err) {
-        console.error(err);
-        alert('❌ Ocurrió un error al convertir a Gastos Fijos');
-    } finally {
-        btn.disabled = false;
-        btn.innerText = 'Convertir a Gastos Fijos';
-    }
-};
-
-document.getElementById('d-split-sheet-overlay').addEventListener('click', () => {
-    deudas_cerrarSplit();
-});
 
 function deudas_cerrarSheet() { 
     document.getElementById('d-sheet').classList.add('hidden'); 
@@ -10439,13 +10168,10 @@ async function deudas_guardar() {
         }
         
         if (editId) {
-            // Preserve hidden flag when editing
-            const existing = deudasState.allItems.find(i => i.id === parseInt(editId));
-            const hiddenVal = existing && existing.hidden ? 'TRUE' : 'FALSE';
-            await sheetsUpdate(SPREADSHEET_DEUDAS_ID, `${sheetName}!A${editId}:C${editId}`, [[concepto, monto, hiddenVal]]);
+            await sheetsUpdate(SPREADSHEET_DEUDAS_ID, `${sheetName}!A${editId}:B${editId}`, [[concepto, monto]]);
             showToast('✅ Deuda actualizada');
         } else {
-            await sheetsAppend(SPREADSHEET_DEUDAS_ID, `${sheetName}!A:C`, [[concepto, Math.abs(monto), 'FALSE']]);
+            await sheetsAppend(SPREADSHEET_DEUDAS_ID, `${sheetName}!A:B`, [[concepto, Math.abs(monto)]]);
             showToast('✅ Deuda agregada');
         }
         deudas_cerrarSheet();

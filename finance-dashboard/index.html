@@ -486,6 +486,70 @@
           </div>
         </div>
 
+        <!-- ════════ SPLIT DEBT SHEET ════════ -->
+        <div id="d-split-sheet" class="bottom-sheet hidden">
+          <div id="d-split-sheet-overlay" class="bottom-sheet-overlay"></div>
+          <div class="bottom-sheet-content glass">
+            <div class="sheet-handle"></div>
+            <h4 class="sheet-title">Dividir Deuda</h4>
+            <input type="hidden" id="d-split-id">
+            
+            <div class="form-field">
+              <label class="field-label">Deuda Original</label>
+              <input type="text" id="d-split-monto" class="field-input readonly" readonly>
+            </div>
+
+            <div class="form-row-2">
+              <div class="form-field">
+                <label class="field-label">Número de Cuotas</label>
+                <input type="number" id="d-split-payments" class="field-input" min="2" max="120" value="12">
+              </div>
+              <div class="form-field">
+                <label class="field-label">Frecuencia</label>
+                <select id="d-split-frequency" class="field-input">
+                  <option value="semanal">Semanal</option>
+                  <option value="quincenal">Quincenal</option>
+                  <option value="mensual" selected>Mensual</option>
+                  <option value="bimestral">Bimestral</option>
+                  <option value="semestral">Semestral</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-field">
+              <label class="field-label">Forma de Pago / Cuenta</label>
+              <select id="d-split-account" class="field-input">
+                <option value="">(Sin asignar)</option>
+                <option value="Santander">Santander</option>
+                <option value="BBVA">BBVA</option>
+                <option value="Cuenta Mariel">Cuenta Mariel</option>
+                <option value="Efectivo">Efectivo</option>
+                <option value="Transferencia">Transferencia</option>
+              </select>
+              <span style="font-size:0.7rem;opacity:0.6;margin-top:4px;display:block;">Se usará para contabilizar el pago automáticamente en Control de Gastos.</span>
+            </div>
+
+            <div class="form-field" style="margin-top:1rem; margin-bottom: 0;">
+              <label class="cat-check-label" style="justify-content:flex-start; margin-bottom:0;">
+                <input type="checkbox" id="d-split-compound">
+                Calcular Interés Compuesto
+              </label>
+            </div>
+
+            <div class="form-field hidden" id="d-split-rate-wrap" style="margin-top:1rem;">
+              <label class="field-label">Tasa de Interés Anual (%)</label>
+              <input type="number" id="d-split-rate" class="field-input" step="0.1" inputmode="decimal" placeholder="Ej. 16.0">
+            </div>
+
+            <div style="margin-top:1.5rem; padding:1rem; border-radius:12px; background:rgba(255,255,255,0.05); text-align:center;">
+              <div class="diff-label" style="opacity:0.8;">Cada cuota quedará en:</div>
+              <div id="d-split-preview" class="balance-amount" style="font-size:1.8rem;">$0.00</div>
+            </div>
+
+            <button id="d-split-btn-convert" class="primary-btn" style="width:100%;margin-top:1.5rem">Convertir a Gastos Fijos</button>
+          </div>
+        </div>
+
       </div>
 
       <!-- ══════════════════════════════════
