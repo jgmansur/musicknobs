@@ -1199,11 +1199,6 @@
             <div class="prompts-toolbar">
               <input id="prompts-search" class="field-input" type="search" placeholder="Buscar por titulo, contenido o tags...">
               <select id="prompts-filter-platform" class="field-input"></select>
-              <select id="prompts-filter-size" class="field-input">
-                <option value="all">Tamano: todos</option>
-                <option value="small">Corto</option>
-                <option value="long">Largo</option>
-              </select>
               <select id="prompts-sort" class="field-input">
                 <option value="updatedDesc">Editados recientes</option>
                 <option value="createdDesc">Agregados recientes</option>
@@ -1228,12 +1223,12 @@
             <input id="prompts-title" class="field-input" placeholder="Titulo del prompt">
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:.55rem;margin-top:.45rem;">
               <input id="prompts-platform" class="field-input" placeholder="Plataforma objetivo (ej. X, Gemini, ChatGPT)">
-              <select id="prompts-size" class="field-input">
-                <option value="small">Corto</option>
-                <option value="long">Largo</option>
-              </select>
               <input id="prompts-tags" class="field-input" placeholder="Tags separados por coma">
-              <input id="prompts-status" class="field-input" placeholder="Estado (draft, listo, prueba)">
+              <select id="prompts-status" class="field-input">
+                <option value="draft">draft</option>
+                <option value="listo">listo</option>
+                <option value="prueba">prueba</option>
+              </select>
             </div>
             <textarea id="prompts-content" class="field-input" rows="8" style="margin-top:.45rem;" placeholder="Escribe aqui el prompt completo..."></textarea>
             <div class="diff-label" id="prompts-meta" style="margin-top:.5rem;"></div>

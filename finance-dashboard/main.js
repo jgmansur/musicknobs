@@ -9238,7 +9238,7 @@ async function pelo_addMemberPrompt() {
 // PROMPTS MODULE
 // =============================================
 const PROMPTS_SHEET = 'PromptVault';
-const PROMPTS_HEADERS = ['id', 'title', 'content', 'platform', 'size', 'tags', 'status', 'favorite', 'useCount', 'lastUsedAt', 'createdAt', 'updatedAt'];
+const PROMPTS_HEADERS = ['id', 'title', 'content', 'platform', 'tags', 'status', 'favorite', 'useCount', 'lastUsedAt', 'createdAt', 'updatedAt'];
 
 const promptsState = {
     items: [],
@@ -9246,7 +9246,6 @@ const promptsState = {
     loading: false,
     search: '',
     filterPlatform: 'all',
-    filterSize: 'all',
     sort: 'updatedDesc',
 };
 
@@ -9262,10 +9261,6 @@ function prompts_bindEvents() {
     });
     document.getElementById('prompts-filter-platform')?.addEventListener('change', (e) => {
         promptsState.filterPlatform = (e.target.value || 'all').toString();
-        prompts_render();
-    });
-    document.getElementById('prompts-filter-size')?.addEventListener('change', (e) => {
-        promptsState.filterSize = (e.target.value || 'all').toString();
         prompts_render();
     });
     document.getElementById('prompts-sort')?.addEventListener('change', (e) => {
@@ -9331,7 +9326,6 @@ async function prompts_loadData() {
         title: (get(row, 'title', '') || '').toString(),
         content: (get(row, 'content', '') || '').toString(),
         platform: (get(row, 'platform', '') || '').toString(),
-        size: ((get(row, 'size', 'small') || 'small').toString() === 'long') ? 'long' : 'small',
         tags: (get(row, 'tags', '') || '').toString(),
         status: (get(row, 'status', '') || '').toString(),
         favorite: parseBool(get(row, 'favorite', false)),
@@ -9360,13 +9354,11 @@ function prompts_toTs(dateStr) {
 function prompts_getFiltered() {
     const q = promptsState.search;
     const platform = promptsState.filterPlatform;
-    const size = promptsState.filterSize;
 
     let list = promptsState.items.filter((item) => {
         const hay = `${item.title} ${item.content} ${item.tags} ${item.platform} ${item.status}`.toLowerCase();
         if (q && !hay.includes(q)) return false;
         if (platform !== 'all' && (item.platform || '').toLowerCase() !== platform.toLowerCase()) return false;
-        if (size !== 'all' && item.size !== size) return false;
         return true;
     });
 
@@ -9414,7 +9406,7 @@ function prompts_render() {
                 <h4 class="docs-title">${prompts_escapeHtml(item.title)}</h4>
                 <button type="button" class="mini-btn" data-prompt-fav="${item.id}">${item.favorite ? '⭐' : '☆'}</button>
               </div>
-              <div class="docs-meta">${prompts_escapeHtml(item.platform || 'Sin plataforma')} · ${(item.size === 'long') ? 'Largo' : 'Corto'} · ${prompts_escapeHtml(item.status || 'sin estado')}</div>
+              <div class="docs-meta">${prompts_escapeHtml(item.platform || 'Sin plataforma')} · ${prompts_escapeHtml(item.status || 'sin estado')}</div>
               <div class="docs-meta">${snippet}${(item.content || '').length > 220 ? '…' : ''}</div>
               <div class="docs-meta">Tags: ${prompts_escapeHtml(item.tags || '—')}</div>
               <div class="docs-meta">Agregado: ${created} · Editado: ${updated} · Ultimo uso: ${used} · Usos: ${item.useCount || 0}</div>
@@ -9437,9 +9429,8 @@ function prompts_openSheet(id) {
     document.getElementById('prompts-title').value = row?.title || '';
     document.getElementById('prompts-content').value = row?.content || '';
     document.getElementById('prompts-platform').value = row?.platform || '';
-    document.getElementById('prompts-size').value = row?.size || 'small';
     document.getElementById('prompts-tags').value = row?.tags || '';
-    document.getElementById('prompts-status').value = row?.status || '';
+    document.getElementById('prompts-status').value = row?.status || 'draft';
     document.getElementById('prompts-meta').innerText = row
         ? `Agregado: ${row.createdAt || '-'} · Editado: ${row.updatedAt || '-'} · Usos: ${row.useCount || 0}`
         : 'Completa titulo, contenido y plataforma para guardar';
@@ -9468,9 +9459,8 @@ async function prompts_save() {
         title,
         content,
         platform,
-        size: ((document.getElementById('prompts-size').value || 'small') === 'long') ? 'long' : 'small',
         tags: (document.getElementById('prompts-tags').value || '').trim(),
-        status: (document.getElementById('prompts-status').value || '').trim(),
+        status: (document.getElementById('prompts-status').value || 'draft').trim(),
         favorite: !!existing?.favorite,
         useCount: existing?.useCount || 0,
         lastUsedAt: existing?.lastUsedAt || '',
@@ -9556,7 +9546,6 @@ async function prompts_saveRows() {
             x.title || '',
             x.content || '',
             x.platform || '',
-            x.size || 'small',
             x.tags || '',
             x.status || '',
             x.favorite ? 'TRUE' : 'FALSE',
