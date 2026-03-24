@@ -10008,7 +10008,7 @@ let deudasState = {
 };
 
 function deudas_getTotalAmount() {
-    return deudasState.allItems.reduce((s, i) => s + (i.monto || 0), 0);
+    return deudasState.allItems.reduce((s, i) => s + (i.hidden ? 0 : (i.monto || 0)), 0);
 }
 
 function deudas_updateKpiCard() {
@@ -10078,15 +10078,16 @@ async function deudas_cargarDatos() {
     try {
         let rows = [];
         try {
-            rows = await sheetsGet(SPREADSHEET_DEUDAS_ID, 'Deudas!A2:B');
+            rows = await sheetsGet(SPREADSHEET_DEUDAS_ID, 'Deudas!A2:C');
         } catch(e) {
-            rows = await sheetsGet(SPREADSHEET_DEUDAS_ID, 'Hoja 1!A2:B');
+            rows = await sheetsGet(SPREADSHEET_DEUDAS_ID, 'Hoja 1!A2:C');
         }
         
         deudasState.allItems = rows.map((row, i) => ({
             id: i + 2,
             concepto: row[0] || '',
-            monto: parseSheetValue(row[1])
+            monto: parseSheetValue(row[1]),
+            hidden: (row[2] || '').toString().toUpperCase() === 'TRUE',
         })).filter(i => i.concepto);
         deudasState.loaded = true;
         
@@ -10108,15 +10109,19 @@ function deudas_renderLista() {
     }
     
     el.innerHTML = deudasState.allItems.map(item => {
-        total += item.monto;
+        if (!item.hidden) total += item.monto;
+        const eyeIcon = item.hidden ? '🙈' : '👁️';
+        const opacity = item.hidden ? 'opacity:.45;' : '';
+        const strikethrough = item.hidden ? 'text-decoration:line-through;' : '';
         return `
-        <div class="movimiento-card">
+        <div class="movimiento-card" style="${opacity}">
           <div class="mc-left">
-            <span class="mc-lugar" style="font-size:1.05rem; font-weight: 600;">${item.concepto}</span>
+            <span class="mc-lugar" style="font-size:1.05rem; font-weight: 600;${strikethrough}">${item.concepto}</span>
           </div>
           <div class="mc-right" style="align-items:flex-end;gap:.5rem">
-            <span class="mc-monto text-danger" style="font-size:1.1rem;font-weight:700">-${formatCurrency(item.monto)}</span>
+            <span class="mc-monto text-danger" style="font-size:1.1rem;font-weight:700;${strikethrough}">-${formatCurrency(item.monto)}</span>
             <div style="display:flex;gap:.4rem;margin-top:.2rem">
+              <button class="mini-btn icon-btn-sm" onclick="deudas_toggleHidden(${item.id})" title="${item.hidden ? 'Mostrar en balance' : 'Ocultar del balance'}" style="font-size: 1.1rem; padding: 4px;">${eyeIcon}</button>
               <button class="mini-btn icon-btn-sm" onclick="deudas_editar(${item.id})" style="font-size: 1.1rem; padding: 4px;">✏️</button>
               <button class="mini-btn mini-btn-danger icon-btn-sm" onclick="deudas_borrar(${item.id})" style="font-size: 1.1rem; padding: 4px;">🗑️</button>
             </div>
@@ -10152,6 +10157,27 @@ window.deudas_borrar = async function(id) {
     } catch(e) { 
         console.error(e); 
         el.innerHTML = '<div class="empty-state text-danger">❌ Error al borrar</div>'; 
+    }
+};
+
+window.deudas_toggleHidden = async function(id) {
+    const item = deudasState.allItems.find(i => i.id === id);
+    if (!item) return;
+    const newVal = !item.hidden;
+    try {
+        let sheetName = 'Deudas';
+        try {
+            await sheetsGet(SPREADSHEET_DEUDAS_ID, 'Deudas!A1:A1');
+        } catch(e) {
+            sheetName = 'Hoja 1';
+        }
+        await sheetsUpdate(SPREADSHEET_DEUDAS_ID, `${sheetName}!C${id}`, [[newVal ? 'TRUE' : 'FALSE']]);
+        item.hidden = newVal;
+        deudas_renderLista();
+        showToast(newVal ? '🙈 Deuda oculta del balance' : '👁️ Deuda visible en balance');
+    } catch(e) {
+        console.error(e);
+        showToast('❌ Error al actualizar visibilidad');
     }
 };
 
@@ -10196,10 +10222,13 @@ async function deudas_guardar() {
         }
         
         if (editId) {
-            await sheetsUpdate(SPREADSHEET_DEUDAS_ID, `${sheetName}!A${editId}:B${editId}`, [[concepto, monto]]);
+            // Preserve hidden flag when editing
+            const existing = deudasState.allItems.find(i => i.id === parseInt(editId));
+            const hiddenVal = existing && existing.hidden ? 'TRUE' : 'FALSE';
+            await sheetsUpdate(SPREADSHEET_DEUDAS_ID, `${sheetName}!A${editId}:C${editId}`, [[concepto, monto, hiddenVal]]);
             showToast('✅ Deuda actualizada');
         } else {
-            await sheetsAppend(SPREADSHEET_DEUDAS_ID, `${sheetName}!A:B`, [[concepto, Math.abs(monto)]]);
+            await sheetsAppend(SPREADSHEET_DEUDAS_ID, `${sheetName}!A:C`, [[concepto, Math.abs(monto), 'FALSE']]);
             showToast('✅ Deuda agregada');
         }
         deudas_cerrarSheet();
