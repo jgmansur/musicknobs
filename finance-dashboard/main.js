@@ -1353,6 +1353,7 @@ function balance_renderPanel() {
             <div class="account-actions">
               <button class="acc-toggle-btn icon-btn-sm" data-id="${acc.id}" title="${eyeTitle}">${eyeIcon}</button>
               ${acc.type === 'credit' ? `<button class="acc-credit-limit-btn icon-btn-sm" data-id="${acc.id}" title="${creditEyeTitle}">${creditEyeIcon}</button>` : ''}
+              <button class="acc-reconcile-btn icon-btn-sm" data-id="${acc.id}" title="Ajustar saldo al real">⚖️</button>
               <button class="acc-edit-btn icon-btn-sm" data-id="${acc.id}" title="Editar">✏️</button>
               <button class="acc-del-btn icon-btn-sm" data-id="${acc.id}" title="Eliminar">🗑️</button>
             </div>
@@ -1368,6 +1369,8 @@ function balance_renderPanel() {
         btn.addEventListener('click', () => balance_deleteAccount(parseInt(btn.dataset.id))));
     list.querySelectorAll('.acc-credit-limit-btn').forEach(btn =>
         btn.addEventListener('click', () => balance_toggleCreditLimitVisibility(parseInt(btn.dataset.id))));
+    list.querySelectorAll('.acc-reconcile-btn').forEach(btn =>
+        btn.addEventListener('click', () => balance_openReconcile(parseInt(btn.dataset.id))));
 }
 
 // ── Panel open/close ─────────────────────────────────────
@@ -1516,6 +1519,39 @@ async function balance_toggleCreditLimitVisibility(id) {
     balance_updateKpi();
 }
 
+async function balance_openReconcile(id) {
+    const acc = balanceAccounts.find(a => a.id === id);
+    if (!acc) return;
+
+    // Show current displayed value so user knows what to compare against
+    const currentDisplayed = balance_getAccountSignedMxn(acc);
+    const rawInput = prompt(
+        `⚖️ Ajustar saldo: ${acc.name}\n\n` +
+        `Saldo mostrado actualmente: ${formatCurrency(currentDisplayed)}\n\n` +
+        `Ingresa el saldo REAL (positivo para banco/efectivo/inversión, positivo para crédito = lo que debes):`,
+        Math.abs(acc.balance)
+    );
+    if (rawInput === null) return; // user cancelled
+
+    const newBalance = parseFloat(rawInput.replace(/,/g, ''));
+    if (!Number.isFinite(newBalance) || newBalance < 0) {
+        alert('Ingresa un número válido mayor o igual a cero.');
+        return;
+    }
+
+    // Update base balance
+    acc.balance = newBalance;
+
+    // Sync anchor → delta becomes 0, so displayed = newBalance exactly
+    const idKey = String(acc.id);
+    balanceAccountLogAnchor[idKey] = Number(balanceAccountLogTotals[idKey] || 0);
+    localStorage.setItem(ACCOUNT_LOG_ANCHOR_KEY, JSON.stringify(balanceAccountLogAnchor));
+
+    await balance_saveAccounts();
+    balance_renderPanel();
+    balance_updateKpi();
+}
+
 async function balance_saveAccount() {
     const name    = document.getElementById('acc-name').value.trim();
     const balance = parseFloat(document.getElementById('acc-balance').value) || 0;
@@ -1546,6 +1582,10 @@ async function balance_saveAccount() {
             acc.investmentType = type === 'invest' ? investmentType : 'custom';
             acc.customAnnualRate = type === 'invest' ? customAnnualRate : 0;
             acc.bitcoinInitialMxn = (type === 'invest' && investmentType === 'bitcoin') ? bitcoinInitialMxn : 0;
+            // Sync log anchor so the manually-entered balance is what shows in the UI
+            const idKey = String(acc.id);
+            balanceAccountLogAnchor[idKey] = Number(balanceAccountLogTotals[idKey] || 0);
+            localStorage.setItem(ACCOUNT_LOG_ANCHOR_KEY, JSON.stringify(balanceAccountLogAnchor));
         }
     } else {
         balanceAccounts.push(balance_normalizeAccount({
