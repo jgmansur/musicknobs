@@ -15,7 +15,7 @@ const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // 
 const SPREADSHEET_DEUDAS_ID = '1dKxhgqazskm15lx0f6FNCA0gpJ7i5glfxkusiH3b0Uk'; // Control de Deudas
 const SPREADSHEET_AUTOS_ID = SPREADSHEET_DEUDAS_ID; // Autos + Reparaciones live in same workbook
 const SPREADSHEET_ESTUDIO_ID = SPREADSHEET_DEUDAS_ID; // Estudio + Plugins in same workbook
-const APP_VERSION  = 'v7.6.6';
+const APP_VERSION  = 'v7.6.5';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -3020,7 +3020,7 @@ async function fijos_cargarDatos() {
             const isPaid = pagosHechos >= pagosMes;
             const periodicidad = parseFixedPeriodicity(row[8]);
             const inicioMes = parseStartMonth(row[9], nowMonth);
-            const isDueThisMonth = isFixedDueThisMonth(periodicidad, inicioMes, nowMonth, isPaid);
+            const isDueThisMonth = isFixedDueThisMonth(periodicidad, inicioMes, nowMonth);
             return {
                 id: i + 2,
                 fecha: `Día ${dayOfMonth}`,
@@ -9955,12 +9955,10 @@ function monthDiff(fromYm, toYm) {
     return (ty - fy) * 12 + (tm - fm);
 }
 
-function isFixedDueThisMonth(periodicity, startMonth, nowMonth, isPaid = false) {
+function isFixedDueThisMonth(periodicity, startMonth, nowMonth) {
     const diff = monthDiff(startMonth, nowMonth);
     if (periodicity === 'Cuota de Deuda') {
-        if (diff < 0) return false;
-        if (diff > 0 && isPaid) return false;
-        return true;
+        return diff >= 0;
     }
     if (periodicity !== 'bimestral') return true;
     if (diff < 0) return false;
