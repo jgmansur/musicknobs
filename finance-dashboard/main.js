@@ -3316,6 +3316,25 @@ window.fijos_togglePagoPart = async function(id, partIndex, options = {}) {
                 }
             }
             
+            // AUTO-SYNC: Mark cuota as paid (yellow→green) in Deudas card
+            const cuotaMatch = item.concepto.match(/^(.+?)\s*-\s*Cuota\s+(\d+)\/(\d+)$/);
+            if (cuotaMatch) {
+                const debtName = cuotaMatch[1].trim();
+                const cuotaIdx = parseInt(cuotaMatch[2]) - 1; // 0-indexed
+                const deuda = deudasState.allItems.find(d => d.concepto === debtName);
+                if (deuda && deuda.cuotas && deuda.cuotas.paid[cuotaIdx] === 1) {
+                    deuda.cuotas.paid[cuotaIdx] = 2; // yellow → green
+                    // Persist to Deudas sheet col D
+                    const flags = deuda.cuotas.paid.join(',');
+                    const colD = `${deuda.cuotas.n}:${deuda.cuotas.perCuota.toFixed(2)}:${flags}`;
+                    let dSheetName = 'Deudas';
+                    try { await sheetsGet(SPREADSHEET_DEUDAS_ID, 'Deudas!A1:A1'); } catch(e) { dSheetName = 'Hoja 1'; }
+                    await sheetsUpdate(SPREADSHEET_DEUDAS_ID, `${dSheetName}!D${deuda.id}`, [[colD]]);
+                    if (window.deudas_renderLista) window.deudas_renderLista();
+                    showToast(`🟢 Cuota ${cuotaIdx + 1} de "${debtName}" marcada como pagada`);
+                }
+            }
+            
             tabInited.gastos = false;
             showToast('✅ Pago registrado en Control de Gastos');
         } else if (!nowPartPaid && !wasPartWaived) {
@@ -3353,6 +3372,24 @@ window.fijos_togglePagoPart = async function(id, partIndex, options = {}) {
                             deuda.monto = newMonto;
                             if (window.deudas_renderLista) window.deudas_renderLista();
                             showToast(`📈 Saldo restaurado a deuda: $${newMonto.toFixed(2)}`);
+                        }
+                    }
+                    
+                    // REVERSE AUTO-SYNC: Revert cuota from green→yellow in Deudas card
+                    const cuotaMatch = item.concepto.match(/^(.+?)\s*-\s*Cuota\s+(\d+)\/(\d+)$/);
+                    if (cuotaMatch) {
+                        const debtName = cuotaMatch[1].trim();
+                        const cuotaIdx = parseInt(cuotaMatch[2]) - 1;
+                        const deuda = deudasState.allItems.find(d => d.concepto === debtName);
+                        if (deuda && deuda.cuotas && deuda.cuotas.paid[cuotaIdx] === 2) {
+                            deuda.cuotas.paid[cuotaIdx] = 1; // green → yellow
+                            const flags = deuda.cuotas.paid.join(',');
+                            const colD = `${deuda.cuotas.n}:${deuda.cuotas.perCuota.toFixed(2)}:${flags}`;
+                            let dSheetName = 'Deudas';
+                            try { await sheetsGet(SPREADSHEET_DEUDAS_ID, 'Deudas!A1:A1'); } catch(e) { dSheetName = 'Hoja 1'; }
+                            await sheetsUpdate(SPREADSHEET_DEUDAS_ID, `${dSheetName}!D${deuda.id}`, [[colD]]);
+                            if (window.deudas_renderLista) window.deudas_renderLista();
+                            showToast(`🟡 Cuota ${cuotaIdx + 1} de "${debtName}" revertida a programada`);
                         }
                     }
                     
