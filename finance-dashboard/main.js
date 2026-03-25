@@ -9938,6 +9938,7 @@ function parseDayOfMonth(val) {
 
 function parseFixedPeriodicity(val) {
     const raw = (val || '').toString().trim().toLowerCase();
+    if (raw === 'cuota de deuda') return 'Cuota de Deuda';
     return raw === 'bimestral' ? 'bimestral' : 'mensual';
 }
 
