@@ -10227,9 +10227,9 @@ function deudas_renderLista() {
                 return `<button onclick="deudas_toggleCuota(${item.id},${idx})" style="${bg}width:28px;height:28px;border-radius:50%;font-size:0.7rem;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;transition:all .2s;" title="Cuota ${idx+1}/${item.cuotas.n} — ${formatCurrency(item.cuotas.perCuota)}">${label}</button>`;
             }).join('');
             cuotasHtml = `
-            <div style="margin-top:0.5rem;padding:0.5rem;border-radius:10px;background:rgba(255,255,255,0.03);">
-              <div style="display:flex;flex-wrap:wrap;gap:4px;justify-content:center;">${btns}</div>
-              <div style="text-align:center;margin-top:0.4rem;font-size:0.75rem;color:var(--text-muted);">
+            <div style="margin-top:0.5rem;padding:0.5rem;border-radius:10px;background:rgba(255,255,255,0.03);width:100%;">
+              <div style="display:flex;flex-wrap:wrap;gap:4px;justify-content:flex-start;">${btns}</div>
+              <div style="margin-top:0.4rem;font-size:0.75rem;color:var(--text-muted);">
                 ${paidCount}/${item.cuotas.n} pagadas · Restante: <strong style="color:${displayMonto > 0 ? '#ef4444' : '#22c55e'}">${formatCurrency(displayMonto)}</strong>
               </div>
             </div>`;
