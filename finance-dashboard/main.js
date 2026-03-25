@@ -10246,14 +10246,13 @@ function deudas_renderLista() {
         const btnDown = isLast ? `<div style="width:24px;"></div>` : `<button class="mini-btn icon-btn-sm" onclick="deudas_moveDown(${item.id})" title="Bajar" style="font-size:0.95rem; padding:4px;">⬇️</button>`;
 
         return `
-        <div class="movimiento-card" style="${opacity}">
-          <div class="mc-left" style="align-items:flex-start; flex-direction:column; gap:0.3rem; flex:1; min-width:0;">
+        <div class="movimiento-card" style="${opacity}flex-wrap:wrap;">
+          <div class="mc-left" style="align-items:flex-start; flex-direction:column; gap:0.3rem;">
             <span class="mc-lugar" style="font-size:0.95rem; font-weight: 600;${strikethrough}">${item.concepto}</span>
             <div style="display:flex; flex-direction:row; gap:4px;">
                 ${btnUp}
                 ${btnDown}
             </div>
-            ${cuotasHtml}
           </div>
           <div class="mc-right" style="align-items:flex-end;gap:.3rem">
             <span class="mc-monto text-danger" style="font-size:1rem;font-weight:700;${strikethrough}">-${formatCurrency(displayMonto)}</span>
@@ -10264,6 +10263,7 @@ function deudas_renderLista() {
               <button class="mini-btn mini-btn-danger icon-btn-sm" onclick="deudas_borrar(${item.id})" style="font-size:0.95rem; padding:4px;">🗑️</button>
             </div>
           </div>
+          ${cuotasHtml ? `<div style="width:100%;margin-top:0.25rem;">${cuotasHtml}</div>` : ''}
         </div>`;
     }).join('');
     
