@@ -10179,7 +10179,7 @@ async function deudas_cargarDatos() {
                 if (parts.length >= 3) {
                     const n = parseInt(parts[0]) || 0;
                     const perCuota = parseFloat(parts[1]) || 0;
-                    const flags = parts[2].split(',').map(f => f === '1');
+                    const flags = parts[2].split(',').map(f => parseInt(f) || 0);
                     cuotas = { n, perCuota, paid: flags };
                 }
             }
@@ -10211,26 +10211,38 @@ function deudas_renderLista() {
     }
     
     el.innerHTML = deudasState.allItems.map((item, index) => {
-        // Calculate remaining based on paid cuotas
+        // Calculate remaining based on PAID cuotas (state === 2)
         let displayMonto = item.monto;
         let cuotasHtml = '';
         if (item.cuotas && item.cuotas.n > 0) {
-            const paidCount = item.cuotas.paid.filter(Boolean).length;
+            const paidCount = item.cuotas.paid.filter(s => s === 2).length;
+            const scheduledCount = item.cuotas.paid.filter(s => s === 1).length;
             const remaining = item.monto - (paidCount * item.cuotas.perCuota);
             displayMonto = Math.max(0, remaining);
-            // Build cuota buttons
-            const btns = item.cuotas.paid.map((isPaid, idx) => {
-                const bg = isPaid
-                    ? 'background:#22c55e;color:#fff;border-color:#22c55e;'
-                    : 'background:rgba(255,255,255,0.06);color:var(--text-muted);border:1px solid rgba(255,255,255,0.12);';
-                const label = isPaid ? '✓' : (idx + 1);
+            // Build cuota buttons — 3 states: 0=gray, 1=yellow, 2=green
+            const btns = item.cuotas.paid.map((state, idx) => {
+                let bg, label;
+                if (state === 2) {
+                    bg = 'background:#22c55e;color:#fff;border-color:#22c55e;';
+                    label = '✓';
+                } else if (state === 1) {
+                    bg = 'background:#f59e0b;color:#fff;border-color:#f59e0b;';
+                    label = '🕐';
+                } else {
+                    bg = 'background:rgba(255,255,255,0.06);color:var(--text-muted);border:1px solid rgba(255,255,255,0.12);';
+                    label = (idx + 1);
+                }
                 return `<button onclick="deudas_toggleCuota(${item.id},${idx})" style="${bg}width:28px;height:28px;border-radius:50%;font-size:0.7rem;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;transition:all .2s;" title="Cuota ${idx+1}/${item.cuotas.n} — ${formatCurrency(item.cuotas.perCuota)}">${label}</button>`;
             }).join('');
+            const statusParts = [];
+            if (paidCount > 0) statusParts.push(`${paidCount} pagadas`);
+            if (scheduledCount > 0) statusParts.push(`${scheduledCount} programadas`);
+            statusParts.push(`${item.cuotas.n - paidCount - scheduledCount} pendientes`);
             cuotasHtml = `
             <div style="margin-top:0.5rem;padding:0.5rem;border-radius:10px;background:rgba(255,255,255,0.03);width:100%;">
               <div style="display:flex;flex-wrap:wrap;gap:4px;justify-content:flex-start;">${btns}</div>
               <div style="margin-top:0.4rem;font-size:0.75rem;color:var(--text-muted);">
-                ${paidCount}/${item.cuotas.n} pagadas · Restante: <strong style="color:${displayMonto > 0 ? '#ef4444' : '#22c55e'}">${formatCurrency(displayMonto)}</strong>
+                ${statusParts.join(' · ')} · Restante: <strong style="color:${displayMonto > 0 ? '#ef4444' : '#22c55e'}">${formatCurrency(displayMonto)}</strong>
               </div>
             </div>`;
         }
@@ -10309,8 +10321,8 @@ async function deudas_swap(idx1, idx2) {
             sheetName = 'Hoja 1';
         }
         
-        const cuotasStr1 = item2.cuotas ? `${item2.cuotas.n}:${item2.cuotas.perCuota.toFixed(2)}:${item2.cuotas.paid.map(p=>p?'1':'0').join(',')}` : '';
-        const cuotasStr2 = item1.cuotas ? `${item1.cuotas.n}:${item1.cuotas.perCuota.toFixed(2)}:${item1.cuotas.paid.map(p=>p?'1':'0').join(',')}` : '';
+        const cuotasStr1 = item2.cuotas ? `${item2.cuotas.n}:${item2.cuotas.perCuota.toFixed(2)}:${item2.cuotas.paid.join(',')}` : '';
+        const cuotasStr2 = item1.cuotas ? `${item1.cuotas.n}:${item1.cuotas.perCuota.toFixed(2)}:${item1.cuotas.paid.join(',')}` : '';
         const dataForRow1 = [[item2.concepto, item2.monto, item2.hidden ? 'TRUE' : 'FALSE', cuotasStr1]];
         const dataForRow2 = [[item1.concepto, item1.monto, item1.hidden ? 'TRUE' : 'FALSE', cuotasStr2]];
         
@@ -10483,7 +10495,7 @@ window.deudas_generarCuotas = async function() {
         const colD = `${n}:${pagoCalc.toFixed(2)}:${flags}`;
         
         // Update cuotas state in memory
-        deudaObj.cuotas = { n, perCuota: pagoCalc, paid: new Array(n).fill(false) };
+        deudaObj.cuotas = { n, perCuota: pagoCalc, paid: new Array(n).fill(0) };
         
         // Write col D to sheet
         let sheetName = 'Deudas';
@@ -10506,14 +10518,62 @@ window.deudas_toggleCuota = async function(id, idx) {
     const item = deudasState.allItems.find(i => i.id === id);
     if (!item || !item.cuotas) return;
     
-    // Toggle paid flag
-    item.cuotas.paid[idx] = !item.cuotas.paid[idx];
+    const currentState = item.cuotas.paid[idx] || 0;
     
-    // Re-render immediately for snappy UX
+    if (currentState === 0) {
+        // 0 → 1: Schedule as Gasto Fijo — ask forma de pago & day
+        const formas = ['Santander', 'BBVA', 'Cuenta Mariel', 'Efectivo', 'Transferencia'];
+        const optsHtml = formas.map((f, i) => `${i + 1}. ${f}`).join('\n');
+        const pick = prompt(`Forma de pago para cuota ${idx + 1}:\n${optsHtml}\n\nEscribe el número (1-${formas.length}):`);
+        if (!pick) return;
+        const formaPago = formas[parseInt(pick) - 1];
+        if (!formaPago) { alert('Opción inválida'); return; }
+        
+        const dia = prompt('¿Día del mes para esta cuota? (1-31):', '1');
+        if (!dia) return;
+        const diaNum = parseInt(dia);
+        if (isNaN(diaNum) || diaNum < 1 || diaNum > 31) { alert('Día inválido'); return; }
+        
+        // Create Gasto Fijo row
+        const concepto = `${item.concepto} - Cuota ${idx + 1}/${item.cuotas.n}`;
+        const monto = item.cuotas.perCuota.toFixed(2);
+        try {
+            await sheetsAppend(SPREADSHEET_FIXED_ID, 'Hoja 1!A:N', [[
+                String(diaNum),          // A: fecha (day)
+                concepto,                // B: concepto
+                monto,                   // C: gasto
+                '',                      // D: ingreso
+                'Deudas',                // E: categoría
+                'FALSE',                 // F: pagado
+                '1',                     // G: pagosMes
+                'false',                 // H: pagosEstado
+                'Mensual',               // I: periodicidad
+                '',                      // J: inicioMes
+                formaPago,               // K: formaPago
+                'Muchachas y Pago de Deudas', // L: budgetCategory
+                'MXN',                   // M: moneda
+                'false',                 // N: waived
+            ]]);
+            showToast(`✅ Gasto Fijo creado: ${concepto}`);
+        } catch(e) {
+            console.error('Error creating Gasto Fijo:', e);
+            showToast('⚠️ Error al crear Gasto Fijo');
+            return;
+        }
+        item.cuotas.paid[idx] = 1;
+    } else if (currentState === 1) {
+        // 1 → 2: Mark as paid
+        item.cuotas.paid[idx] = 2;
+    } else {
+        // 2 → 0: Revert to unpaid (optional undo)
+        item.cuotas.paid[idx] = 0;
+    }
+    
+    // Re-render immediately
     deudas_renderLista();
     
     // Build updated col D string
-    const flags = item.cuotas.paid.map(p => p ? '1' : '0').join(',');
+    const flags = item.cuotas.paid.join(',');
     const colD = `${item.cuotas.n}:${item.cuotas.perCuota.toFixed(2)}:${flags}`;
     
     try {
@@ -10560,7 +10620,7 @@ async function deudas_guardar() {
             const hiddenVal = existing && existing.hidden ? 'TRUE' : 'FALSE';
             // Preserve cuotas (col D) when editing
             const existingCuotas = existing && existing.cuotas
-                ? `${existing.cuotas.n}:${existing.cuotas.perCuota.toFixed(2)}:${existing.cuotas.paid.map(p=>p?'1':'0').join(',')}`
+                ? `${existing.cuotas.n}:${existing.cuotas.perCuota.toFixed(2)}:${existing.cuotas.paid.join(',')}`
                 : '';
             await sheetsUpdate(SPREADSHEET_DEUDAS_ID, `${sheetName}!A${editId}:D${editId}`, [[concepto, monto, hiddenVal, existingCuotas]]);
             showToast('✅ Deuda actualizada');
