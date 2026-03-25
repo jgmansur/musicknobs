@@ -10165,17 +10165,32 @@ async function deudas_cargarDatos() {
     try {
         let rows = [];
         try {
-            rows = await sheetsGet(SPREADSHEET_DEUDAS_ID, 'Deudas!A2:C');
+            rows = await sheetsGet(SPREADSHEET_DEUDAS_ID, 'Deudas!A2:D');
         } catch(e) {
-            rows = await sheetsGet(SPREADSHEET_DEUDAS_ID, 'Hoja 1!A2:C');
+            rows = await sheetsGet(SPREADSHEET_DEUDAS_ID, 'Hoja 1!A2:D');
         }
         
-        deudasState.allItems = rows.map((row, i) => ({
-            id: i + 2,
-            concepto: row[0] || '',
-            monto: parseSheetValue(row[1]),
-            hidden: (row[2] || '').toString().toUpperCase() === 'TRUE',
-        })).filter(i => i.concepto);
+        deudasState.allItems = rows.map((row, i) => {
+            let cuotas = null;
+            const rawD = (row[3] || '').toString().trim();
+            if (rawD) {
+                // Format: N:perCuota:0,1,0,1,...
+                const parts = rawD.split(':');
+                if (parts.length >= 3) {
+                    const n = parseInt(parts[0]) || 0;
+                    const perCuota = parseFloat(parts[1]) || 0;
+                    const flags = parts[2].split(',').map(f => f === '1');
+                    cuotas = { n, perCuota, paid: flags };
+                }
+            }
+            return {
+                id: i + 2,
+                concepto: row[0] || '',
+                monto: parseSheetValue(row[1]),
+                hidden: (row[2] || '').toString().toUpperCase() === 'TRUE',
+                cuotas,
+            };
+        }).filter(i => i.concepto);
         deudasState.loaded = true;
         
         deudas_renderLista();
@@ -10196,7 +10211,31 @@ function deudas_renderLista() {
     }
     
     el.innerHTML = deudasState.allItems.map((item, index) => {
-        if (!item.hidden) total += item.monto;
+        // Calculate remaining based on paid cuotas
+        let displayMonto = item.monto;
+        let cuotasHtml = '';
+        if (item.cuotas && item.cuotas.n > 0) {
+            const paidCount = item.cuotas.paid.filter(Boolean).length;
+            const remaining = item.monto - (paidCount * item.cuotas.perCuota);
+            displayMonto = Math.max(0, remaining);
+            // Build cuota buttons
+            const btns = item.cuotas.paid.map((isPaid, idx) => {
+                const bg = isPaid
+                    ? 'background:#22c55e;color:#fff;border-color:#22c55e;'
+                    : 'background:rgba(255,255,255,0.06);color:var(--text-muted);border:1px solid rgba(255,255,255,0.12);';
+                const label = isPaid ? '✓' : (idx + 1);
+                return `<button onclick="deudas_toggleCuota(${item.id},${idx})" style="${bg}width:28px;height:28px;border-radius:50%;font-size:0.7rem;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;transition:all .2s;" title="Cuota ${idx+1}/${item.cuotas.n} — ${formatCurrency(item.cuotas.perCuota)}">${label}</button>`;
+            }).join('');
+            cuotasHtml = `
+            <div style="margin-top:0.5rem;padding:0.5rem;border-radius:10px;background:rgba(255,255,255,0.03);">
+              <div style="display:flex;flex-wrap:wrap;gap:4px;justify-content:center;">${btns}</div>
+              <div style="text-align:center;margin-top:0.4rem;font-size:0.75rem;color:var(--text-muted);">
+                ${paidCount}/${item.cuotas.n} pagadas · Restante: <strong style="color:${displayMonto > 0 ? '#ef4444' : '#22c55e'}">${formatCurrency(displayMonto)}</strong>
+              </div>
+            </div>`;
+        }
+
+        if (!item.hidden) total += displayMonto;
         const eyeIcon = item.hidden ? '🙈' : '👁️';
         const opacity = item.hidden ? 'opacity:.45;' : '';
         const strikethrough = item.hidden ? 'text-decoration:line-through;' : '';
@@ -10216,14 +10255,15 @@ function deudas_renderLista() {
             </div>
           </div>
           <div class="mc-right" style="align-items:flex-end;gap:.3rem">
-            <span class="mc-monto text-danger" style="font-size:1rem;font-weight:700;${strikethrough}">-${formatCurrency(item.monto)}</span>
+            <span class="mc-monto text-danger" style="font-size:1rem;font-weight:700;${strikethrough}">-${formatCurrency(displayMonto)}</span>
             <div style="display:flex;gap:.3rem;margin-top:.2rem">
               <button class="mini-btn icon-btn-sm" onclick="deudas_toggleHidden(${item.id})" title="${item.hidden ? 'Mostrar en balance' : 'Ocultar del balance'}" style="font-size:0.95rem; padding:4px;">${eyeIcon}</button>
-              <button class="mini-btn icon-btn-sm" onclick="deudas_abrirSplit(${item.id})" title="Dividir en Cuotas Fijas" style="font-size:0.95rem; padding:4px;">✂️</button>
+              <button class="mini-btn icon-btn-sm" onclick="deudas_abrirSplit(${item.id})" title="Dividir en Cuotas" style="font-size:0.95rem; padding:4px;">✂️</button>
               <button class="mini-btn icon-btn-sm" onclick="deudas_editar(${item.id})" style="font-size:0.95rem; padding:4px;">✏️</button>
               <button class="mini-btn mini-btn-danger icon-btn-sm" onclick="deudas_borrar(${item.id})" style="font-size:0.95rem; padding:4px;">🗑️</button>
             </div>
           </div>
+          ${cuotasHtml}
         </div>`;
     }).join('');
     
@@ -10269,11 +10309,13 @@ async function deudas_swap(idx1, idx2) {
             sheetName = 'Hoja 1';
         }
         
-        const dataForRow1 = [[item2.concepto, item2.monto, item2.hidden ? 'TRUE' : 'FALSE']];
-        const dataForRow2 = [[item1.concepto, item1.monto, item1.hidden ? 'TRUE' : 'FALSE']];
+        const cuotasStr1 = item2.cuotas ? `${item2.cuotas.n}:${item2.cuotas.perCuota.toFixed(2)}:${item2.cuotas.paid.map(p=>p?'1':'0').join(',')}` : '';
+        const cuotasStr2 = item1.cuotas ? `${item1.cuotas.n}:${item1.cuotas.perCuota.toFixed(2)}:${item1.cuotas.paid.map(p=>p?'1':'0').join(',')}` : '';
+        const dataForRow1 = [[item2.concepto, item2.monto, item2.hidden ? 'TRUE' : 'FALSE', cuotasStr1]];
+        const dataForRow2 = [[item1.concepto, item1.monto, item1.hidden ? 'TRUE' : 'FALSE', cuotasStr2]];
         
-        await sheetsUpdate(SPREADSHEET_DEUDAS_ID, `${sheetName}!A${rowId1}:C${rowId1}`, dataForRow1);
-        await sheetsUpdate(SPREADSHEET_DEUDAS_ID, `${sheetName}!A${rowId2}:C${rowId2}`, dataForRow2);
+        await sheetsUpdate(SPREADSHEET_DEUDAS_ID, `${sheetName}!A${rowId1}:D${rowId1}`, dataForRow1);
+        await sheetsUpdate(SPREADSHEET_DEUDAS_ID, `${sheetName}!A${rowId2}:D${rowId2}`, dataForRow2);
     } catch(e) {
         console.error('Error swapping:', e);
         showToast('⚠️ Error al reordenar');
@@ -10382,7 +10424,7 @@ window.deudas_abrirSplit = function(id) {
         deudas_calcularSplit();
     });
 
-    document.getElementById('d-split-btn-convert').onclick = deudas_convertirAGastosFijos;
+    document.getElementById('d-split-btn-convert').onclick = deudas_generarCuotas;
     
     deudas_calcularSplit();
     
@@ -10421,100 +10463,66 @@ function deudas_calcularSplit() {
     return pago;
 }
 
-window.deudas_convertirAGastosFijos = async function() {
+window.deudas_generarCuotas = async function() {
     const btn = document.getElementById('d-split-btn-convert');
     const deudaId = parseInt(document.getElementById('d-split-id').value);
     const deudaObj = deudasState.allItems.find(i => i.id === deudaId);
     if (!deudaObj) return;
 
     const n = parseInt(document.getElementById('d-split-payments').value) || 1;
-    const freq = document.getElementById('d-split-frequency').value;
     const pagoCalc = parseFloat(document.getElementById('d-split-preview').dataset.pagoCalc);
-    const formaPago = document.getElementById('d-split-account').value; // puede ser vacio
     
-    if (!confirm(`¿Convertir esta deuda en ${n} pagos de ${formatCurrency(pagoCalc)}? Se inyectarán directamente en Gastos Fijos.`)) return;
+    if (!confirm(`¿Generar ${n} cuotas de ${formatCurrency(pagoCalc)} para "${deudaObj.concepto}"?`)) return;
     
     btn.disabled = true;
-    btn.innerText = 'Convirtiendo...';
+    btn.innerText = 'Generando...';
     
     try {
-        let rows = [];
+        // Build col D value: N:perCuota:0,0,...0
+        const flags = new Array(n).fill('0').join(',');
+        const colD = `${n}:${pagoCalc.toFixed(2)}:${flags}`;
         
-        // Leer la fecha inicial seleccionada por el usuario
-        const dateRaw = document.getElementById('d-split-start-date').value;
-        const d = dateRaw ? new Date(dateRaw + 'T12:00:00') : new Date(); // Usar mediodía para evitar desfases de TimeZone
+        // Update cuotas state in memory
+        deudaObj.cuotas = { n, perCuota: pagoCalc, paid: new Array(n).fill(false) };
         
-        let currentMonth = d.getMonth() + 1;
-        let currentYear = d.getFullYear();
+        // Write col D to sheet
+        let sheetName = 'Deudas';
+        try { await sheetsGet(SPREADSHEET_DEUDAS_ID, 'Deudas!A1:A1'); } catch(e) { sheetName = 'Hoja 1'; }
+        await sheetsUpdate(SPREADSHEET_DEUDAS_ID, `${sheetName}!D${deudaId}`, [[colD]]);
         
-        for (let i = 1; i <= n; i++) {
-            // Calcular Mes de Inicio (YYYY-MM)
-            let mStr = `${currentYear}-${String(currentMonth).padStart(2, '0')}`;
-            
-            // Calcular Día sugerido
-            let diaSugerido = d.getDate();
-            if (freq === 'semanal') {
-                diaSugerido = ((i - 1) % 4) * 7 + 1; // 1, 8, 15, 22 aprox
-                if (i % 4 === 0) { currentMonth++; }
-            } else if (freq === 'quincenal') {
-                diaSugerido = (i % 2 === 1) ? 15 : 30;
-                if (i % 2 === 0) { currentMonth++; }
-            } else if (freq === 'mensual') {
-                currentMonth++;
-            } else if (freq === 'bimestral') {
-                currentMonth += 2;
-            } else if (freq === 'semestral') {
-                currentMonth += 6;
-            }
-            
-            // Roll over years
-            while (currentMonth > 12) {
-                currentMonth -= 12;
-                currentYear++;
-            }
-            
-            // Construir Fila para Gastos Fijos
-            // JSON especial en Columna N (waived) para guardar metadata vinculante
-            const metadata = serializePaymentStates([{
-                "w": false, "deudaTarget": deudaId
-            }]);
-            
-            // CatStr = Deudas (para agrupar fácil en filtros de fijos)
-            rows.push([
-                String(diaSugerido), // A: Fecha
-                `${deudaObj.concepto} (${i}/${n})`, // B: Concepto
-                pagoCalc.toFixed(2), // C: Gasto
-                '', // D: Ingreso
-                'Deudas', // E: Categoria
-                'FALSE', // F: 
-                1, // G: pagosMes
-                serializePaymentStates([false]), // H
-                'Cuota de Deuda', // I: Periodicidad especial
-                mStr, // J: inicioMes
-                formaPago, // K: formaPago / pagador
-                '', // L: budgetCat
-                'MXN', // M: Moneda
-                metadata // N: waived states extended
-            ]);
-        }
-        
-        // Push masivo a Fijos
-        await sheetsAppend(SPREADSHEET_FIXED_ID, 'Hoja 1!A:N', rows);
-        
-        // Hide de balance la deuda original (opcional, pero buena práctica si ya va a estar en fijos)
-        if (!deudaObj.hidden) {
-            await deudas_toggleHidden(deudaId);
-        }
-        
-        showToast(`✅ ${n} cuotas agregadas a Gastos Fijos`);
+        showToast(`✅ ${n} cuotas generadas`);
         deudas_cerrarSplit();
-        if (window.fijos_cargarDatos) window.fijos_cargarDatos(); // refrescar
+        deudas_renderLista();
     } catch(err) {
         console.error(err);
-        alert('❌ Ocurrió un error al convertir a Gastos Fijos');
+        alert('❌ Error al generar cuotas');
     } finally {
         btn.disabled = false;
-        btn.innerText = 'Convertir a Gastos Fijos';
+        btn.innerText = 'Generar Cuotas';
+    }
+};
+
+window.deudas_toggleCuota = async function(id, idx) {
+    const item = deudasState.allItems.find(i => i.id === id);
+    if (!item || !item.cuotas) return;
+    
+    // Toggle paid flag
+    item.cuotas.paid[idx] = !item.cuotas.paid[idx];
+    
+    // Re-render immediately for snappy UX
+    deudas_renderLista();
+    
+    // Build updated col D string
+    const flags = item.cuotas.paid.map(p => p ? '1' : '0').join(',');
+    const colD = `${item.cuotas.n}:${item.cuotas.perCuota.toFixed(2)}:${flags}`;
+    
+    try {
+        let sheetName = 'Deudas';
+        try { await sheetsGet(SPREADSHEET_DEUDAS_ID, 'Deudas!A1:A1'); } catch(e) { sheetName = 'Hoja 1'; }
+        await sheetsUpdate(SPREADSHEET_DEUDAS_ID, `${sheetName}!D${id}`, [[colD]]);
+    } catch(e) {
+        console.error('Error saving cuota toggle:', e);
+        showToast('⚠️ Error al guardar cuota');
     }
 };
 
@@ -10550,10 +10558,14 @@ async function deudas_guardar() {
             // Preserve hidden flag when editing
             const existing = deudasState.allItems.find(i => i.id === parseInt(editId));
             const hiddenVal = existing && existing.hidden ? 'TRUE' : 'FALSE';
-            await sheetsUpdate(SPREADSHEET_DEUDAS_ID, `${sheetName}!A${editId}:C${editId}`, [[concepto, monto, hiddenVal]]);
+            // Preserve cuotas (col D) when editing
+            const existingCuotas = existing && existing.cuotas
+                ? `${existing.cuotas.n}:${existing.cuotas.perCuota.toFixed(2)}:${existing.cuotas.paid.map(p=>p?'1':'0').join(',')}`
+                : '';
+            await sheetsUpdate(SPREADSHEET_DEUDAS_ID, `${sheetName}!A${editId}:D${editId}`, [[concepto, monto, hiddenVal, existingCuotas]]);
             showToast('✅ Deuda actualizada');
         } else {
-            await sheetsAppend(SPREADSHEET_DEUDAS_ID, `${sheetName}!A:C`, [[concepto, Math.abs(monto), 'FALSE']]);
+            await sheetsAppend(SPREADSHEET_DEUDAS_ID, `${sheetName}!A:D`, [[concepto, Math.abs(monto), 'FALSE', '']]);
             showToast('✅ Deuda agregada');
         }
         deudas_cerrarSheet();
