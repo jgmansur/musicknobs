@@ -10167,12 +10167,12 @@ function deudas_renderLista() {
 
         return `
         <div class="movimiento-card" style="${opacity}">
-          <div class="mc-left" style="align-items:center; gap:0.5rem;">
-            <div style="display:flex; flex-direction:column; gap:2px;">
+          <div class="mc-left" style="align-items:flex-start; flex-direction:column; gap:0.3rem;">
+            <span class="mc-lugar" style="font-size:0.95rem; font-weight: 600;${strikethrough}">${item.concepto}</span>
+            <div style="display:flex; flex-direction:row; gap:4px;">
                 ${btnUp}
                 ${btnDown}
             </div>
-            <span class="mc-lugar" style="font-size:0.95rem; font-weight: 600;${strikethrough}">${item.concepto}</span>
           </div>
           <div class="mc-right" style="align-items:flex-end;gap:.3rem">
             <span class="mc-monto text-danger" style="font-size:1rem;font-weight:700;${strikethrough}">-${formatCurrency(item.monto)}</span>
