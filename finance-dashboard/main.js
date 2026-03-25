@@ -10154,23 +10154,33 @@ function deudas_renderLista() {
         return;
     }
     
-    el.innerHTML = deudasState.allItems.map(item => {
+    el.innerHTML = deudasState.allItems.map((item, index) => {
         if (!item.hidden) total += item.monto;
         const eyeIcon = item.hidden ? '🙈' : '👁️';
         const opacity = item.hidden ? 'opacity:.45;' : '';
         const strikethrough = item.hidden ? 'text-decoration:line-through;' : '';
+        
+        const isFirst = index === 0;
+        const isLast = index === deudasState.allItems.length - 1;
+        const btnUp = isFirst ? `<div style="width:24px;"></div>` : `<button class="mini-btn icon-btn-sm" onclick="deudas_moveUp(${item.id})" title="Subir" style="font-size:0.95rem; padding:4px;">⬆️</button>`;
+        const btnDown = isLast ? `<div style="width:24px;"></div>` : `<button class="mini-btn icon-btn-sm" onclick="deudas_moveDown(${item.id})" title="Bajar" style="font-size:0.95rem; padding:4px;">⬇️</button>`;
+
         return `
         <div class="movimiento-card" style="${opacity}">
-          <div class="mc-left">
-            <span class="mc-lugar" style="font-size:1.05rem; font-weight: 600;${strikethrough}">${item.concepto}</span>
+          <div class="mc-left" style="align-items:center; gap:0.5rem;">
+            <div style="display:flex; flex-direction:column; gap:2px;">
+                ${btnUp}
+                ${btnDown}
+            </div>
+            <span class="mc-lugar" style="font-size:0.95rem; font-weight: 600;${strikethrough}">${item.concepto}</span>
           </div>
-          <div class="mc-right" style="align-items:flex-end;gap:.5rem">
-            <span class="mc-monto text-danger" style="font-size:1.1rem;font-weight:700;${strikethrough}">-${formatCurrency(item.monto)}</span>
-            <div style="display:flex;gap:.4rem;margin-top:.2rem">
-              <button class="mini-btn icon-btn-sm" onclick="deudas_toggleHidden(${item.id})" title="${item.hidden ? 'Mostrar en balance' : 'Ocultar del balance'}" style="font-size: 1.1rem; padding: 4px;">${eyeIcon}</button>
-              <button class="mini-btn icon-btn-sm" onclick="deudas_abrirSplit(${item.id})" title="Dividir en Cuotas Fijas" style="font-size: 1.1rem; padding: 4px;">✂️</button>
-              <button class="mini-btn icon-btn-sm" onclick="deudas_editar(${item.id})" style="font-size: 1.1rem; padding: 4px;">✏️</button>
-              <button class="mini-btn mini-btn-danger icon-btn-sm" onclick="deudas_borrar(${item.id})" style="font-size: 1.1rem; padding: 4px;">🗑️</button>
+          <div class="mc-right" style="align-items:flex-end;gap:.3rem">
+            <span class="mc-monto text-danger" style="font-size:1rem;font-weight:700;${strikethrough}">-${formatCurrency(item.monto)}</span>
+            <div style="display:flex;gap:.3rem;margin-top:.2rem">
+              <button class="mini-btn icon-btn-sm" onclick="deudas_toggleHidden(${item.id})" title="${item.hidden ? 'Mostrar en balance' : 'Ocultar del balance'}" style="font-size:0.95rem; padding:4px;">${eyeIcon}</button>
+              <button class="mini-btn icon-btn-sm" onclick="deudas_abrirSplit(${item.id})" title="Dividir en Cuotas Fijas" style="font-size:0.95rem; padding:4px;">✂️</button>
+              <button class="mini-btn icon-btn-sm" onclick="deudas_editar(${item.id})" style="font-size:0.95rem; padding:4px;">✏️</button>
+              <button class="mini-btn mini-btn-danger icon-btn-sm" onclick="deudas_borrar(${item.id})" style="font-size:0.95rem; padding:4px;">🗑️</button>
             </div>
           </div>
         </div>`;
@@ -10179,6 +10189,55 @@ function deudas_renderLista() {
     if (totalEl) totalEl.innerText = total > 0 ? `-${formatCurrency(total)}` : formatCurrency(0);
     deudas_updateKpiCard();
     balance_updateKpi();
+}
+
+window.deudas_moveUp = async function(id) {
+    const idx = deudasState.allItems.findIndex(i => i.id === id);
+    if (idx <= 0) return;
+    await deudas_swap(idx, idx - 1);
+};
+
+window.deudas_moveDown = async function(id) {
+    const idx = deudasState.allItems.findIndex(i => i.id === id);
+    if (idx === -1 || idx === deudasState.allItems.length - 1) return;
+    await deudas_swap(idx, idx + 1);
+};
+
+async function deudas_swap(idx1, idx2) {
+    const item1 = deudasState.allItems[idx1];
+    const item2 = deudasState.allItems[idx2];
+    
+    // Swap in state array
+    deudasState.allItems[idx1] = item2;
+    deudasState.allItems[idx2] = item1;
+    
+    // Swap row IDs to map to the correct rows in Google Sheets
+    const rowId1 = item1.id;
+    const rowId2 = item2.id;
+    item1.id = rowId2;
+    item2.id = rowId1;
+    
+    // UI Feedback is immediate
+    deudas_renderLista();
+    
+    try {
+        let sheetName = 'Deudas';
+        try {
+            await sheetsGet(SPREADSHEET_DEUDAS_ID, 'Deudas!A1:A1');
+        } catch(e) {
+            sheetName = 'Hoja 1';
+        }
+        
+        const dataForRow1 = [[item2.concepto, item2.monto, item2.hidden ? 'TRUE' : 'FALSE']];
+        const dataForRow2 = [[item1.concepto, item1.monto, item1.hidden ? 'TRUE' : 'FALSE']];
+        
+        await sheetsUpdate(SPREADSHEET_DEUDAS_ID, `${sheetName}!A${rowId1}:C${rowId1}`, dataForRow1);
+        await sheetsUpdate(SPREADSHEET_DEUDAS_ID, `${sheetName}!A${rowId2}:C${rowId2}`, dataForRow2);
+    } catch(e) {
+        console.error('Error swapping:', e);
+        showToast('⚠️ Error al reordenar');
+        deudas_cargarDatos();
+    }
 }
 
 window.deudas_editar = function(id) {
