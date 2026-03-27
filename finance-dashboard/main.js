@@ -19,14 +19,13 @@ const SPREADSHEET_RECUERDOS_ID = '1b5PyMcfBQX75BODYRn075Meu-aOMW1lxr81USGE6zJA';
 const RECUERDOS_FOLDER_ID = '1L0t7TjKEugjpOIeYXU_xgoDiRPQ6-YbZ';
 const SPREADSHEET_RSM_ID = '14VsoPHGNTSUSbzMOqGWs2qSL-pGywPgjUoHD3MqIJfo'; // Recibos Salud Mariel
 const RSM_FOLDER_ID = '1-ZfeWQ-Rmh-Wm2WMCkULkN6MQWBuxYnj';
-const APP_VERSION  = 'v7.8.4';
+const APP_VERSION  = 'v7.8.3';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
 // Bump token keys to force re-auth with the new drive scope
 const TOKEN_KEY    = 'google_access_token_v4';
 const EXPIRY_KEY   = 'google_token_expiry_v4';
-const LOGIN_RETURN_HASH_KEY = 'google_login_return_hash_v1';
 const TOKEN_LIFETIME_FALLBACK_SEC = 3500;
 const TOKEN_REFRESH_MARGIN_MS = 5 * 60 * 1000;
 const ACCOUNTS_SHEET_KEY = 'finance_accounts_sheet_v1'; // localStorage key for the accounts spreadsheet ID
@@ -67,24 +66,6 @@ function isStandaloneAppMode() {
     return window.matchMedia?.('(display-mode: standalone)')?.matches || window.navigator.standalone === true;
 }
 
-function auth_rememberReturnHash() {
-    const hash = (window.location.hash || '').replace('#', '').toLowerCase();
-    if (!hash) return;
-    localStorage.setItem(LOGIN_RETURN_HASH_KEY, hash);
-}
-
-function auth_takeReturnHash() {
-    const raw = (localStorage.getItem(LOGIN_RETURN_HASH_KEY) || '').trim().toLowerCase();
-    localStorage.removeItem(LOGIN_RETURN_HASH_KEY);
-    return raw;
-}
-
-function auth_resolveTab(hashLike) {
-    const hash = (hashLike || '').toString().replace('#', '').toLowerCase();
-    const validTabs = ['dashboard', 'gastos', 'fijos', 'deudas', 'plan', 'autos', 'estudio', 'propiedades', 'recuerdos', 'rsm', 'documentos', 'pelo', 'prompts'];
-    return validTabs.includes(hash) ? hash : 'dashboard';
-}
-
 async function firebase_signInWithPopup() {
     if (isStandaloneAppMode()) {
         try {
@@ -102,7 +83,7 @@ async function firebase_signInWithPopup() {
         const provider = new GoogleAuthProvider();
         const result = await signInWithPopup(_fbAuth, provider);
         _fbUid = result.user.uid;
-        localStorage.removeItem(FB_FORCE_INTERACTIVE_KEY);
+        localStorage.setItem(FB_FORCE_INTERACTIVE_KEY, '1');
         debugUpdate({ auth: 'Firebase popup OK', uid: _fbUid, token: accessToken ? 'Si' : 'No' });
         return true;
     } catch (e) {
@@ -130,7 +111,6 @@ async function firebase_restoreRedirectResult() {
         const result = await getRedirectResult(_fbAuth);
         if (result?.user?.uid) {
             _fbUid = result.user.uid;
-            localStorage.removeItem(FB_FORCE_INTERACTIVE_KEY);
             debugUpdate({ auth: 'Firebase redirect OK', uid: _fbUid, token: accessToken ? 'Si' : 'No' });
         }
     } catch (e) {
@@ -597,12 +577,7 @@ document.addEventListener('DOMContentLoaded', () => {
         hideLoginModal();
         firebase_restoreRedirectResult().then(() => {
             if (!_fbUid) debugUpdate({ auth: 'Firebase pendiente (se conecta al guardar cuentas)' });
-            balance_loadAccounts()
-                .then(() => balance_updateKpi())
-                .catch((err) => {
-                    console.warn('balance_loadAccounts boot failed:', err);
-                    showToast('⚠️ Sesión requerida para cargar datos actuales');
-                });
+            balance_loadAccounts().then(() => balance_updateKpi());
             showTab(getInitialTabFromHash());
         });
     } else {
@@ -613,12 +588,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 hideLoginModal();
                 firebase_restoreRedirectResult().then(() => {
                     if (!_fbUid) debugUpdate({ auth: 'Google OK · Firebase pendiente' });
-                    balance_loadAccounts()
-                        .then(() => balance_updateKpi())
-                        .catch((err) => {
-                            console.warn('balance_loadAccounts silent-login failed:', err);
-                            showToast('⚠️ Sesión requerida para cargar datos actuales');
-                        });
+                    balance_loadAccounts().then(() => balance_updateKpi());
                     showTab(getInitialTabFromHash());
                 });
             });
@@ -1058,63 +1028,86 @@ async function balance_getOrCreateSheet() {
 
 async function balance_loadAccounts() {
     if (!accessToken) {
-        // Not logged in — keep safe defaults, require login for fresh cloud data
-        balanceAccounts = DEFAULT_ACCOUNTS.map(a => balance_normalizeAccount(a));
+        // Not logged in — use localStorage fallback
+        try {
+            const raw = localStorage.getItem('finance_accounts_v1');
+            balanceAccounts = raw ? JSON.parse(raw).map(balance_normalizeAccount) : DEFAULT_ACCOUNTS.map(a => balance_normalizeAccount(a));
+        } catch { balanceAccounts = DEFAULT_ACCOUNTS.map(a => balance_normalizeAccount(a)); }
         balance_refreshUsdMxnRate();
         balance_refreshBtcMxnRate();
         balance_refreshInvestmentRates();
-        debugUpdate({ load: `Auth requerida (${balanceAccounts.length})`, token: 'No' });
+        debugUpdate({ load: `localStorage (${balanceAccounts.length})`, token: 'No' });
         return;
     }
-    if (!_fbUid) await firebase_signIn(accessToken, { allowPopupFallback: false });
-    if (!_fbUid) {
-        debugUpdate({ load: 'Firestore requerido (sin uid)', token: 'Si' });
-        showLoginModal();
-        throw new Error('Firebase auth required');
+    // ── 1. Try Firestore first (fastest, cloud-native) ──────────
+    if (_fbUid) {
+        try {
+            const ref  = doc(_fbDb, 'users', _fbUid, 'balance', 'accounts');
+            const snap = await getDoc(ref);
+            if (snap.exists()) {
+                const data = snap.data();
+                balanceAccounts = (data.accounts || []).map(balance_normalizeAccount);
+                const cloudAnchor = Number(data.logNetAnchor);
+                if (Number.isFinite(cloudAnchor)) {
+                    balanceLogNetAnchor = cloudAnchor;
+                    localStorage.setItem('balance_log_anchor_v1', String(balanceLogNetAnchor));
+                    balanceAnchorNeedsMigration = false;
+                } else {
+                    balanceAnchorNeedsMigration = true;
+                }
+                if (data.accountLogAnchor && typeof data.accountLogAnchor === 'object') {
+                    balanceAccountLogAnchor = data.accountLogAnchor;
+                    localStorage.setItem(ACCOUNT_LOG_ANCHOR_KEY, JSON.stringify(balanceAccountLogAnchor));
+                }
+                // Update localStorage cache
+                localStorage.setItem('finance_accounts_v1', JSON.stringify(balanceAccounts));
+                balance_refreshUsdMxnRate();
+                balance_refreshBtcMxnRate();
+                balance_refreshInvestmentRates();
+                debugUpdate({ load: `Firestore (${balanceAccounts.length})`, uid: _fbUid || '-' });
+                return;
+            }
+            // No Firestore data yet — fall through to Sheets to migrate
+        } catch (err) {
+            debugUpdate({ load: `Firestore error -> Sheets (${debugShort(err.code || err.message)})` });
+            console.warn('[Firebase] Firestore load failed, falling back to Sheets:', err.message);
+        }
     }
-
-    // Firestore is the source of truth for daily use
+    // ── 2. Fallback: Google Sheets ──────────────────────────────
     try {
-        const ref  = doc(_fbDb, 'users', _fbUid, 'balance', 'accounts');
-        const snap = await getDoc(ref);
-        if (snap.exists()) {
-            const data = snap.data();
-            balanceAccounts = (data.accounts || []).map(balance_normalizeAccount);
-            const cloudAnchor = Number(data.logNetAnchor);
-            if (Number.isFinite(cloudAnchor)) {
-                balanceLogNetAnchor = cloudAnchor;
-                localStorage.setItem('balance_log_anchor_v1', String(balanceLogNetAnchor));
-                balanceAnchorNeedsMigration = false;
-            } else {
-                balanceAnchorNeedsMigration = true;
-            }
-            if (data.accountLogAnchor && typeof data.accountLogAnchor === 'object') {
-                balanceAccountLogAnchor = data.accountLogAnchor;
-                localStorage.setItem(ACCOUNT_LOG_ANCHOR_KEY, JSON.stringify(balanceAccountLogAnchor));
-            }
-            localStorage.setItem('finance_accounts_v1', JSON.stringify(balanceAccounts));
-            balance_refreshUsdMxnRate();
-            balance_refreshBtcMxnRate();
-            balance_refreshInvestmentRates();
-            debugUpdate({ load: `Firestore (${balanceAccounts.length})`, uid: _fbUid || '-' });
-            return;
-        }
-        // First-time user in Firestore: seed defaults there (no Sheets fallback)
-        if (!snap.exists()) {
+        const sid  = await balance_getOrCreateSheet();
+        const rows = await sheetsGet(sid, 'A2:K');
+        if (!rows.length) {
             balanceAccounts = DEFAULT_ACCOUNTS.map(a => balance_normalizeAccount(a));
-            await balance_saveToFirestore();
-            localStorage.setItem('finance_accounts_v1', JSON.stringify(balanceAccounts));
-            balance_refreshUsdMxnRate();
-            balance_refreshBtcMxnRate();
-            balance_refreshInvestmentRates();
-            debugUpdate({ load: `Firestore seeded (${balanceAccounts.length})`, uid: _fbUid || '-' });
-            return;
+            await balance_writeToSheet(sid); // seed defaults
+        } else {
+            balanceAccounts = rows
+                .filter(r => r[0])
+                .map(r => balance_normalizeAccount({
+                    id:      Number(r[0]) || Date.now(),
+                    name:    r[1] || '',
+                    balance: typeof r[2] === 'number' ? r[2] : parseSheetValue(r[2]),
+                    type:    r[3] || 'bank',
+                    hidden:  (r[4] || '').toString().toUpperCase() === 'TRUE',
+                    creditLimit: typeof r[5] === 'number' ? r[5] : parseSheetValue(r[5]),
+                    creditLimitVisible: (r[6] || '').toString().toUpperCase() === 'TRUE',
+                    currency: (r[7] || 'MXN').toString().toUpperCase(),
+                    investmentType: (r[8] || 'custom').toString().toLowerCase(),
+                    customAnnualRate: typeof r[9] === 'number' ? r[9] : parseSheetValue(r[9]),
+                    bitcoinInitialMxn: typeof r[10] === 'number' ? r[10] : parseSheetValue(r[10]),
+                }));
         }
+        debugUpdate({ load: `Sheets (${balanceAccounts.length})` });
+        balance_refreshUsdMxnRate();
+        balance_refreshBtcMxnRate();
+        balance_refreshInvestmentRates();
+        // Migrate to Firestore now that we have the data
+        if (_fbUid) balance_saveToFirestore().catch(console.warn);
     } catch (err) {
-        console.error('Error loading accounts from Firestore:', err);
-        debugUpdate({ load: `Firestore error (${debugShort(err?.code || err?.message || err)})` });
-        showLoginModal();
-        throw err;
+        console.error('Error loading accounts from Sheets:', err);
+        const raw = localStorage.getItem('finance_accounts_v1');
+        balanceAccounts = raw ? JSON.parse(raw).map(balance_normalizeAccount) : DEFAULT_ACCOUNTS.map(a => balance_normalizeAccount(a));
+        debugUpdate({ load: `localStorage fallback (${balanceAccounts.length})` });
     }
 }
 
@@ -1169,7 +1162,7 @@ async function balance_saveAccounts(opts = {}) {
         debugUpdate({ save: `Solo localStorage (${balanceAccounts.length})`, token: 'No' });
         return;
     }
-    if (!_fbUid) await firebase_signIn(accessToken, { allowPopupFallback: false });
+    if (!_fbUid) await firebase_signIn(accessToken, { allowPopupFallback: true });
 
     // 2. Firestore first (primary), then Sheets backup (deferred by default)
     if (_fbUid) {
@@ -1194,16 +1187,24 @@ async function balance_saveAccounts(opts = {}) {
         } catch (err) {
             const code = err?.code || err?.status || 'ERR';
             console.warn('[Firestore] save failed:', debugShort(err?.message || err));
-            debugUpdate({ save: `Firestore:ERR(${code}) | Sheets:SKIP`, token: 'Si' });
-            showLoginModal();
-            throw err;
+            // Fallback: if Firestore fails, force synchronous Sheets backup.
+            try {
+                const sid = await balance_getOrCreateSheet();
+                await balance_writeToSheet(sid);
+                debugUpdate({ save: `Firestore:ERR(${code}) | Sheets:OK`, token: 'Si' });
+                return;
+            } catch (sheetErr) {
+                const sheetCode = sheetErr?.code || sheetErr?.status || 'ERR';
+                debugUpdate({ save: `Firestore:ERR(${code}) | Sheets:ERR(${sheetCode})`, token: 'Si' });
+                throw sheetErr;
+            }
         }
     }
 
-    // No Firebase UID: do not fallback to stale stores.
-    debugUpdate({ save: 'Firestore:SKIP(no uid) | Sheets:SKIP', token: 'Si' });
-    showLoginModal();
-    throw new Error('Firebase auth required for save');
+    // No Firebase UID: rely on Sheets only.
+    const sid = await balance_getOrCreateSheet();
+    await balance_writeToSheet(sid);
+    debugUpdate({ save: 'Firestore:SKIP(no uid) | Sheets:OK', token: 'Si' });
 }
 
 // ── Compute helpers ──────────────────────────────────────
@@ -1757,7 +1758,6 @@ function refreshCurrentTab() {
 // GOOGLE AUTH
 // =============================================
 function startGoogleLogin() {
-    auth_rememberReturnHash();
     if (window.google?.accounts?.oauth2) { requestToken({ interactive: true }); return; }
     const btn = document.getElementById('login-google-btn');
     btn.innerText = 'Cargando...'; btn.disabled = true;
@@ -1810,18 +1810,12 @@ async function requestToken(options = {}) {
                         debugUpdate({ token: 'Si (cache)', auth: 'Google OAuth OK' });
                         hideLoginModal();
                         if (tokenRequestInteractive) {
-                            const returnTab = auth_resolveTab(auth_takeReturnHash());
                             // Recover redirect session if any; connect Firebase lazily on account save.
                             firebase_restoreRedirectResult().then(() => {
                                 if (!_fbUid) debugUpdate({ auth: 'Google OK · Firebase pendiente' });
-                                balance_loadAccounts()
-                                    .then(() => balance_updateKpi())
-                                    .catch((err) => {
-                                        console.warn('balance_loadAccounts after login failed:', err);
-                                        showToast('⚠️ Inicia sesión de nuevo para cargar datos actuales');
-                                    });
+                                balance_loadAccounts().then(() => balance_updateKpi());
                             });
-                            showTab(returnTab);
+                            showTab('dashboard');
                         }
                     } else if (tokenRequestInteractive) {
                         showLoginModal();
@@ -1832,7 +1826,7 @@ async function requestToken(options = {}) {
             });
         }
         try {
-            tokenClient.requestAccessToken({ prompt: '' });
+            tokenClient.requestAccessToken({ prompt: interactive ? 'select_account' : '' });
         } catch (_) {
             if (tokenRequestWatchdog) {
                 clearTimeout(tokenRequestWatchdog);
