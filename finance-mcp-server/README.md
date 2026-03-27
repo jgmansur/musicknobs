@@ -83,11 +83,15 @@ curl "https://<your-app>.fly.dev/api/widget/accounts?token=$WIDGET_TOKEN"
 ## Widgy endpoint
 
 - `GET /api/widget/accounts`
-- Auth via query `token` (or header `x-widget-token`)
+- Auth via `WIDGET_TOKEN` only (query `token` or header `x-widget-token`)
 - Returns account balances converted to MXN (`USD` and `BTC` converted using live rates with fallback values)
 - Useful params:
   - `limit` (1-20, default 8)
   - `includeHidden=true|false`
+- Security notes:
+  - Do not reuse `API_TOKEN` in Widgy.
+  - Rotate `WIDGET_TOKEN` periodically (`fly secrets set WIDGET_TOKEN="..."`).
+  - Endpoint response is minimized for widgets (no raw original balances or account IDs).
 
 ## AI Mirror behavior
 

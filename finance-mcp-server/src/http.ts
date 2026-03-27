@@ -28,11 +28,14 @@ app.addHook("onRequest", async (req, reply) => {
   if (req.url === "/health") return;
 
   if (req.url.startsWith("/api/widget/accounts")) {
-    const expected = (config.widgetToken || config.apiToken || "").trim();
+    const expected = (config.widgetToken || "").trim();
     const queryToken = String((req.query as Record<string, unknown>)?.token || "").trim();
     const headerToken = String(req.headers["x-widget-token"] || "").trim();
     const token = headerToken || queryToken;
-    if (!expected || !token || token !== expected) {
+    if (!expected) {
+      return reply.code(503).send({ error: "Widget endpoint disabled" });
+    }
+    if (!token || token !== expected) {
       return reply.code(401).send({ error: "Unauthorized" });
     }
     return;
@@ -118,6 +121,8 @@ app.get("/api/widget/accounts", async (req, reply) => {
   });
   const parsed = schema.safeParse(req.query);
   if (!parsed.success) return reply.code(400).send({ error: parsed.error.flatten() });
+  reply.header("Cache-Control", "no-store, max-age=0");
+  reply.header("Pragma", "no-cache");
   return getWidgetAccountsSnapshot(parsed.data.limit || 8, !!parsed.data.includeHidden);
 });
 

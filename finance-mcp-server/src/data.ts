@@ -327,12 +327,9 @@ export async function getWidgetAccountsSnapshot(limit = 8, includeHidden = false
     const balanceOriginal = parseNumber(a.balance);
     const balanceMxn = convertToMxn(balanceOriginal, a.currency, fx);
     return {
-      id: a.id,
       name: a.name,
       type: a.type,
-      currency: (a.currency || "MXN").toUpperCase(),
-      balanceOriginal,
-      balanceMxn,
+      balanceMxn: Math.round(balanceMxn),
     };
   });
 
@@ -345,19 +342,17 @@ export async function getWidgetAccountsSnapshot(limit = 8, includeHidden = false
   return {
     ok: true,
     updatedAt: new Date().toISOString(),
-    rates: {
-      usdMxn: fx.usdMxn,
-      btcMxn: fx.btcMxn,
-      source: fx.source,
-      stale: fx.stale,
-    },
     totals: {
-      netMxn,
-      assetsMxn,
-      liabilitiesMxn,
+      netMxn: Math.round(netMxn),
+      assetsMxn: Math.round(assetsMxn),
+      liabilitiesMxn: Math.round(liabilitiesMxn),
       countVisible: mapped.length,
     },
     accounts: sliced,
+    meta: {
+      fxSource: fx.source,
+      fxStale: fx.stale,
+    },
   };
 }
 
