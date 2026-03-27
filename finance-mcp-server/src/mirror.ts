@@ -58,6 +58,7 @@ async function getSourceBooks(): Promise<SourceBook[]> {
     { key: "fixed", spreadsheetId: config.spreadsheets.fixed, title: "Gastos Fijos" },
     { key: "autos", spreadsheetId: config.spreadsheets.autos, title: "Autos+Docs+Pelo+Studio" },
     { key: "recuerdos", spreadsheetId: config.spreadsheets.recuerdos, title: "Bitacora Recuerdos" },
+    { key: "rsm", spreadsheetId: config.spreadsheets.rsm, title: "Recibos Salud Mariel" },
   ].filter((b) => !!b.spreadsheetId);
 
   const accountsId = await resolveAccountsSheetId();

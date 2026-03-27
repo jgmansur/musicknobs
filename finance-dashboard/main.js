@@ -17,7 +17,9 @@ const SPREADSHEET_AUTOS_ID = SPREADSHEET_DEUDAS_ID; // Autos + Reparaciones live
 const SPREADSHEET_ESTUDIO_ID = SPREADSHEET_DEUDAS_ID; // Estudio + Plugins in same workbook
 const SPREADSHEET_RECUERDOS_ID = '1b5PyMcfBQX75BODYRn075Meu-aOMW1lxr81USGE6zJA'; // Bitacora Recuerdos
 const RECUERDOS_FOLDER_ID = '1L0t7TjKEugjpOIeYXU_xgoDiRPQ6-YbZ';
-const APP_VERSION  = 'v7.7.7';
+const SPREADSHEET_RSM_ID = '14VsoPHGNTSUSbzMOqGWs2qSL-pGywPgjUoHD3MqIJfo'; // Recibos Salud Mariel
+const RSM_FOLDER_ID = '1-ZfeWQ-Rmh-Wm2WMCkULkN6MQWBuxYnj';
+const APP_VERSION  = 'v7.7.8';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -169,7 +171,7 @@ let tokenRequestInFlight = null;
 let tokenRequestInteractive = true;
 let tokenRequestWatchdog = null;
 let currentTab  = 'dashboard';
-let tabInited   = { dashboard: false, gastos: false, fijos: false, deudas: false, plan: false, autos: false, propiedades: false, recuerdos: false, documentos: false, pelo: false, prompts: false, estudio: false };
+let tabInited   = { dashboard: false, gastos: false, fijos: false, deudas: false, plan: false, autos: false, propiedades: false, recuerdos: false, rsm: false, documentos: false, pelo: false, prompts: false, estudio: false };
 const MELI_ACCESS_TOKEN_KEY = 'meli_access_token_v1';
 const MELI_REFRESH_TOKEN_KEY = 'meli_refresh_token_v1';
 const MELI_EXPIRES_AT_KEY = 'meli_expires_at_v1';
@@ -524,6 +526,7 @@ document.addEventListener('DOMContentLoaded', () => {
     autos_bindEvents();
     propiedades_bindEvents();
     recuerdos_bindEvents();
+    rsm_bindEvents();
     documentos_bindEvents();
     pelo_bindEvents();
     prompts_bindEvents();
@@ -559,7 +562,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Helper para obtener tab inicial desde el hash de la URL
     function getInitialTabFromHash() {
         const hash = (window.location.hash || '').replace('#', '').toLowerCase();
-        const validTabs = ['dashboard', 'gastos', 'fijos', 'deudas', 'plan', 'autos', 'estudio', 'propiedades', 'recuerdos', 'documentos', 'pelo', 'prompts'];
+        const validTabs = ['dashboard', 'gastos', 'fijos', 'deudas', 'plan', 'autos', 'estudio', 'propiedades', 'recuerdos', 'rsm', 'documentos', 'pelo', 'prompts'];
         return validTabs.includes(hash) ? hash : 'dashboard';
     }
 
@@ -1738,6 +1741,7 @@ function showTab(name) {
         if (name === 'autos')     autos_cargarVista();
         if (name === 'propiedades') propiedades_cargarVista();
         if (name === 'recuerdos') recuerdos_cargarVista();
+        if (name === 'rsm')       rsm_cargarVista();
         if (name === 'documentos') documentos_cargarVista();
         if (name === 'pelo')      pelo_cargarVista();
         if (name === 'prompts')   prompts_cargarVista();
@@ -8255,6 +8259,364 @@ async function propiedades_uploadFirstFile(inputId) {
     if (feedback) feedback.innerText = `✅ Archivo cargado: ${first.name}`;
     input.value = '';
     return link;
+}
+
+// =============================================
+// RSM MODULE (Recibos Salud Mariel)
+// =============================================
+const RSM_SHEET = 'Hoja 1';
+const RSM_HEADERS = ['fecha', 'monto', 'url'];
+
+const rsmState = {
+    items: [],
+    loading: false,
+    loaded: false,
+    filterDate: '',
+    visibleCount: 10,
+    limit: 10,
+    editingRow: 0,
+    editingUrl: '',
+    pendingFile: null,
+    detailRow: 0,
+};
+
+function rsm_bindEvents() {
+    document.getElementById('rsm-btn-guardar')?.addEventListener('click', rsm_guardar);
+    document.getElementById('rsm-btn-cancel-edit')?.addEventListener('click', rsm_resetForm);
+    document.getElementById('rsm-filter-date')?.addEventListener('change', (e) => {
+        rsmState.filterDate = (e.target.value || '').trim();
+        rsm_render(true);
+    });
+    document.getElementById('rsm-btn-more')?.addEventListener('click', () => {
+        rsmState.visibleCount += rsmState.limit;
+        rsm_render(false);
+    });
+    document.getElementById('rsm-monto')?.addEventListener('input', (e) => {
+        const input = e.target;
+        input.value = rsm_formatMontoInput(input.value);
+    });
+    document.getElementById('rsm-archivo')?.addEventListener('change', (e) => {
+        const input = e.target;
+        const file = input?.files?.[0] || null;
+        rsmState.pendingFile = file;
+        const statusEl = document.getElementById('rsm-file-status');
+        if (statusEl) statusEl.innerText = file ? `📎 ${file.name}` : '';
+    });
+
+    document.getElementById('rsm-list')?.addEventListener('click', (e) => {
+        const openBtn = e.target.closest('[data-rsm-open]');
+        if (openBtn) {
+            const row = parseInt(openBtn.dataset.rsmOpen || '0', 10);
+            if (row) rsm_openDetail(row);
+            return;
+        }
+    });
+
+    document.getElementById('rsm-detail-overlay')?.addEventListener('click', rsm_closeDetail);
+    document.getElementById('rsm-detail-close')?.addEventListener('click', rsm_closeDetail);
+    document.getElementById('rsm-detail-edit')?.addEventListener('click', rsm_editFromDetail);
+    document.getElementById('rsm-detail-delete')?.addEventListener('click', rsm_deleteFromDetail);
+}
+
+async function rsm_cargarVista() {
+    if (!accessToken || rsmState.loading) return;
+    rsmState.loading = true;
+    const listEl = document.getElementById('rsm-list');
+    if (listEl) listEl.innerHTML = '<div class="loading-spinner">⏳ Cargando recibos...</div>';
+    try {
+        await rsm_ensureSheet();
+        await rsm_loadData();
+        rsm_resetForm();
+        rsm_render(true);
+    } catch (e) {
+        console.error('rsm_cargarVista:', e);
+        if (listEl) listEl.innerHTML = '<div class="empty-state text-danger">❌ Error cargando RSM</div>';
+    } finally {
+        rsmState.loading = false;
+    }
+}
+
+async function rsm_ensureSheet() {
+    try {
+        await sheetsGet(SPREADSHEET_RSM_ID, `${RSM_SHEET}!A1:A1`);
+    } catch (_) {
+        const url = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_RSM_ID}:batchUpdate`;
+        await authFetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ requests: [{ addSheet: { properties: { title: RSM_SHEET } } }] }),
+        });
+    }
+    const head = await sheetsGet(SPREADSHEET_RSM_ID, `${RSM_SHEET}!A1:C1`).catch(() => []);
+    const first = (head[0] || []);
+    const hasData = first.some((x) => (x || '').toString().trim() !== '');
+    if (!hasData) {
+        await sheetsUpdate(SPREADSHEET_RSM_ID, `${RSM_SHEET}!A1:C1`, [RSM_HEADERS]);
+    }
+}
+
+function rsm_todayYmd() {
+    const now = new Date();
+    const y = now.getFullYear();
+    const m = String(now.getMonth() + 1).padStart(2, '0');
+    const d = String(now.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+}
+
+function rsm_excelSerialToYmd(value) {
+    const ms = (value - 25569) * 86400000;
+    const d = new Date(ms);
+    if (Number.isNaN(d.getTime())) return '';
+    const y = d.getUTCFullYear();
+    const m = String(d.getUTCMonth() + 1).padStart(2, '0');
+    const day = String(d.getUTCDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+}
+
+function rsm_toYmd(value) {
+    if (typeof value === 'number' && Number.isFinite(value)) return rsm_excelSerialToYmd(value);
+    const raw = (value || '').toString().trim();
+    if (!raw) return '';
+    if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) return raw;
+    const d = new Date(raw);
+    if (Number.isNaN(d.getTime())) return raw.slice(0, 10);
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+}
+
+function rsm_formatFechaBonita(ymd) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test((ymd || '').toString())) return (ymd || 'Fecha desconocida');
+    const [y, m, d] = ymd.split('-').map(Number);
+    const date = new Date(y, m - 1, d, 12, 0, 0);
+    if (Number.isNaN(date.getTime())) return ymd;
+    return date.toLocaleDateString('es-MX', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+function rsm_formatMontoInput(value) {
+    const cleaned = (value || '').toString().replace(/[^0-9.]/g, '');
+    if (!cleaned) return '';
+    const [intRaw = '', decRaw = ''] = cleaned.split('.');
+    const intPart = intRaw.replace(/^0+(?=\d)/, '') || '0';
+    const grouped = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    if (cleaned.includes('.')) return `${grouped}.${decRaw.slice(0, 2)}`;
+    return grouped;
+}
+
+function rsm_parseMonto(value) {
+    const clean = (value || '').toString().replace(/,/g, '').replace(/\$/g, '').trim();
+    const n = parseFloat(clean);
+    return Number.isFinite(n) ? n : 0;
+}
+
+async function rsm_loadData() {
+    const rows = await sheetsGet(SPREADSHEET_RSM_ID, `${RSM_SHEET}!A2:C`).catch(() => []);
+    const parsed = rows.map((row, idx) => ({
+        rowNum: idx + 2,
+        fechaInput: rsm_toYmd(row[0]),
+        monto: parseSheetValue(row[1]),
+        url: (row[2] || '').toString().trim(),
+    }));
+    parsed.sort((a, b) => {
+        const ta = new Date(`${a.fechaInput || '1970-01-01'}T12:00:00`).getTime() || 0;
+        const tb = new Date(`${b.fechaInput || '1970-01-01'}T12:00:00`).getTime() || 0;
+        if (tb !== ta) return tb - ta;
+        return b.rowNum - a.rowNum;
+    });
+    rsmState.items = parsed;
+    rsmState.loaded = true;
+}
+
+function rsm_getFiltered() {
+    if (!rsmState.filterDate) return [...rsmState.items];
+    return rsmState.items.filter((item) => item.fechaInput === rsmState.filterDate);
+}
+
+function rsm_render(resetPagination = false) {
+    const listEl = document.getElementById('rsm-list');
+    if (!listEl) return;
+    if (resetPagination) rsmState.visibleCount = rsmState.limit;
+
+    const filtered = rsm_getFiltered();
+    const visible = filtered.slice(0, rsmState.visibleCount);
+    const totalMonto = filtered.reduce((sum, item) => sum + (parseFloat(item.monto) || 0), 0);
+    const totalEl = document.getElementById('rsm-total');
+    if (totalEl) totalEl.innerText = formatCurrency(totalMonto);
+    const subtitle = document.getElementById('rsm-subtitle');
+    if (subtitle) subtitle.innerText = rsmState.filterDate ? `Filtrado: ${filtered.length} recibo(s)` : `Total historico: ${rsmState.items.length} recibo(s)`;
+
+    if (!visible.length) {
+        listEl.innerHTML = '<div class="empty-state">No hay recibos para mostrar.</div>';
+    } else {
+        listEl.innerHTML = visible.map((item) => {
+            const hasUrl = !!item.url;
+            return `
+            <div class="movimiento-card" style="align-items:center;gap:.55rem;">
+              <div class="mc-izq">
+                <div class="mc-fecha">📅 ${rsm_formatFechaBonita(item.fechaInput)}</div>
+                <div class="mc-concepto">${hasUrl ? '📎 Con evidencia' : 'Sin evidencia'}</div>
+              </div>
+              <div class="mc-der" style="display:grid;justify-items:end;gap:.35rem;">
+                <div class="mc-monto" style="font-weight:700;color:var(--text-main);">${formatCurrency(item.monto)}</div>
+                <button class="mini-btn" data-rsm-open="${item.rowNum}">Ver detalle</button>
+              </div>
+            </div>`;
+        }).join('');
+    }
+
+    const moreBtn = document.getElementById('rsm-btn-more');
+    if (moreBtn) {
+        moreBtn.classList.toggle('hidden', rsmState.visibleCount >= filtered.length);
+        if (!moreBtn.classList.contains('hidden')) {
+            const left = Math.max(0, filtered.length - rsmState.visibleCount);
+            moreBtn.innerText = `Ver mas (${left})`;
+        }
+    }
+}
+
+function rsm_setStatus(msg = '') {
+    const el = document.getElementById('rsm-status');
+    if (el) el.innerText = msg;
+}
+
+function rsm_resetForm() {
+    const fechaEl = document.getElementById('rsm-fecha');
+    const montoEl = document.getElementById('rsm-monto');
+    const fileEl = document.getElementById('rsm-archivo');
+    const saveBtn = document.getElementById('rsm-btn-guardar');
+    const cancelBtn = document.getElementById('rsm-btn-cancel-edit');
+    const fileStatus = document.getElementById('rsm-file-status');
+    if (fechaEl) fechaEl.value = rsm_todayYmd();
+    if (montoEl) montoEl.value = '';
+    if (fileEl) fileEl.value = '';
+    if (fileStatus) fileStatus.innerText = '';
+    rsmState.pendingFile = null;
+    rsmState.editingRow = 0;
+    rsmState.editingUrl = '';
+    if (saveBtn) saveBtn.innerText = 'Guardar';
+    if (cancelBtn) cancelBtn.classList.add('hidden');
+    rsm_setStatus('');
+}
+
+function rsm_extractDriveId(url) {
+    const match = (url || '').toString().match(/[-\w]{25,}/);
+    return match ? match[0] : '';
+}
+
+async function rsm_guardar() {
+    const fechaEl = document.getElementById('rsm-fecha');
+    const montoEl = document.getElementById('rsm-monto');
+    const saveBtn = document.getElementById('rsm-btn-guardar');
+    const cancelBtn = document.getElementById('rsm-btn-cancel-edit');
+    if (!fechaEl || !montoEl || !saveBtn) return;
+
+    const fecha = (fechaEl.value || '').trim() || rsm_todayYmd();
+    const monto = rsm_parseMonto(montoEl.value);
+    if (!monto) {
+        showToast('⚠️ Falta el monto');
+        montoEl.focus();
+        return;
+    }
+
+    saveBtn.disabled = true;
+    if (cancelBtn) cancelBtn.disabled = true;
+    saveBtn.innerText = rsmState.editingRow ? 'Actualizando...' : 'Guardando...';
+    try {
+        let url = rsmState.editingUrl || '';
+        if (rsmState.pendingFile) {
+            rsm_setStatus('Subiendo evidencia...');
+            url = await driveUploadFile(rsmState.pendingFile, RSM_FOLDER_ID);
+        }
+        const row = [fecha, monto, url];
+        if (rsmState.editingRow) {
+            await sheetsUpdate(SPREADSHEET_RSM_ID, `${RSM_SHEET}!A${rsmState.editingRow}:C${rsmState.editingRow}`, [row]);
+            showToast('✅ Recibo actualizado');
+        } else {
+            await sheetsAppend(SPREADSHEET_RSM_ID, `${RSM_SHEET}!A:C`, [row]);
+            showToast('✅ Recibo guardado');
+        }
+        await rsm_loadData();
+        rsm_render(true);
+        rsm_resetForm();
+    } catch (e) {
+        console.error('rsm_guardar:', e);
+        rsm_setStatus('Error al guardar');
+        showToast('⚠️ Error al guardar recibo');
+    } finally {
+        saveBtn.disabled = false;
+        if (cancelBtn) cancelBtn.disabled = false;
+        if (!rsmState.editingRow) saveBtn.innerText = 'Guardar';
+    }
+}
+
+function rsm_openDetail(rowNum) {
+    const item = rsmState.items.find((x) => x.rowNum === rowNum);
+    if (!item) return;
+    rsmState.detailRow = rowNum;
+    const montoEl = document.getElementById('rsm-detail-monto');
+    const fechaEl = document.getElementById('rsm-detail-fecha');
+    const linkEl = document.getElementById('rsm-detail-link');
+    if (montoEl) montoEl.innerText = formatCurrency(item.monto);
+    if (fechaEl) fechaEl.innerText = rsm_formatFechaBonita(item.fechaInput);
+    if (linkEl) {
+        linkEl.innerHTML = item.url
+            ? `<a href="${item.url}" target="_blank" rel="noopener" class="primary-btn" style="display:inline-flex;align-items:center;justify-content:center;min-width:220px;">📎 Abrir foto</a>`
+            : '<span class="diff-label">Sin foto adjunta</span>';
+    }
+    document.getElementById('rsm-detail-sheet')?.classList.remove('hidden');
+}
+
+function rsm_closeDetail() {
+    document.getElementById('rsm-detail-sheet')?.classList.add('hidden');
+}
+
+function rsm_editFromDetail() {
+    const rowNum = rsmState.detailRow;
+    if (!rowNum) return;
+    const item = rsmState.items.find((x) => x.rowNum === rowNum);
+    if (!item) return;
+    const fechaEl = document.getElementById('rsm-fecha');
+    const montoEl = document.getElementById('rsm-monto');
+    const saveBtn = document.getElementById('rsm-btn-guardar');
+    const cancelBtn = document.getElementById('rsm-btn-cancel-edit');
+    if (fechaEl) fechaEl.value = item.fechaInput || rsm_todayYmd();
+    if (montoEl) montoEl.value = rsm_formatMontoInput((Number(item.monto) || 0).toFixed(2));
+    rsmState.editingRow = rowNum;
+    rsmState.editingUrl = item.url || '';
+    rsmState.pendingFile = null;
+    const fileEl = document.getElementById('rsm-archivo');
+    if (fileEl) fileEl.value = '';
+    const statusEl = document.getElementById('rsm-file-status');
+    if (statusEl) statusEl.innerText = item.url ? '📎 Se conservara la evidencia actual' : '';
+    if (saveBtn) saveBtn.innerText = 'Actualizar';
+    if (cancelBtn) cancelBtn.classList.remove('hidden');
+    rsm_closeDetail();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+async function rsm_deleteFromDetail() {
+    const rowNum = rsmState.detailRow;
+    if (!rowNum) return;
+    const item = rsmState.items.find((x) => x.rowNum === rowNum);
+    if (!item) return;
+    if (!confirm('¿Eliminar este recibo?')) return;
+    try {
+        const sheetId = await getSheetId(SPREADSHEET_RSM_ID, RSM_SHEET);
+        await sheetsDeleteRow(SPREADSHEET_RSM_ID, sheetId, rowNum - 1);
+        if (item.url) {
+            const fid = rsm_extractDriveId(item.url);
+            if (fid) await driveDeleteFile(fid).catch(() => {});
+        }
+        rsm_closeDetail();
+        await rsm_loadData();
+        rsm_render(true);
+        if (rsmState.editingRow === rowNum) rsm_resetForm();
+        showToast('🗑️ Recibo eliminado');
+    } catch (e) {
+        console.error('rsm_deleteFromDetail:', e);
+        showToast('⚠️ Error al eliminar recibo');
+    }
 }
 
 // =============================================

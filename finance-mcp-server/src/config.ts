@@ -22,6 +22,7 @@ export const config = {
     autos: process.env.SPREADSHEET_AUTOS_ID || "",
     fixed: process.env.SPREADSHEET_FIXED_ID || "",
     recuerdos: process.env.SPREADSHEET_RECUERDOS_ID || "",
+    rsm: process.env.SPREADSHEET_RSM_ID || "",
     accounts: process.env.SPREADSHEET_ACCOUNTS_ID || "",
     aiMirror: process.env.SPREADSHEET_AI_MIRROR_ID || "",
   },
