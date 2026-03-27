@@ -15,7 +15,7 @@ const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // 
 const SPREADSHEET_DEUDAS_ID = '1dKxhgqazskm15lx0f6FNCA0gpJ7i5glfxkusiH3b0Uk'; // Control de Deudas
 const SPREADSHEET_AUTOS_ID = SPREADSHEET_DEUDAS_ID; // Autos + Reparaciones live in same workbook
 const SPREADSHEET_ESTUDIO_ID = SPREADSHEET_DEUDAS_ID; // Estudio + Plugins in same workbook
-const APP_VERSION  = 'v7.7.0';
+const APP_VERSION  = 'v7.7.1';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -3021,6 +3021,15 @@ function fijos_bindEvents() {
     document.getElementById('f-sheet-overlay').addEventListener('click', fijos_cerrarSheet);
     document.getElementById('f-filter-overlay').addEventListener('click', fijos_cerrarFiltro);
     document.getElementById('f-periodicidad').addEventListener('change', fijos_togglePeriodicityFields);
+    
+    // PIN Modal events
+    const pinSubmit = document.getElementById('pin-submit-btn');
+    if (pinSubmit) pinSubmit.addEventListener('click', fijos_onPinSubmit);
+    const pinCancel = document.getElementById('pin-cancel-btn');
+    if (pinCancel) pinCancel.addEventListener('click', () => document.getElementById('pin-modal').classList.add('hidden'));
+    const pinInput = document.getElementById('pin-input');
+    if (pinInput) pinInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') fijos_onPinSubmit(); });
+
     const resetBtn = document.getElementById('f-btn-reset');
     if (resetBtn) resetBtn.addEventListener('click', fijos_resetManual);
 }
@@ -3368,7 +3377,23 @@ window.fijos_togglePagoPart = async function(id, partIndex, options = {}) {
                     showToast(`🟢 Cuota ${cuotaIdx + 1} de "${debtName}" marcada como pagada`);
                 }
             }
-            
+                        
+            // FEATURE: Prompt to delete Gasto Fijo row if it's a cuota and was just completed
+            if (item.periodicidad === 'Cuota de Deuda' && item.isPaid) {
+                const cuotaPromptLabel = `${item.concepto}`;
+                if (confirm(`✅ "${cuotaPromptLabel}" marcado como pagado.\n\n¿Deseas borrar esta entrada de Gasto Fijo ahora que está pagada?`)) {
+                    try {
+                        const fixedSheetName = 'Hoja 1'; // Assumed from context
+                        const fixedSheetId = await getSheetId(SPREADSHEET_FIXED_ID, fixedSheetName);
+                        await sheetsDeleteRow(SPREADSHEET_FIXED_ID, fixedSheetId, id);
+                        showToast(`🗑️ Gasto Fijo "${cuotaPromptLabel}" eliminado`);
+                        // Force refresh
+                        tabInited.fijos = false;
+                        if (currentTab === 'fijos') fijos_cargarVista();
+                    } catch(ex) { console.error('Error auto-deleting cuota row:', ex); }
+                }
+            }
+
             tabInited.gastos = false;
             showToast('✅ Pago registrado en Control de Gastos');
         } else if (!nowPartPaid && !wasPartWaived) {
@@ -3503,11 +3528,30 @@ function fijos_togglePeriodicityFields() {
 function fijos_cerrarSheet() { document.getElementById('f-sheet').classList.add('hidden'); }
 function fijos_abrirFiltro()  { fijos_generarPills(); document.getElementById('f-filter-sheet').classList.remove('hidden'); }
 function fijos_cerrarFiltro() { document.getElementById('f-filter-sheet').classList.add('hidden'); }
-
 async function fijos_resetManual() {
-    if (!confirm('⚠️ ¿Estás seguro que quieres resetear todos los pagos del mes?\n\nEsto marcará todos los gastos fijos como "no pagados".')) return;
+    const modal = document.getElementById('pin-modal');
+    const input = document.getElementById('pin-input');
+    if (!modal || !input) return;
+    input.value = '';
+    modal.classList.remove('hidden');
+    setTimeout(() => input.focus(), 300);
+}
+
+async function fijos_onPinSubmit() {
+    const input = document.getElementById('pin-input');
+    const pin = input ? input.value : '';
+    if (pin === '9776') {
+        document.getElementById('pin-modal').classList.add('hidden');
+        await fijos_executeReset();
+    } else {
+        showToast('❌ PIN Incorrecto');
+        if (input) input.value = '';
+    }
+}
+
+async function fijos_executeReset() {
     const status = document.getElementById('f-lista');
-    status.innerHTML = '<div class="loading-spinner">🔄 Reseteando...</div>';
+    if (status) status.innerHTML = '<div class="loading-spinner">🔄 Reseteando...</div>';
     try {
         const rows = await sheetsGet(SPREADSHEET_FIXED_ID, 'Hoja 1!A2:N').catch(() => []);
         if (!rows.length) { showToast('ℹ️ No hay datos para resetear'); fijos_cargarDatos(); return; }
@@ -3522,18 +3566,12 @@ async function fijos_resetManual() {
             `Hoja 1!H2:H${lastRow}`,
             rows.map(r => [parseFixedPeriodicity(r[8]) === 'Cuota de Deuda' ? (r[7] || serializePaymentStates(new Array(parsePaymentsTotal(r[6])).fill(false))) : serializePaymentStates(new Array(parsePaymentsTotal(r[6])).fill(false))])
         );
-        await sheetsUpdate(
-            SPREADSHEET_FIXED_ID,
-            `Hoja 1!N2:N${lastRow}`,
-            rows.map(r => [parseFixedPeriodicity(r[8]) === 'Cuota de Deuda' ? (r[13] || serializePaymentStates(new Array(parsePaymentsTotal(r[6])).fill(false))) : serializePaymentStates(new Array(parsePaymentsTotal(r[6])).fill(false))])
-        );
-        showToast('✅ Pagos reseteados correctamente');
-        fijos_cargarDatos();
+        showToast('✅ Pagos del mes reseteados');
     } catch(e) {
-        console.error('fijos_resetManual error:', e);
-        showToast('❌ Error al resetear pagos');
-        fijos_cargarDatos();
+        console.error('Error resetting month:', e);
+        showToast('⚠️ Error al resetear');
     }
+    await fijos_cargarDatos();
 }
 
 async function fijos_guardar() {
@@ -7485,6 +7523,7 @@ function propiedades_rowToItem(row, map) {
         deudas: parseJson(propiedades_getCell(row, map, 'deudasJson', '[]'), []),
         ingresos: parseJson(propiedades_getCell(row, map, 'ingresosJson', '[]'), []),
         updatedAt: (propiedades_getCell(row, map, 'updatedAt', '') || '').toString(),
+        formaPago: (propiedades_getCell(row, map, 'formaPago', 'Santander') || 'Santander').toString(),
     };
 }
 
@@ -7515,12 +7554,13 @@ function propiedades_itemToRow(item, headers) {
         docExtra2Url: item.docExtra2Url || '',
         docExtra3Nombre: item.docExtra3Nombre || 'Documento extra 3',
         docExtra3Url: item.docExtra3Url || '',
-        ownersJson: JSON.stringify(Array.isArray(item.owners) ? item.owners : []),
-        deudasJson: JSON.stringify(Array.isArray(item.deudas) ? item.deudas : []),
-        ingresosJson: JSON.stringify(Array.isArray(item.ingresos) ? item.ingresos : []),
-        updatedAt: item.updatedAt || normalizeDateString(new Date().toLocaleDateString('en-CA')),
+        ownersJson: JSON.stringify(item.owners || []),
+        deudasJson: JSON.stringify(item.deudas || []),
+        ingresosJson: JSON.stringify(item.ingresos || []),
+        updatedAt: item.updatedAt || '',
+        formaPago: item.formaPago || 'Santander',
     };
-    return headers.map((h) => fields[h] ?? '');
+    return headers.map((h) => fields[h] || '');
 }
 
 function propiedades_getSelected() {
@@ -7798,6 +7838,7 @@ function propiedades_openSheet(id, section = 'all') {
     const titlePrefix = item ? 'Editar' : 'Nueva';
     document.getElementById('prop-sheet-title').innerText = `${titlePrefix} ${sectionLabel[section] || 'Propiedad'}`;
     document.getElementById('prop-nombre').value = item?.nombre || '';
+    document.getElementById('prop-forma-pago').value = item?.formaPago || 'Santander';
     document.getElementById('prop-tipo').value = item?.tipo || 'Casa';
     document.getElementById('prop-zona').value = item?.zona || '';
     document.getElementById('prop-m2-construccion').value = item?.metrosConstruccion || '';
@@ -7945,6 +7986,7 @@ async function propiedades_save() {
         const payload = {
             id: editId || `prop-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
             nombre,
+            formaPago: (document.getElementById('prop-forma-pago').value || 'Santander').trim(),
             tipo: document.getElementById('prop-tipo').value || 'Casa',
             zona: (document.getElementById('prop-zona').value || '').trim(),
             metrosConstruccion: (document.getElementById('prop-m2-construccion').value || '').trim(),
@@ -8050,6 +8092,7 @@ async function propiedades_syncPropertyRemotes(item) {
     await propiedades_syncDeudas(item);
     const day = Math.max(1, Math.min(31, new Date().getDate()));
     const monthStart = parseStartMonth(document.getElementById('prop-sync-month')?.value || '');
+    const formaPago = item.formaPago || 'Santander';
     await propiedades_upsertFijoByMarker(item, 'predial', {
         monto: Math.max(0, parseSheetValue(item.predialMensual)),
         tipo: 'gasto',
@@ -8058,6 +8101,7 @@ async function propiedades_syncPropertyRemotes(item) {
         budgetCategory: 'Mantenimiento y Pago de Servicios',
         day,
         monthStart,
+        formaPago,
     });
     await propiedades_upsertFijoByMarker(item, 'mantenimiento', {
         monto: Math.max(0, parseSheetValue(item.mantenimientoMensual)),
@@ -8067,6 +8111,7 @@ async function propiedades_syncPropertyRemotes(item) {
         budgetCategory: 'Mantenimiento y Pago de Servicios',
         day,
         monthStart,
+        formaPago,
     });
 
     const miPct = propiedades_miParticipacionPct(item);
@@ -8076,6 +8121,7 @@ async function propiedades_syncPropertyRemotes(item) {
         const ingreso = ingresos[i];
         const conceptoLimpio = (ingreso.concepto || '').toString().trim() || `Ingreso ${i + 1}`;
         const miParte = Math.max(0, parseSheetValue(ingreso.monto)) * (miPct / 100);
+        const formaPago = item.formaPago || 'Santander';
         await propiedades_upsertFijoByMarker(item, `ingreso:${i + 1}`, {
             monto: miParte,
             tipo: 'ingreso',
@@ -8084,6 +8130,7 @@ async function propiedades_syncPropertyRemotes(item) {
             budgetCategory: 'Mantenimiento y Pago de Servicios',
             day,
             monthStart,
+            formaPago,
         });
     }
 }
@@ -8148,7 +8195,7 @@ async function propiedades_upsertFijoByMarker(item, key, config) {
         serializePaymentStates([false]),
         'mensual',
         config.monthStart || parseStartMonth(''),
-        'yo',
+        config.formaPago || 'Santander',
         config.budgetCategory || 'Mantenimiento y Pago de Servicios',
         'MXN',
         serializePaymentStates([false]),
@@ -9292,6 +9339,47 @@ function pelo_buildMarker(id) {
     return `[PELO:${id}]`;
 }
 
+async function pelo_syncFixed(entry) {
+    const marker = `#pelo:${entry.member}:${entry.id}`;
+    const date = entry.date;
+    const yearMonth = date.substring(0, 7); // YYYY-MM
+    const startOfMonth = `${yearMonth}-01`;
+    const day = parseInt(date.substring(8, 10)) || 1;
+
+    // Search existing in Gastos Fijos
+    await fijos_cargarDatos();
+    const existingIdx = fijosState.allItems.findIndex(f => f.referencia === marker);
+    
+    const rowData = [
+        entry.id,                                     // A: ID
+        `Corte de Pelo: ${entry.member}`,             // B: Concepto
+        entry.amount,                                 // C: Monto
+        'Pelo',                                       // D: Categoria
+        marker,                                       // E: Referencia (marker)
+        'FALSE',                                      // F: Pagado
+        '1',                                          // G: pagosMes
+        'false',                                      // H: pagosEstado
+        'Mensual',                                    // I: periodicidad
+        startOfMonth,                                 // J: inicioMes
+        entry.formaPago || 'Santander',               // K: formaPago
+        'Cuidado Personal',                           // L: budgetCategory
+        'MXN',                                        // M: Moneda
+        'false',                                      // N: waivedEstado
+        day.toString()                                // O: Dia
+    ];
+
+    try {
+        if (existingIdx !== -1) {
+            const rowNum = fijosState.allItems[existingIdx].rowNum;
+            await sheetsUpdate(SPREADSHEET_FIXED_ID, `Hoja 1!A${rowNum}:O${rowNum}`, [rowData]);
+        } else {
+            await sheetsAppend(SPREADSHEET_FIXED_ID, 'Hoja 1!A:O', [rowData]);
+        }
+    } catch(e) {
+        console.error('Error syncing pelo to fixed:', e);
+    }
+}
+
 async function pelo_syncExpense(entry) {
     const marker = entry.expenseMarker || pelo_buildMarker(entry.id);
     const rows = await sheetsGet(SPREADSHEET_LOG_ID, 'Hoja 1!A2:H').catch(() => []);
@@ -9368,6 +9456,7 @@ async function pelo_save() {
     };
 
     const sync = await pelo_syncExpense(payload);
+    await pelo_syncFixed(payload);
     payload.expenseMarker = sync.marker;
     payload.expenseRowNum = sync.rowNum || payload.expenseRowNum;
 
@@ -10659,7 +10748,7 @@ window.deudas_toggleCuota = async function(id, idx) {
                 'FALSE',                 // F: pagado
                 '1',                     // G: pagosMes
                 'false',                 // H: pagosEstado
-                'Mensual',               // I: periodicidad
+                'Cuota de Deuda',         // I: periodicidad
                 '',                      // J: inicioMes
                 formaPago,               // K: formaPago
                 'Muchachas y Pago de Deudas', // L: budgetCategory
@@ -10676,28 +10765,37 @@ window.deudas_toggleCuota = async function(id, idx) {
     } else if (currentState === 1) {
         // 1 → 2: Mark as paid
         item.cuotas.paid[idx] = 2;
-        // Prompt to delete corresponding Gasto Fijo
+        
+        // Find matching Gasto Fijo to first MARK AS PAID (logging)
         const cuotaConcepto = `${item.concepto} - Cuota ${idx + 1}/${item.cuotas.n}`;
-        if (confirm(`✅ Cuota ${idx + 1} pagada.\n\n¿Deseas borrar la entrada de Gasto Fijo "${cuotaConcepto}"?`)) {
-            try {
-                // Find matching Gasto Fijo row
-                const fijoRows = await sheetsGet(SPREADSHEET_FIXED_ID, 'Hoja 1!A2:N').catch(() => []);
-                let fijoRowIdx = -1;
-                for (let fi = 0; fi < fijoRows.length; fi++) {
-                    if ((fijoRows[fi][1] || '').trim() === cuotaConcepto) { fijoRowIdx = fi; break; }
+        let fijo = fijosState.allItems.find(f => (f.concepto || '').trim() === cuotaConcepto);
+        
+        if (fijo) {
+            showToast('🔄 Registrando en Control de Gastos...');
+            // Need to ensure fijos_togglePagoPart is available globally or we call it
+            await window.fijos_togglePagoPart(fijo.id, 0);
+            // fijos_togglePagoPart already handles logging and the deletion prompt
+        } else {
+            // Fallback prompt to delete if not found in memory (e.g. not yet synced or manually changed)
+            if (confirm(`✅ Cuota ${idx + 1} pagada.\n\n¿Deseas buscar y borrar la entrada de Gasto Fijo "${cuotaConcepto}"?`)) {
+                try {
+                    const fijoRows = await sheetsGet(SPREADSHEET_FIXED_ID, 'Hoja 1!A2:N').catch(() => []);
+                    let fijoRowIdx = -1;
+                    for (let fi = 0; fi < fijoRows.length; fi++) {
+                        if ((fijoRows[fi][1] || '').trim() === cuotaConcepto) { fijoRowIdx = fi; break; }
+                    }
+                    if (fijoRowIdx >= 0) {
+                        const fixedSheetId = await getSheetId(SPREADSHEET_FIXED_ID, 'Hoja 1');
+                        await sheetsDeleteRow(SPREADSHEET_FIXED_ID, fixedSheetId, fijoRowIdx + 1);
+                        showToast(`🗑️ Gasto Fijo "${cuotaConcepto}" eliminado`);
+                        if (tabInited.fijos) tabInited.fijos = false;
+                    } else {
+                        showToast('ℹ️ No se encontró Gasto Fijo correspondiente');
+                    }
+                } catch(e) {
+                    console.error('Error deleting Gasto Fijo:', e);
+                    showToast('⚠️ Error al borrar Gasto Fijo');
                 }
-                if (fijoRowIdx >= 0) {
-                    const fixedSheetId = await getSheetId(SPREADSHEET_FIXED_ID, 'Hoja 1');
-                    await sheetsDeleteRow(SPREADSHEET_FIXED_ID, fixedSheetId, fijoRowIdx + 1); // +1 because header row
-                    showToast(`🗑️ Gasto Fijo "${cuotaConcepto}" eliminado`);
-                    // Refresh fijos if tab was initialized
-                    if (tabInited.fijos) { tabInited.fijos = false; }
-                } else {
-                    showToast('ℹ️ No se encontró Gasto Fijo correspondiente');
-                }
-            } catch(e) {
-                console.error('Error deleting Gasto Fijo for cuota:', e);
-                showToast('⚠️ Error al borrar Gasto Fijo');
             }
         }
     } else {

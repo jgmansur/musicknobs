@@ -13,7 +13,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <link rel="stylesheet" href="./style.css">
-    <script type="module" src="./main.js?v=7.7.0"></script>
+    <script type="module" src="./main.js?v=7.7.1"></script>
   </head>
   <body>
     <div id="app">
@@ -23,7 +23,7 @@
         <div class="header-content">
           <div class="logo-area">
             <h1 class="premium-title">ESTRATÉGIA<span>FINANCIERA</span></h1>
-            <p class="subtitle">Music Knobs | v7.7.0</p>
+            <p class="subtitle">Music Knobs | v7.7.1</p>
           </div>
           <div class="action-area">
             <div id="sync-status" class="status-badge">Sincronizado</div>
@@ -941,6 +941,13 @@
               <div class="field-label">🏠 Editar Propiedad</div>
               <div style="display:grid;grid-template-columns:1fr 1fr;gap:.55rem;">
                 <input id="prop-nombre" class="field-input" placeholder="Nombre de la propiedad">
+                <select id="prop-forma-pago" class="field-input">
+                  <option value="Santander" selected>Santander</option>
+                  <option value="BBVA">BBVA</option>
+                  <option value="Cuenta Mariel">Cuenta Mariel</option>
+                  <option value="Efectivo">Efectivo</option>
+                  <option value="Transferencia">Transferencia</option>
+                </select>
                 <select id="prop-tipo" class="field-input">
                   <option value="Casa">Casa</option>
                   <option value="Departamento">Departamento</option>
@@ -1625,6 +1632,21 @@
           <div class="modal-security-note">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
             Protegido por Google OAuth 2.0 · Lectura y escritura de tus datos
+          </div>
+        </div>
+      </div>
+
+      <!-- ── PIN MODAL (RESET PROTECTION) ── -->
+      <div id="pin-modal" class="modal hidden" style="z-index: 9999;">
+        <div id="pin-modal-backdrop" class="modal-backdrop"></div>
+        <div class="modal-inner glass" style="max-width: 320px; text-align: center; padding: 2rem; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);">
+          <h3 style="margin-bottom: 0.5rem;">Código de Seguridad</h3>
+          <p style="font-size: 0.85rem; color: #94a3b8; margin-bottom: 1.5rem;">Introduce el PIN para resetear los pagos</p>
+          <input type="tel" id="pin-input" pattern="[0-9]*" inputmode="numeric" maxlength="4" class="field-input" 
+                 style="font-size: 2.2rem; text-align: center; letter-spacing: 0.8rem; height: 60px; border: 1px solid rgba(255,255,255,0.1); width: 100%; border-radius: 12px; font-weight: 700; background: rgba(0,0,0,0.2); color: #fff;">
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 2rem;">
+            <button id="pin-cancel-btn" class="secondary-btn">Cancelar</button>
+            <button id="pin-submit-btn" class="primary-btn">Confirmar</button>
           </div>
         </div>
       </div>
