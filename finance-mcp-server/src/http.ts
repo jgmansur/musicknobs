@@ -9,6 +9,7 @@ import {
   getFinanceSummary,
   getInvestmentsSnapshot,
   getWidgetAccountsSnapshot,
+  getWidgetDashboardSnapshot,
   searchPrompts,
   searchDocuments,
 } from "./data.js";
@@ -21,13 +22,13 @@ const app = Fastify({ logger: true });
 await app.register(cors, {
   origin: true,
   methods: ["GET", "POST", "OPTIONS"],
-  allowedHeaders: ["Authorization", "Content-Type"],
+  allowedHeaders: ["Authorization", "Content-Type", "x-widget-token"],
 });
 
 app.addHook("onRequest", async (req, reply) => {
   if (req.url === "/health") return;
 
-  if (req.url.startsWith("/api/widget/accounts")) {
+  if (req.url.startsWith("/api/widget/accounts") || req.url.startsWith("/api/widget/dashboard")) {
     const expected = (config.widgetToken || "").trim();
     const queryToken = String((req.query as Record<string, unknown>)?.token || "").trim();
     const headerToken = String(req.headers["x-widget-token"] || "").trim();
@@ -124,6 +125,24 @@ app.get("/api/widget/accounts", async (req, reply) => {
   reply.header("Cache-Control", "no-store, max-age=0");
   reply.header("Pragma", "no-cache");
   return getWidgetAccountsSnapshot(parsed.data.limit || 8, !!parsed.data.includeHidden);
+});
+
+app.get("/api/widget/dashboard", async (req, reply) => {
+  const schema = z.object({
+    token: z.string().optional(),
+    limit: z.coerce.number().int().min(1).max(20).optional(),
+    includeHidden: z.coerce.boolean().optional(),
+    focusAccount: z.string().optional(),
+  });
+  const parsed = schema.safeParse(req.query);
+  if (!parsed.success) return reply.code(400).send({ error: parsed.error.flatten() });
+  reply.header("Cache-Control", "no-store, max-age=0");
+  reply.header("Pragma", "no-cache");
+  return getWidgetDashboardSnapshot(
+    parsed.data.limit || 6,
+    !!parsed.data.includeHidden,
+    (parsed.data.focusAccount || "Santander").trim() || "Santander",
+  );
 });
 
 app.post("/api/ai-mirror/sync", async (_req, reply) => {

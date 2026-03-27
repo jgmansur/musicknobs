@@ -1,11 +1,12 @@
 import { config } from "./config.js";
-import { findSpreadsheetByName, sheetsGet } from "./google.js";
+import { findSpreadsheetByName, sheetsBatchUpdate, sheetsClear, sheetsGet, sheetsGetSpreadsheet, sheetsUpdate } from "./google.js";
 import { inDateRange, normalizeText, parseNumber } from "./utils.js";
 
 const DOCS_SHEET = "DocumentosArchivador";
 const DOCS_PROFILE_SHEET = "DocumentosPerfiles";
 const PROMPTS_SHEET = "PromptVault";
 const ACCOUNTS_SHEET_FALLBACK_NAME = "Finance Dashboard - Cuentas";
+const WIDGET_CACHE_SHEET = "WidgyCache";
 
 let discoveredAccountsSheetId: string | null = null;
 
@@ -51,6 +52,8 @@ type AccountRow = {
   balance: number;
   type: string;
   hidden: boolean;
+  creditLimit: number;
+  creditLimitVisible: boolean;
   currency: string;
   investmentType: string;
 };
@@ -256,7 +259,7 @@ export async function searchPrompts(query: string, platform?: string) {
   };
 }
 
-export async function getAccounts(): Promise<AccountRow[]> {
+async function resolveAccountsSheetId(): Promise<string> {
   let id = config.spreadsheets.accounts;
   if (!id) {
     if (discoveredAccountsSheetId === null) {
@@ -264,6 +267,11 @@ export async function getAccounts(): Promise<AccountRow[]> {
     }
     id = discoveredAccountsSheetId || "";
   }
+  return id;
+}
+
+export async function getAccounts(): Promise<AccountRow[]> {
+  const id = await resolveAccountsSheetId();
   if (!id) return [];
   const rows = await sheetsGet(id, "A2:K");
   return rows.map((row) => ({
@@ -272,6 +280,8 @@ export async function getAccounts(): Promise<AccountRow[]> {
     balance: parseNumber(row[2]),
     type: row[3] || "bank",
     hidden: (row[4] || "").toUpperCase() === "TRUE",
+    creditLimit: Math.abs(parseNumber(row[5])),
+    creditLimitVisible: (row[6] || "").toUpperCase() === "TRUE",
     currency: row[7] || "MXN",
     investmentType: row[8] || "custom",
   }));
@@ -320,6 +330,107 @@ function convertToMxn(balance: number, currency: string, fx: FxSnapshot): number
   return balance;
 }
 
+function normalizePaymentKey(value: unknown): string {
+  return String(value || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+}
+
+function getAccountMatchKeys(acc: AccountRow): string[] {
+  const keys = new Set<string>();
+  const add = (v: unknown) => {
+    const k = normalizePaymentKey(v);
+    if (k) keys.add(k);
+  };
+  add(acc.name);
+  if (acc.type === "cash") add("efectivo");
+  if (acc.type === "invest") {
+    add("inversion");
+    add("inversiones");
+    add("inversión");
+    if ((acc.investmentType || "").toLowerCase() === "cetes") add("cetes");
+    if ((acc.investmentType || "").toLowerCase() === "mifel") add("mifel");
+    if ((acc.investmentType || "").toLowerCase() === "bitcoin") {
+      add("bitcoin");
+      add("btc");
+    }
+  }
+  return [...keys];
+}
+
+function getAccountIdByPayment(accounts: AccountRow[], formaPago: unknown): string | null {
+  const key = normalizePaymentKey(formaPago);
+  if (!key) return null;
+  let partial: string | null = null;
+  for (const acc of accounts) {
+    const keys = getAccountMatchKeys(acc);
+    if (keys.includes(key)) return acc.id;
+    if (!partial && keys.some((k) => k.length >= 4 && (key.includes(k) || k.includes(key)))) {
+      partial = acc.id;
+    }
+  }
+  return partial;
+}
+
+async function ensureWidgetCacheSheet(spreadsheetId: string): Promise<void> {
+  const meta = await sheetsGetSpreadsheet(spreadsheetId);
+  const exists = (meta.sheets || []).some((s) => (s.properties?.title || "") === WIDGET_CACHE_SHEET);
+  if (!exists) {
+    await sheetsBatchUpdate(spreadsheetId, [{ addSheet: { properties: { title: WIDGET_CACHE_SHEET } } }]);
+  }
+  const header = await sheetsGet(spreadsheetId, `${WIDGET_CACHE_SHEET}!A1:C1`).catch(() => []);
+  const current = (header[0] || []).map((x) => String(x || "").trim().toLowerCase());
+  if ((current[0] || "") !== "key" || (current[1] || "") !== "value" || (current[2] || "") !== "updatedat") {
+    await sheetsUpdate(spreadsheetId, `${WIDGET_CACHE_SHEET}!A1:C1`, [["key", "value", "updatedAt"]]);
+  }
+}
+
+async function loadWidgetCache(spreadsheetId: string): Promise<Record<string, string>> {
+  await ensureWidgetCacheSheet(spreadsheetId);
+  const rows = await sheetsGet(spreadsheetId, `${WIDGET_CACHE_SHEET}!A2:C`).catch(() => []);
+  const out: Record<string, string> = {};
+  for (const row of rows) {
+    const key = String(row[0] || "").trim();
+    if (!key) continue;
+    out[key] = String(row[1] || "");
+  }
+  return out;
+}
+
+async function saveWidgetCache(spreadsheetId: string, cache: Record<string, string>): Promise<void> {
+  const now = new Date().toISOString();
+  const keys = Object.keys(cache).sort();
+  const values = [["key", "value", "updatedAt"], ...keys.map((k) => [k, cache[k], now])];
+  await sheetsClear(spreadsheetId, `${WIDGET_CACHE_SHEET}!A1:C`);
+  await sheetsUpdate(spreadsheetId, `${WIDGET_CACHE_SHEET}!A1:C${values.length}`, values);
+}
+
+async function getDebtImpactMxn(): Promise<number> {
+  if (!config.spreadsheets.autos) return 0;
+  const rows = await sheetsGet(config.spreadsheets.autos, "Hoja 1!A2:D").catch(() => []);
+  return rows.reduce((sum, row) => {
+    const hidden = String(row[2] || "").toUpperCase() === "TRUE";
+    if (hidden) return sum;
+    return sum + Math.max(0, parseNumber(row[1]));
+  }, 0);
+}
+
+async function getLogTotalsByAccountMxn(accounts: AccountRow[], fx: FxSnapshot): Promise<Record<string, number>> {
+  const rows = await getExpenses();
+  const totals: Record<string, number> = {};
+  for (const row of rows) {
+    const accountId = getAccountIdByPayment(accounts, row.formaPago);
+    if (!accountId) continue;
+    const amountMxn = convertToMxn(Math.abs(parseNumber(row.monto)), row.moneda, fx);
+    const signed = row.tipo === "Ingreso" ? amountMxn : row.tipo === "Gasto" ? -amountMxn : 0;
+    totals[accountId] = Number(totals[accountId] || 0) + signed;
+  }
+  return totals;
+}
+
 export async function getWidgetAccountsSnapshot(limit = 8, includeHidden = false) {
   const [accounts, fx] = await Promise.all([getAccounts(), getFxSnapshot()]);
   const visible = accounts.filter((a) => includeHidden || !a.hidden);
@@ -352,6 +463,160 @@ export async function getWidgetAccountsSnapshot(limit = 8, includeHidden = false
     meta: {
       fxSource: fx.source,
       fxStale: fx.stale,
+    },
+  };
+}
+
+type DashboardWidgetSnapshot = {
+  ok: true;
+  updatedAt: string;
+  totals: {
+    balanceDisponibleMxn: number;
+    balanceDisponibleWithDebtMxn: number;
+    balanceRealMxn: number;
+    balanceRealWithDebtMxn: number;
+    pendingFixedMxn: number;
+    debtImpactMxn: number;
+  };
+  highlights: {
+    focusAccountRealMxn: number;
+    focusAccountFound: boolean;
+    focusAccount: string;
+  };
+  accounts: Array<{
+    name: string;
+    type: string;
+    realMxn: number;
+  }>;
+  meta: {
+    cacheSheet: string;
+    fxSource: string;
+    fxStale: boolean;
+    cacheWritable: boolean;
+  };
+};
+
+async function resolveWidgetCacheSpreadsheetId(): Promise<string> {
+  if (config.spreadsheets.rsm) return config.spreadsheets.rsm;
+  if (config.spreadsheets.autos) return config.spreadsheets.autos;
+  return resolveAccountsSheetId();
+}
+
+export async function getWidgetDashboardSnapshot(limit = 6, includeHidden = false, focusAccount = "Santander"): Promise<DashboardWidgetSnapshot> {
+  const [accounts, fx, fixedStatus, debtImpact] = await Promise.all([
+    getAccounts(),
+    getFxSnapshot(),
+    getFixedStatus(),
+    getDebtImpactMxn(),
+  ]);
+
+  const cacheSpreadsheetId = await resolveWidgetCacheSpreadsheetId();
+  let cacheWritable = true;
+  const cache: Record<string, string> = {};
+  if (cacheSpreadsheetId) {
+    try {
+      Object.assign(cache, await loadWidgetCache(cacheSpreadsheetId));
+    } catch {
+      cacheWritable = false;
+    }
+  } else {
+    cacheWritable = false;
+  }
+  const logTotalsByAccount = await getLogTotalsByAccountMxn(accounts, fx);
+  let cacheChanged = false;
+
+  const visible = accounts.filter((a) => includeHidden || !a.hidden);
+  const rows = visible.map((acc) => {
+    const idKey = String(acc.id || "");
+    const cacheKey = `anchor:${idKey}`;
+    const currentLog = Number(logTotalsByAccount[idKey] || 0);
+    if (!(cacheKey in cache)) {
+      cache[cacheKey] = String(currentLog);
+      cacheChanged = true;
+    }
+    const anchor = parseNumber(cache[cacheKey]);
+    const adjustment = currentLog - (Number.isFinite(anchor) ? anchor : currentLog);
+    const signedBase = acc.type === "credit" ? -Math.abs(acc.balance || 0) : Number(acc.balance || 0);
+    const signedBaseMxn = convertToMxn(Math.abs(signedBase), acc.currency, fx) * (signedBase < 0 ? -1 : 1);
+    const limitMxn = acc.type === "credit" && acc.creditLimitVisible ? convertToMxn(Math.abs(acc.creditLimit || 0), acc.currency, fx) : 0;
+    const realMxn = signedBaseMxn + adjustment + limitMxn;
+    return {
+      id: idKey,
+      name: String(acc.name || "Cuenta"),
+      type: String(acc.type || "bank"),
+      realMxn,
+    };
+  });
+
+  const balanceDisponibleBase = rows.reduce((s, a) => s + a.realMxn, 0);
+  const balanceDisponibleWithDebt = balanceDisponibleBase - debtImpact;
+  const pendingFixedMxn = fixedStatus.pendingTotal;
+  const balanceReal = balanceDisponibleBase - pendingFixedMxn;
+  const balanceRealWithDebt = balanceDisponibleWithDebt - pendingFixedMxn;
+
+  const sorted = [...rows].sort((a, b) => Math.abs(b.realMxn) - Math.abs(a.realMxn));
+  const outAccounts = sorted.slice(0, Math.max(1, Math.min(20, Math.trunc(limit) || 6))).map((a) => ({
+    name: a.name,
+    type: a.type,
+    realMxn: Math.round(a.realMxn),
+  }));
+
+  const targetKey = normalizePaymentKey(focusAccount);
+  const focus = rows.find((a) => normalizePaymentKey(a.name) === targetKey)
+    || rows.find((a) => {
+      const k = normalizePaymentKey(a.name);
+      return k.includes(targetKey) || targetKey.includes(k);
+    });
+
+  const nextCacheValues: Record<string, string> = {
+    "snapshot.balanceDisponibleMxn": String(Math.round(balanceDisponibleBase)),
+    "snapshot.balanceDisponibleWithDebtMxn": String(Math.round(balanceDisponibleWithDebt)),
+    "snapshot.balanceRealMxn": String(Math.round(balanceReal)),
+    "snapshot.balanceRealWithDebtMxn": String(Math.round(balanceRealWithDebt)),
+    "snapshot.pendingFixedMxn": String(Math.round(pendingFixedMxn)),
+    "snapshot.debtImpactMxn": String(Math.round(debtImpact)),
+    "snapshot.focusAccount": focusAccount,
+    "snapshot.focusAccountRealMxn": String(Math.round(focus?.realMxn || 0)),
+    "snapshot.updatedAt": new Date().toISOString(),
+  };
+
+  for (const [k, v] of Object.entries(nextCacheValues)) {
+    if (cache[k] !== v) {
+      cache[k] = v;
+      cacheChanged = true;
+    }
+  }
+
+  if (cacheSpreadsheetId && cacheChanged && cacheWritable) {
+    try {
+      await saveWidgetCache(cacheSpreadsheetId, cache);
+    } catch {
+      cacheWritable = false;
+    }
+  }
+
+  return {
+    ok: true,
+    updatedAt: new Date().toISOString(),
+    totals: {
+      balanceDisponibleMxn: Math.round(balanceDisponibleBase),
+      balanceDisponibleWithDebtMxn: Math.round(balanceDisponibleWithDebt),
+      balanceRealMxn: Math.round(balanceReal),
+      balanceRealWithDebtMxn: Math.round(balanceRealWithDebt),
+      pendingFixedMxn: Math.round(pendingFixedMxn),
+      debtImpactMxn: Math.round(debtImpact),
+    },
+    highlights: {
+      focusAccountRealMxn: Math.round(focus?.realMxn || 0),
+      focusAccountFound: !!focus,
+      focusAccount,
+    },
+    accounts: outAccounts,
+    meta: {
+      cacheSheet: WIDGET_CACHE_SHEET,
+      fxSource: fx.source,
+      fxStale: fx.stale,
+      cacheWritable,
     },
   };
 }
