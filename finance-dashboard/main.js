@@ -3021,6 +3021,8 @@ function fijos_bindEvents() {
     document.getElementById('f-sheet-overlay').addEventListener('click', fijos_cerrarSheet);
     document.getElementById('f-filter-overlay').addEventListener('click', fijos_cerrarFiltro);
     document.getElementById('f-periodicidad').addEventListener('change', fijos_togglePeriodicityFields);
+    const resetBtn = document.getElementById('f-btn-reset');
+    if (resetBtn) resetBtn.addEventListener('click', fijos_resetManual);
 }
 
 function planner_refreshIfReady() {
@@ -3125,10 +3127,14 @@ function fijos_generarPills() {
             `<label class="cat-check-label"><input type="checkbox" class="${cat}" value="__payer_yo" id="${cat}___payer_yo">👤 Pago propio</label>`,
             `<label class="cat-check-label"><input type="checkbox" class="${cat}" value="__payer_esposa" id="${cat}___payer_esposa">👩 Pago esposa</label>`,
         ].join('');
+        const paymentStatusPills = [
+            `<label class="cat-check-label"><input type="checkbox" class="${cat}" value="__status_pendiente" id="${cat}___status_pendiente">⏳ Pendientes</label>`,
+            `<label class="cat-check-label"><input type="checkbox" class="${cat}" value="__status_pagado" id="${cat}___status_pagado">✅ Pagados</label>`,
+        ].join('');
         const categoryPills = fijosState.categorias
             .map(c => `<label class="cat-check-label"><input type="checkbox" class="${cat}" value="${c}" id="${cat}_${c}">${c}</label>`)
             .join('');
-        return typePills + categoryPills;
+        return typePills + paymentStatusPills + categoryPills;
     };
     document.getElementById('f-cat-checks').innerHTML = pills('f-cat-chk');
     document.getElementById('f-filter-checks').innerHTML = pills('f-filter-chk');
@@ -3178,16 +3184,20 @@ function fijos_aplicarFiltros() {
         const t = item.concepto.toLowerCase().includes(q) || item.categoria.toLowerCase().includes(q);
         const tipoActivos = fijosState.filtrosActivos.filter(f => f === '__tipo_gasto' || f === '__tipo_ingreso');
         const payerActivos = fijosState.filtrosActivos.filter(f => f === '__payer_yo' || f === '__payer_esposa');
-        const catActivos = fijosState.filtrosActivos.filter(f => !f.startsWith('__tipo_'));
+        const statusActivos = fijosState.filtrosActivos.filter(f => f === '__status_pendiente' || f === '__status_pagado');
+        const catActivos = fijosState.filtrosActivos.filter(f => !f.startsWith('__tipo_') && !f.startsWith('__payer_') && !f.startsWith('__status_'));
         const tipoOk = !tipoActivos.length
             || (tipoActivos.includes('__tipo_gasto') && item.tipo === 'gasto')
             || (tipoActivos.includes('__tipo_ingreso') && item.tipo === 'ingreso');
         const payerOk = !payerActivos.length
             || (payerActivos.includes('__payer_yo') && item.pagador === 'yo')
             || (payerActivos.includes('__payer_esposa') && item.pagador === 'esposa');
-        const catOk = !catActivos.filter(f => !f.startsWith('__payer_')).length
-            || catActivos.filter(f => !f.startsWith('__payer_')).some(f => item.categoria.split(', ').includes(f));
-        return t && tipoOk && payerOk && catOk && item.isDueThisMonth;
+        const statusOk = !statusActivos.length
+            || (statusActivos.includes('__status_pendiente') && !item.isPaid)
+            || (statusActivos.includes('__status_pagado') && item.isPaid);
+        const catOk = !catActivos.length
+            || catActivos.some(f => item.categoria.split(', ').includes(f));
+        return t && tipoOk && payerOk && statusOk && catOk && item.isDueThisMonth;
     });
     lista.sort((a,b) => {
         if (sort==='fechaDesc') return b.fechaValue.localeCompare(a.fechaValue);
@@ -3493,6 +3503,38 @@ function fijos_togglePeriodicityFields() {
 function fijos_cerrarSheet() { document.getElementById('f-sheet').classList.add('hidden'); }
 function fijos_abrirFiltro()  { fijos_generarPills(); document.getElementById('f-filter-sheet').classList.remove('hidden'); }
 function fijos_cerrarFiltro() { document.getElementById('f-filter-sheet').classList.add('hidden'); }
+
+async function fijos_resetManual() {
+    if (!confirm('⚠️ ¿Estás seguro que quieres resetear todos los pagos del mes?\n\nEsto marcará todos los gastos fijos como "no pagados".')) return;
+    const status = document.getElementById('f-lista');
+    status.innerHTML = '<div class="loading-spinner">🔄 Reseteando...</div>';
+    try {
+        const rows = await sheetsGet(SPREADSHEET_FIXED_ID, 'Hoja 1!A2:N').catch(() => []);
+        if (!rows.length) { showToast('ℹ️ No hay datos para resetear'); fijos_cargarDatos(); return; }
+        const lastRow = rows.length + 1;
+        await sheetsUpdate(
+            SPREADSHEET_FIXED_ID,
+            `Hoja 1!F2:F${lastRow}`,
+            rows.map(r => [parseFixedPeriodicity(r[8]) === 'Cuota de Deuda' ? (r[5] || 'FALSE') : 'FALSE'])
+        );
+        await sheetsUpdate(
+            SPREADSHEET_FIXED_ID,
+            `Hoja 1!H2:H${lastRow}`,
+            rows.map(r => [parseFixedPeriodicity(r[8]) === 'Cuota de Deuda' ? (r[7] || serializePaymentStates(new Array(parsePaymentsTotal(r[6])).fill(false))) : serializePaymentStates(new Array(parsePaymentsTotal(r[6])).fill(false))])
+        );
+        await sheetsUpdate(
+            SPREADSHEET_FIXED_ID,
+            `Hoja 1!N2:N${lastRow}`,
+            rows.map(r => [parseFixedPeriodicity(r[8]) === 'Cuota de Deuda' ? (r[13] || serializePaymentStates(new Array(parsePaymentsTotal(r[6])).fill(false))) : serializePaymentStates(new Array(parsePaymentsTotal(r[6])).fill(false))])
+        );
+        showToast('✅ Pagos reseteados correctamente');
+        fijos_cargarDatos();
+    } catch(e) {
+        console.error('fijos_resetManual error:', e);
+        showToast('❌ Error al resetear pagos');
+        fijos_cargarDatos();
+    }
+}
 
 async function fijos_guardar() {
     const btn     = document.getElementById('f-btn-guardar');
@@ -10634,6 +10676,30 @@ window.deudas_toggleCuota = async function(id, idx) {
     } else if (currentState === 1) {
         // 1 → 2: Mark as paid
         item.cuotas.paid[idx] = 2;
+        // Prompt to delete corresponding Gasto Fijo
+        const cuotaConcepto = `${item.concepto} - Cuota ${idx + 1}/${item.cuotas.n}`;
+        if (confirm(`✅ Cuota ${idx + 1} pagada.\n\n¿Deseas borrar la entrada de Gasto Fijo "${cuotaConcepto}"?`)) {
+            try {
+                // Find matching Gasto Fijo row
+                const fijoRows = await sheetsGet(SPREADSHEET_FIXED_ID, 'Hoja 1!A2:N').catch(() => []);
+                let fijoRowIdx = -1;
+                for (let fi = 0; fi < fijoRows.length; fi++) {
+                    if ((fijoRows[fi][1] || '').trim() === cuotaConcepto) { fijoRowIdx = fi; break; }
+                }
+                if (fijoRowIdx >= 0) {
+                    const fixedSheetId = await getSheetId(SPREADSHEET_FIXED_ID, 'Hoja 1');
+                    await sheetsDeleteRow(SPREADSHEET_FIXED_ID, fixedSheetId, fijoRowIdx + 1); // +1 because header row
+                    showToast(`🗑️ Gasto Fijo "${cuotaConcepto}" eliminado`);
+                    // Refresh fijos if tab was initialized
+                    if (tabInited.fijos) { tabInited.fijos = false; }
+                } else {
+                    showToast('ℹ️ No se encontró Gasto Fijo correspondiente');
+                }
+            } catch(e) {
+                console.error('Error deleting Gasto Fijo for cuota:', e);
+                showToast('⚠️ Error al borrar Gasto Fijo');
+            }
+        }
     } else {
         // 2 → 0: Revert to unpaid (optional undo)
         item.cuotas.paid[idx] = 0;
