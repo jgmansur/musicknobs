@@ -55,6 +55,13 @@ type AccountRow = {
   investmentType: string;
 };
 
+type FxSnapshot = {
+  usdMxn: number;
+  btcMxn: number;
+  source: string;
+  stale: boolean;
+};
+
 type PromptRow = {
   id: string;
   title: string;
@@ -268,6 +275,90 @@ export async function getAccounts(): Promise<AccountRow[]> {
     currency: row[7] || "MXN",
     investmentType: row[8] || "custom",
   }));
+}
+
+async function fetchUsdMxnRate(): Promise<number | null> {
+  try {
+    const r = await fetch("https://open.er-api.com/v6/latest/USD");
+    if (!r.ok) return null;
+    const data = (await r.json()) as { rates?: Record<string, number> };
+    const rate = parseNumber(data?.rates?.MXN);
+    return rate > 0 ? rate : null;
+  } catch {
+    return null;
+  }
+}
+
+async function fetchBtcMxnRate(): Promise<number | null> {
+  try {
+    const r = await fetch("https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=mxn");
+    if (!r.ok) return null;
+    const data = (await r.json()) as { bitcoin?: { mxn?: number } };
+    const rate = parseNumber(data?.bitcoin?.mxn);
+    return rate > 0 ? rate : null;
+  } catch {
+    return null;
+  }
+}
+
+async function getFxSnapshot(): Promise<FxSnapshot> {
+  const [usdMxnRemote, btcMxnRemote] = await Promise.all([fetchUsdMxnRate(), fetchBtcMxnRate()]);
+  const usdMxn = usdMxnRemote || 17;
+  const btcMxn = btcMxnRemote || 1_500_000;
+  return {
+    usdMxn,
+    btcMxn,
+    source: "open.er-api+coingecko",
+    stale: !usdMxnRemote || !btcMxnRemote,
+  };
+}
+
+function convertToMxn(balance: number, currency: string, fx: FxSnapshot): number {
+  const curr = (currency || "MXN").toString().trim().toUpperCase();
+  if (curr === "USD") return balance * fx.usdMxn;
+  if (curr === "BTC") return balance * fx.btcMxn;
+  return balance;
+}
+
+export async function getWidgetAccountsSnapshot(limit = 8, includeHidden = false) {
+  const [accounts, fx] = await Promise.all([getAccounts(), getFxSnapshot()]);
+  const visible = accounts.filter((a) => includeHidden || !a.hidden);
+  const mapped = visible.map((a) => {
+    const balanceOriginal = parseNumber(a.balance);
+    const balanceMxn = convertToMxn(balanceOriginal, a.currency, fx);
+    return {
+      id: a.id,
+      name: a.name,
+      type: a.type,
+      currency: (a.currency || "MXN").toUpperCase(),
+      balanceOriginal,
+      balanceMxn,
+    };
+  });
+
+  const sorted = mapped.sort((a, b) => Math.abs(b.balanceMxn) - Math.abs(a.balanceMxn));
+  const sliced = sorted.slice(0, Math.max(1, Math.min(20, Math.trunc(limit) || 8)));
+  const assetsMxn = mapped.filter((a) => a.balanceMxn > 0).reduce((s, a) => s + a.balanceMxn, 0);
+  const liabilitiesMxn = Math.abs(mapped.filter((a) => a.balanceMxn < 0).reduce((s, a) => s + a.balanceMxn, 0));
+  const netMxn = mapped.reduce((s, a) => s + a.balanceMxn, 0);
+
+  return {
+    ok: true,
+    updatedAt: new Date().toISOString(),
+    rates: {
+      usdMxn: fx.usdMxn,
+      btcMxn: fx.btcMxn,
+      source: fx.source,
+      stale: fx.stale,
+    },
+    totals: {
+      netMxn,
+      assetsMxn,
+      liabilitiesMxn,
+      countVisible: mapped.length,
+    },
+    accounts: sliced,
+  };
 }
 
 export async function findProfileField(member: string | undefined, field: keyof ProfileRow) {

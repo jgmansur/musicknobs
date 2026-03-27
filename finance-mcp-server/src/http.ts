@@ -8,6 +8,7 @@ import {
   getFixedStatus,
   getFinanceSummary,
   getInvestmentsSnapshot,
+  getWidgetAccountsSnapshot,
   searchPrompts,
   searchDocuments,
 } from "./data.js";
@@ -25,6 +26,18 @@ await app.register(cors, {
 
 app.addHook("onRequest", async (req, reply) => {
   if (req.url === "/health") return;
+
+  if (req.url.startsWith("/api/widget/accounts")) {
+    const expected = (config.widgetToken || config.apiToken || "").trim();
+    const queryToken = String((req.query as Record<string, unknown>)?.token || "").trim();
+    const headerToken = String(req.headers["x-widget-token"] || "").trim();
+    const token = headerToken || queryToken;
+    if (!expected || !token || token !== expected) {
+      return reply.code(401).send({ error: "Unauthorized" });
+    }
+    return;
+  }
+
   const auth = req.headers.authorization || "";
   const token = auth.startsWith("Bearer ") ? auth.slice(7) : "";
   if (!token || token !== config.apiToken) {
@@ -95,6 +108,17 @@ app.get("/api/prompts/search", async (req, reply) => {
   const parsed = schema.safeParse(req.query);
   if (!parsed.success) return reply.code(400).send({ error: parsed.error.flatten() });
   return searchPrompts(parsed.data.query, parsed.data.platform);
+});
+
+app.get("/api/widget/accounts", async (req, reply) => {
+  const schema = z.object({
+    token: z.string().optional(),
+    limit: z.coerce.number().int().min(1).max(20).optional(),
+    includeHidden: z.coerce.boolean().optional(),
+  });
+  const parsed = schema.safeParse(req.query);
+  if (!parsed.success) return reply.code(400).send({ error: parsed.error.flatten() });
+  return getWidgetAccountsSnapshot(parsed.data.limit || 8, !!parsed.data.includeHidden);
 });
 
 app.post("/api/ai-mirror/sync", async (_req, reply) => {

@@ -15,6 +15,7 @@ export const config = {
   port: Number(process.env.PORT || 8787),
   nodeEnv: process.env.NODE_ENV || "development",
   apiToken: process.env.API_TOKEN || "",
+  widgetToken: process.env.WIDGET_TOKEN || "",
   serviceAccountJson: readServiceAccountJson(),
   spreadsheets: {
     log: process.env.SPREADSHEET_LOG_ID || "",

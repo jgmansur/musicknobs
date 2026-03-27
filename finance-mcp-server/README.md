@@ -27,6 +27,7 @@ Copy `.env.example` to `.env` and set values:
 - `AI_MIRROR_SHEET_NAME` (optional)
 - `AI_MIRROR_SHARE_EMAIL` (optional; auto-share mirror sheet)
 - `API_TOKEN`
+- `WIDGET_TOKEN` (recommended for Widgy endpoint)
 
 Share your target Google Sheets with your Service Account email.
 
@@ -76,7 +77,17 @@ curl -H "Authorization: Bearer $API_TOKEN" "https://<your-app>.fly.dev/api/fixed
 curl -H "Authorization: Bearer $API_TOKEN" "https://<your-app>.fly.dev/api/profile/field?member=yo&field=curp"
 curl -H "Authorization: Bearer $API_TOKEN" "https://<your-app>.fly.dev/api/prompts/search?query=lanzamiento&platform=X"
 curl -X POST -H "Authorization: Bearer $API_TOKEN" "https://<your-app>.fly.dev/api/ai-mirror/sync"
+curl "https://<your-app>.fly.dev/api/widget/accounts?token=$WIDGET_TOKEN"
 ```
+
+## Widgy endpoint
+
+- `GET /api/widget/accounts`
+- Auth via query `token` (or header `x-widget-token`)
+- Returns account balances converted to MXN (`USD` and `BTC` converted using live rates with fallback values)
+- Useful params:
+  - `limit` (1-20, default 8)
+  - `includeHidden=true|false`
 
 ## AI Mirror behavior
 
