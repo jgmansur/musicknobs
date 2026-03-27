@@ -3385,7 +3385,7 @@ window.fijos_togglePagoPart = async function(id, partIndex, options = {}) {
                     try {
                         const fixedSheetName = 'Hoja 1'; // Assumed from context
                         const fixedSheetId = await getSheetId(SPREADSHEET_FIXED_ID, fixedSheetName);
-                        await sheetsDeleteRow(SPREADSHEET_FIXED_ID, fixedSheetId, id);
+                        await sheetsDeleteRow(SPREADSHEET_FIXED_ID, fixedSheetId, id - 1);
                         showToast(`🗑️ Gasto Fijo "${cuotaPromptLabel}" eliminado`);
                         // Force refresh
                         tabInited.fijos = false;

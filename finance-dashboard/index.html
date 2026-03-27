@@ -1636,21 +1636,19 @@
         </div>
       </div>
 
-      <!-- ── PIN MODAL (RESET PROTECTION) ── -->
-      <div id="pin-modal" class="modal hidden" style="z-index: 9999;">
-        <div id="pin-modal-backdrop" class="modal-backdrop"></div>
-        <div class="modal-inner glass" style="max-width: 320px; text-align: center; padding: 2rem; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);">
-          <h3 style="margin-bottom: 0.5rem;">Código de Seguridad</h3>
-          <p style="font-size: 0.85rem; color: #94a3b8; margin-bottom: 1.5rem;">Introduce el PIN para resetear los pagos</p>
-          <input type="tel" id="pin-input" pattern="[0-9]*" inputmode="numeric" maxlength="4" class="field-input" 
-                 style="font-size: 2.2rem; text-align: center; letter-spacing: 0.8rem; height: 60px; border: 1px solid rgba(255,255,255,0.1); width: 100%; border-radius: 12px; font-weight: 700; background: rgba(0,0,0,0.2); color: #fff;">
-          <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 2rem;">
-            <button id="pin-cancel-btn" class="secondary-btn">Cancelar</button>
-            <button id="pin-submit-btn" class="primary-btn">Confirmar</button>
-          </div>
+    </div><!-- /#app -->
+    <!-- ── PIN MODAL (RESET PROTECTION) ── -->
+    <div id="pin-modal" class="modal hidden" style="z-index: 10000;">
+      <div class="modal-inner glass" style="max-width: 320px; text-align: center; padding: 2rem; border-radius: 2rem;">
+        <h3 style="margin-bottom: 0.5rem;">CÓDIGO<span>SEGURIDAD</span></h3>
+        <p style="font-size: 0.85rem; color: #94a3b8; margin-bottom: 1.5rem;">Introduce el PIN para resetear los pagos</p>
+        <input type="tel" id="pin-input" pattern="[0-9]*" inputmode="numeric" maxlength="4" class="field-input" 
+               style="font-size: 2.2rem; text-align: center; letter-spacing: 0.8rem; height: 60px; border: 1px solid rgba(255,255,255,0.1); width: 100%; border-radius: 12px; font-weight: 700; background: rgba(0,0,0,0.2); color: #fff;">
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 2rem;">
+          <button id="pin-cancel-btn" class="secondary-btn">Cancelar</button>
+          <button id="pin-submit-btn" class="primary-btn">Confirmar</button>
         </div>
       </div>
-
-    </div><!-- /#app -->
+    </div>
   </body>
 </html>
