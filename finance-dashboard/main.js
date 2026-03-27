@@ -19,7 +19,7 @@ const SPREADSHEET_RECUERDOS_ID = '1b5PyMcfBQX75BODYRn075Meu-aOMW1lxr81USGE6zJA';
 const RECUERDOS_FOLDER_ID = '1L0t7TjKEugjpOIeYXU_xgoDiRPQ6-YbZ';
 const SPREADSHEET_RSM_ID = '14VsoPHGNTSUSbzMOqGWs2qSL-pGywPgjUoHD3MqIJfo'; // Recibos Salud Mariel
 const RSM_FOLDER_ID = '1-ZfeWQ-Rmh-Wm2WMCkULkN6MQWBuxYnj';
-const APP_VERSION  = 'v7.8.1';
+const APP_VERSION  = 'v7.8.2';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -2173,6 +2173,31 @@ async function driveDeleteFile(fileId) {
     });
 }
 
+function extractDriveFileId(url) {
+    const raw = (url || '').toString().trim();
+    if (!raw) return '';
+    const m1 = raw.match(/\/d\/([a-zA-Z0-9_-]+)/);
+    if (m1) return m1[1];
+    const m2 = raw.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+    if (m2) return m2[1];
+    if (!/drive\.google\.com|googleusercontent\.com/i.test(raw)) return '';
+    const m3 = raw.match(/[-\w]{25,}/);
+    return m3 ? m3[0] : '';
+}
+
+async function deleteDriveFilesFromUrls(urls) {
+    const ids = [...new Set((urls || [])
+        .map((u) => extractDriveFileId(u))
+        .filter(Boolean))];
+    for (const id of ids) {
+        try {
+            await driveDeleteFile(id);
+        } catch (e) {
+            console.warn('No se pudo borrar archivo Drive:', e);
+        }
+    }
+}
+
 async function driveListFolderFilesRecursive(folderId) {
     const out = [];
     const queue = [{ id: folderId, path: '' }];
@@ -4324,6 +4349,29 @@ async function autos_deleteCarById(carId) {
 
     autosState.cars = autosState.cars.filter(c => c.id !== carId);
     autosState.repairs = autosState.repairs.filter(r => r.carId !== carId);
+
+    const carFileUrls = [
+        car.fotoAuto,
+        car.contratoPrestamo,
+        car.polizaSeguro,
+        car.emergenciaInterior,
+        car.emergenciaMetro,
+        car.reporteSiniestros1,
+        car.reporteSiniestros2,
+        car.tarjetaCirculacionFrente,
+        car.tarjetaCirculacionAtras,
+        car.pagoTenencia,
+        car.tablaPagos,
+        car.tablaPagosSeguro,
+        car.llantasFoto,
+        car.certificadoPolarizado,
+        car.facturaArchivo,
+        car.polizaArchivo,
+        car.extraDoc1Url,
+        car.extraDoc2Url,
+    ];
+    const repairFileUrls = linkedRepairs.flatMap((r) => [r.foto, r.recibo]);
+    await deleteDriveFilesFromUrls([...carFileUrls, ...repairFileUrls]);
 
     await autos_saveCarsSheet();
     await autos_saveRepairsSheet();
@@ -6523,6 +6571,7 @@ window.autos_deleteRepair = async function(repairId) {
     const repair = autosState.repairs.find(r => r.id === repairId);
     if (!repair) return;
     if (!confirm('¿Eliminar esta reparacion?')) return;
+    await deleteDriveFilesFromUrls([repair.foto, repair.recibo]);
     autosState.repairs = autosState.repairs.filter(r => r.id !== repairId);
     await autos_saveRepairsSheet();
     try {
@@ -7245,6 +7294,7 @@ window.estudio_deleteInventario = async function(id) {
     const item = estudioState.inventario.find((x) => x.id === id);
     if (!item) return;
     if (!confirm('¿Eliminar este equipo del inventario?')) return;
+    await deleteDriveFilesFromUrls([item.foto]);
     estudioState.inventario = estudioState.inventario.filter((x) => x.id !== id);
     await estudio_saveInventarioSheet();
     try {
@@ -7272,6 +7322,7 @@ window.estudio_deletePlugin = async function(id) {
     const item = estudioState.plugins.find((x) => x.id === id);
     if (!item) return;
     if (!confirm('¿Eliminar este plugin?')) return;
+    await deleteDriveFilesFromUrls([item.foto]);
     estudioState.plugins = estudioState.plugins.filter((x) => x.id !== id);
     await estudio_savePluginsSheet();
     try {
@@ -8074,6 +8125,13 @@ async function propiedades_deleteFromSheet() {
     const item = propiedadesState.items.find((x) => x.id === id);
     if (!item) return;
     if (!confirm('¿Eliminar esta propiedad y sus remotos?')) return;
+    await deleteDriveFilesFromUrls([
+        item.fotoUrl,
+        item.escrituraUrl,
+        item.docExtra1Url,
+        item.docExtra2Url,
+        item.docExtra3Url,
+    ]);
     propiedadesState.items = propiedadesState.items.filter((x) => x.id !== id);
     if (propiedadesState.selectedId === id) propiedadesState.selectedId = propiedadesState.items[0]?.id || '';
     try {
@@ -9856,14 +9914,28 @@ const hairState = {
     selectedMember: HAIR_DEFAULT_MEMBERS[0],
     loaded: false,
     loading: false,
+    detailId: '',
 };
 
 function pelo_bindEvents() {
     document.getElementById('hair-btn-add-entry')?.addEventListener('click', () => pelo_openSheet(null));
     document.getElementById('hair-btn-add-member')?.addEventListener('click', pelo_addMemberPrompt);
     document.getElementById('hair-sheet-overlay')?.addEventListener('click', pelo_closeSheet);
+    document.getElementById('hair-detail-overlay')?.addEventListener('click', pelo_closeDetail);
     document.getElementById('hair-save')?.addEventListener('click', pelo_save);
     document.getElementById('hair-delete')?.addEventListener('click', pelo_delete);
+    document.getElementById('hair-detail-close')?.addEventListener('click', pelo_closeDetail);
+    document.getElementById('hair-detail-edit')?.addEventListener('click', () => {
+        if (!hairState.detailId) return;
+        pelo_closeDetail();
+        pelo_openSheet(hairState.detailId);
+    });
+    document.getElementById('hair-detail-delete')?.addEventListener('click', async () => {
+        if (!hairState.detailId) return;
+        const idInput = document.getElementById('hair-edit-id');
+        if (idInput) idInput.value = hairState.detailId;
+        await pelo_delete();
+    });
 
     const uploadBindings = [
         ['hair-upload-receipt-camera', 'hair-receipt-url', 'receipt'],
@@ -9907,6 +9979,13 @@ function pelo_bindEvents() {
             e.stopPropagation();
             const url = link.dataset.openUrl || '';
             if (url) window.open(url, '_blank', 'noopener');
+            return;
+        }
+        const open = e.target.closest('[data-hair-open]');
+        if (open) {
+            e.preventDefault();
+            const id = open.dataset.hairOpen || '';
+            if (id) pelo_openDetail(id);
         }
     });
 }
@@ -10003,7 +10082,7 @@ function pelo_render() {
 
     list.innerHTML = entries.length
         ? entries.map((e) => `
-            <article class="docs-card">
+            <article class="docs-card" data-hair-open="${e.id}" style="cursor:pointer;">
               <div class="hair-entry-head">
                 <div class="hair-entry-main">
                   ${e.frontUrl || e.sideUrl
@@ -10027,6 +10106,41 @@ function pelo_render() {
         : '<div class="empty-state">Sin cortes registrados para este miembro</div>';
 }
 
+function pelo_openDetail(id) {
+    const row = hairState.items.find((x) => x.id === id);
+    if (!row) return;
+    hairState.detailId = row.id;
+    document.getElementById('hair-detail-title').innerText = `${row.member} · ${formatFecha(row.date)}`;
+    document.getElementById('hair-detail-amount').innerText = formatCurrency(row.amount || 0);
+    document.getElementById('hair-detail-meta').innerText = `${row.stylist || 'Sin estilista'} · ${row.formaPago || 'Sin forma de pago'}`;
+    document.getElementById('hair-detail-notes').innerText = row.notes || 'Sin notas';
+
+    const media = [
+        { label: '🧾 Recibo', url: row.receiptUrl || '' },
+        { label: '📷 Frente', url: row.frontUrl || '' },
+        { label: '📷 Lado', url: row.sideUrl || '' },
+        { label: '📷 Atras', url: row.backUrl || '' },
+    ].filter((x) => x.url);
+
+    const mediaEl = document.getElementById('hair-detail-media');
+    if (mediaEl) {
+        mediaEl.innerHTML = media.length
+            ? media.map((m) => `<a class="mini-btn" href="${m.url}" target="_blank" rel="noopener">${m.label}</a>`).join('')
+            : '<span class="diff-label">Sin fotos/recibo</span>';
+    }
+    document.getElementById('hair-detail-sheet')?.classList.remove('hidden');
+}
+
+function pelo_closeDetail() {
+    document.getElementById('hair-detail-sheet')?.classList.add('hidden');
+    hairState.detailId = '';
+}
+
+async function pelo_deleteEntryFiles(row) {
+    if (!row) return;
+    await deleteDriveFilesFromUrls([row.receiptUrl, row.frontUrl, row.sideUrl, row.backUrl]);
+}
+
 function pelo_fillMemberSelect(selected) {
     const sel = document.getElementById('hair-member');
     if (!sel) return;
@@ -10034,6 +10148,7 @@ function pelo_fillMemberSelect(selected) {
 }
 
 function pelo_openSheet(id) {
+    pelo_closeDetail();
     const row = id ? hairState.items.find((x) => x.id === id) : null;
     document.getElementById('hair-edit-id').value = row?.id || '';
     document.getElementById('hair-sheet-title').innerText = row ? 'Editar entrada de Pelo' : 'Nueva entrada de Pelo';
@@ -10223,14 +10338,16 @@ async function pelo_save() {
 }
 
 async function pelo_delete() {
-    const id = (document.getElementById('hair-edit-id').value || '').trim();
+    const id = (document.getElementById('hair-edit-id').value || '').trim() || hairState.detailId;
     if (!id) return;
     const row = hairState.items.find((x) => x.id === id);
     if (!row) return;
     if (!confirm('¿Eliminar esta entrada de Pelo?')) return;
+    await pelo_deleteEntryFiles(row);
     await pelo_removeExpenseByMarker(row.expenseMarker || pelo_buildMarker(row.id));
     hairState.items = hairState.items.filter((x) => x.id !== id);
     await pelo_saveRows();
+    pelo_closeDetail();
     pelo_closeSheet();
     pelo_render();
     showToast('🗑️ Entrada eliminada');

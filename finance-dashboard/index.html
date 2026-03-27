@@ -13,7 +13,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <link rel="stylesheet" href="./style.css">
-    <script type="module" src="./main.js?v=7.8.1"></script>
+    <script type="module" src="./main.js?v=7.8.2"></script>
   </head>
   <body>
     <div id="app">
@@ -23,7 +23,7 @@
         <div class="header-content">
           <div class="logo-area">
             <h1 class="premium-title">ESTRATÉGIA<span>FINANCIERA</span></h1>
-            <p class="subtitle">Music Knobs | v7.8.1</p>
+            <p class="subtitle">Music Knobs | v7.8.2</p>
           </div>
           <div class="action-area">
             <div id="sync-status" class="status-badge">Sincronizado</div>
@@ -1304,6 +1304,25 @@
             <div id="hair-file-feedback" class="diff-label" style="margin-top:.45rem;"></div>
             <button id="hair-delete" class="mini-btn mini-btn-danger hidden" style="margin-top:.7rem;width:100%;">🗑️ Eliminar entrada</button>
             <button id="hair-save" class="primary-btn" style="margin-top:.6rem;width:100%;">Guardar entrada</button>
+          </div>
+        </div>
+
+        <div id="hair-detail-sheet" class="bottom-sheet hidden">
+          <div id="hair-detail-overlay" class="bottom-sheet-overlay"></div>
+          <div class="bottom-sheet-content glass">
+            <div class="sheet-handle"></div>
+            <div class="balance-panel-header">
+              <h3 id="hair-detail-title" class="balance-panel-title">Detalle del Corte</h3>
+              <button id="hair-detail-close" class="icon-btn">✕</button>
+            </div>
+            <div id="hair-detail-amount" style="font-size:1.85rem;font-weight:800;color:var(--text-main);margin-bottom:.45rem;">$0.00</div>
+            <div id="hair-detail-meta" class="diff-label" style="margin-bottom:.55rem;">-</div>
+            <div id="hair-detail-notes" class="field-input" style="padding:.65rem;min-height:74px;white-space:pre-wrap;">Sin notas</div>
+            <div id="hair-detail-media" style="display:flex;gap:.45rem;flex-wrap:wrap;margin-top:.65rem;"></div>
+            <div class="form-actions" style="margin-top:.8rem;">
+              <button id="hair-detail-edit" class="secondary-btn" style="flex:1;">Editar</button>
+              <button id="hair-detail-delete" class="primary-btn" style="flex:1;background:linear-gradient(120deg,#ef4444,#f97316);">Borrar</button>
+            </div>
           </div>
         </div>
       </div>
