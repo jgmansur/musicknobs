@@ -13,7 +13,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <link rel="stylesheet" href="./style.css">
-    <script type="module" src="./main.js?v=7.7.6"></script>
+    <script type="module" src="./main.js?v=7.7.7"></script>
   </head>
   <body>
     <div id="app">
@@ -23,7 +23,7 @@
         <div class="header-content">
           <div class="logo-area">
             <h1 class="premium-title">ESTRATÉGIA<span>FINANCIERA</span></h1>
-            <p class="subtitle">Music Knobs | v7.7.6</p>
+            <p class="subtitle">Music Knobs | v7.7.7</p>
           </div>
           <div class="action-area">
             <div id="sync-status" class="status-badge">Sincronizado</div>
@@ -1401,6 +1401,80 @@
       </div>
 
       <!-- ══════════════════════════════════
+           VIEW: RECUERDOS
+           ══════════════════════════════════ -->
+      <div id="view-recuerdos" class="view">
+        <main class="dashboard-grid">
+          <section class="kpi-row">
+            <div class="kpi-card glass">
+              <div class="kpi-icon" style="background:rgba(16,185,129,.15);color:#10b981">🧠</div>
+              <div class="kpi-data">
+                <span class="label">Recuerdos guardados</span>
+                <h2 id="rec-total" class="text-success">0</h2>
+                <span id="rec-subtitle" class="diff-label">Bitacora con archivos</span>
+              </div>
+            </div>
+          </section>
+
+          <div class="main-content-row">
+            <section class="glass" style="display:grid;gap:.7rem;align-content:start;">
+              <div class="section-header" style="display:flex;justify-content:space-between;align-items:center;gap:.5rem;">
+                <h3>Nuevo Recuerdo</h3>
+              </div>
+              <textarea id="rec-texto" class="field-input" rows="5" placeholder="Escribe aqui..."></textarea>
+              <div class="autos-file-row">
+                <label for="rec-archivo" class="secondary-btn autos-file-btn">📎 Adjuntar archivos/fotos</label>
+                <input id="rec-archivo" type="file" class="autos-file-native" multiple>
+              </div>
+              <div id="rec-file-note" class="diff-label"></div>
+              <button id="rec-btn-guardar" class="primary-btn" style="width:100%;">Guardar todo</button>
+              <div id="rec-status" class="diff-label"></div>
+            </section>
+
+            <section class="glass" style="display:grid;gap:.65rem;align-content:start;">
+              <div class="section-header" style="display:flex;justify-content:space-between;align-items:center;gap:.5rem;">
+                <h3>Historial</h3>
+                <button id="rec-btn-notebook" class="btn-notebook" style="margin-bottom:0;">🧠 NotebookLM</button>
+              </div>
+              <div class="form-row-2" style="grid-template-columns:1fr auto;gap:.5rem;">
+                <input id="rec-search" type="search" class="field-input" placeholder="Buscar...">
+                <select id="rec-sort" class="field-input" style="min-width:138px;">
+                  <option value="desc">Mas recientes</option>
+                  <option value="asc">Mas antiguos</option>
+                </select>
+              </div>
+              <div id="rec-list" class="accounts-list"></div>
+              <button id="rec-btn-more" class="secondary-btn hidden" style="width:100%;">Ver mas</button>
+            </section>
+          </div>
+        </main>
+
+        <div id="rec-edit-sheet" class="bottom-sheet hidden">
+          <div id="rec-edit-overlay" class="bottom-sheet-overlay"></div>
+          <div class="bottom-sheet-content glass">
+            <div class="sheet-handle"></div>
+            <div class="balance-panel-header">
+              <h3 class="balance-panel-title">Editar Recuerdo</h3>
+              <button class="icon-btn" onclick="document.getElementById('rec-edit-sheet').classList.add('hidden')">✕</button>
+            </div>
+            <input id="rec-edit-row" type="hidden">
+            <textarea id="rec-edit-texto" class="field-input" rows="6" placeholder="Texto del recuerdo"></textarea>
+            <div class="field-label" style="margin-top:.6rem;">Archivos actuales (quita los que no quieras)</div>
+            <div id="rec-edit-files" class="accounts-list" style="padding:.5rem;"></div>
+            <div class="autos-file-row" style="margin-top:.55rem;">
+              <label for="rec-edit-archivo" class="secondary-btn autos-file-btn">📎 Agregar mas archivos</label>
+              <input id="rec-edit-archivo" type="file" class="autos-file-native" multiple>
+            </div>
+            <div id="rec-edit-file-note" class="diff-label" style="margin-top:.45rem;"></div>
+            <div class="form-actions" style="margin-top:.8rem;">
+              <button id="rec-edit-cancel" class="secondary-btn" style="flex:1;">Cancelar</button>
+              <button id="rec-edit-save" class="primary-btn" style="flex:1;">Guardar cambios</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════════════
            VIEW: ESTUDIO (Tab 11)
            ══════════════════════════════════ -->
       <div id="view-estudio" class="view">
@@ -1632,6 +1706,10 @@
         <button class="tab" id="tab-propiedades" data-tab="propiedades">
           <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 10.5L12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/><path d="M9 21v-6h6v6"/></svg>
           <span class="tab-label">Propiedades</span>
+        </button>
+        <button class="tab" id="tab-recuerdos" data-tab="recuerdos">
+          <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 4h12a2 2 0 0 1 2 2v14l-4-2-4 2-4-2-4 2V6a2 2 0 0 1 2-2z"/><path d="M9 9h6M9 13h6"/></svg>
+          <span class="tab-label">Recuerdos</span>
         </button>
         <button class="tab" id="tab-documentos" data-tab="documentos">
           <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h6"/></svg>

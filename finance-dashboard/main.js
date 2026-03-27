@@ -15,7 +15,9 @@ const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // 
 const SPREADSHEET_DEUDAS_ID = '1dKxhgqazskm15lx0f6FNCA0gpJ7i5glfxkusiH3b0Uk'; // Control de Deudas
 const SPREADSHEET_AUTOS_ID = SPREADSHEET_DEUDAS_ID; // Autos + Reparaciones live in same workbook
 const SPREADSHEET_ESTUDIO_ID = SPREADSHEET_DEUDAS_ID; // Estudio + Plugins in same workbook
-const APP_VERSION  = 'v7.7.6';
+const SPREADSHEET_RECUERDOS_ID = '1b5PyMcfBQX75BODYRn075Meu-aOMW1lxr81USGE6zJA'; // Bitacora Recuerdos
+const RECUERDOS_FOLDER_ID = '1L0t7TjKEugjpOIeYXU_xgoDiRPQ6-YbZ';
+const APP_VERSION  = 'v7.7.7';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -167,7 +169,7 @@ let tokenRequestInFlight = null;
 let tokenRequestInteractive = true;
 let tokenRequestWatchdog = null;
 let currentTab  = 'dashboard';
-let tabInited   = { dashboard: false, gastos: false, fijos: false, deudas: false, plan: false, autos: false, propiedades: false, documentos: false, pelo: false, prompts: false, estudio: false };
+let tabInited   = { dashboard: false, gastos: false, fijos: false, deudas: false, plan: false, autos: false, propiedades: false, recuerdos: false, documentos: false, pelo: false, prompts: false, estudio: false };
 const MELI_ACCESS_TOKEN_KEY = 'meli_access_token_v1';
 const MELI_REFRESH_TOKEN_KEY = 'meli_refresh_token_v1';
 const MELI_EXPIRES_AT_KEY = 'meli_expires_at_v1';
@@ -521,6 +523,7 @@ document.addEventListener('DOMContentLoaded', () => {
     deudas_bindEvents();
     autos_bindEvents();
     propiedades_bindEvents();
+    recuerdos_bindEvents();
     documentos_bindEvents();
     pelo_bindEvents();
     prompts_bindEvents();
@@ -556,7 +559,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Helper para obtener tab inicial desde el hash de la URL
     function getInitialTabFromHash() {
         const hash = (window.location.hash || '').replace('#', '').toLowerCase();
-        const validTabs = ['dashboard', 'gastos', 'fijos', 'deudas', 'plan', 'autos', 'estudio', 'propiedades', 'documentos', 'pelo', 'prompts'];
+        const validTabs = ['dashboard', 'gastos', 'fijos', 'deudas', 'plan', 'autos', 'estudio', 'propiedades', 'recuerdos', 'documentos', 'pelo', 'prompts'];
         return validTabs.includes(hash) ? hash : 'dashboard';
     }
 
@@ -1734,6 +1737,7 @@ function showTab(name) {
         if (name === 'plan')      planner_cargarVista();
         if (name === 'autos')     autos_cargarVista();
         if (name === 'propiedades') propiedades_cargarVista();
+        if (name === 'recuerdos') recuerdos_cargarVista();
         if (name === 'documentos') documentos_cargarVista();
         if (name === 'pelo')      pelo_cargarVista();
         if (name === 'prompts')   prompts_cargarVista();
@@ -8251,6 +8255,393 @@ async function propiedades_uploadFirstFile(inputId) {
     if (feedback) feedback.innerText = `✅ Archivo cargado: ${first.name}`;
     input.value = '';
     return link;
+}
+
+// =============================================
+// RECUERDOS MODULE
+// =============================================
+const RECUERDOS_SHEET = 'Datos';
+const RECUERDOS_HEADERS = ['fecha', 'texto', 'url'];
+const RECUERDOS_NOTEBOOK_URL = 'https://notebooklm.google.com/notebook/7a39cca5-cdf9-4922-9228-cdb8f523015f';
+
+const recuerdosState = {
+    items: [],
+    loaded: false,
+    loading: false,
+    search: '',
+    sort: 'desc',
+    visibleCount: 10,
+    limit: 10,
+    debounceTimer: null,
+    editRow: 0,
+    editUrls: [],
+    removeUrls: [],
+};
+
+function recuerdos_bindEvents() {
+    document.getElementById('rec-btn-guardar')?.addEventListener('click', recuerdos_guardarNuevo);
+    document.getElementById('rec-archivo')?.addEventListener('change', () => {
+        const input = document.getElementById('rec-archivo');
+        const note = document.getElementById('rec-file-note');
+        if (note) note.innerText = input?.files?.length ? `${input.files.length} archivo(s) listo(s)` : '';
+    });
+    document.getElementById('rec-search')?.addEventListener('input', (e) => {
+        recuerdosState.search = (e.target.value || '').trim();
+        if (recuerdosState.debounceTimer) clearTimeout(recuerdosState.debounceTimer);
+        recuerdosState.debounceTimer = setTimeout(() => recuerdos_render(true), 350);
+    });
+    document.getElementById('rec-sort')?.addEventListener('change', (e) => {
+        recuerdosState.sort = (e.target.value || 'desc');
+        recuerdos_render(true);
+    });
+    document.getElementById('rec-btn-more')?.addEventListener('click', () => {
+        recuerdosState.visibleCount += recuerdosState.limit;
+        recuerdos_render(false);
+    });
+    document.getElementById('rec-btn-notebook')?.addEventListener('click', () => window.open(RECUERDOS_NOTEBOOK_URL, '_blank', 'noopener'));
+
+    document.getElementById('rec-list')?.addEventListener('click', (e) => {
+        const editBtn = e.target.closest('[data-rec-edit]');
+        if (editBtn) {
+            const row = parseInt(editBtn.dataset.recEdit || '0', 10);
+            if (row) recuerdos_abrirEdicion(row);
+            return;
+        }
+        const delBtn = e.target.closest('[data-rec-del]');
+        if (delBtn) {
+            const row = parseInt(delBtn.dataset.recDel || '0', 10);
+            if (row) recuerdos_borrar(row);
+            return;
+        }
+    });
+
+    document.getElementById('rec-edit-overlay')?.addEventListener('click', recuerdos_cerrarEdicion);
+    document.getElementById('rec-edit-cancel')?.addEventListener('click', recuerdos_cerrarEdicion);
+    document.getElementById('rec-edit-save')?.addEventListener('click', recuerdos_guardarEdicion);
+    document.getElementById('rec-edit-archivo')?.addEventListener('change', () => {
+        const input = document.getElementById('rec-edit-archivo');
+        const note = document.getElementById('rec-edit-file-note');
+        if (note) note.innerText = input?.files?.length ? `${input.files.length} archivo(s) nuevo(s)` : '';
+    });
+    document.getElementById('rec-edit-files')?.addEventListener('click', (e) => {
+        const rm = e.target.closest('[data-rec-remove-url]');
+        if (!rm) return;
+        const url = (rm.dataset.recRemoveUrl || '').trim();
+        if (!url) return;
+        if (!recuerdosState.removeUrls.includes(url)) recuerdosState.removeUrls.push(url);
+        recuerdosState.editUrls = recuerdosState.editUrls.filter((u) => u !== url);
+        recuerdos_renderEditFiles();
+    });
+}
+
+async function recuerdos_cargarVista() {
+    if (!accessToken || recuerdosState.loading) return;
+    recuerdosState.loading = true;
+    const listEl = document.getElementById('rec-list');
+    if (listEl) listEl.innerHTML = '<div class="loading-spinner">⏳ Cargando recuerdos...</div>';
+    try {
+        await recuerdos_ensureSheet();
+        await recuerdos_loadData();
+        recuerdos_render(true);
+    } catch (e) {
+        console.error('recuerdos_cargarVista:', e);
+        if (listEl) listEl.innerHTML = '<div class="empty-state text-danger">❌ Error cargando recuerdos</div>';
+    } finally {
+        recuerdosState.loading = false;
+    }
+}
+
+async function recuerdos_ensureSheet() {
+    try {
+        await sheetsGet(SPREADSHEET_RECUERDOS_ID, `${RECUERDOS_SHEET}!A1:A1`);
+    } catch (_) {
+        const url = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_RECUERDOS_ID}:batchUpdate`;
+        await authFetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ requests: [{ addSheet: { properties: { title: RECUERDOS_SHEET } } }] }),
+        });
+    }
+    const head = await sheetsGet(SPREADSHEET_RECUERDOS_ID, `${RECUERDOS_SHEET}!A1:C1`).catch(() => []);
+    const current = (head[0] || []).map((x) => (x || '').toString().trim().toLowerCase());
+    const expected = RECUERDOS_HEADERS;
+    const needs = expected.some((h, i) => (current[i] || '') !== h);
+    if (needs || !head.length) {
+        await sheetsUpdate(SPREADSHEET_RECUERDOS_ID, `${RECUERDOS_SHEET}!A1:C1`, [expected]);
+    }
+}
+
+function recuerdos_toIso(value) {
+    if (typeof value === 'number' && Number.isFinite(value)) {
+        const ms = (value - 25569) * 86400000;
+        const d = new Date(ms);
+        return Number.isNaN(d.getTime()) ? '' : d.toISOString();
+    }
+    const s = (value || '').toString().trim();
+    if (!s) return '';
+    const d = new Date(s);
+    if (!Number.isNaN(d.getTime())) return d.toISOString();
+    return s;
+}
+
+function recuerdos_parseUrls(value) {
+    const raw = (value || '').toString().trim();
+    if (!raw || raw.toLowerCase() === 'sin imagen') return [];
+    return raw.split(',').map((u) => u.trim()).filter(Boolean);
+}
+
+function recuerdos_escapeHtml(value) {
+    return (value || '').toString()
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+function recuerdos_stripAccents(value) {
+    try {
+        return (value || '').toString().normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+    } catch {
+        return (value || '').toString().toLowerCase();
+    }
+}
+
+function recuerdos_getTs(item) {
+    const t = new Date(item.fechaIso || '').getTime();
+    return Number.isNaN(t) ? 0 : t;
+}
+
+function recuerdos_getFiltered() {
+    const q = recuerdos_stripAccents(recuerdosState.search);
+    let list = recuerdosState.items.filter((item) => {
+        if (!q) return true;
+        const hay = recuerdos_stripAccents(`${item.texto} ${item.fechaIso}`);
+        return hay.includes(q);
+    });
+    list.sort((a, b) => {
+        const ta = recuerdos_getTs(a);
+        const tb = recuerdos_getTs(b);
+        return recuerdosState.sort === 'asc' ? ta - tb : tb - ta;
+    });
+    return list;
+}
+
+function recuerdos_formatFecha(value) {
+    const d = new Date(value || '');
+    if (Number.isNaN(d.getTime())) return (value || 'Fecha desconocida');
+    return d.toLocaleString('es-MX', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+}
+
+async function recuerdos_loadData() {
+    const rows = await sheetsGet(SPREADSHEET_RECUERDOS_ID, `${RECUERDOS_SHEET}!A2:C`).catch(() => []);
+    recuerdosState.items = rows.map((row, idx) => ({
+        rowNum: idx + 2,
+        fechaIso: recuerdos_toIso(row[0]),
+        texto: (row[1] || '').toString(),
+        urlsRaw: (row[2] || '').toString(),
+        urls: recuerdos_parseUrls(row[2]),
+    }));
+    recuerdosState.loaded = true;
+}
+
+function recuerdos_setStatus(msg = '') {
+    const el = document.getElementById('rec-status');
+    if (el) el.innerText = msg;
+}
+
+function recuerdos_render(resetPagination = false) {
+    const listEl = document.getElementById('rec-list');
+    if (!listEl) return;
+    if (resetPagination) recuerdosState.visibleCount = recuerdosState.limit;
+
+    const filtered = recuerdos_getFiltered();
+    const totalEl = document.getElementById('rec-total');
+    if (totalEl) totalEl.innerText = String(filtered.length);
+    const subEl = document.getElementById('rec-subtitle');
+    if (subEl) subEl.innerText = recuerdosState.search ? `Filtro activo: ${filtered.length}` : `Total historico: ${recuerdosState.items.length}`;
+
+    const visible = filtered.slice(0, recuerdosState.visibleCount);
+    if (!visible.length) {
+        listEl.innerHTML = '<div class="empty-state">No hay recuerdos encontrados.</div>';
+    } else {
+        listEl.innerHTML = visible.map((item) => {
+            const textHtml = recuerdos_escapeHtml(item.texto).replace(/\n/g, '<br>');
+            const filesHtml = item.urls.length
+                ? item.urls.map((url, i) => `<div><a href="${url}" target="_blank" rel="noopener" class="autos-phone-link">📎 Ver archivo ${item.urls.length > 1 ? i + 1 : ''}</a></div>`).join('')
+                : '<div class="diff-label">Sin imagen</div>';
+            return `
+            <div class="movimiento-card" style="cursor:default;align-items:flex-start;flex-direction:column;gap:.45rem;">
+              <div class="mc-fecha">📅 ${recuerdos_formatFecha(item.fechaIso)}</div>
+              <div class="mc-concepto" style="white-space:pre-wrap;max-width:100%;font-size:.84rem;color:var(--text-main);">${textHtml || '<span style="opacity:.7;">(Sin texto)</span>'}</div>
+              <div style="display:grid;gap:.2rem;">${filesHtml}</div>
+              <div style="display:flex;gap:.45rem;flex-wrap:wrap;">
+                <button class="mini-btn" data-rec-edit="${item.rowNum}">✏️ Editar / Archivos</button>
+                <button class="mini-btn mini-btn-danger" data-rec-del="${item.rowNum}">🗑️ Borrar</button>
+              </div>
+            </div>`;
+        }).join('');
+    }
+
+    const moreBtn = document.getElementById('rec-btn-more');
+    if (moreBtn) {
+        moreBtn.classList.toggle('hidden', recuerdosState.visibleCount >= filtered.length);
+        if (!moreBtn.classList.contains('hidden')) {
+            const left = Math.max(0, filtered.length - recuerdosState.visibleCount);
+            moreBtn.innerText = `Ver mas (${left})`;
+        }
+    }
+}
+
+async function recuerdos_subirArchivos(files, statusPrefix = 'Subiendo') {
+    const urls = [];
+    for (let i = 0; i < files.length; i++) {
+        recuerdos_setStatus(`${statusPrefix} ${i + 1}/${files.length}...`);
+        const url = await driveUploadFile(files[i], RECUERDOS_FOLDER_ID);
+        urls.push(url);
+    }
+    return urls;
+}
+
+function recuerdos_extractDriveId(url) {
+    const s = (url || '').toString();
+    const match = s.match(/[-\w]{25,}/);
+    return match ? match[0] : '';
+}
+
+async function recuerdos_guardarNuevo() {
+    const textEl = document.getElementById('rec-texto');
+    const fileEl = document.getElementById('rec-archivo');
+    const btn = document.getElementById('rec-btn-guardar');
+    if (!textEl || !fileEl || !btn) return;
+
+    const texto = (textEl.value || '').trim();
+    const files = Array.from(fileEl.files || []);
+    if (!texto && !files.length) {
+        recuerdos_setStatus('Escribe algo o adjunta algun archivo.');
+        return;
+    }
+
+    btn.disabled = true;
+    btn.innerText = 'Guardando...';
+    try {
+        let urls = [];
+        if (files.length) urls = await recuerdos_subirArchivos(files, 'Subiendo archivo');
+        const row = [new Date().toISOString(), texto, urls.length ? urls.join(',') : 'Sin imagen'];
+        await sheetsAppend(SPREADSHEET_RECUERDOS_ID, `${RECUERDOS_SHEET}!A:C`, [row]);
+        textEl.value = '';
+        fileEl.value = '';
+        const note = document.getElementById('rec-file-note');
+        if (note) note.innerText = '';
+        recuerdos_setStatus('¡Guardado con exito!');
+        showToast('✅ Recuerdo guardado');
+        await recuerdos_loadData();
+        recuerdos_render(true);
+        setTimeout(() => recuerdos_setStatus(''), 3000);
+    } catch (e) {
+        console.error('recuerdos_guardarNuevo:', e);
+        recuerdos_setStatus('Error al guardar el recuerdo');
+        showToast('⚠️ Error guardando recuerdo');
+    } finally {
+        btn.disabled = false;
+        btn.innerText = 'Guardar todo';
+    }
+}
+
+function recuerdos_abrirEdicion(rowNum) {
+    const item = recuerdosState.items.find((x) => x.rowNum === rowNum);
+    if (!item) return;
+    recuerdosState.editRow = rowNum;
+    recuerdosState.editUrls = [...item.urls];
+    recuerdosState.removeUrls = [];
+    const rowEl = document.getElementById('rec-edit-row');
+    const textEl = document.getElementById('rec-edit-texto');
+    const newFiles = document.getElementById('rec-edit-archivo');
+    const note = document.getElementById('rec-edit-file-note');
+    if (rowEl) rowEl.value = String(rowNum);
+    if (textEl) textEl.value = item.texto || '';
+    if (newFiles) newFiles.value = '';
+    if (note) note.innerText = '';
+    recuerdos_renderEditFiles();
+    document.getElementById('rec-edit-sheet')?.classList.remove('hidden');
+}
+
+function recuerdos_cerrarEdicion() {
+    document.getElementById('rec-edit-sheet')?.classList.add('hidden');
+    recuerdosState.editRow = 0;
+    recuerdosState.editUrls = [];
+    recuerdosState.removeUrls = [];
+}
+
+function recuerdos_renderEditFiles() {
+    const box = document.getElementById('rec-edit-files');
+    if (!box) return;
+    if (!recuerdosState.editUrls.length) {
+        box.innerHTML = '<div class="diff-label">Sin archivos actualmente.</div>';
+        return;
+    }
+    box.innerHTML = recuerdosState.editUrls.map((url, idx) => `
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:.5rem;padding:.4rem;border-bottom:1px solid rgba(255,255,255,.08);">
+        <a href="${url}" target="_blank" rel="noopener" class="autos-phone-link" style="font-size:.78rem;">📎 Archivo ${idx + 1}</a>
+        <button class="mini-btn mini-btn-danger" data-rec-remove-url="${url}">❌ Borrar</button>
+      </div>
+    `).join('');
+}
+
+async function recuerdos_guardarEdicion() {
+    const rowNum = recuerdosState.editRow;
+    if (!rowNum) return;
+    const saveBtn = document.getElementById('rec-edit-save');
+    const textEl = document.getElementById('rec-edit-texto');
+    const filesEl = document.getElementById('rec-edit-archivo');
+    const texto = (textEl?.value || '').trim();
+    const newFiles = Array.from(filesEl?.files || []);
+    if (!saveBtn) return;
+    saveBtn.disabled = true;
+    saveBtn.innerText = 'Guardando...';
+    try {
+        for (const url of recuerdosState.removeUrls) {
+            const fid = recuerdos_extractDriveId(url);
+            if (fid) await driveDeleteFile(fid).catch(() => {});
+        }
+        const uploaded = newFiles.length ? await recuerdos_subirArchivos(newFiles, 'Subiendo nuevo archivo') : [];
+        const finalUrls = [...recuerdosState.editUrls, ...uploaded];
+        await sheetsUpdate(
+            SPREADSHEET_RECUERDOS_ID,
+            `${RECUERDOS_SHEET}!B${rowNum}:C${rowNum}`,
+            [[texto, finalUrls.length ? finalUrls.join(',') : 'Sin imagen']]
+        );
+        recuerdos_cerrarEdicion();
+        await recuerdos_loadData();
+        recuerdos_render(true);
+        showToast('✅ Edicion guardada');
+    } catch (e) {
+        console.error('recuerdos_guardarEdicion:', e);
+        showToast('⚠️ Error al guardar edicion');
+    } finally {
+        saveBtn.disabled = false;
+        saveBtn.innerText = 'Guardar cambios';
+    }
+}
+
+async function recuerdos_borrar(rowNum) {
+    const item = recuerdosState.items.find((x) => x.rowNum === rowNum);
+    if (!item) return;
+    if (!confirm('¿Seguro que deseas borrar este recuerdo por completo?')) return;
+    try {
+        const sheetId = await getSheetId(SPREADSHEET_RECUERDOS_ID, RECUERDOS_SHEET);
+        await sheetsDeleteRow(SPREADSHEET_RECUERDOS_ID, sheetId, rowNum - 1);
+        for (const url of item.urls) {
+            const fid = recuerdos_extractDriveId(url);
+            if (fid) await driveDeleteFile(fid).catch(() => {});
+        }
+        await recuerdos_loadData();
+        recuerdos_render(true);
+        showToast('🗑️ Recuerdo eliminado');
+    } catch (e) {
+        console.error('recuerdos_borrar:', e);
+        showToast('⚠️ Error al borrar recuerdo');
+    }
 }
 
 // =============================================
