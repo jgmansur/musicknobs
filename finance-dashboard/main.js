@@ -15,7 +15,7 @@ const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // 
 const SPREADSHEET_DEUDAS_ID = '1dKxhgqazskm15lx0f6FNCA0gpJ7i5glfxkusiH3b0Uk'; // Control de Deudas
 const SPREADSHEET_AUTOS_ID = SPREADSHEET_DEUDAS_ID; // Autos + Reparaciones live in same workbook
 const SPREADSHEET_ESTUDIO_ID = SPREADSHEET_DEUDAS_ID; // Estudio + Plugins in same workbook
-const APP_VERSION  = 'v7.7.1';
+const APP_VERSION  = 'v7.7.2';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -10295,6 +10295,8 @@ let deudasState = {
     loading: false,
 };
 
+let deudasCuotaPromptResolve = null;
+
 function deudas_getTotalAmount() {
     return deudasState.allItems.reduce((s, i) => s + (i.hidden ? 0 : (i.monto || 0)), 0);
 }
@@ -10358,6 +10360,64 @@ function deudas_bindEvents() {
          // In index.html there is no d-sheet-close inside d-sheet based on grep
     }
     document.getElementById('d-btn-guardar')?.addEventListener('click', deudas_guardar);
+
+    document.getElementById('d-cuota-sheet-overlay')?.addEventListener('click', () => deudas_resolverPromptCuota(null));
+    document.getElementById('d-cuota-cancel')?.addEventListener('click', () => deudas_resolverPromptCuota(null));
+    document.getElementById('d-cuota-confirm')?.addEventListener('click', () => {
+        const accountEl = document.getElementById('d-cuota-account');
+        const dateEl = document.getElementById('d-cuota-start-date');
+        const formaPago = (accountEl?.value || '').trim();
+        const fecha = (dateEl?.value || '').trim();
+        if (!formaPago) {
+            showToast('⚠️ Elige una forma de pago');
+            accountEl?.focus();
+            return;
+        }
+        if (!fecha) {
+            showToast('⚠️ Selecciona la fecha del primer pago');
+            dateEl?.focus();
+            return;
+        }
+        const fechaDate = new Date(`${fecha}T12:00:00`);
+        const diaNum = fechaDate.getDate();
+        if (!(diaNum >= 1 && diaNum <= 31)) {
+            showToast('⚠️ Fecha inválida');
+            return;
+        }
+        deudas_resolverPromptCuota({ formaPago, diaNum });
+    });
+}
+
+function deudas_resolverPromptCuota(result) {
+    const sheet = document.getElementById('d-cuota-sheet');
+    if (sheet) sheet.classList.add('hidden');
+    if (deudasCuotaPromptResolve) {
+        const resolve = deudasCuotaPromptResolve;
+        deudasCuotaPromptResolve = null;
+        resolve(result);
+    }
+}
+
+function deudas_pedirConfigCuota({ cuotaLabel = '' } = {}) {
+    if (deudasCuotaPromptResolve) deudas_resolverPromptCuota(null);
+    const titleEl = document.getElementById('d-cuota-title');
+    const accountEl = document.getElementById('d-cuota-account');
+    const dateEl = document.getElementById('d-cuota-start-date');
+    const sheet = document.getElementById('d-cuota-sheet');
+    const splitAccount = document.getElementById('d-split-account');
+    const splitStartDate = document.getElementById('d-split-start-date');
+    if (!accountEl || !dateEl || !sheet) return Promise.resolve(null);
+
+    if (titleEl) titleEl.innerText = cuotaLabel ? `Programar ${cuotaLabel}` : 'Programar Cuota';
+    accountEl.value = (splitAccount?.value || '').trim();
+    const today = new Date().toISOString().split('T')[0];
+    dateEl.value = (splitStartDate?.value || today).trim();
+    sheet.classList.remove('hidden');
+    setTimeout(() => accountEl.focus(), 60);
+
+    return new Promise((resolve) => {
+        deudasCuotaPromptResolve = resolve;
+    });
 }
 
 async function deudas_cargarDatos() {
@@ -10722,18 +10782,10 @@ window.deudas_toggleCuota = async function(id, idx) {
     const currentState = item.cuotas.paid[idx] || 0;
     
     if (currentState === 0) {
-        // 0 → 1: Schedule as Gasto Fijo — ask forma de pago & day
-        const formas = ['Santander', 'BBVA', 'Cuenta Mariel', 'Efectivo', 'Transferencia'];
-        const optsHtml = formas.map((f, i) => `${i + 1}. ${f}`).join('\n');
-        const pick = prompt(`Forma de pago para cuota ${idx + 1}:\n${optsHtml}\n\nEscribe el número (1-${formas.length}):`);
-        if (!pick) return;
-        const formaPago = formas[parseInt(pick) - 1];
-        if (!formaPago) { alert('Opción inválida'); return; }
-        
-        const dia = prompt('¿Día del mes para esta cuota? (1-31):', '1');
-        if (!dia) return;
-        const diaNum = parseInt(dia);
-        if (isNaN(diaNum) || diaNum < 1 || diaNum > 31) { alert('Día inválido'); return; }
+        // 0 → 1: Schedule as Gasto Fijo with visual picker (same logic)
+        const cfg = await deudas_pedirConfigCuota({ cuotaLabel: `Cuota ${idx + 1}` });
+        if (!cfg) return;
+        const { formaPago, diaNum } = cfg;
         
         // Create Gasto Fijo row
         const concepto = `${item.concepto} - Cuota ${idx + 1}/${item.cuotas.n}`;

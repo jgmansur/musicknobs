@@ -13,7 +13,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <link rel="stylesheet" href="./style.css">
-    <script type="module" src="./main.js?v=7.7.1"></script>
+    <script type="module" src="./main.js?v=7.7.2"></script>
   </head>
   <body>
     <div id="app">
@@ -23,7 +23,7 @@
         <div class="header-content">
           <div class="logo-area">
             <h1 class="premium-title">ESTRATÉGIA<span>FINANCIERA</span></h1>
-            <p class="subtitle">Music Knobs | v7.7.1</p>
+            <p class="subtitle">Music Knobs | v7.7.2</p>
           </div>
           <div class="action-area">
             <div id="sync-status" class="status-badge">Sincronizado</div>
@@ -560,6 +560,36 @@
             </div>
 
             <button id="d-split-btn-convert" class="primary-btn" style="width:100%;margin-top:1.5rem">Generar Cuotas</button>
+          </div>
+        </div>
+
+        <div id="d-cuota-sheet" class="bottom-sheet hidden">
+          <div id="d-cuota-sheet-overlay" class="bottom-sheet-overlay"></div>
+          <div class="bottom-sheet-content glass">
+            <div class="sheet-handle"></div>
+            <h4 id="d-cuota-title" class="sheet-title">Programar Cuota</h4>
+
+            <div class="form-field">
+              <label class="field-label">Forma de Pago / Cuenta</label>
+              <select id="d-cuota-account" class="field-input">
+                <option value="">Selecciona una cuenta</option>
+                <option value="Santander">Santander</option>
+                <option value="BBVA">BBVA</option>
+                <option value="Cuenta Mariel">Cuenta Mariel</option>
+                <option value="Efectivo">Efectivo</option>
+                <option value="Transferencia">Transferencia</option>
+              </select>
+            </div>
+
+            <div class="form-field">
+              <label class="field-label">Fecha del Primer Pago</label>
+              <input type="date" id="d-cuota-start-date" class="field-input">
+            </div>
+
+            <div class="form-actions" style="margin-top:1rem;">
+              <button id="d-cuota-cancel" class="secondary-btn" style="flex:1;">Cancelar</button>
+              <button id="d-cuota-confirm" class="primary-btn" style="flex:1;">Programar</button>
+            </div>
           </div>
         </div>
 
