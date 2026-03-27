@@ -330,6 +330,15 @@ function convertToMxn(balance: number, currency: string, fx: FxSnapshot): number
   return balance;
 }
 
+function round2(value: number): number {
+  const n = Number(value || 0);
+  return Math.round((n + Number.EPSILON) * 100) / 100;
+}
+
+function fixed2(value: number): string {
+  return round2(value).toFixed(2);
+}
+
 function normalizePaymentKey(value: unknown): string {
   return String(value || "")
     .normalize("NFD")
@@ -440,7 +449,8 @@ export async function getWidgetAccountsSnapshot(limit = 8, includeHidden = false
     return {
       name: a.name,
       type: a.type,
-      balanceMxn: Math.round(balanceMxn),
+      balanceMxn: round2(balanceMxn),
+      balanceMxnText: fixed2(balanceMxn),
     };
   });
 
@@ -454,9 +464,12 @@ export async function getWidgetAccountsSnapshot(limit = 8, includeHidden = false
     ok: true,
     updatedAt: new Date().toISOString(),
     totals: {
-      netMxn: Math.round(netMxn),
-      assetsMxn: Math.round(assetsMxn),
-      liabilitiesMxn: Math.round(liabilitiesMxn),
+      netMxn: round2(netMxn),
+      netMxnText: fixed2(netMxn),
+      assetsMxn: round2(assetsMxn),
+      assetsMxnText: fixed2(assetsMxn),
+      liabilitiesMxn: round2(liabilitiesMxn),
+      liabilitiesMxnText: fixed2(liabilitiesMxn),
       countVisible: mapped.length,
     },
     accounts: sliced,
@@ -472,14 +485,21 @@ type DashboardWidgetSnapshot = {
   updatedAt: string;
   totals: {
     balanceDisponibleMxn: number;
+    balanceDisponibleMxnText: string;
     balanceDisponibleWithDebtMxn: number;
+    balanceDisponibleWithDebtMxnText: string;
     balanceRealMxn: number;
+    balanceRealMxnText: string;
     balanceRealWithDebtMxn: number;
+    balanceRealWithDebtMxnText: string;
     pendingFixedMxn: number;
+    pendingFixedMxnText: string;
     debtImpactMxn: number;
+    debtImpactMxnText: string;
   };
   highlights: {
     focusAccountRealMxn: number;
+    focusAccountRealMxnText: string;
     focusAccountFound: boolean;
     focusAccount: string;
   };
@@ -487,6 +507,7 @@ type DashboardWidgetSnapshot = {
     name: string;
     type: string;
     realMxn: number;
+    realMxnText: string;
   }>;
   meta: {
     cacheSheet: string;
@@ -558,7 +579,8 @@ export async function getWidgetDashboardSnapshot(limit = 6, includeHidden = fals
   const outAccounts = sorted.slice(0, Math.max(1, Math.min(20, Math.trunc(limit) || 6))).map((a) => ({
     name: a.name,
     type: a.type,
-    realMxn: Math.round(a.realMxn),
+    realMxn: round2(a.realMxn),
+    realMxnText: fixed2(a.realMxn),
   }));
 
   const targetKey = normalizePaymentKey(focusAccount);
@@ -569,14 +591,14 @@ export async function getWidgetDashboardSnapshot(limit = 6, includeHidden = fals
     });
 
   const nextCacheValues: Record<string, string> = {
-    "snapshot.balanceDisponibleMxn": String(Math.round(balanceDisponibleBase)),
-    "snapshot.balanceDisponibleWithDebtMxn": String(Math.round(balanceDisponibleWithDebt)),
-    "snapshot.balanceRealMxn": String(Math.round(balanceReal)),
-    "snapshot.balanceRealWithDebtMxn": String(Math.round(balanceRealWithDebt)),
-    "snapshot.pendingFixedMxn": String(Math.round(pendingFixedMxn)),
-    "snapshot.debtImpactMxn": String(Math.round(debtImpact)),
+    "snapshot.balanceDisponibleMxn": String(round2(balanceDisponibleBase)),
+    "snapshot.balanceDisponibleWithDebtMxn": String(round2(balanceDisponibleWithDebt)),
+    "snapshot.balanceRealMxn": String(round2(balanceReal)),
+    "snapshot.balanceRealWithDebtMxn": String(round2(balanceRealWithDebt)),
+    "snapshot.pendingFixedMxn": String(round2(pendingFixedMxn)),
+    "snapshot.debtImpactMxn": String(round2(debtImpact)),
     "snapshot.focusAccount": focusAccount,
-    "snapshot.focusAccountRealMxn": String(Math.round(focus?.realMxn || 0)),
+    "snapshot.focusAccountRealMxn": String(round2(focus?.realMxn || 0)),
     "snapshot.updatedAt": new Date().toISOString(),
   };
 
@@ -599,15 +621,22 @@ export async function getWidgetDashboardSnapshot(limit = 6, includeHidden = fals
     ok: true,
     updatedAt: new Date().toISOString(),
     totals: {
-      balanceDisponibleMxn: Math.round(balanceDisponibleBase),
-      balanceDisponibleWithDebtMxn: Math.round(balanceDisponibleWithDebt),
-      balanceRealMxn: Math.round(balanceReal),
-      balanceRealWithDebtMxn: Math.round(balanceRealWithDebt),
-      pendingFixedMxn: Math.round(pendingFixedMxn),
-      debtImpactMxn: Math.round(debtImpact),
+      balanceDisponibleMxn: round2(balanceDisponibleBase),
+      balanceDisponibleMxnText: fixed2(balanceDisponibleBase),
+      balanceDisponibleWithDebtMxn: round2(balanceDisponibleWithDebt),
+      balanceDisponibleWithDebtMxnText: fixed2(balanceDisponibleWithDebt),
+      balanceRealMxn: round2(balanceReal),
+      balanceRealMxnText: fixed2(balanceReal),
+      balanceRealWithDebtMxn: round2(balanceRealWithDebt),
+      balanceRealWithDebtMxnText: fixed2(balanceRealWithDebt),
+      pendingFixedMxn: round2(pendingFixedMxn),
+      pendingFixedMxnText: fixed2(pendingFixedMxn),
+      debtImpactMxn: round2(debtImpact),
+      debtImpactMxnText: fixed2(debtImpact),
     },
     highlights: {
-      focusAccountRealMxn: Math.round(focus?.realMxn || 0),
+      focusAccountRealMxn: round2(focus?.realMxn || 0),
+      focusAccountRealMxnText: fixed2(focus?.realMxn || 0),
       focusAccountFound: !!focus,
       focusAccount,
     },
