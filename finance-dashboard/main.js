@@ -3368,8 +3368,7 @@ window.fijos_togglePagoPart = async function(id, partIndex, options = {}) {
                 if (deuda && deuda.cuotas && deuda.cuotas.paid[cuotaIdx] === 1) {
                     deuda.cuotas.paid[cuotaIdx] = 2; // yellow → green
                     // Persist to Deudas sheet col D
-                    const flags = deuda.cuotas.paid.join(',');
-                    const colD = `${deuda.cuotas.n}:${deuda.cuotas.perCuota.toFixed(2)}:${flags}`;
+                    const colD = deudas_buildCuotasCell(deuda.cuotas);
                     let dSheetName = 'Deudas';
                     try { await sheetsGet(SPREADSHEET_DEUDAS_ID, 'Deudas!A1:A1'); } catch(e) { dSheetName = 'Hoja 1'; }
                     await sheetsUpdate(SPREADSHEET_DEUDAS_ID, `${dSheetName}!D${deuda.id}`, [[colD]]);
@@ -3442,8 +3441,7 @@ window.fijos_togglePagoPart = async function(id, partIndex, options = {}) {
                         const deuda = deudasState.allItems.find(d => d.concepto === debtName);
                         if (deuda && deuda.cuotas && deuda.cuotas.paid[cuotaIdx] === 2) {
                             deuda.cuotas.paid[cuotaIdx] = 1; // green → yellow
-                            const flags = deuda.cuotas.paid.join(',');
-                            const colD = `${deuda.cuotas.n}:${deuda.cuotas.perCuota.toFixed(2)}:${flags}`;
+                            const colD = deudas_buildCuotasCell(deuda.cuotas);
                             let dSheetName = 'Deudas';
                             try { await sheetsGet(SPREADSHEET_DEUDAS_ID, 'Deudas!A1:A1'); } catch(e) { dSheetName = 'Hoja 1'; }
                             await sheetsUpdate(SPREADSHEET_DEUDAS_ID, `${dSheetName}!D${deuda.id}`, [[colD]]);
@@ -10297,6 +10295,62 @@ let deudasState = {
 
 let deudasCuotaPromptResolve = null;
 
+function deudas_normalizeStartDate(raw) {
+    const s = (raw || '').toString().trim();
+    if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+    return '';
+}
+
+function deudas_frequencyStepDays(freq) {
+    const f = (freq || '').toString().trim().toLowerCase();
+    if (f === 'semanal') return 7;
+    if (f === 'quincenal') return 15;
+    if (f === 'bimestral') return 62;
+    if (f === 'semestral') return 186;
+    return 31;
+}
+
+function deudas_parseCuotasCell(rawD) {
+    const raw = (rawD || '').toString().trim();
+    if (!raw) return null;
+    const parts = raw.split(':');
+    if (parts.length < 3) return null;
+    const n = parseInt(parts[0], 10) || 0;
+    const perCuota = parseFloat(parts[1]) || 0;
+    const flags = parts[2].split(',').map(f => parseInt(f, 10) || 0);
+    if (n <= 0) return null;
+    while (flags.length < n) flags.push(0);
+    const paid = flags.slice(0, n);
+    const frequency = (parts[3] || 'mensual').toString().trim().toLowerCase() || 'mensual';
+    const startDate = deudas_normalizeStartDate(parts[4]);
+    return { n, perCuota, paid, frequency, startDate };
+}
+
+function deudas_buildCuotasCell(cuotas) {
+    if (!cuotas || !cuotas.n) return '';
+    const n = parseInt(cuotas.n, 10) || 0;
+    if (!n) return '';
+    const perCuota = Number(cuotas.perCuota || 0);
+    const paidRaw = Array.isArray(cuotas.paid) ? cuotas.paid.map(v => parseInt(v, 10) || 0) : [];
+    while (paidRaw.length < n) paidRaw.push(0);
+    const paid = paidRaw.slice(0, n);
+    const frequency = ((cuotas.frequency || 'mensual').toString().trim().toLowerCase() || 'mensual');
+    const startDate = deudas_normalizeStartDate(cuotas.startDate);
+    return `${n}:${perCuota.toFixed(2)}:${paid.join(',')}:${frequency}:${startDate}`;
+}
+
+function deudas_getNextPaymentDate(cuotas) {
+    if (!cuotas || !Array.isArray(cuotas.paid) || !cuotas.paid.length) return null;
+    const nextIdx = cuotas.paid.findIndex(s => s !== 2);
+    if (nextIdx === -1) return 'Complatado';
+    if (!cuotas.startDate) return null;
+    const base = new Date(`${cuotas.startDate}T12:00:00`);
+    if (Number.isNaN(base.getTime())) return null;
+    const d = new Date(base);
+    d.setDate(d.getDate() + (deudas_frequencyStepDays(cuotas.frequency) * nextIdx));
+    return d;
+}
+
 function deudas_getTotalAmount() {
     return deudasState.allItems.reduce((s, i) => s + (i.hidden ? 0 : (i.monto || 0)), 0);
 }
@@ -10434,16 +10488,7 @@ async function deudas_cargarDatos() {
         deudasState.allItems = rows.map((row, i) => {
             let cuotas = null;
             const rawD = (row[3] || '').toString().trim();
-            if (rawD) {
-                // Format: N:perCuota:0,1,0,1,...
-                const parts = rawD.split(':');
-                if (parts.length >= 3) {
-                    const n = parseInt(parts[0]) || 0;
-                    const perCuota = parseFloat(parts[1]) || 0;
-                    const flags = parts[2].split(',').map(f => parseInt(f) || 0);
-                    cuotas = { n, perCuota, paid: flags };
-                }
-            }
+            if (rawD) cuotas = deudas_parseCuotasCell(rawD);
             return {
                 id: i + 2,
                 concepto: row[0] || '',
@@ -10499,12 +10544,20 @@ function deudas_renderLista() {
             if (paidCount > 0) statusParts.push(`${paidCount} pagadas`);
             if (scheduledCount > 0) statusParts.push(`${scheduledCount} programadas`);
             statusParts.push(`${item.cuotas.n - paidCount - scheduledCount} pendientes`);
+            const nextPayment = deudas_getNextPaymentDate(item.cuotas);
+            let nextPaymentHtml = '<span style="opacity:.7;">Próximo pago: sin fecha</span>';
+            if (nextPayment === 'Complatado') {
+                nextPaymentHtml = '<strong style="color:#22c55e;">Complatado</strong>';
+            } else if (nextPayment instanceof Date) {
+                nextPaymentHtml = `Próximo pago: <strong style="color:#fbbf24;">${nextPayment.toLocaleDateString('es-MX')}</strong>`;
+            }
             cuotasHtml = `
             <div style="margin-top:0.5rem;padding:0.5rem;border-radius:10px;background:rgba(255,255,255,0.03);width:100%;">
               <div style="display:flex;flex-wrap:wrap;gap:4px;justify-content:flex-start;">${btns}</div>
               <div style="margin-top:0.4rem;font-size:0.75rem;color:var(--text-muted);">
                 ${statusParts.join(' · ')} · Restante: <strong style="color:${displayMonto > 0 ? '#ef4444' : '#22c55e'}">${formatCurrency(displayMonto)}</strong>
               </div>
+              <div style="margin-top:0.2rem;font-size:0.75rem;color:var(--text-muted);">${nextPaymentHtml}</div>
             </div>`;
         }
 
@@ -10582,8 +10635,8 @@ async function deudas_swap(idx1, idx2) {
             sheetName = 'Hoja 1';
         }
         
-        const cuotasStr1 = item2.cuotas ? `${item2.cuotas.n}:${item2.cuotas.perCuota.toFixed(2)}:${item2.cuotas.paid.join(',')}` : '';
-        const cuotasStr2 = item1.cuotas ? `${item1.cuotas.n}:${item1.cuotas.perCuota.toFixed(2)}:${item1.cuotas.paid.join(',')}` : '';
+        const cuotasStr1 = item2.cuotas ? deudas_buildCuotasCell(item2.cuotas) : '';
+        const cuotasStr2 = item1.cuotas ? deudas_buildCuotasCell(item1.cuotas) : '';
         const dataForRow1 = [[item2.concepto, item2.monto, item2.hidden ? 'TRUE' : 'FALSE', cuotasStr1]];
         const dataForRow2 = [[item1.concepto, item1.monto, item1.hidden ? 'TRUE' : 'FALSE', cuotasStr2]];
         
@@ -10671,15 +10724,15 @@ window.deudas_abrirSplit = function(id) {
     document.getElementById('d-split-monto').dataset.monto = item.monto;
     
     // reset values
-    document.getElementById('d-split-payments').value = 12;
-    document.getElementById('d-split-frequency').value = 'mensual';
+    document.getElementById('d-split-payments').value = item.cuotas?.n || 12;
+    document.getElementById('d-split-frequency').value = item.cuotas?.frequency || 'mensual';
     document.getElementById('d-split-compound').checked = false;
     document.getElementById('d-split-rate-wrap').classList.add('hidden');
     document.getElementById('d-split-rate').value = '';
     
     // Set default date to today for d-split-start-date
     const today = new Date();
-    document.getElementById('d-split-start-date').value = today.toISOString().split('T')[0];
+    document.getElementById('d-split-start-date').value = item.cuotas?.startDate || today.toISOString().split('T')[0];
     
     // Listeners para re-calcular (si no existen)
     const formInputs = ['d-split-payments', 'd-split-frequency', 'd-split-compound', 'd-split-rate'];
@@ -10744,6 +10797,8 @@ window.deudas_generarCuotas = async function() {
 
     const n = parseInt(document.getElementById('d-split-payments').value) || 1;
     const pagoCalc = parseFloat(document.getElementById('d-split-preview').dataset.pagoCalc);
+    const frequency = (document.getElementById('d-split-frequency').value || 'mensual').toLowerCase();
+    const startDate = deudas_normalizeStartDate(document.getElementById('d-split-start-date').value) || new Date().toISOString().split('T')[0];
     
     if (!confirm(`¿Generar ${n} cuotas de ${formatCurrency(pagoCalc)} para "${deudaObj.concepto}"?`)) return;
     
@@ -10751,12 +10806,12 @@ window.deudas_generarCuotas = async function() {
     btn.innerText = 'Generando...';
     
     try {
-        // Build col D value: N:perCuota:0,0,...0
-        const flags = new Array(n).fill('0').join(',');
-        const colD = `${n}:${pagoCalc.toFixed(2)}:${flags}`;
+        // Build col D value: N:perCuota:flags:frecuencia:startDate
+        const cuotasData = { n, perCuota: pagoCalc, paid: new Array(n).fill(0), frequency, startDate };
+        const colD = deudas_buildCuotasCell(cuotasData);
         
         // Update cuotas state in memory
-        deudaObj.cuotas = { n, perCuota: pagoCalc, paid: new Array(n).fill(0) };
+        deudaObj.cuotas = cuotasData;
         
         // Write col D to sheet
         let sheetName = 'Deudas';
@@ -10859,8 +10914,7 @@ window.deudas_toggleCuota = async function(id, idx) {
     deudas_renderLista();
     
     // Build updated col D string
-    const flags = item.cuotas.paid.join(',');
-    const colD = `${item.cuotas.n}:${item.cuotas.perCuota.toFixed(2)}:${flags}`;
+    const colD = deudas_buildCuotasCell(item.cuotas);
     
     try {
         let sheetName = 'Deudas';
@@ -10906,7 +10960,7 @@ async function deudas_guardar() {
             const hiddenVal = existing && existing.hidden ? 'TRUE' : 'FALSE';
             // Preserve cuotas (col D) when editing
             const existingCuotas = existing && existing.cuotas
-                ? `${existing.cuotas.n}:${existing.cuotas.perCuota.toFixed(2)}:${existing.cuotas.paid.join(',')}`
+                ? deudas_buildCuotasCell(existing.cuotas)
                 : '';
             await sheetsUpdate(SPREADSHEET_DEUDAS_ID, `${sheetName}!A${editId}:D${editId}`, [[concepto, monto, hiddenVal, existingCuotas]]);
             showToast('✅ Deuda actualizada');
