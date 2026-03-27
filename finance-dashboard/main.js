@@ -2251,7 +2251,7 @@ async function fetchAndProcess() {
         await ensureUsdMxnRateForTransactions();
         const [logData, fixedData] = await Promise.all([
             sheetsGet(SPREADSHEET_LOG_ID, 'Hoja 1!A2:H'),
-            sheetsGet(SPREADSHEET_FIXED_ID, 'Hoja 1!A2:N')  // H=estado pagos, I=periodicidad, J=inicio, K=pagador, L=budget, M=moneda, N=waive
+            sheetsGet(SPREADSHEET_FIXED_ID, 'Hoja 1!A2:O')  // H=estado pagos, I=periodicidad, J=inicio, K=pagador, L=budget, M=moneda, N=waive, O=linkGroup
         ]);
         processAndRender(logData, fixedData);
         status.innerText = 'Sincronizado ✓'; status.style.color = 'var(--accent-green)';
@@ -2344,7 +2344,7 @@ function processAndRender(logRows, fixedRows) {
     });
 
 
-    // F = pagado legacy, G = pagos por mes, H = estado pagos, I = periodicidad, J = inicio, K = pagador
+    // F = pagado legacy, G = pagos por mes, H = estado pagos, I = periodicidad, J = inicio, K = pagador, O = linkGroup
     const fixedExpenses = fixedRows.map((row, i) => {
         const concepto = row[1] || '';
         const categoria = row[4] || 'General';
@@ -2369,7 +2369,7 @@ function processAndRender(logRows, fixedRows) {
         const paidAmount = partAmount * Math.max(0, pagosHechos);
         const pendingAmount = partAmount * Math.max(0, pagosMes - pagosHechos);
         const formaPago = parseFixedFormaPago(row[10]);
-        return { rowNum: i + 2, concepto, categoria, monto, montoOriginal, moneda, tipo, isPaid, pagosMes, pagosEstado, waivedEstado, pagosHechos, paidAmount, pendingAmount, periodicidad, inicioMes, isDueThisMonth, pagador: parseFixedPayer(row[10]), formaPago, budgetCategory: parseBudgetCategory(row[11]) };
+        return { rowNum: i + 2, concepto, categoria, monto, montoOriginal, moneda, tipo, isPaid, pagosMes, pagosEstado, waivedEstado, pagosHechos, paidAmount, pendingAmount, periodicidad, inicioMes, isDueThisMonth, pagador: parseFixedPayer(row[10]), formaPago, budgetCategory: parseBudgetCategory(row[11]), linkGroup: (row[14] || '').toString().trim() };
     }).filter(e => e.concepto);
 
     // KPI: count partial progress for fixed expenses
@@ -3081,7 +3081,7 @@ async function fijos_cargarDatos() {
     try {
         await ensureUsdMxnRateForTransactions();
         const [rows, catRows] = await Promise.all([
-            sheetsGet(SPREADSHEET_FIXED_ID, 'Hoja 1!A2:N').catch(() => []),  // I=periodicidad, J=inicio, K=pagador, L=budget, M=moneda, N=waive
+            sheetsGet(SPREADSHEET_FIXED_ID, 'Hoja 1!A2:O').catch(() => []),  // I=periodicidad, J=inicio, K=pagador, L=budget, M=moneda, N=waive, O=linkGroup
             sheetsGet(SPREADSHEET_FIXED_ID, 'Categorias!A:A').catch(() => [])
         ]);
         fijosState.categorias = catRows.map(r => r[0]).filter(Boolean);
@@ -3151,6 +3151,7 @@ async function fijos_cargarDatos() {
                 pagador: parseFixedPayer(row[10]),
                 formaPago: parseFixedFormaPago(row[10]),
                 budgetCategory: parseBudgetCategory(row[11]),
+                linkGroup: (row[14] || '').toString().trim(),
             };
         }).filter(i => i.concepto).sort((a, b) => a.diaMes - b.diaMes);
 
@@ -3388,7 +3389,7 @@ window.fijos_togglePagoPart = async function(id, partIndex, options = {}) {
                     if (newMonto === 0 && !deuda.hidden && window.deudas_toggleHidden) {
                         await window.deudas_toggleHidden(deuda.id);
                     }
-                    showToast(`📉 Deuda reducida: restan $${newMonto.toFixed(2)}`);
+                    if (!options.silent) showToast(`📉 Deuda reducida: restan $${newMonto.toFixed(2)}`);
                 }
             }
             
@@ -3406,7 +3407,7 @@ window.fijos_togglePagoPart = async function(id, partIndex, options = {}) {
                     try { await sheetsGet(SPREADSHEET_DEUDAS_ID, 'Deudas!A1:A1'); } catch(e) { dSheetName = 'Hoja 1'; }
                     await sheetsUpdate(SPREADSHEET_DEUDAS_ID, `${dSheetName}!D${deuda.id}`, [[colD]]);
                     if (window.deudas_renderLista) window.deudas_renderLista();
-                    showToast(`🟢 Cuota ${cuotaIdx + 1} de "${debtName}" marcada como pagada`);
+                    if (!options.silent) showToast(`🟢 Cuota ${cuotaIdx + 1} de "${debtName}" marcada como pagada`);
                 }
             }
                         
@@ -3418,7 +3419,7 @@ window.fijos_togglePagoPart = async function(id, partIndex, options = {}) {
                         const fixedSheetName = 'Hoja 1'; // Assumed from context
                         const fixedSheetId = await getSheetId(SPREADSHEET_FIXED_ID, fixedSheetName);
                         await sheetsDeleteRow(SPREADSHEET_FIXED_ID, fixedSheetId, id - 1);
-                        showToast(`🗑️ Gasto Fijo "${cuotaPromptLabel}" eliminado`);
+                        if (!options.silent) showToast(`🗑️ Gasto Fijo "${cuotaPromptLabel}" eliminado`);
                         // Force refresh
                         tabInited.fijos = false;
                         if (currentTab === 'fijos') fijos_cargarVista();
@@ -3427,7 +3428,7 @@ window.fijos_togglePagoPart = async function(id, partIndex, options = {}) {
             }
 
             tabInited.gastos = false;
-            showToast('✅ Pago registrado en Control de Gastos');
+            if (!options.silent) showToast('✅ Pago registrado en Control de Gastos');
         } else if (!nowPartPaid && !wasPartWaived) {
             // UN-SYNC: remove matching partial entry in Control de Gastos
             try {
@@ -3445,7 +3446,7 @@ window.fijos_togglePagoPart = async function(id, partIndex, options = {}) {
                 if (foundRowIndex !== -1) {
                     await sheetsDeleteRow(SPREADSHEET_LOG_ID, logSheetId, foundRowIndex);
                     tabInited.gastos = false;
-                    showToast('\uD83D\uDDD1\uFE0F Pago eliminado de Control de Gastos');
+                    if (!options.silent) showToast('\uD83D\uDDD1\uFE0F Pago eliminado de Control de Gastos');
                     
                     // INTEGRACIÓN: Restaurar saldo a la Deuda Original
                     if (item.periodicidad === 'Cuota de Deuda') {
@@ -3462,7 +3463,7 @@ window.fijos_togglePagoPart = async function(id, partIndex, options = {}) {
                             await sheetsUpdate(SPREADSHEET_DEUDAS_ID, `${sheetName}!B${deuda.id}`, [[newMonto]]);
                             deuda.monto = newMonto;
                             if (window.deudas_renderLista) window.deudas_renderLista();
-                            showToast(`📈 Saldo restaurado a deuda: $${newMonto.toFixed(2)}`);
+                            if (!options.silent) showToast(`📈 Saldo restaurado a deuda: $${newMonto.toFixed(2)}`);
                         }
                     }
                     
@@ -3479,20 +3480,47 @@ window.fijos_togglePagoPart = async function(id, partIndex, options = {}) {
                             try { await sheetsGet(SPREADSHEET_DEUDAS_ID, 'Deudas!A1:A1'); } catch(e) { dSheetName = 'Hoja 1'; }
                             await sheetsUpdate(SPREADSHEET_DEUDAS_ID, `${dSheetName}!D${deuda.id}`, [[colD]]);
                             if (window.deudas_renderLista) window.deudas_renderLista();
-                            showToast(`🟡 Cuota ${cuotaIdx + 1} de "${debtName}" revertida a programada`);
+                            if (!options.silent) showToast(`🟡 Cuota ${cuotaIdx + 1} de "${debtName}" revertida a programada`);
                         }
                     }
                     
                 } else {
-                    showToast('\u2139\uFE0F Sin registro para eliminar en Control de Gastos');
+                    if (!options.silent) showToast('\u2139\uFE0F Sin registro para eliminar en Control de Gastos');
                 }
             } catch (err) {
                 console.error('Error un-syncing payment:', err);
-                showToast('\u26A0\uFE0F Error al eliminar pago');
+                if (!options.silent) showToast('\u26A0\uFE0F Error al eliminar pago');
             }
         }
         if (nowPartPaid && options.skipControlLog) {
-            showToast('🟡 Pago waived (sin registro en Control de Gastos)');
+            if (!options.silent) showToast('🟡 Pago waived (sin registro en Control de Gastos)');
+        }
+
+        const canSyncLinkedGroup = !options.skipLinkedSync && partIndex === 0 && (item.pagosMes || 1) === 1 && !!(item.linkGroup || '').trim();
+        if (canSyncLinkedGroup) {
+            const group = item.linkGroup.trim();
+            const linkedSingles = fijosState.allItems.filter((x) => x.id !== item.id && (x.linkGroup || '').trim() === group && (x.pagosMes || 1) === 1);
+            for (const linked of linkedSingles) {
+                const linkedPaid = !!(linked.pagosEstado && linked.pagosEstado[0]);
+                const linkedWaived = !!(linked.waivedEstado && linked.waivedEstado[0]);
+                const needStateSync = linkedPaid !== nowPartPaid;
+                const desiredWaive = !!(options.skipControlLog || options.waive);
+                const needWaiveSync = nowPartPaid && desiredWaive && !linkedWaived;
+                if (!needStateSync && !needWaiveSync) continue;
+                try {
+                    await window.fijos_togglePagoPart(linked.id, 0, {
+                        skipControlLog: !!options.skipControlLog,
+                        waive: !!options.waive,
+                        skipLinkedSync: true,
+                        silent: true,
+                    });
+                } catch (linkedErr) {
+                    console.warn('Error syncing linked fixed payment:', linkedErr);
+                }
+            }
+            if (linkedSingles.length && !options.silent) {
+                showToast(`🔗 Grupo vinculado sincronizado (${linkedSingles.length + 1})`);
+            }
         }
         planner_refreshIfReady();
     } catch(e) {
@@ -3526,6 +3554,7 @@ function fijos_abrirSheet(item) {
     document.getElementById('f-forma-pago').value = '';
     document.getElementById('f-currency').value = 'MXN';
     document.getElementById('f-budget-cat').value = BUDGET_BUCKETS[0];
+    document.getElementById('f-link-group').value = '';
     document.getElementById('f-fecha').value = String(hoy.getDate());
     document.querySelectorAll('.f-cat-chk').forEach(cb => cb.checked = false);
     const def = document.querySelector('.f-cat-chk[value="General"]');
@@ -3543,6 +3572,7 @@ function fijos_abrirSheet(item) {
         document.getElementById('f-forma-pago').value = item.formaPago || '';
         document.getElementById('f-currency').value = item.moneda || 'MXN';
         document.getElementById('f-budget-cat').value = parseBudgetCategory(item.budgetCategory);
+        document.getElementById('f-link-group').value = item.linkGroup || '';
         item.categoria.split(', ').forEach(c => { const cb = document.querySelector(`.f-cat-chk[value="${c}"]`); if (cb) cb.checked = true; });
     }
     fijos_togglePeriodicityFields();
@@ -3618,6 +3648,7 @@ async function fijos_guardar() {
     const pagador = parseFixedPayer(formaPagoVal);
     const moneda = parseCurrencyCode(document.getElementById('f-currency').value);
     const budgetCategory = parseBudgetCategory(document.getElementById('f-budget-cat').value);
+    const linkGroup = (document.getElementById('f-link-group')?.value || '').trim();
     const editId  = document.getElementById('f-edit-id').value;
     if (!concepto || !monto) return;
     const cats   = [...document.querySelectorAll('.f-cat-chk:checked')].map(cb => cb.value);
@@ -3636,7 +3667,7 @@ async function fijos_guardar() {
                 return !!prevWaived[idx];
             });
             const fullPaid = nextStates.every(Boolean);
-            await sheetsUpdate(SPREADSHEET_FIXED_ID, `Hoja 1!A${editId}:N${editId}`, [[
+            await sheetsUpdate(SPREADSHEET_FIXED_ID, `Hoja 1!A${editId}:O${editId}`, [[
                 fecha,
                 concepto,
                 gasto,
@@ -3651,10 +3682,11 @@ async function fijos_guardar() {
                 budgetCategory,
                 moneda,
                 serializePaymentStates(nextWaived),
+                linkGroup,
             ]]);
         } else {
             // new rows start with all partial payments pending
-            await sheetsAppend(SPREADSHEET_FIXED_ID, 'Hoja 1!A:N', [[
+            await sheetsAppend(SPREADSHEET_FIXED_ID, 'Hoja 1!A:O', [[
                 fecha,
                 concepto,
                 gasto,
@@ -3669,6 +3701,7 @@ async function fijos_guardar() {
                 budgetCategory,
                 moneda,
                 serializePaymentStates(new Array(pagosMes).fill(false)),
+                linkGroup,
             ]]);
         }
         fijos_cerrarSheet();
