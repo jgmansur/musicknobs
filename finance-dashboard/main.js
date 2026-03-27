@@ -15,7 +15,7 @@ const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // 
 const SPREADSHEET_DEUDAS_ID = '1dKxhgqazskm15lx0f6FNCA0gpJ7i5glfxkusiH3b0Uk'; // Control de Deudas
 const SPREADSHEET_AUTOS_ID = SPREADSHEET_DEUDAS_ID; // Autos + Reparaciones live in same workbook
 const SPREADSHEET_ESTUDIO_ID = SPREADSHEET_DEUDAS_ID; // Estudio + Plugins in same workbook
-const APP_VERSION  = 'v7.7.3';
+const APP_VERSION  = 'v7.7.4';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -10361,6 +10361,20 @@ function deudas_formatLongDate(date) {
     return `${cap(weekday)}, ${day} de ${cap(month)} del ${year}`;
 }
 
+function deudas_getRelativeDueLabel(date) {
+    if (!(date instanceof Date) || Number.isNaN(date.getTime())) return '';
+    const target = new Date(date);
+    const today = new Date();
+    target.setHours(0, 0, 0, 0);
+    today.setHours(0, 0, 0, 0);
+    const diffDays = Math.round((target.getTime() - today.getTime()) / 86400000);
+    if (diffDays < 0) return 'Vencido, pagar cuanto antes';
+    if (diffDays === 0) return 'Hoy';
+    if (diffDays === 1) return 'Mañana';
+    if (diffDays === 2) return 'Pasado mañana';
+    return '';
+}
+
 function deudas_getTotalAmount() {
     return deudasState.allItems.reduce((s, i) => s + (i.hidden ? 0 : (i.monto || 0)), 0);
 }
@@ -10559,7 +10573,11 @@ function deudas_renderLista() {
             if (nextPayment === 'Complatado') {
                 nextPaymentHtml = '<strong style="color:#22c55e;">Complatado</strong>';
             } else if (nextPayment instanceof Date) {
-                nextPaymentHtml = `Próximo pago: <strong style="color:#fbbf24;">${deudas_formatLongDate(nextPayment)}</strong>`;
+                const relativeLabel = deudas_getRelativeDueLabel(nextPayment);
+                const relativeHtml = relativeLabel
+                    ? ` <strong style="color:${relativeLabel.startsWith('Vencido') ? '#f87171' : '#34d399'};">· ${relativeLabel}</strong>`
+                    : '';
+                nextPaymentHtml = `Próximo pago: <strong style="color:#fbbf24;">${deudas_formatLongDate(nextPayment)}</strong>${relativeHtml}`;
             }
             cuotasHtml = `
             <div style="margin-top:0.5rem;padding:0.5rem;border-radius:10px;background:rgba(255,255,255,0.03);width:100%;">
