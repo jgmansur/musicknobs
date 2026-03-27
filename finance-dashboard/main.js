@@ -15,7 +15,7 @@ const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // 
 const SPREADSHEET_DEUDAS_ID = '1dKxhgqazskm15lx0f6FNCA0gpJ7i5glfxkusiH3b0Uk'; // Control de Deudas
 const SPREADSHEET_AUTOS_ID = SPREADSHEET_DEUDAS_ID; // Autos + Reparaciones live in same workbook
 const SPREADSHEET_ESTUDIO_ID = SPREADSHEET_DEUDAS_ID; // Estudio + Plugins in same workbook
-const APP_VERSION  = 'v7.7.4';
+const APP_VERSION  = 'v7.7.5';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -10574,10 +10574,11 @@ function deudas_renderLista() {
                 nextPaymentHtml = '<strong style="color:#22c55e;">Complatado</strong>';
             } else if (nextPayment instanceof Date) {
                 const relativeLabel = deudas_getRelativeDueLabel(nextPayment);
-                const relativeHtml = relativeLabel
-                    ? ` <strong style="color:${relativeLabel.startsWith('Vencido') ? '#f87171' : '#34d399'};">· ${relativeLabel}</strong>`
-                    : '';
-                nextPaymentHtml = `Próximo pago: <strong style="color:#fbbf24;">${deudas_formatLongDate(nextPayment)}</strong>${relativeHtml}`;
+                if (relativeLabel) {
+                    nextPaymentHtml = `<strong style="color:${relativeLabel.startsWith('Vencido') ? '#f87171' : '#34d399'};">${relativeLabel}</strong>`;
+                } else {
+                    nextPaymentHtml = `Próximo pago: <strong style="color:#fbbf24;">${deudas_formatLongDate(nextPayment)}</strong>`;
+                }
             }
             cuotasHtml = `
             <div style="margin-top:0.5rem;padding:0.5rem;border-radius:10px;background:rgba(255,255,255,0.03);width:100%;">
