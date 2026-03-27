@@ -19,7 +19,7 @@ const SPREADSHEET_RECUERDOS_ID = '1b5PyMcfBQX75BODYRn075Meu-aOMW1lxr81USGE6zJA';
 const RECUERDOS_FOLDER_ID = '1L0t7TjKEugjpOIeYXU_xgoDiRPQ6-YbZ';
 const SPREADSHEET_RSM_ID = '14VsoPHGNTSUSbzMOqGWs2qSL-pGywPgjUoHD3MqIJfo'; // Recibos Salud Mariel
 const RSM_FOLDER_ID = '1-ZfeWQ-Rmh-Wm2WMCkULkN6MQWBuxYnj';
-const APP_VERSION  = 'v7.7.9';
+const APP_VERSION  = 'v7.8.0';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -10207,7 +10207,6 @@ async function pelo_save() {
     };
 
     const sync = await pelo_syncExpense(payload);
-    await pelo_syncFixed(payload);
     payload.expenseMarker = sync.marker;
     payload.expenseRowNum = sync.rowNum || payload.expenseRowNum;
 
