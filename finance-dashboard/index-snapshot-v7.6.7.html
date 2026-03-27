@@ -2,14 +2,17 @@
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
     <link rel="icon" type="image/svg+xml" href="./vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <title>Estratégia Financiera | Jay Studio</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="./style.css">
     <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <link rel="stylesheet" href="./style.css">
     <script type="module" src="./main.js?v=7.6.7"></script>
   </head>
   <body>
@@ -20,7 +23,7 @@
         <div class="header-content">
           <div class="logo-area">
             <h1 class="premium-title">ESTRATÉGIA<span>FINANCIERA</span></h1>
-            <p class="subtitle">Music Knobs | v4.1.0</p>
+            <p class="subtitle">Music Knobs | v7.6.7</p>
           </div>
           <div class="action-area">
             <div id="sync-status" class="status-badge">Sincronizado</div>
@@ -41,6 +44,11 @@
            ══════════════════════════════════ -->
       <div id="view-dashboard" class="view active">
         <main class="dashboard-grid">
+          <div style="padding: 0.5rem 0 0.25rem;">
+            <button class="btn-notebook" style="width:100%;" onclick="window.open('https://notebooklm.google.com/notebook/7a39cca5-cdf9-4922-9228-cdb8f523015f', '_blank')">
+              🧠 Analizar Finanzas en NotebookLM
+            </button>
+          </div>
           <section class="kpi-row">
             <div class="kpi-card glass kpi-card--clickable" id="kpi-balance-card" title="Ver detalle de cuentas">
               <div class="kpi-icon green"><i data-lucide="trending-up"></i></div>
@@ -384,10 +392,14 @@
               </div>
             </div>
             <div class="form-field">
-              <label class="field-label">Pagado con</label>
-              <select id="f-pagador" class="field-input">
-                <option value="yo">Mi sueldo</option>
-                <option value="esposa">Sueldo de mi esposa</option>
+              <label class="field-label">Forma de Pago</label>
+              <select id="f-forma-pago" class="field-input">
+                <option value="">— Sin asignar —</option>
+                <option value="Santander" selected>Santander</option>
+                <option value="BBVA">BBVA</option>
+                <option value="Cuenta Mariel">Cuenta Mariel</option>
+                <option value="Efectivo">Efectivo</option>
+                <option value="Transferencia">Transferencia</option>
               </select>
             </div>
             <div class="form-field">
@@ -443,11 +455,8 @@
         <div class="glass balance-card">
           <p class="balance-label">Total Adeudado</p>
           <h2 id="d-total" class="balance-amount">$0.00</h2>
-          
-          <button class="btn-notebook" style="margin-top: 15px;" onclick="window.open('https://notebooklm.google.com/notebook/7a39cca5-cdf9-4922-9228-cdb8f523015f', '_blank')">
-            🧠 Analizar Deudas en NotebookLM
-          </button>
         </div>
+
 
         <!-- List -->
         <div id="d-lista" class="glass movimientos-list" style="margin-top: 1rem;">
@@ -476,6 +485,76 @@
             </div>
 
             <button id="d-btn-guardar" class="primary-btn" style="width:100%;margin-top:1rem">Guardar</button>
+          </div>
+        </div>
+
+        <!-- ════════ SPLIT DEBT SHEET ════════ -->
+        <div id="d-split-sheet" class="bottom-sheet hidden">
+          <div id="d-split-sheet-overlay" class="bottom-sheet-overlay"></div>
+          <div class="bottom-sheet-content glass">
+            <div class="sheet-handle"></div>
+            <h4 class="sheet-title">Dividir Deuda</h4>
+            <input type="hidden" id="d-split-id">
+            
+            <div class="form-field">
+              <label class="field-label">Deuda Original</label>
+              <input type="text" id="d-split-monto" class="field-input readonly" readonly>
+            </div>
+
+            <div class="form-row-2">
+              <div class="form-field">
+                <label class="field-label">Número de Cuotas</label>
+                <input type="number" id="d-split-payments" class="field-input" min="2" max="120" value="12">
+              </div>
+              <div class="form-field">
+                <label class="field-label">Frecuencia</label>
+                <select id="d-split-frequency" class="field-input">
+                  <option value="semanal">Semanal</option>
+                  <option value="quincenal">Quincenal</option>
+                  <option value="mensual" selected>Mensual</option>
+                  <option value="bimestral">Bimestral</option>
+                  <option value="semestral">Semestral</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-row-2">
+              <div class="form-field">
+                <label class="field-label">Fecha 1ra Cuota</label>
+                <input type="date" id="d-split-start-date" class="field-input">
+              </div>
+              <div class="form-field">
+                <label class="field-label">Forma de Pago / Cuenta</label>
+                <select id="d-split-account" class="field-input">
+                  <option value="">(Sin asignar)</option>
+                  <option value="Santander">Santander</option>
+                  <option value="BBVA">BBVA</option>
+                  <option value="Cuenta Mariel">Cuenta Mariel</option>
+                  <option value="Efectivo">Efectivo</option>
+                  <option value="Transferencia">Transferencia</option>
+                </select>
+                <span style="font-size:0.7rem;opacity:0.6;margin-top:4px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Para descuento aut.</span>
+              </div>
+            </div>
+
+            <div class="form-field" style="margin-top:1rem; margin-bottom: 0;">
+              <label class="cat-check-label" style="justify-content:flex-start; margin-bottom:0;">
+                <input type="checkbox" id="d-split-compound">
+                Calcular Interés Compuesto
+              </label>
+            </div>
+
+            <div class="form-field hidden" id="d-split-rate-wrap" style="margin-top:1rem;">
+              <label class="field-label">Tasa de Interés Anual (%)</label>
+              <input type="number" id="d-split-rate" class="field-input" step="0.1" inputmode="decimal" placeholder="Ej. 16.0">
+            </div>
+
+            <div style="margin-top:1.5rem; padding:1rem; border-radius:12px; background:rgba(255,255,255,0.05); text-align:center;">
+              <div class="diff-label" style="opacity:0.8;">Cada cuota quedará en:</div>
+              <div id="d-split-preview" class="balance-amount" style="font-size:1.8rem;">$0.00</div>
+            </div>
+
+            <button id="d-split-btn-convert" class="primary-btn" style="width:100%;margin-top:1.5rem">Generar Cuotas</button>
           </div>
         </div>
 
@@ -749,6 +828,14 @@
               <button class="icon-btn" onclick="autos_closeRepairSheet()">✕</button>
             </div>
             <input id="autos-repair-edit-id" type="hidden">
+            <select id="autos-repair-forma-pago" class="field-input" style="margin-bottom:.5rem;">
+              <option value="">— Forma de Pago —</option>
+              <option value="Santander" selected>Santander</option>
+              <option value="BBVA">BBVA</option>
+              <option value="Cuenta Mariel">Cuenta Mariel</option>
+              <option value="Efectivo">Efectivo</option>
+              <option value="Transferencia">Transferencia</option>
+            </select>
             <select id="autos-repair-car" class="field-input" style="margin-bottom:.5rem;"></select>
             <input id="autos-repair-name" class="field-input" placeholder="Reparacion">
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin-top:.5rem;">
@@ -1115,6 +1202,14 @@
               <button class="icon-btn" onclick="document.getElementById('hair-sheet').classList.add('hidden')">✕</button>
             </div>
             <input id="hair-edit-id" type="hidden">
+            <select id="hair-forma-pago" class="field-input" style="margin-bottom:.5rem;">
+              <option value="">— Forma de Pago —</option>
+              <option value="Santander" selected>Santander</option>
+              <option value="BBVA">BBVA</option>
+              <option value="Cuenta Mariel">Cuenta Mariel</option>
+              <option value="Efectivo">Efectivo</option>
+              <option value="Transferencia">Transferencia</option>
+            </select>
             <select id="hair-member" class="field-input"></select>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:.55rem;margin-top:.45rem;">
               <input id="hair-date" type="date" class="field-input">
@@ -1320,6 +1415,14 @@
               <button class="icon-btn" onclick="estudio_closeInventarioSheet()">✕</button>
             </div>
             <input id="estudio-inventario-edit-id" type="hidden">
+            <select id="estudio-inventario-forma-pago" class="field-input" style="margin-bottom:.5rem;">
+              <option value="">— Forma de Pago —</option>
+              <option value="Santander" selected>Santander</option>
+              <option value="BBVA">BBVA</option>
+              <option value="Cuenta Mariel">Cuenta Mariel</option>
+              <option value="Efectivo">Efectivo</option>
+              <option value="Transferencia">Transferencia</option>
+            </select>
             <input id="estudio-inventario-name" class="field-input" placeholder="Nombre del equipo">
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin-top:.55rem;">
               <input id="estudio-inventario-cantidad" type="number" step="1" class="field-input" placeholder="Cantidad">
@@ -1348,6 +1451,14 @@
               <button class="icon-btn" onclick="estudio_closePluginSheet()">✕</button>
             </div>
             <input id="estudio-plugin-edit-id" type="hidden">
+            <select id="estudio-plugin-forma-pago" class="field-input" style="margin-bottom:.5rem;">
+              <option value="">— Forma de Pago —</option>
+              <option value="Santander" selected>Santander</option>
+              <option value="BBVA">BBVA</option>
+              <option value="Cuenta Mariel">Cuenta Mariel</option>
+              <option value="Efectivo">Efectivo</option>
+              <option value="Transferencia">Transferencia</option>
+            </select>
             <input id="estudio-plugin-name" class="field-input" placeholder="Nombre del plugin">
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin-top:.55rem;">
               <input id="estudio-plugin-brand" class="field-input" placeholder="Marca">
