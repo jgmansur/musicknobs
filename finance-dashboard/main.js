@@ -19,7 +19,7 @@ const SPREADSHEET_RECUERDOS_ID = '1b5PyMcfBQX75BODYRn075Meu-aOMW1lxr81USGE6zJA';
 const RECUERDOS_FOLDER_ID = '1L0t7TjKEugjpOIeYXU_xgoDiRPQ6-YbZ';
 const SPREADSHEET_RSM_ID = '14VsoPHGNTSUSbzMOqGWs2qSL-pGywPgjUoHD3MqIJfo'; // Recibos Salud Mariel
 const RSM_FOLDER_ID = '1-ZfeWQ-Rmh-Wm2WMCkULkN6MQWBuxYnj';
-const APP_VERSION  = 'v7.8.3';
+const APP_VERSION  = 'v7.8.6';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -3271,6 +3271,40 @@ function fijos_aplicarFiltros() {
     fijos_renderLista(lista);
 }
 
+function fijos_escapeHtml(value) {
+    return (value || '').toString()
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+async function fijos_copyText(text) {
+    const val = (text || '').toString();
+    if (!val) return false;
+    try {
+        if (navigator?.clipboard?.writeText) {
+            await navigator.clipboard.writeText(val);
+            return true;
+        }
+    } catch (_) {}
+    try {
+        const ta = document.createElement('textarea');
+        ta.value = val;
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.focus();
+        ta.select();
+        const ok = document.execCommand('copy');
+        document.body.removeChild(ta);
+        return !!ok;
+    } catch (_) {
+        return false;
+    }
+}
+
 function fijos_renderLista(lista) {
     const el  = document.getElementById('f-lista');
     const fmt = new Intl.NumberFormat('es-MX',{style:'currency',currency:'MXN'});
@@ -3294,11 +3328,21 @@ function fijos_renderLista(lista) {
                 const isWaived = !!(item.waivedEstado && item.waivedEstado[idx]);
                 return `<button class="${clsPart}" style="min-width:44px;padding:.35rem .45rem;font-size:.72rem" ${fixedPartButtonAttrs(item.id, idx, 'fijos')}>${isPartPaid && isWaived ? 'W' : (idx + 1)}</button>`;
             }).join('');
+        const linkGroupRaw = (item.linkGroup || '').trim();
+        const linkGroupEsc = fijos_escapeHtml(linkGroupRaw);
+        const linkGroupUi = linkGroupRaw
+            ? `<div style="display:flex;align-items:center;gap:.35rem;flex-wrap:wrap;margin-top:.25rem;">
+                <span class="kpi-inline-note" style="font-size:.7rem;">Grupo:</span>
+                <button class="mini-btn" onclick="fijos_copyLinkGroup('${linkGroupRaw.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}')">${linkGroupEsc}</button>
+                <button class="mini-btn mini-btn-danger" onclick="fijos_clearLinkGroup(${item.id})" title="Desasignar grupo">✕</button>
+              </div>`
+            : '';
         return `<div class="movimiento-card ${item.isPaid ? 'card-paid' : ''}">
           <div class="mc-left">
             <span class="mc-fecha">${item.fecha}</span>
             <span class="mc-lugar">${item.concepto}</span>
             <span class="mc-concepto">${item.categoria} · ${item.periodicidad === 'bimestral' ? 'Bimestral' : 'Mensual'} · ${item.pagador === 'esposa' ? 'Paga esposa' : 'Pago propio'}${item.pagosMes > 1 ? ` · ${item.pagosHechos}/${item.pagosMes} pagos · ${sign}${fmt.format(montoParcial)} c/u` : ''}${currencyHint}</span>
+            ${linkGroupUi}
           </div>
           <div class="mc-right" style="align-items:flex-end;gap:.5rem">
             <span class="mc-monto ${cls}">${sign}${fmt.format(pendingAmount)}</span>
@@ -3327,6 +3371,29 @@ window.fijos_borrar = async function(id) {
         fijos_cargarDatos();
         planner_refreshIfReady();
     } catch(e) { console.error(e); el.innerHTML = '<div class="empty-state text-danger">❌ Error al borrar</div>'; }
+};
+
+window.fijos_copyLinkGroup = async function(groupName) {
+    const group = (groupName || '').toString().trim();
+    if (!group) return;
+    const ok = await fijos_copyText(group);
+    if (ok) showToast(`📋 Grupo copiado: ${group}`);
+    else showToast('⚠️ No se pudo copiar el grupo');
+};
+
+window.fijos_clearLinkGroup = async function(id) {
+    const item = fijosState.allItems.find(i => i.id === id);
+    if (!item || !(item.linkGroup || '').trim()) return;
+    if (!confirm(`¿Quitar el grupo "${item.linkGroup}" de este gasto fijo?`)) return;
+    try {
+        await sheetsUpdate(SPREADSHEET_FIXED_ID, `Hoja 1!O${id}:O${id}`, [['']]);
+        item.linkGroup = '';
+        fijos_aplicarFiltros();
+        showToast('✅ Grupo desasignado');
+    } catch (e) {
+        console.error('Error clearing fixed link group:', e);
+        showToast('⚠️ Error al desasignar grupo');
+    }
 };
 
 /** Toggle one partial payment state and sync to Control de Gastos */
