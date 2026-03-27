@@ -12,7 +12,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <script type="module" crossorigin src="./assets/index-DxxmvMIH.js"></script>
+    <script type="module" crossorigin src="./assets/index-B8JZlp7r.js"></script>
     <link rel="stylesheet" crossorigin href="./assets/index-DMLsGJDg.css">
   </head>
   <body>
@@ -23,7 +23,7 @@
         <div class="header-content">
           <div class="logo-area">
             <h1 class="premium-title">ESTRATÉGIA<span>FINANCIERA</span></h1>
-            <p class="subtitle">Music Knobs | v7.7.7</p>
+            <p class="subtitle">Music Knobs | v7.7.8</p>
           </div>
           <div class="action-area">
             <div id="sync-status" class="status-badge">Sincronizado</div>
@@ -1475,6 +1475,73 @@
       </div>
 
       <!-- ══════════════════════════════════
+           VIEW: RSM
+           ══════════════════════════════════ -->
+      <div id="view-rsm" class="view">
+        <main class="dashboard-grid">
+          <section class="kpi-row">
+            <div class="kpi-card glass">
+              <div class="kpi-icon" style="background:rgba(34,197,94,.16);color:#22c55e">🧾</div>
+              <div class="kpi-data">
+                <span class="label">Recibos Salud Mariel</span>
+                <h2 id="rsm-total" class="text-success">$0.00</h2>
+                <span id="rsm-subtitle" class="diff-label">Historial de recibos medicos</span>
+              </div>
+            </div>
+          </section>
+
+          <div class="main-content-row">
+            <section class="glass" style="display:grid;gap:.7rem;align-content:start;">
+              <div class="section-header" style="display:flex;justify-content:space-between;align-items:center;gap:.5rem;">
+                <h3>Nuevo Recibo</h3>
+              </div>
+              <label class="field-label">Fecha</label>
+              <input id="rsm-fecha" type="date" class="field-input">
+              <label class="field-label">Monto</label>
+              <input id="rsm-monto" type="text" class="field-input" placeholder="0.00" inputmode="decimal">
+              <div class="autos-file-row">
+                <label for="rsm-archivo" class="secondary-btn autos-file-btn">📷 Tomar / subir foto</label>
+                <input id="rsm-archivo" type="file" class="autos-file-native" accept="image/*">
+              </div>
+              <div id="rsm-file-status" class="diff-label"></div>
+              <button id="rsm-btn-guardar" class="primary-btn" style="width:100%;">Guardar</button>
+              <button id="rsm-btn-cancel-edit" class="secondary-btn hidden" style="width:100%;">Cancelar edicion</button>
+              <div id="rsm-status" class="diff-label"></div>
+            </section>
+
+            <section class="glass" style="display:grid;gap:.65rem;align-content:start;">
+              <div class="section-header" style="display:flex;justify-content:space-between;align-items:center;gap:.5rem;">
+                <h3>Historial</h3>
+                <input id="rsm-filter-date" type="date" class="field-input" style="max-width:176px;">
+              </div>
+              <div id="rsm-list" class="accounts-list"></div>
+              <button id="rsm-btn-more" class="secondary-btn hidden" style="width:100%;">Ver mas antiguos</button>
+            </section>
+          </div>
+        </main>
+
+        <div id="rsm-detail-sheet" class="bottom-sheet hidden">
+          <div id="rsm-detail-overlay" class="bottom-sheet-overlay"></div>
+          <div class="bottom-sheet-content glass">
+            <div class="sheet-handle"></div>
+            <div class="balance-panel-header">
+              <h3 class="balance-panel-title">Detalle Recibo</h3>
+              <button id="rsm-detail-close" class="icon-btn">✕</button>
+            </div>
+            <div class="diff-label" style="margin-bottom:.35rem;">Monto</div>
+            <div id="rsm-detail-monto" style="font-size:2rem;font-weight:800;color:var(--text-main);margin-bottom:.7rem;">$0.00</div>
+            <div class="diff-label" style="margin-bottom:.35rem;">Fecha</div>
+            <div id="rsm-detail-fecha" style="font-weight:700;color:var(--text-main);margin-bottom:.8rem;">-</div>
+            <div id="rsm-detail-link" style="margin-bottom:.9rem;"></div>
+            <div class="form-actions">
+              <button id="rsm-detail-edit" class="secondary-btn" style="flex:1;">Editar</button>
+              <button id="rsm-detail-delete" class="primary-btn" style="flex:1;background:linear-gradient(120deg,#ef4444,#f97316);">Borrar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════════════
            VIEW: ESTUDIO (Tab 11)
            ══════════════════════════════════ -->
       <div id="view-estudio" class="view">
@@ -1710,6 +1777,10 @@
         <button class="tab" id="tab-recuerdos" data-tab="recuerdos">
           <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 4h12a2 2 0 0 1 2 2v14l-4-2-4 2-4-2-4 2V6a2 2 0 0 1 2-2z"/><path d="M9 9h6M9 13h6"/></svg>
           <span class="tab-label">Recuerdos</span>
+        </button>
+        <button class="tab" id="tab-rsm" data-tab="rsm">
+          <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 3h10l4 4v14H6z"/><path d="M14 3v5h5"/><path d="M9 13h6"/><path d="M9 17h6"/></svg>
+          <span class="tab-label">RSM</span>
         </button>
         <button class="tab" id="tab-documentos" data-tab="documentos">
           <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h6"/></svg>
