@@ -19,7 +19,7 @@ const SPREADSHEET_RECUERDOS_ID = '1b5PyMcfBQX75BODYRn075Meu-aOMW1lxr81USGE6zJA';
 const RECUERDOS_FOLDER_ID = '1L0t7TjKEugjpOIeYXU_xgoDiRPQ6-YbZ';
 const SPREADSHEET_RSM_ID = '14VsoPHGNTSUSbzMOqGWs2qSL-pGywPgjUoHD3MqIJfo'; // Recibos Salud Mariel
 const RSM_FOLDER_ID = '1-ZfeWQ-Rmh-Wm2WMCkULkN6MQWBuxYnj';
-const APP_VERSION  = 'v7.8.2';
+const APP_VERSION  = 'v7.8.3';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -10066,6 +10066,26 @@ function pelo_renderStars(id, rating) {
     return [1, 2, 3, 4, 5].map((v) => `<button type="button" class="hair-star-btn ${(rating || 0) >= v ? 'active' : ''}" data-hair-star="${id}" data-hair-value="${v}">★</button>`).join('');
 }
 
+function pelo_renderThumb(url, alt = 'Foto de corte') {
+    const raw = (url || '').toString().trim();
+    if (!raw) return '<div class="hair-thumb hair-thumb-empty">✂️</div>';
+    const candidates = autos_imagePreviewCandidates(raw);
+    const src = candidates[0] || raw;
+    return `<img class="hair-thumb" src="${src}" data-raw="${raw}" data-try-idx="0" alt="${alt}" onload="autos_handleDocPreviewLoad(this)" onerror="autos_handleDocPreviewError(this)">`;
+}
+
+function pelo_renderDetailPhoto(url, label) {
+    const raw = (url || '').toString().trim();
+    if (!raw) return '';
+    const candidates = autos_imagePreviewCandidates(raw);
+    const src = candidates[0] || raw;
+    return `
+      <a href="${raw}" target="_blank" rel="noopener" class="hair-detail-photo-link">
+        <img src="${src}" data-raw="${raw}" data-try-idx="0" alt="${label}" class="hair-detail-photo" onload="autos_handleDocPreviewLoad(this)" onerror="autos_handleDocPreviewError(this)">
+        <span class="hair-detail-photo-label">${label}</span>
+      </a>`;
+}
+
 function pelo_render() {
     const tabs = document.getElementById('hair-member-tabs');
     const list = document.getElementById('hair-list');
@@ -10085,9 +10105,7 @@ function pelo_render() {
             <article class="docs-card" data-hair-open="${e.id}" style="cursor:pointer;">
               <div class="hair-entry-head">
                 <div class="hair-entry-main">
-                  ${e.frontUrl || e.sideUrl
-                      ? `<img class="hair-thumb" src="${e.frontUrl || e.sideUrl}" alt="Foto de corte" data-open-url="${e.frontUrl || e.sideUrl}">`
-                      : '<div class="hair-thumb hair-thumb-empty">✂️</div>'}
+                  ${pelo_renderThumb(e.frontUrl || e.sideUrl, 'Foto de corte')}
                   <h4 class="docs-title">${e.member} · ${formatFecha(e.date)}</h4>
                 </div>
                 <button type="button" class="mini-btn" data-hair-edit="${e.id}">✏️ Editar</button>
@@ -10115,18 +10133,21 @@ function pelo_openDetail(id) {
     document.getElementById('hair-detail-meta').innerText = `${row.stylist || 'Sin estilista'} · ${row.formaPago || 'Sin forma de pago'}`;
     document.getElementById('hair-detail-notes').innerText = row.notes || 'Sin notas';
 
-    const media = [
-        { label: '🧾 Recibo', url: row.receiptUrl || '' },
-        { label: '📷 Frente', url: row.frontUrl || '' },
-        { label: '📷 Lado', url: row.sideUrl || '' },
-        { label: '📷 Atras', url: row.backUrl || '' },
-    ].filter((x) => x.url);
-
     const mediaEl = document.getElementById('hair-detail-media');
     if (mediaEl) {
-        mediaEl.innerHTML = media.length
-            ? media.map((m) => `<a class="mini-btn" href="${m.url}" target="_blank" rel="noopener">${m.label}</a>`).join('')
-            : '<span class="diff-label">Sin fotos/recibo</span>';
+        const photosHtml = [
+            pelo_renderDetailPhoto(row.frontUrl, 'Frente'),
+            pelo_renderDetailPhoto(row.sideUrl, 'Lado'),
+            pelo_renderDetailPhoto(row.backUrl, 'Atras'),
+        ].filter(Boolean).join('');
+        const receiptHtml = row.receiptUrl
+            ? `<a class="mini-btn" href="${row.receiptUrl}" target="_blank" rel="noopener">🧾 Abrir recibo</a>`
+            : '';
+        mediaEl.innerHTML = `
+            ${photosHtml ? `<div class="hair-detail-photos">${photosHtml}</div>` : ''}
+            ${receiptHtml ? `<div style="display:flex;gap:.45rem;flex-wrap:wrap;">${receiptHtml}</div>` : ''}
+            ${(!photosHtml && !receiptHtml) ? '<span class="diff-label">Sin fotos ni recibo</span>' : ''}
+        `;
     }
     document.getElementById('hair-detail-sheet')?.classList.remove('hidden');
 }
