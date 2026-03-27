@@ -1,0 +1,1684 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <link rel="icon" type="image/svg+xml" href="./vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <title>Estratégia Financiera | Jay Studio</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script type="module" crossorigin src="./assets/index-j3Uo-by-.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-DMLsGJDg.css">
+  </head>
+  <body>
+    <div id="app">
+
+      <!-- ── HEADER (shared) ── -->
+      <header class="glass-header">
+        <div class="header-content">
+          <div class="logo-area">
+            <h1 class="premium-title">ESTRATÉGIA<span>FINANCIERA</span></h1>
+            <p class="subtitle">Music Knobs | v7.7.2</p>
+          </div>
+          <div class="action-area">
+            <div id="sync-status" class="status-badge">Sincronizado</div>
+          <div style="display: flex; gap: 0.5rem;">
+            <button id="logout-btn" class="icon-btn" aria-label="Cerrar Sesión" title="Cerrar Sesión">
+              <i data-lucide="log-out"></i>
+            </button>
+            <button id="refresh-btn" class="icon-btn" aria-label="Actualizar" title="Actualizar">
+              <i data-lucide="refresh-cw"></i>
+            </button>
+          </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- ══════════════════════════════════
+           VIEW: DASHBOARD (Tab 1)
+           ══════════════════════════════════ -->
+      <div id="view-dashboard" class="view active">
+        <main class="dashboard-grid">
+          <div style="padding: 0.5rem 0 0.25rem;">
+            <button class="btn-notebook" style="width:100%;" onclick="window.open('https://notebooklm.google.com/notebook/7a39cca5-cdf9-4922-9228-cdb8f523015f', '_blank')">
+              🧠 Analizar Finanzas en NotebookLM
+            </button>
+          </div>
+          <section class="kpi-row">
+            <div class="kpi-card glass kpi-card--clickable" id="kpi-balance-card" title="Ver detalle de cuentas">
+              <div class="kpi-icon green"><i data-lucide="trending-up"></i></div>
+              <div class="kpi-data">
+                <span class="label">Balance Disponible <span class="kpi-tap-hint">↗</span></span>
+                <h2 id="balance-total">$0.00 <span id="balance-total-income-pending" class="kpi-inline-note"></span></h2>
+                <span id="balance-real-label" class="diff-label text-success">Toca para ver cuentas</span>
+              </div>
+            </div>
+            <div class="kpi-card glass kpi-card--clickable" id="kpi-fixed-card" title="Ver desglose por pagador">
+              <div class="kpi-icon blue"><i data-lucide="calendar-check"></i></div>
+              <div class="kpi-data">
+                <span class="label">Gastos Fijos Mes <span class="kpi-tap-hint">↗</span></span>
+                <h2 id="gastos-fijos-total">$0.00 <span id="gastos-fijos-coverage" class="kpi-inline-note"></span></h2>
+                <span id="pago-status" class="diff-label">0/0 Pagados</span>
+              </div>
+            </div>
+            <div class="kpi-card glass kpi-card--clickable" id="kpi-invest-card" title="Ver detalle de inversiones" style="cursor:pointer">
+              <div class="kpi-icon" style="background:rgba(56,189,248,.16);color:#38bdf8"><i data-lucide="trending-up"></i></div>
+              <div class="kpi-data">
+                <span class="label">Inversiones <span class="kpi-tap-hint">↗</span></span>
+                <h2 id="kpi-invest-amount" class="text-success">$0.00</h2>
+                <span id="kpi-invest-yield" class="diff-label text-success">+$0.00/mes</span>
+              </div>
+            </div>
+            <div class="kpi-card glass kpi-card--clickable" id="kpi-deuda-card" title="Ver deudas" style="cursor:pointer">
+              <div class="kpi-icon" style="background:rgba(239,68,68,.15);color:#ef4444"><i data-lucide="credit-card"></i></div>
+              <div class="kpi-data">
+                <span class="label">Total Deudas <span class="kpi-tap-hint">↗</span></span>
+                <h2 id="kpi-deuda-amount" class="text-danger">$0.00</h2>
+                <span id="kpi-deuda-status" class="diff-label text-danger">Deudas visibles en balance</span>
+              </div>
+            </div>
+            <div class="kpi-card glass kpi-card--clickable" id="kpi-hormiga-card" title="Ver detalle de gasto hormiga">
+              <div class="kpi-icon orange"><i data-lucide="alert-triangle"></i></div>
+              <div class="kpi-data">
+                <span class="label">Gasto Hormiga <span class="kpi-tap-hint">↗</span></span>
+                <h2 id="gasto-hormiga-total">$0.00</h2>
+                <span id="gasto-hormiga-diff" class="diff-label">Calculando...</span>
+                <span id="gasto-imprevisto-diff" class="diff-label">Imprevistos: $0.00</span>
+              </div>
+            </div>
+          </section>
+
+          <div class="main-content-row">
+            <section class="chart-section glass">
+              <div class="section-header chart-header">
+                <h3>Tendencia Gasto Hormiga</h3>
+                <div class="chart-toggle-group">
+                  <button id="chart-toggle-daily" class="chart-toggle-btn active" onclick="setChartMode('daily')">Diario</button>
+                  <button id="chart-toggle-monthly" class="chart-toggle-btn" onclick="setChartMode('monthly')">Mensual</button>
+                </div>
+              </div>
+              <div id="chart-hormiga"></div>
+            </section>
+            <section class="table-section glass">
+              <div class="section-header fixed-status-header">
+                <h3>Estatus Gastos Fijos</h3>
+                <button id="fixed-search-open" class="icon-btn" aria-label="Buscar gastos fijos">🔍</button>
+              </div>
+              <div class="table-wrapper">
+                <table id="fixed-expenses-table">
+                  <thead>
+                    <tr><th>Concepto</th><th>Monto</th><th>Estatus</th></tr>
+                  </thead>
+                  <tbody id="fixed-expenses-body"></tbody>
+                </table>
+              </div>
+            </section>
+          </div>
+          <section class="ai-mirror-sync-row glass-subtle">
+            <button id="ai-mirror-sync-btn" class="secondary-btn">♻️ Actualizar copia maestra AI</button>
+            <span id="ai-mirror-sync-status" class="diff-label">Sin sincronizar hoy</span>
+          </section>
+          <div id="fixed-search-modal" class="fixed-search-modal hidden">
+            <div id="fixed-search-overlay" class="fixed-search-overlay"></div>
+            <div class="fixed-search-card glass">
+              <div class="fixed-search-head">
+                <h4>Buscar gasto fijo</h4>
+                <button id="fixed-search-close" class="icon-btn" aria-label="Cerrar buscador">✕</button>
+              </div>
+              <input id="fixed-search-input" class="field-input" type="search" placeholder="Escribe concepto o categoría...">
+            </div>
+          </div>
+        </main>
+      </div>
+
+      <!-- ══ BALANCE DETAIL PANEL ══ -->
+      <div id="balance-panel" class="bottom-sheet hidden">
+        <div id="balance-panel-overlay" class="bottom-sheet-overlay"></div>
+        <div class="bottom-sheet-content glass balance-panel-inner">
+          <div class="sheet-handle"></div>
+          <div class="balance-panel-header">
+            <h3 class="balance-panel-title">💰 Mis Cuentas</h3>
+            <button id="balance-panel-close" class="icon-btn" aria-label="Cerrar">✕</button>
+          </div>
+
+          <!-- Summary Row -->
+          <div class="balance-summary-row">
+            <div class="balance-summary-card balance-summary-card--total glass-subtle">
+              <span class="bs-label">Total en Cuentas</span>
+              <span id="bs-total" class="bs-amount text-success">$0.00</span>
+            </div>
+            <div class="balance-summary-card balance-summary-card--real glass-subtle">
+              <span class="bs-label">Libertad Real 🎯</span>
+              <span id="bs-real" class="bs-amount">$0.00</span>
+              <span class="bs-sublabel" id="bs-pending-label">- pendientes</span>
+            </div>
+          </div>
+
+          <!-- Account List -->
+          <div id="accounts-list" class="accounts-list"></div>
+
+          <!-- Add Account -->
+          <div id="add-account-form" class="add-account-form glass-subtle hidden">
+            <input id="acc-name" class="field-input" type="text" placeholder="Nombre de cuenta (ej. Nu Bank)" maxlength="30">
+            <input id="acc-balance" class="field-input" type="number" placeholder="Saldo ($)" step="0.01" inputmode="decimal">
+            <select id="acc-type" class="field-input">
+              <option value="bank">🏦 Cuenta Bancaria</option>
+              <option value="credit">💳 Tarjeta de Crédito</option>
+              <option value="cash">💵 Efectivo</option>
+              <option value="invest">📈 Inversión</option>
+              <option value="other">🌎 Otro</option>
+            </select>
+            <select id="acc-currency" class="field-input">
+              <option value="MXN">🇲🇽 Pesos (MXN)</option>
+              <option value="USD">🇺🇸 Dólares (USD)</option>
+              <option value="BTC">₿ Bitcoin (BTC)</option>
+            </select>
+            <div id="acc-credit-fields" class="hidden">
+              <input id="acc-credit-limit" class="field-input" type="number" placeholder="Límite de crédito ($)" step="0.01" inputmode="decimal">
+              <input id="acc-credit-visible" type="hidden" value="0">
+              <button id="acc-credit-visible-btn" type="button" class="secondary-btn" style="width:100%;margin-top:.45rem">🙈 Limite oculto en balance</button>
+            </div>
+            <div id="acc-invest-fields" class="hidden">
+              <select id="acc-invest-type" class="field-input">
+                <option value="cetes">CETES (tasa diaria)</option>
+                <option value="mifel">MIFEL (tasa diaria)</option>
+                <option value="bitcoin">Bitcoin</option>
+                <option value="custom">Inversión personalizada</option>
+              </select>
+              <input id="acc-bitcoin-initial" class="field-input hidden" type="number" placeholder="Inversión inicial en pesos (MXN)" step="0.01" inputmode="decimal" style="margin-top:.45rem">
+              <input id="acc-invest-rate" class="field-input hidden" type="number" placeholder="Tasa anual estimada (%)" step="0.01" inputmode="decimal" style="margin-top:.45rem">
+            </div>
+            <div class="form-row-2" style="gap:.5rem">
+              <button id="acc-save-btn" class="primary-btn" style="flex:1">Guardar</button>
+              <button id="acc-cancel-btn" class="secondary-btn">Cancelar</button>
+            </div>
+          </div>
+
+          <button id="acc-add-btn" class="add-account-btn">+ Agregar cuenta</button>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════════════
+           VIEW: CONTROL DE GASTOS (Tab 2)
+           ══════════════════════════════════ -->
+      <div id="view-gastos" class="view">
+
+        <!-- Form card -->
+        <div class="form-card glass">
+          <input type="hidden" id="g-id-fila" value="">
+          <div class="form-row-2">
+            <div class="form-field">
+              <label class="field-label">Tipo</label>
+              <select id="g-tipo" class="field-input">
+                <option value="Gasto">🔴 Gasto</option>
+                <option value="Ingreso">🟢 Ingreso</option>
+              </select>
+            </div>
+            <div class="form-field">
+              <label class="field-label">Forma de Pago</label>
+              <select id="g-forma-pago" class="field-input">
+                <option>Santander</option>
+                <option>BBVA</option>
+                <option>Cuenta Mariel</option>
+                <option>Efectivo</option>
+                <option>Transferencia</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-field">
+            <label class="field-label">Lugar</label>
+            <input type="text" id="g-lugar" class="field-input" placeholder="Ej. Oxxo">
+          </div>
+          <div class="form-field">
+            <label class="field-label">Concepto</label>
+            <input type="text" id="g-concepto" class="field-input" placeholder="Ej. Coca y Cigarros">
+          </div>
+          <div class="form-field">
+            <label class="field-label">Monto ($)</label>
+            <input type="number" id="g-monto" class="field-input field-input-lg" placeholder="0.00" step="any" inputmode="decimal">
+          </div>
+          <div class="form-field">
+            <label class="field-label">Moneda</label>
+            <select id="g-currency" class="field-input">
+              <option value="MXN">🇲🇽 Pesos (MXN)</option>
+              <option value="USD">🇺🇸 Dólares (USD)</option>
+            </select>
+          </div>
+          <div class="form-field hidden" id="g-fecha-creacion-field">
+            <label class="field-label">📅 Fecha del Gasto</label>
+            <input type="datetime-local" id="g-fecha-creacion" class="field-input">
+          </div>
+          <div class="form-field">
+            <label class="field-label">Foto / Recibo</label>
+            <input type="file" id="g-fotos-input" multiple accept="image/*,application/pdf" style="display:none">
+            <label for="g-fotos-input" class="foto-btn-label">📷 Adjuntar foto o recibo</label>
+            <div id="g-fotos-feedback" class="foto-feedback"></div>
+          </div>
+          <div class="form-actions">
+            <button id="g-btn-save" class="primary-btn" style="flex:1">GUARDAR</button>
+            <button id="g-btn-cancel" class="secondary-btn hidden">Cancelar</button>
+          </div>
+          <p id="g-status" class="form-status"></p>
+        </div>
+
+        <!-- History -->
+        <div class="glass historial-card">
+          <div class="section-header">
+            <h3>📋 Últimos Movimientos</h3>
+          </div>
+          <input type="text" id="g-search" class="search-input" placeholder="🔍 Buscar lugar, concepto...">
+          <div id="g-lista"></div>
+          <button id="g-btn-mas" class="load-more-btn hidden">⬇ Cargar más</button>
+        </div>
+
+        <!-- Detail Modal Backdrop -->
+        <div id="g-modal-backdrop" class="modal-backdrop hidden"></div>
+        <!-- Detail Modal -->
+        <div id="g-modal" class="detail-modal glass hidden">
+          <button id="g-modal-close" class="modal-close-btn">✕</button>
+          <div id="g-m-monto" class="modal-monto-big"></div>
+          <div class="modal-meta-row">
+            <div>
+              <div class="modal-meta-label">Tipo</div>
+              <div id="g-m-tipo" class="modal-badge"></div>
+            </div>
+            <div>
+              <div class="modal-meta-label">Forma de Pago</div>
+              <div id="g-m-pago" class="modal-meta-val"></div>
+            </div>
+          </div>
+          <div class="modal-meta-label">Lugar</div>
+          <div id="g-m-lugar" class="modal-meta-val"></div>
+          <div class="modal-meta-label">Concepto</div>
+          <div id="g-m-concepto" class="modal-meta-val"></div>
+          <div class="modal-meta-label">Fecha</div>
+          <div id="g-m-fecha" class="modal-meta-val modal-meta-sm"></div>
+          <div class="modal-meta-label" style="margin-top:1rem">Recibos</div>
+          <div id="g-m-recibos"></div>
+          <div class="modal-actions">
+            <button id="g-modal-btn-editar" class="primary-btn" style="background:var(--accent-orange)">✏️ Editar</button>
+            <button id="g-modal-btn-borrar" class="primary-btn" style="background:#ef4444">🗑️ Borrar</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════════════
+           VIEW: GASTOS FIJOS (Tab 3)
+           ══════════════════════════════════ -->
+      <div id="view-fijos" class="view">
+
+        <!-- Balance Card -->
+        <div class="glass balance-card">
+          <p id="f-balance-label" class="balance-label">Disponible (Libertad Financiera)</p>
+          <h2 id="f-balance" class="balance-amount">$0.00</h2>
+          <div class="balance-stats">
+            <div class="balance-stat">
+              <span class="stat-label text-success">↑ Ingresos</span>
+              <span id="f-ingresos" class="stat-value text-success">$0.00</span>
+            </div>
+            <div class="balance-stat">
+              <span class="stat-label text-danger">↓ Gastos</span>
+              <span id="f-gastos-total" class="stat-value text-danger">$0.00</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Toolbar -->
+        <div class="toolbar-row">
+          <input type="text" id="f-search" class="search-input" style="flex:1" placeholder="🔍 Buscar...">
+          <div class="filtro-wrap">
+            <button id="f-btn-filtro" class="icon-btn" title="Filtrar por categoría">📂</button>
+            <span id="f-filtro-badge" class="filtro-badge" style="display:none"></span>
+          </div>
+          <select id="f-sort" class="sort-select field-input">
+            <option value="fechaAsc">📅 ↑</option>
+            <option value="fechaDesc">📅 ↓</option>
+            <option value="alphaAsc">A–Z</option>
+          </select>
+          <button id="f-btn-reset" class="icon-btn" title="Resetear pagos del mes">🔄</button>
+        </div>
+
+        <!-- List -->
+        <div id="f-lista" class="glass movimientos-list"></div>
+
+        <!-- FAB -->
+        <button id="f-btn-add" class="fab-btn" aria-label="Nuevo movimiento" title="Nuevo movimiento">＋</button>
+
+        <!-- Bottom Sheet: Add/Edit -->
+        <div id="f-sheet" class="bottom-sheet hidden">
+          <div id="f-sheet-overlay" class="bottom-sheet-overlay"></div>
+          <div class="bottom-sheet-content glass">
+            <div class="sheet-handle"></div>
+            <h4 id="f-sheet-title" class="sheet-title">Nuevo Movimiento</h4>
+            <input type="hidden" id="f-edit-id">
+            <div class="form-field">
+              <label class="field-label">Día del mes</label>
+              <input type="number" id="f-fecha" class="field-input" min="1" max="31" step="1" inputmode="numeric" placeholder="1-31">
+            </div>
+            <div class="form-row-2">
+              <div class="form-field">
+                <label class="field-label">Tipo</label>
+                <select id="f-tipo" class="field-input">
+                  <option value="gasto">🔴 Gasto</option>
+                  <option value="ingreso">🟢 Ingreso</option>
+                </select>
+              </div>
+              <div class="form-field">
+                <label class="field-label">Monto</label>
+                <input type="number" id="f-monto" class="field-input" step="0.01" inputmode="decimal" placeholder="0.00">
+              </div>
+            </div>
+            <div class="form-field">
+              <label class="field-label">Pagos por mes</label>
+              <select id="f-pagos-mes" class="field-input">
+                <option value="1">1 pago</option>
+                <option value="2">2 pagos</option>
+                <option value="3">3 pagos</option>
+                <option value="4">4 pagos</option>
+                <option value="5">5 pagos</option>
+              </select>
+            </div>
+            <div class="form-row-2">
+              <div class="form-field">
+                <label class="field-label">Periodicidad</label>
+                <select id="f-periodicidad" class="field-input">
+                  <option value="mensual">Mensual</option>
+                  <option value="bimestral">Bimestral (mes sí / mes no)</option>
+                </select>
+              </div>
+              <div class="form-field hidden" id="f-inicio-mes-wrap">
+                <label class="field-label">Mes de inicio (con pago)</label>
+                <input type="month" id="f-inicio-mes" class="field-input">
+              </div>
+            </div>
+            <div class="form-field">
+              <label class="field-label">Forma de Pago</label>
+              <select id="f-forma-pago" class="field-input">
+                <option value="">— Sin asignar —</option>
+                <option value="Santander" selected>Santander</option>
+                <option value="BBVA">BBVA</option>
+                <option value="Cuenta Mariel">Cuenta Mariel</option>
+                <option value="Efectivo">Efectivo</option>
+                <option value="Transferencia">Transferencia</option>
+              </select>
+            </div>
+            <div class="form-field">
+              <label class="field-label">Moneda</label>
+              <select id="f-currency" class="field-input">
+                <option value="MXN">🇲🇽 Pesos (MXN)</option>
+                <option value="USD">🇺🇸 Dólares (USD)</option>
+              </select>
+            </div>
+            <div class="form-field">
+              <label class="field-label">Categoría Presupuestal</label>
+              <select id="f-budget-cat" class="field-input">
+                <option value="Seguros">Seguros</option>
+                <option value="Gasolina y Autos">Gasolina y Autos</option>
+                <option value="Super">Super</option>
+                <option value="Mantenimiento y Pago de Servicios">Mantenimiento y Pago de Servicios</option>
+                <option value="Muchachas y Pago de Deudas">Muchachas y Pago de Deudas</option>
+              </select>
+            </div>
+            <div class="form-field">
+              <label class="field-label">Concepto</label>
+              <input type="text" id="f-concepto" class="field-input" placeholder="Ej. Netflix">
+            </div>
+            <div class="form-field">
+              <label class="field-label">Categorías</label>
+              <div id="f-cat-checks" class="cat-checks-container"></div>
+            </div>
+            <button id="f-btn-guardar" class="primary-btn" style="width:100%;margin-top:1rem">Guardar</button>
+          </div>
+        </div>
+
+        <!-- Bottom Sheet: Filter -->
+        <div id="f-filter-sheet" class="bottom-sheet hidden">
+          <div id="f-filter-overlay" class="bottom-sheet-overlay"></div>
+          <div class="bottom-sheet-content glass">
+            <div class="sheet-handle"></div>
+            <h4 class="sheet-title">Filtrar por Categoría</h4>
+            <p class="sheet-hint">Muestra movimientos con cualquiera de estas categorías:</p>
+            <div id="f-filter-checks" class="cat-checks-container"></div>
+            <div class="form-row-2" style="margin-top:1.25rem">
+              <button id="f-filter-clear" class="secondary-btn" style="flex:1">Ver Todas</button>
+              <button id="f-filter-apply" class="primary-btn" style="flex:1">Aplicar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════════════
+           VIEW: DEUDAS (Tab 4)
+           ══════════════════════════════════ -->
+      <div id="view-deudas" class="view">
+        <!-- Balance Card -->
+        <div class="glass balance-card">
+          <p class="balance-label">Total Adeudado</p>
+          <h2 id="d-total" class="balance-amount">$0.00</h2>
+        </div>
+
+
+        <!-- List -->
+        <div id="d-lista" class="glass movimientos-list" style="margin-top: 1rem;">
+          <div class="loader" style="text-align:center; padding: 20px; color: var(--text-muted);">Cargando deudas...</div>
+        </div>
+
+        <!-- FAB -->
+        <button id="d-btn-add" class="fab-btn" aria-label="Nueva deuda" title="Nueva deuda">＋</button>
+
+        <!-- Bottom Sheet: Add/Edit -->
+        <div id="d-sheet" class="bottom-sheet hidden">
+          <div id="d-sheet-overlay" class="bottom-sheet-overlay"></div>
+          <div class="bottom-sheet-content glass">
+            <div class="sheet-handle"></div>
+            <h4 id="d-sheet-title" class="sheet-title">Nueva Deuda</h4>
+            <input type="hidden" id="d-edit-id">
+            
+            <div class="form-field">
+              <label class="field-label">Concepto</label>
+              <input type="text" id="d-concepto" class="field-input" placeholder="Ej. Tarjeta Mariel">
+            </div>
+            
+            <div class="form-field">
+              <label class="field-label">Monto Adeudado</label>
+              <input type="number" id="d-monto" class="field-input" step="0.01" inputmode="decimal" placeholder="0.00">
+            </div>
+
+            <button id="d-btn-guardar" class="primary-btn" style="width:100%;margin-top:1rem">Guardar</button>
+          </div>
+        </div>
+
+        <!-- ════════ SPLIT DEBT SHEET ════════ -->
+        <div id="d-split-sheet" class="bottom-sheet hidden">
+          <div id="d-split-sheet-overlay" class="bottom-sheet-overlay"></div>
+          <div class="bottom-sheet-content glass">
+            <div class="sheet-handle"></div>
+            <h4 class="sheet-title">Dividir Deuda</h4>
+            <input type="hidden" id="d-split-id">
+            
+            <div class="form-field">
+              <label class="field-label">Deuda Original</label>
+              <input type="text" id="d-split-monto" class="field-input readonly" readonly>
+            </div>
+
+            <div class="form-row-2">
+              <div class="form-field">
+                <label class="field-label">Número de Cuotas</label>
+                <input type="number" id="d-split-payments" class="field-input" min="2" max="120" value="12">
+              </div>
+              <div class="form-field">
+                <label class="field-label">Frecuencia</label>
+                <select id="d-split-frequency" class="field-input">
+                  <option value="semanal">Semanal</option>
+                  <option value="quincenal">Quincenal</option>
+                  <option value="mensual" selected>Mensual</option>
+                  <option value="bimestral">Bimestral</option>
+                  <option value="semestral">Semestral</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-row-2">
+              <div class="form-field">
+                <label class="field-label">Fecha 1ra Cuota</label>
+                <input type="date" id="d-split-start-date" class="field-input">
+              </div>
+              <div class="form-field">
+                <label class="field-label">Forma de Pago / Cuenta</label>
+                <select id="d-split-account" class="field-input">
+                  <option value="">(Sin asignar)</option>
+                  <option value="Santander">Santander</option>
+                  <option value="BBVA">BBVA</option>
+                  <option value="Cuenta Mariel">Cuenta Mariel</option>
+                  <option value="Efectivo">Efectivo</option>
+                  <option value="Transferencia">Transferencia</option>
+                </select>
+                <span style="font-size:0.7rem;opacity:0.6;margin-top:4px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Para descuento aut.</span>
+              </div>
+            </div>
+
+            <div class="form-field" style="margin-top:1rem; margin-bottom: 0;">
+              <label class="cat-check-label" style="justify-content:flex-start; margin-bottom:0;">
+                <input type="checkbox" id="d-split-compound">
+                Calcular Interés Compuesto
+              </label>
+            </div>
+
+            <div class="form-field hidden" id="d-split-rate-wrap" style="margin-top:1rem;">
+              <label class="field-label">Tasa de Interés Anual (%)</label>
+              <input type="number" id="d-split-rate" class="field-input" step="0.1" inputmode="decimal" placeholder="Ej. 16.0">
+            </div>
+
+            <div style="margin-top:1.5rem; padding:1rem; border-radius:12px; background:rgba(255,255,255,0.05); text-align:center;">
+              <div class="diff-label" style="opacity:0.8;">Cada cuota quedará en:</div>
+              <div id="d-split-preview" class="balance-amount" style="font-size:1.8rem;">$0.00</div>
+            </div>
+
+            <button id="d-split-btn-convert" class="primary-btn" style="width:100%;margin-top:1.5rem">Generar Cuotas</button>
+          </div>
+        </div>
+
+        <div id="d-cuota-sheet" class="bottom-sheet hidden">
+          <div id="d-cuota-sheet-overlay" class="bottom-sheet-overlay"></div>
+          <div class="bottom-sheet-content glass">
+            <div class="sheet-handle"></div>
+            <h4 id="d-cuota-title" class="sheet-title">Programar Cuota</h4>
+
+            <div class="form-field">
+              <label class="field-label">Forma de Pago / Cuenta</label>
+              <select id="d-cuota-account" class="field-input">
+                <option value="">Selecciona una cuenta</option>
+                <option value="Santander">Santander</option>
+                <option value="BBVA">BBVA</option>
+                <option value="Cuenta Mariel">Cuenta Mariel</option>
+                <option value="Efectivo">Efectivo</option>
+                <option value="Transferencia">Transferencia</option>
+              </select>
+            </div>
+
+            <div class="form-field">
+              <label class="field-label">Fecha del Primer Pago</label>
+              <input type="date" id="d-cuota-start-date" class="field-input">
+            </div>
+
+            <div class="form-actions" style="margin-top:1rem;">
+              <button id="d-cuota-cancel" class="secondary-btn" style="flex:1;">Cancelar</button>
+              <button id="d-cuota-confirm" class="primary-btn" style="flex:1;">Programar</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ══════════════════════════════════
+           VIEW: PLAN DE PAGOS (Tab 5)
+           ══════════════════════════════════ -->
+      <div id="view-plan" class="view">
+        <div class="glass balance-card">
+          <p class="balance-label">Planificador de Pagos por Ingreso</p>
+          <h2 id="plan-summary" class="balance-amount">$0.00</h2>
+          <div id="plan-summary-sub" class="diff-label">Cargando entradas fijas...</div>
+          <button class="secondary-btn plan-reset-btn" onclick="planner_resetAssignments()">Reiniciar movimientos manuales</button>
+        </div>
+        <div id="plan-income-groups" class="movimientos-list glass" style="margin-top:1rem;"></div>
+      </div>
+
+      <!-- ══════════════════════════════════
+           VIEW: AUTOS (Tab 6)
+           ══════════════════════════════════ -->
+      <div id="view-autos" class="view">
+        <main class="dashboard-grid">
+          <section class="kpi-row">
+            <div class="kpi-card glass kpi-card--clickable" id="autos-license-card" title="Tap: ver licencia · Dejar presionado: subir licencia">
+              <div class="kpi-icon" style="background:rgba(34,197,94,.15);color:#22c55e"><i data-lucide="car-front"></i></div>
+              <div class="kpi-data">
+                <span class="label">Control de Autos</span>
+                <h2 id="autos-total-spent" class="text-danger" style="margin:0;">$0.00</h2>
+                <span class="diff-label">Gasto acumulado historico</span>
+              </div>
+            </div>
+          </section>
+
+          <div class="main-content-row">
+            <section class="glass" style="display:flex;flex-direction:column;gap:.6rem;">
+              <div class="section-header" style="display:flex;justify-content:space-between;align-items:center;">
+                <h3>Mis Autos</h3>
+                <button id="autos-btn-add-car" class="secondary-btn" style="padding:.45rem .7rem;">+ Auto</button>
+              </div>
+              <div id="autos-car-list" class="accounts-list"></div>
+            </section>
+
+            <section class="glass" style="display:flex;flex-direction:column;gap:.7rem;">
+              <div class="section-header" style="display:flex;justify-content:space-between;align-items:center;">
+                <h3 id="autos-selected-title">Selecciona un auto</h3>
+                <button id="autos-btn-add-repair" class="primary-btn" style="padding:.45rem .7rem;">+ Reparacion</button>
+              </div>
+              <div id="autos-car-profile" class="autos-profile"></div>
+              <div class="balance-summary-card glass-subtle">
+                <span class="bs-label">Total gastado en este auto</span>
+                <span id="autos-selected-spent" class="bs-amount text-danger">$0.00</span>
+              </div>
+              <div class="autos-repair-filters" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.55rem;">
+                <label class="autos-filter-col">
+                  <span class="autos-filter-label">Buscar texto</span>
+                  <input id="autos-repair-search" type="search" class="field-input" placeholder="Taller, concepto...">
+                </label>
+                <label class="autos-filter-col">
+                  <span class="autos-filter-label">Fecha desde</span>
+                  <input id="autos-repair-date-from" type="date" class="field-input" title="Desde">
+                </label>
+                <label class="autos-filter-col">
+                  <span class="autos-filter-label">Fecha hasta</span>
+                  <input id="autos-repair-date-to" type="date" class="field-input" title="Hasta">
+                </label>
+              </div>
+              <div id="autos-repair-list" class="movimientos-list"></div>
+              <button id="autos-repair-load-more" class="secondary-btn hidden" style="width:100%;">Cargar 10 mas</button>
+            </section>
+          </div>
+        </main>
+
+        <div id="autos-detail-panel" class="bottom-sheet hidden">
+          <div id="autos-detail-overlay" class="bottom-sheet-overlay"></div>
+          <div class="bottom-sheet-content glass">
+            <div class="sheet-handle"></div>
+            <div class="balance-panel-header">
+              <h3 id="autos-detail-title" class="balance-panel-title">Detalle del Auto</h3>
+              <button id="autos-detail-close" class="icon-btn">✕</button>
+            </div>
+            <div id="autos-detail-content"></div>
+          </div>
+        </div>
+
+        <div id="autos-license-panel" class="bottom-sheet hidden">
+          <div id="autos-license-overlay" class="bottom-sheet-overlay"></div>
+          <div class="bottom-sheet-content glass">
+            <div class="sheet-handle"></div>
+            <div class="balance-panel-header">
+              <h3 class="balance-panel-title">Licencia de Manejar</h3>
+              <button id="autos-license-close" class="icon-btn">✕</button>
+            </div>
+            <button id="autos-license-upload-btn" class="secondary-btn" style="width:100%;margin-bottom:.6rem;">Subir o tomar foto de licencia</button>
+            <img id="autos-license-image" alt="Licencia" style="width:100%;max-height:68dvh;object-fit:contain;border-radius:.8rem;background:rgba(255,255,255,.04);" />
+            <a id="autos-license-open-link" class="mini-btn hidden" style="margin-top:.6rem;display:inline-flex;" target="_blank" rel="noopener">Abrir archivo original</a>
+            <div id="autos-license-empty" class="empty-state hidden" style="margin-top:1rem;">No hay licencia guardada</div>
+          </div>
+          <input id="autos-license-file" type="file" class="autos-file-native" accept="image/*,application/pdf">
+        </div>
+
+        <div id="autos-meli-debug-panel" class="bottom-sheet hidden">
+          <div id="autos-meli-debug-overlay" class="bottom-sheet-overlay"></div>
+          <div class="bottom-sheet-content glass">
+            <div class="sheet-handle"></div>
+            <div class="balance-panel-header">
+              <h3 class="balance-panel-title">Debug Mercado Libre</h3>
+              <button id="autos-meli-debug-close" class="icon-btn">✕</button>
+            </div>
+            <div id="autos-meli-debug-body" class="autos-debug-body"></div>
+            <div style="display:flex;gap:.4rem;flex-wrap:wrap;margin-top:.65rem;">
+              <button class="secondary-btn" onclick="autos_connectMercadoLibre()">🔐 Reintentar conectar</button>
+              <button class="secondary-btn" onclick="autos_openMeliDebug()">↻ Refrescar debug</button>
+              <button class="secondary-btn" onclick="autos_copyMeliDebug()">📋 Copiar debug para soporte</button>
+            </div>
+          </div>
+        </div>
+
+        <div id="autos-license-crop-panel" class="bottom-sheet hidden">
+          <div id="autos-license-crop-overlay" class="bottom-sheet-overlay"></div>
+          <div class="bottom-sheet-content glass">
+            <div class="sheet-handle"></div>
+            <div class="balance-panel-header">
+              <h3 class="balance-panel-title">Ajustar licencia</h3>
+              <button id="autos-license-crop-close" class="icon-btn">✕</button>
+            </div>
+            <div class="diff-label" style="margin-bottom:.45rem;">Encuadra la credencial y guarda el recorte.</div>
+            <canvas id="autos-license-crop-canvas" class="autos-license-crop-canvas" width="1200" height="756"></canvas>
+            <div class="autos-license-crop-grid">
+              <label class="autos-filter-col">
+                <span class="autos-filter-label">Zoom</span>
+                <input id="autos-license-crop-zoom" type="range" min="1" max="3" step="0.01" value="1">
+              </label>
+              <label class="autos-filter-col">
+                <span class="autos-filter-label">Mover horizontal</span>
+                <input id="autos-license-crop-x" type="range" min="-100" max="100" step="1" value="0">
+              </label>
+              <label class="autos-filter-col">
+                <span class="autos-filter-label">Mover vertical</span>
+                <input id="autos-license-crop-y" type="range" min="-100" max="100" step="1" value="0">
+              </label>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:.55rem;margin-top:.8rem;">
+              <button id="autos-license-crop-cancel" class="secondary-btn">Cancelar</button>
+              <button id="autos-license-crop-apply" class="primary-btn">Usar recorte</button>
+            </div>
+          </div>
+        </div>
+
+        <div id="autos-doc-crop-panel" class="bottom-sheet hidden">
+          <div id="autos-doc-crop-overlay" class="bottom-sheet-overlay"></div>
+          <div class="bottom-sheet-content glass">
+            <div class="sheet-handle"></div>
+            <div class="balance-panel-header">
+              <h3 id="autos-doc-crop-title" class="balance-panel-title">Recortar documento</h3>
+              <button id="autos-doc-crop-close" class="icon-btn">✕</button>
+            </div>
+            <div class="diff-label" style="margin-bottom:.45rem;">Ajusta el encuadre y elige tamaño: carta, oficio o libre.</div>
+            <canvas id="autos-doc-crop-canvas" class="autos-license-crop-canvas" width="1200" height="1560"></canvas>
+            <div class="autos-license-crop-grid">
+              <label class="autos-filter-col">
+                <span class="autos-filter-label">Tamaño</span>
+                <select id="autos-doc-crop-size" class="field-input">
+                  <option value="credencial">Credencial</option>
+                  <option value="carta">Carta</option>
+                  <option value="oficio">Oficio</option>
+                  <option value="libre">Libre</option>
+                </select>
+              </label>
+              <label class="autos-filter-col">
+                <span class="autos-filter-label">Zoom</span>
+                <input id="autos-doc-crop-zoom" type="range" min="1" max="3" step="0.01" value="1">
+              </label>
+              <label class="autos-filter-col">
+                <span class="autos-filter-label">Mover horizontal</span>
+                <input id="autos-doc-crop-x" type="range" min="-100" max="100" step="1" value="0">
+              </label>
+              <label class="autos-filter-col">
+                <span class="autos-filter-label">Mover vertical</span>
+                <input id="autos-doc-crop-y" type="range" min="-100" max="100" step="1" value="0">
+              </label>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:.55rem;margin-top:.8rem;">
+              <button id="autos-doc-crop-cancel" class="secondary-btn">Usar original</button>
+              <button id="autos-doc-crop-apply" class="primary-btn">Usar recorte</button>
+            </div>
+          </div>
+        </div>
+
+        <div id="autos-car-sheet" class="bottom-sheet hidden">
+          <div id="autos-car-sheet-overlay" class="bottom-sheet-overlay"></div>
+          <div class="bottom-sheet-content glass">
+            <div class="sheet-handle"></div>
+            <div class="balance-panel-header">
+              <h3 id="autos-car-title" class="balance-panel-title">Nuevo Auto</h3>
+              <button class="icon-btn" onclick="autos_closeCarSheet()">✕</button>
+            </div>
+            <input id="autos-car-edit-id" type="hidden">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem;">
+              <input id="autos-car-marca" class="field-input" placeholder="Marca">
+              <input id="autos-car-modelo" class="field-input" placeholder="Modelo">
+              <input id="autos-car-anio" class="field-input" placeholder="Año">
+              <input id="autos-car-factura" type="number" inputmode="decimal" class="field-input" placeholder="Valor factura (MXN)">
+              <input id="autos-car-kilometraje" type="number" inputmode="numeric" class="field-input" placeholder="Kilometraje actual">
+              <input id="autos-car-propietario" class="field-input" placeholder="Propietario">
+              <select id="autos-car-seguro" class="field-input"><option value="1">Con seguro</option><option value="0">Sin seguro</option></select>
+              <input id="autos-car-poliza" class="field-input" placeholder="No. Poliza">
+              <input id="autos-car-vencimiento-poliza" type="date" class="field-input" title="Vencimiento de póliza del seguro" placeholder="Vencimiento de póliza">
+              <input id="autos-car-proxima-revision-km" type="number" inputmode="numeric" class="field-input" placeholder="Próxima revisión (km)">
+              <input id="autos-car-placa" class="field-input" placeholder="Placa">
+              <input id="autos-car-vin" class="field-input" placeholder="VIN">
+              <input id="autos-car-emergencia" class="field-input" placeholder="Telefono emergencia">
+              <input id="autos-car-llantas" class="field-input" placeholder="Tipo de llantas">
+            </div>
+            <div class="diff-label" style="margin-top:.35rem;">📅 Vencimiento póliza: selecciona la fecha en el calendario</div>
+            <div class="autos-file-row" style="margin-top:.45rem;">
+              <label for="autos-car-foto-file" class="secondary-btn autos-file-btn">📷 Seleccionar foto del auto</label>
+              <input id="autos-car-foto-file" type="file" class="autos-file-native" accept="image/*">
+            </div>
+            <div id="autos-car-foto-feedback" class="diff-label"></div>
+            <div class="autos-file-row" style="margin-top:.45rem;">
+              <label for="autos-car-factura-file" class="secondary-btn autos-file-btn">🧾 Factura (foto/PDF)</label>
+              <input id="autos-car-factura-file" type="file" class="autos-file-native" accept="image/*,application/pdf">
+            </div>
+            <div id="autos-car-factura-feedback" class="diff-label"></div>
+            <div class="autos-file-row" style="margin-top:.45rem;">
+              <label for="autos-car-poliza-file" class="secondary-btn autos-file-btn">🛡️ Poliza (foto/PDF)</label>
+              <input id="autos-car-poliza-file" type="file" class="autos-file-native" accept="image/*,application/pdf">
+            </div>
+            <div id="autos-car-poliza-feedback" class="diff-label"></div>
+            <div class="autos-file-row" style="margin-top:.45rem;">
+              <label for="autos-car-extra1-file" class="secondary-btn autos-file-btn">📎 Documento extra 1</label>
+              <input id="autos-car-extra1-file" type="file" class="autos-file-native" accept="image/*,application/pdf">
+            </div>
+            <div id="autos-car-extra1-feedback" class="diff-label"></div>
+            <div class="autos-file-row" style="margin-top:.45rem;">
+              <label for="autos-car-extra2-file" class="secondary-btn autos-file-btn">📎 Documento extra 2</label>
+              <input id="autos-car-extra2-file" type="file" class="autos-file-native" accept="image/*,application/pdf">
+            </div>
+            <div id="autos-car-extra2-feedback" class="diff-label"></div>
+            <div class="autos-file-row" style="margin-top:.45rem;">
+              <label for="autos-car-tarjeta-frente-file" class="secondary-btn autos-file-btn">🪪 Tarjeta frontal (foto/PDF)</label>
+              <input id="autos-car-tarjeta-frente-file" type="file" class="autos-file-native" accept="image/*,application/pdf">
+            </div>
+            <div id="autos-car-tarjeta-frente-feedback" class="diff-label"></div>
+            <div class="autos-file-row" style="margin-top:.45rem;">
+              <label for="autos-car-tarjeta-atras-file" class="secondary-btn autos-file-btn">🪪 Tarjeta trasera (foto/PDF)</label>
+              <input id="autos-car-tarjeta-atras-file" type="file" class="autos-file-native" accept="image/*,application/pdf">
+            </div>
+            <div id="autos-car-tarjeta-atras-feedback" class="diff-label"></div>
+            <input id="autos-car-foto" class="field-input" style="margin-top:.6rem;" placeholder="URL foto del auto (opcional)">
+            <input id="autos-car-factura-archivo" class="field-input" style="margin-top:.45rem;" placeholder="URL archivo factura (opcional)">
+            <input id="autos-car-poliza-archivo" class="field-input" style="margin-top:.45rem;" placeholder="URL archivo poliza (opcional)">
+            <input id="autos-car-extra1-name" class="field-input" style="margin-top:.45rem;" placeholder="Nombre documento extra 1 (ej. Certificado polarizado)">
+            <input id="autos-car-extra1-url" class="field-input" style="margin-top:.45rem;" placeholder="URL documento extra 1 (opcional)">
+            <input id="autos-car-extra2-name" class="field-input" style="margin-top:.45rem;" placeholder="Nombre documento extra 2 (opcional)">
+            <input id="autos-car-extra2-url" class="field-input" style="margin-top:.45rem;" placeholder="URL documento extra 2 (opcional)">
+            <input id="autos-car-tarjeta-frente" class="field-input" style="margin-top:.45rem;" placeholder="URL tarjeta circulacion frontal (opcional)">
+            <input id="autos-car-tarjeta-atras" class="field-input" style="margin-top:.45rem;" placeholder="URL tarjeta circulacion trasera (opcional)">
+            <button id="autos-car-delete" class="mini-btn mini-btn-danger hidden" style="margin-top:.8rem;width:100%;">🗑️ Eliminar Auto</button>
+            <button id="autos-car-save" class="primary-btn" style="margin-top:.8rem;width:100%;">Guardar Auto</button>
+          </div>
+        </div>
+
+        <div id="autos-repair-sheet" class="bottom-sheet hidden">
+          <div id="autos-repair-sheet-overlay" class="bottom-sheet-overlay"></div>
+          <div class="bottom-sheet-content glass">
+            <div class="sheet-handle"></div>
+            <div class="balance-panel-header">
+              <h3 id="autos-repair-title" class="balance-panel-title">Nueva Reparacion</h3>
+              <button class="icon-btn" onclick="autos_closeRepairSheet()">✕</button>
+            </div>
+            <input id="autos-repair-edit-id" type="hidden">
+            <select id="autos-repair-forma-pago" class="field-input" style="margin-bottom:.5rem;">
+              <option value="">— Forma de Pago —</option>
+              <option value="Santander" selected>Santander</option>
+              <option value="BBVA">BBVA</option>
+              <option value="Cuenta Mariel">Cuenta Mariel</option>
+              <option value="Efectivo">Efectivo</option>
+              <option value="Transferencia">Transferencia</option>
+            </select>
+            <select id="autos-repair-car" class="field-input" style="margin-bottom:.5rem;"></select>
+            <input id="autos-repair-name" class="field-input" placeholder="Reparacion">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin-top:.5rem;">
+              <input id="autos-repair-cost" type="number" step="0.01" class="field-input" placeholder="Costo">
+              <select id="autos-repair-currency" class="field-input"><option value="MXN">MXN</option><option value="USD">USD</option></select>
+              <input id="autos-repair-place" class="field-input" placeholder="Taller o lugar">
+              <input id="autos-repair-date" type="date" class="field-input">
+            </div>
+            <div class="autos-file-row" style="margin-top:.45rem;">
+              <label for="autos-repair-photo-file" class="secondary-btn autos-file-btn">🛠️ Agregar fotos de reparacion</label>
+              <input id="autos-repair-photo-file" type="file" class="autos-file-native" accept="image/*" multiple>
+            </div>
+            <div id="autos-repair-photo-feedback" class="diff-label"></div>
+            <div class="autos-file-row" style="margin-top:.45rem;">
+              <label for="autos-repair-receipt-file" class="secondary-btn autos-file-btn">🧾 Agregar recibos (foto/PDF)</label>
+              <input id="autos-repair-receipt-file" type="file" class="autos-file-native" accept="image/*,application/pdf" multiple>
+            </div>
+            <div id="autos-repair-receipt-feedback" class="diff-label"></div>
+            <textarea id="autos-repair-desc" class="field-input" rows="3" style="margin-top:.45rem;" placeholder="Descripcion"></textarea>
+            <input id="autos-repair-photo" class="field-input" style="margin-top:.45rem;" placeholder="URL foto (opcional)">
+            <input id="autos-repair-receipt" class="field-input" style="margin-top:.45rem;" placeholder="URL recibo (opcional)">
+            <button id="autos-repair-save" class="primary-btn" style="margin-top:.8rem;width:100%;">Guardar Reparacion</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════════════
+           VIEW: PROPIEDADES (Tab 7)
+           ══════════════════════════════════ -->
+      <div id="view-propiedades" class="view">
+        <main class="dashboard-grid">
+          <section class="kpi-row">
+            <div class="kpi-card glass">
+              <div class="kpi-icon" style="background:rgba(59,130,246,.15);color:#3b82f6"><i data-lucide="home"></i></div>
+              <div class="kpi-data">
+                <span class="label">Valor Comercial (Mi Parte)</span>
+                <h2 id="prop-total-valor" class="text-success">$0.00</h2>
+                <span id="prop-total-valor-total" class="diff-label">Total global: $0.00</span>
+              </div>
+            </div>
+            <div class="kpi-card glass">
+              <div class="kpi-icon" style="background:rgba(239,68,68,.15);color:#ef4444"><i data-lucide="credit-card"></i></div>
+              <div class="kpi-data">
+                <span class="label">Deuda Propiedades (Mi Parte)</span>
+                <h2 id="prop-total-deudas" class="text-danger">$0.00</h2>
+                <span id="prop-total-deudas-total" class="diff-label">Total global: $0.00</span>
+              </div>
+            </div>
+            <div class="kpi-card glass">
+              <div class="kpi-icon" style="background:rgba(14,165,233,.14);color:#0ea5e9"><i data-lucide="calendar-check"></i></div>
+              <div class="kpi-data">
+                <span class="label">Fijos Propiedades</span>
+                <h2 id="prop-total-fijos" class="text-danger">$0.00</h2>
+                <span class="diff-label">Predial + mantenimiento</span>
+              </div>
+            </div>
+            <div class="kpi-card glass">
+              <div class="kpi-icon" style="background:rgba(34,197,94,.14);color:#22c55e"><i data-lucide="trending-up"></i></div>
+              <div class="kpi-data">
+                <span class="label">Ingreso mi parte</span>
+                <h2 id="prop-total-ingresos" class="text-success">$0.00</h2>
+                <span class="diff-label">Sincroniza con gastos fijos</span>
+              </div>
+            </div>
+          </section>
+
+          <div class="main-content-row">
+            <section class="glass" style="display:grid;gap:.65rem;align-content:start;">
+              <div class="section-header" style="display:flex;justify-content:space-between;align-items:center;gap:.5rem;">
+                <h3>Mis Propiedades</h3>
+                <button id="prop-btn-add" class="secondary-btn" style="padding:.45rem .7rem;">+ Propiedad</button>
+              </div>
+              <div id="prop-tabs" class="estudio-subtabs" style="display:flex;overflow:auto;max-width:100%;"></div>
+              <button id="prop-open-sheet" class="mini-btn" style="width:100%;">Editar propiedad seleccionada</button>
+            </section>
+
+            <section class="glass" style="display:grid;gap:.7rem;">
+              <div class="section-header" style="display:flex;justify-content:space-between;align-items:center;">
+                <h3>Detalle de Propiedad</h3>
+              </div>
+              <div id="prop-detail"></div>
+            </section>
+          </div>
+        </main>
+
+        <div id="prop-sheet" class="bottom-sheet hidden">
+          <div id="prop-sheet-overlay" class="bottom-sheet-overlay"></div>
+          <div class="bottom-sheet-content glass">
+            <div class="sheet-handle"></div>
+            <div class="balance-panel-header">
+              <h3 id="prop-sheet-title" class="balance-panel-title">Nueva propiedad</h3>
+              <button class="icon-btn" onclick="document.getElementById('prop-sheet').classList.add('hidden')">✕</button>
+            </div>
+            <input id="prop-edit-id" type="hidden">
+            <input id="prop-sync-month" type="hidden">
+
+            <div class="prop-sheet-card" data-section="general">
+              <div class="field-label">🏠 Editar Propiedad</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:.55rem;">
+                <input id="prop-nombre" class="field-input" placeholder="Nombre de la propiedad">
+                <select id="prop-forma-pago" class="field-input">
+                  <option value="Santander" selected>Santander</option>
+                  <option value="BBVA">BBVA</option>
+                  <option value="Cuenta Mariel">Cuenta Mariel</option>
+                  <option value="Efectivo">Efectivo</option>
+                  <option value="Transferencia">Transferencia</option>
+                </select>
+                <select id="prop-tipo" class="field-input">
+                  <option value="Casa">Casa</option>
+                  <option value="Departamento">Departamento</option>
+                  <option value="Terreno">Terreno</option>
+                  <option value="Local">Local</option>
+                  <option value="Otro">Otro</option>
+                </select>
+                <input id="prop-zona" class="field-input" placeholder="Zona / Colonia / Ciudad">
+                <input id="prop-m2-construccion" type="number" step="0.01" class="field-input" placeholder="m² construcción">
+                <input id="prop-m2-terreno" type="number" step="0.01" class="field-input" placeholder="m² terreno">
+                <input id="prop-valor-compra" type="number" step="0.01" class="field-input" placeholder="Valor compra (MXN)">
+                <input id="prop-valor-catastral" type="number" step="0.01" class="field-input" placeholder="Valor catastral (MXN)">
+                <input id="prop-valor-comercial" type="number" step="0.01" class="field-input" placeholder="Valor comercial (manual)">
+                <input id="prop-valor-investigado" type="number" step="0.01" class="field-input" placeholder="Valor investigado (MXN)">
+                <input id="prop-predial" type="number" step="0.01" class="field-input" placeholder="Predial mensual (MXN)">
+                <input id="prop-mantenimiento" type="number" step="0.01" class="field-input" placeholder="Mantenimiento mensual (MXN)">
+              </div>
+              <textarea id="prop-fuente" class="field-input" rows="2" style="margin-top:.5rem;" placeholder="Cómo se estimó la valoración"></textarea>
+            </div>
+
+            <div class="prop-sheet-card" data-section="docs">
+              <div class="field-label">📁 Documentos y Enlaces</div>
+              <div class="autos-file-row" style="margin-top:.45rem;">
+                <label for="prop-upload-foto" class="secondary-btn autos-file-btn">🏠 Subir foto propiedad</label>
+                <input id="prop-upload-foto" type="file" class="autos-file-native" accept="image/*,application/pdf">
+              </div>
+              <input id="prop-foto-url" class="field-input" style="margin-top:.45rem;" placeholder="URL foto propiedad (opcional)">
+              <input id="prop-link1" class="field-input" style="margin-top:.45rem;" placeholder="Link asociado 1 (venta, portal, etc)">
+              <input id="prop-link2" class="field-input" style="margin-top:.45rem;" placeholder="Link asociado 2 (opcional)">
+
+              <div class="autos-file-row" style="margin-top:.45rem;">
+                <label for="prop-upload-escritura" class="secondary-btn autos-file-btn">📄 Subir escritura (foto/PDF)</label>
+                <input id="prop-upload-escritura" type="file" class="autos-file-native" accept="image/*,application/pdf">
+              </div>
+              <input id="prop-escritura-nombre" class="field-input" style="margin-top:.45rem;" placeholder="Nombre documento escritura">
+              <input id="prop-escritura-url" class="field-input" style="margin-top:.45rem;" placeholder="URL escritura">
+
+              <div class="autos-file-row" style="margin-top:.45rem;">
+                <label for="prop-upload-extra1" class="secondary-btn autos-file-btn">📎 Documento extra 1</label>
+                <input id="prop-upload-extra1" type="file" class="autos-file-native" accept="image/*,application/pdf">
+              </div>
+              <input id="prop-doc1-nombre" class="field-input" style="margin-top:.45rem;" placeholder="Nombre doc extra 1">
+              <input id="prop-doc1-url" class="field-input" style="margin-top:.45rem;" placeholder="URL doc extra 1">
+
+              <div class="autos-file-row" style="margin-top:.45rem;">
+                <label for="prop-upload-extra2" class="secondary-btn autos-file-btn">📎 Documento extra 2</label>
+                <input id="prop-upload-extra2" type="file" class="autos-file-native" accept="image/*,application/pdf">
+              </div>
+              <input id="prop-doc2-nombre" class="field-input" style="margin-top:.45rem;" placeholder="Nombre doc extra 2">
+              <input id="prop-doc2-url" class="field-input" style="margin-top:.45rem;" placeholder="URL doc extra 2">
+
+              <div class="autos-file-row" style="margin-top:.45rem;">
+                <label for="prop-upload-extra3" class="secondary-btn autos-file-btn">📎 Documento extra 3</label>
+                <input id="prop-upload-extra3" type="file" class="autos-file-native" accept="image/*,application/pdf">
+              </div>
+              <input id="prop-doc3-nombre" class="field-input" style="margin-top:.45rem;" placeholder="Nombre doc extra 3">
+              <input id="prop-doc3-url" class="field-input" style="margin-top:.45rem;" placeholder="URL doc extra 3">
+            </div>
+
+            <div class="prop-sheet-card" data-section="owners">
+              <label class="field-label">👥 Editar Dueños y Porcentajes</label>
+              <div id="prop-owners-list" class="prop-dyn-list"></div>
+              <div style="display:flex;gap:.5rem;align-items:center;justify-content:space-between;margin-top:.35rem;">
+                <button id="prop-add-owner" type="button" class="mini-btn">+ Agregar dueño</button>
+                <span id="prop-owners-total" class="diff-label">Total dueños: 0%</span>
+              </div>
+            </div>
+
+            <div class="prop-sheet-card" data-section="deudas">
+              <label class="field-label">💳 Deudas de la Propiedad</label>
+              <div id="prop-deudas-list" class="prop-dyn-list prop-dyn-list-money"></div>
+              <button id="prop-add-deuda" type="button" class="mini-btn" style="margin-top:.35rem;">+ Agregar deuda</button>
+            </div>
+
+            <div class="prop-sheet-card" data-section="ingresos">
+              <label class="field-label">💵 Ingresos de la Propiedad (mensual)</label>
+              <div id="prop-ingresos-list" class="prop-dyn-list prop-dyn-list-money"></div>
+              <button id="prop-add-ingreso" type="button" class="mini-btn" style="margin-top:.35rem;">+ Agregar ingreso</button>
+            </div>
+
+            <div id="prop-file-feedback" class="diff-label" style="margin-top:.5rem;"></div>
+            <button id="prop-delete" class="mini-btn mini-btn-danger hidden" style="margin-top:.7rem;width:100%;">🗑️ Eliminar propiedad</button>
+            <button id="prop-save" class="primary-btn" style="margin-top:.6rem;width:100%;">Guardar propiedad</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════════════
+           VIEW: DOCUMENTOS (Tab 8)
+           ══════════════════════════════════ -->
+      <div id="view-documentos" class="view">
+        <main class="dashboard-grid">
+          <section class="kpi-row">
+            <div class="kpi-card glass">
+              <div class="kpi-icon" style="background:rgba(34,197,94,.15);color:#22c55e"><i data-lucide="calendar-check"></i></div>
+              <div class="kpi-data">
+                <span class="label">Documentos encontrados</span>
+                <h2 id="docs-total" class="text-success">0</h2>
+                <span id="docs-subtitle" class="diff-label">Archivador familiar</span>
+              </div>
+            </div>
+          </section>
+
+          <div class="main-content-row">
+            <section class="glass" style="display:grid;gap:.7rem;align-content:start;">
+              <div class="section-header" style="display:flex;justify-content:space-between;align-items:center;gap:.5rem;">
+                <h3>Perfil Familiar</h3>
+                <button id="docs-profile-edit" class="mini-btn">✏️ Editar perfil</button>
+              </div>
+              <div id="docs-member-tabs" class="estudio-subtabs" style="display:flex;overflow:auto;max-width:100%;"></div>
+              <div id="docs-profile-card"></div>
+            </section>
+
+            <section class="glass" style="display:grid;gap:.65rem;align-content:start;">
+              <div class="section-header" style="display:flex;justify-content:space-between;align-items:center;gap:.5rem;">
+                <h3>Archivador</h3>
+                <button id="docs-btn-add" class="secondary-btn" style="padding:.45rem .7rem;">+ Documento</button>
+              </div>
+              <input id="docs-search" type="search" class="field-input" placeholder="Buscar por nombre, tipo, etiqueta...">
+              <div id="docs-list" class="accounts-list"></div>
+            </section>
+          </div>
+        </main>
+
+        <div id="docs-sheet" class="bottom-sheet hidden">
+          <div id="docs-sheet-overlay" class="bottom-sheet-overlay"></div>
+          <div class="bottom-sheet-content glass">
+            <div class="sheet-handle"></div>
+            <div class="balance-panel-header">
+              <h3 id="docs-sheet-title" class="balance-panel-title">Nuevo documento</h3>
+              <button class="icon-btn" onclick="document.getElementById('docs-sheet').classList.add('hidden')">✕</button>
+            </div>
+            <input id="docs-edit-id" type="hidden">
+            <select id="docs-member" class="field-input"></select>
+            <input id="docs-title" class="field-input" style="margin-top:.45rem;" placeholder="Nombre del documento">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:.55rem;margin-top:.45rem;">
+              <select id="docs-type-select" class="field-input"></select>
+              <input id="docs-type-new" class="field-input" placeholder="Nueva categoria (opcional)">
+              <input id="docs-tags" class="field-input" placeholder="Etiquetas separadas por coma">
+              <input id="docs-expiry" type="date" class="field-input" placeholder="Fecha de vencimiento">
+            </div>
+            <textarea id="docs-notes" class="field-input" rows="2" style="margin-top:.45rem;" placeholder="Notas"></textarea>
+            <div class="autos-file-row" style="margin-top:.45rem;">
+              <label for="docs-upload-camera" class="secondary-btn autos-file-btn">📷 Camara</label>
+              <input id="docs-upload-camera" type="file" class="autos-file-native" accept="image/*" capture="environment">
+            </div>
+            <div class="autos-file-row" style="margin-top:.45rem;">
+              <label for="docs-upload-file" class="secondary-btn autos-file-btn">📁 Galeria / Archivo</label>
+              <input id="docs-upload-file" type="file" class="autos-file-native" accept="image/*,application/pdf">
+            </div>
+            <div id="docs-crop-tools" class="hidden" style="display:grid;gap:.4rem;margin-top:.45rem;">
+              <div class="diff-label">Recorte rapido antes de subir:</div>
+              <div style="display:flex;gap:.35rem;flex-wrap:wrap;">
+                <button type="button" class="mini-btn" data-doc-crop="carta">Carta</button>
+                <button type="button" class="mini-btn" data-doc-crop="oficio">Oficio</button>
+                <button type="button" class="mini-btn" data-doc-crop="credencial">Credencial</button>
+                <button type="button" class="mini-btn" data-doc-crop="libre">Libre</button>
+                <button type="button" id="docs-crop-upload" class="mini-btn">⬆️ Subir recorte</button>
+              </div>
+              <img id="docs-crop-preview" alt="Preview recorte" style="width:100%;max-height:200px;object-fit:contain;border-radius:.6rem;background:rgba(255,255,255,.04);">
+            </div>
+            <div id="docs-file-feedback" class="diff-label" style="margin-top:.4rem;"></div>
+            <input id="docs-url" class="field-input" style="margin-top:.45rem;" placeholder="URL en Drive">
+            <button id="docs-delete" class="mini-btn mini-btn-danger hidden" style="margin-top:.7rem;width:100%;">🗑️ Eliminar entrada</button>
+            <button id="docs-save" class="primary-btn" style="margin-top:.6rem;width:100%;">Guardar documento</button>
+          </div>
+        </div>
+
+        <div id="docs-profile-sheet" class="bottom-sheet hidden">
+          <div id="docs-profile-sheet-overlay" class="bottom-sheet-overlay"></div>
+          <div class="bottom-sheet-content glass">
+            <div class="sheet-handle"></div>
+            <div class="balance-panel-header">
+              <h3 class="balance-panel-title">Editar perfil familiar</h3>
+              <button class="icon-btn" onclick="document.getElementById('docs-profile-sheet').classList.add('hidden')">✕</button>
+            </div>
+            <select id="docs-profile-member" class="field-input"></select>
+            <input id="docs-profile-name" class="field-input" style="margin-top:.45rem;" placeholder="Nombre completo">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:.55rem;margin-top:.45rem;">
+              <input id="docs-profile-birth" type="date" class="field-input" placeholder="Fecha nacimiento">
+              <input id="docs-profile-weight" class="field-input" placeholder="Peso al nacer">
+              <input id="docs-profile-curp" class="field-input" placeholder="CURP">
+              <input id="docs-profile-passport-mx" class="field-input" placeholder="Pasaporte mexicano">
+              <input id="docs-profile-passport-us" class="field-input" placeholder="Pasaporte americano">
+              <input id="docs-profile-visa" class="field-input" placeholder="Visa USA">
+            </div>
+            <input id="docs-profile-photo" class="field-input" style="margin-top:.45rem;" placeholder="URL foto">
+            <div class="autos-file-row" style="margin-top:.45rem;">
+              <label for="docs-profile-upload-camera" class="secondary-btn autos-file-btn">📷 Foto camara</label>
+              <input id="docs-profile-upload-camera" type="file" class="autos-file-native" accept="image/*" capture="environment">
+            </div>
+            <div class="autos-file-row" style="margin-top:.45rem;">
+              <label for="docs-profile-upload-gallery" class="secondary-btn autos-file-btn">🖼️ Foto galeria</label>
+              <input id="docs-profile-upload-gallery" type="file" class="autos-file-native" accept="image/*">
+            </div>
+            <div class="autos-file-row" style="margin-top:.45rem;">
+              <label for="docs-profile-upload-file" class="secondary-btn autos-file-btn">📁 Foto archivo</label>
+              <input id="docs-profile-upload-file" type="file" class="autos-file-native" accept="image/*">
+            </div>
+            <div id="docs-profile-crop-tools" class="hidden" style="display:grid;gap:.4rem;margin-top:.45rem;">
+              <div class="diff-label">Recorte cuadrado de perfil:</div>
+              <button type="button" id="docs-profile-crop-upload" class="mini-btn" style="justify-self:start;">⬆️ Subir foto recortada</button>
+              <img id="docs-profile-crop-preview" alt="Preview foto perfil" style="width:100%;max-height:200px;object-fit:contain;border-radius:.6rem;background:rgba(255,255,255,.04);">
+            </div>
+            <div id="docs-profile-file-feedback" class="diff-label" style="margin-top:.35rem;"></div>
+            <textarea id="docs-profile-notes" class="field-input" rows="2" style="margin-top:.45rem;" placeholder="Notas"></textarea>
+            <div class="field-label" style="margin-top:.5rem;">Vacunacion (hijos)</div>
+            <label class="checkbox-item"><input id="docs-vac-bcg" type="checkbox"> BCG</label>
+            <label class="checkbox-item"><input id="docs-vac-hepb" type="checkbox"> Hepatitis B</label>
+            <label class="checkbox-item"><input id="docs-vac-pentavalente" type="checkbox"> Pentavalente</label>
+            <label class="checkbox-item"><input id="docs-vac-tripleviral" type="checkbox"> Triple viral</label>
+            <label class="checkbox-item"><input id="docs-vac-influenza" type="checkbox"> Influenza</label>
+            <button id="docs-profile-save" class="primary-btn" style="margin-top:.8rem;width:100%;">Guardar perfil</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════════════
+           VIEW: PELO (Tab 9)
+           ══════════════════════════════════ -->
+      <div id="view-pelo" class="view">
+        <main class="dashboard-grid">
+          <section class="kpi-row">
+            <div class="kpi-card glass">
+              <div class="kpi-icon" style="background:rgba(236,72,153,.15);color:#ec4899"><i data-lucide="scissors"></i></div>
+              <div class="kpi-data">
+                <span class="label">Log de Cortes</span>
+                <h2 id="hair-total" class="text-main">0</h2>
+                <span id="hair-subtitle" class="diff-label">Ordenado por favoritos y fecha</span>
+              </div>
+            </div>
+          </section>
+
+          <div class="main-content-row">
+            <section class="glass" style="display:grid;gap:.65rem;align-content:start;">
+              <div class="section-header" style="display:flex;justify-content:space-between;align-items:center;gap:.5rem;">
+                <h3>Pelo</h3>
+                <div style="display:flex;gap:.4rem;">
+                  <button id="hair-btn-add-member" class="mini-btn">+ Miembro</button>
+                  <button id="hair-btn-add-entry" class="secondary-btn" style="padding:.45rem .7rem;">+ Entrada</button>
+                </div>
+              </div>
+              <div id="hair-member-tabs" class="estudio-subtabs" style="display:flex;overflow:auto;max-width:100%;"></div>
+              <div id="hair-list" class="accounts-list"></div>
+            </section>
+
+            <section class="glass" style="display:grid;gap:.7rem;align-content:start;">
+              <div class="section-header" style="display:flex;justify-content:space-between;align-items:center;">
+                <h3>Notas del Corte</h3>
+              </div>
+              <div class="diff-label">Cada entrada de Pelo se sincroniza como gasto regular en Control de Gastos.</div>
+              <div class="diff-label">Recibo se guarda como comprobante y fotos de frente/lado/atras en carpeta de Pelo.</div>
+              <div class="diff-label">Tip: marca con ⭐ tus cortes favoritos para que aparezcan primero.</div>
+            </section>
+          </div>
+        </main>
+
+        <div id="hair-sheet" class="bottom-sheet hidden">
+          <div id="hair-sheet-overlay" class="bottom-sheet-overlay"></div>
+          <div class="bottom-sheet-content glass">
+            <div class="sheet-handle"></div>
+            <div class="balance-panel-header">
+              <h3 id="hair-sheet-title" class="balance-panel-title">Nueva entrada de Pelo</h3>
+              <button class="icon-btn" onclick="document.getElementById('hair-sheet').classList.add('hidden')">✕</button>
+            </div>
+            <input id="hair-edit-id" type="hidden">
+            <select id="hair-forma-pago" class="field-input" style="margin-bottom:.5rem;">
+              <option value="">— Forma de Pago —</option>
+              <option value="Santander" selected>Santander</option>
+              <option value="BBVA">BBVA</option>
+              <option value="Cuenta Mariel">Cuenta Mariel</option>
+              <option value="Efectivo">Efectivo</option>
+              <option value="Transferencia">Transferencia</option>
+            </select>
+            <select id="hair-member" class="field-input"></select>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:.55rem;margin-top:.45rem;">
+              <input id="hair-date" type="date" class="field-input">
+              <input id="hair-amount" type="number" step="0.01" class="field-input" placeholder="Monto pagado">
+              <input id="hair-stylist" class="field-input" placeholder="Nombre estilista">
+              <input class="field-input" value="Favoritos: usa ⭐ en cada tarjeta" readonly>
+            </div>
+            <textarea id="hair-notes" class="field-input" rows="2" style="margin-top:.45rem;" placeholder="Notas del corte"></textarea>
+
+            <div class="autos-file-row" style="margin-top:.45rem;">
+              <label for="hair-upload-receipt-camera" class="secondary-btn autos-file-btn">🧾 Recibo camara</label>
+              <input id="hair-upload-receipt-camera" type="file" class="autos-file-native" accept="image/*" capture="environment">
+            </div>
+            <div class="autos-file-row" style="margin-top:.45rem;">
+              <label for="hair-upload-receipt-file" class="secondary-btn autos-file-btn">📁 Recibo galeria / archivo</label>
+              <input id="hair-upload-receipt-file" type="file" class="autos-file-native" accept="image/*,application/pdf">
+            </div>
+            <input id="hair-receipt-url" class="field-input" style="margin-top:.45rem;" placeholder="URL recibo">
+
+            <div class="autos-file-row" style="margin-top:.45rem;">
+              <label for="hair-upload-front-camera" class="secondary-btn autos-file-btn">📷 Frente camara</label>
+              <input id="hair-upload-front-camera" type="file" class="autos-file-native" accept="image/*" capture="environment">
+            </div>
+            <div class="autos-file-row" style="margin-top:.45rem;">
+              <label for="hair-upload-front-file" class="secondary-btn autos-file-btn">📁 Frente galeria / archivo</label>
+              <input id="hair-upload-front-file" type="file" class="autos-file-native" accept="image/*,application/pdf">
+            </div>
+            <input id="hair-front-url" class="field-input" style="margin-top:.45rem;" placeholder="URL foto frente">
+
+            <div class="autos-file-row" style="margin-top:.45rem;">
+              <label for="hair-upload-side-camera" class="secondary-btn autos-file-btn">📷 Lado camara</label>
+              <input id="hair-upload-side-camera" type="file" class="autos-file-native" accept="image/*" capture="environment">
+            </div>
+            <div class="autos-file-row" style="margin-top:.45rem;">
+              <label for="hair-upload-side-file" class="secondary-btn autos-file-btn">📁 Lado galeria / archivo</label>
+              <input id="hair-upload-side-file" type="file" class="autos-file-native" accept="image/*,application/pdf">
+            </div>
+            <input id="hair-side-url" class="field-input" style="margin-top:.45rem;" placeholder="URL foto lado">
+
+            <div class="autos-file-row" style="margin-top:.45rem;">
+              <label for="hair-upload-back-camera" class="secondary-btn autos-file-btn">📷 Atras camara</label>
+              <input id="hair-upload-back-camera" type="file" class="autos-file-native" accept="image/*" capture="environment">
+            </div>
+            <div class="autos-file-row" style="margin-top:.45rem;">
+              <label for="hair-upload-back-file" class="secondary-btn autos-file-btn">📁 Atras galeria / archivo</label>
+              <input id="hair-upload-back-file" type="file" class="autos-file-native" accept="image/*,application/pdf">
+            </div>
+            <input id="hair-back-url" class="field-input" style="margin-top:.45rem;" placeholder="URL foto atras">
+
+            <div id="hair-file-feedback" class="diff-label" style="margin-top:.45rem;"></div>
+            <button id="hair-delete" class="mini-btn mini-btn-danger hidden" style="margin-top:.7rem;width:100%;">🗑️ Eliminar entrada</button>
+            <button id="hair-save" class="primary-btn" style="margin-top:.6rem;width:100%;">Guardar entrada</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════════════
+           VIEW: PROMPTS (Tab 10)
+           ══════════════════════════════════ -->
+      <div id="view-prompts" class="view">
+        <main class="dashboard-grid">
+          <section class="kpi-row">
+            <div class="kpi-card glass">
+              <div class="kpi-icon" style="background:rgba(59,130,246,.16);color:#60a5fa">🧠</div>
+              <div class="kpi-data">
+                <span class="label">Prompt Vault</span>
+                <h2 id="prompts-total">0</h2>
+                <span id="prompts-subtitle" class="diff-label">Log con busqueda, plataforma y fechas</span>
+              </div>
+            </div>
+          </section>
+
+          <section id="prompts-fav-section" class="glass prompts-fav-section" style="display:grid;gap:.65rem;">
+            <div class="section-header" style="display:flex;justify-content:space-between;align-items:center;gap:.6rem;flex-wrap:wrap;">
+              <h3>Favoritos rapidos</h3>
+              <span class="diff-label">Top 5 prompts favoritos</span>
+            </div>
+            <div id="prompts-fav-grid" class="prompts-fav-grid"></div>
+          </section>
+
+          <section class="glass prompts-list-section" style="display:grid;gap:.7rem;">
+            <div class="section-header" style="display:flex;justify-content:space-between;align-items:center;gap:.6rem;flex-wrap:wrap;">
+              <h3>Prompts</h3>
+              <button id="prompts-btn-add" class="secondary-btn" style="padding:.45rem .7rem;">+ Prompt</button>
+            </div>
+
+            <div class="prompts-toolbar">
+              <input id="prompts-search" class="field-input" type="search" placeholder="Buscar por titulo, contenido o tags...">
+              <select id="prompts-filter-platform" class="field-input"></select>
+              <select id="prompts-sort" class="field-input">
+                <option value="updatedDesc">Editados recientes</option>
+                <option value="createdDesc">Agregados recientes</option>
+                <option value="usedDesc">Mas usados</option>
+                <option value="alphaAsc">A-Z</option>
+              </select>
+            </div>
+
+            <div id="prompts-list" class="accounts-list"></div>
+          </section>
+        </main>
+
+        <div id="prompts-sheet" class="bottom-sheet hidden">
+          <div id="prompts-sheet-overlay" class="bottom-sheet-overlay"></div>
+          <div class="bottom-sheet-content glass">
+            <div class="sheet-handle"></div>
+            <div class="balance-panel-header">
+              <h3 id="prompts-sheet-title" class="balance-panel-title">Nuevo prompt</h3>
+              <button class="icon-btn" onclick="document.getElementById('prompts-sheet').classList.add('hidden')">✕</button>
+            </div>
+            <input id="prompts-edit-id" type="hidden">
+            <input id="prompts-title" class="field-input" placeholder="Titulo del prompt">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:.55rem;margin-top:.45rem;">
+              <select id="prompts-platform" class="field-input">
+                <option value="Gemini">Gemini</option>
+                <option value="ChatGPT">ChatGPT</option>
+                <option value="NotebookLM">NotebookLM</option>
+                <option value="Claude">Claude</option>
+                <option value="Skill">Skill</option>
+                <option value="Todas">Todas</option>
+              </select>
+              <input id="prompts-tags" class="field-input" placeholder="Tags separados por coma">
+              <select id="prompts-status" class="field-input">
+                <option value="draft">draft</option>
+                <option value="listo">listo</option>
+                <option value="prueba">prueba</option>
+              </select>
+            </div>
+            <textarea id="prompts-content" class="field-input" rows="8" style="margin-top:.45rem;" placeholder="Escribe aqui el prompt completo..."></textarea>
+            <div class="diff-label" id="prompts-meta" style="margin-top:.5rem;"></div>
+            <button id="prompts-delete" class="mini-btn mini-btn-danger hidden" style="margin-top:.7rem;width:100%;">🗑️ Eliminar prompt</button>
+            <button id="prompts-save" class="primary-btn" style="margin-top:.6rem;width:100%;">Guardar prompt</button>
+          </div>
+        </div>
+
+        <div id="prompts-fav-sheet" class="bottom-sheet hidden">
+          <div id="prompts-fav-sheet-overlay" class="bottom-sheet-overlay"></div>
+          <div class="bottom-sheet-content glass">
+            <div class="sheet-handle"></div>
+            <div class="balance-panel-header">
+              <h3 class="balance-panel-title">Gestionar favoritos</h3>
+              <button class="icon-btn" onclick="document.getElementById('prompts-fav-sheet').classList.add('hidden')">✕</button>
+            </div>
+            <div class="diff-label" style="margin-bottom:.45rem;">Los primeros 5 salen en la tarjeta rapida. Aqui puedes reordenar y subir favoritos.</div>
+            <div id="prompts-fav-sheet-list" class="accounts-list"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════════════
+           VIEW: ESTUDIO (Tab 11)
+           ══════════════════════════════════ -->
+      <div id="view-estudio" class="view">
+        <main class="dashboard-grid">
+          <section class="kpi-row">
+            <div class="kpi-card glass">
+              <div class="kpi-icon" style="background:rgba(56,189,248,.15);color:#38bdf8"><i data-lucide="wrench"></i></div>
+              <div class="kpi-data">
+                <span class="label">Control de Estudio</span>
+                <h2 id="estudio-total-spent" class="text-danger" style="margin:0;">$0.00</h2>
+                <span class="diff-label">Inventario + Plugins sincronizados a gastos</span>
+              </div>
+            </div>
+          </section>
+
+          <section class="glass" style="display:grid;gap:.75rem;">
+            <div class="section-header" style="display:flex;justify-content:space-between;align-items:center;gap:.6rem;flex-wrap:wrap;">
+              <div style="display:grid;gap:.22rem;">
+                <h3>Estudio</h3>
+                <span id="estudio-breakdown-note" class="estudio-breakdown-note">$0.00</span>
+              </div>
+              <div class="estudio-subtabs">
+                <button id="estudio-subtab-inventario" class="estudio-subtab-btn active" type="button">Inventario</button>
+                <button id="estudio-subtab-plugins" class="estudio-subtab-btn" type="button">Plugins</button>
+              </div>
+            </div>
+
+            <div id="estudio-inventario-section" style="display:grid;gap:.65rem;">
+              <div class="section-header" style="display:flex;justify-content:space-between;align-items:center;gap:.6rem;">
+                <h3>Inventario de Estudio</h3>
+                <button id="estudio-btn-add-inventario" class="secondary-btn" style="padding:.45rem .7rem;">+ Equipo</button>
+              </div>
+              <input id="estudio-inventario-search" type="search" class="field-input" placeholder="Buscar equipo, marca, serial...">
+              <div id="estudio-inventario-list" class="accounts-list"></div>
+            </div>
+
+            <div id="estudio-plugins-section" class="hidden" style="display:grid;gap:.65rem;">
+              <div class="section-header" style="display:flex;justify-content:space-between;align-items:center;gap:.6rem;">
+                <h3>Plugins</h3>
+                <button id="estudio-btn-add-plugin" class="secondary-btn" style="padding:.45rem .7rem;">+ Plugin</button>
+              </div>
+              <input id="estudio-plugins-search" type="search" class="field-input" placeholder="Buscar plugin, marca, licencia...">
+              <div id="estudio-plugins-list" class="accounts-list"></div>
+            </div>
+          </section>
+        </main>
+
+        <div id="estudio-inventario-sheet" class="bottom-sheet hidden">
+          <div id="estudio-inventario-overlay" class="bottom-sheet-overlay"></div>
+          <div class="bottom-sheet-content glass">
+            <div class="sheet-handle"></div>
+            <div class="balance-panel-header">
+              <h3 id="estudio-inventario-title" class="balance-panel-title">Nuevo Equipo</h3>
+              <button class="icon-btn" onclick="estudio_closeInventarioSheet()">✕</button>
+            </div>
+            <input id="estudio-inventario-edit-id" type="hidden">
+            <select id="estudio-inventario-forma-pago" class="field-input" style="margin-bottom:.5rem;">
+              <option value="">— Forma de Pago —</option>
+              <option value="Santander" selected>Santander</option>
+              <option value="BBVA">BBVA</option>
+              <option value="Cuenta Mariel">Cuenta Mariel</option>
+              <option value="Efectivo">Efectivo</option>
+              <option value="Transferencia">Transferencia</option>
+            </select>
+            <input id="estudio-inventario-name" class="field-input" placeholder="Nombre del equipo">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin-top:.55rem;">
+              <input id="estudio-inventario-cantidad" type="number" step="1" class="field-input" placeholder="Cantidad">
+              <input id="estudio-inventario-price" type="number" step="0.01" class="field-input" placeholder="Precio USD">
+              <select id="estudio-inventario-category-pick" class="field-input"></select>
+              <input id="estudio-inventario-year" class="field-input" placeholder="Año de compra">
+              <input id="estudio-inventario-brand" class="field-input" placeholder="Marca">
+              <input id="estudio-inventario-model" class="field-input" placeholder="Modelo">
+            </div>
+            <input id="estudio-inventario-category-new" class="field-input" style="margin-top:.45rem;" placeholder="Nueva categoría (opcional)">
+            <input id="estudio-inventario-photo" class="field-input" style="margin-top:.45rem;" placeholder="URL foto (opcional)">
+            <input id="estudio-inventario-site" class="field-input" style="margin-top:.45rem;" placeholder="Sitio (opcional)">
+            <input id="estudio-inventario-serial" class="field-input" style="margin-top:.45rem;" placeholder="Serial / No. de serie (opcional)">
+            <input id="estudio-inventario-account" class="field-input" style="margin-top:.45rem;" placeholder="Cuenta / Email licencia (opcional)">
+            <textarea id="estudio-inventario-notes" class="field-input" rows="3" style="margin-top:.45rem;" placeholder="Notas (opcional)"></textarea>
+            <button id="estudio-inventario-save" class="primary-btn" style="margin-top:.8rem;width:100%;">Guardar Equipo</button>
+          </div>
+        </div>
+
+        <div id="estudio-plugin-sheet" class="bottom-sheet hidden">
+          <div id="estudio-plugin-overlay" class="bottom-sheet-overlay"></div>
+          <div class="bottom-sheet-content glass">
+            <div class="sheet-handle"></div>
+            <div class="balance-panel-header">
+              <h3 id="estudio-plugin-title" class="balance-panel-title">Nuevo Plugin</h3>
+              <button class="icon-btn" onclick="estudio_closePluginSheet()">✕</button>
+            </div>
+            <input id="estudio-plugin-edit-id" type="hidden">
+            <select id="estudio-plugin-forma-pago" class="field-input" style="margin-bottom:.5rem;">
+              <option value="">— Forma de Pago —</option>
+              <option value="Santander" selected>Santander</option>
+              <option value="BBVA">BBVA</option>
+              <option value="Cuenta Mariel">Cuenta Mariel</option>
+              <option value="Efectivo">Efectivo</option>
+              <option value="Transferencia">Transferencia</option>
+            </select>
+            <input id="estudio-plugin-name" class="field-input" placeholder="Nombre del plugin">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin-top:.55rem;">
+              <input id="estudio-plugin-brand" class="field-input" placeholder="Marca">
+              <select id="estudio-plugin-category-pick" class="field-input"></select>
+              <input id="estudio-plugin-price" type="number" step="0.01" class="field-input" placeholder="Precio USD">
+            </div>
+            <input id="estudio-plugin-category-new" class="field-input" style="margin-top:.45rem;" placeholder="Nueva categoría (opcional)">
+            <textarea id="estudio-plugin-description" class="field-input" rows="3" style="margin-top:.45rem;" placeholder="Descripción"></textarea>
+            <input id="estudio-plugin-site" class="field-input" style="margin-top:.45rem;" placeholder="Sitio (opcional)">
+            <input id="estudio-plugin-license" class="field-input" style="margin-top:.45rem;" placeholder="Licencia (opcional)">
+            <input id="estudio-plugin-serial" class="field-input" style="margin-top:.45rem;" placeholder="Serial / No. de serie (opcional)">
+            <input id="estudio-plugin-account" class="field-input" style="margin-top:.45rem;" placeholder="Cuenta / Email licencia (opcional)">
+            <input id="estudio-plugin-photo" class="field-input" style="margin-top:.45rem;" placeholder="URL imagen (opcional)">
+            <button id="estudio-plugin-save" class="primary-btn" style="margin-top:.8rem;width:100%;">Guardar Plugin</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ HORMIGA DETAIL PANEL ══ -->
+      <div id="fixed-panel" class="bottom-sheet hidden">
+        <div id="fixed-panel-overlay" class="bottom-sheet-overlay"></div>
+        <div class="bottom-sheet-content glass hormiga-panel-inner">
+          <div class="sheet-handle"></div>
+          <div class="balance-panel-header">
+            <h3 class="balance-panel-title">🧾 Desglose Gastos Fijos</h3>
+            <button id="fixed-panel-close" class="icon-btn" aria-label="Cerrar">✕</button>
+          </div>
+
+          <div class="balance-summary-row">
+            <div class="balance-summary-card balance-summary-card--total glass-subtle">
+              <span class="bs-label">Pago propio (pendiente)</span>
+              <span id="fixed-yo-pending" class="bs-amount text-danger">$0.00</span>
+              <span class="bs-sublabel">Pagado: <strong id="fixed-yo-paid">$0.00</strong></span>
+              <span class="bs-sublabel">Total mes: <strong id="fixed-yo-total">$0.00</strong></span>
+            </div>
+            <div class="balance-summary-card glass-subtle">
+              <span class="bs-label">Pago esposa (pendiente)</span>
+              <span id="fixed-esposa-pending" class="bs-amount text-danger">$0.00</span>
+              <span class="bs-sublabel">Pagado: <strong id="fixed-esposa-paid">$0.00</strong></span>
+              <span class="bs-sublabel">Total mes: <strong id="fixed-esposa-total">$0.00</strong></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ HORMIGA DETAIL PANEL ══ -->
+      <div id="hormiga-panel" class="bottom-sheet hidden">
+        <div id="hormiga-panel-overlay" class="bottom-sheet-overlay"></div>
+        <div class="bottom-sheet-content glass hormiga-panel-inner">
+          <div class="sheet-handle"></div>
+          <div class="balance-panel-header">
+            <h3 id="hormiga-panel-title" class="balance-panel-title">🍔 Detalle Gasto Hormiga</h3>
+            <button id="hormiga-panel-close" class="icon-btn" aria-label="Cerrar">✕</button>
+          </div>
+          
+          <div class="balance-summary-row">
+            <div class="balance-summary-card balance-summary-card--total glass-subtle">
+              <span class="bs-label" id="bs-hormiga-label">Este Mes</span>
+              <span id="bs-hormiga-total" class="bs-amount text-danger">$0.00</span>
+            </div>
+            <div class="balance-summary-card glass-subtle">
+              <span class="bs-label" id="bs-hormiga-prev-label">Mes Anterior</span>
+              <span id="bs-hormiga-prev" class="bs-amount" style="color:var(--text-muted)">$0.00</span>
+            </div>
+          </div>
+
+          <h4 class="sheet-title" style="margin-top: 1rem; font-size: 0.95rem;">Gastos Frecuentes</h4>
+          <div id="hormiga-bars-container" style="display: flex; flex-direction: column; gap: 0.75rem;">
+            <!-- Barras se insertan dinámicamente aquí -->
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ INVESTMENT DETAIL PANEL ══ -->
+      <div id="invest-panel" class="bottom-sheet hidden">
+        <div id="invest-panel-overlay" class="bottom-sheet-overlay"></div>
+        <div class="bottom-sheet-content glass hormiga-panel-inner">
+          <div class="sheet-handle"></div>
+          <div class="balance-panel-header">
+            <h3 class="balance-panel-title">📈 Detalle Inversiones</h3>
+            <button id="invest-panel-close" class="icon-btn" aria-label="Cerrar">✕</button>
+          </div>
+
+          <div class="balance-summary-row">
+            <div class="balance-summary-card balance-summary-card--total glass-subtle">
+              <span class="bs-label">Total invertido</span>
+              <span id="invest-total" class="bs-amount text-success">$0.00</span>
+            </div>
+            <div class="balance-summary-card glass-subtle">
+              <span id="invest-monthly-label" class="bs-label">Rendimiento mensual</span>
+              <span id="invest-monthly" class="bs-amount text-success">+$0.00</span>
+            </div>
+          </div>
+
+          <div id="invest-list" class="accounts-list"></div>
+        </div>
+      </div>
+
+      <!-- ── TAB BAR ── -->
+      <nav class="tab-bar">
+        <button class="tab active" id="tab-dashboard" data-tab="dashboard">
+          <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+          <span class="tab-label">Dashboard</span>
+        </button>
+        <button class="tab" id="tab-gastos" data-tab="gastos">
+          <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+          <span class="tab-label">Gastos</span>
+        </button>
+        <button class="tab" id="tab-fijos" data-tab="fijos">
+          <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          <span class="tab-label">Fijos</span>
+        </button>
+        <button class="tab" id="tab-deudas" data-tab="deudas">
+          <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+          <span class="tab-label">Deudas</span>
+        </button>
+        <button class="tab" id="tab-plan" data-tab="plan">
+          <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 6h18M3 12h18M3 18h18"/><circle cx="8" cy="6" r="1.5"/><circle cx="14" cy="12" r="1.5"/><circle cx="10" cy="18" r="1.5"/></svg>
+          <span class="tab-label">Plan</span>
+        </button>
+        <button class="tab" id="tab-autos" data-tab="autos">
+          <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 13l1.5-4.5A2 2 0 0 1 6.4 7h11.2a2 2 0 0 1 1.9 1.5L21 13"/><path d="M5 13h14v5a2 2 0 0 1-2 2h-1a1 1 0 0 1-1-1v-1H9v1a1 1 0 0 1-1 1H7a2 2 0 0 1-2-2v-5z"/><circle cx="7.5" cy="15.5" r="1"/><circle cx="16.5" cy="15.5" r="1"/></svg>
+          <span class="tab-label">Autos</span>
+        </button>
+        <button class="tab" id="tab-estudio" data-tab="estudio">
+          <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 4h12v3H6z"/><path d="M5 7h14l-1.2 11.2a2 2 0 0 1-2 1.8H8.2a2 2 0 0 1-2-1.8z"/><path d="M10 10v6M14 10v6"/></svg>
+          <span class="tab-label">Estudio</span>
+        </button>
+        <button class="tab" id="tab-propiedades" data-tab="propiedades">
+          <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 10.5L12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/><path d="M9 21v-6h6v6"/></svg>
+          <span class="tab-label">Propiedades</span>
+        </button>
+        <button class="tab" id="tab-documentos" data-tab="documentos">
+          <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h6"/></svg>
+          <span class="tab-label">Documentos</span>
+        </button>
+        <button class="tab" id="tab-pelo" data-tab="pelo">
+          <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 8c1-1 1.5-2.3.7-3.1-.8-.8-2.1-.3-3.1.7L8 10l6 6 4-4-4-4z"/><path d="M2 22l6-6"/><path d="M7 11l6 6"/></svg>
+          <span class="tab-label">Pelo</span>
+        </button>
+        <button class="tab" id="tab-prompts" data-tab="prompts">
+          <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 5h16v14H4z"/><path d="M8 9h8M8 13h8M8 17h5"/></svg>
+          <span class="tab-label">Prompts</span>
+        </button>
+      </nav>
+
+      <!-- ── LOGIN MODAL ── -->
+      <div id="modal-backdrop"></div>
+      <div id="modal-api" class="modal" style="display:none;">
+        <div class="modal-inner">
+          <div class="modal-logo-badge"><div class="logo-icon-wrap">💰</div></div>
+          <h2 class="modal-title">ESTRATÉGIA<span>FINANCIERA</span></h2>
+          <p class="modal-subtitle">Accede a tus finanzas en tiempo real.<br>Conecta tu cuenta de Google para continuar.</p>
+          <button id="login-google-btn" class="primary-btn google-btn">
+            <svg class="btn-icon" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+            Iniciar Sesión con Google
+          </button>
+          <div class="modal-divider"><span>ACCESO SEGURO</span></div>
+          <div class="modal-security-note">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            Protegido por Google OAuth 2.0 · Lectura y escritura de tus datos
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /#app -->
+    <!-- ── PIN MODAL (RESET PROTECTION) ── -->
+    <div id="pin-modal" class="modal hidden" style="z-index: 10000;">
+      <div class="modal-inner glass" style="max-width: 320px; text-align: center; padding: 2rem; border-radius: 2rem;">
+        <h3 style="margin-bottom: 0.5rem;">CÓDIGO<span>SEGURIDAD</span></h3>
+        <p style="font-size: 0.85rem; color: #94a3b8; margin-bottom: 1.5rem;">Introduce el PIN para resetear los pagos</p>
+        <input type="tel" id="pin-input" pattern="[0-9]*" inputmode="numeric" maxlength="4" class="field-input" 
+               style="font-size: 2.2rem; text-align: center; letter-spacing: 0.8rem; height: 60px; border: 1px solid rgba(255,255,255,0.1); width: 100%; border-radius: 12px; font-weight: 700; background: rgba(0,0,0,0.2); color: #fff;">
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 2rem;">
+          <button id="pin-cancel-btn" class="secondary-btn">Cancelar</button>
+          <button id="pin-submit-btn" class="primary-btn">Confirmar</button>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
