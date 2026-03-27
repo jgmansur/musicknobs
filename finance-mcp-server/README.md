@@ -21,6 +21,7 @@ Copy `.env.example` to `.env` and set values:
 - `SPREADSHEET_LOG_ID`
 - `SPREADSHEET_AUTOS_ID`
 - `SPREADSHEET_FIXED_ID` (optional in current MVP)
+- `SPREADSHEET_RECUERDOS_ID` (optional)
 - `SPREADSHEET_ACCOUNTS_ID` (optional but recommended)
 - `SPREADSHEET_AI_MIRROR_ID` (optional; auto-create if missing)
 - `AI_MIRROR_SHEET_NAME` (optional)
@@ -62,6 +63,7 @@ fly secrets set API_TOKEN="<strong-token>"
 fly secrets set GOOGLE_SERVICE_ACCOUNT_JSON='{"type":"service_account",...}'
 fly secrets set SPREADSHEET_LOG_ID="..."
 fly secrets set SPREADSHEET_AUTOS_ID="..."
+fly secrets set SPREADSHEET_RECUERDOS_ID="..."
 fly secrets set SPREADSHEET_ACCOUNTS_ID="..."
 fly deploy
 ```
@@ -82,6 +84,7 @@ curl -X POST -H "Authorization: Bearer $API_TOKEN" "https://<your-app>.fly.dev/a
 - Mirror tab names use `<source>__<tab>` (example: `autos__DocumentosArchivador`).
 - Future columns and fields are copied automatically because each source tab is mirrored as raw table data.
 - New tabs in source spreadsheets are also picked up automatically on the next sync.
+- If `SPREADSHEET_RECUERDOS_ID` is configured, all its tabs are mirrored as `recuerdos__<tab>`.
 - Includes derived tab `ai__fixed_status` with pending split-payment amounts for accurate AI debt context.
 
 ## Security notes

@@ -20,6 +20,7 @@ export const config = {
     log: process.env.SPREADSHEET_LOG_ID || "",
     autos: process.env.SPREADSHEET_AUTOS_ID || "",
     fixed: process.env.SPREADSHEET_FIXED_ID || "",
+    recuerdos: process.env.SPREADSHEET_RECUERDOS_ID || "",
     accounts: process.env.SPREADSHEET_ACCOUNTS_ID || "",
     aiMirror: process.env.SPREADSHEET_AI_MIRROR_ID || "",
   },

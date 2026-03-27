@@ -57,6 +57,7 @@ async function getSourceBooks(): Promise<SourceBook[]> {
     { key: "log", spreadsheetId: config.spreadsheets.log, title: "Control de Gastos" },
     { key: "fixed", spreadsheetId: config.spreadsheets.fixed, title: "Gastos Fijos" },
     { key: "autos", spreadsheetId: config.spreadsheets.autos, title: "Autos+Docs+Pelo+Studio" },
+    { key: "recuerdos", spreadsheetId: config.spreadsheets.recuerdos, title: "Bitacora Recuerdos" },
   ].filter((b) => !!b.spreadsheetId);
 
   const accountsId = await resolveAccountsSheetId();
