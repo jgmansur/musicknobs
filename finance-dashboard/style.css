@@ -1490,16 +1490,13 @@ select.field-input { background-image: url("data:image/svg+xml,%3Csvg xmlns='htt
 
 .deuda-children-wrap {
   margin: .35rem 0 .85rem 1rem;
-  padding: .55rem;
-  border-radius: .75rem;
-  border: 1px solid rgba(255,255,255,.12);
-  background: rgba(255,255,255,.02);
+  padding: .6rem;
   display: grid;
-  gap: .35rem;
+  gap: .4rem;
 }
 
 .deuda-children-title {
-  font-size: .72rem;
+  font-size: .74rem;
   color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: .04em;
@@ -1507,6 +1504,42 @@ select.field-input { background-image: url("data:image/svg+xml,%3Csvg xmlns='htt
 
 .deuda-child-card {
   margin: 0;
+}
+
+.deuda-layout {
+  align-items: flex-start;
+}
+
+.deuda-layout-left {
+  max-width: calc(100% - 172px);
+  min-width: 0;
+}
+
+.deuda-layout-right {
+  min-width: 164px;
+  flex-shrink: 0;
+}
+
+.deuda-layout-monto {
+  white-space: nowrap;
+  text-align: right;
+}
+
+.deuda-layout-actions {
+  justify-content: flex-end;
+  flex-wrap: nowrap;
+}
+
+@media (max-width: 420px) {
+  .deuda-layout-left {
+    max-width: calc(100% - 152px);
+  }
+  .deuda-layout-right {
+    min-width: 146px;
+  }
+  .deuda-layout-monto {
+    font-size: .9rem !important;
+  }
 }
 
 @media (max-width: 420px) {

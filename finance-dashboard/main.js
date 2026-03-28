@@ -11929,17 +11929,17 @@ function deudas_renderCard(item, options = {}) {
     const btnDown = (isChild || isLast) ? `<div style="width:24px;"></div>` : `<button class="mini-btn icon-btn-sm" onclick="deudas_moveDown(${item.id})" title="Bajar" style="font-size:0.95rem; padding:4px;">⬇️</button>`;
     const childTag = isChild ? '<span class="diff-label" style="font-size:.7rem;">Deuda hija</span>' : '';
 
-    return `<div class="movimiento-card ${hasFiles ? 'deuda-card-expandable' : ''} ${isChild ? 'deuda-child-card' : ''}" ${hasFiles ? `onclick="deudas_cardClick(event,${item.id})" title="Ver archivos"` : ''} style="${opacity}flex-wrap:wrap;">
-      <div class="mc-left" style="align-items:flex-start;flex-direction:column;gap:0.3rem;max-width:68%;">
+    return `<div class="movimiento-card deuda-layout ${hasFiles ? 'deuda-card-expandable' : ''} ${isChild ? 'deuda-child-card' : ''}" ${hasFiles ? `onclick="deudas_cardClick(event,${item.id})" title="Ver archivos"` : ''} style="${opacity}flex-wrap:wrap;">
+      <div class="mc-left deuda-layout-left" style="align-items:flex-start;flex-direction:column;gap:0.3rem;">
         <span class="mc-lugar" style="font-size:0.95rem;font-weight:600;${strikethrough}">${item.concepto}</span>
         ${aggregateLabel ? `<span class="diff-label" style="font-size:.7rem;">${aggregateLabel}</span>` : ''}
         ${childTag}
         ${filesBadge}
         <div style="display:flex;flex-direction:row;gap:4px;">${btnUp}${btnDown}</div>
       </div>
-      <div class="mc-right" style="align-items:flex-end;gap:.3rem;">
-        <span class="mc-monto text-danger" style="font-size:1rem;font-weight:700;${strikethrough}">-${formatCurrency(displayMonto)}</span>
-        <div style="display:flex;gap:.3rem;margin-top:.2rem;">
+      <div class="mc-right deuda-layout-right" style="align-items:flex-end;gap:.3rem;">
+        <span class="mc-monto text-danger deuda-layout-monto" style="font-size:0.94rem;font-weight:700;${strikethrough}">-${formatCurrency(displayMonto)}</span>
+        <div class="deuda-layout-actions" style="display:flex;gap:.3rem;margin-top:.2rem;">
           <button class="mini-btn icon-btn-sm" onclick="deudas_toggleHidden(${item.id})" title="${hideTitle}" style="font-size:0.95rem; padding:4px;">${eyeIcon}</button>
           <button class="mini-btn icon-btn-sm" onclick="deudas_abrirSplit(${item.id})" title="Dividir en Cuotas" style="font-size:0.95rem; padding:4px;">✂️</button>
           <button class="mini-btn icon-btn-sm" onclick="deudas_editar(${item.id})" style="font-size:0.95rem; padding:4px;">✏️</button>
@@ -11986,9 +11986,9 @@ function deudas_renderLista() {
                 if (!child.hidden && !parentUsesGroupCuotas) total += deudas_getItemRemaining(child);
                 return deudas_renderCard(child, { isChild: true, parentHidden: root.hidden, displayMonto: deudas_getItemRemaining(child) });
             }).join('');
-            rootCard += `<div class="deuda-children-wrap"><div class="deuda-children-title">Deudas hijas</div>${kidsHtml}</div>`;
+            rootCard += `<div class="deuda-files-panel deuda-children-wrap"><div class="deuda-children-title">👨‍👧‍👦 Deudas hijas</div>${kidsHtml}</div>`;
         } else if (kids.length && root.hidden) {
-            rootCard += '<div class="deuda-children-wrap"><div class="deuda-children-title">Deudas hijas ocultas por la deuda padre</div></div>';
+            rootCard += '<div class="deuda-files-panel deuda-children-wrap"><div class="deuda-children-title">👨‍👧‍👦 Deudas hijas ocultas por la deuda padre</div></div>';
         }
         return rootCard;
     }).join('');
