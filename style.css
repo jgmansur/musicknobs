@@ -81,6 +81,7 @@ h1, h2, h3 {
     margin-bottom: 1.5rem;
     background: var(--gradient-gold);
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
     animation: fadeInUp 1s ease-out 0.2s both;
 }
@@ -178,6 +179,14 @@ h1, h2, h3 {
     color: var(--primary);
     margin-bottom: 1.5rem;
     display: block;
+}
+
+.card-icon-img {
+    height: 2.5rem;
+    width: auto;
+    margin-bottom: 1.5rem;
+    display: block;
+    filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.2));
 }
 
 .card h3 {
