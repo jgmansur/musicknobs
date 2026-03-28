@@ -514,6 +514,7 @@ type DashboardWidgetSnapshot = {
     fxSource: string;
     fxStale: boolean;
     cacheWritable: boolean;
+    source?: string;
   };
 };
 
@@ -545,6 +546,67 @@ export async function getWidgetDashboardSnapshot(limit = 6, includeHidden = fals
   }
   const logTotalsByAccount = await getLogTotalsByAccountMxn(accounts, fx);
   let cacheChanged = false;
+
+  const cacheHasSnapshot = !!cache["snapshot.updatedAt"] && !!cache["snapshot.balanceDisponibleMxn"];
+  const cacheFromDashboardApp = String(cache["snapshot.source"] || "") === "dashboard_app";
+  if (cacheHasSnapshot && cacheFromDashboardApp) {
+    let cachedAccounts: Array<{ name: string; type: string; realMxn: number; realMxnText: string }> = [];
+    try {
+      const arr = JSON.parse(cache["snapshot.accountsJson"] || "[]");
+      if (Array.isArray(arr)) {
+        cachedAccounts = arr
+          .map((x) => ({
+            name: String(x?.name || "Cuenta"),
+            type: String(x?.type || "bank"),
+            realMxn: round2(parseNumber(x?.realMxn)),
+            realMxnText: String(x?.realMxnText || fixed2(parseNumber(x?.realMxn))),
+          }))
+          .filter((x) => !!x.name)
+          .slice(0, Math.max(1, Math.min(20, Math.trunc(limit) || 6)));
+      }
+    } catch {
+      cachedAccounts = [];
+    }
+
+    const c = (key: string, fallback = 0) => round2(parseNumber(cache[key] || fallback));
+    const cText = (key: string, fallback = 0) => String(cache[key] || fixed2(fallback));
+    const focusName = String(cache["snapshot.focusAccount"] || focusAccount || "Santander");
+    const focusVal = c("snapshot.focusAccountRealMxn", 0);
+    const focusValText = String(cache["snapshot.focusAccountRealMxnText"] || fixed2(focusVal));
+
+    return {
+      ok: true,
+      updatedAt: String(cache["snapshot.updatedAt"] || new Date().toISOString()),
+      totals: {
+        balanceDisponibleMxn: c("snapshot.balanceDisponibleMxn", 0),
+        balanceDisponibleMxnText: cText("snapshot.balanceDisponibleMxnText", c("snapshot.balanceDisponibleMxn", 0)),
+        balanceDisponibleWithDebtMxn: c("snapshot.balanceDisponibleWithDebtMxn", c("snapshot.balanceDisponibleMxn", 0)),
+        balanceDisponibleWithDebtMxnText: cText("snapshot.balanceDisponibleWithDebtMxnText", c("snapshot.balanceDisponibleWithDebtMxn", 0)),
+        balanceRealMxn: c("snapshot.balanceRealMxn", 0),
+        balanceRealMxnText: cText("snapshot.balanceRealMxnText", c("snapshot.balanceRealMxn", 0)),
+        balanceRealWithDebtMxn: c("snapshot.balanceRealWithDebtMxn", c("snapshot.balanceRealMxn", 0)),
+        balanceRealWithDebtMxnText: cText("snapshot.balanceRealWithDebtMxnText", c("snapshot.balanceRealWithDebtMxn", 0)),
+        pendingFixedMxn: c("snapshot.pendingFixedMxn", 0),
+        pendingFixedMxnText: cText("snapshot.pendingFixedMxnText", c("snapshot.pendingFixedMxn", 0)),
+        debtImpactMxn: c("snapshot.debtImpactMxn", 0),
+        debtImpactMxnText: cText("snapshot.debtImpactMxnText", c("snapshot.debtImpactMxn", 0)),
+      },
+      highlights: {
+        focusAccountRealMxn: focusVal,
+        focusAccountRealMxnText: focusValText,
+        focusAccountFound: focusVal !== 0 || !!focusName,
+        focusAccount: focusName,
+      },
+      accounts: cachedAccounts,
+      meta: {
+        cacheSheet: WIDGET_CACHE_SHEET,
+        fxSource: fx.source,
+        fxStale: fx.stale,
+        cacheWritable,
+        source: String(cache["snapshot.source"] || "widgy_cache"),
+      },
+    };
+  }
 
   const visible = accounts.filter((a) => includeHidden || !a.hidden);
   const rows = visible.map((acc) => {

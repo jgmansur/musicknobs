@@ -19,7 +19,7 @@ const SPREADSHEET_RECUERDOS_ID = '1b5PyMcfBQX75BODYRn075Meu-aOMW1lxr81USGE6zJA';
 const RECUERDOS_FOLDER_ID = '1L0t7TjKEugjpOIeYXU_xgoDiRPQ6-YbZ';
 const SPREADSHEET_RSM_ID = '14VsoPHGNTSUSbzMOqGWs2qSL-pGywPgjUoHD3MqIJfo'; // Recibos Salud Mariel
 const RSM_FOLDER_ID = '1-ZfeWQ-Rmh-Wm2WMCkULkN6MQWBuxYnj';
-const APP_VERSION  = 'v7.8.6';
+const APP_VERSION  = 'v7.8.7';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -34,6 +34,7 @@ const AI_MIRROR_TOKEN_KEY = 'finance_ai_mirror_api_token_v1';
 const AI_MIRROR_LAST_SYNC_KEY = 'finance_ai_mirror_last_sync_v1';
 const AI_MIRROR_SYNC_DEBOUNCE_MS = 15_000;
 const AI_MIRROR_SYNC_MAX_WAIT_MS = 5 * 60_000;
+const WIDGY_CACHE_KEY_ROWS = 'widgy_cache_rowmap_v1';
 
 // =============================================
 // FIREBASE
@@ -1287,6 +1288,7 @@ function balance_updateKpi() {
     // Update debt summary card on dashboard
     deudas_updateKpiCard();
     balance_updateFixedCoverageKpi();
+    widgyCache_scheduleSnapshotSync();
 }
 
 function balance_updateFixedCoverageKpi() {
@@ -2089,6 +2091,150 @@ async function sheetsClear(ssId, range) {
     const data = await r.json();
     aiMirror_scheduleSync('sheets_clear');
     return data;
+}
+
+let widgyCacheSyncTimer = null;
+let widgyCacheSyncInFlight = false;
+
+function widgy_round2(n) {
+    return Math.round((Number(n || 0) + Number.EPSILON) * 100) / 100;
+}
+
+function widgy_fixed2(n) {
+    return widgy_round2(n).toFixed(2);
+}
+
+async function widgyCache_ensureSheet() {
+    try {
+        await sheetsGet(SPREADSHEET_RSM_ID, 'WidgyCache!A1:C1');
+        return;
+    } catch (_) {}
+    const url = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_RSM_ID}:batchUpdate`;
+    await authFetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ requests: [{ addSheet: { properties: { title: 'WidgyCache' } } }] }),
+    });
+    await sheetsUpdate(SPREADSHEET_RSM_ID, 'WidgyCache!A1:C1', [['key', 'value', 'updatedAt']]);
+}
+
+async function widgyCache_readRowMap() {
+    try {
+        const raw = localStorage.getItem(WIDGY_CACHE_KEY_ROWS);
+        const parsed = raw ? JSON.parse(raw) : {};
+        return parsed && typeof parsed === 'object' ? parsed : {};
+    } catch {
+        return {};
+    }
+}
+
+async function widgyCache_writeSnapshotNow() {
+    if (!accessToken || widgyCacheSyncInFlight) return;
+    widgyCacheSyncInFlight = true;
+    try {
+        await widgyCache_ensureSheet();
+
+        const nowIso = new Date().toISOString();
+        const debtImpactRaw = deudas_getTotalAmount();
+        const paidDeduction = balance_getPaidFixedDeduction();
+        const baseNoDebt = balanceAccounts
+            .filter(a => !a.hidden)
+            .reduce((sum, a) => {
+                const signedMxn = balance_getAccountSignedMxn(a);
+                if (a.type === 'credit') {
+                    const limiteVisible = a.creditLimitVisible
+                        ? balance_convertToMxn(Math.abs(a.creditLimit || 0), a.currency)
+                        : 0;
+                    return sum + signedMxn + limiteVisible;
+                }
+                return sum + signedMxn;
+            }, 0) - paidDeduction;
+
+        const balanceDisponibleWithDebt = baseNoDebt - debtImpactRaw;
+        const balanceRealWithDebt = balanceDisponibleWithDebt - balancePendingFixed;
+        const currentTotal = balance_getTotal();
+        const currentReal = currentTotal - balancePendingFixed;
+
+        const accountRows = balanceAccounts
+            .filter(a => !a.hidden)
+            .map((a) => {
+                let real = balance_getAccountSignedMxn(a);
+                if (a.type === 'credit' && a.creditLimitVisible) {
+                    real += balance_convertToMxn(Math.abs(a.creditLimit || 0), a.currency);
+                }
+                return { name: a.name, type: a.type, realMxn: widgy_round2(real), realMxnText: widgy_fixed2(real) };
+            })
+            .sort((x, y) => Math.abs(y.realMxn) - Math.abs(x.realMxn))
+            .slice(0, 8);
+
+        const santander = accountRows.find((a) => (a.name || '').toLowerCase().includes('santander')) || accountRows[0];
+
+        const payload = {
+            'snapshot.source': 'dashboard_app',
+            'snapshot.updatedAt': nowIso,
+            'snapshot.balanceDisponibleMxn': String(widgy_round2(currentTotal)),
+            'snapshot.balanceDisponibleMxnText': widgy_fixed2(currentTotal),
+            'snapshot.balanceRealMxn': String(widgy_round2(currentReal)),
+            'snapshot.balanceRealMxnText': widgy_fixed2(currentReal),
+            'snapshot.balanceDisponibleWithDebtMxn': String(widgy_round2(balanceDisponibleWithDebt)),
+            'snapshot.balanceDisponibleWithDebtMxnText': widgy_fixed2(balanceDisponibleWithDebt),
+            'snapshot.balanceRealWithDebtMxn': String(widgy_round2(balanceRealWithDebt)),
+            'snapshot.balanceRealWithDebtMxnText': widgy_fixed2(balanceRealWithDebt),
+            'snapshot.pendingFixedMxn': String(widgy_round2(balancePendingFixed)),
+            'snapshot.pendingFixedMxnText': widgy_fixed2(balancePendingFixed),
+            'snapshot.debtImpactMxn': String(widgy_round2(debtImpactRaw)),
+            'snapshot.debtImpactMxnText': widgy_fixed2(debtImpactRaw),
+            'snapshot.focusAccount': santander?.name || 'Santander',
+            'snapshot.focusAccountRealMxn': String(widgy_round2(santander?.realMxn || 0)),
+            'snapshot.focusAccountRealMxnText': widgy_fixed2(santander?.realMxn || 0),
+            'snapshot.accountsJson': JSON.stringify(accountRows),
+        };
+
+        const rowMap = await widgyCache_readRowMap();
+        const existingRows = await sheetsGet(SPREADSHEET_RSM_ID, 'WidgyCache!A2:C').catch(() => []);
+        if (!Object.keys(rowMap).length && existingRows.length) {
+            existingRows.forEach((r, i) => {
+                const k = (r[0] || '').toString().trim();
+                if (k) rowMap[k] = i + 2;
+            });
+        }
+
+        const toUpdate = [];
+        const toAppend = [];
+        for (const [key, value] of Object.entries(payload)) {
+            const row = Number(rowMap[key] || 0);
+            if (row > 1) {
+                toUpdate.push({ row, value });
+            } else {
+                toAppend.push([key, value, nowIso]);
+            }
+        }
+
+        for (const u of toUpdate) {
+            await sheetsUpdate(SPREADSHEET_RSM_ID, `WidgyCache!B${u.row}:C${u.row}`, [[u.value, nowIso]]);
+        }
+        if (toAppend.length) {
+            await sheetsAppend(SPREADSHEET_RSM_ID, 'WidgyCache!A:C', toAppend);
+            const rowsAfter = await sheetsGet(SPREADSHEET_RSM_ID, 'WidgyCache!A2:A').catch(() => []);
+            rowsAfter.forEach((r, i) => {
+                const k = (r[0] || '').toString().trim();
+                if (k) rowMap[k] = i + 2;
+            });
+        }
+        localStorage.setItem(WIDGY_CACHE_KEY_ROWS, JSON.stringify(rowMap));
+    } catch (e) {
+        console.warn('Widgy cache sync skipped:', e?.message || e);
+    } finally {
+        widgyCacheSyncInFlight = false;
+    }
+}
+
+function widgyCache_scheduleSnapshotSync() {
+    if (widgyCacheSyncTimer) clearTimeout(widgyCacheSyncTimer);
+    widgyCacheSyncTimer = setTimeout(() => {
+        widgyCacheSyncTimer = null;
+        widgyCache_writeSnapshotNow();
+    }, 1500);
 }
 
 // ── Drive API helpers ─────────────────────────────────────
