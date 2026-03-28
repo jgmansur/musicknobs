@@ -19,7 +19,7 @@ const SPREADSHEET_RECUERDOS_ID = '1b5PyMcfBQX75BODYRn075Meu-aOMW1lxr81USGE6zJA';
 const RECUERDOS_FOLDER_ID = '1L0t7TjKEugjpOIeYXU_xgoDiRPQ6-YbZ';
 const SPREADSHEET_RSM_ID = '14VsoPHGNTSUSbzMOqGWs2qSL-pGywPgjUoHD3MqIJfo'; // Recibos Salud Mariel
 const RSM_FOLDER_ID = '1-ZfeWQ-Rmh-Wm2WMCkULkN6MQWBuxYnj';
-const APP_VERSION  = 'v7.8.7';
+const APP_VERSION  = 'v7.8.8';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -34,7 +34,6 @@ const AI_MIRROR_TOKEN_KEY = 'finance_ai_mirror_api_token_v1';
 const AI_MIRROR_LAST_SYNC_KEY = 'finance_ai_mirror_last_sync_v1';
 const AI_MIRROR_SYNC_DEBOUNCE_MS = 15_000;
 const AI_MIRROR_SYNC_MAX_WAIT_MS = 5 * 60_000;
-const WIDGY_CACHE_KEY_ROWS = 'widgy_cache_rowmap_v1';
 
 // =============================================
 // FIREBASE
@@ -2118,16 +2117,6 @@ async function widgyCache_ensureSheet() {
     await sheetsUpdate(SPREADSHEET_RSM_ID, 'WidgyCache!A1:C1', [['key', 'value', 'updatedAt']]);
 }
 
-async function widgyCache_readRowMap() {
-    try {
-        const raw = localStorage.getItem(WIDGY_CACHE_KEY_ROWS);
-        const parsed = raw ? JSON.parse(raw) : {};
-        return parsed && typeof parsed === 'object' ? parsed : {};
-    } catch {
-        return {};
-    }
-}
-
 async function widgyCache_writeSnapshotNow() {
     if (!accessToken || widgyCacheSyncInFlight) return;
     widgyCacheSyncInFlight = true;
@@ -2190,14 +2179,12 @@ async function widgyCache_writeSnapshotNow() {
             'snapshot.accountsJson': JSON.stringify(accountRows),
         };
 
-        const rowMap = await widgyCache_readRowMap();
         const existingRows = await sheetsGet(SPREADSHEET_RSM_ID, 'WidgyCache!A2:C').catch(() => []);
-        if (!Object.keys(rowMap).length && existingRows.length) {
-            existingRows.forEach((r, i) => {
-                const k = (r[0] || '').toString().trim();
-                if (k) rowMap[k] = i + 2;
-            });
-        }
+        const rowMap = {};
+        existingRows.forEach((r, i) => {
+            const k = (r[0] || '').toString().trim();
+            if (k) rowMap[k] = i + 2;
+        });
 
         const toUpdate = [];
         const toAppend = [];
@@ -2215,13 +2202,7 @@ async function widgyCache_writeSnapshotNow() {
         }
         if (toAppend.length) {
             await sheetsAppend(SPREADSHEET_RSM_ID, 'WidgyCache!A:C', toAppend);
-            const rowsAfter = await sheetsGet(SPREADSHEET_RSM_ID, 'WidgyCache!A2:A').catch(() => []);
-            rowsAfter.forEach((r, i) => {
-                const k = (r[0] || '').toString().trim();
-                if (k) rowMap[k] = i + 2;
-            });
         }
-        localStorage.setItem(WIDGY_CACHE_KEY_ROWS, JSON.stringify(rowMap));
     } catch (e) {
         console.warn('Widgy cache sync skipped:', e?.message || e);
     } finally {

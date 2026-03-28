@@ -339,6 +339,38 @@ function fixed2(value: number): string {
   return round2(value).toFixed(2);
 }
 
+function formatUpdatedAtMxText(isoLike: string): string {
+  const d = new Date(isoLike || "");
+  if (Number.isNaN(d.getTime())) return "-";
+  const datePart = d.toLocaleDateString("es-MX", {
+    timeZone: "America/Mexico_City",
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
+  const timePart = d.toLocaleTimeString("es-MX", {
+    timeZone: "America/Mexico_City",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  });
+  return `${datePart} ${timePart}`;
+}
+
+function formatUpdatedAgoText(isoLike: string): string {
+  const d = new Date(isoLike || "");
+  if (Number.isNaN(d.getTime())) return "actualización desconocida";
+  const diffMs = Date.now() - d.getTime();
+  const abs = Math.abs(diffMs);
+  const mins = Math.round(abs / 60000);
+  if (mins < 1) return "hace unos segundos";
+  if (mins < 60) return `hace ${mins} min`;
+  const hours = Math.round(mins / 60);
+  if (hours < 24) return `hace ${hours} h`;
+  const days = Math.round(hours / 24);
+  return `hace ${days} d`;
+}
+
 function normalizePaymentKey(value: unknown): string {
   return String(value || "")
     .normalize("NFD")
@@ -460,9 +492,12 @@ export async function getWidgetAccountsSnapshot(limit = 8, includeHidden = false
   const liabilitiesMxn = Math.abs(mapped.filter((a) => a.balanceMxn < 0).reduce((s, a) => s + a.balanceMxn, 0));
   const netMxn = mapped.reduce((s, a) => s + a.balanceMxn, 0);
 
+  const updatedAt = new Date().toISOString();
   return {
     ok: true,
-    updatedAt: new Date().toISOString(),
+    updatedAt,
+    updatedAtMxText: formatUpdatedAtMxText(updatedAt),
+    updatedAgoText: formatUpdatedAgoText(updatedAt),
     totals: {
       netMxn: round2(netMxn),
       netMxnText: fixed2(netMxn),
@@ -483,6 +518,8 @@ export async function getWidgetAccountsSnapshot(limit = 8, includeHidden = false
 type DashboardWidgetSnapshot = {
   ok: true;
   updatedAt: string;
+  updatedAtMxText: string;
+  updatedAgoText: string;
   totals: {
     balanceDisponibleMxn: number;
     balanceDisponibleMxnText: string;
@@ -580,9 +617,12 @@ export async function getWidgetDashboardSnapshot(
     const focusVal = c("snapshot.focusAccountRealMxn", 0);
     const focusValText = String(cache["snapshot.focusAccountRealMxnText"] || fixed2(focusVal));
 
+    const updatedAt = String(cache["snapshot.updatedAt"] || new Date().toISOString());
     return {
       ok: true,
-      updatedAt: String(cache["snapshot.updatedAt"] || new Date().toISOString()),
+      updatedAt,
+      updatedAtMxText: formatUpdatedAtMxText(updatedAt),
+      updatedAgoText: formatUpdatedAgoText(updatedAt),
       totals: {
         balanceDisponibleMxn: c("snapshot.balanceDisponibleMxn", 0),
         balanceDisponibleMxnText: cText("snapshot.balanceDisponibleMxnText", c("snapshot.balanceDisponibleMxn", 0)),
@@ -685,9 +725,12 @@ export async function getWidgetDashboardSnapshot(
     }
   }
 
+  const updatedAt = new Date().toISOString();
   return {
     ok: true,
-    updatedAt: new Date().toISOString(),
+    updatedAt,
+    updatedAtMxText: formatUpdatedAtMxText(updatedAt),
+    updatedAgoText: formatUpdatedAgoText(updatedAt),
     totals: {
       balanceDisponibleMxn: round2(balanceDisponibleBase),
       balanceDisponibleMxnText: fixed2(balanceDisponibleBase),
