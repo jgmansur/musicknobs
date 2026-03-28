@@ -1502,6 +1502,26 @@ select.field-input { background-image: url("data:image/svg+xml,%3Csvg xmlns='htt
   letter-spacing: .04em;
 }
 
+.deuda-children-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .4rem;
+}
+
+.deuda-collapse-btn {
+  min-width: 30px;
+  height: 28px;
+  padding: 0 .35rem;
+  font-size: .9rem;
+  line-height: 1;
+}
+
+.deuda-children-collapsed {
+  font-size: .74rem;
+  color: var(--text-muted);
+}
+
 .deuda-child-card {
   margin: 0;
 }

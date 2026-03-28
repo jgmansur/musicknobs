@@ -11410,9 +11410,12 @@ let deudasState = {
     loaded: false,
     loading: false,
     expandedFiles: new Set(),
+    collapsedParents: new Set(),
+    collapseLoaded: false,
 };
 
 let deudasCuotaPromptResolve = null;
+const DEUDAS_COLLAPSE_KEY = 'finance_deudas_collapsed_parents_v1';
 
 function deudas_parseUrls(raw) {
     return (raw || '')
@@ -11420,6 +11423,24 @@ function deudas_parseUrls(raw) {
         .split(',')
         .map((u) => u.trim())
         .filter(Boolean);
+}
+
+function deudas_loadCollapsedParents() {
+    try {
+        const raw = localStorage.getItem(DEUDAS_COLLAPSE_KEY);
+        const arr = JSON.parse(raw || '[]');
+        if (!Array.isArray(arr)) return new Set();
+        return new Set(arr.map((v) => (v || '').toString().trim()).filter(Boolean));
+    } catch (_) {
+        return new Set();
+    }
+}
+
+function deudas_saveCollapsedParents() {
+    try {
+        const arr = [...(deudasState.collapsedParents || new Set())];
+        localStorage.setItem(DEUDAS_COLLAPSE_KEY, JSON.stringify(arr));
+    } catch (_) {}
 }
 
 function deudas_clearFileSelection() {
@@ -11850,6 +11871,13 @@ async function deudas_cargarDatos() {
             );
         }
 
+        if (!deudasState.collapseLoaded) {
+            deudasState.collapsedParents = deudas_loadCollapsedParents();
+            deudasState.collapseLoaded = true;
+        }
+        const validKeys = new Set(deudasState.allItems.map((x) => (x.debtKey || '').toString().trim()).filter(Boolean));
+        deudasState.collapsedParents = new Set([...deudasState.collapsedParents].filter((k) => validKeys.has(k)));
+
         const validIds = new Set(deudasState.allItems.map((x) => x.id));
         const prevExpanded = deudasState.expandedFiles instanceof Set ? deudasState.expandedFiles : new Set();
         deudasState.expandedFiles = new Set([...prevExpanded].filter((id) => validIds.has(id)));
@@ -11979,14 +12007,16 @@ function deudas_renderLista() {
         });
 
         if (!root.hidden) total += ownRemaining;
-        const kids = childrenMap.get((root.debtKey || '').toString().trim()) || [];
+        const rootKey = (root.debtKey || '').toString().trim();
+        const kids = childrenMap.get(rootKey) || [];
         const visibleKids = root.hidden ? [] : kids;
         if (visibleKids.length) {
+            const isCollapsed = deudasState.collapsedParents.has(rootKey);
             const kidsHtml = visibleKids.map((child) => {
                 if (!child.hidden && !parentUsesGroupCuotas) total += deudas_getItemRemaining(child);
                 return deudas_renderCard(child, { isChild: true, parentHidden: root.hidden, displayMonto: deudas_getItemRemaining(child) });
             }).join('');
-            rootCard += `<div class="deuda-files-panel deuda-children-wrap"><div class="deuda-children-title">👨‍👧‍👦 Deudas hijas</div>${kidsHtml}</div>`;
+            rootCard += `<div class="deuda-files-panel deuda-children-wrap"><div class="deuda-children-head"><div class="deuda-children-title">👨‍👧‍👦 Deudas hijas</div><button class="mini-btn deuda-collapse-btn" onclick="deudas_toggleChildren(event,'${rootKey}')" title="${isCollapsed ? 'Expandir' : 'Colapsar'}">${isCollapsed ? '▸' : '▾'}</button></div>${isCollapsed ? `<div class="deuda-children-collapsed">${visibleKids.length} deuda(s) hija(s)</div>` : kidsHtml}</div>`;
         } else if (kids.length && root.hidden) {
             rootCard += '<div class="deuda-files-panel deuda-children-wrap"><div class="deuda-children-title">👨‍👧‍👦 Deudas hijas ocultas por la deuda padre</div></div>';
         }
@@ -12009,6 +12039,20 @@ window.deudas_cardClick = function(ev, id) {
     if (!(deudasState.expandedFiles instanceof Set)) deudasState.expandedFiles = new Set();
     if (deudasState.expandedFiles.has(id)) deudasState.expandedFiles.delete(id);
     else deudasState.expandedFiles.add(id);
+    deudas_renderLista();
+};
+
+window.deudas_toggleChildren = function(ev, parentKey) {
+    if (ev) {
+        ev.preventDefault();
+        ev.stopPropagation();
+    }
+    const key = (parentKey || '').toString().trim();
+    if (!key) return;
+    if (!(deudasState.collapsedParents instanceof Set)) deudasState.collapsedParents = new Set();
+    if (deudasState.collapsedParents.has(key)) deudasState.collapsedParents.delete(key);
+    else deudasState.collapsedParents.add(key);
+    deudas_saveCollapsedParents();
     deudas_renderLista();
 };
 
