@@ -20,7 +20,7 @@ const RECUERDOS_FOLDER_ID = '1L0t7TjKEugjpOIeYXU_xgoDiRPQ6-YbZ';
 const DEUDAS_RECIBOS_FOLDER_ID = '157KDn-vbkuHH1L8xbaJBGz-oKmT7p5a9';
 const SPREADSHEET_RSM_ID = '14VsoPHGNTSUSbzMOqGWs2qSL-pGywPgjUoHD3MqIJfo'; // Recibos Salud Mariel
 const RSM_FOLDER_ID = '1-ZfeWQ-Rmh-Wm2WMCkULkN6MQWBuxYnj';
-const APP_VERSION  = 'v7.8.9';
+const APP_VERSION  = 'v7.9.0';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -11458,6 +11458,99 @@ async function deudas_uploadSelectedFiles(files) {
     }
 }
 
+function deudas_newKey() {
+    return `debt-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
+async function deudas_getSheetName() {
+    try {
+        await sheetsGet(SPREADSHEET_DEUDAS_ID, 'Deudas!A1:A1');
+        return 'Deudas';
+    } catch (_) {
+        return 'Hoja 1';
+    }
+}
+
+function deudas_getItemRemaining(item) {
+    if (!item) return 0;
+    if (!(item.cuotas && item.cuotas.n > 0)) return Math.max(0, parseSheetValue(item.monto));
+    const pending = item.cuotas.paid.reduce((sum, state) => sum + (state === 2 ? 0 : parseSheetValue(item.cuotas.perCuota)), 0);
+    return Math.max(0, pending);
+}
+
+function deudas_getChildrenMap() {
+    const map = new Map();
+    for (const item of deudasState.allItems) {
+        const key = (item.parentKey || '').toString().trim();
+        if (!key) continue;
+        if (!map.has(key)) map.set(key, []);
+        map.get(key).push(item);
+    }
+    return map;
+}
+
+function deudas_getItemByKey(key) {
+    const target = (key || '').toString().trim();
+    if (!target) return null;
+    return deudasState.allItems.find((x) => (x.debtKey || '').toString().trim() === target) || null;
+}
+
+function deudas_getRootItems(childrenMap) {
+    return deudasState.allItems.filter((item) => {
+        const parentKey = (item.parentKey || '').toString().trim();
+        if (!parentKey) return true;
+        return !deudas_getItemByKey(parentKey);
+    });
+}
+
+function deudas_getAggregatedDisplayAmount(parentItem, childrenMap) {
+    if (!parentItem) return 0;
+    let total = deudas_getItemRemaining(parentItem);
+    if (parentItem.hidden) return total;
+    if ((parentItem.cuotas?.scope || 'self') === 'group') return total;
+    const kids = childrenMap.get((parentItem.debtKey || '').toString().trim()) || [];
+    for (const child of kids) {
+        if (child.hidden) continue;
+        total += deudas_getItemRemaining(child);
+    }
+    return Math.max(0, total);
+}
+
+function deudas_collectDescendants(startItem, childrenMap) {
+    const out = [];
+    const queue = [startItem];
+    const seen = new Set();
+    while (queue.length) {
+        const current = queue.shift();
+        if (!current) continue;
+        const id = current.id;
+        if (seen.has(id)) continue;
+        seen.add(id);
+        out.push(current);
+        const kids = childrenMap.get((current.debtKey || '').toString().trim()) || [];
+        for (const kid of kids) queue.push(kid);
+    }
+    return out;
+}
+
+function deudas_isDescendantKey(descendantKey, ancestorKey, childrenMap) {
+    const aKey = (ancestorKey || '').toString().trim();
+    const dKey = (descendantKey || '').toString().trim();
+    if (!aKey || !dKey) return false;
+    const queue = [...(childrenMap.get(aKey) || [])];
+    const seen = new Set();
+    while (queue.length) {
+        const current = queue.shift();
+        const key = (current?.debtKey || '').toString().trim();
+        if (!key || seen.has(key)) continue;
+        if (key === dKey) return true;
+        seen.add(key);
+        const kids = childrenMap.get(key) || [];
+        for (const kid of kids) queue.push(kid);
+    }
+    return false;
+}
+
 function deudas_renderFileThumb(url, idx) {
     const raw = (url || '').toString().trim();
     if (!raw) return '';
@@ -11518,7 +11611,8 @@ function deudas_parseCuotasCell(rawD) {
     const paid = flags.slice(0, n);
     const frequency = (parts[3] || 'mensual').toString().trim().toLowerCase() || 'mensual';
     const startDate = deudas_normalizeStartDate(parts[4]);
-    return { n, perCuota, paid, frequency, startDate };
+    const scope = (parts[5] || 'self').toString().trim().toLowerCase() === 'group' ? 'group' : 'self';
+    return { n, perCuota, paid, frequency, startDate, scope };
 }
 
 function deudas_buildCuotasCell(cuotas) {
@@ -11531,7 +11625,8 @@ function deudas_buildCuotasCell(cuotas) {
     const paid = paidRaw.slice(0, n);
     const frequency = ((cuotas.frequency || 'mensual').toString().trim().toLowerCase() || 'mensual');
     const startDate = deudas_normalizeStartDate(cuotas.startDate);
-    return `${n}:${perCuota.toFixed(2)}:${paid.join(',')}:${frequency}:${startDate}`;
+    const scope = ((cuotas.scope || 'self').toString().trim().toLowerCase() === 'group') ? 'group' : 'self';
+    return `${n}:${perCuota.toFixed(2)}:${paid.join(',')}:${frequency}:${startDate}:${scope}`;
 }
 
 function deudas_getNextPaymentDate(cuotas) {
@@ -11571,7 +11666,20 @@ function deudas_getRelativeDueLabel(date) {
 }
 
 function deudas_getTotalAmount() {
-    return deudasState.allItems.reduce((s, i) => s + (i.hidden ? 0 : (i.monto || 0)), 0);
+    const childrenMap = deudas_getChildrenMap();
+    const roots = deudas_getRootItems(childrenMap);
+    let total = 0;
+    for (const root of roots) {
+        if (root.hidden) continue;
+        total += deudas_getItemRemaining(root);
+        if ((root.cuotas?.scope || 'self') === 'group') continue;
+        const kids = childrenMap.get((root.debtKey || '').toString().trim()) || [];
+        for (const child of kids) {
+            if (child.hidden) continue;
+            total += deudas_getItemRemaining(child);
+        }
+    }
+    return Math.max(0, total);
 }
 
 function deudas_updateKpiCard() {
@@ -11703,17 +11811,14 @@ async function deudas_cargarDatos() {
     const lista = document.getElementById('d-lista');
     lista.innerHTML = '<div class="loading-spinner" style="margin-top: 2rem;">Cargando deudas...</div>';
     try {
-        let rows = [];
-        try {
-            rows = await sheetsGet(SPREADSHEET_DEUDAS_ID, 'Deudas!A2:E');
-        } catch(e) {
-            rows = await sheetsGet(SPREADSHEET_DEUDAS_ID, 'Hoja 1!A2:E');
-        }
+        const sheetName = await deudas_getSheetName();
+        const rows = await sheetsGet(SPREADSHEET_DEUDAS_ID, `${sheetName}!A2:G`);
         
         deudasState.allItems = rows.map((row, i) => {
             let cuotas = null;
             const rawD = (row[3] || '').toString().trim();
             if (rawD) cuotas = deudas_parseCuotasCell(rawD);
+            const debtKey = (row[5] || '').toString().trim() || deudas_newKey();
             return {
                 id: i + 2,
                 concepto: row[0] || '',
@@ -11721,8 +11826,30 @@ async function deudas_cargarDatos() {
                 hidden: (row[2] || '').toString().toUpperCase() === 'TRUE',
                 cuotas,
                 archivos: (row[4] || '').toString().trim(),
+                debtKey,
+                parentKey: (row[6] || '').toString().trim(),
             };
         }).filter(i => i.concepto);
+
+        const keys = new Set(deudasState.allItems.map((x) => (x.debtKey || '').toString().trim()).filter(Boolean));
+        for (const item of deudasState.allItems) {
+            if (!item.parentKey) continue;
+            if (!keys.has(item.parentKey) || item.parentKey === item.debtKey) item.parentKey = '';
+        }
+
+        for (const item of deudasState.allItems) {
+            const row = rows[item.id - 2] || [];
+            const existingKey = (row[5] || '').toString().trim();
+            const existingParent = (row[6] || '').toString().trim();
+            if (existingKey === item.debtKey && existingParent === item.parentKey) continue;
+            const cuotasCell = item.cuotas ? deudas_buildCuotasCell(item.cuotas) : '';
+            await sheetsUpdate(
+                SPREADSHEET_DEUDAS_ID,
+                `${sheetName}!A${item.id}:G${item.id}`,
+                [[item.concepto, item.monto, item.hidden ? 'TRUE' : 'FALSE', cuotasCell, item.archivos || '', item.debtKey || '', item.parentKey || '']]
+            );
+        }
+
         const validIds = new Set(deudasState.allItems.map((x) => x.id));
         const prevExpanded = deudasState.expandedFiles instanceof Set ? deudasState.expandedFiles : new Set();
         deudasState.expandedFiles = new Set([...prevExpanded].filter((id) => validIds.has(id)));
@@ -11734,108 +11861,139 @@ async function deudas_cargarDatos() {
     }
 }
 
+function deudas_renderCuotasHtml(item, displayMonto) {
+    if (!(item?.cuotas && item.cuotas.n > 0)) return '';
+    const paidCount = item.cuotas.paid.filter((s) => s === 2).length;
+    const scheduledCount = item.cuotas.paid.filter((s) => s === 1).length;
+    const btns = item.cuotas.paid.map((state, idx) => {
+        let bg;
+        let label;
+        if (state === 2) {
+            bg = 'background:#22c55e;color:#fff;border-color:#22c55e;';
+            label = '✓';
+        } else if (state === 1) {
+            bg = 'background:#f59e0b;color:#fff;border-color:#f59e0b;';
+            label = '🕐';
+        } else {
+            bg = 'background:rgba(255,255,255,0.06);color:var(--text-muted);border:1px solid rgba(255,255,255,0.12);';
+            label = (idx + 1);
+        }
+        return `<button onclick="deudas_toggleCuota(${item.id},${idx})" style="${bg}width:28px;height:28px;border-radius:50%;font-size:0.7rem;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;transition:all .2s;" title="Cuota ${idx + 1}/${item.cuotas.n} — ${formatCurrency(item.cuotas.perCuota)}">${label}</button>`;
+    }).join('');
+    const statusParts = [];
+    if (paidCount > 0) statusParts.push(`${paidCount} pagadas`);
+    if (scheduledCount > 0) statusParts.push(`${scheduledCount} programadas`);
+    statusParts.push(`${item.cuotas.n - paidCount - scheduledCount} pendientes`);
+    const nextPayment = deudas_getNextPaymentDate(item.cuotas);
+    let nextPaymentHtml = '<span style="opacity:.7;">Próximo pago: sin fecha</span>';
+    if (nextPayment === 'Complatado') {
+        nextPaymentHtml = '<strong style="color:#22c55e;">Complatado</strong>';
+    } else if (nextPayment instanceof Date) {
+        const relativeLabel = deudas_getRelativeDueLabel(nextPayment);
+        if (relativeLabel) {
+            const relColor = relativeLabel.startsWith('Vencido') ? '#f87171' : '#f59e0b';
+            nextPaymentHtml = `Próximo pago: <strong style="color:${relColor};">${relativeLabel}</strong>`;
+        } else {
+            nextPaymentHtml = `Próximo pago: <strong style="color:#fbbf24;">${deudas_formatLongDate(nextPayment)}</strong>`;
+        }
+    }
+    const frequencyHtml = `Frecuencia de pago: <strong style="color:var(--text-main);">${deudas_formatFrequencyLabel(item.cuotas.frequency)}</strong>`;
+    return `<div style="margin-top:0.5rem;padding:0.5rem;border-radius:10px;background:rgba(255,255,255,0.03);width:100%;">
+      <div style="display:flex;flex-wrap:wrap;gap:4px;justify-content:flex-start;">${btns}</div>
+      <div style="margin-top:0.4rem;font-size:0.75rem;color:var(--text-muted);">${statusParts.join(' · ')} · Restante: <strong style="color:${displayMonto > 0 ? '#ef4444' : '#22c55e'}">${formatCurrency(displayMonto)}</strong></div>
+      <div style="margin-top:0.2rem;font-size:0.75rem;color:var(--text-muted);">${nextPaymentHtml}</div>
+      <div style="margin-top:0.2rem;font-size:0.75rem;color:var(--text-muted);">${frequencyHtml}</div>
+    </div>`;
+}
+
+function deudas_renderCard(item, options = {}) {
+    const {
+        isChild = false,
+        parentHidden = false,
+        isFirst = false,
+        isLast = false,
+        displayMonto = deudas_getItemRemaining(item),
+        aggregateLabel = '',
+    } = options;
+    const effectiveHidden = !!(item.hidden || parentHidden);
+    const fileUrls = deudas_parseUrls(item.archivos || '');
+    const hasFiles = fileUrls.length > 0;
+    const filesBadge = hasFiles ? `<span class="diff-label" style="font-size:.7rem;">📎 ${fileUrls.length} archivo(s)</span>` : '';
+    const filesPanelHtml = deudas_renderFilesPanel(item);
+    const cuotasHtml = deudas_renderCuotasHtml(item, deudas_getItemRemaining(item));
+    const eyeIcon = item.hidden ? '🙈' : '👁️';
+    const opacity = effectiveHidden ? 'opacity:.45;' : '';
+    const strikethrough = effectiveHidden ? 'text-decoration:line-through;' : '';
+    const hideTitle = item.hidden ? 'Mostrar en balance' : 'Ocultar del balance';
+    const btnUp = (isChild || isFirst) ? `<div style="width:24px;"></div>` : `<button class="mini-btn icon-btn-sm" onclick="deudas_moveUp(${item.id})" title="Subir" style="font-size:0.95rem; padding:4px;">⬆️</button>`;
+    const btnDown = (isChild || isLast) ? `<div style="width:24px;"></div>` : `<button class="mini-btn icon-btn-sm" onclick="deudas_moveDown(${item.id})" title="Bajar" style="font-size:0.95rem; padding:4px;">⬇️</button>`;
+    const childTag = isChild ? '<span class="diff-label" style="font-size:.7rem;">Deuda hija</span>' : '';
+
+    return `<div class="movimiento-card ${hasFiles ? 'deuda-card-expandable' : ''} ${isChild ? 'deuda-child-card' : ''}" ${hasFiles ? `onclick="deudas_cardClick(event,${item.id})" title="Ver archivos"` : ''} style="${opacity}flex-wrap:wrap;">
+      <div class="mc-left" style="align-items:flex-start;flex-direction:column;gap:0.3rem;max-width:68%;">
+        <span class="mc-lugar" style="font-size:0.95rem;font-weight:600;${strikethrough}">${item.concepto}</span>
+        ${aggregateLabel ? `<span class="diff-label" style="font-size:.7rem;">${aggregateLabel}</span>` : ''}
+        ${childTag}
+        ${filesBadge}
+        <div style="display:flex;flex-direction:row;gap:4px;">${btnUp}${btnDown}</div>
+      </div>
+      <div class="mc-right" style="align-items:flex-end;gap:.3rem;">
+        <span class="mc-monto text-danger" style="font-size:1rem;font-weight:700;${strikethrough}">-${formatCurrency(displayMonto)}</span>
+        <div style="display:flex;gap:.3rem;margin-top:.2rem;">
+          <button class="mini-btn icon-btn-sm" onclick="deudas_toggleHidden(${item.id})" title="${hideTitle}" style="font-size:0.95rem; padding:4px;">${eyeIcon}</button>
+          <button class="mini-btn icon-btn-sm" onclick="deudas_abrirSplit(${item.id})" title="Dividir en Cuotas" style="font-size:0.95rem; padding:4px;">✂️</button>
+          <button class="mini-btn icon-btn-sm" onclick="deudas_editar(${item.id})" style="font-size:0.95rem; padding:4px;">✏️</button>
+          <button class="mini-btn mini-btn-danger icon-btn-sm" onclick="deudas_borrar(${item.id})" style="font-size:0.95rem; padding:4px;">🗑️</button>
+        </div>
+      </div>
+      ${cuotasHtml ? `<div style="width:100%;margin-top:0.25rem;">${cuotasHtml}</div>` : ''}
+      ${filesPanelHtml ? `<div style="width:100%;margin-top:0.3rem;">${filesPanelHtml}</div>` : ''}
+    </div>`;
+}
+
 function deudas_renderLista() {
     const el = document.getElementById('d-lista');
     const totalEl = document.getElementById('d-total');
-    let total = 0;
-    
     if (!deudasState.allItems.length) {
         el.innerHTML = '<div class="empty-state">No tienes deudas registradas 🎉</div>';
         if (totalEl) totalEl.innerText = formatCurrency(0);
+        deudas_updateKpiCard();
+        balance_updateKpi();
         return;
     }
-    
-    el.innerHTML = deudasState.allItems.map((item, index) => {
-        const fileUrls = deudas_parseUrls(item.archivos || '');
-        const hasFiles = fileUrls.length > 0;
-        const filesBadge = hasFiles ? `<span class="diff-label" style="font-size:.7rem;">📎 ${fileUrls.length} archivo(s)</span>` : '';
-        const filesPanelHtml = deudas_renderFilesPanel(item);
-        // Calculate remaining based on PAID cuotas (state === 2)
-        let displayMonto = item.monto;
-        let cuotasHtml = '';
-        if (item.cuotas && item.cuotas.n > 0) {
-            const paidCount = item.cuotas.paid.filter(s => s === 2).length;
-            const scheduledCount = item.cuotas.paid.filter(s => s === 1).length;
-            const remaining = item.monto - (paidCount * item.cuotas.perCuota);
-            displayMonto = Math.max(0, remaining);
-            // Build cuota buttons — 3 states: 0=gray, 1=yellow, 2=green
-            const btns = item.cuotas.paid.map((state, idx) => {
-                let bg, label;
-                if (state === 2) {
-                    bg = 'background:#22c55e;color:#fff;border-color:#22c55e;';
-                    label = '✓';
-                } else if (state === 1) {
-                    bg = 'background:#f59e0b;color:#fff;border-color:#f59e0b;';
-                    label = '🕐';
-                } else {
-                    bg = 'background:rgba(255,255,255,0.06);color:var(--text-muted);border:1px solid rgba(255,255,255,0.12);';
-                    label = (idx + 1);
-                }
-                return `<button onclick="deudas_toggleCuota(${item.id},${idx})" style="${bg}width:28px;height:28px;border-radius:50%;font-size:0.7rem;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;transition:all .2s;" title="Cuota ${idx+1}/${item.cuotas.n} — ${formatCurrency(item.cuotas.perCuota)}">${label}</button>`;
+
+    const childrenMap = deudas_getChildrenMap();
+    const roots = deudas_getRootItems(childrenMap);
+    let total = 0;
+    const html = roots.map((root, idx) => {
+        const ownRemaining = deudas_getItemRemaining(root);
+        const aggregateRemaining = deudas_getAggregatedDisplayAmount(root, childrenMap);
+        const parentUsesGroupCuotas = (root.cuotas?.scope || 'self') === 'group';
+        let rootCard = deudas_renderCard(root, {
+            isFirst: idx === 0,
+            isLast: idx === roots.length - 1,
+            displayMonto: aggregateRemaining,
+            aggregateLabel: parentUsesGroupCuotas
+                ? 'Cuotas del padre incluyen deuda agrupada'
+                : (aggregateRemaining > ownRemaining ? `Incluye hijas: ${formatCurrency(aggregateRemaining - ownRemaining)}` : ''),
+        });
+
+        if (!root.hidden) total += ownRemaining;
+        const kids = childrenMap.get((root.debtKey || '').toString().trim()) || [];
+        const visibleKids = root.hidden ? [] : kids;
+        if (visibleKids.length) {
+            const kidsHtml = visibleKids.map((child) => {
+                if (!child.hidden && !parentUsesGroupCuotas) total += deudas_getItemRemaining(child);
+                return deudas_renderCard(child, { isChild: true, parentHidden: root.hidden, displayMonto: deudas_getItemRemaining(child) });
             }).join('');
-            const statusParts = [];
-            if (paidCount > 0) statusParts.push(`${paidCount} pagadas`);
-            if (scheduledCount > 0) statusParts.push(`${scheduledCount} programadas`);
-            statusParts.push(`${item.cuotas.n - paidCount - scheduledCount} pendientes`);
-            const nextPayment = deudas_getNextPaymentDate(item.cuotas);
-            let nextPaymentHtml = '<span style="opacity:.7;">Próximo pago: sin fecha</span>';
-            if (nextPayment === 'Complatado') {
-                nextPaymentHtml = '<strong style="color:#22c55e;">Complatado</strong>';
-            } else if (nextPayment instanceof Date) {
-                const relativeLabel = deudas_getRelativeDueLabel(nextPayment);
-                if (relativeLabel) {
-                    const relColor = relativeLabel.startsWith('Vencido') ? '#f87171' : '#f59e0b';
-                    nextPaymentHtml = `Próximo pago: <strong style="color:${relColor};">${relativeLabel}</strong>`;
-                } else {
-                    nextPaymentHtml = `Próximo pago: <strong style="color:#fbbf24;">${deudas_formatLongDate(nextPayment)}</strong>`;
-                }
-            }
-            const frequencyHtml = `Frecuencia de pago: <strong style="color:var(--text-main);">${deudas_formatFrequencyLabel(item.cuotas.frequency)}</strong>`;
-            cuotasHtml = `
-            <div style="margin-top:0.5rem;padding:0.5rem;border-radius:10px;background:rgba(255,255,255,0.03);width:100%;">
-              <div style="display:flex;flex-wrap:wrap;gap:4px;justify-content:flex-start;">${btns}</div>
-              <div style="margin-top:0.4rem;font-size:0.75rem;color:var(--text-muted);">
-                ${statusParts.join(' · ')} · Restante: <strong style="color:${displayMonto > 0 ? '#ef4444' : '#22c55e'}">${formatCurrency(displayMonto)}</strong>
-              </div>
-              <div style="margin-top:0.2rem;font-size:0.75rem;color:var(--text-muted);">${nextPaymentHtml}</div>
-              <div style="margin-top:0.2rem;font-size:0.75rem;color:var(--text-muted);">${frequencyHtml}</div>
-            </div>`;
+            rootCard += `<div class="deuda-children-wrap"><div class="deuda-children-title">Deudas hijas</div>${kidsHtml}</div>`;
+        } else if (kids.length && root.hidden) {
+            rootCard += '<div class="deuda-children-wrap"><div class="deuda-children-title">Deudas hijas ocultas por la deuda padre</div></div>';
         }
-
-        if (!item.hidden) total += displayMonto;
-        const eyeIcon = item.hidden ? '🙈' : '👁️';
-        const opacity = item.hidden ? 'opacity:.45;' : '';
-        const strikethrough = item.hidden ? 'text-decoration:line-through;' : '';
-        
-        const isFirst = index === 0;
-        const isLast = index === deudasState.allItems.length - 1;
-        const btnUp = isFirst ? `<div style="width:24px;"></div>` : `<button class="mini-btn icon-btn-sm" onclick="deudas_moveUp(${item.id})" title="Subir" style="font-size:0.95rem; padding:4px;">⬆️</button>`;
-        const btnDown = isLast ? `<div style="width:24px;"></div>` : `<button class="mini-btn icon-btn-sm" onclick="deudas_moveDown(${item.id})" title="Bajar" style="font-size:0.95rem; padding:4px;">⬇️</button>`;
-
-        return `
-        <div class="movimiento-card ${hasFiles ? 'deuda-card-expandable' : ''}" data-deuda-card-id="${item.id}" ${hasFiles ? `onclick="deudas_cardClick(event,${item.id})" title="Ver archivos"` : ''} style="${opacity}flex-wrap:wrap;">
-          <div class="mc-left" style="align-items:flex-start; flex-direction:column; gap:0.3rem;">
-            <span class="mc-lugar" style="font-size:0.95rem; font-weight: 600;${strikethrough}">${item.concepto}</span>
-            ${filesBadge}
-            <div style="display:flex; flex-direction:row; gap:4px;">
-                ${btnUp}
-                ${btnDown}
-            </div>
-          </div>
-          <div class="mc-right" style="align-items:flex-end;gap:.3rem">
-            <span class="mc-monto text-danger" style="font-size:1rem;font-weight:700;${strikethrough}">-${formatCurrency(displayMonto)}</span>
-            <div style="display:flex;gap:.3rem;margin-top:.2rem">
-              <button class="mini-btn icon-btn-sm" onclick="deudas_toggleHidden(${item.id})" title="${item.hidden ? 'Mostrar en balance' : 'Ocultar del balance'}" style="font-size:0.95rem; padding:4px;">${eyeIcon}</button>
-              <button class="mini-btn icon-btn-sm" onclick="deudas_abrirSplit(${item.id})" title="Dividir en Cuotas" style="font-size:0.95rem; padding:4px;">✂️</button>
-              <button class="mini-btn icon-btn-sm" onclick="deudas_editar(${item.id})" style="font-size:0.95rem; padding:4px;">✏️</button>
-              <button class="mini-btn mini-btn-danger icon-btn-sm" onclick="deudas_borrar(${item.id})" style="font-size:0.95rem; padding:4px;">🗑️</button>
-            </div>
-          </div>
-          ${cuotasHtml ? `<div style="width:100%;margin-top:0.25rem;">${cuotasHtml}</div>` : ''}
-          ${filesPanelHtml ? `<div style="width:100%;margin-top:0.3rem;">${filesPanelHtml}</div>` : ''}
-        </div>`;
+        return rootCard;
     }).join('');
-    
+
+    el.innerHTML = html;
     if (totalEl) totalEl.innerText = total > 0 ? `-${formatCurrency(total)}` : formatCurrency(0);
     deudas_updateKpiCard();
     balance_updateKpi();
@@ -11855,15 +12013,27 @@ window.deudas_cardClick = function(ev, id) {
 };
 
 window.deudas_moveUp = async function(id) {
-    const idx = deudasState.allItems.findIndex(i => i.id === id);
-    if (idx <= 0) return;
-    await deudas_swap(idx, idx - 1);
+    const childrenMap = deudas_getChildrenMap();
+    const roots = deudas_getRootItems(childrenMap);
+    const pos = roots.findIndex((x) => x.id === id);
+    if (pos <= 0) return;
+    const prevRoot = roots[pos - 1];
+    const idx1 = deudasState.allItems.findIndex((x) => x.id === id);
+    const idx2 = deudasState.allItems.findIndex((x) => x.id === prevRoot.id);
+    if (idx1 === -1 || idx2 === -1) return;
+    await deudas_swap(idx1, idx2);
 };
 
 window.deudas_moveDown = async function(id) {
-    const idx = deudasState.allItems.findIndex(i => i.id === id);
-    if (idx === -1 || idx === deudasState.allItems.length - 1) return;
-    await deudas_swap(idx, idx + 1);
+    const childrenMap = deudas_getChildrenMap();
+    const roots = deudas_getRootItems(childrenMap);
+    const pos = roots.findIndex((x) => x.id === id);
+    if (pos === -1 || pos >= roots.length - 1) return;
+    const nextRoot = roots[pos + 1];
+    const idx1 = deudasState.allItems.findIndex((x) => x.id === id);
+    const idx2 = deudasState.allItems.findIndex((x) => x.id === nextRoot.id);
+    if (idx1 === -1 || idx2 === -1) return;
+    await deudas_swap(idx1, idx2);
 };
 
 async function deudas_swap(idx1, idx2) {
@@ -11893,11 +12063,11 @@ async function deudas_swap(idx1, idx2) {
         
         const cuotasStr1 = item2.cuotas ? deudas_buildCuotasCell(item2.cuotas) : '';
         const cuotasStr2 = item1.cuotas ? deudas_buildCuotasCell(item1.cuotas) : '';
-        const dataForRow1 = [[item2.concepto, item2.monto, item2.hidden ? 'TRUE' : 'FALSE', cuotasStr1, (item2.archivos || '').toString().trim()]];
-        const dataForRow2 = [[item1.concepto, item1.monto, item1.hidden ? 'TRUE' : 'FALSE', cuotasStr2, (item1.archivos || '').toString().trim()]];
+        const dataForRow1 = [[item2.concepto, item2.monto, item2.hidden ? 'TRUE' : 'FALSE', cuotasStr1, (item2.archivos || '').toString().trim(), (item2.debtKey || '').toString().trim(), (item2.parentKey || '').toString().trim()]];
+        const dataForRow2 = [[item1.concepto, item1.monto, item1.hidden ? 'TRUE' : 'FALSE', cuotasStr2, (item1.archivos || '').toString().trim(), (item1.debtKey || '').toString().trim(), (item1.parentKey || '').toString().trim()]];
         
-        await sheetsUpdate(SPREADSHEET_DEUDAS_ID, `${sheetName}!A${rowId1}:E${rowId1}`, dataForRow1);
-        await sheetsUpdate(SPREADSHEET_DEUDAS_ID, `${sheetName}!A${rowId2}:E${rowId2}`, dataForRow2);
+        await sheetsUpdate(SPREADSHEET_DEUDAS_ID, `${sheetName}!A${rowId1}:G${rowId1}`, dataForRow1);
+        await sheetsUpdate(SPREADSHEET_DEUDAS_ID, `${sheetName}!A${rowId2}:G${rowId2}`, dataForRow2);
     } catch(e) {
         console.error('Error swapping:', e);
         showToast('⚠️ Error al reordenar');
@@ -11911,13 +12081,25 @@ window.deudas_editar = function(id) {
 };
 
 window.deudas_borrar = async function(id) {
-    if (!confirm('¿Eliminar esta deuda?')) return;
+    const target = deudasState.allItems.find((i) => i.id === id);
+    const childrenMap = deudas_getChildrenMap();
+    const descendants = target ? deudas_collectDescendants(target, childrenMap) : [];
+    const hasChildren = descendants.length > 1;
+    const confirmMsg = hasChildren
+        ? `¿Eliminar esta deuda padre y sus ${descendants.length - 1} deuda(s) hija(s)?\n\nTambién se borrarán sus archivos adjuntos.`
+        : '¿Eliminar esta deuda?';
+    if (!confirm(confirmMsg)) return;
     const el = document.getElementById('d-lista');
     el.innerHTML = '<div class="loading-spinner" style="margin-top: 2rem;">Actualizando...</div>';
     try {
         const item = deudasState.allItems.find((i) => i.id === id);
-        const archivos = deudas_parseUrls(item?.archivos || '');
-        if (archivos.length) await deleteDriveFilesFromUrls(archivos);
+        if (!item) return;
+        
+        const toDelete = deudas_collectDescendants(item, childrenMap);
+        const urls = toDelete.flatMap((d) => deudas_parseUrls(d.archivos || ''));
+        if (urls.length) await deleteDriveFilesFromUrls(urls);
+
+        const rows = [...new Set(toDelete.map((d) => d.id).filter((v) => Number.isFinite(v)))].sort((a, b) => b - a);
         if (deudasState.sheetId === null) {
             try {
                 deudasState.sheetId = await getSheetId(SPREADSHEET_DEUDAS_ID, 'Deudas');
@@ -11925,9 +12107,11 @@ window.deudas_borrar = async function(id) {
                 deudasState.sheetId = await getSheetId(SPREADSHEET_DEUDAS_ID, 'Hoja 1');
             }
         }
-        await sheetsDeleteRow(SPREADSHEET_DEUDAS_ID, deudasState.sheetId, id - 1);
+        for (const rowId of rows) {
+            await sheetsDeleteRow(SPREADSHEET_DEUDAS_ID, deudasState.sheetId, rowId - 1);
+        }
         deudas_cargarDatos();
-        showToast('🗑️ Deuda eliminada');
+        showToast(rows.length > 1 ? `🗑️ Deuda padre e hijas eliminadas (${rows.length})` : '🗑️ Deuda eliminada');
     } catch(e) { 
         console.error(e); 
         el.innerHTML = '<div class="empty-state text-danger">❌ Error al borrar</div>'; 
@@ -11948,12 +12132,35 @@ window.deudas_toggleHidden = async function(id) {
         await sheetsUpdate(SPREADSHEET_DEUDAS_ID, `${sheetName}!C${id}`, [[newVal ? 'TRUE' : 'FALSE']]);
         item.hidden = newVal;
         deudas_renderLista();
-        showToast(newVal ? '🙈 Deuda oculta del balance' : '👁️ Deuda visible en balance');
+        const childrenMap = deudas_getChildrenMap();
+        const hasChildren = (childrenMap.get((item.debtKey || '').toString().trim()) || []).length > 0;
+        if (newVal && hasChildren) showToast('🙈 Deuda padre oculta: hijas ocultas en esta vista');
+        else showToast(newVal ? '🙈 Deuda oculta del balance' : '👁️ Deuda visible en balance');
     } catch(e) {
         console.error(e);
         showToast('❌ Error al actualizar visibilidad');
     }
 };
+
+function deudas_renderParentOptions(currentItem = null) {
+    const select = document.getElementById('d-parent-select');
+    if (!select) return;
+    const currentKey = (currentItem?.debtKey || '').toString().trim();
+    const currentParent = (currentItem?.parentKey || '').toString().trim();
+    const childrenMap = deudas_getChildrenMap();
+    const options = deudasState.allItems.filter((candidate) => {
+        const cKey = (candidate.debtKey || '').toString().trim();
+        if (!cKey) return false;
+        if (cKey === currentKey) return false;
+        if ((candidate.parentKey || '').toString().trim()) return false;
+        if (currentKey && deudas_isDescendantKey(cKey, currentKey, childrenMap)) return false;
+        return true;
+    });
+    select.innerHTML = '<option value="">Sin padre</option>' + options.map((opt) => (
+        `<option value="${opt.debtKey}">${opt.concepto}</option>`
+    )).join('');
+    select.value = currentParent || '';
+}
 
 function deudas_abrirSheet(item) {
     const sheet = document.getElementById('d-sheet');
@@ -11961,8 +12168,11 @@ function deudas_abrirSheet(item) {
     document.getElementById('d-sheet-title').innerText = 'Nueva Deuda';
     document.getElementById('d-concepto').value = '';
     document.getElementById('d-monto').value = '';
+    const parentSel = document.getElementById('d-parent-select');
+    if (parentSel) parentSel.value = '';
     deudas_clearFileSelection();
     deudas_renderExistingFiles([]);
+    deudas_renderParentOptions(null);
     
     if (item) {
         document.getElementById('d-edit-id').value = item.id;
@@ -11970,6 +12180,7 @@ function deudas_abrirSheet(item) {
         document.getElementById('d-concepto').value = item.concepto;
         document.getElementById('d-monto').value = item.monto;
         deudas_renderExistingFiles(deudas_parseUrls(item.archivos));
+        deudas_renderParentOptions(item);
     }
     sheet.classList.remove('hidden');
 }
@@ -11980,10 +12191,15 @@ function deudas_abrirSheet(item) {
 window.deudas_abrirSplit = function(id) {
     const item = deudasState.allItems.find(i => i.id === id);
     if (!item) return;
+    const childrenMap = deudas_getChildrenMap();
+    const ownRemaining = deudas_getItemRemaining(item);
+    const splitBase = deudas_getAggregatedDisplayAmount(item, childrenMap);
+    const splitScope = splitBase > (ownRemaining + 0.009) ? 'group' : 'self';
     
     document.getElementById('d-split-id').value = item.id;
-    document.getElementById('d-split-monto').value = `${item.concepto} - ${formatCurrency(item.monto)}`;
-    document.getElementById('d-split-monto').dataset.monto = item.monto;
+    document.getElementById('d-split-monto').value = `${item.concepto} - ${formatCurrency(splitBase)}`;
+    document.getElementById('d-split-monto').dataset.monto = splitBase;
+    document.getElementById('d-split-monto').dataset.scope = splitScope;
     
     // reset values
     document.getElementById('d-split-payments').value = item.cuotas?.n || 12;
@@ -12061,6 +12277,7 @@ window.deudas_generarCuotas = async function() {
     const pagoCalc = parseFloat(document.getElementById('d-split-preview').dataset.pagoCalc);
     const frequency = (document.getElementById('d-split-frequency').value || 'mensual').toLowerCase();
     const startDate = deudas_normalizeStartDate(document.getElementById('d-split-start-date').value) || new Date().toISOString().split('T')[0];
+    const scope = (document.getElementById('d-split-monto').dataset.scope || 'self').toLowerCase() === 'group' ? 'group' : 'self';
     
     if (!confirm(`¿Generar ${n} cuotas de ${formatCurrency(pagoCalc)} para "${deudaObj.concepto}"?`)) return;
     
@@ -12069,7 +12286,7 @@ window.deudas_generarCuotas = async function() {
     
     try {
         // Build col D value: N:perCuota:flags:frecuencia:startDate
-        const cuotasData = { n, perCuota: pagoCalc, paid: new Array(n).fill(0), frequency, startDate };
+        const cuotasData = { n, perCuota: pagoCalc, paid: new Array(n).fill(0), frequency, startDate, scope };
         const colD = deudas_buildCuotasCell(cuotasData);
         
         // Update cuotas state in memory
@@ -12195,6 +12412,8 @@ document.getElementById('d-split-sheet-overlay').addEventListener('click', () =>
 function deudas_cerrarSheet() { 
     document.getElementById('d-sheet').classList.add('hidden');
     deudas_clearFileSelection();
+    const parentSel = document.getElementById('d-parent-select');
+    if (parentSel) parentSel.value = '';
 }
 
 async function deudas_guardar() {
@@ -12202,6 +12421,8 @@ async function deudas_guardar() {
     const concepto = document.getElementById('d-concepto').value.trim();
     const monto = parseSheetValue(document.getElementById('d-monto').value);
     const editId = document.getElementById('d-edit-id').value;
+    const parentSelect = document.getElementById('d-parent-select');
+    const selectedParentKey = (parentSelect?.value || '').toString().trim();
     const fileInput = document.getElementById('d-files-input');
     const selectedFiles = Array.from(fileInput?.files || []);
     
@@ -12212,12 +12433,7 @@ async function deudas_guardar() {
     
     btn.disabled = true; btn.innerText = 'Guardando...';
     try {
-        let sheetName = 'Deudas';
-        try {
-            await sheetsGet(SPREADSHEET_DEUDAS_ID, 'Deudas!A1:A1');
-        } catch(e) {
-            sheetName = 'Hoja 1';
-        }
+        const sheetName = await deudas_getSheetName();
 
         let uploadedUrls = [];
         if (selectedFiles.length) {
@@ -12242,10 +12458,21 @@ async function deudas_guardar() {
                 : '';
             const existingUrls = deudas_parseUrls(existing?.archivos || '');
             const allUrls = [...new Set([...existingUrls, ...uploadedUrls])].join(',');
-            await sheetsUpdate(SPREADSHEET_DEUDAS_ID, `${sheetName}!A${editId}:E${editId}`, [[concepto, monto, hiddenVal, existingCuotas, allUrls]]);
+            const debtKey = (existing?.debtKey || deudas_newKey()).toString().trim();
+            const childrenMap = deudas_getChildrenMap();
+            let parentKey = selectedParentKey;
+            if (parentKey === debtKey) parentKey = '';
+            const parentItem = deudas_getItemByKey(parentKey);
+            if (parentItem && (parentItem.parentKey || '').toString().trim()) parentKey = '';
+            if (parentKey && deudas_isDescendantKey(parentKey, debtKey, childrenMap)) parentKey = '';
+            await sheetsUpdate(SPREADSHEET_DEUDAS_ID, `${sheetName}!A${editId}:G${editId}`, [[concepto, monto, hiddenVal, existingCuotas, allUrls, debtKey, parentKey]]);
             showToast('✅ Deuda actualizada');
         } else {
-            await sheetsAppend(SPREADSHEET_DEUDAS_ID, `${sheetName}!A:E`, [[concepto, Math.abs(monto), 'FALSE', '', uploadedUrls.join(',')]]);
+            const debtKey = deudas_newKey();
+            let parentKey = selectedParentKey;
+            const parentItem = deudas_getItemByKey(parentKey);
+            if (!parentItem || (parentItem.parentKey || '').toString().trim()) parentKey = '';
+            await sheetsAppend(SPREADSHEET_DEUDAS_ID, `${sheetName}!A:G`, [[concepto, Math.abs(monto), 'FALSE', '', uploadedUrls.join(','), debtKey, parentKey]]);
             showToast('✅ Deuda agregada');
         }
         deudas_cerrarSheet();
