@@ -760,6 +760,17 @@ select.field-input { background-image: url("data:image/svg+xml,%3Csvg xmlns='htt
   letter-spacing: .01em;
 }
 
+#view-deudas .deudas-file-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 42px;
+  padding: .88rem 1rem;
+  font-size: .86rem;
+  line-height: 1.2;
+}
+
 .autos-file-native {
   position: absolute;
   width: 1px;
@@ -1425,6 +1436,62 @@ select.field-input { background-image: url("data:image/svg+xml,%3Csvg xmlns='htt
   font-size: .7rem;
   color: var(--text-muted);
   text-align: center;
+}
+
+.deuda-card-expandable {
+  cursor: pointer !important;
+}
+
+.deuda-card-expandable:hover {
+  background: rgba(255,255,255,.04);
+}
+
+.deuda-files-panel {
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: .75rem;
+  background: rgba(255,255,255,.03);
+  padding: .55rem;
+  display: grid;
+  gap: .45rem;
+}
+
+.deuda-files-title {
+  font-size: .72rem;
+  color: var(--text-muted);
+  letter-spacing: .02em;
+}
+
+.deuda-files-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: .42rem;
+}
+
+.deuda-file-link {
+  text-decoration: none;
+  display: grid;
+  gap: .2rem;
+}
+
+.deuda-file-thumb {
+  width: 100%;
+  height: 86px;
+  border-radius: .55rem;
+  object-fit: cover;
+  border: 1px solid rgba(255,255,255,.13);
+  background: rgba(255,255,255,.05);
+}
+
+.deuda-file-label {
+  font-size: .68rem;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+@media (max-width: 420px) {
+  .deuda-files-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 .ai-mirror-sync-row {

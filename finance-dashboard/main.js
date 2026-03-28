@@ -11409,6 +11409,7 @@ let deudasState = {
     sheetId: null,
     loaded: false,
     loading: false,
+    expandedFiles: new Set(),
 };
 
 let deudasCuotaPromptResolve = null;
@@ -11455,6 +11456,28 @@ async function deudas_uploadSelectedFiles(files) {
         await deleteDriveFilesFromUrls(uploadedUrls);
         throw err;
     }
+}
+
+function deudas_renderFileThumb(url, idx) {
+    const raw = (url || '').toString().trim();
+    if (!raw) return '';
+    const candidates = autos_imagePreviewCandidates(raw);
+    const src = candidates[0] || raw;
+    return `<a class="deuda-file-link" href="${raw}" target="_blank" rel="noopener" onclick="event.stopPropagation();">
+        <img class="deuda-file-thumb" src="${src}" data-raw="${raw}" data-try-idx="0" alt="Archivo ${idx + 1}" onload="autos_handleDocPreviewLoad(this)" onerror="autos_handleDocPreviewError(this)">
+        <span class="deuda-file-label">Archivo ${idx + 1}</span>
+    </a>`;
+}
+
+function deudas_renderFilesPanel(item) {
+    const urls = deudas_parseUrls(item?.archivos || '');
+    if (!urls.length) return '';
+    if (!deudasState.expandedFiles?.has(item.id)) return '';
+    const thumbs = urls.map((url, idx) => deudas_renderFileThumb(url, idx)).join('');
+    return `<div class="deuda-files-panel" onclick="event.stopPropagation();">
+        <div class="deuda-files-title">📎 Archivos de la deuda</div>
+        <div class="deuda-files-grid">${thumbs}</div>
+    </div>`;
 }
 
 function deudas_normalizeStartDate(raw) {
@@ -11700,6 +11723,9 @@ async function deudas_cargarDatos() {
                 archivos: (row[4] || '').toString().trim(),
             };
         }).filter(i => i.concepto);
+        const validIds = new Set(deudasState.allItems.map((x) => x.id));
+        const prevExpanded = deudasState.expandedFiles instanceof Set ? deudasState.expandedFiles : new Set();
+        deudasState.expandedFiles = new Set([...prevExpanded].filter((id) => validIds.has(id)));
         deudasState.loaded = true;
         
         deudas_renderLista();
@@ -11720,6 +11746,10 @@ function deudas_renderLista() {
     }
     
     el.innerHTML = deudasState.allItems.map((item, index) => {
+        const fileUrls = deudas_parseUrls(item.archivos || '');
+        const hasFiles = fileUrls.length > 0;
+        const filesBadge = hasFiles ? `<span class="diff-label" style="font-size:.7rem;">📎 ${fileUrls.length} archivo(s)</span>` : '';
+        const filesPanelHtml = deudas_renderFilesPanel(item);
         // Calculate remaining based on PAID cuotas (state === 2)
         let displayMonto = item.monto;
         let cuotasHtml = '';
@@ -11783,9 +11813,10 @@ function deudas_renderLista() {
         const btnDown = isLast ? `<div style="width:24px;"></div>` : `<button class="mini-btn icon-btn-sm" onclick="deudas_moveDown(${item.id})" title="Bajar" style="font-size:0.95rem; padding:4px;">⬇️</button>`;
 
         return `
-        <div class="movimiento-card" style="${opacity}flex-wrap:wrap;">
+        <div class="movimiento-card ${hasFiles ? 'deuda-card-expandable' : ''}" data-deuda-card-id="${item.id}" ${hasFiles ? `onclick="deudas_cardClick(event,${item.id})" title="Ver archivos"` : ''} style="${opacity}flex-wrap:wrap;">
           <div class="mc-left" style="align-items:flex-start; flex-direction:column; gap:0.3rem;">
             <span class="mc-lugar" style="font-size:0.95rem; font-weight: 600;${strikethrough}">${item.concepto}</span>
+            ${filesBadge}
             <div style="display:flex; flex-direction:row; gap:4px;">
                 ${btnUp}
                 ${btnDown}
@@ -11801,6 +11832,7 @@ function deudas_renderLista() {
             </div>
           </div>
           ${cuotasHtml ? `<div style="width:100%;margin-top:0.25rem;">${cuotasHtml}</div>` : ''}
+          ${filesPanelHtml ? `<div style="width:100%;margin-top:0.3rem;">${filesPanelHtml}</div>` : ''}
         </div>`;
     }).join('');
     
@@ -11808,6 +11840,19 @@ function deudas_renderLista() {
     deudas_updateKpiCard();
     balance_updateKpi();
 }
+
+window.deudas_cardClick = function(ev, id) {
+    if (!ev) return;
+    if (ev.target?.closest('button,a,input,textarea,select,label')) return;
+    const item = deudasState.allItems.find((i) => i.id === id);
+    if (!item) return;
+    const hasFiles = deudas_parseUrls(item.archivos || '').length > 0;
+    if (!hasFiles) return;
+    if (!(deudasState.expandedFiles instanceof Set)) deudasState.expandedFiles = new Set();
+    if (deudasState.expandedFiles.has(id)) deudasState.expandedFiles.delete(id);
+    else deudasState.expandedFiles.add(id);
+    deudas_renderLista();
+};
 
 window.deudas_moveUp = async function(id) {
     const idx = deudasState.allItems.findIndex(i => i.id === id);
