@@ -559,6 +559,9 @@ type DashboardWidgetSnapshot = {
     focusAccountRealMxnText: string;
     focusAccountFound: boolean;
     focusAccount: string;
+    santanderRealMxn: number;
+    santanderRealMxnText: string;
+    santanderFound: boolean;
     bbvaRealMxn: number;
     bbvaRealMxnText: string;
     bbvaFound: boolean;
@@ -650,6 +653,7 @@ export async function getWidgetDashboardSnapshot(
     const focusName = String(cache["snapshot.focusAccount"] || focusAccount || "Santander");
     const focusVal = cPair("snapshot.focusAccountRealMxn", "snapshot.focusAccountRealMxnText", 0);
     const focusValText = String(cache["snapshot.focusAccountRealMxnText"] || fixed2(focusVal));
+    const santander = findAccountByAliases(cachedAccounts, ["Santander"]);
     const bbva = findAccountByAliases(cachedAccounts, ["BBVA"]);
     const boa = findAccountByAliases(cachedAccounts, ["Bank of America", "BOA"]);
 
@@ -678,6 +682,9 @@ export async function getWidgetDashboardSnapshot(
         focusAccountRealMxnText: focusValText,
         focusAccountFound: focusVal !== 0 || !!focusName,
         focusAccount: focusName,
+        santanderRealMxn: round2(santander?.realMxn || 0),
+        santanderRealMxnText: santander?.realMxnText || fixed2(santander?.realMxn || 0),
+        santanderFound: !!santander,
         bbvaRealMxn: round2(bbva?.realMxn || 0),
         bbvaRealMxnText: bbva?.realMxnText || fixed2(bbva?.realMxn || 0),
         bbvaFound: !!bbva,
@@ -739,6 +746,9 @@ export async function getWidgetDashboardSnapshot(
       const k = normalizePaymentKey(a.name);
       return k.includes(targetKey) || targetKey.includes(k);
     });
+  const santander = findAccountByAliases(rows, ["Santander"]);
+  const bbva = findAccountByAliases(rows, ["BBVA"]);
+  const boa = findAccountByAliases(rows, ["Bank of America", "BOA"]);
 
   const nextCacheValues: Record<string, string> = {
     "snapshot.balanceDisponibleMxn": String(round2(balanceDisponibleBase)),
@@ -792,12 +802,15 @@ export async function getWidgetDashboardSnapshot(
       focusAccountRealMxnText: fixed2(focus?.realMxn || 0),
       focusAccountFound: !!focus,
       focusAccount,
-      bbvaRealMxn: round2(findAccountByAliases(rows, ["BBVA"])?.realMxn || 0),
-      bbvaRealMxnText: fixed2(findAccountByAliases(rows, ["BBVA"])?.realMxn || 0),
-      bbvaFound: !!findAccountByAliases(rows, ["BBVA"]),
-      bankOfAmericaRealMxn: round2(findAccountByAliases(rows, ["Bank of America", "BOA"])?.realMxn || 0),
-      bankOfAmericaRealMxnText: fixed2(findAccountByAliases(rows, ["Bank of America", "BOA"])?.realMxn || 0),
-      bankOfAmericaFound: !!findAccountByAliases(rows, ["Bank of America", "BOA"]),
+      santanderRealMxn: round2(santander?.realMxn || 0),
+      santanderRealMxnText: fixed2(santander?.realMxn || 0),
+      santanderFound: !!santander,
+      bbvaRealMxn: round2(bbva?.realMxn || 0),
+      bbvaRealMxnText: fixed2(bbva?.realMxn || 0),
+      bbvaFound: !!bbva,
+      bankOfAmericaRealMxn: round2(boa?.realMxn || 0),
+      bankOfAmericaRealMxnText: fixed2(boa?.realMxn || 0),
+      bankOfAmericaFound: !!boa,
     },
     accounts: outAccounts,
     meta: {
