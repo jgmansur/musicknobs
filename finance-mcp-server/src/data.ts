@@ -371,6 +371,26 @@ function formatUpdatedAgoText(isoLike: string): string {
   return `hace ${days} d`;
 }
 
+function normalizeName(value: string): string {
+  return String(value || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim();
+}
+
+function findAccountByAliases<T extends { name: string }>(accounts: T[], aliases: string[]): T | null {
+  const normalizedAliases = aliases.map((a) => normalizeName(a)).filter(Boolean);
+  for (const acc of accounts) {
+    const name = normalizeName(acc.name);
+    if (!name) continue;
+    if (normalizedAliases.some((a) => name === a || name.includes(a) || a.includes(name))) {
+      return acc;
+    }
+  }
+  return null;
+}
+
 function normalizePaymentKey(value: unknown): string {
   return String(value || "")
     .normalize("NFD")
@@ -539,6 +559,12 @@ type DashboardWidgetSnapshot = {
     focusAccountRealMxnText: string;
     focusAccountFound: boolean;
     focusAccount: string;
+    bbvaRealMxn: number;
+    bbvaRealMxnText: string;
+    bbvaFound: boolean;
+    bankOfAmericaRealMxn: number;
+    bankOfAmericaRealMxnText: string;
+    bankOfAmericaFound: boolean;
   };
   accounts: Array<{
     name: string;
@@ -613,9 +639,19 @@ export async function getWidgetDashboardSnapshot(
 
     const c = (key: string, fallback = 0) => round2(parseNumber(cache[key] || fallback));
     const cText = (key: string, fallback = 0) => String(cache[key] || fixed2(fallback));
+    const cPair = (numKey: string, textKey: string, fallback = 0) => {
+      const textRaw = String(cache[textKey] || "").trim();
+      if (textRaw) {
+        const parsed = parseNumber(textRaw);
+        return Number.isFinite(parsed) ? round2(parsed) : round2(fallback);
+      }
+      return c(numKey, fallback);
+    };
     const focusName = String(cache["snapshot.focusAccount"] || focusAccount || "Santander");
-    const focusVal = c("snapshot.focusAccountRealMxn", 0);
+    const focusVal = cPair("snapshot.focusAccountRealMxn", "snapshot.focusAccountRealMxnText", 0);
     const focusValText = String(cache["snapshot.focusAccountRealMxnText"] || fixed2(focusVal));
+    const bbva = findAccountByAliases(cachedAccounts, ["BBVA"]);
+    const boa = findAccountByAliases(cachedAccounts, ["Bank of America", "BOA"]);
 
     const updatedAt = String(cache["snapshot.updatedAt"] || new Date().toISOString());
     return {
@@ -624,24 +660,30 @@ export async function getWidgetDashboardSnapshot(
       updatedAtMxText: formatUpdatedAtMxText(updatedAt),
       updatedAgoText: formatUpdatedAgoText(updatedAt),
       totals: {
-        balanceDisponibleMxn: c("snapshot.balanceDisponibleMxn", 0),
-        balanceDisponibleMxnText: cText("snapshot.balanceDisponibleMxnText", c("snapshot.balanceDisponibleMxn", 0)),
-        balanceDisponibleWithDebtMxn: c("snapshot.balanceDisponibleWithDebtMxn", c("snapshot.balanceDisponibleMxn", 0)),
-        balanceDisponibleWithDebtMxnText: cText("snapshot.balanceDisponibleWithDebtMxnText", c("snapshot.balanceDisponibleWithDebtMxn", 0)),
-        balanceRealMxn: c("snapshot.balanceRealMxn", 0),
-        balanceRealMxnText: cText("snapshot.balanceRealMxnText", c("snapshot.balanceRealMxn", 0)),
-        balanceRealWithDebtMxn: c("snapshot.balanceRealWithDebtMxn", c("snapshot.balanceRealMxn", 0)),
-        balanceRealWithDebtMxnText: cText("snapshot.balanceRealWithDebtMxnText", c("snapshot.balanceRealWithDebtMxn", 0)),
-        pendingFixedMxn: c("snapshot.pendingFixedMxn", 0),
-        pendingFixedMxnText: cText("snapshot.pendingFixedMxnText", c("snapshot.pendingFixedMxn", 0)),
-        debtImpactMxn: c("snapshot.debtImpactMxn", 0),
-        debtImpactMxnText: cText("snapshot.debtImpactMxnText", c("snapshot.debtImpactMxn", 0)),
+        balanceDisponibleMxn: cPair("snapshot.balanceDisponibleMxn", "snapshot.balanceDisponibleMxnText", 0),
+        balanceDisponibleMxnText: cText("snapshot.balanceDisponibleMxnText", cPair("snapshot.balanceDisponibleMxn", "snapshot.balanceDisponibleMxnText", 0)),
+        balanceDisponibleWithDebtMxn: cPair("snapshot.balanceDisponibleWithDebtMxn", "snapshot.balanceDisponibleWithDebtMxnText", cPair("snapshot.balanceDisponibleMxn", "snapshot.balanceDisponibleMxnText", 0)),
+        balanceDisponibleWithDebtMxnText: cText("snapshot.balanceDisponibleWithDebtMxnText", cPair("snapshot.balanceDisponibleWithDebtMxn", "snapshot.balanceDisponibleWithDebtMxnText", 0)),
+        balanceRealMxn: cPair("snapshot.balanceRealMxn", "snapshot.balanceRealMxnText", 0),
+        balanceRealMxnText: cText("snapshot.balanceRealMxnText", cPair("snapshot.balanceRealMxn", "snapshot.balanceRealMxnText", 0)),
+        balanceRealWithDebtMxn: cPair("snapshot.balanceRealWithDebtMxn", "snapshot.balanceRealWithDebtMxnText", cPair("snapshot.balanceRealMxn", "snapshot.balanceRealMxnText", 0)),
+        balanceRealWithDebtMxnText: cText("snapshot.balanceRealWithDebtMxnText", cPair("snapshot.balanceRealWithDebtMxn", "snapshot.balanceRealWithDebtMxnText", 0)),
+        pendingFixedMxn: cPair("snapshot.pendingFixedMxn", "snapshot.pendingFixedMxnText", 0),
+        pendingFixedMxnText: cText("snapshot.pendingFixedMxnText", cPair("snapshot.pendingFixedMxn", "snapshot.pendingFixedMxnText", 0)),
+        debtImpactMxn: cPair("snapshot.debtImpactMxn", "snapshot.debtImpactMxnText", 0),
+        debtImpactMxnText: cText("snapshot.debtImpactMxnText", cPair("snapshot.debtImpactMxn", "snapshot.debtImpactMxnText", 0)),
       },
       highlights: {
         focusAccountRealMxn: focusVal,
         focusAccountRealMxnText: focusValText,
         focusAccountFound: focusVal !== 0 || !!focusName,
         focusAccount: focusName,
+        bbvaRealMxn: round2(bbva?.realMxn || 0),
+        bbvaRealMxnText: bbva?.realMxnText || fixed2(bbva?.realMxn || 0),
+        bbvaFound: !!bbva,
+        bankOfAmericaRealMxn: round2(boa?.realMxn || 0),
+        bankOfAmericaRealMxnText: boa?.realMxnText || fixed2(boa?.realMxn || 0),
+        bankOfAmericaFound: !!boa,
       },
       accounts: cachedAccounts,
       meta: {
@@ -750,6 +792,12 @@ export async function getWidgetDashboardSnapshot(
       focusAccountRealMxnText: fixed2(focus?.realMxn || 0),
       focusAccountFound: !!focus,
       focusAccount,
+      bbvaRealMxn: round2(findAccountByAliases(rows, ["BBVA"])?.realMxn || 0),
+      bbvaRealMxnText: fixed2(findAccountByAliases(rows, ["BBVA"])?.realMxn || 0),
+      bbvaFound: !!findAccountByAliases(rows, ["BBVA"]),
+      bankOfAmericaRealMxn: round2(findAccountByAliases(rows, ["Bank of America", "BOA"])?.realMxn || 0),
+      bankOfAmericaRealMxnText: fixed2(findAccountByAliases(rows, ["Bank of America", "BOA"])?.realMxn || 0),
+      bankOfAmericaFound: !!findAccountByAliases(rows, ["Bank of America", "BOA"]),
     },
     accounts: outAccounts,
     meta: {
