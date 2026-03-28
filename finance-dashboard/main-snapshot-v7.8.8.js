@@ -11427,16 +11427,6 @@ function deudas_frequencyStepDays(freq) {
     return 31;
 }
 
-function deudas_formatFrequencyLabel(freq) {
-    const f = (freq || '').toString().trim().toLowerCase();
-    if (f === 'semanal') return 'Pago semanal';
-    if (f === 'quincenal') return 'Pago quincenal';
-    if (f === 'mensual') return 'Pago mensual';
-    if (f === 'bimestral') return 'Pago bimestral';
-    if (f === 'semestral') return 'Pago semestral';
-    return 'Pago mensual';
-}
-
 function deudas_parseCuotasCell(rawD) {
     const raw = (rawD || '').toString().trim();
     if (!raw) return null;
@@ -11708,7 +11698,6 @@ function deudas_renderLista() {
                     nextPaymentHtml = `Próximo pago: <strong style="color:#fbbf24;">${deudas_formatLongDate(nextPayment)}</strong>`;
                 }
             }
-            const frequencyHtml = `Frecuencia de pago: <strong style="color:var(--text-main);">${deudas_formatFrequencyLabel(item.cuotas.frequency)}</strong>`;
             cuotasHtml = `
             <div style="margin-top:0.5rem;padding:0.5rem;border-radius:10px;background:rgba(255,255,255,0.03);width:100%;">
               <div style="display:flex;flex-wrap:wrap;gap:4px;justify-content:flex-start;">${btns}</div>
@@ -11716,7 +11705,6 @@ function deudas_renderLista() {
                 ${statusParts.join(' · ')} · Restante: <strong style="color:${displayMonto > 0 ? '#ef4444' : '#22c55e'}">${formatCurrency(displayMonto)}</strong>
               </div>
               <div style="margin-top:0.2rem;font-size:0.75rem;color:var(--text-muted);">${nextPaymentHtml}</div>
-              <div style="margin-top:0.2rem;font-size:0.75rem;color:var(--text-muted);">${frequencyHtml}</div>
             </div>`;
         }
 
