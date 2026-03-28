@@ -493,6 +493,18 @@
               <input type="number" id="d-monto" class="field-input" step="0.01" inputmode="decimal" placeholder="0.00">
             </div>
 
+            <div class="form-field" style="margin-top:.8rem;">
+              <label class="field-label">Archivos / Fotos de la deuda</label>
+              <label for="d-files-input" class="secondary-btn autos-file-btn">📎 Adjuntar archivos/fotos</label>
+              <input id="d-files-input" type="file" class="autos-file-native" accept="image/*,application/pdf" multiple>
+              <div id="d-files-feedback" class="diff-label" style="margin-top:.35rem;"></div>
+            </div>
+
+            <div id="d-files-existing-wrap" class="form-field hidden" style="margin-top:.35rem;">
+              <label class="field-label">Archivos ya guardados</label>
+              <div id="d-files-existing" style="display:grid;gap:.35rem;"></div>
+            </div>
+
             <button id="d-btn-guardar" class="primary-btn" style="width:100%;margin-top:1rem">Guardar</button>
           </div>
         </div>

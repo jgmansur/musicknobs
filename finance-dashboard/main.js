@@ -17,9 +17,10 @@ const SPREADSHEET_AUTOS_ID = SPREADSHEET_DEUDAS_ID; // Autos + Reparaciones live
 const SPREADSHEET_ESTUDIO_ID = SPREADSHEET_DEUDAS_ID; // Estudio + Plugins in same workbook
 const SPREADSHEET_RECUERDOS_ID = '1b5PyMcfBQX75BODYRn075Meu-aOMW1lxr81USGE6zJA'; // Bitacora Recuerdos
 const RECUERDOS_FOLDER_ID = '1L0t7TjKEugjpOIeYXU_xgoDiRPQ6-YbZ';
+const DEUDAS_RECIBOS_FOLDER_ID = '157KDn-vbkuHH1L8xbaJBGz-oKmT7p5a9';
 const SPREADSHEET_RSM_ID = '14VsoPHGNTSUSbzMOqGWs2qSL-pGywPgjUoHD3MqIJfo'; // Recibos Salud Mariel
 const RSM_FOLDER_ID = '1-ZfeWQ-Rmh-Wm2WMCkULkN6MQWBuxYnj';
-const APP_VERSION  = 'v7.8.8';
+const APP_VERSION  = 'v7.8.9';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -11412,6 +11413,50 @@ let deudasState = {
 
 let deudasCuotaPromptResolve = null;
 
+function deudas_parseUrls(raw) {
+    return (raw || '')
+        .toString()
+        .split(',')
+        .map((u) => u.trim())
+        .filter(Boolean);
+}
+
+function deudas_clearFileSelection() {
+    const input = document.getElementById('d-files-input');
+    if (input) input.value = '';
+    const feedback = document.getElementById('d-files-feedback');
+    if (feedback) feedback.innerText = '';
+}
+
+function deudas_renderExistingFiles(urls) {
+    const wrap = document.getElementById('d-files-existing-wrap');
+    const box = document.getElementById('d-files-existing');
+    if (!wrap || !box) return;
+    if (!Array.isArray(urls) || !urls.length) {
+        wrap.classList.add('hidden');
+        box.innerHTML = '';
+        return;
+    }
+    wrap.classList.remove('hidden');
+    box.innerHTML = urls.map((url, idx) => (
+        `<a href="${url}" target="_blank" rel="noopener" class="autos-phone-link" style="font-size:.8rem;">📎 Archivo ${idx + 1}</a>`
+    )).join('');
+}
+
+async function deudas_uploadSelectedFiles(files) {
+    const uploadedUrls = [];
+    try {
+        for (let i = 0; i < files.length; i++) {
+            const url = await driveUploadFile(files[i], DEUDAS_RECIBOS_FOLDER_ID);
+            if (url) uploadedUrls.push(url);
+        }
+        return uploadedUrls;
+    } catch (err) {
+        await deleteDriveFilesFromUrls(uploadedUrls);
+        throw err;
+    }
+}
+
 function deudas_normalizeStartDate(raw) {
     const s = (raw || '').toString().trim();
     if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
@@ -11541,6 +11586,12 @@ async function deudas_toggleVisibilityInBalance() {
 
 function deudas_bindEvents() {
     document.getElementById('d-btn-add')?.addEventListener('click', () => deudas_abrirSheet(null));
+    document.getElementById('d-files-input')?.addEventListener('change', () => {
+        const input = document.getElementById('d-files-input');
+        const feedback = document.getElementById('d-files-feedback');
+        if (!feedback) return;
+        feedback.innerText = input?.files?.length ? `✅ ${input.files.length} archivo(s) seleccionado(s)` : '';
+    });
     const overlay = document.getElementById('d-sheet-overlay');
     if (overlay) {
         overlay.addEventListener('click', deudas_cerrarSheet);
@@ -11631,9 +11682,9 @@ async function deudas_cargarDatos() {
     try {
         let rows = [];
         try {
-            rows = await sheetsGet(SPREADSHEET_DEUDAS_ID, 'Deudas!A2:D');
+            rows = await sheetsGet(SPREADSHEET_DEUDAS_ID, 'Deudas!A2:E');
         } catch(e) {
-            rows = await sheetsGet(SPREADSHEET_DEUDAS_ID, 'Hoja 1!A2:D');
+            rows = await sheetsGet(SPREADSHEET_DEUDAS_ID, 'Hoja 1!A2:E');
         }
         
         deudasState.allItems = rows.map((row, i) => {
@@ -11646,6 +11697,7 @@ async function deudas_cargarDatos() {
                 monto: parseSheetValue(row[1]),
                 hidden: (row[2] || '').toString().toUpperCase() === 'TRUE',
                 cuotas,
+                archivos: (row[4] || '').toString().trim(),
             };
         }).filter(i => i.concepto);
         deudasState.loaded = true;
@@ -11796,11 +11848,11 @@ async function deudas_swap(idx1, idx2) {
         
         const cuotasStr1 = item2.cuotas ? deudas_buildCuotasCell(item2.cuotas) : '';
         const cuotasStr2 = item1.cuotas ? deudas_buildCuotasCell(item1.cuotas) : '';
-        const dataForRow1 = [[item2.concepto, item2.monto, item2.hidden ? 'TRUE' : 'FALSE', cuotasStr1]];
-        const dataForRow2 = [[item1.concepto, item1.monto, item1.hidden ? 'TRUE' : 'FALSE', cuotasStr2]];
+        const dataForRow1 = [[item2.concepto, item2.monto, item2.hidden ? 'TRUE' : 'FALSE', cuotasStr1, (item2.archivos || '').toString().trim()]];
+        const dataForRow2 = [[item1.concepto, item1.monto, item1.hidden ? 'TRUE' : 'FALSE', cuotasStr2, (item1.archivos || '').toString().trim()]];
         
-        await sheetsUpdate(SPREADSHEET_DEUDAS_ID, `${sheetName}!A${rowId1}:D${rowId1}`, dataForRow1);
-        await sheetsUpdate(SPREADSHEET_DEUDAS_ID, `${sheetName}!A${rowId2}:D${rowId2}`, dataForRow2);
+        await sheetsUpdate(SPREADSHEET_DEUDAS_ID, `${sheetName}!A${rowId1}:E${rowId1}`, dataForRow1);
+        await sheetsUpdate(SPREADSHEET_DEUDAS_ID, `${sheetName}!A${rowId2}:E${rowId2}`, dataForRow2);
     } catch(e) {
         console.error('Error swapping:', e);
         showToast('⚠️ Error al reordenar');
@@ -11818,6 +11870,9 @@ window.deudas_borrar = async function(id) {
     const el = document.getElementById('d-lista');
     el.innerHTML = '<div class="loading-spinner" style="margin-top: 2rem;">Actualizando...</div>';
     try {
+        const item = deudasState.allItems.find((i) => i.id === id);
+        const archivos = deudas_parseUrls(item?.archivos || '');
+        if (archivos.length) await deleteDriveFilesFromUrls(archivos);
         if (deudasState.sheetId === null) {
             try {
                 deudasState.sheetId = await getSheetId(SPREADSHEET_DEUDAS_ID, 'Deudas');
@@ -11861,12 +11916,15 @@ function deudas_abrirSheet(item) {
     document.getElementById('d-sheet-title').innerText = 'Nueva Deuda';
     document.getElementById('d-concepto').value = '';
     document.getElementById('d-monto').value = '';
+    deudas_clearFileSelection();
+    deudas_renderExistingFiles([]);
     
     if (item) {
         document.getElementById('d-edit-id').value = item.id;
         document.getElementById('d-sheet-title').innerText = 'Editar Deuda';
         document.getElementById('d-concepto').value = item.concepto;
         document.getElementById('d-monto').value = item.monto;
+        deudas_renderExistingFiles(deudas_parseUrls(item.archivos));
     }
     sheet.classList.remove('hidden');
 }
@@ -12090,7 +12148,8 @@ document.getElementById('d-split-sheet-overlay').addEventListener('click', () =>
 });
 
 function deudas_cerrarSheet() { 
-    document.getElementById('d-sheet').classList.add('hidden'); 
+    document.getElementById('d-sheet').classList.add('hidden');
+    deudas_clearFileSelection();
 }
 
 async function deudas_guardar() {
@@ -12098,6 +12157,8 @@ async function deudas_guardar() {
     const concepto = document.getElementById('d-concepto').value.trim();
     const monto = parseSheetValue(document.getElementById('d-monto').value);
     const editId = document.getElementById('d-edit-id').value;
+    const fileInput = document.getElementById('d-files-input');
+    const selectedFiles = Array.from(fileInput?.files || []);
     
     if (!concepto || !monto) {
         alert('Por favor llena todos los campos.');
@@ -12112,6 +12173,19 @@ async function deudas_guardar() {
         } catch(e) {
             sheetName = 'Hoja 1';
         }
+
+        let uploadedUrls = [];
+        if (selectedFiles.length) {
+            btn.innerText = `Subiendo ${selectedFiles.length} archivo(s)...`;
+            try {
+                uploadedUrls = await deudas_uploadSelectedFiles(selectedFiles);
+            } catch (uploadErr) {
+                const msg = uploadErr?.message ? uploadErr.message.toString().substring(0, 70) : 'Error de subida';
+                alert(`❌ No se pudo subir archivos. La deuda no se guardó.\n\n${msg}`);
+                return;
+            }
+            btn.innerText = 'Guardando...';
+        }
         
         if (editId) {
             // Preserve hidden flag when editing
@@ -12121,10 +12195,12 @@ async function deudas_guardar() {
             const existingCuotas = existing && existing.cuotas
                 ? deudas_buildCuotasCell(existing.cuotas)
                 : '';
-            await sheetsUpdate(SPREADSHEET_DEUDAS_ID, `${sheetName}!A${editId}:D${editId}`, [[concepto, monto, hiddenVal, existingCuotas]]);
+            const existingUrls = deudas_parseUrls(existing?.archivos || '');
+            const allUrls = [...new Set([...existingUrls, ...uploadedUrls])].join(',');
+            await sheetsUpdate(SPREADSHEET_DEUDAS_ID, `${sheetName}!A${editId}:E${editId}`, [[concepto, monto, hiddenVal, existingCuotas, allUrls]]);
             showToast('✅ Deuda actualizada');
         } else {
-            await sheetsAppend(SPREADSHEET_DEUDAS_ID, `${sheetName}!A:D`, [[concepto, Math.abs(monto), 'FALSE', '']]);
+            await sheetsAppend(SPREADSHEET_DEUDAS_ID, `${sheetName}!A:E`, [[concepto, Math.abs(monto), 'FALSE', '', uploadedUrls.join(',')]]);
             showToast('✅ Deuda agregada');
         }
         deudas_cerrarSheet();
