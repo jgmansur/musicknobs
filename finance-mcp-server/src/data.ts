@@ -524,7 +524,13 @@ async function resolveWidgetCacheSpreadsheetId(): Promise<string> {
   return resolveAccountsSheetId();
 }
 
-export async function getWidgetDashboardSnapshot(limit = 6, includeHidden = false, focusAccount = "Santander"): Promise<DashboardWidgetSnapshot> {
+export async function getWidgetDashboardSnapshot(
+  limit = 6,
+  includeHidden = false,
+  focusAccount = "Santander",
+  options: { preferCache?: boolean } = {},
+): Promise<DashboardWidgetSnapshot> {
+  const preferCache = options.preferCache !== false;
   const [accounts, fx, fixedStatus, debtImpact] = await Promise.all([
     getAccounts(),
     getFxSnapshot(),
@@ -549,7 +555,7 @@ export async function getWidgetDashboardSnapshot(limit = 6, includeHidden = fals
 
   const cacheHasSnapshot = !!cache["snapshot.updatedAt"] && !!cache["snapshot.balanceDisponibleMxn"];
   const cacheFromDashboardApp = String(cache["snapshot.source"] || "") === "dashboard_app";
-  if (cacheHasSnapshot && cacheFromDashboardApp) {
+  if (preferCache && cacheHasSnapshot && cacheFromDashboardApp) {
     let cachedAccounts: Array<{ name: string; type: string; realMxn: number; realMxnText: string }> = [];
     try {
       const arr = JSON.parse(cache["snapshot.accountsJson"] || "[]");

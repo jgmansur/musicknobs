@@ -142,6 +142,26 @@ app.get("/api/widget/dashboard", async (req, reply) => {
     parsed.data.limit || 6,
     !!parsed.data.includeHidden,
     (parsed.data.focusAccount || "Santander").trim() || "Santander",
+    { preferCache: true },
+  );
+});
+
+app.get("/api/widget/dashboard/live", async (req, reply) => {
+  const schema = z.object({
+    token: z.string().optional(),
+    limit: z.coerce.number().int().min(1).max(20).optional(),
+    includeHidden: z.coerce.boolean().optional(),
+    focusAccount: z.string().optional(),
+  });
+  const parsed = schema.safeParse(req.query);
+  if (!parsed.success) return reply.code(400).send({ error: parsed.error.flatten() });
+  reply.header("Cache-Control", "no-store, max-age=0");
+  reply.header("Pragma", "no-cache");
+  return getWidgetDashboardSnapshot(
+    parsed.data.limit || 6,
+    !!parsed.data.includeHidden,
+    (parsed.data.focusAccount || "Santander").trim() || "Santander",
+    { preferCache: false },
   );
 });
 

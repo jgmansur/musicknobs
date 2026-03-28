@@ -81,6 +81,7 @@ curl -H "Authorization: Bearer $API_TOKEN" "https://<your-app>.fly.dev/api/promp
 curl -X POST -H "Authorization: Bearer $API_TOKEN" "https://<your-app>.fly.dev/api/ai-mirror/sync"
 curl "https://<your-app>.fly.dev/api/widget/accounts?token=$WIDGET_TOKEN"
 curl "https://<your-app>.fly.dev/api/widget/dashboard?token=$WIDGET_TOKEN&focusAccount=Santander"
+curl "https://<your-app>.fly.dev/api/widget/dashboard/live?token=$WIDGET_TOKEN&focusAccount=Santander"
 ```
 
 ## Widgy endpoint
@@ -102,6 +103,8 @@ curl "https://<your-app>.fly.dev/api/widget/dashboard?token=$WIDGET_TOKEN&focusA
 - Includes dashboard-like totals in MXN (`balanceDisponibleMxn`, `balanceRealMxn`, pending fixed and debt impact)
 - Includes focus account real balance via `focusAccount` (default `Santander`)
 - Persists anchors and latest snapshot in sheet `WidgyCache` inside the accounts spreadsheet (auto-created)
+- `GET /api/widget/dashboard/live`
+  - Same payload, but bypasses cache and recalculates in real time
 
 ## AI Mirror behavior
 
