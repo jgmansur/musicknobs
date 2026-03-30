@@ -1,23 +1,23 @@
 {
-  "lastUpdated": "2026-03-30T03:20:41.441Z",
+  "lastUpdated": "2026-03-30T13:48:51.129Z",
   "es": {
     "title": "Noticias Diarias: Copyright e Inteligencia Artificial",
     "subtitle": "Lo último en leyes de derechos de autor para músicos, compositores y productores.",
     "sections": [
       {
         "id": "noticia-reciente-1",
-        "title": "La Corte Suprema de los Estados Unidos considera un caso sobre derechos de autor de AI",
-        "content": "La Corte Suprema de los Estados Unidos ha aceptado un caso que podría tener un impacto significativo en la ley de derechos de autor relacionada con la inteligencia artificial. El caso, que involucra a la empresa de música y tecnología, Meta, se centra en la cuestión de si las obras creadas con la ayuda de la inteligencia artificial pueden ser protegidas por derechos de autor."
+        "title": "La Corte Suprema de los Estados Unidos se pronuncia sobre el caso de derechos de autor de AI",
+        "content": "La semana pasada, la Corte Suprema de los Estados Unidos anunció que no revisará el caso de derechos de autor de AI que involucra a la empresa de inteligencia artificial, Midjourney, y su plataforma de generación de imágenes. Esto significa que la decisión del tribunal inferior, que establece que las obras creadas por la IA no son elegibles para los derechos de autor, se mantiene."
       },
       {
         "id": "noticia-reciente-2",
-        "title": "Acuerdo de licencia entre la Sociedad de Autores y Compositores de Música y la empresa de AI, Amper Music",
-        "content": "La Sociedad de Autores y Compositores de Música ha anunciado un acuerdo de licencia con la empresa de inteligencia artificial, Amper Music, que permitirá a los compositores y productores utilizar la tecnología de Amper para crear música con derechos de autor claros."
+        "title": "La Asociación de la Industria de la Grabación de América (RIAA) lanza una campaña para proteger los derechos de autor de la música generada por IA",
+        "content": "La RIAA ha iniciado una campaña para concienciar sobre la importancia de proteger los derechos de autor de la música generada por IA. La campaña busca educar a los productores y compositores sobre los riesgos de utilizar música generada por IA sin permiso y promover la creación de música original."
       },
       {
         "id": "guia-practica",
-        "title": "Guía del día: Proceso de Registro de Obras con IA",
-        "content": "Para proteger sus obras con inteligencia artificial, los compositores y productores deben registrar sus obras en la Oficina de Derechos de Autor de los Estados Unidos. Es importante proporcionar información detallada sobre el proceso de creación de la obra, incluyendo la contribución de la inteligencia artificial."
+        "title": "Guía del día: Cómo registrar tus obras con IA",
+        "content": "Para proteger tus obras con IA, es importante registrarlas en la Oficina de Derechos de Autor de los Estados Unidos. Asegúrate de proporcionar información detallada sobre la creación de la obra, incluyendo la fecha de creación y el software utilizado. También es recomendable consultar con un abogado especializado en derechos de autor para asegurarte de que estás cumpliendo con todos los requisitos legales."
       }
     ]
   },
@@ -27,18 +27,18 @@
     "sections": [
       {
         "id": "recent-news-1",
-        "title": "US Supreme Court Considers AI Copyright Case",
-        "content": "The US Supreme Court has agreed to hear a case that could have significant implications for copyright law related to artificial intelligence. The case, involving tech giant Meta, centers on the question of whether works created with the help of AI can be protected by copyright."
+        "title": "US Supreme Court Declines to Review AI Copyright Case",
+        "content": "Last week, the US Supreme Court announced that it will not review the AI copyright case involving Midjourney, an AI company, and its image generation platform. This means that the lower court's decision, which states that AI-generated works are not eligible for copyright, stands."
       },
       {
         "id": "recent-news-2",
-        "title": "Licensing Deal Between ASCAP and AI Music Company, Amper Music",
-        "content": "The American Society of Composers, Authors, and Publishers (ASCAP) has announced a licensing deal with AI music company Amper Music, allowing composers and producers to use Amper's technology to create music with clear copyright rights."
+        "title": "RIAA Launches Campaign to Protect AI-Generated Music Copyrights",
+        "content": "The Recording Industry Association of America (RIAA) has launched a campaign to raise awareness about the importance of protecting AI-generated music copyrights. The campaign aims to educate producers and composers about the risks of using AI-generated music without permission and promote the creation of original music."
       },
       {
         "id": "practical-guide",
-        "title": "Today's Guide: Registration Process for AI-Assisted Works",
-        "content": "To protect their AI-assisted works, composers and producers must register their works with the US Copyright Office. It is essential to provide detailed information about the creation process, including the contribution of AI, to ensure that the work is properly protected."
+        "title": "Today's Guide: Registering Your AI-Generated Works",
+        "content": "To protect your AI-generated works, it's essential to register them with the US Copyright Office. Make sure to provide detailed information about the creation of the work, including the date of creation and the software used. It's also recommended to consult with a copyright attorney to ensure you're meeting all the legal requirements."
       }
     ]
   }
