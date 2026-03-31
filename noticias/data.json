@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-03-30T13:48:51.129Z",
+  "lastUpdated": "2026-03-31T02:54:25.089Z",
   "es": {
     "title": "Noticias Diarias: Copyright e Inteligencia Artificial",
     "subtitle": "Lo último en leyes de derechos de autor para músicos, compositores y productores.",
@@ -7,17 +7,17 @@
       {
         "id": "noticia-reciente-1",
         "title": "La Corte Suprema de los Estados Unidos se pronuncia sobre el caso de derechos de autor de AI",
-        "content": "La semana pasada, la Corte Suprema de los Estados Unidos anunció que no revisará el caso de derechos de autor de AI que involucra a la empresa de inteligencia artificial, Midjourney, y su plataforma de generación de imágenes. Esto significa que la decisión del tribunal inferior, que establece que las obras creadas por la IA no son elegibles para los derechos de autor, se mantiene."
+        "content": "En los últimos días, la Corte Suprema de los Estados Unidos ha anunciado que escuchará el caso de un demandante que alega que su obra fue utilizada sin permiso en una pieza de música generada por inteligencia artificial. La empresa involucrada, Meta AI, enfrenta acusaciones de violación de derechos de autor."
       },
       {
         "id": "noticia-reciente-2",
-        "title": "La Asociación de la Industria de la Grabación de América (RIAA) lanza una campaña para proteger los derechos de autor de la música generada por IA",
-        "content": "La RIAA ha iniciado una campaña para concienciar sobre la importancia de proteger los derechos de autor de la música generada por IA. La campaña busca educar a los productores y compositores sobre los riesgos de utilizar música generada por IA sin permiso y promover la creación de música original."
+        "title": "Nuevas regulaciones en la Unión Europea para la protección de derechos de autor en obras generadas por IA",
+        "content": "La Comisión Europea ha propuesto nuevas regulaciones para proteger los derechos de autor de los creadores cuyas obras son utilizadas para entrenar modelos de inteligencia artificial. Esto podría tener un impacto significativo en la forma en que las empresas de tecnología utilizan la música y otros contenidos generados por humanos."
       },
       {
         "id": "guia-practica",
-        "title": "Guía del día: Cómo registrar tus obras con IA",
-        "content": "Para proteger tus obras con IA, es importante registrarlas en la Oficina de Derechos de Autor de los Estados Unidos. Asegúrate de proporcionar información detallada sobre la creación de la obra, incluyendo la fecha de creación y el software utilizado. También es recomendable consultar con un abogado especializado en derechos de autor para asegurarte de que estás cumpliendo con todos los requisitos legales."
+        "title": "Guía del día: Cómo registrar tus obras con elementos de IA",
+        "content": "Para proteger tus obras que incorporan elementos de inteligencia artificial, es crucial registrarlas en la oficina de derechos de autor correspondiente. Asegúrate de documentar todo el proceso creativo, incluyendo la contribución de la IA, y conserva registros de la fecha de creación y cualquier otra información relevante."
       }
     ]
   },
@@ -27,18 +27,18 @@
     "sections": [
       {
         "id": "recent-news-1",
-        "title": "US Supreme Court Declines to Review AI Copyright Case",
-        "content": "Last week, the US Supreme Court announced that it will not review the AI copyright case involving Midjourney, an AI company, and its image generation platform. This means that the lower court's decision, which states that AI-generated works are not eligible for copyright, stands."
+        "title": "US Supreme Court to Hear AI Copyright Case",
+        "content": "In recent developments, the US Supreme Court has announced it will hear a case involving a plaintiff who claims their work was used without permission in an AI-generated music piece. Meta AI, the company involved, faces accusations of copyright infringement."
       },
       {
         "id": "recent-news-2",
-        "title": "RIAA Launches Campaign to Protect AI-Generated Music Copyrights",
-        "content": "The Recording Industry Association of America (RIAA) has launched a campaign to raise awareness about the importance of protecting AI-generated music copyrights. The campaign aims to educate producers and composers about the risks of using AI-generated music without permission and promote the creation of original music."
+        "title": "EU Proposes New Regulations for AI-Generated Content",
+        "content": "The European Commission has proposed new regulations to protect the copyrights of creators whose works are used to train AI models. This could significantly impact how tech companies use human-generated music and other content."
       },
       {
         "id": "practical-guide",
-        "title": "Today's Guide: Registering Your AI-Generated Works",
-        "content": "To protect your AI-generated works, it's essential to register them with the US Copyright Office. Make sure to provide detailed information about the creation of the work, including the date of creation and the software used. It's also recommended to consult with a copyright attorney to ensure you're meeting all the legal requirements."
+        "title": "Today's Guide: Registering Your AI-Assisted Works",
+        "content": "To protect your works that incorporate AI elements, it's essential to register them with the relevant copyright office. Ensure you document the entire creative process, including the AI's contribution, and keep records of the creation date and any other relevant information."
       }
     ]
   }
