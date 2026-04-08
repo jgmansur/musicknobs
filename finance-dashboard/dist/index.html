@@ -12,8 +12,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <script type="module" crossorigin src="./assets/index-CauI2n8D.js"></script>
-    <link rel="stylesheet" crossorigin href="./assets/index-Mj3Vzzpi.css">
+    <script type="module" crossorigin src="./assets/index-CIo93HBM.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-DjcBoKfM.css">
   </head>
   <body>
     <div id="app">
@@ -491,6 +491,25 @@
             <div class="form-field">
               <label class="field-label">Monto Adeudado</label>
               <input type="number" id="d-monto" class="field-input" step="0.01" inputmode="decimal" placeholder="0.00">
+            </div>
+
+            <div class="form-field">
+              <label class="field-label">Deuda padre (opcional)</label>
+              <select id="d-parent-select" class="field-input">
+                <option value="">Sin padre</option>
+              </select>
+            </div>
+
+            <div class="form-field" style="margin-top:.8rem;">
+              <label class="field-label">Archivos / Fotos de la deuda</label>
+              <label for="d-files-input" class="secondary-btn autos-file-btn deudas-file-btn">📎 Adjuntar archivos/fotos</label>
+              <input id="d-files-input" type="file" class="autos-file-native" accept="image/*,application/pdf" multiple>
+              <div id="d-files-feedback" class="diff-label" style="margin-top:.35rem;"></div>
+            </div>
+
+            <div id="d-files-existing-wrap" class="form-field hidden" style="margin-top:.35rem;">
+              <label class="field-label">Archivos ya guardados</label>
+              <div id="d-files-existing" style="display:grid;gap:.35rem;"></div>
             </div>
 
             <button id="d-btn-guardar" class="primary-btn" style="width:100%;margin-top:1rem">Guardar</button>
