@@ -1,24 +1,24 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jay Mansur - Music Producer</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <title>Jay Mansur - Resume</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            --primary-color: #ffd700;
-            --secondary-color: #ffb347;
-            --accent-color: #ffc947;
-            --text-light: #cccccc;
-            --text-dark: #ffd700;
-            --bg-light: #1a1a1a;
-            --bg-dark: #0f0f0f;
-            --gradient: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%);
-            --music-gradient: linear-gradient(135deg, #ffd700 0%, #ffb347 100%);
-            --gold-gradient: linear-gradient(135deg, #ffd700 0%, #ffc947 50%, #ffb347 100%);
+            --bg: #050505;
+            --card-bg: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --accent: #FFD700;
+            --accent-glow: rgba(255, 215, 0, 0.15);
+            --text-main: #e0e0e0;
+            --text-dim: #999;
+            --font-header: 'Outfit', sans-serif;
+            --font-body: 'Inter', sans-serif;
         }
 
         * {
@@ -28,541 +28,250 @@
         }
 
         body {
-            font-family: 'Inter', sans-serif;
+            background-color: var(--bg);
+            color: var(--text-main);
+            font-family: var(--font-body);
             line-height: 1.6;
-            background: #000;
-            color: var(--text-dark);
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(255, 215, 0, 0.03) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(255, 215, 0, 0.02) 0%, transparent 40%);
         }
 
         .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            background: #000;
-            box-shadow: 0 0 40px rgba(255, 215, 0, 0.2);
-            border: 1px solid #333;
+            max-width: 1000px;
+            margin: 40px auto;
+            padding: 0 20px;
         }
 
-        .header {
-            background: var(--gold-gradient);
-            color: #000;
-            padding: 60px 50px;
+        header {
+            text-align: center;
+            margin-bottom: 60px;
             position: relative;
-            overflow: hidden;
         }
 
-        .header::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="20" cy="20" r="2" fill="rgba(0,0,0,0.1)"/><circle cx="80" cy="40" r="1.5" fill="rgba(0,0,0,0.1)"/><circle cx="60" cy="80" r="1" fill="rgba(0,0,0,0.1)"/><path d="M10 50 Q 30 30, 50 50 T 90 50" stroke="rgba(0,0,0,0.05)" stroke-width="2" fill="none"/></svg>') repeat;
-            animation: float 20s infinite linear;
-            pointer-events: none;
-        }
-
-        @keyframes float {
-            0% {
-                transform: translate(-50%, -50%) rotate(0deg);
-            }
-
-            100% {
-                transform: translate(-50%, -50%) rotate(360deg);
-            }
-        }
-
-        .header-content {
-            display: grid;
-            grid-template-columns: auto 1fr auto;
-            gap: 40px;
-            align-items: center;
+        .profile-wrapper {
             position: relative;
-            z-index: 2;
+            display: inline-block;
+            margin-bottom: 25px;
         }
 
-        .profile-photo {
-            width: 160px;
-            height: 160px;
+        .profile-img {
+            width: 180px;
+            height: 180px;
             border-radius: 50%;
-            background: #333;
+            object-fit: cover;
+            border: 2px solid var(--accent);
+            padding: 5px;
+            background: var(--bg);
+            box-shadow: 0 0 30px var(--accent-glow);
+        }
+
+        header h1 {
+            font-family: var(--font-header);
+            font-size: 4rem;
+            font-weight: 700;
+            background: linear-gradient(to bottom, #fff, #aaa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -1px;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            font-size: 1.2rem;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            font-weight: 500;
+        }
+
+        .nav-links {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .btn {
+            padding: 10px 24px;
+            border-radius: 100px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             display: flex;
             align-items: center;
-            justify-content: center;
-            border: 4px solid rgba(0, 0, 0, 0.3);
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: #000;
+        }
+
+        .btn-outline {
+            border: 1px solid var(--glass-border);
+            color: #fff;
+            background: var(--card-bg);
             backdrop-filter: blur(10px);
-            overflow: hidden;
         }
 
-        .profile-info h1 {
-            font-size: 3.5rem;
-            font-weight: 700;
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
         }
 
-        .profile-info .subtitle {
-            font-size: 1.5rem;
-            font-weight: 300;
-            opacity: 0.9;
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 40px;
+        }
+
+        section {
+            background: var(--card-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 40px;
+            backdrop-filter: blur(20px);
+            transition: border 0.3s ease;
+        }
+
+        section:hover {
+            border-color: rgba(255, 215, 0, 0.3);
+        }
+
+        section h2 {
+            font-family: var(--font-header);
+            font-size: 1.8rem;
+            margin-bottom: 30px;
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        section h2::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: linear-gradient(to right, var(--glass-border), transparent);
+        }
+
+        /* Markdown Content Styling */
+        .cv-content h3 {
+            font-size: 1.4rem;
+            margin: 25px 0 10px 0;
+            color: #fff;
+        }
+
+        .cv-content p {
+            margin-bottom: 15px;
+            color: var(--text-dim);
+        }
+
+        .cv-content ul {
+            list-style: none;
             margin-bottom: 20px;
         }
 
-        .profile-info .location {
-            font-size: 1.1rem;
-            opacity: 0.8;
-        }
-
-        .header-btns {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        .linktree-btn {
-            background: #000;
-            color: #ffd700;
-            padding: 15px 30px;
-            border-radius: 50px;
-            text-decoration: none;
-            font-weight: 600;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
-            border: 2px solid #ffd700;
-        }
-
-        .linktree-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 12px 35px rgba(255, 215, 0, 0.4);
-            background: #ffd700;
-            color: #000;
-        }
-
-        .lang-btn {
-            background: rgba(0, 0, 0, 0.1);
-            color: #000;
-            padding: 10px 20px;
-            border-radius: 50px;
-            text-decoration: none;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            border: 1px solid rgba(0, 0, 0, 0.2);
-        }
-
-        .lang-btn:hover {
-            background: rgba(0, 0, 0, 0.2);
-            transform: scale(1.05);
-        }
-
-        .main-content {
-            display: grid;
-            grid-template-columns: 2fr 1fr;
-            gap: 50px;
-            padding: 50px;
-        }
-
-        .section {
-            margin-bottom: 40px;
-        }
-
-        .section h2 {
-            font-size: 1.8rem;
-            font-weight: 600;
-            color: var(--primary-color);
-            margin-bottom: 25px;
+        .cv-content li {
             position: relative;
-            padding-bottom: 10px;
-        }
-
-        .section h2::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 50px;
-            height: 3px;
-            background: var(--gold-gradient);
-            border-radius: 2px;
-        }
-
-        .profile-description {
-            font-size: 1.1rem;
-            line-height: 1.8;
-            color: var(--text-light);
-            margin-bottom: 30px;
-        }
-
-        .experience-item {
-            background: var(--bg-light);
-            padding: 30px;
-            border-radius: 15px;
-            margin-bottom: 25px;
-            border-left: 4px solid var(--secondary-color);
-            transition: transform 0.3s ease;
-            border: 1px solid #333;
-        }
-
-        .experience-item:hover {
-            transform: translateX(5px);
-        }
-
-        .experience-year {
-            color: var(--secondary-color);
-            font-weight: 600;
-            font-size: 1.1rem;
-            margin-bottom: 8px;
-        }
-
-        .experience-title {
-            font-size: 1.3rem;
-            font-weight: 600;
-            color: var(--primary-color);
-            margin-bottom: 15px;
-        }
-
-        .experience-description {
-            color: var(--text-light);
-            line-height: 1.7;
-        }
-
-        .collaborators {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-top: 15px;
-        }
-
-        .collaborator-tag {
-            background: #000;
-            color: var(--primary-color);
-            padding: 5px 12px;
-            border-radius: 20px;
-            font-size: 0.9rem;
-            border: 1px solid #333;
-        }
-
-        .sidebar {
-            background: #000;
-            padding: 30px;
-            border-radius: 15px;
-            height: fit-content;
-            border: 1px solid #333;
-        }
-
-        .contact-info {
-            margin-bottom: 30px;
-        }
-
-        .contact-item {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            margin-bottom: 15px;
-            padding: 10px 0;
-            color: var(--text-light);
-        }
-
-        .contact-item i {
-            color: var(--secondary-color);
-            width: 20px;
-            text-align: center;
-        }
-
-        .skills-list {
-            list-style: none;
-        }
-
-        .skills-list li {
-            background: #000;
-            color: var(--primary-color);
-            padding: 12px 18px;
+            padding-left: 25px;
             margin-bottom: 10px;
-            border-radius: 8px;
-            border-left: 4px solid var(--accent-color);
-            border: 1px solid #333;
-            transition: transform 0.2s ease;
+            color: var(--text-dim);
         }
 
-        .skills-list li:hover {
-            transform: translateX(5px);
-        }
-
-        .education-item {
-            background: #000;
-            color: var(--text-light);
-            padding: 20px;
-            border-radius: 10px;
-            margin-bottom: 15px;
-            border: 1px solid #333;
-        }
-
-        .education-title {
-            font-weight: 600;
-            color: var(--primary-color);
-            margin-bottom: 5px;
-        }
-
-        .education-institution {
-            color: var(--text-light);
-            font-size: 0.95rem;
-        }
-
-        .languages {
-            display: flex;
-            gap: 15px;
-        }
-
-        .language-item {
-            background: #000;
-            color: var(--text-light);
-            padding: 15px;
-            border-radius: 10px;
-            text-align: center;
-            flex: 1;
-            border: 1px solid #333;
-        }
-
-        .language-name {
-            font-weight: 600;
-            margin-bottom: 5px;
-            color: var(--primary-color);
-        }
-
-        .language-level {
-            color: var(--text-light);
-            font-size: 0.9rem;
-        }
-
-        .music-note {
+        .cv-content li::before {
+            content: '→';
             position: absolute;
-            opacity: 0.3;
-            font-size: 2rem;
-            color: var(--secondary-color);
+            left: 0;
+            color: var(--accent);
         }
 
-        .note-1 {
-            top: 20%;
-            right: 10%;
+        .cv-content strong {
+            color: #fff;
+            font-weight: 600;
         }
 
-        .note-2 {
-            bottom: 30%;
-            left: 15%;
-        }
-
+        /* Responsive */
         @media (max-width: 768px) {
-            .header-content {
-                grid-template-columns: 1fr;
-                text-align: center;
-                gap: 30px;
-            }
+            header h1 { font-size: 2.5rem; }
+            section { padding: 25px; }
+        }
 
-            .profile-info h1 {
-                font-size: 2.5rem;
-            }
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
 
-            .main-content {
-                grid-template-columns: 1fr;
-                padding: 30px;
-                gap: 30px;
-            }
-
-            .header {
-                padding: 40px 30px;
-            }
+        section {
+            animation: fadeIn 0.8s ease-out forwards;
         }
     </style>
 </head>
-
 <body>
     <div class="container">
-        <!-- Header Section -->
-        <div class="header">
-            <div class="header-content">
-                <div class="profile-photo">
-                    <img src="ProfilePicture.jpg" alt="Jay Mansur"
-                        style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
-                </div>
-                <div class="profile-info">
+        <header>
+            <div class="profile-wrapper">
+                <img src="ProfilePicture.jpg" alt="Jay Mansur" class="profile-img">
+            </div>
+            <h1>JAY MANSUR</h1>
+            <p>Productor Musical & IA Expert</p>
+            
+            <div class="nav-links">
+                <a href="index.html" class="btn btn-outline">
+                    <i class="fas fa-language"></i> ESPAÑOL
+                </a>
+                <a href="https://linktr.ee/musicknobs" target="_blank" class="btn btn-primary">
+                    <i class="fas fa-link"></i> LINKTREE
+                </a>
+            </div>
+        </header>
+
+        <main class="content-grid">
+            <section>
+                <div class="cv-content">
                     <h1>Jay Mansur</h1>
-                    <div class="subtitle">Music Producer & Mix Engineer</div>
-                    <div class="location">
-                        <i class="fas fa-map-marker-alt"></i>
-                        San Miguel de Allende, Guanajuato, Mexico
-                    </div>
+<p><em>Music Producer, Mixing &amp; Mastering Engineer</em></p>
+<p>📧 <a href="mailto:jgmansur2@gmail.com">jgmansur2@gmail.com</a> | 📍 San Miguel de Allende, Guanajuato, Mexico</p>
+<hr />
+<h2>👤 Professional Profile</h2>
+<p>Music producer, mixing, and mastering engineer with over 25 years of industry experience. Expert in <strong>Pro Tools, Logic, and Ableton Live</strong>, with advanced proficiency in Final Cut Pro, DaVinci Resolve, OBS, and Artificial Intelligence tools. Extensive track record in recording, producing, mixing, and mastering for internationally renowned artists, as well as audiovisual content creation for YouTube and TikTok. In-depth understanding of publishing and record label operations, including royalties and copyrights.</p>
+<h2>💼 Professional Experience</h2>
+<h3>Independent Producer &amp; Collaborator</h3>
+<p><strong>2011 — Present | Mexico (San Miguel de Allende)</strong>
+* Instructor at the SACM (Society of Authors and Composers of Mexico) within the Composers Workshop.
+* Collaborated on production, mixing, and recording with artists such as Reyli, Samo, Yurem, Danny Rey, Renato López (EPD), Gustavo Galindo, among others.</p>
+<h3>Independent Producer</h3>
+<p><strong>2001 — 2011 | Miami, USA</strong>
+* Produced my first album as an independent producer.
+* Worked directly with top-tier producers and artists such as Sergio George, Jorge Luis Piloto, Yoel Enríquez, Tito Nieves, David Bustamante, Carolina La O, Peewee, Anahís, Andrés Cuervo, Ninel Conde, Xeronimo, among others.</p>
+<h3>Music Production</h3>
+<p><strong>1999 | Universal Music</strong>
+* Handled music production on Xeronimo's album for the Universal Music label.</p>
+<h2>🛠️ Key Skills</h2>
+<ul>
+<li><strong>Production and Audio:</strong> Expert in Pro Tools, Logic Pro, and Ableton Live. Specialist in advanced mixing and mastering processes.</li>
+<li><strong>Music Business:</strong> Expert knowledge of royalties, copyrights, and the internal workings of publishing companies and record labels.</li>
+<li><strong>Visual Content:</strong> Advanced use of Final Cut Pro, DaVinci Resolve, and OBS. Solid experience producing optimized videos for YouTube and TikTok.</li>
+<li><strong>AI-Assisted Engineering &amp; Web Development:</strong> Creation and orchestration of advanced web applications using modern frameworks, databases, and AI orchestration tools (like Antigravity). Proficiency in terminal environments and AI CLI tools (e.g., Open Code), effectively interacting with multiple Large Language Models (LLMs) for automation, software development, and complex problem-solving.</li>
+</ul>
+<h2>🎓 Education</h2>
+<ul>
+<li><strong>Mix with the Masters</strong> — Certificate (2013)</li>
+<li><strong>Amparo Rubín Academy</strong> — Production and Composition (1995-1999)</li>
+<li><em>Bachelor's Degree in Marketing (Expected Graduation: May 2026)</em></li>
+</ul>
+<h2>ℹ️ Additional Information</h2>
+<ul>
+<li><strong>Nationalities:</strong> Mexican and American (Born May 8, 1979)</li>
+<li><strong>Languages:</strong> Spanish (Native), English (Advanced)</li>
+</ul>
                 </div>
-                <div class="header-btns">
-                    <a href="index.html" class="lang-btn">
-                        <i class="fas fa-language"></i>
-                        ESPAÑOL
-                    </a>
-                    <a href="https://linktr.ee/musicknobs" target="_blank" class="linktree-btn">
-                        <i class="fas fa-link"></i>
-                        My Linktree
-                    </a>
-                </div>
-            </div>
-            <i class="fas fa-music music-note note-1"></i>
-            <i class="fas fa-headphones music-note note-2"></i>
-        </div>
-
-        <!-- Main Content -->
-        <div class="main-content">
-            <div class="left-column">
-                <!-- Profile Section -->
-                <div class="section">
-                    <h2>Professional Profile</h2>
-                    <p class="profile-description">
-                        Music producer, mix, and mastering engineer with over 25 years of industry experience.
-                        Expert in <strong>Pro Tools</strong>, <strong>Logic</strong>, and <strong>Ableton Live</strong>,
-                        with advanced proficiency in
-                        <strong>Final Cut Pro</strong>, <strong>DaVinci Resolve</strong>, and <strong>OBS</strong>.
-                        Extensive track record in recording,
-                        production, mixing, and mastering for internationally renowned artists, as well as audiovisual
-                        content creation
-                        for YouTube and TikTok.
-                    </p>
-                </div>
-
-                <!-- Experience Section -->
-                <div class="section">
-                    <h2>Professional Experience</h2>
-
-                    <div class="experience-item">
-                        <div class="experience-year">1999</div>
-                        <div class="experience-title">Project with Xeronimo (Universal Music)</div>
-                        <div class="experience-description">
-                            Music production work on the album for the band Xeronimo under Universal Music,
-                            marking the beginning of my professional career in the recording industry.
-                        </div>
-                    </div>
-
-                    <div class="experience-item">
-                        <div class="experience-year">2001 — 2011</div>
-                        <div class="experience-title">Miami Era - Independent Producer</div>
-                        <div class="experience-description">
-                            Production of my first album as an independent producer. Collaboration with world-class
-                            producers and artists in the Latin music scene.
-                        </div>
-                        <div class="collaborators">
-                            <span class="collaborator-tag">Sergio George</span>
-                            <span class="collaborator-tag">Jorge Luis Piloto</span>
-                            <span class="collaborator-tag">Yoel Enríquez</span>
-                            <span class="collaborator-tag">Tito Nieves</span>
-                            <span class="collaborator-tag">David Bustamante</span>
-                            <span class="collaborator-tag">Carolina La O</span>
-                            <span class="collaborator-tag">Peewee</span>
-                            <span class="collaborator-tag">Anahis</span>
-                            <span class="collaborator-tag">Andrés Cuervo</span>
-                            <span class="collaborator-tag">Ninel Conde</span>
-                            <span class="collaborator-tag">Chenoa</span>
-                        </div>
-                    </div>
-
-                    <div class="experience-item">
-                        <div class="experience-year">2011 — Present</div>
-                        <div class="experience-title">Return to Mexico</div>
-                        <div class="experience-description">
-                            Collaborations with renowned artists and established in San Miguel de Allende.
-                            Professor at SACM (Society of Authors and Composers of Mexico) in the Composers Workshop.
-                        </div>
-                        <div class="collaborators">
-                            <span class="collaborator-tag">Reyli</span>
-                            <span class="collaborator-tag">Samo</span>
-                            <span class="collaborator-tag">Yurem</span>
-                            <span class="collaborator-tag">Danny Rey</span>
-                            <span class="collaborator-tag">Renato López (RIP)</span>
-                            <span class="collaborator-tag">Gustavo Galindo</span>
-                            <span class="collaborator-tag">Danna Paola</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Sidebar -->
-            <div class="sidebar">
-                <!-- Personal Data -->
-                <div class="section">
-                    <h2>Personal Data</h2>
-                    <div class="contact-info">
-                        <div class="contact-item">
-                            <i class="fas fa-user"></i>
-                            <div>
-                                <strong>Juan Guillermo Mansur Gonzalez</strong><br>
-                                <small>Known as Jay Mansur</small>
-                            </div>
-                        </div>
-                        <div class="contact-item">
-                            <i class="fas fa-birthday-cake"></i>
-                            <div>May 8, 1979<br><small>Ciudad Victoria, Tamaulipas</small></div>
-                        </div>
-                        <div class="contact-item">
-                            <i class="fas fa-flag"></i>
-                            <div>Mexican and US Citizen</div>
-                        </div>
-                        <div class="contact-item">
-                            <i class="fas fa-envelope"></i>
-                            <div>jgmansur2@gmail.com</div>
-                        </div>
-                        <div class="contact-item">
-                            <i class="fas fa-heart"></i>
-                            <div>Married</div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Skills -->
-                <div class="section">
-                    <h2>Skills</h2>
-                    <ul class="skills-list">
-                        <li><strong>Pro Tools, Logic Pro, Ableton Live</strong></li>
-                        <li><strong>Final Cut Pro, DaVinci Resolve</strong></li>
-                        <li><strong>Mixing and Mastering</strong></li>
-                        <li><strong>YouTube/TikTok Content</strong></li>
-                        <li><strong>Copyright Law</strong></li>
-                        <li><strong>OBS Studio</strong></li>
-                    </ul>
-                </div>
-
-                <!-- Education -->
-                <div class="section">
-                    <h2>Education</h2>
-                    <div class="education-item">
-                        <div class="education-title">Bachelor in Marketing</div>
-                        <div class="education-institution">Universidad Tecmilenio<br><small>To be completed April
-                                2026<br>Graduation: May 2026</small></div>
-                    </div>
-                    <div class="education-item">
-                        <div class="education-title">Mix with the Masters</div>
-                        <div class="education-institution">Specialized Seminar (2013)</div>
-                    </div>
-                </div>
-
-                <!-- Languages -->
-                <div class="section">
-                    <h2>Languages</h2>
-                    <div class="languages">
-                        <div class="language-item">
-                            <div class="language-name">Spanish</div>
-                            <div class="language-level">Native</div>
-                        </div>
-                        <div class="language-item">
-                            <div class="language-name">English</div>
-                            <div class="language-level">Advanced</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+            </section>
+        </main>
     </div>
 </body>
-
 </html>
