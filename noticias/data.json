@@ -1,23 +1,23 @@
 {
-  "lastUpdated": "2026-04-08T02:57:13.347Z",
+  "lastUpdated": "2026-04-08T13:47:38.836Z",
   "es": {
     "title": "Noticias Diarias: Copyright e Inteligencia Artificial",
     "subtitle": "Lo último en leyes de derechos de autor para músicos, compositores y productores.",
     "sections": [
       {
         "id": "noticia-reciente-1",
-        "title": "La Corte Suprema de los Estados Unidos se pronuncia sobre el caso de derechos de autor de AI",
-        "content": "En los últimos días, la Corte Suprema de los Estados Unidos ha aceptado revisar un caso que podría tener un impacto significativo en la ley de derechos de autor relacionada con la inteligencia artificial. El caso involucra a un artista que utilizó una herramienta de IA para generar una obra de arte y ahora está siendo demandado por infracción de derechos de autor. Empresas como Google y Microsoft han mostrado interés en este caso, ya que podría sentar un precedente para la protección de obras creadas con IA."
+        "title": "Spotify se enfrenta a una demanda por violación de derechos de autor por su uso de IA",
+        "content": "La empresa de música en streaming, Spotify, ha sido demandada por varios compositores y productores que alegan que la plataforma ha utilizado inteligencia artificial para generar música sin obtener los permisos necesarios. La demanda, presentada en un tribunal de California, busca compensación por daños y perjuicios y una orden para que Spotify deje de utilizar la tecnología de IA para generar música."
       },
       {
         "id": "noticia-reciente-2",
-        "title": "Nuevas regulaciones en la Unión Europea para la protección de la propiedad intelectual en la era digital",
-        "content": "La Unión Europea ha anunciado planes para actualizar sus leyes de propiedad intelectual para abordar los desafíos planteados por la inteligencia artificial y otras tecnologías emergentes. Esto podría tener implicaciones significativas para los productores de música y otros contenidos que utilizan IA en su proceso creativo. La Comisión Europea está trabajando en una propuesta que podría incluir nuevas normas para la licencia y el uso de obras protegidas por derechos de autor en entornos de IA."
+        "title": "La Unión Europea aprueba una nueva ley de derechos de autor que afecta a la música generada por IA",
+        "content": "La Unión Europea ha aprobado una nueva ley de derechos de autor que establece que los creadores de música generada por inteligencia artificial deben obtener los permisos necesarios para utilizar las obras originales. La ley también establece que los algoritmos de IA deben ser transparentes y que los creadores deben ser identificados claramente."
       },
       {
         "id": "guia-practica",
-        "title": "Guía del día: Cómo registrar tus obras con IA",
-        "content": "Para proteger tus obras creadas con inteligencia artificial, es crucial registrarlas adecuadamente. Actualmente, la Oficina de Derechos de Autor de los Estados Unidos y otras autoridades internacionales están explorando cómo adaptar sus procesos de registro para acomodar obras generadas por IA. Un consejo práctico es documentar detalladamente el proceso creativo, incluyendo la contribución humana y el uso de herramientas de IA, para demostrar la autoría y facilitar el registro de la obra."
+        "title": "Guía del día: Proceso de Registro de Obras con IA",
+        "content": "Para proteger tus obras con IA, es importante registrarlas en la oficina de derechos de autor correspondiente. Asegúrate de proporcionar toda la información necesaria, incluyendo el código fuente de la IA y los permisos obtenidos para utilizar las obras originales. También es recomendable consultar con un abogado especializado en derechos de autor para asegurarte de que estás cumpliendo con todas las leyes y regulaciones aplicables."
       }
     ]
   },
@@ -27,18 +27,18 @@
     "sections": [
       {
         "id": "recent-news-1",
-        "title": "US Supreme Court to Weigh in on AI Copyright Case",
-        "content": "In recent days, the US Supreme Court has agreed to review a case that could have significant implications for copyright law related to artificial intelligence. The case involves an artist who used an AI tool to generate a work of art and is now being sued for copyright infringement. Companies like Google and Microsoft have shown interest in this case, as it could set a precedent for the protection of AI-generated works."
+        "title": "Spotify Faces Lawsuit Over AI-Generated Music Copyright Infringement",
+        "content": "Music streaming giant Spotify has been sued by several composers and producers who allege that the platform has used artificial intelligence to generate music without obtaining the necessary permissions. The lawsuit, filed in a California court, seeks compensation for damages and an order for Spotify to stop using AI technology to generate music."
       },
       {
         "id": "recent-news-2",
-        "title": "EU Announces New Regulations for Intellectual Property Protection in the Digital Age",
-        "content": "The European Union has announced plans to update its intellectual property laws to address the challenges posed by artificial intelligence and other emerging technologies. This could have significant implications for music producers and other content creators who use AI in their creative process. The European Commission is working on a proposal that could include new rules for licensing and using copyrighted works in AI environments."
+        "title": "EU Approves New Copyright Law Affecting AI-Generated Music",
+        "content": "The European Union has approved a new copyright law that states creators of AI-generated music must obtain the necessary permissions to use original works. The law also requires AI algorithms to be transparent and creators to be clearly identified."
       },
       {
         "id": "practical-guide",
-        "title": "Today's Guide: Registering Your AI-Generated Works",
-        "content": "To protect your AI-generated works, it's crucial to register them properly. Currently, the US Copyright Office and other international authorities are exploring how to adapt their registration processes to accommodate AI-generated works. A practical tip is to thoroughly document the creative process, including human contribution and the use of AI tools, to demonstrate authorship and facilitate the registration of the work."
+        "title": "Today's Guide: Registration Process for AI-Assisted Works",
+        "content": "To protect your AI-assisted works, it's essential to register them with the relevant copyright office. Ensure you provide all necessary information, including the AI source code and permissions obtained to use original works. It's also recommended to consult with a copyright law specialist to ensure you're complying with all applicable laws and regulations."
       }
     ]
   }
