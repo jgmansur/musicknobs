@@ -1,24 +1,21 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jay Mansur - Resume</title>
+    <title>Jay Mansur - Curriculum Vitae</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@300;400;600&family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg: #050505;
-            --card-bg: rgba(255, 255, 255, 0.03);
-            --glass-border: rgba(255, 255, 255, 0.08);
-            --accent: #FFD700;
-            --accent-glow: rgba(255, 215, 0, 0.15);
-            --text-main: #e0e0e0;
-            --text-dim: #999;
-            --font-header: 'Outfit', sans-serif;
-            --font-body: 'Inter', sans-serif;
+            --bg-color: #f4f1ea;
+            --paper-color: #ffffff;
+            --text-main: #2d3436;
+            --text-muted: #636e72;
+            --accent-color: #9c8b52;
+            --border-color: #e0dcd3;
         }
 
         * {
@@ -28,250 +25,175 @@
         }
 
         body {
-            background-color: var(--bg);
+            background-color: var(--bg-color);
             color: var(--text-main);
-            font-family: var(--font-body);
+            font-family: 'Inter', sans-serif;
             line-height: 1.6;
-            overflow-x: hidden;
-            background-image: 
-                radial-gradient(circle at 10% 20%, rgba(255, 215, 0, 0.03) 0%, transparent 40%),
-                radial-gradient(circle at 90% 80%, rgba(255, 215, 0, 0.02) 0%, transparent 40%);
+            padding: 40px 20px;
+            display: flex;
+            justify-content: center;
         }
 
-        .container {
-            max-width: 1000px;
-            margin: 40px auto;
-            padding: 0 20px;
+        .paper {
+            background-color: var(--paper-color);
+            max-width: 900px;
+            width: 100%;
+            padding: 60px 80px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            border: 1px solid var(--border-color);
+            position: relative;
         }
 
         header {
             text-align: center;
-            margin-bottom: 60px;
-            position: relative;
+            margin-bottom: 50px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 40px;
         }
 
-        .profile-wrapper {
-            position: relative;
-            display: inline-block;
-            margin-bottom: 25px;
-        }
-
-        .profile-img {
-            width: 180px;
-            height: 180px;
+        .profile-pic {
+            width: 130px;
+            height: 130px;
             border-radius: 50%;
+            margin: 0 auto 25px;
+            border: 1px solid var(--accent-color);
+            padding: 4px;
+            background: white;
+            display: block;
             object-fit: cover;
-            border: 2px solid var(--accent);
-            padding: 5px;
-            background: var(--bg);
-            box-shadow: 0 0 30px var(--accent-glow);
         }
 
-        header h1 {
-            font-family: var(--font-header);
-            font-size: 4rem;
-            font-weight: 700;
-            background: linear-gradient(to bottom, #fff, #aaa);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            letter-spacing: -1px;
-            margin-bottom: 10px;
-        }
-
-        header p {
-            font-size: 1.2rem;
-            color: var(--accent);
+        h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.8rem;
+            letter-spacing: 2px;
             text-transform: uppercase;
-            letter-spacing: 3px;
-            font-weight: 500;
+            margin-bottom: 10px;
+            color: #1a1a1a;
         }
 
-        .nav-links {
+        .subtitle {
+            font-family: 'Playfair Display', serif;
+            font-style: italic;
+            font-size: 1.1rem;
+            color: var(--accent-color);
+            margin-bottom: 25px;
+            letter-spacing: 1px;
+        }
+
+        .controls {
             display: flex;
             justify-content: center;
-            gap: 20px;
-            margin-top: 30px;
+            gap: 12px;
+            margin-bottom: 10px;
         }
 
         .btn {
-            padding: 10px 24px;
-            border-radius: 100px;
+            padding: 6px 18px;
+            border: 1px solid var(--border-color);
+            background: transparent;
+            color: var(--text-muted);
             text-decoration: none;
-            font-weight: 600;
-            font-size: 0.9rem;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .btn-primary {
-            background: var(--accent);
-            color: #000;
-        }
-
-        .btn-outline {
-            border: 1px solid var(--glass-border);
-            color: #fff;
-            background: var(--card-bg);
-            backdrop-filter: blur(10px);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            cursor: pointer;
         }
 
         .btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+            border-color: var(--accent-color);
+            color: var(--accent-color);
         }
 
-        .content-grid {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 40px;
+        .content h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.3rem;
+            color: #1a1a1a;
+            border-bottom: 1px solid var(--border-color);
+            margin: 35px 0 18px;
+            padding-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
-        section {
-            background: var(--card-bg);
-            border: 1px solid var(--glass-border);
-            border-radius: 24px;
-            padding: 40px;
-            backdrop-filter: blur(20px);
-            transition: border 0.3s ease;
+        .cv-text {
+            font-family: 'Lora', serif;
+            font-size: 1.05rem;
+            color: var(--text-main);
+            text-align: justify;
         }
 
-        section:hover {
-            border-color: rgba(255, 215, 0, 0.3);
+        .cv-text h3 {
+            font-family: 'Playfair Display', serif;
+            margin: 22px 0 8px;
+            font-size: 1.2rem;
+            color: #333;
         }
 
-        section h2 {
-            font-family: var(--font-header);
-            font-size: 1.8rem;
-            margin-bottom: 30px;
-            color: var(--accent);
-            display: flex;
-            align-items: center;
-            gap: 15px;
+        .cv-text ul {
+            margin-left: 20px;
+            margin-bottom: 18px;
         }
 
-        section h2::after {
-            content: '';
-            flex: 1;
-            height: 1px;
-            background: linear-gradient(to right, var(--glass-border), transparent);
-        }
-
-        /* Markdown Content Styling */
-        .cv-content h3 {
-            font-size: 1.4rem;
-            margin: 25px 0 10px 0;
-            color: #fff;
-        }
-
-        .cv-content p {
+        .cv-text p {
             margin-bottom: 15px;
-            color: var(--text-dim);
         }
 
-        .cv-content ul {
-            list-style: none;
-            margin-bottom: 20px;
-        }
-
-        .cv-content li {
-            position: relative;
-            padding-left: 25px;
-            margin-bottom: 10px;
-            color: var(--text-dim);
-        }
-
-        .cv-content li::before {
-            content: '→';
-            position: absolute;
-            left: 0;
-            color: var(--accent);
-        }
-
-        .cv-content strong {
-            color: #fff;
+        .cv-text strong {
+            color: #000;
             font-weight: 600;
         }
 
-        /* Responsive */
+        footer {
+            margin-top: 50px;
+            text-align: center;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            border-top: 1px solid var(--border-color);
+            padding-top: 25px;
+            font-family: 'Inter', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
         @media (max-width: 768px) {
-            header h1 { font-size: 2.5rem; }
-            section { padding: 25px; }
+            .paper {
+                padding: 40px 25px;
+            }
+            h1 {
+                font-size: 2rem;
+            }
         }
 
-        /* Animations */
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        section {
-            animation: fadeIn 0.8s ease-out forwards;
+        @media print {
+            body { background: white; padding: 0; }
+            .paper { box-shadow: none; border: none; padding: 0; }
+            .controls { display: none; }
         }
     </style>
 </head>
 <body>
-    <div class="container">
+    <div class="paper">
         <header>
-            <div class="profile-wrapper">
-                <img src="ProfilePicture.jpg" alt="Jay Mansur" class="profile-img">
-            </div>
-            <h1>JAY MANSUR</h1>
-            <p>Productor Musical & IA Expert</p>
-            
-            <div class="nav-links">
-                <a href="index.html" class="btn btn-outline">
-                    <i class="fas fa-language"></i> ESPAÑOL
-                </a>
-                <a href="https://linktr.ee/musicknobs" target="_blank" class="btn btn-primary">
-                    <i class="fas fa-link"></i> LINKTREE
-                </a>
+            <img src="https://i.ibb.co/3W6pZ0d/profile.jpg" alt="Jay Mansur" class="profile-pic">
+            <h1>Jay Mansur</h1>
+            <p class="subtitle">Senior Architect & Tech Leader</p>
+            <div class="controls">
+                <a href="index.html" class="btn">Versión Español</a>
+                <a href="https://linktr.ee/musicknobs" class="btn">Linktree</a>
             </div>
         </header>
 
-        <main class="content-grid">
-            <section>
-                <div class="cv-content">
-                    <h1>Jay Mansur</h1>
-<p><em>Music Producer, Mixing &amp; Mastering Engineer</em></p>
-<p>📧 <a href="mailto:jgmansur2@gmail.com">jgmansur2@gmail.com</a> | 📍 San Miguel de Allende, Guanajuato, Mexico</p>
-<hr />
-<h2>👤 Professional Profile</h2>
-<p>Music producer, mixing, and mastering engineer with over 25 years of industry experience. Expert in <strong>Pro Tools, Logic, and Ableton Live</strong>, with advanced proficiency in Final Cut Pro, DaVinci Resolve, OBS, and Artificial Intelligence tools. Extensive track record in recording, producing, mixing, and mastering for internationally renowned artists, as well as audiovisual content creation for YouTube and TikTok. In-depth understanding of publishing and record label operations, including royalties and copyrights.</p>
-<h2>💼 Professional Experience</h2>
-<h3>Independent Producer &amp; Collaborator</h3>
-<p><strong>2011 — Present | Mexico (San Miguel de Allende)</strong>
-* Instructor at the SACM (Society of Authors and Composers of Mexico) within the Composers Workshop.
-* Collaborated on production, mixing, and recording with artists such as Reyli, Samo, Yurem, Danny Rey, Renato López (EPD), Gustavo Galindo, among others.</p>
-<h3>Independent Producer</h3>
-<p><strong>2001 — 2011 | Miami, USA</strong>
-* Produced my first album as an independent producer.
-* Worked directly with top-tier producers and artists such as Sergio George, Jorge Luis Piloto, Yoel Enríquez, Tito Nieves, David Bustamante, Carolina La O, Peewee, Anahís, Andrés Cuervo, Ninel Conde, Xeronimo, among others.</p>
-<h3>Music Production</h3>
-<p><strong>1999 | Universal Music</strong>
-* Handled music production on Xeronimo's album for the Universal Music label.</p>
-<h2>🛠️ Key Skills</h2>
-<ul>
-<li><strong>Production and Audio:</strong> Expert in Pro Tools, Logic Pro, and Ableton Live. Specialist in advanced mixing and mastering processes.</li>
-<li><strong>Music Business:</strong> Expert knowledge of royalties, copyrights, and the internal workings of publishing companies and record labels.</li>
-<li><strong>Visual Content:</strong> Advanced use of Final Cut Pro, DaVinci Resolve, and OBS. Solid experience producing optimized videos for YouTube and TikTok.</li>
-<li><strong>AI-Assisted Engineering &amp; Web Development:</strong> Creation and orchestration of advanced web applications using modern frameworks, databases, and AI orchestration tools (like Antigravity). Proficiency in terminal environments and AI CLI tools (e.g., Open Code), effectively interacting with multiple Large Language Models (LLMs) for automation, software development, and complex problem-solving.</li>
-</ul>
-<h2>🎓 Education</h2>
-<ul>
-<li><strong>Mix with the Masters</strong> — Certificate (2013)</li>
-<li><strong>Amparo Rubín Academy</strong> — Production and Composition (1995-1999)</li>
-<li><em>Bachelor's Degree in Marketing (Expected Graduation: May 2026)</em></li>
-</ul>
-<h2>ℹ️ Additional Information</h2>
-<ul>
-<li><strong>Nationalities:</strong> Mexican and American (Born May 8, 1979)</li>
-<li><strong>Languages:</strong> Spanish (Native), English (Advanced)</li>
-</ul>
-                </div>
-            </section>
-        </main>
+        <div class="content">
+            <div class="cv-text">
+                <p>/Users/jaystudio/jay_mansur_cv_english_formateado.md</p>
+            </div>
+        </div>
+
+        <footer>
+            <p>&copy; 2026 Jay Mansur - Premium Formal Curriculum</p>
+        </footer>
     </div>
 </body>
 </html>
