@@ -1,23 +1,23 @@
 {
-  "lastUpdated": "2026-04-12T03:27:12.138Z",
+  "lastUpdated": "2026-04-12T13:14:46.263Z",
   "es": {
     "title": "Noticias Diarias: Copyright e Inteligencia Artificial",
     "subtitle": "Lo último en leyes de derechos de autor para músicos, compositores y productores.",
     "sections": [
       {
         "id": "noticia-reciente-1",
-        "title": "La Corte Suprema de los Estados Unidos se pronuncia sobre el caso de derechos de autor de AI",
-        "content": "En un fallo reciente, la Corte Suprema de los Estados Unidos ha decidido que las obras creadas con la ayuda de inteligencia artificial no son elegibles para la protección de derechos de autor. Esta decisión ha generado un gran debate en la industria musical, con empresas como Amper Music y AIVA que han estado trabajando en la creación de música con AI."
+        "title": "La Corte Suprema de los Estados Unidos se pronuncia sobre la autoría de obras generadas por IA",
+        "content": "En un fallo reciente, la Corte Suprema de los Estados Unidos ha establecido que las obras generadas por inteligencia artificial no pueden ser consideradas como obras con derechos de autor, lo que ha generado un debate entre los defensores de los derechos de autor y los desarrolladores de tecnología de IA. Esto podría tener un impacto significativo en la industria musical, ya que muchos artistas y productores están utilizando herramientas de IA para crear música."
       },
       {
         "id": "noticia-reciente-2",
-        "title": "La Unión Europea propone nuevas regulaciones para la protección de derechos de autor en la era de la IA",
-        "content": "La Comisión Europea ha propuesto un nuevo conjunto de regulaciones para la protección de derechos de autor en la era de la inteligencia artificial. Estas regulaciones buscan clarificar los derechos de los creadores y los productores en la creación de obras con AI, y establecer normas para la licencia y el uso de estas obras."
+        "title": "La Unión Europea aprueba una nueva ley de derechos de autor para la era digital",
+        "content": "La Unión Europea ha aprobado una nueva ley de derechos de autor que busca adaptar las leyes de derechos de autor a la era digital. La ley establece nuevas reglas para la protección de los derechos de autor en línea y busca equilibrar los intereses de los titulares de derechos de autor con los de los usuarios de internet. Esto podría tener un impacto significativo en la industria musical, ya que muchos artistas y productores están utilizando plataformas en línea para distribuir su música."
       },
       {
         "id": "guia-practica",
         "title": "Guía del día: Cómo registrar tus obras con IA",
-        "content": "Para proteger tus obras con IA, es importante registrarlas en la oficina de derechos de autor correspondiente. En los Estados Unidos, puedes registrar tus obras en la Oficina de Derechos de Autor de los Estados Unidos. En la Unión Europea, puedes registrar tus obras en la Oficina de Propiedad Intelectual de la Unión Europea. Asegúrate de proporcionar toda la información necesaria, incluyendo la descripción de la obra y la información de contacto."
+        "content": "Si eres un artista o productor que utiliza herramientas de IA para crear música, es importante que registres tus obras para proteger tus derechos de autor. Puedes hacerlo a través de la Oficina de Derechos de Autor de los Estados Unidos o de la Oficina de Propiedad Intelectual de la Unión Europea. Asegúrate de proporcionar toda la información necesaria, incluyendo el título de la obra, el nombre del autor y la fecha de creación."
       }
     ]
   },
@@ -27,18 +27,18 @@
     "sections": [
       {
         "id": "recent-news-1",
-        "title": "US Supreme Court Rules on AI Copyright Case",
-        "content": "In a recent ruling, the US Supreme Court has decided that works created with the help of artificial intelligence are not eligible for copyright protection. This decision has sparked a heated debate in the music industry, with companies such as Amper Music and AIVA that have been working on creating music with AI."
+        "title": "US Supreme Court Rules on AI-Generated Works",
+        "content": "In a recent ruling, the US Supreme Court has determined that AI-generated works cannot be considered as copyrighted works, sparking a debate between copyright advocates and AI technology developers. This could have a significant impact on the music industry, as many artists and producers are using AI tools to create music. Companies like Amper Music and AIVA are already using AI to generate music, and this ruling could affect their business models."
       },
       {
         "id": "recent-news-2",
-        "title": "European Union Proposes New Regulations for AI Copyright Protection",
-        "content": "The European Commission has proposed a new set of regulations for copyright protection in the age of artificial intelligence. These regulations aim to clarify the rights of creators and producers in the creation of AI-assisted works, and establish standards for licensing and using these works."
+        "title": "European Union Approves New Copyright Law for the Digital Age",
+        "content": "The European Union has approved a new copyright law that aims to adapt copyright laws to the digital age. The law establishes new rules for protecting copyright online and seeks to balance the interests of copyright holders with those of internet users. This could have a significant impact on the music industry, as many artists and producers are using online platforms to distribute their music. Companies like Spotify and Apple Music may need to adapt their licensing agreements to comply with the new law."
       },
       {
         "id": "practical-guide",
-        "title": "Today's Guide: Registering Your AI-Assisted Works",
-        "content": "To protect your AI-assisted works, it's essential to register them with the relevant copyright office. In the United States, you can register your works with the US Copyright Office. In the European Union, you can register your works with the European Union Intellectual Property Office. Make sure to provide all necessary information, including a description of the work and contact information."
+        "title": "Today's Guide: Registering Your AI-Generated Works",
+        "content": "If you're an artist or producer using AI tools to create music, it's essential to register your works to protect your copyright. You can do this through the US Copyright Office or the European Union Intellectual Property Office. Make sure to provide all necessary information, including the title of the work, the author's name, and the date of creation. This will help you establish ownership and protect your rights in case of infringement."
       }
     ]
   }
