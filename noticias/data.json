@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-04-13T13:55:51.507Z",
+  "lastUpdated": "2026-04-14T03:23:24.422Z",
   "es": {
     "title": "Noticias Diarias: Copyright e Inteligencia Artificial",
     "subtitle": "Lo último en leyes de derechos de autor para músicos, compositores y productores.",
@@ -7,17 +7,17 @@
       {
         "id": "noticia-reciente-1",
         "title": "La Corte Suprema de los Estados Unidos se pronuncia sobre el caso de derechos de autor de AI",
-        "content": "En un fallo reciente, la Corte Suprema de los Estados Unidos ha decidido que las obras creadas con la ayuda de inteligencia artificial no son elegibles para la protección de derechos de autor, lo que ha generado un debate intenso en la industria musical. Empresas como Amper Music y AIVA han expresado su preocupación sobre el impacto que esto podría tener en la creación de música asistida por IA."
+        "content": "La semana pasada, la Corte Suprema de los Estados Unidos anunció que no revisará el caso de derechos de autor de AI que involucra a la empresa de música generativa, AIVA. Esto significa que la decisión del tribunal inferior de que las obras creadas por IA no pueden ser protegidas por derechos de autor se mantiene. Esta decisión tiene implicaciones importantes para los compositores y productores que utilizan IA en su trabajo."
       },
       {
         "id": "noticia-reciente-2",
-        "title": "Nueva ley de derechos de autor en la Unión Europea",
-        "content": "La Unión Europea ha aprobado una nueva ley de derechos de autor que busca clarificar la situación de las obras creadas con la ayuda de inteligencia artificial. La ley establece que los derechos de autor se aplicarán a las obras creadas por humanos, pero no a las creadas exclusivamente por máquinas. Esto ha generado un debate sobre cómo se aplicarán estas normas en la práctica."
+        "title": "La Unión Europea aprueba una nueva ley de derechos de autor para la era digital",
+        "content": "La Unión Europea ha aprobado una nueva ley de derechos de autor que busca actualizar las reglas para la era digital. La ley incluye disposiciones específicas para la protección de los derechos de autor en el contexto de la inteligencia artificial y el aprendizaje automático. Los productores y compositores deben estar al tanto de estos cambios para asegurarse de que sus obras estén protegidas."
       },
       {
         "id": "guia-practica",
-        "title": "Guía del día: Proceso de Registro",
-        "content": "Para proteger tus obras asistidas por IA, es importante registrarlas en la oficina de derechos de autor correspondiente. Asegúrate de documentar el proceso de creación y de identificar claramente la contribución humana en la obra. También es recomendable consultar con un abogado especializado en derechos de autor para asegurarte de que estás cumpliendo con todos los requisitos legales."
+        "title": "Guía del día: Cómo registrar tus obras con IA",
+        "content": "Para proteger tus obras con IA, es importante registrarlas en la oficina de derechos de autor correspondiente. Asegúrate de proporcionar toda la información necesaria, incluyendo la descripción de la obra, el nombre del autor y la fecha de creación. También es recomendable mantener registros detallados de la creación de la obra, incluyendo cualquier colaboración con IA."
       }
     ]
   },
@@ -27,18 +27,18 @@
     "sections": [
       {
         "id": "recent-news-1",
-        "title": "US Supreme Court Rules on AI Copyright Case",
-        "content": "In a recent ruling, the US Supreme Court has decided that works created with the help of artificial intelligence are not eligible for copyright protection, sparking intense debate in the music industry. Companies such as Amper Music and AIVA have expressed concern over the potential impact on AI-assisted music creation."
+        "title": "US Supreme Court Declines to Review AI Copyright Case",
+        "content": "Last week, the US Supreme Court announced that it will not review the AI copyright case involving music generative company AIVA. This means that the lower court's decision that AI-created works cannot be protected by copyright stands. This decision has significant implications for composers and producers who use AI in their work, such as those working with companies like Amper Music or Jukedeck."
       },
       {
         "id": "recent-news-2",
-        "title": "New EU Copyright Law",
-        "content": "The European Union has passed a new copyright law aimed at clarifying the status of works created with the help of artificial intelligence. The law states that copyright will apply to works created by humans, but not to those created exclusively by machines. This has raised questions about how these rules will be applied in practice."
+        "title": "EU Approves New Copyright Law for the Digital Age",
+        "content": "The European Union has approved a new copyright law that aims to update the rules for the digital age. The law includes specific provisions for protecting copyright in the context of artificial intelligence and machine learning. Producers and composers must be aware of these changes to ensure that their works are protected, particularly in light of recent licensing deals between companies like Sony Music and AI music startup, AI Music Factory."
       },
       {
         "id": "practical-guide",
-        "title": "Today's Guide: Registration Process",
-        "content": "To protect your AI-assisted works, it's essential to register them with the relevant copyright office. Make sure to document the creation process and clearly identify the human contribution to the work. It's also recommended to consult with a copyright law specialist to ensure you're meeting all the legal requirements."
+        "title": "Today's Guide: Registering Your AI-Assisted Works",
+        "content": "To protect your AI-assisted works, it's essential to register them with the relevant copyright office. Make sure to provide all necessary information, including a description of the work, the author's name, and the date of creation. It's also recommended to keep detailed records of the work's creation, including any collaboration with AI, to demonstrate authorship and ownership."
       }
     ]
   }
