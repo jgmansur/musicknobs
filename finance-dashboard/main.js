@@ -615,6 +615,7 @@ const BTC_CACHE_KEY = 'btc_mxn_rate_cache_v1';
 const INVEST_RATE_CACHE_KEY = 'investment_rate_cache_v1';
 const DEBT_VISIBLE_KEY = 'debt_visible_in_balance_v1';
 const ACCOUNT_LOG_ANCHOR_KEY = 'balance_account_log_anchor_v1';
+const BALANCE_SHEETS_DIRTY_KEY = 'balance_sheets_dirty_v1';
 
 let balanceUsdMxnRate = (() => {
     try {
@@ -768,32 +769,34 @@ async function balance_refreshInvestmentRates(force = false) {
     try {
         const next = { ...balanceInvestRates, date: today };
 
+        let cetesFromApi = false;
         if (hasAutoInvestment) {
-            // CETES (best effort scrape)
+            // CETES — Banxico public API (no proxy needed, CORS allowed)
+            // Series SF43783 = CETES 28 días rendimiento primario
             try {
-                const cetesRes = await fetch('https://api.allorigins.win/raw?url=https%3A%2F%2Fwww.cetesdirecto.com%2Fsites%2Fportal%2Finvertir-en-cetes');
-                if (cetesRes.ok) {
-                    const html = await cetesRes.text();
-                    const m = html.match(/(\d{1,2}[\.,]\d{1,2})\s*%/);
-                    if (m) next.cetes = parseFloat(m[1].replace(',', '.')) || next.cetes;
+                const banxioRes = await fetch(
+                    'https://www.banxico.org.mx/SieAPIRest/service/v1/series/SF43783/datos/oportuno',
+                    { headers: { 'Bmx-Token': 'NONE' } }
+                );
+                if (banxioRes.ok) {
+                    const data = await banxioRes.json();
+                    const val = parseFloat(data?.bmx?.series?.[0]?.datos?.[0]?.dato);
+                    if (Number.isFinite(val) && val > 0) {
+                        next.cetes = val;
+                        cetesFromApi = true;
+                    }
                 }
             } catch (_) {}
 
-            // MIFEL (best effort scrape)
-            try {
-                const mifelRes = await fetch('https://api.allorigins.win/raw?url=https%3A%2F%2Fwww.mifel.com.mx%2Finversiones');
-                if (mifelRes.ok) {
-                    const html = await mifelRes.text();
-                    const m = html.match(/(\d{1,2}[\.,]\d{1,2})\s*%/);
-                    if (m) next.mifel = parseFloat(m[1].replace(',', '.')) || next.mifel;
-                }
-            } catch (_) {}
+            // MIFEL: no public CORS API available — uses manual rate set in account form.
+            // Rate stays at cached or default value (10.0%). User can override via account edit.
         }
 
         balanceInvestRates = {
             date: today,
             cetes: Math.max(0, Number(next.cetes) || 10.5),
             mifel: Math.max(0, Number(next.mifel) || 10.0),
+            cetesEstimated: !cetesFromApi,
         };
         localStorage.setItem(INVEST_RATE_CACHE_KEY, JSON.stringify(balanceInvestRates));
         balance_updateKpi();
@@ -1074,9 +1077,15 @@ async function balance_loadAccounts() {
             console.warn('[Firebase] Firestore load failed, falling back to Sheets:', err.message);
         }
     }
-    // ── 2. Fallback: Google Sheets ──────────────────────────────
+    // ── 2. Fallback: Google Sheets (also used when dirty flag is set) ──────────
+    // If a previous deferred Sheets sync was interrupted (e.g. tab closed), force a write before reading.
+    const sheetsDirty = localStorage.getItem(BALANCE_SHEETS_DIRTY_KEY) === '1';
     try {
         const sid  = await balance_getOrCreateSheet();
+        if (sheetsDirty && balanceAccounts.length > 0) {
+            await balance_writeToSheet(sid);
+            localStorage.removeItem(BALANCE_SHEETS_DIRTY_KEY);
+        }
         const rows = await sheetsGet(sid, 'A2:K');
         if (!rows.length) {
             balanceAccounts = DEFAULT_ACCOUNTS.map(a => balance_normalizeAccount(a));
@@ -1172,9 +1181,13 @@ async function balance_saveAccounts(opts = {}) {
             debugUpdate({ save: `Firestore:OK | Sheets:${deferBackup ? 'SYNCING' : 'PENDING'}`, token: 'Si' });
             const runSheetsBackup = () => balance_getOrCreateSheet().then(sid => balance_writeToSheet(sid));
             if (deferBackup) {
+                localStorage.setItem(BALANCE_SHEETS_DIRTY_KEY, '1');
                 balanceSheetSyncQueue = balanceSheetSyncQueue
                     .then(() => runSheetsBackup())
-                    .then(() => debugUpdate({ save: 'Firestore:OK | Sheets:OK', token: 'Si' }))
+                    .then(() => {
+                        localStorage.removeItem(BALANCE_SHEETS_DIRTY_KEY);
+                        debugUpdate({ save: 'Firestore:OK | Sheets:OK', token: 'Si' });
+                    })
                     .catch((err) => {
                         const code = err?.code || err?.status || 'ERR';
                         console.warn('[Sheets] deferred save failed:', debugShort(err?.message || err));
@@ -1335,10 +1348,12 @@ function balance_renderPanel() {
             ? `<span class="account-type-label">Limite: ${acc.creditLimitVisible ? `+${formatCurrency(creditLimitMxn)}` : 'oculto'}${acc.currency === 'USD' ? ` (USD ${creditLimit.toFixed(2)})` : ''}</span>`
             : '';
         const investRate = balance_getEffectiveAnnualRate(acc);
+        const rateIsEstimated = acc.investmentType === 'cetes' && balanceInvestRates.cetesEstimated;
+        const estimatedBadge = rateIsEstimated ? ' <span title="Tasa no pudo actualizarse desde Banxico" style="opacity:.6;font-size:.75em">~estimada</span>' : '';
         const investBadge = acc.type === 'invest'
             ? (acc.investmentType === 'bitcoin'
                 ? `<span class="account-type-label">Inicial: ${formatCurrency(Math.abs(acc.bitcoinInitialMxn || 0))}</span>`
-                : `<span class="account-type-label">Tasa anual: ${investRate.toFixed(2)}% (${(acc.investmentType || 'custom').toUpperCase()})</span>`)
+                : `<span class="account-type-label">Tasa anual: ${investRate.toFixed(2)}% (${(acc.investmentType || 'custom').toUpperCase()})${estimatedBadge}</span>`)
             : '';
         const hiddenClass = acc.hidden ? 'account-card--hidden' : '';
         const eyeIcon = acc.hidden ? '👁️' : '👁';
@@ -2359,13 +2374,23 @@ async function driveListFolderFilesRecursive(folderId) {
     return out;
 }
 
-function handleApiError(err, el) {
+function handleApiError(err, el, retryFn) {
     console.error('API Error:', err);
     if (err.status === 401) {
         clearAccessTokenCache();
         showLoginModal();
     } else if (el) {
-        el.innerHTML = '<div class="empty-state text-danger">⚠️ Error al cargar. Intenta de nuevo.</div>';
+        const code = err?.status || err?.code || 0;
+        const messages = {
+            403: 'Sin permisos. Verificá que el archivo esté compartido con tu cuenta.',
+            429: 'Límite de API alcanzado. Esperá un momento e intentá de nuevo.',
+            0:   'Sin conexión o tiempo de espera agotado.',
+        };
+        const msg = messages[code] || `Error al cargar (${code || 'desconocido'}).`;
+        const retryBtn = retryFn
+            ? `<button class="btn btn-sm btn-secondary mt-2" onclick="(${retryFn})()">Reintentar</button>`
+            : '';
+        el.innerHTML = `<div class="empty-state text-danger">⚠️ ${msg}${retryBtn}</div>`;
     }
 }
 
@@ -3216,9 +3241,12 @@ async function fijos_cargarDatos() {
         if (!fijosState.categorias.length) fijosState.categorias = ['General'];
 
         // ── Monthly Reset ──────────────────────────────────────────────
-        // If month changed since last reset, clear all 'Pagado' checkboxes
+        // If month changed since last reset, clear all 'Pagado' checkboxes.
+        // IMPORTANT: Set the month key BEFORE the updates to prevent concurrent
+        // resets from multiple tabs/devices opening at the same time.
         const nowMonth = `${new Date().getFullYear()}-${new Date().getMonth() + 1}`;
         const storedMonth = localStorage.getItem(RESET_MONTH_KEY);
+        localStorage.setItem(RESET_MONTH_KEY, nowMonth);
         if (storedMonth && storedMonth !== nowMonth && rows.length > 0) {
             console.log('[fijos] Nuevo mes detectado — reseteando progreso de pagos');
             const lastRow = rows.length + 1;
@@ -3238,8 +3266,6 @@ async function fijos_cargarDatos() {
                 rows.map(r => [parseFixedPeriodicity(r[8]) === 'Cuota de Deuda' ? (r[13] || serializePaymentStates(new Array(parsePaymentsTotal(r[6])).fill(false))) : serializePaymentStates(new Array(parsePaymentsTotal(r[6])).fill(false))])
             ).catch(e => console.warn('Reset mensual waived falló:', e));
         }
-        // Always store current month
-        localStorage.setItem(RESET_MONTH_KEY, nowMonth);
         // ─────────────────────────────────────────────────────────────
 
         fijosState.allItems = rows.map((row, i) => {

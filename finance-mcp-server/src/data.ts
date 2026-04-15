@@ -1,5 +1,5 @@
 import { config } from "./config.js";
-import { findSpreadsheetByName, sheetsBatchUpdate, sheetsClear, sheetsGet, sheetsGetSpreadsheet, sheetsUpdate } from "./google.js";
+import { findSpreadsheetByName, sheetsAppend, sheetsBatchUpdate, sheetsClear, sheetsGet, sheetsGetSpreadsheet, sheetsUpdate } from "./google.js";
 import { inDateRange, normalizeText, parseNumber } from "./utils.js";
 
 const DOCS_SHEET = "DocumentosArchivador";
@@ -961,4 +961,117 @@ export async function searchDocuments(query: string, member?: string) {
     count: rows.length,
     rows: rows.slice(0, 200),
   };
+}
+
+// Returns transactions with rowNum for targeted updates/deletes
+export async function getTransactions(from?: string, to?: string, search?: string, limit?: number) {
+  const rawRows = await sheetsGet(config.spreadsheets.log, "Hoja 1!A2:I");
+  const q = normalizeText(search || "");
+  const results = rawRows
+    .map((row, idx) => {
+      const tipoRaw = (row[4] || "").toLowerCase();
+      return {
+        rowNum: idx + 2,
+        fecha: row[0] || "",
+        lugar: row[1] || "",
+        concepto: row[2] || "",
+        monto: parseNumber(row[3]),
+        tipo: tipoRaw === "ingreso" ? "Ingreso" : "Gasto",
+        formaPago: row[5] || "",
+        fotos: row[6] || "",
+        moneda: row[7] || "MXN",
+        fechaCreacion: row[8] || "",
+      };
+    })
+    .filter((row) => {
+      if (from || to) {
+        if (!inDateRange(row.fecha, from, to)) return false;
+      }
+      if (q) {
+        const hay = normalizeText(`${row.lugar} ${row.concepto} ${row.formaPago}`);
+        if (!hay.includes(q)) return false;
+      }
+      return true;
+    });
+
+  const maxRows = limit && limit > 0 ? Math.min(limit, 500) : 200;
+  return {
+    from: from || null,
+    to: to || null,
+    search: search || null,
+    count: results.length,
+    rows: results.slice(0, maxRows),
+  };
+}
+
+// Appends a new transaction to the Control de Gastos spreadsheet
+export async function addTransaction(data: {
+  lugar: string;
+  monto: number;
+  tipo: "Gasto" | "Ingreso";
+  formaPago?: string;
+  concepto?: string;
+  fecha?: string;
+  moneda?: string;
+}): Promise<void> {
+  const today = new Date().toISOString().slice(0, 10);
+  const row = [
+    data.fecha || today,
+    data.lugar,
+    data.concepto || "",
+    String(data.monto),
+    data.tipo,
+    data.formaPago || "",
+    "",
+    data.moneda || "MXN",
+    new Date().toISOString(),
+  ];
+  await sheetsAppend(config.spreadsheets.log, "Hoja 1!A:I", [row]);
+}
+
+// Updates an account's balance by fuzzy name match
+export async function updateAccountBalance(accountName: string, balance: number, currency?: string): Promise<void> {
+  const sheetId = await resolveAccountsSheetId();
+  if (!sheetId) throw new Error("No se encontró el spreadsheet de cuentas");
+
+  const accounts = await getAccounts();
+  const account = findAccountByAliases(accounts, [accountName]);
+  if (!account) throw new Error(`Cuenta no encontrada: "${accountName}"`);
+
+  const idx = accounts.findIndex((a) => a.id === account.id);
+  const rowNum = idx + 2;
+
+  if (currency) {
+    await sheetsUpdate(sheetId, `C${rowNum}:H${rowNum}`, [
+      [String(balance), "", "", "", "", currency],
+    ]);
+  } else {
+    await sheetsUpdate(sheetId, `C${rowNum}`, [[String(balance)]]);
+  }
+}
+
+// Marks a fixed expense installment as paid/unpaid (partIndex null = all parts)
+export async function markFixedPaid(rowNum: number, partIndex: number | null, paid: boolean): Promise<void> {
+  const row = (await sheetsGet(config.spreadsheets.fixed, `Hoja 1!A${rowNum}:N${rowNum}`))[0];
+  if (!row) throw new Error(`Fila ${rowNum} no encontrada en gastos fijos`);
+
+  const pagosMes = parsePaymentsTotal(row[6]);
+  const paidLegacy = parseBool(row[5]);
+  const pagosEstado = parsePaymentStates(row[7], pagosMes, paidLegacy);
+
+  if (partIndex === null) {
+    pagosEstado.fill(paid);
+  } else {
+    if (partIndex < 0 || partIndex >= pagosEstado.length) {
+      throw new Error(`partIndex ${partIndex} fuera de rango (0-${pagosEstado.length - 1})`);
+    }
+    pagosEstado[partIndex] = paid;
+  }
+
+  const newBitstring = pagosEstado.map((b) => (b ? "1" : "0")).join("");
+  const newIsPaid = pagosEstado.every(Boolean) ? "TRUE" : "FALSE";
+
+  await sheetsUpdate(config.spreadsheets.fixed, `Hoja 1!F${rowNum}:H${rowNum}`, [
+    [newIsPaid, String(pagosMes), newBitstring],
+  ]);
 }

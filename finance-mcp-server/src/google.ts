@@ -78,6 +78,17 @@ export async function createSpreadsheet(title: string): Promise<{ id: string; ur
   };
 }
 
+export async function sheetsAppend(spreadsheetId: string, range: string, values: string[][]): Promise<void> {
+  const client = getSheetsClient();
+  await client.spreadsheets.values.append({
+    spreadsheetId,
+    range,
+    valueInputOption: "RAW",
+    insertDataOption: "INSERT_ROWS",
+    requestBody: { values },
+  });
+}
+
 export async function findSpreadsheetByName(name: string): Promise<string | null> {
   const drive = getDriveClient();
   const q = [
