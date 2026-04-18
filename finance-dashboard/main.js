@@ -21,7 +21,7 @@ const DEUDAS_RECIBOS_FOLDER_ID = '157KDn-vbkuHH1L8xbaJBGz-oKmT7p5a9';
 const SPREADSHEET_RSM_ID = '14VsoPHGNTSUSbzMOqGWs2qSL-pGywPgjUoHD3MqIJfo'; // Recibos Salud Mariel
 const SALDOS_SHEET_ID    = '1-cX_qxld3ioSpcO9lEBPg90Db6AyK7SczpJTvj7rw4U'; // Saldos (fuente de verdad — Claude accede vía service account)
 const RSM_FOLDER_ID = '1-ZfeWQ-Rmh-Wm2WMCkULkN6MQWBuxYnj';
-const APP_VERSION  = 'v8.0.2';
+const APP_VERSION  = 'v8.0.3';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -785,12 +785,12 @@ async function balance_refreshInvestmentRates(force = false) {
 
         let cetesFromApi = false;
         if (hasAutoInvestment) {
-            // CETES — Banxico public API (no proxy needed, CORS allowed)
-            // Series SF43783 = CETES 28 días rendimiento primario
+            // CETES 28 días — Banxico SIE API
+            // Series SF43936 = Cetes a 28 días, resultados subasta semanal
             try {
                 const banxioRes = await fetch(
-                    'https://www.banxico.org.mx/SieAPIRest/service/v1/series/SF43783/datos/oportuno',
-                    { headers: { 'Bmx-Token': 'NONE' } }
+                    'https://www.banxico.org.mx/SieAPIRest/service/v1/series/SF43936/datos/oportuno',
+                    { headers: { 'Bmx-Token': 'f1d9ea48b7b67a7c6453e3c2abacc9555ad6e740ab5370deb8eeddc8f71874d2' } }
                 );
                 if (banxioRes.ok) {
                     const data = await banxioRes.json();
