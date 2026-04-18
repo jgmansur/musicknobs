@@ -157,7 +157,6 @@ body {
 .kpi-data h2 { font-size: 1.4rem; font-weight: 700; line-height: 1.1; }
 .diff-label { font-size: .7rem; font-weight: 500; color: var(--text-muted); }
 .main-content-row { display: grid; grid-template-columns: 1.5fr 1fr; gap: 1rem; }
-.main-content-row > * { min-width: 0; }
 .section-header { margin-bottom: 1rem; }
 .section-header h3 { font-size: .95rem; font-weight: 600; }
 
@@ -623,9 +622,8 @@ select.field-input { background-image: url("data:image/svg+xml,%3Csvg xmlns='htt
   .glass { padding:1rem; border-radius:1.25rem; }
   .balance-amount { font-size:1.75rem; }
   .modal-inner { padding:2.25rem 1.5rem; }
-  /* Prevent ApexCharts SVG from overflowing its card */
-  .apexcharts-canvas,
-  .apexcharts-canvas svg { max-width: 100% !important; }
+  /* All dashboard sections share the same width — no uneven cards */
+  .dashboard-grid { width: fit-content; min-width: 100%; }
 }
 
 @media (max-width: 390px) {
