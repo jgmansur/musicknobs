@@ -343,6 +343,15 @@ select.field-input { background-image: url("data:image/svg+xml,%3Csvg xmlns='htt
 .mini-btn:disabled { opacity: .35; cursor: not-allowed; }
 .mini-btn-danger:hover { background: rgba(239,68,68,.15); color: #f87171; }
 
+/* Estados de cuenta filter pills */
+.estados-filter-btn {
+  background: rgba(255,255,255,.06); border: 1px solid var(--glass-border);
+  color: var(--text-muted); border-radius: 999px; padding: .25rem .65rem;
+  font-size: .75rem; cursor: pointer; transition: background .15s, color .15s;
+}
+.estados-filter-btn:hover { background: rgba(255,255,255,.1); color: var(--text-soft); }
+.estados-filter-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
 /* Pagado toggle button */
 .pagado-btn {
   display: inline-flex; align-items: center; gap: .3rem;

@@ -1221,6 +1221,61 @@
       <!-- ══════════════════════════════════
            VIEW: PELO (Tab 9)
            ══════════════════════════════════ -->
+      <!-- ── ESTADOS DE CUENTA ── -->
+      <div id="view-estados" class="view">
+        <main class="dashboard-grid">
+          <section class="kpi-row">
+            <div class="kpi-card glass">
+              <div class="kpi-icon" style="background:rgba(99,102,241,.15);color:#6366f1"><i data-lucide="credit-card"></i></div>
+              <div class="kpi-data">
+                <span class="label">Estados encontrados</span>
+                <h2 id="estados-total" class="text-success">—</h2>
+                <span id="estados-subtitle" class="diff-label">Santander · BBVA</span>
+              </div>
+            </div>
+            <div class="kpi-card glass">
+              <div class="kpi-icon" style="background:rgba(245,158,11,.15);color:#f59e0b"><i data-lucide="folder-open"></i></div>
+              <div class="kpi-data">
+                <span class="label">Carpeta Drive</span>
+                <h2 style="font-size:1rem;font-weight:600">Estados de Cuenta</h2>
+                <a id="estados-drive-link" href="https://drive.google.com/drive/folders/1qycdQD_nQhhmJAn-7qQfTGA6vRTHKIP0" target="_blank" class="diff-label" style="color:var(--accent)">Abrir en Drive ↗</a>
+              </div>
+            </div>
+          </section>
+
+          <div class="main-content-row" style="grid-template-columns:1fr;">
+            <section class="glass" style="display:grid;gap:.75rem;align-content:start;">
+              <!-- Filtros banco -->
+              <div class="section-header" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.5rem;">
+                <h3>Estados de Cuenta</h3>
+                <button id="estados-reload" class="mini-btn">↻ Recargar</button>
+              </div>
+              <div style="display:flex;gap:.4rem;flex-wrap:wrap;align-items:center;">
+                <span style="font-size:.75rem;color:var(--text-muted);margin-right:.2rem;">Banco:</span>
+                <button class="estados-filter-btn active" data-estados-banco="todos">Todos</button>
+                <button class="estados-filter-btn" data-estados-banco="BBVA">BBVA</button>
+                <button class="estados-filter-btn" data-estados-banco="Santander">Santander</button>
+              </div>
+              <div id="estados-cuenta-filters" style="display:flex;gap:.4rem;flex-wrap:wrap;align-items:center;">
+                <span style="font-size:.75rem;color:var(--text-muted);margin-right:.2rem;">Cuenta:</span>
+                <button class="estados-filter-btn active" data-estados-cuenta="todas">Todas</button>
+              </div>
+              <div style="display:flex;gap:.4rem;flex-wrap:wrap;align-items:center;">
+                <span style="font-size:.75rem;color:var(--text-muted);margin-right:.2rem;">Año:</span>
+                <button class="estados-filter-btn active" data-estados-year="todos">Todos</button>
+                <button class="estados-filter-btn" data-estados-year="2026">2026</button>
+                <button class="estados-filter-btn" data-estados-year="2025">2025</button>
+                <button class="estados-filter-btn" data-estados-year="2024">2024</button>
+              </div>
+              <div id="estados-list" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:.65rem;margin-top:.25rem;">
+                <div class="empty-state">Cargando estados de cuenta…</div>
+              </div>
+            </section>
+          </div>
+        </main>
+      </div>
+      <!-- ── / ESTADOS DE CUENTA ── -->
+
       <div id="view-pelo" class="view">
         <main class="dashboard-grid">
           <section class="kpi-row">
@@ -1829,6 +1884,10 @@
         <button class="tab" id="tab-documentos" data-tab="documentos">
           <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h6"/></svg>
           <span class="tab-label">Documentos</span>
+        </button>
+        <button class="tab" id="tab-estados" data-tab="estados">
+          <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/><path d="M6 15h4M14 15h4"/></svg>
+          <span class="tab-label">Estados</span>
         </button>
         <button class="tab" id="tab-pelo" data-tab="pelo">
           <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 8c1-1 1.5-2.3.7-3.1-.8-.8-2.1-.3-3.1.7L8 10l6 6 4-4-4-4z"/><path d="M2 22l6-6"/><path d="M7 11l6 6"/></svg>

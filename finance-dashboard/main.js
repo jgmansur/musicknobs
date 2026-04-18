@@ -21,7 +21,7 @@ const DEUDAS_RECIBOS_FOLDER_ID = '157KDn-vbkuHH1L8xbaJBGz-oKmT7p5a9';
 const SPREADSHEET_RSM_ID = '14VsoPHGNTSUSbzMOqGWs2qSL-pGywPgjUoHD3MqIJfo'; // Recibos Salud Mariel
 const SALDOS_SHEET_ID    = '1-cX_qxld3ioSpcO9lEBPg90Db6AyK7SczpJTvj7rw4U'; // Saldos (fuente de verdad — Claude accede vía service account)
 const RSM_FOLDER_ID = '1-ZfeWQ-Rmh-Wm2WMCkULkN6MQWBuxYnj';
-const APP_VERSION  = 'v8.0.1';
+const APP_VERSION  = 'v8.0.2';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -185,7 +185,7 @@ let tokenRequestInFlight = null;
 let tokenRequestInteractive = true;
 let tokenRequestWatchdog = null;
 let currentTab  = 'dashboard';
-let tabInited   = { dashboard: false, gastos: false, fijos: false, deudas: false, plan: false, autos: false, propiedades: false, recuerdos: false, rsm: false, documentos: false, pelo: false, prompts: false, estudio: false };
+let tabInited   = { dashboard: false, gastos: false, fijos: false, deudas: false, plan: false, autos: false, propiedades: false, recuerdos: false, rsm: false, documentos: false, estados: false, pelo: false, prompts: false, estudio: false };
 const MELI_ACCESS_TOKEN_KEY = 'meli_access_token_v1';
 const MELI_REFRESH_TOKEN_KEY = 'meli_refresh_token_v1';
 const MELI_EXPIRES_AT_KEY = 'meli_expires_at_v1';
@@ -542,6 +542,7 @@ document.addEventListener('DOMContentLoaded', () => {
     recuerdos_bindEvents();
     rsm_bindEvents();
     documentos_bindEvents();
+    estados_bindEvents();
     pelo_bindEvents();
     prompts_bindEvents();
     estudio_bindEvents();
@@ -576,7 +577,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Helper para obtener tab inicial desde el hash de la URL
     function getInitialTabFromHash() {
         const hash = (window.location.hash || '').replace('#', '').toLowerCase();
-        const validTabs = ['dashboard', 'gastos', 'fijos', 'deudas', 'plan', 'autos', 'estudio', 'propiedades', 'recuerdos', 'rsm', 'documentos', 'pelo', 'prompts'];
+        const validTabs = ['dashboard', 'gastos', 'fijos', 'deudas', 'plan', 'autos', 'estudio', 'propiedades', 'recuerdos', 'rsm', 'documentos', 'estados', 'pelo', 'prompts'];
         return validTabs.includes(hash) ? hash : 'dashboard';
     }
 
@@ -1700,6 +1701,7 @@ function showTab(name) {
         if (name === 'recuerdos') recuerdos_cargarVista();
         if (name === 'rsm')       rsm_cargarVista();
         if (name === 'documentos') documentos_cargarVista();
+        if (name === 'estados') estados_cargarVista();
         if (name === 'pelo')      pelo_cargarVista();
         if (name === 'prompts')   prompts_cargarVista();
         if (name === 'estudio')   estudio_cargarVista();
@@ -9265,6 +9267,139 @@ async function recuerdos_borrar(rowNum) {
 // =============================================
 // DOCUMENTOS MODULE
 // =============================================
+// ── ESTADOS DE CUENTA ────────────────────────────────────────────────────────
+const ESTADOS_ROOT_FOLDER = '1qycdQD_nQhhmJAn-7qQfTGA6vRTHKIP0';
+const MESES_ORDER = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+const estadosState = { files: [], loading: false, loaded: false, filters: { banco: 'todos', cuenta: 'todas', year: 'todos' } };
+
+function estados_parseFile(file) {
+    const parts = file.path.split('/').filter(Boolean);
+    const banco = parts[0] || '';
+    let cuenta = '', year = '', mesLabel = '';
+    if (banco === 'BBVA') {
+        year = (parts[1] || '').replace('año ', '');
+        mesLabel = (parts[2] || file.name).replace('.pdf','').replace('.PDF','');
+        cuenta = 'BBVA';
+    } else {
+        cuenta = parts[1] || '';
+        year = (parts[2] || '').replace('año ', '');
+        mesLabel = (parts[3] || file.name).replace('.pdf','').replace('.PDF','');
+    }
+    const mesLower = mesLabel.toLowerCase().replace(/estado de cuenta /i,'').replace(/\s+\d{4}/,'').trim();
+    const mesIdx = MESES_ORDER.findIndex(m => mesLower.startsWith(m));
+    return { ...file, banco, cuenta, year, mesLabel: mesLabel.replace(/estado de cuenta /i,''), mesIdx };
+}
+
+function estados_cuentaLabel(cuenta) {
+    if (cuenta === 'BBVA') return 'BBVA';
+    if (cuenta.includes('Personal') || cuenta.includes('Fiscal')) return 'Personal Fiscal';
+    if (cuenta.includes('Pyme')) return 'Pyme';
+    return cuenta;
+}
+
+function estados_bankColor(banco) {
+    if (banco === 'BBVA') return '#004a97';
+    if (banco === 'Santander') return '#ec0000';
+    return 'var(--accent)';
+}
+
+function estados_render() {
+    const list = document.getElementById('estados-list');
+    if (!list) return;
+    const { banco, cuenta, year } = estadosState.filters;
+    let items = estadosState.files
+        .filter(f => banco === 'todos' || f.banco === banco)
+        .filter(f => cuenta === 'todas' || f.cuenta === cuenta)
+        .filter(f => year === 'todos' || f.year === year)
+        .sort((a, b) => {
+            if (b.year !== a.year) return b.year.localeCompare(a.year);
+            return b.mesIdx - a.mesIdx;
+        });
+    document.getElementById('estados-total').textContent = estadosState.files.length;
+    if (!items.length) {
+        list.innerHTML = '<div class="empty-state">No hay estados con esos filtros.</div>';
+        return;
+    }
+    list.innerHTML = items.map(f => {
+        const color = estados_bankColor(f.banco);
+        const cuentaShort = estados_cuentaLabel(f.cuenta);
+        const driveUrl = f.webViewLink || `https://drive.google.com/file/d/${f.id}/view`;
+        const analyzePrompt = `Analiza este estado de cuenta bancario y dame un resumen de: ingresos totales, egresos totales, 5 gastos más grandes, y cualquier cobro inusual. Documento: ${driveUrl}`;
+        return `<div class="glass" style="display:grid;gap:.45rem;padding:.75rem;border-radius:.7rem;border-left:3px solid ${color};">
+            <div style="display:flex;align-items:center;gap:.5rem;">
+                <span style="font-size:1.1rem;font-weight:700;color:${color};">${f.banco}</span>
+                <span style="font-size:.72rem;color:var(--text-muted);background:var(--bg-card);padding:.15rem .45rem;border-radius:999px;">${cuentaShort}</span>
+            </div>
+            <div style="font-size:.95rem;font-weight:600;">${f.mesLabel}</div>
+            <div style="font-size:.75rem;color:var(--text-muted);">${f.year}</div>
+            <div style="display:flex;gap:.4rem;margin-top:.25rem;flex-wrap:wrap;">
+                <a href="${driveUrl}" target="_blank" class="mini-btn" style="text-decoration:none;font-size:.75rem;">📄 Ver PDF</a>
+                <button class="mini-btn" style="font-size:.75rem;" onclick="navigator.clipboard.writeText(${JSON.stringify(analyzePrompt)}).then(()=>{this.textContent='✓ Copiado';setTimeout(()=>this.textContent='🤖 Analizar',1800)})">🤖 Analizar</button>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+function estados_updateCuentaFilters() {
+    const container = document.getElementById('estados-cuenta-filters');
+    if (!container) return;
+    const cuentas = [...new Set(estadosState.files.map(f => f.cuenta))].sort();
+    const active = estadosState.filters.cuenta;
+    container.innerHTML = `<span style="font-size:.75rem;color:var(--text-muted);margin-right:.2rem;">Cuenta:</span>
+        <button class="estados-filter-btn ${active === 'todas' ? 'active' : ''}" data-estados-cuenta="todas">Todas</button>
+        ${cuentas.map(c => `<button class="estados-filter-btn ${active === c ? 'active' : ''}" data-estados-cuenta="${c}">${estados_cuentaLabel(c)}</button>`).join('')}`;
+    container.querySelectorAll('[data-estados-cuenta]').forEach(btn =>
+        btn.addEventListener('click', () => {
+            estadosState.filters.cuenta = btn.dataset.estadosCuenta;
+            container.querySelectorAll('[data-estados-cuenta]').forEach(b => b.classList.toggle('active', b === btn));
+            estados_render();
+        }));
+}
+
+async function estados_cargarVista() {
+    if (!accessToken || estadosState.loading) return;
+    if (estadosState.loaded) { estados_render(); return; }
+    estadosState.loading = true;
+    const list = document.getElementById('estados-list');
+    if (list) list.innerHTML = '<div class="empty-state">Cargando estados de cuenta…</div>';
+    try {
+        const raw = await driveListFolderFilesRecursive(ESTADOS_ROOT_FOLDER);
+        estadosState.files = raw
+            .filter(f => f.mimeType === 'application/pdf' || f.name.toLowerCase().endsWith('.pdf'))
+            .map(estados_parseFile);
+        estadosState.loaded = true;
+        estados_updateCuentaFilters();
+        estados_render();
+    } catch (e) {
+        console.error('estados_cargarVista:', e);
+        if (list) list.innerHTML = '<div class="empty-state text-danger">❌ Error cargando estados de cuenta</div>';
+    } finally {
+        estadosState.loading = false;
+    }
+}
+
+function estados_bindEvents() {
+    document.querySelectorAll('[data-estados-banco]').forEach(btn =>
+        btn.addEventListener('click', () => {
+            estadosState.filters.banco = btn.dataset.estadosBanco;
+            estadosState.filters.cuenta = 'todas';
+            document.querySelectorAll('[data-estados-banco]').forEach(b => b.classList.toggle('active', b === btn));
+            estados_updateCuentaFilters();
+            estados_render();
+        }));
+    document.querySelectorAll('[data-estados-year]').forEach(btn =>
+        btn.addEventListener('click', () => {
+            estadosState.filters.year = btn.dataset.estadosYear;
+            document.querySelectorAll('[data-estados-year]').forEach(b => b.classList.toggle('active', b === btn));
+            estados_render();
+        }));
+    document.getElementById('estados-reload')?.addEventListener('click', () => {
+        estadosState.loaded = false;
+        estados_cargarVista();
+    });
+}
+
+// ── / ESTADOS DE CUENTA ──────────────────────────────────────────────────────
 const DOCS_SHEET = 'DocumentosArchivador';
 const DOCS_PROFILE_SHEET = 'DocumentosPerfiles';
 const DOCS_HEADERS = ['id', 'member', 'title', 'type', 'tags', 'notes', 'expiryDate', 'url', 'sourceFolderId', 'driveFileId', 'createdAt', 'updatedAt'];
