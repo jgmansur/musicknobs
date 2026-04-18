@@ -21,7 +21,7 @@ const DEUDAS_RECIBOS_FOLDER_ID = '157KDn-vbkuHH1L8xbaJBGz-oKmT7p5a9';
 const SPREADSHEET_RSM_ID = '14VsoPHGNTSUSbzMOqGWs2qSL-pGywPgjUoHD3MqIJfo'; // Recibos Salud Mariel
 const SALDOS_SHEET_ID    = '1-cX_qxld3ioSpcO9lEBPg90Db6AyK7SczpJTvj7rw4U'; // Saldos (fuente de verdad — Claude accede vía service account)
 const RSM_FOLDER_ID = '1-ZfeWQ-Rmh-Wm2WMCkULkN6MQWBuxYnj';
-const APP_VERSION  = 'v8.1.1';
+const APP_VERSION  = 'v8.1.2';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -320,13 +320,32 @@ function scheduleTokenRefresh() {
         tokenRefreshTimer = null;
     }
     if (!accessToken) return;
-    const expiryTs = parseInt(localStorage.getItem(EXPIRY_KEY) || '0', 10);
+    const expiryTs = parseInt(localStorage.getItem(EXPIRY_KEY) || _getCookie(EXPIRY_KEY) || '0', 10);
     if (!expiryTs) return;
     const delayMs = Math.max(10_000, expiryTs - Date.now() - TOKEN_REFRESH_MARGIN_MS);
     tokenRefreshTimer = setTimeout(() => {
         requestToken({ interactive: false }).catch(() => {});
     }, delayMs);
 }
+
+// Refresh silencioso al volver del background (iOS congela timers)
+document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState !== 'visible') return;
+    const expiryTs = parseInt(localStorage.getItem(EXPIRY_KEY) || _getCookie(EXPIRY_KEY) || '0', 10);
+    const remaining = expiryTs - Date.now();
+    // Si el token expiró o le quedan menos de 10 minutos → renovar silenciosamente
+    if (remaining < 10 * 60 * 1000) {
+        requestToken({ interactive: false }).catch(() => {});
+    }
+});
+// También en pageshow (bfcache restore en iOS Safari)
+window.addEventListener('pageshow', (e) => {
+    if (!e.persisted) return;
+    const expiryTs = parseInt(localStorage.getItem(EXPIRY_KEY) || _getCookie(EXPIRY_KEY) || '0', 10);
+    if (expiryTs - Date.now() < 10 * 60 * 1000) {
+        requestToken({ interactive: false }).catch(() => {});
+    }
+});
 
 function meli_getRedirectUri() {
     return `${window.location.origin}${window.location.pathname}`;
