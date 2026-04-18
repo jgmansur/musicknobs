@@ -21,7 +21,7 @@ const DEUDAS_RECIBOS_FOLDER_ID = '157KDn-vbkuHH1L8xbaJBGz-oKmT7p5a9';
 const SPREADSHEET_RSM_ID = '14VsoPHGNTSUSbzMOqGWs2qSL-pGywPgjUoHD3MqIJfo'; // Recibos Salud Mariel
 const SALDOS_SHEET_ID    = '1-cX_qxld3ioSpcO9lEBPg90Db6AyK7SczpJTvj7rw4U'; // Saldos (fuente de verdad — Claude accede vía service account)
 const RSM_FOLDER_ID = '1-ZfeWQ-Rmh-Wm2WMCkULkN6MQWBuxYnj';
-const APP_VERSION  = 'v8.0.4';
+const APP_VERSION  = 'v8.0.5';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -3139,7 +3139,18 @@ function fijos_bindEvents() {
     if (sortEl) sortEl.value = 'fechaAsc';
     document.getElementById('f-btn-add').addEventListener('click', () => fijos_abrirSheet(null));
     document.getElementById('f-btn-guardar').addEventListener('click', fijos_guardar);
-    document.getElementById('f-search').addEventListener('input', fijos_aplicarFiltros);
+    const fSearchEl = document.getElementById('f-search');
+    const fClearBtn = document.getElementById('f-search-clear');
+    fSearchEl.addEventListener('input', () => {
+        if (fClearBtn) fClearBtn.style.display = fSearchEl.value ? 'flex' : 'none';
+        fijos_aplicarFiltros();
+    });
+    if (fClearBtn) fClearBtn.addEventListener('click', () => {
+        fSearchEl.value = '';
+        fClearBtn.style.display = 'none';
+        fSearchEl.focus();
+        fijos_aplicarFiltros();
+    });
     document.getElementById('f-sort').addEventListener('change', fijos_aplicarFiltros);
     document.getElementById('f-btn-filtro').addEventListener('click', fijos_abrirFiltro);
     document.getElementById('f-filter-clear').addEventListener('click', () => { fijosState.filtrosActivos = []; fijos_cerrarFiltro(); fijos_aplicarFiltros(); });
@@ -3403,11 +3414,7 @@ async function fijos_copyText(text) {
     }
 }
 
-function fijos_renderLista(lista) {
-    const el  = document.getElementById('f-lista');
-    const fmt = new Intl.NumberFormat('es-MX',{style:'currency',currency:'MXN'});
-    if (!lista.length) { el.innerHTML = '<div class="empty-state">Sin movimientos</div>'; return; }
-    el.innerHTML = lista.map(item => {
+function fijos_renderCard(item, fmt) {
         const sign     = item.tipo==='gasto' ? '-' : '+';
         const cls      = item.tipo==='gasto' ? 'text-danger' : 'text-success';
         const montoParcial = item.pagosMes > 0 ? (item.monto / item.pagosMes) : item.monto;
@@ -3462,7 +3469,36 @@ function fijos_renderLista(lista) {
             </div>
           </div>
         </div>`;
-    }).join('');
+}
+
+function fijos_renderLista(lista) {
+    const el  = document.getElementById('f-lista');
+    const fmt = new Intl.NumberFormat('es-MX',{style:'currency',currency:'MXN'});
+    if (!lista.length) { el.innerHTML = '<div class="empty-state">Sin movimientos</div>'; return; }
+
+    const ingresos = lista.filter(i => i.tipo === 'ingreso');
+    const gastos   = lista.filter(i => i.tipo === 'gasto');
+
+    const pendingTotal = items => items.reduce((sum, item) => {
+        const pendingParts = Math.max(0, (item.pagosMes || 1) - (item.pagosHechos || 0));
+        return sum + (Math.abs(item.monto || 0) / (item.pagosMes || 1)) * pendingParts;
+    }, 0);
+
+    const renderSection = (items, label, emoji, totalCls) => {
+        if (!items.length) return '';
+        const total = pendingTotal(items);
+        const sign  = emoji === '💸' ? '-' : '+';
+        return `
+            <div class="fijos-section-header">
+                <span class="fijos-section-title">${emoji} ${label} · ${items.length}</span>
+                <span class="fijos-section-total ${totalCls}">${sign}${fmt.format(total)}</span>
+            </div>
+            ${items.map(item => fijos_renderCard(item, fmt)).join('')}`;
+    };
+
+    el.innerHTML =
+        renderSection(ingresos, 'Ingresos', '💰', 'text-success') +
+        renderSection(gastos,   'Gastos',   '💸', 'text-danger');
 }
 
 window.fijos_editar = function(id) {
