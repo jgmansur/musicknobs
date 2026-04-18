@@ -19,8 +19,9 @@ const SPREADSHEET_RECUERDOS_ID = '1b5PyMcfBQX75BODYRn075Meu-aOMW1lxr81USGE6zJA';
 const RECUERDOS_FOLDER_ID = '1L0t7TjKEugjpOIeYXU_xgoDiRPQ6-YbZ';
 const DEUDAS_RECIBOS_FOLDER_ID = '157KDn-vbkuHH1L8xbaJBGz-oKmT7p5a9';
 const SPREADSHEET_RSM_ID = '14VsoPHGNTSUSbzMOqGWs2qSL-pGywPgjUoHD3MqIJfo'; // Recibos Salud Mariel
+const SALDOS_SHEET_ID    = '1-cX_qxld3ioSpcO9lEBPg90Db6AyK7SczpJTvj7rw4U'; // Saldos (fuente de verdad — Claude accede vía service account)
 const RSM_FOLDER_ID = '1-ZfeWQ-Rmh-Wm2WMCkULkN6MQWBuxYnj';
-const APP_VERSION  = 'v7.9.0';
+const APP_VERSION  = 'v8.0.1';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -30,11 +31,23 @@ const EXPIRY_KEY   = 'google_token_expiry_v4';
 const TOKEN_LIFETIME_FALLBACK_SEC = 3500;
 const TOKEN_REFRESH_MARGIN_MS = 5 * 60 * 1000;
 const ACCOUNTS_SHEET_KEY = 'finance_accounts_sheet_v1'; // localStorage key for the accounts spreadsheet ID
-const AI_MIRROR_SYNC_URL = 'https://finance-mcp-server.fly.dev/api/ai-mirror/sync';
+const AI_MIRROR_SYNC_URL = 'http://localhost:8787/api/ai-mirror/sync';
 const AI_MIRROR_TOKEN_KEY = 'finance_ai_mirror_api_token_v1';
+const ENGRAM_API_BASE = 'http://127.0.0.1:8788';
 const AI_MIRROR_LAST_SYNC_KEY = 'finance_ai_mirror_last_sync_v1';
 const AI_MIRROR_SYNC_DEBOUNCE_MS = 15_000;
 const AI_MIRROR_SYNC_MAX_WAIT_MS = 5 * 60_000;
+
+// =============================================
+// ENGRAM v2 SYNC (fire-and-forget — never blocks UI)
+// =============================================
+function engramSync(endpoint, payload) {
+    fetch(`${ENGRAM_API_BASE}${endpoint}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+    }).catch(() => { /* server not running — silently ignored */ });
+}
 
 // =============================================
 // FIREBASE
@@ -949,7 +962,7 @@ function balance_updateLogNetFromRows(logRows) {
         balanceLogNetAnchor = balanceLogNetTotal;
         localStorage.setItem('balance_log_anchor_v1', String(balanceLogNetAnchor));
         balanceAnchorNeedsMigration = false;
-        if (_fbUid) balance_saveToFirestore().catch(console.warn);
+        balance_saveAccounts().catch(console.warn);
     }
 }
 
@@ -962,40 +975,7 @@ function balance_stopRealtimeSync() {
 }
 
 function balance_startRealtimeSync() {
-    if (!_fbUid) {
-        balance_stopRealtimeSync();
-        return;
-    }
-    if (balanceRealtimeUnsub && balanceRealtimeUid === _fbUid) return;
-    balance_stopRealtimeSync();
-    const ref = doc(_fbDb, 'users', _fbUid, 'balance', 'accounts');
-    balanceRealtimeUid = _fbUid;
-    balanceRealtimeUnsub = onSnapshot(ref, (snap) => {
-        if (!snap.exists()) return;
-        const data = snap.data() || {};
-        const nextAccounts = (data.accounts || []).map(balance_normalizeAccount);
-        balanceAccounts = nextAccounts;
-        if (data.accountLogAnchor && typeof data.accountLogAnchor === 'object') {
-            balanceAccountLogAnchor = data.accountLogAnchor;
-            localStorage.setItem(ACCOUNT_LOG_ANCHOR_KEY, JSON.stringify(balanceAccountLogAnchor));
-        }
-        const cloudAnchor = Number(data.logNetAnchor);
-        if (Number.isFinite(cloudAnchor)) {
-            balanceLogNetAnchor = cloudAnchor;
-            localStorage.setItem('balance_log_anchor_v1', String(balanceLogNetAnchor));
-            balanceAnchorNeedsMigration = false;
-        }
-        localStorage.setItem('finance_accounts_v1', JSON.stringify(balanceAccounts));
-        balance_updateKpi();
-        const panel = document.getElementById('balance-panel');
-        if (panel && !panel.classList.contains('hidden')) {
-            balance_renderPanel();
-        }
-        debugUpdate({ load: `Firestore realtime (${balanceAccounts.length})`, uid: _fbUid || '-' });
-    }, (err) => {
-        console.warn('[Firebase] realtime listener failed:', err.message);
-        debugUpdate({ load: `Firestore realtime error (${debugShort(err.message)})` });
-    });
+    // Realtime sync via Firestore removido — saldos ahora viven en Google Sheets (SALDOS_SHEET_ID)
 }
 
 function balance_handleFirebaseAuthChange() {
@@ -1007,32 +987,13 @@ function balance_handleFirebaseAuthChange() {
 }
 
 // ── Sheet-backed persistence ─────────────────────────────
-async function balance_getOrCreateSheet() {
-    let sheetId = localStorage.getItem(ACCOUNTS_SHEET_KEY);
-    // Find 'Jay App' folder in Drive
-    const folderId = await driveFindFolder('Jay App');
-    // Prefer canonical spreadsheet by name so all devices share the same file.
-    const canonicalSheetId = await driveFindSpreadsheetByName('Finance Dashboard - Cuentas', folderId);
-    if (canonicalSheetId) {
-        localStorage.setItem(ACCOUNTS_SHEET_KEY, canonicalSheetId);
-        return canonicalSheetId;
-    }
-    // Fallback to cached sheet id only if no canonical file was found.
-    if (sheetId) {
-        try { await sheetsGet(sheetId, 'A1:A1'); return sheetId; }
-        catch { localStorage.removeItem(ACCOUNTS_SHEET_KEY); }
-    }
-    // Create the spreadsheet (in Jay App folder if found, else root Drive)
-    sheetId = await driveCreateSpreadsheet('Finance Dashboard - Cuentas', folderId);
-    // Initialize header row
-    await sheetsUpdate(sheetId, 'A1:K1', [['ID', 'Nombre', 'Saldo', 'Tipo', 'Oculto', 'LimiteCredito', 'LimiteVisible', 'Moneda', 'TipoInversion', 'TasaPersonal', 'BitcoinInicialMXN']]);
-    localStorage.setItem(ACCOUNTS_SHEET_KEY, sheetId);
-    return sheetId;
+// Los saldos ahora viven en SALDOS_SHEET_ID (accesible por Claude vía service account)
+function balance_getOrCreateSheet() {
+    return Promise.resolve(SALDOS_SHEET_ID);
 }
 
 async function balance_loadAccounts() {
     if (!accessToken) {
-        // Not logged in — use localStorage fallback
         try {
             const raw = localStorage.getItem('finance_accounts_v1');
             balanceAccounts = raw ? JSON.parse(raw).map(balance_normalizeAccount) : DEFAULT_ACCOUNTS.map(a => balance_normalizeAccount(a));
@@ -1043,7 +1004,63 @@ async function balance_loadAccounts() {
         debugUpdate({ load: `localStorage (${balanceAccounts.length})`, token: 'No' });
         return;
     }
-    // ── 1. Try Firestore first (fastest, cloud-native) ──────────
+
+    // ── Primary: SALDOS_SHEET_ID (fuente de verdad) ──────────────────────────
+    try {
+        const rows = await sheetsGet(SALDOS_SHEET_ID, 'Hoja 1!A2:K');
+        if (rows && rows.filter(r => r[0]).length > 0) {
+            balanceAccounts = rows
+                .filter(r => r[0])
+                .map(r => balance_normalizeAccount({
+                    id:               Number(r[0]) || Date.now(),
+                    name:             r[1] || '',
+                    balance:          typeof r[2] === 'number' ? r[2] : parseSheetValue(r[2]),
+                    type:             r[3] || 'bank',
+                    hidden:           (r[4] || '').toString().toUpperCase() === 'TRUE',
+                    creditLimit:      typeof r[5] === 'number' ? r[5] : parseSheetValue(r[5]),
+                    creditLimitVisible: (r[6] || '').toString().toUpperCase() === 'TRUE',
+                    currency:         (r[7] || 'MXN').toString().toUpperCase(),
+                    investmentType:   (r[8] || 'custom').toString().toLowerCase(),
+                    customAnnualRate: typeof r[9] === 'number' ? r[9] : parseSheetValue(r[9]),
+                    bitcoinInitialMxn: typeof r[10] === 'number' ? r[10] : parseSheetValue(r[10]),
+                }));
+            // Read logNetAnchor and accountLogAnchor from Meta tab
+            try {
+                const metaRows = await sheetsGet(SALDOS_SHEET_ID, 'Meta!A2:B10');
+                const anchorRow = (metaRows || []).find(r => r[0] === 'logNetAnchor');
+                if (anchorRow) {
+                    const v = Number(anchorRow[1]);
+                    if (Number.isFinite(v)) {
+                        balanceLogNetAnchor = v;
+                        localStorage.setItem('balance_log_anchor_v1', String(v));
+                        balanceAnchorNeedsMigration = false;
+                    }
+                }
+                const anchorLogRow = (metaRows || []).find(r => r[0] === 'accountLogAnchor');
+                if (anchorLogRow && anchorLogRow[1]) {
+                    try { balanceAccountLogAnchor = JSON.parse(anchorLogRow[1]); } catch {}
+                }
+            } catch {}
+            localStorage.setItem('finance_accounts_v1', JSON.stringify(balanceAccounts));
+            debugUpdate({ load: `Saldos Sheet (${balanceAccounts.length})` });
+        } else {
+            // Sheet vacío — intentar migrar desde Firebase, luego defaults
+            await balance_migrateToSaldosSheet();
+        }
+    } catch (err) {
+        console.warn('[Saldos] Sheet load failed, using localStorage:', err.message);
+        debugUpdate({ load: `localStorage fallback (${err.message})` });
+        const raw = localStorage.getItem('finance_accounts_v1');
+        balanceAccounts = raw ? JSON.parse(raw).map(balance_normalizeAccount) : DEFAULT_ACCOUNTS.map(a => balance_normalizeAccount(a));
+    }
+
+    balance_refreshUsdMxnRate();
+    balance_refreshBtcMxnRate();
+    balance_refreshInvestmentRates();
+}
+
+async function balance_migrateToSaldosSheet() {
+    // One-time migration: Firebase → SALDOS_SHEET_ID
     if (_fbUid) {
         try {
             const ref  = doc(_fbDb, 'users', _fbUid, 'balance', 'accounts');
@@ -1054,77 +1071,32 @@ async function balance_loadAccounts() {
                 const cloudAnchor = Number(data.logNetAnchor);
                 if (Number.isFinite(cloudAnchor)) {
                     balanceLogNetAnchor = cloudAnchor;
-                    localStorage.setItem('balance_log_anchor_v1', String(balanceLogNetAnchor));
+                    localStorage.setItem('balance_log_anchor_v1', String(cloudAnchor));
                     balanceAnchorNeedsMigration = false;
-                } else {
-                    balanceAnchorNeedsMigration = true;
                 }
                 if (data.accountLogAnchor && typeof data.accountLogAnchor === 'object') {
                     balanceAccountLogAnchor = data.accountLogAnchor;
-                    localStorage.setItem(ACCOUNT_LOG_ANCHOR_KEY, JSON.stringify(balanceAccountLogAnchor));
                 }
-                // Update localStorage cache
+                await balance_writeToSheet();
                 localStorage.setItem('finance_accounts_v1', JSON.stringify(balanceAccounts));
-                balance_refreshUsdMxnRate();
-                balance_refreshBtcMxnRate();
-                balance_refreshInvestmentRates();
-                debugUpdate({ load: `Firestore (${balanceAccounts.length})`, uid: _fbUid || '-' });
+                debugUpdate({ load: `Migrado Firebase→Sheet (${balanceAccounts.length})` });
+                console.info('[Saldos] Migración Firebase → SALDOS_SHEET_ID completada');
                 return;
             }
-            // No Firestore data yet — fall through to Sheets to migrate
         } catch (err) {
-            debugUpdate({ load: `Firestore error -> Sheets (${debugShort(err.code || err.message)})` });
-            console.warn('[Firebase] Firestore load failed, falling back to Sheets:', err.message);
+            console.warn('[Saldos] Migración Firebase fallida:', err.message);
         }
     }
-    // ── 2. Fallback: Google Sheets (also used when dirty flag is set) ──────────
-    // If a previous deferred Sheets sync was interrupted (e.g. tab closed), force a write before reading.
-    const sheetsDirty = localStorage.getItem(BALANCE_SHEETS_DIRTY_KEY) === '1';
-    try {
-        const sid  = await balance_getOrCreateSheet();
-        if (sheetsDirty && balanceAccounts.length > 0) {
-            await balance_writeToSheet(sid);
-            localStorage.removeItem(BALANCE_SHEETS_DIRTY_KEY);
-        }
-        const rows = await sheetsGet(sid, 'A2:K');
-        if (!rows.length) {
-            balanceAccounts = DEFAULT_ACCOUNTS.map(a => balance_normalizeAccount(a));
-            await balance_writeToSheet(sid); // seed defaults
-        } else {
-            balanceAccounts = rows
-                .filter(r => r[0])
-                .map(r => balance_normalizeAccount({
-                    id:      Number(r[0]) || Date.now(),
-                    name:    r[1] || '',
-                    balance: typeof r[2] === 'number' ? r[2] : parseSheetValue(r[2]),
-                    type:    r[3] || 'bank',
-                    hidden:  (r[4] || '').toString().toUpperCase() === 'TRUE',
-                    creditLimit: typeof r[5] === 'number' ? r[5] : parseSheetValue(r[5]),
-                    creditLimitVisible: (r[6] || '').toString().toUpperCase() === 'TRUE',
-                    currency: (r[7] || 'MXN').toString().toUpperCase(),
-                    investmentType: (r[8] || 'custom').toString().toLowerCase(),
-                    customAnnualRate: typeof r[9] === 'number' ? r[9] : parseSheetValue(r[9]),
-                    bitcoinInitialMxn: typeof r[10] === 'number' ? r[10] : parseSheetValue(r[10]),
-                }));
-        }
-        debugUpdate({ load: `Sheets (${balanceAccounts.length})` });
-        balance_refreshUsdMxnRate();
-        balance_refreshBtcMxnRate();
-        balance_refreshInvestmentRates();
-        // Migrate to Firestore now that we have the data
-        if (_fbUid) balance_saveToFirestore().catch(console.warn);
-    } catch (err) {
-        console.error('Error loading accounts from Sheets:', err);
-        const raw = localStorage.getItem('finance_accounts_v1');
-        balanceAccounts = raw ? JSON.parse(raw).map(balance_normalizeAccount) : DEFAULT_ACCOUNTS.map(a => balance_normalizeAccount(a));
-        debugUpdate({ load: `localStorage fallback (${balanceAccounts.length})` });
-    }
+    // Sin datos — usar defaults y escribir al Sheet
+    balanceAccounts = DEFAULT_ACCOUNTS.map(a => balance_normalizeAccount(a));
+    await balance_writeToSheet().catch(console.warn);
+    debugUpdate({ load: `Defaults escritos a Sheet (${balanceAccounts.length})` });
 }
 
-async function balance_writeToSheet(sheetId) {
-    await sheetsClear(sheetId, 'A2:K');
+async function balance_writeToSheet() {
+    await sheetsClear(SALDOS_SHEET_ID, 'Hoja 1!A2:K');
     if (balanceAccounts.length) {
-        await sheetsUpdate(sheetId, `A2:K${1 + balanceAccounts.length}`,
+        await sheetsUpdate(SALDOS_SHEET_ID, `Hoja 1!A2:K${1 + balanceAccounts.length}`,
             balanceAccounts.map(a => [
                 a.id,
                 a.name,
@@ -1139,6 +1111,13 @@ async function balance_writeToSheet(sheetId) {
                 Number(a.bitcoinInitialMxn) || 0,
             ]));
     }
+    // Persistir logNetAnchor y accountLogAnchor en Meta tab
+    try {
+        await sheetsUpdate(SALDOS_SHEET_ID, 'Meta!A2:B3', [
+            ['logNetAnchor',      balanceLogNetAnchor === null ? '' : String(balanceLogNetAnchor)],
+            ['accountLogAnchor',  JSON.stringify(balanceAccountLogAnchor || {})],
+        ]);
+    } catch {}
 }
 
 async function balance_saveToFirestore() {
@@ -1164,61 +1143,22 @@ async function balance_saveToFirestore() {
     });
 }
 
-async function balance_saveAccounts(opts = {}) {
-    const deferBackup = opts.deferBackup !== false;
-    // 1. Update localStorage cache immediately (offline-first)
+async function balance_saveAccounts() {
+    // 1. localStorage siempre (offline-first)
     localStorage.setItem('finance_accounts_v1', JSON.stringify(balanceAccounts));
     if (!accessToken) {
         debugUpdate({ save: `Solo localStorage (${balanceAccounts.length})`, token: 'No' });
         return;
     }
-    if (!_fbUid) await firebase_signIn(accessToken, { allowPopupFallback: true });
-
-    // 2. Firestore first (primary), then Sheets backup (deferred by default)
-    if (_fbUid) {
-        try {
-            await balance_saveToFirestore();
-            debugUpdate({ save: `Firestore:OK | Sheets:${deferBackup ? 'SYNCING' : 'PENDING'}`, token: 'Si' });
-            const runSheetsBackup = () => balance_getOrCreateSheet().then(sid => balance_writeToSheet(sid));
-            if (deferBackup) {
-                localStorage.setItem(BALANCE_SHEETS_DIRTY_KEY, '1');
-                balanceSheetSyncQueue = balanceSheetSyncQueue
-                    .then(() => runSheetsBackup())
-                    .then(() => {
-                        localStorage.removeItem(BALANCE_SHEETS_DIRTY_KEY);
-                        debugUpdate({ save: 'Firestore:OK | Sheets:OK', token: 'Si' });
-                    })
-                    .catch((err) => {
-                        const code = err?.code || err?.status || 'ERR';
-                        console.warn('[Sheets] deferred save failed:', debugShort(err?.message || err));
-                        debugUpdate({ save: `Firestore:OK | Sheets:ERR(${code})`, token: 'Si' });
-                    });
-            } else {
-                await runSheetsBackup();
-                debugUpdate({ save: 'Firestore:OK | Sheets:OK', token: 'Si' });
-            }
-            return;
-        } catch (err) {
-            const code = err?.code || err?.status || 'ERR';
-            console.warn('[Firestore] save failed:', debugShort(err?.message || err));
-            // Fallback: if Firestore fails, force synchronous Sheets backup.
-            try {
-                const sid = await balance_getOrCreateSheet();
-                await balance_writeToSheet(sid);
-                debugUpdate({ save: `Firestore:ERR(${code}) | Sheets:OK`, token: 'Si' });
-                return;
-            } catch (sheetErr) {
-                const sheetCode = sheetErr?.code || sheetErr?.status || 'ERR';
-                debugUpdate({ save: `Firestore:ERR(${code}) | Sheets:ERR(${sheetCode})`, token: 'Si' });
-                throw sheetErr;
-            }
-        }
+    // 2. Saldos Sheet (fuente de verdad)
+    try {
+        await balance_writeToSheet();
+        debugUpdate({ save: `Saldos Sheet:OK (${balanceAccounts.length})`, token: 'Si' });
+    } catch (err) {
+        const code = err?.code || err?.status || 'ERR';
+        console.warn('[Saldos] Sheet save failed:', debugShort(err?.message || err));
+        debugUpdate({ save: `Saldos Sheet:ERR(${code})`, token: 'Si' });
     }
-
-    // No Firebase UID: rely on Sheets only.
-    const sid = await balance_getOrCreateSheet();
-    await balance_writeToSheet(sid);
-    debugUpdate({ save: 'Firestore:SKIP(no uid) | Sheets:OK', token: 'Si' });
 }
 
 // ── Compute helpers ──────────────────────────────────────
@@ -3032,6 +2972,7 @@ async function gastos_guardar() {
         } else {
             const fechaCreacionNow = new Date().toISOString();
             await sheetsAppend(SPREADSHEET_LOG_ID, 'Hoja 1!A:I', [[fecha, lugar, concepto, parseSheetValue(monto), tipo, forma, nuevasUrls.join(','), moneda, fechaCreacionNow]]);
+            engramSync('/api/engram/gasto', { fecha, lugar, concepto, monto: parseSheetValue(monto), tipo, forma_pago: forma, recibo: nuevasUrls.join(','), moneda, fuente: 'dashboard' });
         }
         status.innerText = nuevasUrls.length
             ? '✅ ' + (idFila ? 'Actualizado con recibo' : 'Guardado con recibo')
@@ -3924,6 +3865,7 @@ async function fijos_guardar() {
                 serializePaymentStates(new Array(pagosMes).fill(false)),
                 linkGroup,
             ]]);
+            engramSync('/api/engram/gasto', { fecha, concepto, monto: parseFloat(gasto || ingreso || 0), tipo: gasto ? 'fijo-gasto' : 'fijo-ingreso', forma_pago: formaPagoVal, fuente: 'dashboard' });
         }
         fijos_cerrarSheet();
         fijos_cargarDatos();
@@ -8846,6 +8788,7 @@ async function rsm_guardar() {
             showToast('✅ Recibo actualizado');
         } else {
             await sheetsAppend(SPREADSHEET_RSM_ID, `${RSM_SHEET}!A:C`, [row]);
+            engramSync('/api/engram/gasto', { fecha, monto, recibo: url, tipo: 'rsm', fuente: 'dashboard' });
             showToast('✅ Recibo guardado');
         }
         await rsm_loadData();
@@ -9203,6 +9146,7 @@ async function recuerdos_guardarNuevo() {
         if (files.length) urls = await recuerdos_subirArchivos(files, 'Subiendo archivo');
         const row = [new Date().toISOString(), texto, urls.length ? urls.join(',') : 'Sin imagen'];
         await sheetsAppend(SPREADSHEET_RECUERDOS_ID, `${RECUERDOS_SHEET}!A:C`, [row]);
+        engramSync('/api/engram/recuerdo', { texto, url: urls.join(','), fecha: new Date().toISOString().slice(0, 10), fuente: 'dashboard' });
         textEl.value = '';
         fileEl.value = '';
         const note = document.getElementById('rec-file-note');
@@ -10607,6 +10551,7 @@ async function pelo_save() {
     if (!hairState.members.includes(member)) hairState.members.push(member);
     await pelo_saveMembersMeta();
     await pelo_saveRows();
+    engramSync('/api/engram/gasto', { fecha: payload.date, monto: payload.amount, concepto: 'Corte de pelo', tipo: 'pelo', forma_pago: payload.formaPago, fuente: 'dashboard' });
     pelo_closeSheet();
     pelo_render();
     showToast('✅ Entrada de Pelo guardada y sincronizada');
