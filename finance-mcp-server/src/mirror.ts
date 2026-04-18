@@ -1,5 +1,6 @@
 import { config } from "./config.js";
 import { getFixedStatus } from "./data.js";
+import { createHash } from "node:crypto";
 import {
   createSpreadsheet,
   findSpreadsheetByName,
@@ -18,6 +19,15 @@ type SourceBook = {
   key: string;
   spreadsheetId: string;
   title: string;
+};
+
+type EngramBridgeResult = {
+  enabled: boolean;
+  attempted: boolean;
+  pushed: boolean;
+  skippedReason?: string;
+  statusCode?: number;
+  error?: string;
 };
 
 function safeTabName(raw: string): string {
@@ -68,6 +78,115 @@ async function getSourceBooks(): Promise<SourceBook[]> {
   return books;
 }
 
+function metadataToMap(rows: string[][]): Map<string, string> {
+  const map = new Map<string, string>();
+  for (const row of rows) {
+    const key = String(row[0] || "").trim();
+    if (!key) continue;
+    map.set(key, String(row[1] || "").trim());
+  }
+  return map;
+}
+
+async function pushEngramBridgeEvent(params: {
+  signature: string;
+  previousSignature: string;
+  syncedAt: string;
+  mirror: { id: string; url: string };
+  books: SourceBook[];
+  copied: Array<{ sourceBook: string; sourceTab: string; mirrorTab: string; rows: number; cols: number }>;
+  fixedStatus: { month: string; pendingTotal: number; rows: Array<{ montoPendiente: number }> };
+}): Promise<EngramBridgeResult> {
+  const webhookUrl = (config.engram.webhookUrl || "").trim();
+  const webhookToken = (config.engram.webhookToken || "").trim();
+
+  if (!webhookUrl) {
+    return {
+      enabled: false,
+      attempted: false,
+      pushed: false,
+      skippedReason: "ENGRAM_WEBHOOK_URL not configured",
+    };
+  }
+
+  if (params.signature === params.previousSignature) {
+    return {
+      enabled: true,
+      attempted: false,
+      pushed: false,
+      skippedReason: "No mirror changes detected",
+    };
+  }
+
+  const totalCells = params.copied.reduce((sum, item) => sum + item.rows * Math.max(1, item.cols), 0);
+  const pendingTop3 = params.fixedStatus.rows
+    .slice(0, 3)
+    .reduce((sum, row) => sum + Number(row.montoPendiente || 0), 0);
+
+  const payload = {
+    source: "finance-mcp-server",
+    event: "finance_ai_mirror_changed",
+    syncedAt: params.syncedAt,
+    signature: params.signature,
+    previousSignature: params.previousSignature,
+    mirror: {
+      spreadsheetId: params.mirror.id,
+      url: params.mirror.url,
+    },
+    summary: {
+      sourceBooks: params.books.length,
+      mirroredTabs: params.copied.length,
+      mirroredCellsApprox: totalCells,
+    },
+    financeSignals: {
+      month: params.fixedStatus.month,
+      fixedPendingTotal: params.fixedStatus.pendingTotal,
+      pendingRows: params.fixedStatus.rows.length,
+      top3PendingSum: pendingTop3,
+    },
+  };
+
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
+  if (webhookToken) {
+    headers.Authorization = `Bearer ${webhookToken}`;
+  }
+
+  try {
+    const response = await fetch(webhookUrl, {
+      method: "POST",
+      headers,
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      const body = await response.text().catch(() => "");
+      return {
+        enabled: true,
+        attempted: true,
+        pushed: false,
+        statusCode: response.status,
+        error: body || `Webhook failed with status ${response.status}`,
+      };
+    }
+
+    return {
+      enabled: true,
+      attempted: true,
+      pushed: true,
+      statusCode: response.status,
+    };
+  } catch (error) {
+    return {
+      enabled: true,
+      attempted: true,
+      pushed: false,
+      error: String((error as Error)?.message || error),
+    };
+  }
+}
+
 export async function syncAiMirror() {
   const mirror = await resolveMirrorSheet();
   const books = await getSourceBooks();
@@ -76,6 +195,8 @@ export async function syncAiMirror() {
 
   const copied: Array<{ sourceBook: string; sourceTab: string; mirrorTab: string; rows: number; cols: number }> = [];
   const addRequests: Array<{ addSheet: { properties: { title: string } } }> = [];
+
+  const contentHash = createHash("sha256");
 
   for (const book of books) {
     const sourceMeta = await sheetsGetSpreadsheet(book.spreadsheetId);
@@ -100,6 +221,16 @@ export async function syncAiMirror() {
     for (const sourceTab of sourceTabs) {
       const mirrorTab = buildTabName(book.key, sourceTab);
       const data = await sheetsGet(book.spreadsheetId, `${sourceTab}!A1:ZZ`);
+
+      contentHash.update(book.key);
+      contentHash.update("\u001f");
+      contentHash.update(sourceTab);
+      contentHash.update("\u001f");
+      for (const row of data) {
+        contentHash.update(row.join("\u241f"));
+        contentHash.update("\n");
+      }
+
       await sheetsClear(mirror.id, `${mirrorTab}!A1:ZZ`);
       if (data.length) {
         await sheetsUpdate(mirror.id, `${mirrorTab}!A1`, data);
@@ -119,12 +250,36 @@ export async function syncAiMirror() {
     await sheetsBatchUpdate(mirror.id, [{ addSheet: { properties: { title: metadataTab } } }]);
   }
 
+  const previousMetadataRows = await sheetsGet(mirror.id, `${metadataTab}!A1:B200`).catch(() => [] as string[][]);
+  const previousMetadata = metadataToMap(previousMetadataRows);
+  const previousSignature = previousMetadata.get("engramLastSignature") || "";
+
   const now = new Date().toISOString();
+  const currentSignature = contentHash.digest("hex");
+  const fixedStatus = await getFixedStatus();
+
+  const engramBridge = await pushEngramBridgeEvent({
+    signature: currentSignature,
+    previousSignature,
+    syncedAt: now,
+    mirror: { id: mirror.id, url: mirror.url },
+    books,
+    copied,
+    fixedStatus,
+  });
+
   const metadataRows = [
     ["lastSyncedAt", now],
     ["mirrorSpreadsheetId", mirror.id],
     ["sourceBooks", String(books.length)],
     ["tabsCopied", String(copied.length)],
+    ["engramLastSignature", currentSignature],
+    ["engramBridgeEnabled", engramBridge.enabled ? "TRUE" : "FALSE"],
+    ["engramBridgeAttempted", engramBridge.attempted ? "TRUE" : "FALSE"],
+    ["engramBridgePushed", engramBridge.pushed ? "TRUE" : "FALSE"],
+    ["engramBridgeStatusCode", engramBridge.statusCode ? String(engramBridge.statusCode) : ""],
+    ["engramBridgeSkippedReason", engramBridge.skippedReason || ""],
+    ["engramBridgeError", engramBridge.error || ""],
   ];
   await sheetsClear(mirror.id, `${metadataTab}!A1:B200`);
   await sheetsUpdate(mirror.id, `${metadataTab}!A1`, metadataRows);
@@ -133,7 +288,6 @@ export async function syncAiMirror() {
   if (!existingTabs.has(fixedStatusTab)) {
     await sheetsBatchUpdate(mirror.id, [{ addSheet: { properties: { title: fixedStatusTab } } }]);
   }
-  const fixedStatus = await getFixedStatus();
   const fixedRows: string[][] = [
     [
       "month",
@@ -175,5 +329,7 @@ export async function syncAiMirror() {
     sources: books,
     copied,
     syncedAt: now,
+    signature: currentSignature,
+    engramBridge,
   };
 }

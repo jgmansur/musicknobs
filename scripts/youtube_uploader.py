@@ -162,8 +162,21 @@ if __name__ == "__main__":
             print("Authorization failed.")
             sys.exit(1)
         
+    # Standalone thumbnail: --set_thumbnail=VIDEO_ID --thumbnail=PATH
+    set_thumb_id = next((a.split("=", 1)[1] for a in sys.argv if a.startswith("--set_thumbnail=")), None)
+    if set_thumb_id:
+        thumb_path = next((a.split("=", 1)[1] for a in sys.argv if a.startswith("--thumbnail=")), None)
+        if not thumb_path:
+            print("❌ Falta --thumbnail=PATH")
+            sys.exit(1)
+        youtube = get_authenticated_service()
+        if youtube:
+            set_thumbnail(youtube, set_thumb_id, thumb_path)
+        sys.exit(0)
+
     if len(sys.argv) < 5:
         print("Usage: python3 youtube_uploader.py <file_path> <title> <description> <tags_comma_separated> [recording_date_YYYY-MM-DD]")
+        print("       python3 youtube_uploader.py --set_thumbnail=VIDEO_ID --thumbnail=PATH")
         sys.exit(1)
 
     file_path = sys.argv[1]

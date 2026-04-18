@@ -27,6 +27,8 @@ Copy `.env.example` to `.env` and set values:
 - `SPREADSHEET_AI_MIRROR_ID` (optional; auto-create if missing)
 - `AI_MIRROR_SHEET_NAME` (optional)
 - `AI_MIRROR_SHARE_EMAIL` (optional; auto-share mirror sheet)
+- `ENGRAM_WEBHOOK_URL` (optional; pushes sanitized mirror change events)
+- `ENGRAM_WEBHOOK_TOKEN` (optional; bearer token for webhook)
 - `API_TOKEN`
 - `WIDGET_TOKEN` (recommended for Widgy endpoint)
 
@@ -68,6 +70,8 @@ fly secrets set SPREADSHEET_AUTOS_ID="..."
 fly secrets set SPREADSHEET_RECUERDOS_ID="..."
 fly secrets set SPREADSHEET_RSM_ID="..."
 fly secrets set SPREADSHEET_ACCOUNTS_ID="..."
+fly secrets set ENGRAM_WEBHOOK_URL="https://<tu-engram-bridge>/ingest"
+fly secrets set ENGRAM_WEBHOOK_TOKEN="<engram-bridge-token-opcional>"
 fly deploy
 ```
 
@@ -115,6 +119,30 @@ curl "https://<your-app>.fly.dev/api/widget/dashboard/live?token=$WIDGET_TOKEN&f
 - If `SPREADSHEET_RECUERDOS_ID` is configured, all its tabs are mirrored as `recuerdos__<tab>`.
 - If `SPREADSHEET_RSM_ID` is configured, all its tabs are mirrored as `rsm__<tab>`.
 - Includes derived tab `ai__fixed_status` with pending split-payment amounts for accurate AI debt context.
+
+## Engram bridge webhook (optional)
+
+- If `ENGRAM_WEBHOOK_URL` is configured, every successful `sync_ai_mirror` tries to POST a **sanitized** change event.
+- The server computes a content signature from mirrored tabs; if signature did not change, webhook is skipped.
+- Payload includes only aggregate metadata (no raw ledger rows):
+  - mirror spreadsheet id/url
+  - sync timestamp + content signature
+  - counts of source books/tabs/cells
+  - fixed-status totals (`pendingTotal`, month, row count)
+- Sync status is persisted in mirror tab `sync_metadata` fields:
+  - `engramLastSignature`
+  - `engramBridgeEnabled`
+  - `engramBridgeAttempted`
+  - `engramBridgePushed`
+  - `engramBridgeStatusCode`
+  - `engramBridgeSkippedReason`
+  - `engramBridgeError`
+
+Example webhook flow:
+1. Dashboard writes to Sheets.
+2. Dashboard auto-calls `/api/ai-mirror/sync`.
+3. MCP mirrors tabs and computes signature.
+4. If changed, MCP POSTs event to your Engram bridge endpoint.
 
 ## Security notes
 

@@ -28,6 +28,10 @@ export const config = {
   },
   aiMirrorName: process.env.AI_MIRROR_SHEET_NAME || "Finance AI Mirror",
   aiMirrorShareEmail: process.env.AI_MIRROR_SHARE_EMAIL || "",
+  engram: {
+    webhookUrl: process.env.ENGRAM_WEBHOOK_URL || "",
+    webhookToken: process.env.ENGRAM_WEBHOOK_TOKEN || "",
+  },
 };
 
 export function assertConfig() {
