@@ -21,7 +21,7 @@ const DEUDAS_RECIBOS_FOLDER_ID = '157KDn-vbkuHH1L8xbaJBGz-oKmT7p5a9';
 const SPREADSHEET_RSM_ID = '14VsoPHGNTSUSbzMOqGWs2qSL-pGywPgjUoHD3MqIJfo'; // Recibos Salud Mariel
 const SALDOS_SHEET_ID    = '1-cX_qxld3ioSpcO9lEBPg90Db6AyK7SczpJTvj7rw4U'; // Saldos (fuente de verdad — Claude accede vía service account)
 const RSM_FOLDER_ID = '1-ZfeWQ-Rmh-Wm2WMCkULkN6MQWBuxYnj';
-const APP_VERSION  = 'v8.0.7';
+const APP_VERSION  = 'v8.0.8';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -547,13 +547,21 @@ document.addEventListener('DOMContentLoaded', () => {
     prompts_bindEvents();
     estudio_bindEvents();
 
-    document.getElementById('fixed-search-open')?.addEventListener('click', dashboard_openFixedSearch);
-    document.getElementById('fixed-search-close')?.addEventListener('click', dashboard_closeFixedSearch);
-    document.getElementById('fixed-search-overlay')?.addEventListener('click', dashboard_closeFixedSearch);
-    const fixedSearchInput = document.getElementById('fixed-search-input');
-    if (fixedSearchInput) {
-        fixedSearchInput.addEventListener('input', () => {
-            dashboardFixedState.query = fixedSearchInput.value.toLowerCase().trim();
+    const fixedSearchInline = document.getElementById('fixed-search-inline');
+    const fixedSearchClear  = document.getElementById('fixed-search-inline-clear');
+    if (fixedSearchInline) {
+        fixedSearchInline.addEventListener('input', () => {
+            dashboardFixedState.query = fixedSearchInline.value.toLowerCase().trim();
+            if (fixedSearchClear) fixedSearchClear.style.display = fixedSearchInline.value ? 'flex' : 'none';
+            renderFixedTable();
+        });
+    }
+    if (fixedSearchClear) {
+        fixedSearchClear.addEventListener('click', () => {
+            fixedSearchInline.value = '';
+            fixedSearchClear.style.display = 'none';
+            dashboardFixedState.query = '';
+            fixedSearchInline.focus();
             renderFixedTable();
         });
     }
@@ -2532,7 +2540,11 @@ function renderFixedTable(expenses) {
         tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;color:var(--text-muted)">Sin resultados</td></tr>';
         return;
     }
-    tbody.innerHTML = filtered.map(e => {
+    const ingresos = filtered.filter(e => e.tipo === 'ingreso');
+    const gastos   = filtered.filter(e => e.tipo === 'gasto');
+    const sectionRow = (label, emoji) =>
+        `<tr class="fixed-section-row"><td colspan="3"><span class="fixed-section-label">${emoji} ${label}</span></td></tr>`;
+    const renderRows = arr => arr.map(e => {
         const pagosMes = e.pagosMes || 1;
         const botonesPagos = pagosMes === 1
             ? (() => {
@@ -2557,6 +2569,10 @@ function renderFixedTable(expenses) {
           </td>
         </tr>`;
     }).join('');
+    const parts = [];
+    if (ingresos.length) parts.push(sectionRow('Ingresos', '💰') + renderRows(ingresos));
+    if (gastos.length)   parts.push(sectionRow('Gastos',   '💸') + renderRows(gastos));
+    tbody.innerHTML = parts.join('') || '<tr><td colspan="3" style="text-align:center;color:var(--text-muted)">Sin resultados</td></tr>';
 }
 
 function dashboard_openFixedSearch() {

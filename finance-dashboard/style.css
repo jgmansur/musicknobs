@@ -329,6 +329,11 @@ select.field-input { background-image: url("data:image/svg+xml,%3Csvg xmlns='htt
 }
 .search-clear-btn:hover { background: rgba(255,255,255,.22); color: var(--text-main); }
 /* Fijos section headers */
+/* Dashboard fixed table section rows */
+.fixed-section-row td { padding: .4rem .5rem .3rem; background: rgba(255,255,255,.04); border-top: 1px solid var(--glass-border); }
+.fixed-section-row:first-child td { border-top: none; }
+.fixed-section-label { font-size: .72rem; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; color: var(--text-soft); }
+/* Fijos section headers (tab Gastos Fijos) */
 .fijos-section-header {
   display: flex; align-items: center; justify-content: space-between;
   padding: .5rem .85rem .45rem;

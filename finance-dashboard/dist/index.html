@@ -12,8 +12,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <script type="module" crossorigin src="./assets/index-DcLiAGYf.js"></script>
-    <link rel="stylesheet" crossorigin href="./assets/index-DUXA3ldA.css">
+    <script type="module" crossorigin src="./assets/index-CLsr_zQK.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-Dj0FIKS6.css">
   </head>
   <body>
     <div id="app">
@@ -107,7 +107,15 @@
             <section class="table-section glass">
               <div class="section-header fixed-status-header">
                 <h3>Estatus Gastos Fijos</h3>
-                <button id="fixed-search-open" class="icon-btn" aria-label="Buscar gastos fijos">🔍</button>
+              </div>
+              <div class="search-wrap" style="margin-bottom:.75rem">
+                <span class="search-icon">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                </span>
+                <input id="fixed-search-inline" type="text" class="search-input search-input--icon" placeholder="Buscar fijo...">
+                <button id="fixed-search-inline-clear" class="search-clear-btn" title="Limpiar" style="display:none">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
               </div>
               <div class="table-wrapper">
                 <table id="fixed-expenses-table">
@@ -123,16 +131,6 @@
             <button id="ai-mirror-sync-btn" class="secondary-btn">♻️ Actualizar copia maestra AI</button>
             <span id="ai-mirror-sync-status" class="diff-label">Sin sincronizar hoy</span>
           </section>
-          <div id="fixed-search-modal" class="fixed-search-modal hidden">
-            <div id="fixed-search-overlay" class="fixed-search-overlay"></div>
-            <div class="fixed-search-card glass">
-              <div class="fixed-search-head">
-                <h4>Buscar gasto fijo</h4>
-                <button id="fixed-search-close" class="icon-btn" aria-label="Cerrar buscador">✕</button>
-              </div>
-              <input id="fixed-search-input" class="field-input" type="search" placeholder="Escribe concepto o categoría...">
-            </div>
-          </div>
         </main>
       </div>
 
