@@ -21,7 +21,7 @@ const DEUDAS_RECIBOS_FOLDER_ID = '157KDn-vbkuHH1L8xbaJBGz-oKmT7p5a9';
 const SPREADSHEET_RSM_ID = '14VsoPHGNTSUSbzMOqGWs2qSL-pGywPgjUoHD3MqIJfo'; // Recibos Salud Mariel
 const SALDOS_SHEET_ID    = '1-cX_qxld3ioSpcO9lEBPg90Db6AyK7SczpJTvj7rw4U'; // Saldos (fuente de verdad — Claude accede vía service account)
 const RSM_FOLDER_ID = '1-ZfeWQ-Rmh-Wm2WMCkULkN6MQWBuxYnj';
-const APP_VERSION  = 'v8.2.0';
+const APP_VERSION  = 'v8.2.1';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -12868,9 +12868,12 @@ function escolar_renderAnalysis(analysis) {
         </div>`;
     }
 
-    const { promedio, materias = [], advertencias = [], consejos = [], observaciones } = analysis;
+    const { promedio, materias = [], advertencias = [], consejos = [], observaciones, desarrollo_emocional = [], habitos_trabajo = [], conducta, trimestre } = analysis;
+
+    const nivelColor = n => n === 'Siempre' || n === 'Always' ? '#34d399' : n === 'Casi siempre' || n === 'Almost Always' ? '#fbbf24' : '#f87171';
 
     const statsHtml = `
+        ${trimestre ? `<p style="font-size:.7rem;color:var(--text-muted);margin-bottom:.5rem">${trimestre}</p>` : ''}
         <div class="escolar-stats-grid">
             <div class="escolar-stat ${promedio >= 9 ? 'escolar-stat--good' : promedio >= 7 ? 'escolar-stat--warn' : 'escolar-stat--bad'}">
                 <span class="escolar-stat-value">${promedio?.toFixed(1) ?? '—'}</span>
@@ -12892,13 +12895,38 @@ function escolar_renderAnalysis(analysis) {
                 const pct = Math.min(100, ((m.calificacion || 0) / 10) * 100);
                 const color = m.calificacion >= 9 ? '#34d399' : m.calificacion >= 7 ? '#fbbf24' : '#f87171';
                 return `<div class="escolar-materia-row">
-                    <span class="escolar-materia-nombre">${m.nombre}</span>
+                    <span class="escolar-materia-nombre">${m.nombre}${m.detalle ? ` <span style="font-size:.65rem;color:var(--text-muted)">${m.detalle}</span>` : ''}</span>
                     <span class="escolar-materia-cal" style="color:${color}">${m.calificacion ?? '—'}</span>
                     <div class="escolar-materia-bar">
                         <div class="escolar-materia-fill" style="width:${pct}%;background:${color}"></div>
                     </div>
                 </div>`;
             }).join('')}
+        </div>` : '';
+
+    const desarrolloHtml = desarrollo_emocional.length ? `
+        <div style="margin-bottom:.65rem">
+            <div class="escolar-docs-title" style="margin-bottom:.35rem">Desarrollo Emocional</div>
+            ${desarrollo_emocional.map(d => `
+                <div style="display:flex;justify-content:space-between;align-items:center;font-size:.75rem;padding:.18rem 0;border-bottom:1px solid rgba(255,255,255,.04)">
+                    <span style="color:var(--text-soft)">${d.aspecto}</span>
+                    <span style="color:${nivelColor(d.nivel)};font-weight:600;font-size:.68rem;white-space:nowrap;margin-left:.5rem">${d.nivel}</span>
+                </div>`).join('')}
+        </div>` : '';
+
+    const habitosHtml = habitos_trabajo.length ? `
+        <div style="margin-bottom:.65rem">
+            <div class="escolar-docs-title" style="margin-bottom:.35rem">Hábitos de Trabajo</div>
+            ${habitos_trabajo.map(h => `
+                <div style="display:flex;justify-content:space-between;align-items:center;font-size:.75rem;padding:.18rem 0;border-bottom:1px solid rgba(255,255,255,.04)">
+                    <span style="color:var(--text-soft)">${h.aspecto}</span>
+                    <span style="color:${nivelColor(h.nivel)};font-weight:600;font-size:.68rem;white-space:nowrap;margin-left:.5rem">${h.nivel}</span>
+                </div>`).join('')}
+        </div>` : '';
+
+    const conductaHtml = conducta ? `
+        <div style="font-size:.75rem;color:var(--text-soft);background:rgba(52,211,153,.06);border:1px solid rgba(52,211,153,.15);border-radius:.5rem;padding:.4rem .65rem;margin-bottom:.65rem">
+            🎯 <strong>Conducta:</strong> ${conducta}
         </div>` : '';
 
     const warningsHtml = advertencias.length ? `
@@ -12911,7 +12939,7 @@ function escolar_renderAnalysis(analysis) {
             ${consejos.map(c => `<div class="escolar-consejo-item">💡 ${c}</div>`).join('')}
         </div>` : '';
 
-    const obsHtml = observaciones ? `<p style="font-size:.78rem;color:var(--text-soft);margin-top:.5rem">${observaciones}</p>` : '';
+    const obsHtml = observaciones ? `<p style="font-size:.78rem;color:var(--text-soft);margin-top:.65rem;padding:.5rem .65rem;background:rgba(255,255,255,.03);border-radius:.5rem">${observaciones}</p>` : '';
 
-    return statsHtml + materiasHtml + warningsHtml + consejosHtml + obsHtml;
+    return statsHtml + materiasHtml + desarrolloHtml + habitosHtml + conductaHtml + warningsHtml + consejosHtml + obsHtml;
 }
