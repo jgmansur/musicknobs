@@ -21,7 +21,7 @@ const DEUDAS_RECIBOS_FOLDER_ID = '157KDn-vbkuHH1L8xbaJBGz-oKmT7p5a9';
 const SPREADSHEET_RSM_ID = '14VsoPHGNTSUSbzMOqGWs2qSL-pGywPgjUoHD3MqIJfo'; // Recibos Salud Mariel
 const SALDOS_SHEET_ID    = '1-cX_qxld3ioSpcO9lEBPg90Db6AyK7SczpJTvj7rw4U'; // Saldos (fuente de verdad — Claude accede vía service account)
 const RSM_FOLDER_ID = '1-ZfeWQ-Rmh-Wm2WMCkULkN6MQWBuxYnj';
-const APP_VERSION  = 'v8.0.3';
+const APP_VERSION  = 'v8.0.4';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -2346,7 +2346,7 @@ async function fetchAndProcess() {
         await ensureUsdMxnRateForTransactions();
         const [logData, fixedData] = await Promise.all([
             sheetsGet(SPREADSHEET_LOG_ID, 'Hoja 1!A2:H'),
-            sheetsGet(SPREADSHEET_FIXED_ID, 'Hoja 1!A2:O')  // H=estado pagos, I=periodicidad, J=inicio, K=pagador, L=budget, M=moneda, N=waive, O=linkGroup
+            sheetsGet(SPREADSHEET_FIXED_ID, 'Hoja 1!A2:P')  // H=estado pagos, I=periodicidad, J=inicio, K=pagador, L=budget, M=moneda, N=waive, O=linkGroup, P=fechasPago
         ]);
         processAndRender(logData, fixedData);
         status.innerText = 'Sincronizado ✓'; status.style.color = 'var(--accent-green)';
@@ -2464,7 +2464,7 @@ function processAndRender(logRows, fixedRows) {
         const paidAmount = partAmount * Math.max(0, pagosHechos);
         const pendingAmount = partAmount * Math.max(0, pagosMes - pagosHechos);
         const formaPago = parseFixedFormaPago(row[10]);
-        return { rowNum: i + 2, concepto, categoria, monto, montoOriginal, moneda, tipo, isPaid, pagosMes, pagosEstado, waivedEstado, pagosHechos, paidAmount, pendingAmount, periodicidad, inicioMes, isDueThisMonth, pagador: parseFixedPayer(row[10]), formaPago, budgetCategory: parseBudgetCategory(row[11]), linkGroup: (row[14] || '').toString().trim() };
+        return { rowNum: i + 2, concepto, categoria, monto, montoOriginal, moneda, tipo, isPaid, pagosMes, pagosEstado, waivedEstado, pagosHechos, paidAmount, pendingAmount, periodicidad, inicioMes, isDueThisMonth, pagador: parseFixedPayer(row[10]), formaPago, budgetCategory: parseBudgetCategory(row[11]), linkGroup: (row[14] || '').toString().trim(), fechasPago: parseFechasPago(row[15], pagosMes) };
     }).filter(e => e.concepto);
 
     // KPI: count partial progress for fixed expenses
@@ -3177,7 +3177,7 @@ async function fijos_cargarDatos() {
     try {
         await ensureUsdMxnRateForTransactions();
         const [rows, catRows] = await Promise.all([
-            sheetsGet(SPREADSHEET_FIXED_ID, 'Hoja 1!A2:O').catch(() => []),  // I=periodicidad, J=inicio, K=pagador, L=budget, M=moneda, N=waive, O=linkGroup
+            sheetsGet(SPREADSHEET_FIXED_ID, 'Hoja 1!A2:P').catch(() => []),  // I=periodicidad, J=inicio, K=pagador, L=budget, M=moneda, N=waive, O=linkGroup, P=fechasPago
             sheetsGet(SPREADSHEET_FIXED_ID, 'Categorias!A:A').catch(() => [])
         ]);
         fijosState.categorias = catRows.map(r => r[0]).filter(Boolean);
@@ -3249,6 +3249,7 @@ async function fijos_cargarDatos() {
                 formaPago: parseFixedFormaPago(row[10]),
                 budgetCategory: parseBudgetCategory(row[11]),
                 linkGroup: (row[14] || '').toString().trim(),
+                fechasPago: parseFechasPago(row[15], pagosMes),
             };
         }).filter(i => i.concepto).sort((a, b) => a.diaMes - b.diaMes);
 
@@ -3425,6 +3426,16 @@ function fijos_renderLista(lista) {
                 const isWaived = !!(item.waivedEstado && item.waivedEstado[idx]);
                 return `<button class="${clsPart}" style="min-width:44px;padding:.35rem .45rem;font-size:.72rem" ${fixedPartButtonAttrs(item.id, idx, 'fijos')}>${isPartPaid && isWaived ? 'W' : (idx + 1)}</button>`;
             }).join('');
+        const fechasPagoUi = (() => {
+            const fechas = item.fechasPago || [];
+            const hasFecha = fechas.some(f => f);
+            if (!hasFecha) return '';
+            if (item.pagosMes === 1) {
+                return fechas[0] ? `<span style="font-size:.68rem;color:var(--text-muted);margin-top:.15rem;display:block">${fechas[0]}</span>` : '';
+            }
+            const parts = item.pagosEstado.map((_, idx) => fechas[idx] ? `<span title="Cuota ${idx+1}" style="font-size:.65rem;color:var(--text-muted)">${fechas[idx]}</span>` : '').filter(Boolean);
+            return parts.length ? `<div style="display:flex;gap:.4rem;flex-wrap:wrap;margin-top:.15rem">${parts.join('')}</div>` : '';
+        })();
         const linkGroupRaw = (item.linkGroup || '').trim();
         const linkGroupEsc = fijos_escapeHtml(linkGroupRaw);
         const linkGroupUi = linkGroupRaw
@@ -3444,6 +3455,7 @@ function fijos_renderLista(lista) {
           <div class="mc-right" style="align-items:flex-end;gap:.5rem">
             <span class="mc-monto ${cls}">${sign}${fmt.format(pendingAmount)}</span>
             <div style="display:flex;gap:.35rem;flex-wrap:wrap;justify-content:flex-end;max-width:220px">${botonesPagos}</div>
+            ${fechasPagoUi}
             <div style="display:flex;gap:.4rem;margin-top:.2rem">
               <button class="mini-btn" onclick="fijos_editar(${item.id})">✏️</button>
               <button class="mini-btn mini-btn-danger" onclick="fijos_borrar(${item.id})">🗑️</button>
@@ -3509,6 +3521,8 @@ window.fijos_togglePagoPart = async function(id, partIndex, options = {}) {
     item.pagosEstado[partIndex] = nowPartPaid;
     if (!item.waivedEstado) item.waivedEstado = new Array(item.pagosMes).fill(false);
     item.waivedEstado[partIndex] = nowPartPaid ? !!(options.skipControlLog || options.waive) : false;
+    if (!item.fechasPago) item.fechasPago = new Array(item.pagosMes).fill('');
+    item.fechasPago[partIndex] = nowPartPaid ? new Date().toLocaleDateString('en-CA') : '';
     item.pagosHechos = item.pagosEstado.filter(Boolean).length;
     item.isPaid = item.pagosHechos >= item.pagosMes;
     balanceLogNetTotal += nowPartPaid ? signedPartAmount : -signedPartAmount;
@@ -3517,9 +3531,10 @@ window.fijos_togglePagoPart = async function(id, partIndex, options = {}) {
     fijos_aplicarFiltros();
 
     try {
-        // 1) Persist partial state (H) + legacy full-paid checkbox (F)
+        // 1) Persist partial state (H) + legacy full-paid checkbox (F) + fechasPago (P)
         await sheetsUpdate(SPREADSHEET_FIXED_ID, `Hoja 1!F${id}:H${id}`, [[item.isPaid ? 'TRUE' : 'FALSE', item.pagosMes, serializePaymentStates(item.pagosEstado)]]);
         await sheetsUpdate(SPREADSHEET_FIXED_ID, `Hoja 1!N${id}:N${id}`, [[serializePaymentStates(item.waivedEstado)]]);
+        await sheetsUpdate(SPREADSHEET_FIXED_ID, `Hoja 1!P${id}:P${id}`, [[serializeFechasPago(item.fechasPago)]]);
 
         // 2) If marking one part as PAID -> append partial entry to Control de Gastos
         if (nowPartPaid && !options.skipControlLog) {
@@ -3825,13 +3840,15 @@ async function fijos_guardar() {
             const current = fijosState.allItems.find(i => i.id === Number(editId));
             const prevStates = current?.pagosEstado || [];
             const prevWaived = current?.waivedEstado || [];
+            const prevFechas = current?.fechasPago || [];
             const nextStates = new Array(pagosMes).fill(false).map((_, idx) => !!prevStates[idx]);
             const nextWaived = new Array(pagosMes).fill(false).map((_, idx) => {
                 if (!nextStates[idx]) return false;
                 return !!prevWaived[idx];
             });
+            const nextFechas = new Array(pagosMes).fill('').map((_, idx) => prevFechas[idx] || '');
             const fullPaid = nextStates.every(Boolean);
-            await sheetsUpdate(SPREADSHEET_FIXED_ID, `Hoja 1!A${editId}:O${editId}`, [[
+            await sheetsUpdate(SPREADSHEET_FIXED_ID, `Hoja 1!A${editId}:P${editId}`, [[
                 fecha,
                 concepto,
                 gasto,
@@ -3847,10 +3864,11 @@ async function fijos_guardar() {
                 moneda,
                 serializePaymentStates(nextWaived),
                 linkGroup,
+                serializeFechasPago(nextFechas),
             ]]);
         } else {
             // new rows start with all partial payments pending
-            await sheetsAppend(SPREADSHEET_FIXED_ID, 'Hoja 1!A:O', [[
+            await sheetsAppend(SPREADSHEET_FIXED_ID, 'Hoja 1!A:P', [[
                 fecha,
                 concepto,
                 gasto,
@@ -3866,6 +3884,7 @@ async function fijos_guardar() {
                 moneda,
                 serializePaymentStates(new Array(pagosMes).fill(false)),
                 linkGroup,
+                '',
             ]]);
             engramSync('/api/engram/gasto', { fecha, concepto, monto: parseFloat(gasto || ingreso || 0), tipo: gasto ? 'fijo-gasto' : 'fijo-ingreso', forma_pago: formaPagoVal, fuente: 'dashboard' });
         }
@@ -11358,6 +11377,20 @@ function parseWaiveStates(raw, total, paidStates = []) {
         if (!paidStates[i]) states[i] = false;
     }
     return states;
+}
+
+/** Serialize array of date strings → pipe-separated: "2026-04-05||2026-05-10" */
+function serializeFechasPago(dates) {
+    return (dates || []).map(d => d || '').join('|');
+}
+
+/** Parse pipe-separated date string → array of date strings (length=count) */
+function parseFechasPago(raw, count) {
+    const n = parsePaymentsTotal(count);
+    const parts = (raw || '').toString().split('|').slice(0, n);
+    const result = new Array(n).fill('');
+    for (let i = 0; i < parts.length; i++) result[i] = parts[i] || '';
+    return result;
 }
 
 /** Parse a date that may be a Google Sheets serial number or an ISO/DD/MM/YYYY string AND RETURNS A JS DATE */
