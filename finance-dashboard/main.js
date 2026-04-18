@@ -21,7 +21,7 @@ const DEUDAS_RECIBOS_FOLDER_ID = '157KDn-vbkuHH1L8xbaJBGz-oKmT7p5a9';
 const SPREADSHEET_RSM_ID = '14VsoPHGNTSUSbzMOqGWs2qSL-pGywPgjUoHD3MqIJfo'; // Recibos Salud Mariel
 const SALDOS_SHEET_ID    = '1-cX_qxld3ioSpcO9lEBPg90Db6AyK7SczpJTvj7rw4U'; // Saldos (fuente de verdad — Claude accede vía service account)
 const RSM_FOLDER_ID = '1-ZfeWQ-Rmh-Wm2WMCkULkN6MQWBuxYnj';
-const APP_VERSION  = 'v8.1.0';
+const APP_VERSION  = 'v8.1.1';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -271,20 +271,38 @@ function debugInitPanel() {
 
 // migrate away from old token keys
 ['google_access_token', 'google_access_token_v2', 'google_access_token_v3'].forEach(k => localStorage.removeItem(k));
-// Load stored token only if not expired (tokens live ~3600s, we use 3500s to be safe)
-const _stored  = localStorage.getItem(TOKEN_KEY);
-const _expiry  = parseInt(localStorage.getItem(EXPIRY_KEY) || '0', 10);
+
+// Cookie helpers — cookies are shared between Safari and iOS PWA (localStorage is NOT)
+function _setCookie(name, value, expiryMs) {
+    const expires = new Date(expiryMs).toUTCString();
+    document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expires}; path=/; SameSite=Lax`;
+}
+function _getCookie(name) {
+    const m = document.cookie.match(new RegExp('(?:^|;\\s*)' + name + '=([^;]*)'));
+    return m ? decodeURIComponent(m[1]) : null;
+}
+function _clearCookie(name) {
+    document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; SameSite=Lax`;
+}
+
+// Load stored token — check localStorage first (desktop), then cookie (iOS PWA fallback)
+const _stored  = localStorage.getItem(TOKEN_KEY) || _getCookie(TOKEN_KEY);
+const _expiry  = parseInt(localStorage.getItem(EXPIRY_KEY) || _getCookie(EXPIRY_KEY) || '0', 10);
 if (_stored && _stored !== 'undefined' && _stored !== 'null' && Date.now() < _expiry) {
     accessToken = _stored;
 } else {
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(EXPIRY_KEY);
+    _clearCookie(TOKEN_KEY);
+    _clearCookie(EXPIRY_KEY);
 }
 
 function clearAccessTokenCache() {
     accessToken = null;
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(EXPIRY_KEY);
+    _clearCookie(TOKEN_KEY);
+    _clearCookie(EXPIRY_KEY);
     tokenRequestInFlight = null;
     if (tokenRequestWatchdog) {
         clearTimeout(tokenRequestWatchdog);
@@ -1771,8 +1789,12 @@ async function requestToken(options = {}) {
                     if (ok) {
                         accessToken = res.access_token;
                         const expiresInSec = Number(res.expires_in) || TOKEN_LIFETIME_FALLBACK_SEC;
+                        const expiryMs = Date.now() + expiresInSec * 1000;
                         localStorage.setItem(TOKEN_KEY, accessToken);
-                        localStorage.setItem(EXPIRY_KEY, String(Date.now() + expiresInSec * 1000));
+                        localStorage.setItem(EXPIRY_KEY, String(expiryMs));
+                        // Cookie compartida con iOS PWA (localStorage no se comparte entre Safari y PWA)
+                        _setCookie(TOKEN_KEY, accessToken, expiryMs);
+                        _setCookie(EXPIRY_KEY, String(expiryMs), expiryMs);
                         scheduleTokenRefresh();
                         debugUpdate({ token: 'Si (cache)', auth: 'Google OAuth OK' });
                         hideLoginModal();
@@ -1812,6 +1834,9 @@ function showLoginModal() {
     if (m) { m.style.display = 'flex'; m.style.alignItems = 'center'; m.style.justifyContent = 'center'; }
     const b = document.getElementById('modal-backdrop');
     if (b) b.style.display = 'block';
+    // Mostrar hint de login en iOS PWA standalone
+    const hint = document.getElementById('pwa-login-hint');
+    if (hint) hint.style.display = isStandaloneAppMode() ? 'block' : 'none';
 }
 function hideLoginModal() {
     const m = document.getElementById('modal-api'); if (m) m.style.display = 'none';
