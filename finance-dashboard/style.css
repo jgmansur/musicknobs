@@ -1764,3 +1764,244 @@ select.field-input { background-image: url("data:image/svg+xml,%3Csvg xmlns='htt
     grid-template-columns: repeat(5, minmax(0, 1fr));
   }
 }
+
+/* =============================================
+   ESCOLARIDAD
+   ============================================= */
+.escolar-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+.escolar-card {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+.escolar-header {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+}
+.escolar-avatar {
+  width: 2.8rem;
+  height: 2.8rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+  flex-shrink: 0;
+}
+.escolar-avatar--roby { background: rgba(236,72,153,.15); }
+.escolar-avatar--hans { background: rgba(59,130,246,.15); }
+.escolar-meta { display: flex; flex-direction: column; gap: .1rem; }
+.escolar-meta h3 { font-size: 1rem; font-weight: 700; }
+.escolar-meta span { font-size: .72rem; color: var(--text-soft); }
+.escolar-drive-link {
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
+  font-size: .72rem;
+  color: var(--accent);
+  text-decoration: none;
+  padding: .25rem .6rem;
+  border-radius: .5rem;
+  background: rgba(251,191,36,.08);
+  border: 1px solid rgba(251,191,36,.2);
+  width: fit-content;
+  transition: background .2s;
+}
+.escolar-drive-link:hover { background: rgba(251,191,36,.15); }
+
+/* Documentos */
+.escolar-docs-title {
+  font-size: .72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  color: var(--text-soft);
+  margin-bottom: .4rem;
+}
+.escolar-folder {
+  margin-bottom: .5rem;
+}
+.escolar-folder-name {
+  font-size: .78rem;
+  font-weight: 600;
+  color: var(--text-soft);
+  display: flex;
+  align-items: center;
+  gap: .3rem;
+  margin-bottom: .3rem;
+}
+.escolar-file {
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+  padding: .3rem .5rem;
+  border-radius: .5rem;
+  background: rgba(255,255,255,.03);
+  margin-bottom: .2rem;
+}
+.escolar-file a {
+  font-size: .8rem;
+  color: var(--text-main);
+  text-decoration: none;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.escolar-file a:hover { color: var(--accent); }
+.escolar-file-date {
+  font-size: .65rem;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+.escolar-empty {
+  font-size: .8rem;
+  color: var(--text-muted);
+  text-align: center;
+  padding: 1.5rem 0;
+}
+
+/* Análisis */
+.escolar-analysis {
+  border-top: 1px solid var(--glass-border);
+  padding-top: .85rem;
+}
+.escolar-analysis-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: .65rem;
+}
+.escolar-analysis-header h4 {
+  font-size: .82rem;
+  font-weight: 600;
+}
+.escolar-updated {
+  font-size: .65rem;
+  color: var(--text-muted);
+}
+.escolar-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: .5rem;
+  margin-bottom: .75rem;
+}
+.escolar-stat {
+  background: rgba(255,255,255,.04);
+  border-radius: .75rem;
+  padding: .5rem .6rem;
+  text-align: center;
+}
+.escolar-stat-value {
+  font-size: 1.1rem;
+  font-weight: 700;
+  display: block;
+}
+.escolar-stat-label {
+  font-size: .62rem;
+  color: var(--text-soft);
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+.escolar-stat--good .escolar-stat-value { color: #34d399; }
+.escolar-stat--warn .escolar-stat-value { color: #fbbf24; }
+.escolar-stat--bad  .escolar-stat-value { color: #f87171; }
+
+.escolar-materias { margin-bottom: .65rem; }
+.escolar-materia-row {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  padding: .3rem 0;
+  border-bottom: 1px solid rgba(255,255,255,.04);
+  font-size: .78rem;
+}
+.escolar-materia-nombre { flex: 1; color: var(--text-main); }
+.escolar-materia-cal {
+  font-weight: 700;
+  width: 2.2rem;
+  text-align: right;
+}
+.escolar-materia-bar {
+  width: 60px;
+  height: 4px;
+  background: rgba(255,255,255,.08);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.escolar-materia-fill {
+  height: 100%;
+  border-radius: 2px;
+}
+
+.escolar-warnings {
+  display: flex;
+  flex-direction: column;
+  gap: .35rem;
+  margin-bottom: .65rem;
+}
+.escolar-warning-item {
+  display: flex;
+  gap: .4rem;
+  font-size: .75rem;
+  color: #fbbf24;
+  background: rgba(251,191,36,.06);
+  border: 1px solid rgba(251,191,36,.15);
+  border-radius: .5rem;
+  padding: .35rem .6rem;
+}
+.escolar-consejos {
+  display: flex;
+  flex-direction: column;
+  gap: .3rem;
+}
+.escolar-consejo-item {
+  display: flex;
+  gap: .4rem;
+  font-size: .75rem;
+  color: var(--text-soft);
+  background: rgba(255,255,255,.03);
+  border-radius: .5rem;
+  padding: .3rem .6rem;
+}
+
+.escolar-no-analysis {
+  text-align: center;
+  padding: 1.5rem;
+  border: 1px dashed rgba(255,255,255,.1);
+  border-radius: .75rem;
+  color: var(--text-muted);
+  font-size: .8rem;
+}
+.escolar-analyze-btn {
+  margin-top: .75rem;
+  padding: .4rem .8rem;
+  font-size: .75rem;
+  border-radius: .75rem;
+  background: rgba(251,191,36,.1);
+  border: 1px solid rgba(251,191,36,.25);
+  color: var(--accent);
+  cursor: pointer;
+  transition: background .2s;
+  display: inline-block;
+}
+.escolar-analyze-btn:hover { background: rgba(251,191,36,.2); }
+
+.escolar-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: .5rem;
+  margin-bottom: .75rem;
+}
+
+@media (max-width: 768px) {
+  .escolar-grid { grid-template-columns: 1fr; }
+  .escolar-stats-grid { grid-template-columns: repeat(3, 1fr); }
+  .escolar-materia-bar { display: none; }
+}

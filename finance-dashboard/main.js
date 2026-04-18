@@ -21,7 +21,7 @@ const DEUDAS_RECIBOS_FOLDER_ID = '157KDn-vbkuHH1L8xbaJBGz-oKmT7p5a9';
 const SPREADSHEET_RSM_ID = '14VsoPHGNTSUSbzMOqGWs2qSL-pGywPgjUoHD3MqIJfo'; // Recibos Salud Mariel
 const SALDOS_SHEET_ID    = '1-cX_qxld3ioSpcO9lEBPg90Db6AyK7SczpJTvj7rw4U'; // Saldos (fuente de verdad — Claude accede vía service account)
 const RSM_FOLDER_ID = '1-ZfeWQ-Rmh-Wm2WMCkULkN6MQWBuxYnj';
-const APP_VERSION  = 'v8.1.6';
+const APP_VERSION  = 'v8.2.0';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -185,7 +185,7 @@ let tokenRequestInFlight = null;
 let tokenRequestInteractive = true;
 let tokenRequestWatchdog = null;
 let currentTab  = 'dashboard';
-let tabInited   = { dashboard: false, gastos: false, fijos: false, deudas: false, plan: false, autos: false, propiedades: false, recuerdos: false, rsm: false, documentos: false, estados: false, pelo: false, prompts: false, estudio: false };
+let tabInited   = { dashboard: false, gastos: false, fijos: false, deudas: false, plan: false, autos: false, propiedades: false, recuerdos: false, rsm: false, documentos: false, estados: false, pelo: false, prompts: false, estudio: false, escolar: false };
 const MELI_ACCESS_TOKEN_KEY = 'meli_access_token_v1';
 const MELI_REFRESH_TOKEN_KEY = 'meli_refresh_token_v1';
 const MELI_EXPIRES_AT_KEY = 'meli_expires_at_v1';
@@ -622,7 +622,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Helper para obtener tab inicial desde el hash de la URL
     function getInitialTabFromHash() {
         const hash = (window.location.hash || '').replace('#', '').toLowerCase();
-        const validTabs = ['dashboard', 'gastos', 'fijos', 'deudas', 'plan', 'autos', 'estudio', 'propiedades', 'recuerdos', 'rsm', 'documentos', 'estados', 'pelo', 'prompts'];
+        const validTabs = ['dashboard', 'gastos', 'fijos', 'deudas', 'plan', 'autos', 'estudio', 'propiedades', 'recuerdos', 'rsm', 'documentos', 'estados', 'pelo', 'prompts', 'escolar'];
         return validTabs.includes(hash) ? hash : 'dashboard';
     }
 
@@ -1750,6 +1750,7 @@ function showTab(name) {
         if (name === 'pelo')      pelo_cargarVista();
         if (name === 'prompts')   prompts_cargarVista();
         if (name === 'estudio')   estudio_cargarVista();
+        if (name === 'escolar')   escolar_cargarVista();
     }
 }
 
@@ -12762,4 +12763,155 @@ async function deudas_guardar() {
     } finally {
         btn.disabled = false; btn.innerText = 'Guardar';
     }
+}
+
+// =============================================
+// ESCOLARIDAD
+// =============================================
+
+async function escolar_cargarVista() {
+    const container = document.getElementById('escolar-grid');
+    if (!container) return;
+    container.innerHTML = '<p style="color:var(--text-muted);padding:2rem;text-align:center">Cargando...</p>';
+
+    let data;
+    try {
+        const r = await fetch('./escolaridad.json?v=' + Date.now());
+        if (!r.ok) throw new Error('404');
+        data = await r.json();
+    } catch(e) {
+        container.innerHTML = '<p style="color:var(--text-muted);padding:2rem;text-align:center">No se encontró escolaridad.json</p>';
+        return;
+    }
+
+    container.innerHTML = `
+        <div class="escolar-toolbar">
+            <span style="font-size:.72rem;color:var(--text-muted)">Actualizado: ${data.updated || '—'}</span>
+            <a href="https://drive.google.com/drive/folders/11fhq_3ZC0pzR9c9fErFvieYS5iOSAemS" target="_blank" class="escolar-drive-link">
+                📁 Ver en Drive
+            </a>
+        </div>
+        ${escolar_renderChild(data.roby, 'roby')}
+        ${escolar_renderChild(data.hans, 'hans')}
+    `;
+}
+
+function escolar_renderChild(child, key) {
+    const avatarEmoji = key === 'roby' ? '👧' : '👦';
+    const docsHtml = escolar_renderDocs(child.documentos || []);
+    const analysisHtml = escolar_renderAnalysis(child.analysis);
+
+    return `
+    <div class="glass escolar-card">
+        <div class="escolar-header">
+            <div class="escolar-avatar escolar-avatar--${key}">${avatarEmoji}</div>
+            <div class="escolar-meta">
+                <h3>${child.nombre}</h3>
+                <span>${child.grado} · ${child.escuela}</span>
+            </div>
+        </div>
+        <a href="${child.folderUrl}" target="_blank" class="escolar-drive-link">
+            📂 Carpeta en Drive
+        </a>
+        <div>
+            <div class="escolar-docs-title">Documentos (${escolar_countFiles(child.documentos || [])})</div>
+            ${docsHtml}
+        </div>
+        <div class="escolar-analysis">
+            <div class="escolar-analysis-header">
+                <h4>📊 Análisis</h4>
+                ${child.analysis ? `<span class="escolar-updated">Actualizado: ${child.analysis.updated || '—'}</span>` : ''}
+            </div>
+            ${analysisHtml}
+        </div>
+    </div>`;
+}
+
+function escolar_countFiles(docs) {
+    let count = 0;
+    for (const d of docs) {
+        if (d.type === 'file') count++;
+        else if (d.children) count += escolar_countFiles(d.children);
+    }
+    return count;
+}
+
+function escolar_renderDocs(docs) {
+    if (!docs.length) return '<div class="escolar-empty">Sin documentos aún</div>';
+    return docs.map(d => {
+        if (d.type === 'folder') {
+            const children = (d.children || []).map(f =>
+                `<div class="escolar-file">
+                    <span style="font-size:.75rem">📄</span>
+                    <a href="${f.url}" target="_blank">${f.name}</a>
+                    <span class="escolar-file-date">${f.modified || ''}</span>
+                </div>`
+            ).join('');
+            return `<div class="escolar-folder">
+                <div class="escolar-folder-name">📁 ${d.name}</div>
+                ${children || '<div class="escolar-empty" style="font-size:.75rem">Vacía</div>'}
+            </div>`;
+        }
+        return `<div class="escolar-file">
+            <span style="font-size:.75rem">📄</span>
+            <a href="${d.url}" target="_blank">${d.name}</a>
+            <span class="escolar-file-date">${d.modified || ''}</span>
+        </div>`;
+    }).join('');
+}
+
+function escolar_renderAnalysis(analysis) {
+    if (!analysis) {
+        return `<div class="escolar-no-analysis">
+            Sin análisis todavía.<br>
+            <span style="font-size:.7rem">Pídele a Claude que analice los documentos de evaluación.</span>
+        </div>`;
+    }
+
+    const { promedio, materias = [], advertencias = [], consejos = [], observaciones } = analysis;
+
+    const statsHtml = `
+        <div class="escolar-stats-grid">
+            <div class="escolar-stat ${promedio >= 9 ? 'escolar-stat--good' : promedio >= 7 ? 'escolar-stat--warn' : 'escolar-stat--bad'}">
+                <span class="escolar-stat-value">${promedio?.toFixed(1) ?? '—'}</span>
+                <span class="escolar-stat-label">Promedio</span>
+            </div>
+            <div class="escolar-stat">
+                <span class="escolar-stat-value">${materias.length}</span>
+                <span class="escolar-stat-label">Materias</span>
+            </div>
+            <div class="escolar-stat ${advertencias.length === 0 ? 'escolar-stat--good' : advertencias.length <= 2 ? 'escolar-stat--warn' : 'escolar-stat--bad'}">
+                <span class="escolar-stat-value">${advertencias.length}</span>
+                <span class="escolar-stat-label">Alertas</span>
+            </div>
+        </div>`;
+
+    const materiasHtml = materias.length ? `
+        <div class="escolar-materias">
+            ${materias.map(m => {
+                const pct = Math.min(100, ((m.calificacion || 0) / 10) * 100);
+                const color = m.calificacion >= 9 ? '#34d399' : m.calificacion >= 7 ? '#fbbf24' : '#f87171';
+                return `<div class="escolar-materia-row">
+                    <span class="escolar-materia-nombre">${m.nombre}</span>
+                    <span class="escolar-materia-cal" style="color:${color}">${m.calificacion ?? '—'}</span>
+                    <div class="escolar-materia-bar">
+                        <div class="escolar-materia-fill" style="width:${pct}%;background:${color}"></div>
+                    </div>
+                </div>`;
+            }).join('')}
+        </div>` : '';
+
+    const warningsHtml = advertencias.length ? `
+        <div class="escolar-warnings">
+            ${advertencias.map(w => `<div class="escolar-warning-item">⚠️ ${w}</div>`).join('')}
+        </div>` : '';
+
+    const consejosHtml = consejos.length ? `
+        <div class="escolar-consejos">
+            ${consejos.map(c => `<div class="escolar-consejo-item">💡 ${c}</div>`).join('')}
+        </div>` : '';
+
+    const obsHtml = observaciones ? `<p style="font-size:.78rem;color:var(--text-soft);margin-top:.5rem">${observaciones}</p>` : '';
+
+    return statsHtml + materiasHtml + warningsHtml + consejosHtml + obsHtml;
 }
