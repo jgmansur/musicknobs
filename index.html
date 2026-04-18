@@ -12,8 +12,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <script type="module" crossorigin src="./assets/index-VoKPWGfR.js"></script>
-    <link rel="stylesheet" crossorigin href="./assets/index-DfnlLr9B.css">
+    <script type="module" crossorigin src="./assets/index-Hzy9FWPC.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-DGca0v99.css">
   </head>
   <body>
     <div id="app">
@@ -330,7 +330,15 @@
 
         <!-- Toolbar -->
         <div class="toolbar-row">
-          <input type="text" id="f-search" class="search-input" style="flex:1" placeholder="🔍 Buscar...">
+          <div class="search-wrap" style="flex:1">
+            <span class="search-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            </span>
+            <input type="text" id="f-search" class="search-input search-input--icon" placeholder="Buscar gasto o ingreso...">
+            <button id="f-search-clear" class="search-clear-btn" title="Limpiar búsqueda" style="display:none">
+              <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
           <div class="filtro-wrap">
             <button id="f-btn-filtro" class="icon-btn" title="Filtrar por categoría">📂</button>
             <span id="f-filtro-badge" class="filtro-badge" style="display:none"></span>
