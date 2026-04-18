@@ -21,7 +21,7 @@ const DEUDAS_RECIBOS_FOLDER_ID = '157KDn-vbkuHH1L8xbaJBGz-oKmT7p5a9';
 const SPREADSHEET_RSM_ID = '14VsoPHGNTSUSbzMOqGWs2qSL-pGywPgjUoHD3MqIJfo'; // Recibos Salud Mariel
 const SALDOS_SHEET_ID    = '1-cX_qxld3ioSpcO9lEBPg90Db6AyK7SczpJTvj7rw4U'; // Saldos (fuente de verdad — Claude accede vía service account)
 const RSM_FOLDER_ID = '1-ZfeWQ-Rmh-Wm2WMCkULkN6MQWBuxYnj';
-const APP_VERSION  = 'v8.0.8';
+const APP_VERSION  = 'v8.0.9';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -2522,7 +2522,7 @@ function processAndRender(logRows, fixedRows) {
     fixed_renderPanel();
 
     // Show only entries that still have pending parts
-    renderFixedTable(fixedExpenses.filter(e => e.isDueThisMonth && !e.isPaid));
+    renderFixedTable(fixedExpenses.filter(e => e.isDueThisMonth && (e.tipo === 'ingreso' || !e.isPaid)));
     renderChart(hormigaChartData);
     renderHormigaPanel(hormigaGastos, hormigaTotal, hormigaPrevTotal, monthName, prevMonthName);
 }
