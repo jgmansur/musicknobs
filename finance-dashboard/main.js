@@ -2910,19 +2910,25 @@ async function gastos_cargarHistorial() {
         await ensureUsdMxnRateForTransactions();
         const rows = await sheetsGet(SPREADSHEET_LOG_ID, 'Hoja 1!A2:I');
         balance_updateLogNetFromRows(rows);
-        gastosState.allRows = rows.map((row, i) => ({
-            rowNum:   i + 2,
-            fecha:    row[0] || '',
-            lugar:    row[1] || '',
-            concepto: row[2] || '',
-            montoOriginal: parseSheetValue(row[3]),
-            moneda:   parseCurrencyCode(row[7]),
-            monto:    convertTransactionAmountToMxn(parseSheetValue(row[3]), parseCurrencyCode(row[7])),
-            tipo:     normalizeTipo(row[4] || 'Gasto'),
-            formaPago:row[5] || '',
-            fotos:    row[6] || '',
-            fechaCreacion: row[8] || '',
-        })).reverse();
+        gastosState.allRows = rows.map((row, i) => {
+            const fechaRaw = row[0];
+            const fechaNormalizada = (fechaRaw === null || fechaRaw === undefined || fechaRaw === '')
+                ? ''
+                : normalizeDateString(fechaRaw);
+            return {
+                rowNum:   i + 2,
+                fecha:    fechaNormalizada,
+                lugar:    row[1] || '',
+                concepto: row[2] || '',
+                montoOriginal: parseSheetValue(row[3]),
+                moneda:   parseCurrencyCode(row[7]),
+                monto:    convertTransactionAmountToMxn(parseSheetValue(row[3]), parseCurrencyCode(row[7])),
+                tipo:     normalizeTipo(row[4] || 'Gasto'),
+                formaPago:row[5] || '',
+                fotos:    row[6] || '',
+                fechaCreacion: row[8] || '',
+            };
+        }).reverse();
         gastosState.offset = 0;
         gastos_renderLista(false);
         balance_updateKpi();
@@ -11413,8 +11419,8 @@ function formatCurrency(val) {
     return new Intl.NumberFormat('es-MX', { style:'currency', currency:'MXN' }).format(val || 0);
 }
 function formatFecha(str) {
-    if (!str) return '';
-    const d = new Date(str);
+    if (str === null || str === undefined || str === '') return '';
+    const d = parseSheetDate(str);
     return isNaN(d) ? str : d.toLocaleDateString('es-MX', { day:'numeric', month:'short' });
 }
 
