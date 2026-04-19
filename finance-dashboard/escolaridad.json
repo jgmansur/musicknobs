@@ -1,0 +1,81 @@
+{
+  "updated": "2026-04-18",
+  "roby": {
+    "nombre": "Roberta",
+    "grado": "3° de Primaria",
+    "escuela": "Vasconcelos",
+    "folderId": "1aCicbFzXUY566WCaqaArTUH9lcBhr5fr",
+    "folderUrl": "https://drive.google.com/drive/folders/1aCicbFzXUY566WCaqaArTUH9lcBhr5fr",
+    "documentos": [
+      {
+        "type": "folder",
+        "name": "3o de Primaria",
+        "id": "1Jio9_eB-nq81eo5oi9FlIMUeJK54x90y",
+        "url": "https://drive.google.com/drive/folders/1Jio9_eB-nq81eo5oi9FlIMUeJK54x90y",
+        "children": [
+          {
+            "type": "file",
+            "name": "Evaluación Abril 2026 - Parte 1.pdf",
+            "id": "14yG8TywU3xg-pMHHxO-7q0M2TsEdc6-A",
+            "url": "https://drive.google.com/file/d/14yG8TywU3xg-pMHHxO-7q0M2TsEdc6-A/view",
+            "modified": "2026-04-18"
+          },
+          {
+            "type": "file",
+            "name": "Evaluación Abril 2026 - Parte 2.pdf",
+            "id": "1wztEd2hSGlKRGK45a_gRC-IPIca95p4F",
+            "url": "https://drive.google.com/file/d/1wztEd2hSGlKRGK45a_gRC-IPIca95p4F/view",
+            "modified": "2026-04-18"
+          }
+        ]
+      }
+    ],
+    "analysis": {
+      "updated": "2026-04-18",
+      "trimestre": "2do Trimestre 2025-2026",
+      "escuela": "Centro Educativo Naciones Unidas",
+      "docente_esp": "Lucero López Ortíz",
+      "docente_eng": "Itzel S. Puente",
+      "promedio": 7.4,
+      "materias": [
+        { "nombre": "Español", "calificacion": 8.3, "detalle": "46.5/56 pts" },
+        { "nombre": "Reading (Inglés)", "calificacion": 6.5, "detalle": "17/26 pts" }
+      ],
+      "desarrollo_emocional": [
+        { "aspecto": "Expresa emociones adecuadamente", "nivel": "Siempre" },
+        { "aspecto": "Muestra empatía y comprensión", "nivel": "Siempre" },
+        { "aspecto": "Resuelve conflictos constructivamente", "nivel": "Siempre" },
+        { "aspecto": "Participa cooperativamente en grupo", "nivel": "Casi siempre" },
+        { "aspecto": "Se relaciona respetuosamente", "nivel": "Siempre" }
+      ],
+      "habitos_trabajo": [
+        { "aspecto": "Completa tareas oportunamente", "nivel": "Casi siempre" },
+        { "aspecto": "Organiza su material escolar", "nivel": "En ocasiones" },
+        { "aspecto": "Participa activamente en clase", "nivel": "Casi siempre" },
+        { "aspecto": "Sigue instrucciones y reglas", "nivel": "Siempre" },
+        { "aspecto": "Muestra perseverancia", "nivel": "Casi siempre" }
+      ],
+      "conducta": "Excelente — comportamiento respetuoso, responsable y participativo en todas las áreas evaluadas.",
+      "advertencias": [
+        "Reading/Inglés con 6.5 — área más débil, requiere refuerzo en comprensión lectora en inglés.",
+        "Organización de material escolar marcada 'En ocasiones' — trabajar hábitos de orden en casa."
+      ],
+      "consejos": [
+        "Dedicar 15 minutos diarios a lectura en inglés para fortalecer comprensión.",
+        "Establecer una rutina de preparación de mochila la noche anterior.",
+        "El español va bien (8.3) — mantener el hábito de lectura en español.",
+        "Su desarrollo emocional y conducta son un punto muy fuerte — reconocérselo."
+      ],
+      "observaciones": "Roberta muestra un perfil socioemocional muy sólido: empática, respetuosa y perseverante. El área académica que más necesita atención es Reading en inglés. En general es una alumna comprometida con buen rendimiento."
+    }
+  },
+  "hans": {
+    "nombre": "Hans",
+    "grado": "3° de Primaria",
+    "escuela": "Vasconcelos",
+    "folderId": "1PG71hyEE3dhDGO7Pn02RR-S-LdvKqHDQ",
+    "folderUrl": "https://drive.google.com/drive/folders/1PG71hyEE3dhDGO7Pn02RR-S-LdvKqHDQ",
+    "documentos": [],
+    "analysis": null
+  }
+}
