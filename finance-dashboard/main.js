@@ -11886,6 +11886,80 @@ function deudas_buildCuotasCell(cuotas) {
     return `${n}:${perCuota.toFixed(2)}:${paid.join(',')}:${frequency}:${startDate}:${scope}`;
 }
 
+function deudas_recalculatePendingCuotas(cuotas, nuevoMontoTotal) {
+    if (!cuotas || !cuotas.n) return { cuotas: cuotas || null, adjusted: false, paidLockedAmount: 0, pendingCount: 0 };
+    const n = parseInt(cuotas.n, 10) || 0;
+    if (!n) return { cuotas, adjusted: false, paidLockedAmount: 0, pendingCount: 0 };
+
+    const paid = Array.isArray(cuotas.paid) ? cuotas.paid.map((v) => parseInt(v, 10) || 0) : [];
+    while (paid.length < n) paid.push(0);
+
+    const perCuotaActual = Math.max(0, Number(cuotas.perCuota || 0));
+    const paidCount = paid.filter((state) => state === 2).length;
+    const pendingCount = paid.filter((state) => state !== 2).length;
+    const paidLockedAmount = paidCount * perCuotaActual;
+
+    if (!pendingCount) {
+        return {
+            cuotas: { ...cuotas, paid: paid.slice(0, n) },
+            adjusted: false,
+            paidLockedAmount,
+            pendingCount,
+        };
+    }
+
+    const remaining = Math.max(0, Number(nuevoMontoTotal || 0) - paidLockedAmount);
+    const newPerCuota = remaining / pendingCount;
+    return {
+        cuotas: { ...cuotas, paid: paid.slice(0, n), perCuota: newPerCuota },
+        adjusted: true,
+        paidLockedAmount,
+        pendingCount,
+    };
+}
+
+async function deudas_syncPendingFixedRows({ oldConcepto, newConcepto, cuotas }) {
+    if (!cuotas || !cuotas.n) return 0;
+    const n = parseInt(cuotas.n, 10) || 0;
+    if (!n) return 0;
+
+    const paid = Array.isArray(cuotas.paid) ? cuotas.paid : [];
+    const perCuota = Number(cuotas.perCuota || 0);
+    const fixedRows = await sheetsGet(SPREADSHEET_FIXED_ID, 'Hoja 1!A2:P').catch(() => []);
+    let updates = 0;
+
+    for (let idx = 0; idx < n; idx++) {
+        if ((paid[idx] || 0) !== 1) continue; // solo cuotas pendientes ya programadas en fijos
+        const oldLabel = `${oldConcepto} - Cuota ${idx + 1}/${n}`;
+        const newLabel = `${newConcepto} - Cuota ${idx + 1}/${n}`;
+
+        let rowNum = -1;
+        for (let i = fixedRows.length - 1; i >= 0; i--) {
+            const row = fixedRows[i] || [];
+            const concepto = (row[1] || '').toString().trim();
+            const periodicidad = (row[8] || '').toString().trim().toLowerCase();
+            if (periodicidad !== 'cuota de deuda') continue;
+            if (concepto === oldLabel || concepto === newLabel) {
+                rowNum = i + 2;
+                break;
+            }
+        }
+
+        if (rowNum === -1) continue;
+        await sheetsUpdate(
+            SPREADSHEET_FIXED_ID,
+            `Hoja 1!B${rowNum}:C${rowNum}`,
+            [[newLabel, perCuota.toFixed(2)]]
+        );
+        updates += 1;
+    }
+
+    if (updates > 0) {
+        tabInited.fijos = false;
+    }
+    return updates;
+}
+
 function deudas_getNextPaymentDate(cuotas) {
     if (!cuotas || !Array.isArray(cuotas.paid) || !cuotas.paid.length) return null;
     const nextIdx = cuotas.paid.findIndex(s => s !== 2);
@@ -12733,9 +12807,14 @@ async function deudas_guardar() {
             const existing = deudasState.allItems.find(i => i.id === parseInt(editId));
             const hiddenVal = existing && existing.hidden ? 'TRUE' : 'FALSE';
             // Preserve cuotas (col D) when editing
-            const existingCuotas = existing && existing.cuotas
-                ? deudas_buildCuotasCell(existing.cuotas)
-                : '';
+            let cuotasForSave = existing?.cuotas || null;
+            let cuotasRecalcMeta = { adjusted: false, paidLockedAmount: 0, pendingCount: 0 };
+            if (cuotasForSave) {
+                const recalc = deudas_recalculatePendingCuotas(cuotasForSave, Math.abs(monto));
+                cuotasForSave = recalc.cuotas;
+                cuotasRecalcMeta = recalc;
+            }
+            const existingCuotas = cuotasForSave ? deudas_buildCuotasCell(cuotasForSave) : '';
             const existingUrls = deudas_parseUrls(existing?.archivos || '');
             const allUrls = [...new Set([...existingUrls, ...uploadedUrls])].join(',');
             const debtKey = (existing?.debtKey || deudas_newKey()).toString().trim();
@@ -12746,6 +12825,20 @@ async function deudas_guardar() {
             if (parentItem && (parentItem.parentKey || '').toString().trim()) parentKey = '';
             if (parentKey && deudas_isDescendantKey(parentKey, debtKey, childrenMap)) parentKey = '';
             await sheetsUpdate(SPREADSHEET_DEUDAS_ID, `${sheetName}!A${editId}:G${editId}`, [[concepto, monto, hiddenVal, existingCuotas, allUrls, debtKey, parentKey]]);
+            if (cuotasForSave) {
+                if (existing) existing.cuotas = cuotasForSave;
+                const updatedFixed = await deudas_syncPendingFixedRows({
+                    oldConcepto: existing?.concepto || concepto,
+                    newConcepto: concepto,
+                    cuotas: cuotasForSave,
+                });
+                if (cuotasRecalcMeta.adjusted && cuotasRecalcMeta.pendingCount > 0) {
+                    showToast(`✅ Cuotas pendientes recalculadas (${cuotasRecalcMeta.pendingCount})${updatedFixed ? ` · Fijos sync: ${updatedFixed}` : ''}`);
+                }
+                if (Math.abs(monto) < (cuotasRecalcMeta.paidLockedAmount || 0)) {
+                    showToast(`⚠️ Monto menor a lo ya pagado. Pendientes quedaron en 0.`);
+                }
+            }
             showToast('✅ Deuda actualizada');
         } else {
             const debtKey = deudas_newKey();

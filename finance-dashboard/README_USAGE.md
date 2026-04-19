@@ -25,3 +25,23 @@ This dashboard is a custom-built HTML5 application designed for premium financia
 
 ## 🛠 Maintenance
 - To change keywords for Gasto Hormiga, edit `main.js` in the `src` folder and run `npm run build`.
+
+## Dynamic Split Debts (New Rule)
+
+All debts with split payments (`cuotas`) are dynamic by default.
+
+When editing a debt total amount:
+- Paid installments are preserved (state `2`).
+- Pending/scheduled installments are recalculated automatically.
+- Scheduled fixed rows created from debt installments (state `1`) are also updated in `Gastos Fijos`.
+
+This keeps debt tracking, fixed expenses, and available balance in sync without deleting/recreating debts.
+
+### Regression Checklist (mandatory)
+
+1. Create or open a debt with split installments.
+2. Mark one installment as scheduled (first tap, creates `Gasto Fijo`).
+3. Edit the debt total amount.
+4. Verify pending installment amount is recalculated.
+5. Verify matching `Gasto Fijo` row updates concept/amount.
+6. Verify already paid installments remain unchanged.

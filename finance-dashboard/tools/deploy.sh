@@ -42,6 +42,6 @@ git push
 
 # ── Deploy gh-pages ──────────────────────────────────────────────────────────
 echo "▶ Deploying to gh-pages..."
-npx gh-pages -d dist
+npx gh-pages -d dist --dest finance-dashboard
 
 echo "✓ Deployed ${NEW_VERSION}"
