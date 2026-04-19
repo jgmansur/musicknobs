@@ -35,7 +35,7 @@ jobs:
       - name: Build finance dashboard
         run: npm ci --prefix finance-dashboard && npm run build --prefix finance-dashboard
       - name: Prepare finance dashboard deploy files
-        run: rm -rf finance-dashboard/assets && cp finance-dashboard/dist/index.html finance-dashboard/index.html && mkdir -p finance-dashboard/assets && cp -R finance-dashboard/dist/assets/. finance-dashboard/assets/
+        run: rm -rf finance-dashboard/assets && cp -r finance-dashboard/dist/* finance-dashboard/ && cp finance-dashboard/dist/.nojekyll finance-dashboard/ || true
       - name: Build casa galeria portfolio
         run: npm ci --prefix casa-galeria-portfolio && npm run build --prefix casa-galeria-portfolio
       - name: Prepare casa galeria portfolio deploy files

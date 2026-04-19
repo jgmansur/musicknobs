@@ -12869,10 +12869,35 @@ async function escolar_cargarVista() {
 
     let data;
     try {
-        const r = await fetch('./escolaridad.json?v=' + Date.now());
-        if (!r.ok) throw new Error('404');
-        data = await r.json();
+        const ts = Date.now();
+        let basePath = window.location.pathname || '/';
+        if (basePath.endsWith('/index.html')) basePath = basePath.slice(0, -'index.html'.length);
+        else if (!basePath.endsWith('/')) basePath += '/';
+
+        const candidates = [
+            `${window.location.origin}${basePath}escolaridad.json?v=${ts}`,
+            `${window.location.origin}/musicknobs/finance-dashboard/escolaridad.json?v=${ts}`,
+            `./escolaridad.json?v=${ts}`,
+        ];
+
+        let lastErr = null;
+        for (const url of candidates) {
+            try {
+                const r = await fetch(url, { cache: 'no-store' });
+                if (!r.ok) {
+                    lastErr = new Error(`HTTP ${r.status} en ${url}`);
+                    continue;
+                }
+                data = await r.json();
+                break;
+            } catch (err) {
+                lastErr = err;
+            }
+        }
+
+        if (!data) throw lastErr || new Error('No se pudo cargar escolaridad.json');
     } catch(e) {
+        console.error('escolar_cargarVista error:', e);
         container.innerHTML = '<p style="color:var(--text-muted);padding:2rem;text-align:center">No se encontró escolaridad.json</p>';
         return;
     }
