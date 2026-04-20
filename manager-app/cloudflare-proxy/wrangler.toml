@@ -1,0 +1,6 @@
+name = "manager-app-proxy"
+main = "src/worker.js"
+compatibility_date = "2025-01-15"
+
+[observability]
+enabled = true
