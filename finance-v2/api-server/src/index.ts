@@ -25,6 +25,8 @@ import {
 
 const PORT = Number(process.env.PORT || 8788);
 const API_TOKEN = process.env.API_TOKEN || "";
+const NOTION_TOKEN = process.env.NOTION_TOKEN || "";
+const MANAGER_CONTACTS_DB_ID = process.env.MANAGER_CONTACTS_DB_ID || "";
 
 const app = Fastify({ logger: { level: "info" } });
 
@@ -156,6 +158,97 @@ app.get("/api/engram/resumen", async (req, reply) => {
   const parsed = schema.safeParse(req.query);
   if (!parsed.success) return reply.code(400).send({ error: parsed.error.flatten() });
   return await getResumen(parsed.data.month);
+});
+
+// ─── MANAGER APP ─────────────────────────────────────────────────────────────
+
+type NotionPage = {
+  properties?: Record<string, any>;
+};
+
+function notionRichTextToString(value: any): string {
+  if (!Array.isArray(value)) return "";
+  return value.map((x) => x?.plain_text || "").join("").trim();
+}
+
+function readNotionTitle(props: Record<string, any>): string {
+  const titleProp = Object.values(props).find((p: any) => p?.type === "title");
+  return notionRichTextToString((titleProp as any)?.title);
+}
+
+function readNotionEmail(props: Record<string, any>): string {
+  for (const [name, prop] of Object.entries(props)) {
+    const key = name.toLowerCase();
+    if (!["email", "correo", "mail", "e-mail"].some((k) => key.includes(k))) continue;
+    if ((prop as any)?.type === "email") return (prop as any).email || "";
+    if ((prop as any)?.type === "rich_text") return notionRichTextToString((prop as any).rich_text);
+  }
+  return "";
+}
+
+function readNotionRole(props: Record<string, any>): string {
+  for (const [name, prop] of Object.entries(props)) {
+    const key = name.toLowerCase();
+    if (!["rol", "role", "puesto", "cargo"].some((k) => key.includes(k))) continue;
+    if ((prop as any)?.type === "select") return (prop as any).select?.name || "";
+    if ((prop as any)?.type === "rich_text") return notionRichTextToString((prop as any).rich_text);
+    if ((prop as any)?.type === "multi_select") {
+      return ((prop as any).multi_select || []).map((x: any) => x?.name).filter(Boolean).join(", ");
+    }
+  }
+  return "";
+}
+
+app.get("/api/manager/contacts", async (req, reply) => {
+  if (!NOTION_TOKEN || !MANAGER_CONTACTS_DB_ID) {
+    return reply.code(503).send({
+      error: "Manager contacts not configured",
+      hint: "Set NOTION_TOKEN and MANAGER_CONTACTS_DB_ID in api-server env",
+      data: [],
+    });
+  }
+
+  try {
+    const notionResp = await fetch(`https://api.notion.com/v1/databases/${MANAGER_CONTACTS_DB_ID}/query`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${NOTION_TOKEN}`,
+        "Notion-Version": "2022-06-28",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ page_size: 100 }),
+    });
+
+    if (!notionResp.ok) {
+      const txt = await notionResp.text();
+      return reply.code(502).send({ error: "Notion query failed", details: txt });
+    }
+
+    const payload = (await notionResp.json()) as { results?: NotionPage[] };
+    const data = (payload.results || []).map((page) => {
+      const props = page.properties || {};
+      return {
+        nombre: readNotionTitle(props),
+        rol: readNotionRole(props),
+        correo: readNotionEmail(props),
+      };
+    });
+
+    return { data };
+  } catch (e: any) {
+    return reply.code(500).send({ error: "Manager contacts error", details: String(e?.message || e) });
+  }
+});
+
+app.get("/api/manager/catalog", async () => {
+  // Integración full con Sheets se conecta en siguiente iteración.
+  // Este endpoint mantiene contrato estable para frontend.
+  return {
+    data: [
+      { obra: "Tema Demo 1", autores: "Jay Mansur", generos: "Regional Mexicano", drive: "#" },
+      { obra: "Tema Demo 2", autores: "Jay Mansur, Alejandro De Nigris", generos: "Pop", drive: "#" },
+    ],
+  };
 });
 
 // ─── START ───────────────────────────────────────────────────────────────────

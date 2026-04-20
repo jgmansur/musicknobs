@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Manager App · Jay Mansur</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="./styles.css" />
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+  </head>
+  <body>
+    <header class="topbar">
+      <div>
+        <h1>Manager App</h1>
+        <p class="subtitle">Jay Mansur · Productor / Compositor / Artista</p>
+      </div>
+      <button id="print-btn" class="btn ghost">PDF</button>
+    </header>
+
+    <main class="container">
+      <section class="hero card">
+        <div class="hero-content">
+          <h2>Pitch Deck Operativo (MVP)</h2>
+          <p>
+            Enfoque mobile-first para managers: perfil, catálogo, contactos, links clave y acciones de envío por correo/WhatsApp.
+          </p>
+        </div>
+        <div class="actions">
+          <a id="mail-share" class="btn" href="#">Enviar por Email</a>
+          <a id="wa-share" class="btn ghost" href="#" target="_blank" rel="noopener">Enviar por WhatsApp</a>
+        </div>
+      </section>
+
+      <nav class="tabs" aria-label="Secciones">
+        <button class="tab active" data-tab="overview">Overview</button>
+        <button class="tab" data-tab="catalog">Catálogo</button>
+        <button class="tab" data-tab="contacts">Contactos</button>
+        <button class="tab" data-tab="links">Links</button>
+        <button class="tab" data-tab="ops">Ops</button>
+      </nav>
+
+      <section id="tab-overview" class="panel card active">
+        <h3>Perfil para Manager</h3>
+        <ul class="list">
+          <li>Nombre artístico: <strong>Jay Mansur</strong></li>
+          <li>Roles: Productor musical, compositor, artista</li>
+          <li>Marca principal: Music Knobs</li>
+          <li>Sitio oficial: <a href="https://www.musicknobs.com" target="_blank" rel="noopener">musicknobs.com</a></li>
+        </ul>
+      </section>
+
+      <section id="tab-catalog" class="panel card">
+        <div class="panel-head">
+          <h3>Catálogo de canciones (Google Sheets)</h3>
+          <button id="refresh-catalog" class="btn ghost">Refrescar</button>
+        </div>
+        <p class="hint">Fuente prevista: Google Sheets editable end-to-end vía API / Apps Script.</p>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Obra</th>
+                <th>Compositores</th>
+                <th>Géneros</th>
+                <th>Drive</th>
+              </tr>
+            </thead>
+            <tbody id="catalog-body"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="tab-contacts" class="panel card">
+        <div class="panel-head">
+          <h3>Contactos Manager (Notion)</h3>
+          <button id="refresh-contacts" class="btn ghost">Refrescar</button>
+        </div>
+        <p class="hint">Fuente prevista: Notion DB para gestión de contactos y seguimiento.</p>
+        <ul id="contacts-list" class="list"></ul>
+      </section>
+
+      <section id="tab-links" class="panel card">
+        <h3>Redes y enlaces clave</h3>
+        <ul id="links-list" class="list"></ul>
+      </section>
+
+      <section id="tab-ops" class="panel card">
+        <h3>Operación y accesos</h3>
+        <ul class="list">
+          <li>Autenticación: OAuth Google (Manager / Colaboradores).</li>
+          <li>Acción rápida: compartir perfil y catálogo por mail/WhatsApp.</li>
+          <li>PDF: usar botón <strong>PDF</strong> (window.print).</li>
+        </ul>
+        <div class="actions">
+          <button id="google-auth" class="btn">Conectar con Google</button>
+          <button id="google-signout" class="btn ghost">Cerrar sesión</button>
+        </div>
+        <p id="oauth-status" class="hint">Sin sesión</p>
+      </section>
+    </main>
+
+    <script src="./config.js"></script>
+    <script src="./app.js"></script>
+  </body>
+  </html>
