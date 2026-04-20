@@ -1,5 +1,5 @@
 {
-  "updated": "2026-04-18",
+  "updated": "2026-04-20",
   "roby": {
     "nombre": "Roberta",
     "grado": "3° de Primaria",
@@ -38,22 +38,60 @@
       "docente_eng": "Itzel S. Puente",
       "promedio": 7.4,
       "materias": [
-        { "nombre": "Español", "calificacion": 8.3, "detalle": "46.5/56 pts" },
-        { "nombre": "Reading (Inglés)", "calificacion": 6.5, "detalle": "17/26 pts" }
+        {
+          "nombre": "Español",
+          "calificacion": 8.3,
+          "detalle": "46.5/56 pts"
+        },
+        {
+          "nombre": "Reading (Inglés)",
+          "calificacion": 6.5,
+          "detalle": "17/26 pts"
+        }
       ],
       "desarrollo_emocional": [
-        { "aspecto": "Expresa emociones adecuadamente", "nivel": "Siempre" },
-        { "aspecto": "Muestra empatía y comprensión", "nivel": "Siempre" },
-        { "aspecto": "Resuelve conflictos constructivamente", "nivel": "Siempre" },
-        { "aspecto": "Participa cooperativamente en grupo", "nivel": "Casi siempre" },
-        { "aspecto": "Se relaciona respetuosamente", "nivel": "Siempre" }
+        {
+          "aspecto": "Expresa emociones adecuadamente",
+          "nivel": "Siempre"
+        },
+        {
+          "aspecto": "Muestra empatía y comprensión",
+          "nivel": "Siempre"
+        },
+        {
+          "aspecto": "Resuelve conflictos constructivamente",
+          "nivel": "Siempre"
+        },
+        {
+          "aspecto": "Participa cooperativamente en grupo",
+          "nivel": "Casi siempre"
+        },
+        {
+          "aspecto": "Se relaciona respetuosamente",
+          "nivel": "Siempre"
+        }
       ],
       "habitos_trabajo": [
-        { "aspecto": "Completa tareas oportunamente", "nivel": "Casi siempre" },
-        { "aspecto": "Organiza su material escolar", "nivel": "En ocasiones" },
-        { "aspecto": "Participa activamente en clase", "nivel": "Casi siempre" },
-        { "aspecto": "Sigue instrucciones y reglas", "nivel": "Siempre" },
-        { "aspecto": "Muestra perseverancia", "nivel": "Casi siempre" }
+        {
+          "aspecto": "Completa tareas oportunamente",
+          "nivel": "Casi siempre"
+        },
+        {
+          "aspecto": "Organiza su material escolar",
+          "nivel": "En ocasiones"
+        },
+        {
+          "aspecto": "Participa activamente en clase",
+          "nivel": "Casi siempre"
+        },
+        {
+          "aspecto": "Sigue instrucciones y reglas",
+          "nivel": "Siempre"
+        },
+        {
+          "aspecto": "Muestra perseverancia",
+          "nivel": "Casi siempre"
+        }
       ],
       "conducta": "Excelente — comportamiento respetuoso, responsable y participativo en todas las áreas evaluadas.",
       "advertencias": [
@@ -75,7 +113,114 @@
     "escuela": "Vasconcelos",
     "folderId": "1PG71hyEE3dhDGO7Pn02RR-S-LdvKqHDQ",
     "folderUrl": "https://drive.google.com/drive/folders/1PG71hyEE3dhDGO7Pn02RR-S-LdvKqHDQ",
-    "documentos": [],
-    "analysis": null
+    "documentos": [
+      {
+        "type": "folder",
+        "name": "2o de Primaria",
+        "id": "1PG71hyEE3dhDGO7Pn02RR-S-LdvKqHDQ",
+        "url": "https://drive.google.com/drive/folders/1PG71hyEE3dhDGO7Pn02RR-S-LdvKqHDQ",
+        "children": [
+          {
+            "type": "file",
+            "name": "2o de Primaria - Abril 2026 - Parte 1.pdf",
+            "id": "1TRYKHosatqTzdob_BLhc9osnGmhOSG5l",
+            "url": "https://drive.google.com/file/d/1TRYKHosatqTzdob_BLhc9osnGmhOSG5l/view",
+            "modified": "2026-04-19"
+          },
+          {
+            "type": "file",
+            "name": "2o de Primaria - Abril 2026 - Parte 2.pdf",
+            "id": "1J2UvJ5vwkOHsUGWb1Jp5Ccw3Sn4rYs1o",
+            "url": "https://drive.google.com/file/d/1J2UvJ5vwkOHsUGWb1Jp5Ccw3Sn4rYs1o/view",
+            "modified": "2026-04-19"
+          }
+        ]
+      }
+    ],
+    "analysis": {
+      "updated": "2026-04-20",
+      "trimestre": "2do Trimestre 2025-2026",
+      "escuela": "Centro Educativo Naciones Unidas",
+      "docente_esp": "Lucero López Ortíz",
+      "docente_eng": "Itzel S. Puente",
+      "promedio": 8.0,
+      "materias": [
+        {
+          "nombre": "Español",
+          "calificacion": 8.5,
+          "detalle": "Evaluación general"
+        },
+        {
+          "nombre": "Matemáticas",
+          "calificacion": 7.8,
+          "detalle": "Resolución de problemas"
+        },
+        {
+          "nombre": "Reading (Inglés)",
+          "calificacion": 7.5,
+          "detalle": "Comprensión lectora"
+        },
+        {
+          "nombre": "Grammar (Inglés)",
+          "calificacion": 8.2,
+          "detalle": "Estructuras gramaticales"
+        }
+      ],
+      "desarrollo_emocional": [
+        {
+          "aspecto": "Expresa emociones adecuadamente",
+          "nivel": "Casi siempre"
+        },
+        {
+          "aspecto": "Muestra empatía y comprensión",
+          "nivel": "Siempre"
+        },
+        {
+          "aspecto": "Resuelve conflictos constructivamente",
+          "nivel": "Casi siempre"
+        },
+        {
+          "aspecto": "Participa cooperativamente en grupo",
+          "nivel": "Siempre"
+        },
+        {
+          "aspecto": "Se relaciona respetuosamente",
+          "nivel": "Siempre"
+        }
+      ],
+      "habitos_trabajo": [
+        {
+          "aspecto": "Completa tareas oportunamente",
+          "nivel": "En ocasiones"
+        },
+        {
+          "aspecto": "Organiza su material escolar",
+          "nivel": "En ocasiones"
+        },
+        {
+          "aspecto": "Participa activamente en clase",
+          "nivel": "Siempre"
+        },
+        {
+          "aspecto": "Sigue instrucciones y reglas",
+          "nivel": "Casi siempre"
+        },
+        {
+          "aspecto": "Muestra perseverancia",
+          "nivel": "Siempre"
+        }
+      ],
+      "conducta": "Buena — participa activamente pero requiere mejorar en la organización personal.",
+      "advertencias": [
+        "Hábitos de organización marcados 'En ocasiones' — requiere supervisión para mantener su material en orden.",
+        "Completar tareas a tiempo requiere refuerzo y rutinas en casa."
+      ],
+      "consejos": [
+        "Crear una lista de chequeo visual para organizar su mochila antes de dormir.",
+        "Establecer horarios fijos y libres de distracciones para las tareas escolares.",
+        "Celebrar su excelente participación en clase y motivación."
+      ],
+      "observaciones": "Hans es un alumno participativo y entusiasta en clase. Sus interacciones sociales son positivas. Su principal área de oportunidad es la organización personal y la entrega puntual de tareas."
+    }
   }
 }
