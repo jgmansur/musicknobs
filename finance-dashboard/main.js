@@ -669,7 +669,7 @@ const DEFAULT_ACCOUNTS = [
 const ACCOUNT_ICONS  = { bank:'🏦', credit:'💳', cash:'💵', invest:'📈', other:'🌎' };
 const ACCOUNT_COLORS = { bank:'#3b82f6', credit:'#ef4444', cash:'#22c55e', invest:'#a855f7', other:'#f59e0b' };
 const ACCOUNT_TYPE_LABEL = { bank:'Cuenta bancaria', credit:'Tarjeta de crédito', cash:'Efectivo', invest:'Inversión', other:'Otro' };
-const BASE_PAYMENT_METHODS = ['Santander', 'BBVA', 'Cuenta Mariel', 'Efectivo', 'Tarjeta de Credito'];
+const BASE_PAYMENT_METHODS = ['Santander', 'BBVA', 'Cuenta Mariel', 'Efectivo'];
 const FX_CACHE_KEY = 'usd_mxn_rate_cache_v1';
 const BTC_CACHE_KEY = 'btc_mxn_rate_cache_v1';
 const INVEST_RATE_CACHE_KEY = 'investment_rate_cache_v1';
@@ -945,11 +945,26 @@ function balance_getAccountMatchKeys(acc) {
 
 function balance_getPaymentMethodOptions({ includeLegacyTransfer = false } = {}) {
     const unique = new Map();
+    const excluded = new Set(['tarjeta de credito']);
+    const order = {
+        'santander': 10,
+        'bbva': 20,
+        'bank of america': 30,
+        'tarjeta de credito likeu': 40,
+        'cuenta mariel': 50,
+        'efectivo': 60,
+        // Siempre al final
+        'cetes': 900,
+        'mifel': 910,
+        'bitcoin': 920,
+        'btc': 920,
+        'transferencia': 2000,
+    };
     const add = (value) => {
         const label = (value || '').toString().trim();
         if (!label) return;
         const key = balance_normalizePaymentKey(label);
-        if (!key || key === 'transferencia') return;
+        if (!key || key === 'transferencia' || excluded.has(key)) return;
         if (!unique.has(key)) unique.set(key, label);
     };
 
@@ -957,7 +972,16 @@ function balance_getPaymentMethodOptions({ includeLegacyTransfer = false } = {})
     balanceAccounts.forEach((acc) => add(acc?.name));
 
     if (includeLegacyTransfer) unique.set('transferencia', 'Transferencia');
-    return [...unique.values()];
+    return [...unique.entries()]
+        .sort((a, b) => {
+            const [ka, la] = a;
+            const [kb, lb] = b;
+            const oa = Number.isFinite(order[ka]) ? order[ka] : 500;
+            const ob = Number.isFinite(order[kb]) ? order[kb] : 500;
+            if (oa !== ob) return oa - ob;
+            return la.localeCompare(lb, 'es', { sensitivity: 'base' });
+        })
+        .map(([, label]) => label);
 }
 
 function balance_refreshPaymentMethodSelects() {
