@@ -21,7 +21,7 @@ const DEUDAS_RECIBOS_FOLDER_ID = '157KDn-vbkuHH1L8xbaJBGz-oKmT7p5a9';
 const SPREADSHEET_RSM_ID = '14VsoPHGNTSUSbzMOqGWs2qSL-pGywPgjUoHD3MqIJfo'; // Recibos Salud Mariel
 const SALDOS_SHEET_ID    = '1-cX_qxld3ioSpcO9lEBPg90Db6AyK7SczpJTvj7rw4U'; // Saldos (fuente de verdad — Claude accede vía service account)
 const RSM_FOLDER_ID = '1-ZfeWQ-Rmh-Wm2WMCkULkN6MQWBuxYnj';
-const APP_VERSION  = 'v8.2.5';
+const APP_VERSION  = 'v8.2.6';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -4329,7 +4329,10 @@ function planner_render() {
             : `Dia ${income.day} · ${income.concept}`;
         const incomeSub = income.isBalanceSource
             ? `Disponible neto: ${fmt.format(availableAmount)} · apartados en otros ingresos: ${fmt.format(reservedForOtherIncomes)}`
-            : `Ingreso del mes: ${fmt.format(income.amount)} · pagado ${income.paidParts || 0}/${income.totalParts || 1}`;
+            : `Balance disponible: ${fmt.format(diff)} · pagado ${income.paidParts || 0}/${income.totalParts || 1}`;
+
+        const cardMainAmount = assignedTotal;
+        const cardMainClass = diff < 0 ? 'text-danger' : 'text-success';
 
         return `<div class="glass-subtle plan-income-card">
             <div class="plan-income-head">
@@ -4337,9 +4340,9 @@ function planner_render() {
                     <div class="plan-income-title">${headTitle}</div>
                     <div class="plan-income-sub">${incomeSub}</div>
                 </div>
-                <div class="plan-income-diff ${diff < 0 ? 'text-danger' : 'text-success'}">${fmt.format(diff)}</div>
+                <div class="plan-income-diff ${cardMainClass}">${fmt.format(cardMainAmount)}</div>
             </div>
-            <div class="plan-income-sub">Asignado: ${fmt.format(assignedTotal)}</div>
+            <div class="plan-income-sub">Disponible: ${fmt.format(diff)}</div>
             ${income.isBalanceSource ? '' : `<div style="margin:.45rem 0 0;"><button class="mini-btn" onclick="planner_finishIncome('${income.key}')">✅ Terminado (mover al siguiente)</button></div>`}
             <div class="plan-buckets">${bucketHtml}</div>
             <div class="plan-expenses-list">${expenseRows}</div>
