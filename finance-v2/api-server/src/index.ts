@@ -26,7 +26,54 @@ import {
 const PORT = Number(process.env.PORT || 8788);
 const API_TOKEN = process.env.API_TOKEN || "";
 const NOTION_TOKEN = process.env.NOTION_TOKEN || "";
-const MANAGER_CONTACTS_DB_ID = process.env.MANAGER_CONTACTS_DB_ID || "";
+const NOTION_VERSION = process.env.NOTION_VERSION || "2025-09-03";
+const DEFAULT_MANAGER_CONTACTS_DB_ID = "c4d6cef4-ddcc-436a-9576-402994a4ddac";
+const MANAGER_CONTACTS_DB_ID = process.env.MANAGER_CONTACTS_DB_ID || DEFAULT_MANAGER_CONTACTS_DB_ID;
+
+const managerContactsFallback = [
+  {
+    nombre: "Rodrigo Navarro Montealegre",
+    rol: "Contacto",
+    correo: "",
+    telefono: "+52 55 9195 7811",
+    whatsapp: "https://wa.me/525591957811",
+  },
+  {
+    nombre: "Patricia Monsell",
+    rol: "Contacto",
+    correo: "",
+    telefono: "+52 415 101 6377",
+    whatsapp: "https://wa.me/524151016377",
+  },
+  {
+    nombre: "Kazim Mohamed",
+    rol: "Contacto",
+    correo: "",
+    telefono: "+52 81 1044 6279",
+    whatsapp: "https://wa.me/528110446279",
+  },
+  {
+    nombre: "Elva Juanita Torres",
+    rol: "Contacto",
+    correo: "",
+    telefono: "+52 81 1600 6251",
+    whatsapp: "https://wa.me/528116006251",
+  },
+  {
+    nombre: "Tecmilenio Oficina",
+    rol: "Contacto",
+    correo: "",
+    telefono: "+52 81 1824 0040",
+    whatsapp: "https://wa.me/528118240040",
+  },
+  {
+    nombre: "Jay Mansur",
+    rol: "Contacto",
+    correo: "",
+    telefono: "+52 55 4345 4693",
+    whatsapp: "https://wa.me/5543454693",
+  },
+];
 
 const app = Fastify({ logger: { level: "info" } });
 
@@ -57,6 +104,10 @@ app.get("/health", async () => ({
   ok: true,
   service: "finance-v2-api-server",
   version: "0.1.0",
+  manager: {
+    contactsConfigured: Boolean(NOTION_TOKEN && MANAGER_CONTACTS_DB_ID),
+    contactsDbId: MANAGER_CONTACTS_DB_ID,
+  },
 }));
 
 // ─── GASTOS ──────────────────────────────────────────────────────────────────
@@ -186,6 +237,26 @@ function readNotionEmail(props: Record<string, any>): string {
   return "";
 }
 
+function readNotionPhone(props: Record<string, any>): string {
+  for (const [name, prop] of Object.entries(props)) {
+    const key = name.toLowerCase();
+    if (!["telefono", "teléfono", "phone", "cel", "movil", "móvil"].some((k) => key.includes(k))) continue;
+    if ((prop as any)?.type === "phone_number") return (prop as any).phone_number || "";
+    if ((prop as any)?.type === "rich_text") return notionRichTextToString((prop as any).rich_text);
+  }
+  return "";
+}
+
+function readNotionWhatsapp(props: Record<string, any>): string {
+  for (const [name, prop] of Object.entries(props)) {
+    const key = name.toLowerCase();
+    if (!["whatsapp", "wa"].some((k) => key.includes(k))) continue;
+    if ((prop as any)?.type === "url") return (prop as any).url || "";
+    if ((prop as any)?.type === "rich_text") return notionRichTextToString((prop as any).rich_text);
+  }
+  return "";
+}
+
 function readNotionRole(props: Record<string, any>): string {
   for (const [name, prop] of Object.entries(props)) {
     const key = name.toLowerCase();
@@ -199,44 +270,60 @@ function readNotionRole(props: Record<string, any>): string {
   return "";
 }
 
-app.get("/api/manager/contacts", async (req, reply) => {
-  if (!NOTION_TOKEN || !MANAGER_CONTACTS_DB_ID) {
-    return reply.code(503).send({
-      error: "Manager contacts not configured",
-      hint: "Set NOTION_TOKEN and MANAGER_CONTACTS_DB_ID in api-server env",
-      data: [],
-    });
-  }
+async function queryNotionContacts(dbOrDataSourceId: string) {
+  const endpoints = [
+    `https://api.notion.com/v1/data_sources/${dbOrDataSourceId}/query`,
+    `https://api.notion.com/v1/databases/${dbOrDataSourceId}/query`,
+  ];
 
-  try {
-    const notionResp = await fetch(`https://api.notion.com/v1/databases/${MANAGER_CONTACTS_DB_ID}/query`, {
+  let lastError = "";
+
+  for (const url of endpoints) {
+    const notionResp = await fetch(url, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${NOTION_TOKEN}`,
-        "Notion-Version": "2022-06-28",
+        "Notion-Version": NOTION_VERSION,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({ page_size: 100 }),
     });
 
-    if (!notionResp.ok) {
-      const txt = await notionResp.text();
-      return reply.code(502).send({ error: "Notion query failed", details: txt });
+    if (notionResp.ok) {
+      return notionResp.json() as Promise<{ results?: NotionPage[] }>;
     }
 
-    const payload = (await notionResp.json()) as { results?: NotionPage[] };
+    lastError = await notionResp.text();
+  }
+
+  throw new Error(lastError || "Notion query failed");
+}
+
+app.get("/api/manager/contacts", async (req, reply) => {
+  if (!NOTION_TOKEN) {
+    return {
+      source: "fallback",
+      warning: "NOTION_TOKEN not configured. Returning local fallback contacts.",
+      data: managerContactsFallback,
+    };
+  }
+
+  try {
+    const payload = await queryNotionContacts(MANAGER_CONTACTS_DB_ID);
     const data = (payload.results || []).map((page) => {
       const props = page.properties || {};
       return {
         nombre: readNotionTitle(props),
         rol: readNotionRole(props),
         correo: readNotionEmail(props),
+        telefono: readNotionPhone(props),
+        whatsapp: readNotionWhatsapp(props),
       };
     });
 
-    return { data };
+    return { source: "notion", data };
   } catch (e: any) {
-    return reply.code(500).send({ error: "Manager contacts error", details: String(e?.message || e) });
+    return reply.code(500).send({ error: "Manager contacts error", details: String(e?.message || e), data: [] });
   }
 });
 

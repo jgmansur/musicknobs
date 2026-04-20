@@ -34,9 +34,11 @@ window.MANAGER_APP_CONFIG = {
 ### Backend (`finance-v2/api-server/.env`)
 
 - `NOTION_TOKEN=...`
-- `MANAGER_CONTACTS_DB_ID=...`
+- `MANAGER_CONTACTS_DB_ID=...` (opcional: default a DB `Contacto`)
+- `NOTION_VERSION=2025-09-03` (opcional; recomendado)
 
-Sin esos valores, `/api/manager/contacts` responde 503 con hint de configuración.
+Si falta `NOTION_TOKEN`, `/api/manager/contacts` regresa fallback local con contactos base para no bloquear operación del MVP.
+Con `NOTION_TOKEN` activo, el backend intenta primero `data_sources/{id}/query` y, si no aplica, cae a `databases/{id}/query` para compatibilidad.
 
 ## Archivos
 

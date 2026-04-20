@@ -28,8 +28,20 @@ const catalogSample = [
 ];
 
 const contactsSample = [
-  { nombre: 'Ricardo Calanda', rol: 'Manager', correo: 'ricardo.calanda@gmail.com' },
-  { nombre: 'Xeronimo Mansur', rol: 'Compositor/Productor', correo: 'xeronimo3@gmail.com' }
+  {
+    nombre: 'Ricardo Calanda',
+    rol: 'Manager',
+    correo: 'ricardo.calanda@gmail.com',
+    telefono: '',
+    whatsapp: ''
+  },
+  {
+    nombre: 'Xeronimo Mansur',
+    rol: 'Compositor/Productor',
+    correo: 'xeronimo3@gmail.com',
+    telefono: '',
+    whatsapp: ''
+  }
 ];
 
 function apiHeaders() {
@@ -40,8 +52,24 @@ function apiHeaders() {
 
 async function fetchJson(url) {
   const r = await fetch(url, { headers: apiHeaders() });
-  if (!r.ok) throw new Error(`HTTP ${r.status}`);
+  if (!r.ok) {
+    let details = '';
+    try {
+      const body = await r.json();
+      details = body?.error || body?.message || JSON.stringify(body);
+    } catch {
+      details = await r.text();
+    }
+    throw new Error(`HTTP ${r.status}${details ? ` - ${details}` : ''}`);
+  }
   return r.json();
+}
+
+function setStatus(id, text, isError = false) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.textContent = text;
+  el.classList.toggle('error', Boolean(isError));
 }
 
 function setShareActions() {
@@ -83,7 +111,14 @@ function setCatalog(rows = catalogSample) {
 function setContacts(rows = contactsSample) {
   const list = document.getElementById('contacts-list');
   list.innerHTML = rows
-    .map((c) => `<li><strong>${c.nombre}</strong> · ${c.rol} · <a href="mailto:${c.correo}">${c.correo}</a></li>`)
+    .map((c) => {
+      const role = c.rol || 'Contacto';
+      const email = c.correo ? `<a href="mailto:${c.correo}">${c.correo}</a>` : '';
+      const phone = c.telefono || '';
+      const whatsapp = c.whatsapp ? `<a href="${c.whatsapp}" target="_blank" rel="noopener">WhatsApp</a>` : '';
+      const parts = [role, email, phone, whatsapp].filter(Boolean).join(' · ');
+      return `<li><strong>${c.nombre}</strong>${parts ? ` · ${parts}` : ''}</li>`;
+    })
     .join('');
 }
 
@@ -101,12 +136,22 @@ async function loadContactsFromNotion() {
     const rows = (res.data || []).map((item) => ({
       nombre: item.nombre || 'Sin nombre',
       rol: item.rol || '—',
-      correo: item.correo || ''
+      correo: item.correo || '',
+      telefono: item.telefono || '',
+      whatsapp: item.whatsapp || ''
     }));
     setContacts(rows.length ? rows : contactsSample);
+    const source = res.source || 'api';
+    if (source === 'fallback') {
+      setStatus('contacts-status', `${rows.length} contactos cargados (fallback local del backend).`);
+      return;
+    }
+    setStatus('contacts-status', rows.length ? `${rows.length} contactos cargados desde Notion API.` : 'API sin contactos, usando muestra local.');
   } catch (e) {
     console.warn('No se pudieron cargar contactos desde Notion API:', e);
     setContacts(contactsSample);
+    const reason = e instanceof Error ? e.message : String(e);
+    setStatus('contacts-status', `Sin conexión a Notion/API: ${reason}`, true);
   }
 }
 
@@ -121,9 +166,12 @@ async function loadCatalogFromApi() {
       drive: item.drive || '#'
     }));
     setCatalog(rows.length ? rows : catalogSample);
+    setStatus('catalog-status', rows.length ? `${rows.length} canciones cargadas desde API.` : 'API sin catálogo, usando muestra local.');
   } catch (e) {
     console.warn('No se pudo cargar catálogo desde API:', e);
     setCatalog(catalogSample);
+    const reason = e instanceof Error ? e.message : String(e);
+    setStatus('catalog-status', `Sin conexión a catálogo/API: ${reason}`, true);
   }
 }
 
