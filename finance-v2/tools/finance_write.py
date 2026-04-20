@@ -16,6 +16,7 @@ import json
 import sys
 import base64
 import os
+import subprocess
 from datetime import datetime
 
 def load_credentials():
@@ -62,6 +63,41 @@ def format_amount(amount):
             return 0.0
     return float(amount)
 
+def is_url(value):
+    value = (value or '').strip().lower()
+    return value.startswith('http://') or value.startswith('https://')
+
+def drive_url_from_local_path(path):
+    """Construye URL de Google Drive usando el item-id local de DriveFS."""
+    path = (path or '').strip()
+    if not path or not os.path.exists(path):
+        return ''
+    try:
+        file_id = subprocess.check_output(
+            ['xattr', '-p', 'com.google.drivefs.item-id#S', path],
+            text=True,
+            stderr=subprocess.DEVNULL,
+        ).strip()
+    except Exception:
+        return ''
+    if not file_id:
+        return ''
+    return f'https://drive.google.com/file/d/{file_id}/view'
+
+def resolve_recibo_value(data):
+    """Acepta URL directa o path local de un archivo sincronizado con Google Drive."""
+    recibo = (data.get('recibo') or '').strip()
+    if is_url(recibo):
+        return recibo
+    if recibo:
+        drive_url = drive_url_from_local_path(recibo)
+        if drive_url:
+            return drive_url
+    recibo_path = (data.get('recibo_path') or data.get('recibo_local_path') or '').strip()
+    if recibo_path:
+        return drive_url_from_local_path(recibo_path)
+    return ''
+
 def append_row(service, spreadsheet_id, sheet_name, values):
     body = {'values': [values]}
     result = service.spreadsheets().values().append(
@@ -85,7 +121,7 @@ def write_gastos(service, env_vars, data):
         format_amount(data.get('monto', 0)),
         data.get('tipo', 'Gasto'),
         data.get('forma_pago', ''),
-        data.get('recibo', '')
+        resolve_recibo_value(data)
     ]
     return append_row(service, env_vars['SPREADSHEET_LOG_ID'], 'Hoja 1', row)
 

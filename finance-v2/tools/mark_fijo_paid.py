@@ -206,13 +206,15 @@ def append_control_log_entries(service, env_vars, item, cuotas_indexes):
     today = date.today().isoformat()
     pagos_mes = max(1, int(item.get('pagos_mes') or 1))
     per_part = abs(float(item.get('monto') or 0.0)) / pagos_mes
-    tipo = 'Ingreso' if item.get('tipo') == 'ingreso' else 'Gasto'
+    is_ingreso = item.get('tipo') == 'ingreso'
+    tipo = 'Ingreso' if is_ingreso else 'Gasto'
+    lugar = 'Ingreso Fijo' if is_ingreso else 'Gasto Fijo'
     forma_pago = item.get('forma_pago', '')
     moneda = item.get('moneda', 'MXN')
 
     for idx in cuotas_indexes:
         concepto = f"{item['concepto']} ({idx + 1}/{pagos_mes})"
-        key = ('Gasto Fijo', concepto)
+        key = (lugar, concepto)
         if key in existing:
             skipped += 1
             continue
@@ -222,7 +224,7 @@ def append_control_log_entries(service, env_vars, item, cuotas_indexes):
             range='Hoja 1!A:H',
             valueInputOption='USER_ENTERED',
             insertDataOption='INSERT_ROWS',
-            body={'values': [[today, 'Gasto Fijo', concepto, per_part, tipo, forma_pago, '', moneda]]}
+            body={'values': [[today, lugar, concepto, per_part, tipo, forma_pago, '', moneda]]}
         ).execute()
         existing.add(key)
         appended += 1
@@ -239,6 +241,9 @@ def remove_control_log_entries(service, env_vars, item, cuotas_indexes):
     pagos_mes = max(1, int(item.get('pagos_mes') or 1))
     target_concepts = {f"{item['concepto']} ({idx + 1}/{pagos_mes})" for idx in cuotas_indexes}
 
+    is_ingreso = item.get('tipo') == 'ingreso'
+    expected_lugar = 'Ingreso Fijo' if is_ingreso else 'Gasto Fijo'
+
     for target in target_concepts:
         rows = read_log_rows(service, spreadsheet_log_id)
         found_index = -1
@@ -246,7 +251,7 @@ def remove_control_log_entries(service, env_vars, item, cuotas_indexes):
             row = rows[i] if i < len(rows) else []
             lugar = (row[1] if len(row) > 1 else '').strip()
             concepto = (row[2] if len(row) > 2 else '').strip()
-            if lugar == 'Gasto Fijo' and concepto == target:
+            if lugar == expected_lugar and concepto == target:
                 found_index = i
                 break
 

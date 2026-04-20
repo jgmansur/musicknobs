@@ -32,6 +32,13 @@ Extraer del mensaje de Jay:
 
 Si Jay manda foto: usar visión para extraer estos datos del recibo. Confirmar con Jay si algo no está claro.
 
+Reglas de extracción de tickets (OBLIGATORIAS):
+- Leer **texto + montos** del ticket para tener panorama completo. No clasificar solo por keywords.
+- En `concepto`, **NO resumir**: guardar todos los artículos tal como vienen en el ticket (literal, en orden cuando sea posible).
+- Si hay itemización con precios por artículo, conservar esos montos en el texto de `concepto`.
+
+Si el recibo ya se guardó como archivo local dentro de Google Drive sincronizado, pasarlo como `recibo_path` para que `finance_write.py` escriba el link en la columna `Recibos`.
+
 ### PASO 2 — Guardar en Engram
 
 Usar `mem_save` con el topic_key apropiado:
@@ -72,6 +79,13 @@ python3 /Users/jaystudio/Documents/GitHub/Apps/musicknobs/finance-v2/tools/finan
   --data '{...json...}'
 ```
 
+Ejemplo con recibo:
+```bash
+python3 /Users/jaystudio/Documents/GitHub/Apps/musicknobs/finance-v2/tools/finance_write.py \
+  --sheet gastos \
+  --data '{"fecha":"YYYY-MM-DD","monto":123.45,"concepto":"...","lugar":"...","forma_pago":"","tipo":"Gasto","recibo_path":"/ruta/local/en/Google Drive/archivo.jpg"}'
+```
+
 Mapeo tipo → sheet:
 - `gasto` → `--sheet gastos`
 - `ingreso` → `--sheet gastos` (tipo="Ingreso")
@@ -80,6 +94,51 @@ Mapeo tipo → sheet:
 - `recuerdo` → `--sheet recuerdos`
 - `pelo` → `--sheet pelo`
 - `rsm` → `--sheet rsm`
+
+### PASO 3.1 — Regla de tarjetas de credito y saldos
+
+Cuando Jay indique que un gasto se hizo con una tarjeta de credito existente (por ejemplo `Tarjeta de Credito LikeU`):
+- Registrar el gasto normalmente en `gastos`, pero dejar `forma_pago` vacio salvo que Jay pida otra cosa.
+- NO registrar ese cargo en `deudas`.
+- El impacto correcto va en el sheet de saldos (`SALDOS_SHEET_ID`), sumando el monto al saldo actual de la cuenta de tarjeta correspondiente.
+- Si despues Jay reporta un pago a esa tarjeta, restar ese monto al saldo de la tarjeta y tambien restarlo de la cuenta origen que Jay indique (`Santander`, `BBVA`, etc.).
+- Cuando haya que corregir o editar saldos, hacerlo directamente en el sheet de saldos, no en `deudas`.
+
+Regla operativa acordada con Jay:
+- `Tarjeta de Credito LikeU` se maneja como cuenta de saldos, no como deuda separada.
+
+### PASO 3.2 — Regla supermercado por comercio del ticket (OBLIGATORIA)
+
+Cuando el recibo sea de alguno de estos comercios:
+- `City Market` / `Citimarket`
+- `La Comer`
+- `HEB` / `H.E.B.`
+- `Aurrerá` / `Bodega Aurrerá`
+- `Soriana`
+
+Aplicar este flujo especial:
+- NO crear un gasto fijo nuevo en `fijos`.
+- Marcar solo la siguiente cuota pendiente del fijo `Supermercado` con:
+
+```bash
+python3 /Users/jaystudio/Documents/GitHub/Apps/musicknobs/finance-v2/tools/mark_fijo_paid.py \
+  --concepto "Supermercado" --cuota [N]
+```
+
+- Ese comando agrega una fila automática en `Control de Gastos`.
+- Inmediatamente editar esa fila para reemplazarla con los datos reales del ticket:
+  - `Fecha` = fecha del recibo
+  - `Lugar` = comercio real (ej. City Market San Miguel de Allende)
+  - `Concepto` = itemización completa (sin resumir artículos)
+  - `Monto` = monto real gastado en ese ticket
+  - `Recibos` = link de Google Drive (usar `recibo_path` para generarlo)
+- En correcciones o re-capturas, **NO reutilizar links viejos** de `Recibos`; generar un link nuevo desde archivo local vigente en la carpeta de Drive (preferir `recibo_path`).
+
+Regla adicional para análisis Hormiga (Dashboard):
+- En comercios de supermercado/gasolinera (ej. City Market, Citimarket, Shell), solo considerar monto hormiga si hay monto **itemizado explícito** para artículos hormiga (cocas/snacks/papas/chips).
+- Si no hay monto explícito por artículo hormiga, considerar **0** para hormiga (no tomar el total del ticket).
+
+Objetivo: mantener el avance de cuotas del fijo `Supermercado` sin perder el detalle real del gasto en `Control de Gastos`.
 
 ### PASO 4 — Confirmar a Jay
 
@@ -137,6 +196,7 @@ Si el script falla, avisar a Jay pero indicar que Engram sí quedó guardado.
 - Si el monto es ambiguo (¿MXN o USD?), preguntar antes de guardar
 - Para recuerdos, el texto es libre — no estructurar demasiado
 - Para gastos fijos que ya existen en el sheet, usar `--sheet fijos` con `estado: "Pagado"` si Jay dice que ya pagó
+- Las tarjetas de credito activas se ajustan en el sheet de saldos; no duplicar esos cargos en `deudas` salvo que Jay pida explicitamente registrar una deuda separada
 
 ---
 
