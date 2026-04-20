@@ -2503,6 +2503,75 @@ function processAndRender(logRows, fixedRows) {
         'dulces','chicles','golosinas','chocolate','tamarindos','cine','brincolines',
         'lerele','danny trova','dany trova'
     ];
+    const hormigaExcludedPlaces = [
+        'city market', 'citimarket',
+        'shell'
+    ];
+    const hormigaPartialKeywords = ['coca', 'coca cola', 'cocas', 'snack', 'snacks', 'papas', 'chips'];
+    const parseHormigaMoney = (raw) => {
+        const str = (raw || '').toString().trim();
+        if (!str) return 0;
+        const cleaned = str.replace(/[^\d.,-]/g, '');
+        if (!cleaned) return 0;
+        const hasComma = cleaned.includes(',');
+        const hasDot = cleaned.includes('.');
+        let normalized = cleaned;
+        if (hasComma && hasDot) {
+            const lastComma = cleaned.lastIndexOf(',');
+            const lastDot = cleaned.lastIndexOf('.');
+            normalized = lastComma > lastDot
+                ? cleaned.replace(/\./g, '').replace(',', '.')
+                : cleaned.replace(/,/g, '');
+        } else if (hasComma) {
+            normalized = /,\d{1,2}$/.test(cleaned)
+                ? cleaned.replace(/\./g, '').replace(',', '.')
+                : cleaned.replace(/,/g, '');
+        } else if (hasDot) {
+            normalized = /\.\d{1,2}$/.test(cleaned)
+                ? cleaned.replace(/,/g, '')
+                : cleaned.replace(/\./g, '');
+        }
+        const num = Number(normalized);
+        return Number.isFinite(num) ? Math.abs(num) : 0;
+    };
+    const extractHormigaPartialFromConcept = (conceptoRaw, montoTotal) => {
+        const raw = (conceptoRaw || '').toString();
+        const montoCap = Math.max(0, Number(montoTotal) || 0);
+        if (!raw || !montoCap) return 0;
+        const normalized = raw
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .toLowerCase();
+        const chunks = normalized.split(/[;,|]+/).map(c => c.trim()).filter(Boolean);
+        let sum = 0;
+        chunks.forEach((chunk) => {
+            const hasKeyword = hormigaPartialKeywords.some(k => chunk.includes(k));
+            if (!hasKeyword) return;
+            // Prefer explicit money expressions: $123, 123 mxn, 123 pesos
+            const explicit = [];
+            const moneyPatterns = [
+                /\$\s*([\d.,]+)/gi,
+                /([\d.,]+)\s*(?:mxn|pesos?)/gi,
+            ];
+            moneyPatterns.forEach((re) => {
+                let m;
+                while ((m = re.exec(chunk)) !== null) {
+                    explicit.push(parseHormigaMoney(m[1]));
+                }
+            });
+            if (explicit.length) {
+                sum += explicit.reduce((a, b) => a + b, 0);
+                return;
+            }
+            // Fallback conservador: monto junto al keyword (sin unidades de volumen/cantidad)
+            const nearKeyword = chunk.match(/(?:coca(?:\s+cola)?|cocas|snacks?|papas|chips?)\D{0,12}(\d[\d.,]*)/i);
+            if (!nearKeyword) return;
+            if (/(litros?|l\b|lt\b|pza\b|pzas\b|pieza|piezas|ml\b|kg\b)/i.test(chunk)) return;
+            const n = parseHormigaMoney(nearKeyword[1]);
+            if (n > 0) sum += n;
+        });
+        return Math.max(0, Math.min(montoCap, sum));
+    };
     const imprevistoKeywords = [
         'restaurante','restaurant','comida fuera','comidas fuera','fuera de casa',
         'enfermedad','enfermo','medico','doctor','farmacia','medicina','medicinas','hospital',
@@ -2532,8 +2601,10 @@ function processAndRender(logRows, fixedRows) {
     if (panelTitle) panelTitle.innerText = `🍔 Gasto Hormiga (${monthName})`;
 
     logRows.forEach(row => {
-        const concepto = (row[2] || '').toLowerCase();
-        const lugar    = (row[1] || '').toLowerCase();
+        const conceptoRaw = (row[2] || '').toString();
+        const lugarRaw = (row[1] || '').toString();
+        const concepto = conceptoRaw.toLowerCase();
+        const lugar    = lugarRaw.toLowerCase();
         const moneda   = parseCurrencyCode(row[7]);
         const monto    = convertTransactionAmountToMxn(parseSheetValue(row[3]), moneda);
         const fecha    = row[0] || '';
@@ -2553,6 +2624,22 @@ function processAndRender(logRows, fixedRows) {
             return;
         }
 
+        const isExcludedHormigaPlace = hormigaExcludedPlaces.some(k => lugar.includes(k));
+        if (isExcludedHormigaPlace) {
+            const partialHormiga = extractHormigaPartialFromConcept(conceptoRaw, monto);
+            if (partialHormiga <= 0) return;
+            const parsedDate = parseSheetDate(fecha);
+            const formattedDate = normalizeDateString(fecha);
+            hormigaChartData.push({ x: formattedDate, y: partialHormiga });
+            if (parsedDate.getMonth() === currentMonth && parsedDate.getFullYear() === currentYear) {
+                hormigaTotal += partialHormiga;
+                hormigaGastos.push({ lugar: lugarRaw || 'Varios', concepto: conceptoRaw || '', monto: partialHormiga });
+            }
+            if (parsedDate.getMonth() === prevMonth && parsedDate.getFullYear() === prevYear) {
+                hormigaPrevTotal += partialHormiga;
+            }
+            return;
+        }
         // FIX: use toLowerCase() so 'Gasto'/'gasto'/'GASTO' all match
         if (hormigaKeywords.some(k => concepto.includes(k) || lugar.includes(k))) {
             const parsedDate = parseSheetDate(fecha);
@@ -2564,7 +2651,7 @@ function processAndRender(logRows, fixedRows) {
             // Solo incluir gastos del mes corriente en los indicadores visuales y panel
             if (parsedDate.getMonth() === currentMonth && parsedDate.getFullYear() === currentYear) {
                 hormigaTotal += monto;
-                hormigaGastos.push({ lugar: row[1] || 'Oxxo', concepto: row[2] || '', monto });
+                hormigaGastos.push({ lugar: lugarRaw || 'Oxxo', concepto: conceptoRaw || '', monto });
             }
             // Acumulamos el mes anterior para comparación
             if (parsedDate.getMonth() === prevMonth && parsedDate.getFullYear() === prevYear) {
@@ -2833,9 +2920,19 @@ function renderHormigaPanel(gastos, total, prevTotal = 0, monthName = '', prevMo
     
     // Agrupar por lugar/concepto
     const agrupados = {};
+    const normalizeHormigaPlace = (rawLugar) => {
+        const raw = (rawLugar || '').toString().trim();
+        const normalized = raw
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .toLowerCase();
+        if (!normalized) return 'Varios';
+        // Regla solicitada: agrupar cualquier variante de Oxxo como un solo lugar
+        if (normalized.includes('oxxo')) return 'Oxxo';
+        return raw.charAt(0).toUpperCase() + raw.slice(1).toLowerCase();
+    };
     gastos.forEach(g => {
-        // Normalizamos el nombre (ej. "Oxxo" vs "oxxo")
-        const key = g.lugar ? g.lugar.charAt(0).toUpperCase() + g.lugar.slice(1).toLowerCase() : 'Varios';
+        const key = normalizeHormigaPlace(g.lugar);
         agrupados[key] = (agrupados[key] || 0) + g.monto;
     });
 
