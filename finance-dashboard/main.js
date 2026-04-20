@@ -669,6 +669,7 @@ const DEFAULT_ACCOUNTS = [
 const ACCOUNT_ICONS  = { bank:'🏦', credit:'💳', cash:'💵', invest:'📈', other:'🌎' };
 const ACCOUNT_COLORS = { bank:'#3b82f6', credit:'#ef4444', cash:'#22c55e', invest:'#a855f7', other:'#f59e0b' };
 const ACCOUNT_TYPE_LABEL = { bank:'Cuenta bancaria', credit:'Tarjeta de crédito', cash:'Efectivo', invest:'Inversión', other:'Otro' };
+const BASE_PAYMENT_METHODS = ['Santander', 'BBVA', 'Cuenta Mariel', 'Efectivo', 'Tarjeta de Credito'];
 const FX_CACHE_KEY = 'usd_mxn_rate_cache_v1';
 const BTC_CACHE_KEY = 'btc_mxn_rate_cache_v1';
 const INVEST_RATE_CACHE_KEY = 'investment_rate_cache_v1';
@@ -940,6 +941,62 @@ function balance_getAccountMatchKeys(acc) {
         }
     }
     return [...keys];
+}
+
+function balance_getPaymentMethodOptions({ includeLegacyTransfer = false } = {}) {
+    const unique = new Map();
+    const add = (value) => {
+        const label = (value || '').toString().trim();
+        if (!label) return;
+        const key = balance_normalizePaymentKey(label);
+        if (!key || key === 'transferencia') return;
+        if (!unique.has(key)) unique.set(key, label);
+    };
+
+    BASE_PAYMENT_METHODS.forEach(add);
+    balanceAccounts.forEach((acc) => add(acc?.name));
+
+    if (includeLegacyTransfer) unique.set('transferencia', 'Transferencia');
+    return [...unique.values()];
+}
+
+function balance_refreshPaymentMethodSelects() {
+    const options = balance_getPaymentMethodOptions();
+    const targets = [
+        { id: 'g-forma-pago', placeholder: null },
+        { id: 'f-forma-pago', placeholder: '— Sin asignar —' },
+        { id: 'd-split-account', placeholder: '(Sin asignar)' },
+        { id: 'd-cuota-account', placeholder: 'Selecciona una cuenta' },
+        { id: 'autos-repair-forma-pago', placeholder: '— Forma de Pago —' },
+        { id: 'prop-forma-pago', placeholder: null },
+        { id: 'hair-forma-pago', placeholder: '— Forma de Pago —' },
+        { id: 'estudio-inventario-forma-pago', placeholder: '— Forma de Pago —' },
+        { id: 'estudio-plugin-forma-pago', placeholder: '— Forma de Pago —' },
+    ];
+
+    targets.forEach(({ id, placeholder }) => {
+        const sel = document.getElementById(id);
+        if (!(sel instanceof HTMLSelectElement)) return;
+
+        const prev = (sel.value || '').toString();
+        const legacyOption = prev && !options.some((opt) => balance_normalizePaymentKey(opt) === balance_normalizePaymentKey(prev))
+            ? prev
+            : null;
+
+        const html = [];
+        if (placeholder !== null) {
+            html.push(`<option value="">${placeholder}</option>`);
+        }
+        options.forEach((opt) => {
+            html.push(`<option value="${opt}">${opt}</option>`);
+        });
+        if (legacyOption) {
+            html.push(`<option value="${legacyOption}">${legacyOption}</option>`);
+        }
+        sel.innerHTML = html.join('');
+
+        if (prev) sel.value = prev;
+    });
 }
 
 function balance_getAccountIdByPayment(formaPago) {
@@ -1252,6 +1309,7 @@ function balance_getInvestmentSummary() {
 }
 
 function balance_updateKpi() {
+    balance_refreshPaymentMethodSelects();
     const total = balance_getTotal();
     const real  = total - balancePendingFixed;
     const paidDeduction = balance_getPaidFixedDeduction();
@@ -11581,8 +11639,10 @@ function parseFixedFormaPago(val) {
     if (raw.toLowerCase() === 'esposa') return 'Cuenta Mariel';
     if (raw.toLowerCase() === 'yo') return '';
     // Valores nuevos: devolver tal cual si es una cuenta válida
-    const valid = ['Santander', 'BBVA', 'Cuenta Mariel', 'Efectivo', 'Transferencia'];
-    return valid.includes(raw) ? raw : '';
+    const valid = balance_getPaymentMethodOptions({ includeLegacyTransfer: true });
+    return valid.some((item) => balance_normalizePaymentKey(item) === balance_normalizePaymentKey(raw))
+        ? raw
+        : '';
 }
 
 function parseBudgetCategory(val) {
