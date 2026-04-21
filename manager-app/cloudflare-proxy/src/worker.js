@@ -12,6 +12,9 @@ const CORS_HEADERS = {
 const DEFAULT_MANAGER_TASKS_DB_ID = "6405719e-5f90-4fc0-8eab-d9352387dd07";
 const DEFAULT_SOCIAL_LINKS_DB_ID = "761cbab4-0fef-4aad-aa99-d3aa5e47025c";
 const DEFAULT_CATALOG_DB_ID = "348c1932-ede8-80a1-a852-000b7e0cc2b4";
+const DEFAULT_MANAGER_CONTACTS_DB_ID = "349c1932-ede8-80c2-a457-000b79e7eae0";
+const DEFAULT_DRIVE_CATALOG_FOLDER_ID = "1y6RhTb3JnAGQJ8mTcJglr1aeeFYeStbq";
+const CATALOG_AUTOSYNC_TAG = "Catalog AutoSync";
 const TASK_PREFIX = "[ManagerTask] ";
 const MESSAGE_PREFIX = "[ManagerMsg] ";
 const SUBTASK_PREFIX = "subtask:";
@@ -97,6 +100,37 @@ function readNotionRole(props) {
         .filter(Boolean)
         .join(", ");
     }
+  }
+  return "";
+}
+
+function readNotionInstagram(props) {
+  for (const [name, prop] of Object.entries(props)) {
+    const key = name.toLowerCase();
+    if (!["instagram", "insta", "ig"].some((k) => key.includes(k))) continue;
+    if (prop?.type === "url") return prop.url || "";
+    if (prop?.type === "rich_text") return richTextToString(prop.rich_text);
+  }
+  return "";
+}
+
+function readNotionTiktok(props) {
+  for (const [name, prop] of Object.entries(props)) {
+    const key = name.toLowerCase();
+    if (!["tiktok", "tik tok"].some((k) => key.includes(k))) continue;
+    if (prop?.type === "url") return prop.url || "";
+    if (prop?.type === "rich_text") return richTextToString(prop.rich_text);
+  }
+  return "";
+}
+
+function readNotionAddress(props) {
+  for (const [name, prop] of Object.entries(props)) {
+    const key = name.toLowerCase();
+    if (!["direccion", "dirección", "address", "ubicacion", "ubicación"].some((k) => key.includes(k))) continue;
+    if (prop?.type === "rich_text") return richTextToString(prop.rich_text);
+    if (prop?.type === "select") return prop.select?.name || "";
+    if (prop?.type === "url") return prop.url || "";
   }
   return "";
 }
@@ -209,7 +243,7 @@ function readNotionLinkLabel(props) {
 
 async function queryNotionContacts(env) {
   const notionVersion = env.NOTION_VERSION || "2025-09-03";
-  const dbId = env.MANAGER_CONTACTS_DB_ID || "";
+  const dbId = env.MANAGER_CONTACTS_DB_ID || DEFAULT_MANAGER_CONTACTS_DB_ID;
   const notionToken = env.NOTION_TOKEN || "";
 
   if (!notionToken || !dbId) {
@@ -253,6 +287,9 @@ async function queryNotionContacts(env) {
         correo: readNotionEmail(props),
         telefono: readNotionPhone(props),
         whatsapp: readNotionWhatsapp(props),
+        instagram: readNotionInstagram(props),
+        tiktok: readNotionTiktok(props),
+        direccion: readNotionAddress(props),
       };
     });
 
@@ -299,7 +336,200 @@ function buildNotionValueByType(type, rawValue) {
   if (type === "select") {
     return { select: value ? { name: value } : null };
   }
+  if (type === "multi_select") {
+    const names = String(rawValue || "")
+      .split(",")
+      .map((x) => x.trim())
+      .filter(Boolean)
+      .slice(0, 25);
+    return { multi_select: names.map((name) => ({ name })) };
+  }
   return null;
+}
+
+function extractDriveFileId(urlValue = "") {
+  const raw = String(urlValue || "").trim();
+  if (!raw) return "";
+  const match = raw.match(/\/file\/d\/([^/]+)/);
+  if (match?.[1]) return match[1];
+  try {
+    const parsed = new URL(raw);
+    return parsed.searchParams.get("id") || "";
+  } catch {
+    return "";
+  }
+}
+
+function isAudioLike(name = "", mimeType = "") {
+  const n = String(name || "").toLowerCase();
+  const m = String(mimeType || "").toLowerCase();
+  return m.startsWith("audio/") || [".mp3", ".wav", ".m4a", ".aac", ".flac", ".ogg", ".aiff"].some((ext) => n.endsWith(ext));
+}
+
+async function driveListChildren(apiKey, folderId) {
+  const q = encodeURIComponent(`'${folderId}' in parents and trashed=false`);
+  const url = `https://www.googleapis.com/drive/v3/files?q=${q}&fields=files(id,name,mimeType,webViewLink)&pageSize=1000&includeItemsFromAllDrives=true&supportsAllDrives=true&key=${encodeURIComponent(apiKey)}`;
+  const resp = await fetch(url, { method: "GET" });
+  if (!resp.ok) {
+    throw new Error(`Drive list failed (${resp.status})`);
+  }
+  const payload = await resp.json();
+  return Array.isArray(payload?.files) ? payload.files : [];
+}
+
+async function collectDriveCatalogSongs(apiKey, rootFolderId) {
+  const rootChildren = await driveListChildren(apiKey, rootFolderId);
+  const genreFolders = rootChildren.filter((f) => f?.mimeType === "application/vnd.google-apps.folder");
+  const songs = [];
+
+  for (const folder of genreFolders) {
+    const genre = String(folder?.name || "").trim() || "Sin género";
+    const children = await driveListChildren(apiKey, folder.id);
+    for (const file of children) {
+      if (!isAudioLike(file?.name, file?.mimeType)) continue;
+      const fileId = String(file?.id || "").trim();
+      if (!fileId) continue;
+      songs.push({
+        fileId,
+        obra: String(file?.name || "").trim() || "Sin título",
+        generos: genre,
+        drive: String(file?.webViewLink || "").trim() || `https://drive.google.com/file/d/${fileId}/view`,
+      });
+    }
+  }
+
+  const byId = new Map();
+  for (const s of songs) {
+    if (!byId.has(s.fileId)) byId.set(s.fileId, s);
+  }
+  return Array.from(byId.values());
+}
+
+function buildCatalogPropertiesFromSchema(schemaProps = {}, input = {}) {
+  const titleKey = findPropertyKey(schemaProps, ["name", "nombre", "title"], ["title"]);
+  const genreKey = findPropertyKey(schemaProps, ["genero", "género", "genre"], ["multi_select", "select", "rich_text"]);
+  const playKey = findPropertyKey(schemaProps, ["play", "drive", "audio", "url", "link"], ["url", "rich_text"]);
+  const tagsKey = findPropertyKey(schemaProps, ["tags", "etiquetas"], ["multi_select"]);
+
+  const properties = {};
+  if (titleKey) {
+    const value = buildNotionValueByType(schemaProps[titleKey]?.type, input.obra || "");
+    if (value) properties[titleKey] = value;
+  }
+  if (genreKey) {
+    const value = buildNotionValueByType(schemaProps[genreKey]?.type, input.generos || "");
+    if (value) properties[genreKey] = value;
+  }
+  if (playKey) {
+    const value = buildNotionValueByType(schemaProps[playKey]?.type, input.drive || "");
+    if (value) properties[playKey] = value;
+  }
+  if (tagsKey && schemaProps[tagsKey]?.type === "multi_select") {
+    properties[tagsKey] = { multi_select: [{ name: CATALOG_AUTOSYNC_TAG }] };
+  }
+  return properties;
+}
+
+async function syncCatalogFromDrive(env) {
+  const notionVersion = env.NOTION_VERSION || "2025-09-03";
+  const notionToken = env.NOTION_TOKEN || "";
+  const dbId = env.MANAGER_CATALOG_DB_ID || DEFAULT_CATALOG_DB_ID;
+  const driveApiKey = String(env.DRIVE_API_KEY || "").trim();
+  const driveFolderId = String(env.DRIVE_CATALOG_FOLDER_ID || DEFAULT_DRIVE_CATALOG_FOLDER_ID).trim();
+
+  if (!notionToken || !dbId) return { error: "NOTION_TOKEN o MANAGER_CATALOG_DB_ID missing" };
+  if (!driveApiKey || !driveFolderId) return { error: "DRIVE_API_KEY o DRIVE_CATALOG_FOLDER_ID missing" };
+
+  const driveSongs = await collectDriveCatalogSongs(driveApiKey, driveFolderId);
+  const schema = await retrieveNotionCollectionSchema(dbId, notionToken, notionVersion);
+  const schemaProps = schema.properties || {};
+
+  const payload = await notionQueryAdvanced(dbId, notionToken, notionVersion, { pageSize: 200 });
+  const existingPages = payload.results || [];
+
+  const byFileId = new Map();
+  const autosyncTagged = [];
+  for (const page of existingPages) {
+    const props = page.properties || {};
+    const play = readNotionSongUrl(props);
+    const fileId = extractDriveFileId(play);
+    if (fileId) byFileId.set(fileId, page);
+    const tags = getTagNames(props);
+    if (tags.includes(CATALOG_AUTOSYNC_TAG)) autosyncTagged.push(page);
+  }
+
+  let created = 0;
+  let updated = 0;
+  const activeIds = new Set();
+
+  for (const song of driveSongs) {
+    const existing = byFileId.get(song.fileId);
+    const properties = buildCatalogPropertiesFromSchema(schemaProps, song);
+
+    if (existing) {
+      const resp = await fetch(`https://api.notion.com/v1/pages/${existing.id}`, {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${notionToken}`,
+          "Notion-Version": notionVersion,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ properties }),
+      });
+      if (!resp.ok) throw new Error(await resp.text());
+      updated += 1;
+      activeIds.add(existing.id);
+      continue;
+    }
+
+    const parentShapes = [{ data_source_id: dbId }, { database_id: dbId }];
+    let createdOk = false;
+    let lastError = "";
+    for (const parent of parentShapes) {
+      const resp = await fetch("https://api.notion.com/v1/pages", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${notionToken}`,
+          "Notion-Version": notionVersion,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ parent, properties }),
+      });
+      if (resp.ok) {
+        const createdPage = await resp.json();
+        activeIds.add(createdPage.id);
+        created += 1;
+        createdOk = true;
+        break;
+      }
+      lastError = await resp.text();
+    }
+    if (!createdOk) throw new Error(lastError || "Catalog create failed");
+  }
+
+  let archived = 0;
+  for (const page of autosyncTagged) {
+    if (activeIds.has(page.id)) continue;
+    const resp = await fetch(`https://api.notion.com/v1/pages/${page.id}`, {
+      method: "PATCH",
+      headers: {
+        Authorization: `Bearer ${notionToken}`,
+        "Notion-Version": notionVersion,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ archived: true }),
+    });
+    if (!resp.ok) throw new Error(await resp.text());
+    archived += 1;
+  }
+
+  return {
+    ok: true,
+    created,
+    updated,
+    archived,
+    totalDriveSongs: driveSongs.length,
+  };
 }
 
 async function retrieveNotionCollectionSchema(dbOrDataSourceId, notionToken, notionVersion) {
@@ -330,6 +560,9 @@ function buildContactPropertiesFromSchema(schemaProps = {}, input = {}, { includ
   const emailKey = findPropertyKey(schemaProps, ["correo", "email", "mail"], ["email", "rich_text"]);
   const phoneKey = findPropertyKey(schemaProps, ["telefono", "teléfono", "phone", "cel", "movil", "móvil"], ["phone_number", "rich_text"]);
   const waKey = findPropertyKey(schemaProps, ["whatsapp", "wa"], ["url", "rich_text"]);
+  const instagramKey = findPropertyKey(schemaProps, ["instagram", "insta", "ig"], ["url", "rich_text"]);
+  const tiktokKey = findPropertyKey(schemaProps, ["tiktok", "tik tok"], ["url", "rich_text"]);
+  const addressKey = findPropertyKey(schemaProps, ["direccion", "dirección", "address", "ubicacion", "ubicación"], ["rich_text", "select", "url"]);
 
   const properties = {};
   if (includeTitle && titleKey) {
@@ -343,6 +576,9 @@ function buildContactPropertiesFromSchema(schemaProps = {}, input = {}, { includ
     { key: emailKey, raw: input.correo || "" },
     { key: phoneKey, raw: input.telefono || "" },
     { key: waKey, raw: input.whatsapp || "" },
+    { key: instagramKey, raw: input.instagram || "" },
+    { key: tiktokKey, raw: input.tiktok || "" },
+    { key: addressKey, raw: input.direccion || "" },
   ];
 
   for (const field of fieldMap) {
@@ -358,7 +594,7 @@ function buildContactPropertiesFromSchema(schemaProps = {}, input = {}, { includ
 async function createManagerContact(env, body) {
   const notionVersion = env.NOTION_VERSION || "2025-09-03";
   const notionToken = env.NOTION_TOKEN || "";
-  const dbId = env.MANAGER_CONTACTS_DB_ID || "";
+  const dbId = env.MANAGER_CONTACTS_DB_ID || DEFAULT_MANAGER_CONTACTS_DB_ID;
 
   if (!notionToken || !dbId) return { error: "NOTION_TOKEN o MANAGER_CONTACTS_DB_ID missing" };
   const nombre = String(body?.nombre || "").trim();
@@ -372,6 +608,9 @@ async function createManagerContact(env, body) {
       correo: body?.correo,
       telefono: body?.telefono,
       whatsapp: body?.whatsapp,
+      instagram: body?.instagram,
+      tiktok: body?.tiktok,
+      direccion: body?.direccion,
     }, { includeTitle: true });
 
     const parentShapes = [{ data_source_id: dbId }, { database_id: dbId }];
@@ -401,7 +640,7 @@ async function createManagerContact(env, body) {
 async function updateManagerContact(env, contactId, body) {
   const notionVersion = env.NOTION_VERSION || "2025-09-03";
   const notionToken = env.NOTION_TOKEN || "";
-  const dbId = env.MANAGER_CONTACTS_DB_ID || "";
+  const dbId = env.MANAGER_CONTACTS_DB_ID || DEFAULT_MANAGER_CONTACTS_DB_ID;
 
   if (!notionToken || !dbId) return { error: "NOTION_TOKEN o MANAGER_CONTACTS_DB_ID missing" };
 
@@ -413,6 +652,9 @@ async function updateManagerContact(env, contactId, body) {
       correo: body?.correo,
       telefono: body?.telefono,
       whatsapp: body?.whatsapp,
+      instagram: body?.instagram,
+      tiktok: body?.tiktok,
+      direccion: body?.direccion,
     }, { includeTitle: Object.prototype.hasOwnProperty.call(body || {}, "nombre") });
 
     const resp = await fetch(`https://api.notion.com/v1/pages/${contactId}`, {
@@ -1137,8 +1379,24 @@ export default {
     }
 
     if (request.method === "GET" && url.pathname === "/api/manager/catalog") {
+      if (url.searchParams.get("sync") === "1") {
+        try {
+          await syncCatalogFromDrive(env);
+        } catch {
+          // non-blocking: si falla sync, devolvemos último estado de Notion
+        }
+      }
       const result = await listCatalogSongs(env);
       return json(result, result.error ? 502 : 200);
+    }
+
+    if (request.method === "POST" && url.pathname === "/api/manager/catalog/sync") {
+      try {
+        const result = await syncCatalogFromDrive(env);
+        return json(result, result.error ? 400 : 200);
+      } catch (e) {
+        return json({ error: "Catalog sync failed", details: String(e?.message || e) }, 500);
+      }
     }
 
     if (request.method === "GET" && url.pathname === "/api/manager/tasks") {

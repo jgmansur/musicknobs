@@ -34,23 +34,19 @@
     <p id="oauth-status" class="hint oauth-header-status">Sin sesión</p>
 
     <main class="container">
-      <section id="tab-overview" class="panel card active">
+      <section id="tab-overview" class="panel card panel-fullscreen active">
         <div class="featured-box">
-          <div class="panel-head">
-            <h3>Anuncios destacados</h3>
-            <button id="refresh-messages-overview" class="btn ghost">Refrescar</button>
+          <div class="actions panel-actions-inline">
+            <button id="refresh-messages-overview" class="btn ghost">Refrescar anuncios</button>
           </div>
           <ul id="messages-featured" class="list compact-list"></ul>
         </div>
 
         <hr class="soft-sep" />
 
-        <div class="panel-head">
-          <h3>Tasks del Manager (últimos 10)</h3>
-          <div class="actions">
-            <button id="refresh-tasks" class="btn ghost">Refrescar</button>
-            <button id="task-form-toggle" class="btn">Nueva task</button>
-          </div>
+        <div class="actions panel-actions-inline">
+          <button id="refresh-tasks" class="btn ghost">Refrescar tasks</button>
+          <button id="task-form-toggle" class="btn">Nueva task</button>
         </div>
 
         <div class="task-filters">
@@ -81,20 +77,14 @@
         <ul id="tasks-list" class="list compact-list"></ul>
       </section>
 
-      <section id="tab-messages" class="panel card">
+      <section id="tab-messages" class="panel card panel-fullscreen">
         <div class="wa-shell">
-          <div class="wa-topbar">
-            <div>
-              <h3>Mensajes internos</h3>
-              <p class="hint">Estilo WhatsApp interno · destacados máx. 3 (rotación).</p>
-            </div>
-            <div class="actions">
-              <button id="refresh-messages" class="btn ghost">Refrescar</button>
-              <button id="clear-messages-log" class="btn ghost hidden">Borrar log</button>
-            </div>
+          <div class="actions panel-actions-inline">
+            <button id="refresh-messages" class="btn ghost">Refrescar</button>
+            <button id="messages-load-more" class="btn ghost">Cargar más</button>
+            <button id="clear-messages-log" class="btn ghost hidden">Borrar log</button>
           </div>
-
-          <p id="messages-status" class="hint status" aria-live="polite">Sin anuncios cargados.</p>
+          <p id="messages-status" class="hint status panel-status-inline" aria-live="polite">Sin anuncios cargados.</p>
 
           <ul id="messages-list" class="list compact-list messages-chat-list"></ul>
 
@@ -105,13 +95,14 @@
         </div>
       </section>
 
-      <section id="tab-catalog" class="panel card">
-        <div class="panel-head">
-          <h3>Catálogo de canciones</h3>
+      <section id="tab-catalog" class="panel card panel-fullscreen">
+        <div class="actions panel-actions-inline">
+          <button id="catalog-sync" class="btn ghost">Sync Drive</button>
           <button id="refresh-catalog" class="btn ghost">Refrescar</button>
+          <button id="catalog-load-more" class="btn ghost">Cargar más</button>
         </div>
         <p class="hint">Vista tipo iPod: géneros, canciones, reproducción y compartir link.</p>
-        <p id="catalog-status" class="hint status" aria-live="polite">Usando muestra local (MVP).</p>
+        <p id="catalog-status" class="hint status panel-status-inline" aria-live="polite">Usando muestra local (MVP).</p>
 
         <div class="catalog-shell">
           <div class="catalog-grid">
@@ -143,13 +134,14 @@
           <h3>Contactos Manager (Notion)</h3>
           <div class="actions">
             <button id="refresh-contacts" class="btn ghost">Refrescar</button>
+            <button id="contacts-load-more" class="btn ghost">Cargar más</button>
             <button id="contact-form-toggle" class="btn">Nuevo contacto</button>
           </div>
         </div>
         <p class="hint">Fuente prevista: Notion DB para gestión de contactos y seguimiento.</p>
 
         <div class="task-filters">
-          <input id="contacts-search" class="field-input" type="search" placeholder="Buscar por nombre, rol, correo, teléfono..." />
+          <input id="contacts-search" class="field-input" type="search" placeholder="Buscar por nombre, rol, correo, teléfono, Instagram, TikTok..." />
         </div>
 
         <div id="contact-form-card" class="task-form-card hidden">
@@ -159,6 +151,9 @@
             <input id="contact-email" class="field-input" type="email" placeholder="Correo" />
             <input id="contact-phone" class="field-input" type="text" placeholder="Teléfono" />
             <input id="contact-whatsapp" class="field-input" type="url" placeholder="Link WhatsApp (https://wa.me/...)" />
+            <input id="contact-instagram" class="field-input" type="text" placeholder="Instagram (@usuario o URL)" />
+            <input id="contact-tiktok" class="field-input" type="text" placeholder="TikTok (@usuario o URL)" />
+            <input id="contact-address" class="field-input" type="text" placeholder="Dirección" />
             <div class="actions">
               <button id="contact-save" class="btn">Guardar contacto</button>
               <button id="contact-cancel" class="btn ghost hidden" type="button">Cancelar edición</button>

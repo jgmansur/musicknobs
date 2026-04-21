@@ -48,6 +48,13 @@ let catalogCache = [];
 let catalogGenreFilter = 'Todas';
 let catalogNowPlayingId = '';
 let catalogNowCardOpen = false;
+let contactsVisibleCount = 12;
+let messagesVisibleCount = 20;
+let catalogVisibleCount = 20;
+
+const CONTACTS_PAGE_STEP = 12;
+const MESSAGES_PAGE_STEP = 20;
+const CATALOG_PAGE_STEP = 20;
 
 const catalogSample = [
   { obra: 'Tema Demo 1', autores: 'Jay Mansur', generos: 'Regional Mexicano', drive: 'https://drive.google.com/file/d/1abCDefghIJkLmNoPqRsTUvwxYZ/view?usp=sharing' },
@@ -60,14 +67,20 @@ const contactsSample = [
     rol: 'Manager',
     correo: 'ricardo.calanda@gmail.com',
     telefono: '',
-    whatsapp: ''
+    whatsapp: '',
+    instagram: '',
+    tiktok: '',
+    direccion: ''
   },
   {
     nombre: 'Xeronimo Mansur',
     rol: 'Compositor/Productor',
     correo: 'xeronimo3@gmail.com',
     telefono: '',
-    whatsapp: ''
+    whatsapp: '',
+    instagram: '',
+    tiktok: '',
+    direccion: ''
   }
 ];
 
@@ -229,11 +242,12 @@ function renderCatalog() {
   const visibleSongs = catalogGenreFilter === 'Todas'
     ? catalogCache
     : catalogCache.filter((row) => parseCatalogGenres(row.generos).includes(catalogGenreFilter));
+  const pagedSongs = visibleSongs.slice(0, catalogVisibleCount);
 
   selectedGenreEl.textContent = catalogGenreFilter;
 
-  songsEl.innerHTML = visibleSongs.length
-    ? visibleSongs
+  songsEl.innerHTML = pagedSongs.length
+    ? pagedSongs
         .map((row) => `
           <li>
             <div class="catalog-song-row">
@@ -250,9 +264,17 @@ function renderCatalog() {
         .join('')
     : '<li>Sin canciones en este género.</li>';
 
+  const catalogLoadMoreBtn = document.getElementById('catalog-load-more');
+  if (catalogLoadMoreBtn) {
+    const canLoadMore = visibleSongs.length > pagedSongs.length;
+    catalogLoadMoreBtn.disabled = !canLoadMore;
+    catalogLoadMoreBtn.textContent = canLoadMore ? 'Cargar más' : 'Sin más';
+  }
+
   genresEl.querySelectorAll('[data-catalog-genre]').forEach((btn) => {
     btn.addEventListener('click', () => {
       catalogGenreFilter = btn.dataset.catalogGenre || 'Todas';
+      catalogVisibleCount = CATALOG_PAGE_STEP;
       renderCatalog();
     });
   });
@@ -436,6 +458,7 @@ function setMessages(rows = []) {
   messagesCache = rows;
   const list = document.getElementById('messages-list');
   const featuredList = document.getElementById('messages-featured');
+  const loadMoreBtn = document.getElementById('messages-load-more');
   if (!list || !featuredList) return;
 
   const myEmail = String(googleProfile?.email || '').trim().toLowerCase();
@@ -453,7 +476,9 @@ function setMessages(rows = []) {
         .join('')
     : '<li>Sin mensajes destacados.</li>';
 
-  list.innerHTML = rows
+  const visibleRows = rows.slice(0, messagesVisibleCount);
+
+  list.innerHTML = visibleRows
     .map((m) => {
       const author = m.author || 'Anónimo';
       const created = m.createdAt ? new Date(m.createdAt).toLocaleString('es-MX') : '';
@@ -472,6 +497,12 @@ function setMessages(rows = []) {
       `;
     })
     .join('');
+
+  if (loadMoreBtn) {
+    const canLoadMore = rows.length > visibleRows.length;
+    loadMoreBtn.disabled = !canLoadMore;
+    loadMoreBtn.textContent = canLoadMore ? 'Cargar más' : 'Sin más';
+  }
 
   list.querySelectorAll('[data-message-feature]').forEach((btn) => {
     btn.addEventListener('click', async () => {
@@ -522,11 +553,27 @@ function normalizeWhatsappLink(value) {
   return `https://wa.me/${digits}`;
 }
 
+function normalizeInstagramLink(value) {
+  const raw = String(value || '').trim();
+  if (!raw) return '';
+  if (/^https?:\/\//i.test(raw)) return raw;
+  const user = raw.replace(/^@+/, '').trim();
+  return user ? `https://www.instagram.com/${user}/` : '';
+}
+
+function normalizeTikTokLink(value) {
+  const raw = String(value || '').trim();
+  if (!raw) return '';
+  if (/^https?:\/\//i.test(raw)) return raw;
+  const user = raw.replace(/^@+/, '').trim();
+  return user ? `https://www.tiktok.com/@${user}` : '';
+}
+
 function applyContactsFilter(rows = []) {
   const q = contactsSearchQuery.trim().toLowerCase();
   if (!q) return rows;
   return rows.filter((c) => {
-    const haystack = [c.nombre, c.rol, c.correo, c.telefono, c.whatsapp]
+    const haystack = [c.nombre, c.rol, c.correo, c.telefono, c.whatsapp, c.instagram, c.tiktok, c.direccion]
       .map((v) => String(v || '').toLowerCase())
       .join(' ');
     return haystack.includes(q);
@@ -536,18 +583,25 @@ function applyContactsFilter(rows = []) {
 function setContacts(rows = contactsSample) {
   contactsCache = rows;
   const list = document.getElementById('contacts-list');
+  const loadMoreBtn = document.getElementById('contacts-load-more');
   if (!list) return;
 
   const filtered = applyContactsFilter(rows);
+  const visible = filtered.slice(0, contactsVisibleCount);
 
-  list.innerHTML = filtered
+  list.innerHTML = visible
     .map((c) => {
       const role = c.rol || 'Contacto';
       const email = c.correo ? `<a href="mailto:${escapeHtml(c.correo)}">${escapeHtml(c.correo)}</a>` : '';
       const phone = c.telefono || '';
       const whatsappHref = normalizeWhatsappLink(c.whatsapp);
       const whatsapp = whatsappHref ? `<a href="${whatsappHref}" target="_blank" rel="noopener">WhatsApp</a>` : '';
-      const parts = [role, email, phone, whatsapp].filter(Boolean).join(' · ');
+      const igHref = normalizeInstagramLink(c.instagram);
+      const tiktokHref = normalizeTikTokLink(c.tiktok);
+      const instagram = igHref ? `<a href="${igHref}" target="_blank" rel="noopener">Instagram</a>` : '';
+      const tiktok = tiktokHref ? `<a href="${tiktokHref}" target="_blank" rel="noopener">TikTok</a>` : '';
+      const address = c.direccion ? `Dirección: ${escapeHtml(c.direccion)}` : '';
+      const parts = [role, email, phone, whatsapp, instagram, tiktok, address].filter(Boolean).join(' · ');
       return `
         <li>
           <div class="contact-card">
@@ -564,6 +618,12 @@ function setContacts(rows = contactsSample) {
       `;
     })
     .join('');
+
+  if (loadMoreBtn) {
+    const canLoadMore = filtered.length > visible.length;
+    loadMoreBtn.disabled = !canLoadMore;
+    loadMoreBtn.textContent = canLoadMore ? 'Cargar más' : 'Sin más';
+  }
 
   list.querySelectorAll('[data-contact-edit]').forEach((btn) => {
     btn.addEventListener('click', () => beginEditContact(btn.dataset.contactEdit || ''));
@@ -781,8 +841,12 @@ async function loadContactsFromNotion() {
       rol: item.rol || '—',
       correo: item.correo || '',
       telefono: item.telefono || '',
-      whatsapp: item.whatsapp || ''
+      whatsapp: item.whatsapp || '',
+      instagram: item.instagram || '',
+      tiktok: item.tiktok || '',
+      direccion: item.direccion || ''
     }));
+    contactsVisibleCount = CONTACTS_PAGE_STEP;
     setContacts(rows.length ? rows : contactsSample);
     const source = res.source || 'api';
     if (source === 'fallback') {
@@ -793,6 +857,7 @@ async function loadContactsFromNotion() {
   } catch (e) {
     console.warn('No se pudieron cargar contactos desde Notion API:', e);
     contactsSource = 'fallback';
+    contactsVisibleCount = CONTACTS_PAGE_STEP;
     setContacts(contactsSample);
     const reason = e instanceof Error ? e.message : String(e);
     setStatus('contacts-status', `Sin conexión a Notion/API: ${reason}`, true);
@@ -806,7 +871,17 @@ function setContactFormVisibility(show) {
 }
 
 function resetContactForm() {
-  const ids = ['contact-name', 'contact-role', 'contact-email', 'contact-phone', 'contact-whatsapp', 'contact-edit-id'];
+  const ids = [
+    'contact-name',
+    'contact-role',
+    'contact-email',
+    'contact-phone',
+    'contact-whatsapp',
+    'contact-instagram',
+    'contact-tiktok',
+    'contact-address',
+    'contact-edit-id'
+  ];
   ids.forEach((id) => {
     const el = document.getElementById(id);
     if (el) el.value = '';
@@ -831,6 +906,9 @@ function beginEditContact(contactId) {
   const emailEl = document.getElementById('contact-email');
   const phoneEl = document.getElementById('contact-phone');
   const waEl = document.getElementById('contact-whatsapp');
+  const igEl = document.getElementById('contact-instagram');
+  const tiktokEl = document.getElementById('contact-tiktok');
+  const addressEl = document.getElementById('contact-address');
   const editIdEl = document.getElementById('contact-edit-id');
   const saveBtn = document.getElementById('contact-save');
   const cancelBtn = document.getElementById('contact-cancel');
@@ -840,6 +918,9 @@ function beginEditContact(contactId) {
   if (emailEl) emailEl.value = contact.correo || '';
   if (phoneEl) phoneEl.value = contact.telefono || '';
   if (waEl) waEl.value = contact.whatsapp || '';
+  if (igEl) igEl.value = contact.instagram || '';
+  if (tiktokEl) tiktokEl.value = contact.tiktok || '';
+  if (addressEl) addressEl.value = contact.direccion || '';
   if (editIdEl) editIdEl.value = contactId;
   if (saveBtn) saveBtn.textContent = 'Guardar cambios';
   if (cancelBtn) cancelBtn.classList.remove('hidden');
@@ -852,8 +933,11 @@ async function saveContact() {
   const emailEl = document.getElementById('contact-email');
   const phoneEl = document.getElementById('contact-phone');
   const waEl = document.getElementById('contact-whatsapp');
+  const igEl = document.getElementById('contact-instagram');
+  const tiktokEl = document.getElementById('contact-tiktok');
+  const addressEl = document.getElementById('contact-address');
   const editIdEl = document.getElementById('contact-edit-id');
-  if (!nameEl || !roleEl || !emailEl || !phoneEl || !waEl || !editIdEl) return;
+  if (!nameEl || !roleEl || !emailEl || !phoneEl || !waEl || !igEl || !tiktokEl || !addressEl || !editIdEl) return;
 
   const nombre = String(nameEl.value || '').trim();
   if (!nombre) {
@@ -866,7 +950,10 @@ async function saveContact() {
     rol: String(roleEl.value || '').trim(),
     correo: String(emailEl.value || '').trim(),
     telefono: String(phoneEl.value || '').trim(),
-    whatsapp: String(waEl.value || '').trim()
+    whatsapp: String(waEl.value || '').trim(),
+    instagram: String(igEl.value || '').trim(),
+    tiktok: String(tiktokEl.value || '').trim(),
+    direccion: String(addressEl.value || '').trim()
   };
 
   const editingId = String(editIdEl.value || '').trim();
@@ -1134,7 +1221,7 @@ async function loadCatalogFromApi() {
   if (!isAuthenticated) return;
   try {
     if (!API_BASE) throw new Error('apiBaseUrl no configurado');
-    const res = await fetchJson(`${API_BASE}/api/manager/catalog`);
+    const res = await fetchJson(`${API_BASE}/api/manager/catalog?sync=1`);
     const rows = (res.data || []).map((item, i) => ({
       id: item.id || `song-api-${i + 1}`,
       obra: item.obra || 'Sin título',
@@ -1142,13 +1229,42 @@ async function loadCatalogFromApi() {
       generos: item.generos || '—',
       drive: item.drive || '#'
     }));
+    catalogVisibleCount = CATALOG_PAGE_STEP;
     setCatalog(rows.length ? rows : catalogSample);
-    setStatus('catalog-status', rows.length ? `${rows.length} canciones cargadas desde API.` : 'API sin catálogo, usando muestra local.');
+    setStatus('catalog-status', rows.length ? `${rows.length} canciones cargadas y sincronizadas.` : 'API sin catálogo, usando muestra local.');
   } catch (e) {
     console.warn('No se pudo cargar catálogo desde API:', e);
+    catalogVisibleCount = CATALOG_PAGE_STEP;
     setCatalog(catalogSample);
     const reason = e instanceof Error ? e.message : String(e);
     setStatus('catalog-status', `Sin conexión a catálogo/API: ${reason}`, true);
+  }
+}
+
+async function syncCatalogNow() {
+  if (!isAuthenticated) return;
+  try {
+    if (!API_BASE) throw new Error('apiBaseUrl no configurado');
+    setStatus('catalog-status', 'Sincronizando Drive ↔ Notion...');
+    const r = await fetch(`${API_BASE}/api/manager/catalog/sync`, {
+      method: 'POST',
+      headers: apiHeaders(),
+      body: JSON.stringify({ manual: true })
+    });
+    if (!r.ok) {
+      let reason = `HTTP ${r.status}`;
+      try {
+        const body = await r.json();
+        if (body?.details || body?.error) reason = `${body.error || 'sync failed'}: ${body.details || ''}`;
+      } catch {
+        // noop
+      }
+      throw new Error(reason);
+    }
+    await loadCatalogFromApi();
+  } catch (e) {
+    const reason = e instanceof Error ? e.message : String(e);
+    setStatus('catalog-status', `No se pudo sincronizar catálogo: ${reason}`, true);
   }
 }
 
@@ -1165,9 +1281,11 @@ async function loadMessagesFromApi() {
       highlighted: Boolean(item.highlighted),
       createdAt: item.createdAt || ''
     }));
+    messagesVisibleCount = MESSAGES_PAGE_STEP;
     setMessages(rows);
     setStatus('messages-status', rows.length ? `${rows.length} mensajes cargados.` : 'No hay anuncios todavía.');
   } catch (e) {
+    messagesVisibleCount = MESSAGES_PAGE_STEP;
     setMessages([]);
     const reason = e instanceof Error ? e.message : String(e);
     setStatus('messages-status', `No se pudieron cargar anuncios: ${reason}`, true);
@@ -1412,6 +1530,10 @@ function setupActions() {
   bindClick('auth-gate-login', startGoogleLogin);
   bindClick('refresh-messages', () => loadMessagesFromApi());
   bindClick('refresh-messages-overview', () => loadMessagesFromApi());
+  bindClick('messages-load-more', () => {
+    messagesVisibleCount += MESSAGES_PAGE_STEP;
+    setMessages(messagesCache);
+  });
   bindClick('message-create', createMessage);
   bindClick('clear-messages-log', clearMessagesLog);
 
@@ -1426,7 +1548,16 @@ function setupActions() {
   }
 
   bindClick('refresh-catalog', () => loadCatalogFromApi());
+  bindClick('catalog-sync', () => syncCatalogNow());
+  bindClick('catalog-load-more', () => {
+    catalogVisibleCount += CATALOG_PAGE_STEP;
+    renderCatalog();
+  });
   bindClick('refresh-contacts', () => loadContactsFromNotion());
+  bindClick('contacts-load-more', () => {
+    contactsVisibleCount += CONTACTS_PAGE_STEP;
+    setContacts(contactsCache);
+  });
   bindClick('contact-form-toggle', () => {
     const card = document.getElementById('contact-form-card');
     const shouldShow = card?.classList.contains('hidden');
@@ -1467,6 +1598,7 @@ function setupActions() {
   if (contactsSearch) {
     contactsSearch.addEventListener('input', () => {
       contactsSearchQuery = String(contactsSearch.value || '');
+      contactsVisibleCount = CONTACTS_PAGE_STEP;
       setContacts(contactsCache);
     });
   }
