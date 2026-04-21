@@ -217,6 +217,9 @@ function setStatus(id, text, isError = false) {
   if (!el) return;
   el.textContent = text;
   el.classList.toggle('error', Boolean(isError));
+  if (id === 'catalog-status') {
+    el.classList.toggle('autoplay-hint', String(text || '').trim() === '[DALE CLICK A LA CANCIÓN SELECCIONADA]');
+  }
 }
 
 function setShareActions() {
@@ -646,7 +649,7 @@ async function loadCatalogTrack(index, { autoplay = false } = {}) {
       catalogPlayer.pendingPlay = false;
       stopCatalogProgressTimer();
       updateCatalogPlayerUi();
-      setCatalogPlayerStatus('[DALE CLICK A LA CANCIÓN SELECCIONADA]');
+      setCatalogPlayerStatus('Listo para reproducir');
       setStatus('catalog-status', '[DALE CLICK A LA CANCIÓN SELECCIONADA]');
       return;
     }

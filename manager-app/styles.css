@@ -531,6 +531,10 @@ h1 {
 .hint { color: var(--text-muted); font-size: .8rem; }
 .status { margin-top: 6px; }
 .status.error { color: #fca5a5; }
+.status.autoplay-hint {
+  color: #22c55e;
+  font-weight: 800;
+}
 
 .soft-sep {
   border: 0;
