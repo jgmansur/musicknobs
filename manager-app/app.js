@@ -1619,6 +1619,37 @@ function init() {
   setAuthenticated(false);
   initGoogleOAuth();
   autoLoginOnLoad();
+  initNotifications();
+}
+
+function initNotifications() {
+  if ('serviceWorker' in navigator && 'PushManager' in window) {
+    navigator.serviceWorker.register('./sw.js')
+      .then(() => {
+        checkNotificationStatus();
+      })
+      .catch(err => console.error('Error al registrar sw:', err));
+  }
+}
+
+function checkNotificationStatus() {
+  const btn = document.getElementById('notify-enable-btn');
+  if (!btn) return;
+  
+  if (Notification.permission === 'granted') {
+    btn.classList.add('hidden');
+  } else if (Notification.permission !== 'denied') {
+    btn.classList.remove('hidden');
+    btn.onclick = async () => {
+      const perm = await Notification.requestPermission();
+      if (perm === 'granted') {
+        btn.classList.add('hidden');
+        alert('Notificaciones activadas. Ahora podrás recibir alertas de la app.');
+      } else {
+        alert('Permiso de notificaciones denegado.');
+      }
+    };
+  }
 }
 
 init();
