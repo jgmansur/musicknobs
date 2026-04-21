@@ -11,6 +11,9 @@ import "dotenv/config";
 import Fastify from "fastify";
 import cors from "@fastify/cors";
 import { z } from "zod";
+import * as fs from "fs";
+import * as path from "path";
+import { execSync } from "child_process";
 import {
   getGastos,
   getIngresos,
@@ -26,9 +29,13 @@ import {
 const PORT = Number(process.env.PORT || 8788);
 const API_TOKEN = process.env.API_TOKEN || "";
 const NOTION_TOKEN = process.env.NOTION_TOKEN || "";
-const NOTION_VERSION = process.env.NOTION_VERSION || "2025-09-03";
+const NOTION_VERSION = process.env.NOTION_VERSION || "2022-06-28";
 const DEFAULT_MANAGER_CONTACTS_DB_ID = "c4d6cef4-ddcc-436a-9576-402994a4ddac";
 const MANAGER_CONTACTS_DB_ID = process.env.MANAGER_CONTACTS_DB_ID || DEFAULT_MANAGER_CONTACTS_DB_ID;
+const DEFAULT_MANAGER_CATALOG_DB_ID = "348c1932-ede8-8031-ac87-f876cd74a82b";
+const MANAGER_CATALOG_DB_ID = process.env.MANAGER_CATALOG_DB_ID || DEFAULT_MANAGER_CATALOG_DB_ID;
+
+const GOOGLE_DRIVE_CANCIONES_DIR = "/Users/jaystudio/Library/CloudStorage/GoogleDrive-jgmansur2@gmail.com/My Drive/Manager App/Canciones";
 
 const managerContactsFallback = [
   {
@@ -270,7 +277,33 @@ function readNotionRole(props: Record<string, any>): string {
   return "";
 }
 
-async function queryNotionContacts(dbOrDataSourceId: string) {
+function readNotionMultiSelect(props: Record<string, any>, possibleKeys: string[]): string {
+  for (const [name, prop] of Object.entries(props)) {
+    const key = name.toLowerCase();
+    if (!possibleKeys.some((k) => key.includes(k))) continue;
+    if ((prop as any)?.type === "multi_select") {
+      return ((prop as any).multi_select || []).map((x: any) => x?.name).filter(Boolean).join(", ");
+    }
+    if ((prop as any)?.type === "select") return (prop as any).select?.name || "";
+    if ((prop as any)?.type === "rich_text") return notionRichTextToString((prop as any).rich_text);
+  }
+  return "";
+}
+
+function readNotionUrl(props: Record<string, any>, possibleKeys: string[]): string {
+  for (const [name, prop] of Object.entries(props)) {
+    const key = name.toLowerCase();
+    if (!possibleKeys.some((k) => key.includes(k))) continue;
+    if ((prop as any)?.type === "url" && (prop as any).url) return (prop as any).url;
+    if ((prop as any)?.type === "rich_text") {
+      const text = notionRichTextToString((prop as any).rich_text);
+      if (text) return text;
+    }
+  }
+  return "";
+}
+
+async function queryNotionDatabase(dbOrDataSourceId: string) {
   const endpoints = [
     `https://api.notion.com/v1/data_sources/${dbOrDataSourceId}/query`,
     `https://api.notion.com/v1/databases/${dbOrDataSourceId}/query`,
@@ -309,7 +342,7 @@ app.get("/api/manager/contacts", async (req, reply) => {
   }
 
   try {
-    const payload = await queryNotionContacts(MANAGER_CONTACTS_DB_ID);
+    const payload = await queryNotionDatabase(MANAGER_CONTACTS_DB_ID);
     const data = (payload.results || []).map((page) => {
       const props = page.properties || {};
       return {
@@ -327,15 +360,104 @@ app.get("/api/manager/contacts", async (req, reply) => {
   }
 });
 
-app.get("/api/manager/catalog", async () => {
-  // Integración full con Sheets se conecta en siguiente iteración.
-  // Este endpoint mantiene contrato estable para frontend.
-  return {
-    data: [
-      { obra: "Tema Demo 1", autores: "Jay Mansur", generos: "Regional Mexicano", drive: "#" },
-      { obra: "Tema Demo 2", autores: "Jay Mansur, Alejandro De Nigris", generos: "Pop", drive: "#" },
-    ],
-  };
+app.get("/api/manager/catalog", async (req, reply) => {
+  if (!NOTION_TOKEN) return { data: [] };
+  try {
+    const payload = await queryNotionDatabase(MANAGER_CATALOG_DB_ID);
+    const data = (payload.results || []).map((page) => {
+      const props = page.properties || {};
+      return {
+        id: page.id,
+        obra: readNotionTitle(props),
+        autores: readNotionMultiSelect(props, ["autor", "autores"]),
+        generos: readNotionMultiSelect(props, ["genero", "género"]),
+        drive: readNotionUrl(props, ["play", "youtube url"]),
+      };
+    });
+    return { data };
+  } catch (e: any) {
+    return reply.code(500).send({ error: "Catalog error", details: String(e?.message || e), data: [] });
+  }
+});
+
+// Helper for finding files recursively
+function getAudioFilesRecursively(dir: string, fileList: string[] = []) {
+  if (!fs.existsSync(dir)) return fileList;
+  const files = fs.readdirSync(dir);
+  for (const file of files) {
+    const filePath = path.join(dir, file);
+    if (fs.statSync(filePath).isDirectory()) {
+      getAudioFilesRecursively(filePath, fileList);
+    } else if (file.endsWith(".mp3") || file.endsWith(".wav") || file.endsWith(".m4a")) {
+      fileList.push(filePath);
+    }
+  }
+  return fileList;
+}
+
+app.post("/api/manager/catalog/sync", async (req, reply) => {
+  if (!NOTION_TOKEN) return reply.code(400).send({ error: "NOTION_TOKEN not configured" });
+
+  try {
+    // 1. Get existing Notion entries 
+    const payload = await queryNotionDatabase(MANAGER_CATALOG_DB_ID);
+    const existingTitles = new Set(
+      (payload.results || []).map((page) => readNotionTitle(page.properties || {}).toLowerCase())
+    );
+
+    // 2. Read local drive folder
+    const audioFiles = getAudioFilesRecursively(GOOGLE_DRIVE_CANCIONES_DIR);
+    let synced = 0;
+
+    for (const filePath of audioFiles) {
+      const fileName = path.basename(filePath, path.extname(filePath)); // "Perra Soledad"
+      if (existingTitles.has(fileName.toLowerCase())) continue; // Already in DB
+
+      // Get genre from parent folder name
+      const parentDir = path.basename(path.dirname(filePath));
+      const genre = parentDir !== "Canciones" ? parentDir : "Otro";
+
+      // 3. Obtain Google Drive file ID from xattr
+      let driveUrl = "";
+      try {
+        const xattrCmd = `xattr -p "com.google.drivefs.item-id#S" "${filePath}"`;
+        const driveId = execSync(xattrCmd, { encoding: "utf-8", stdio: "pipe" }).trim();
+        if (driveId) {
+          driveUrl = `https://drive.google.com/file/d/${driveId}/view?usp=drive_link`;
+        }
+      } catch (e) {
+        // xattr failed or attribute not present
+      }
+
+      // 4. Create in Notion
+      const createResp = await fetch("https://api.notion.com/v1/pages", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${NOTION_TOKEN}`,
+          "Notion-Version": NOTION_VERSION,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          parent: { database_id: MANAGER_CATALOG_DB_ID },
+          properties: {
+            "Name": { title: [{ text: { content: fileName } }] },
+            "Autores": { multi_select: [{ name: "Jay Mansur" }] },
+            "Genero": { multi_select: [{ name: genre }] },
+            "Play": { url: driveUrl || null }
+          }
+        }),
+      });
+
+      if (createResp.ok) {
+        synced++;
+        existingTitles.add(fileName.toLowerCase());
+      }
+    }
+
+    return { ok: true, synced };
+  } catch (e: any) {
+    return reply.code(500).send({ error: "Sync failed", details: String(e?.message || e) });
+  }
 });
 
 // ─── START ───────────────────────────────────────────────────────────────────
