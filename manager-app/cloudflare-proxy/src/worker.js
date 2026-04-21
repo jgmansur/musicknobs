@@ -1052,8 +1052,8 @@ async function createManagerMessage(env, body) {
 
   const properties = {
     Name: { title: [{ text: { content: `${MESSAGE_PREFIX}${text}` } }] },
-    Estatus: { select: { name: "Empezó" } },
-    Prioridad: { select: { name: "Alta" } },
+    Estatus: { select: { name: "Ideas por checar" } },
+    Prioridad: { select: { name: "-" } },
     Tipo: { select: { name: "Music Knobs" } },
     Tags: {
       multi_select: [
