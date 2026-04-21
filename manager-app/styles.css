@@ -249,6 +249,64 @@ h1 {
 .status { margin-top: 6px; }
 .status.error { color: #fca5a5; }
 
+.soft-sep {
+  border: 0;
+  border-top: 1px solid var(--glass-border);
+  margin: 1rem 0;
+}
+
+.task-form-grid {
+  display: grid;
+  gap: .55rem;
+  margin-top: .6rem;
+  grid-template-columns: 1fr;
+}
+
+.field-input {
+  width: 100%;
+  border: 1px solid var(--glass-border);
+  border-radius: .8rem;
+  background: rgba(255,255,255,.04);
+  color: var(--text-main);
+  padding: .65rem .75rem;
+  font-size: .82rem;
+}
+
+.field-input::placeholder {
+  color: var(--text-muted);
+}
+
+.compact-list li {
+  border-bottom: 1px solid rgba(255,255,255,.06);
+  padding: .45rem 0;
+}
+
+.task-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .6rem;
+}
+
+.task-meta {
+  color: var(--text-soft);
+  font-size: .75rem;
+}
+
+.mini-btn {
+  border: 1px solid var(--glass-border);
+  background: rgba(255,255,255,.06);
+  color: var(--text-main);
+  border-radius: .55rem;
+  padding: .3rem .55rem;
+  font-size: .72rem;
+  cursor: pointer;
+}
+
+.mini-btn:hover {
+  background: rgba(255,255,255,.11);
+}
+
 .list {
   margin: 0;
   padding-left: 18px;

@@ -55,6 +55,25 @@
           <li>Marca principal: Music Knobs</li>
           <li>Sitio oficial: <a href="https://www.musicknobs.com" target="_blank" rel="noopener">musicknobs.com</a></li>
         </ul>
+
+        <hr class="soft-sep" />
+
+        <div class="panel-head">
+          <h3>Tasks del Manager (últimos 10)</h3>
+          <button id="refresh-tasks" class="btn ghost">Refrescar</button>
+        </div>
+
+        <div class="task-form-grid">
+          <input id="task-title" class="field-input" type="text" placeholder="Nueva tarea..." />
+          <select id="task-assignee" class="field-input">
+            <option value="">Asignar a...</option>
+          </select>
+          <input id="task-due" class="field-input" type="date" />
+          <button id="task-create" class="btn">Agregar task</button>
+        </div>
+
+        <p id="tasks-status" class="hint status" aria-live="polite">Sin tareas cargadas.</p>
+        <ul id="tasks-list" class="list compact-list"></ul>
       </section>
 
       <section id="tab-catalog" class="panel card">

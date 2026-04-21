@@ -23,6 +23,8 @@ let googleAccessToken = '';
 let googleProfile = null;
 let googleInitInterval = null;
 let isAuthenticated = false;
+let contactsCache = [];
+let tasksCache = [];
 
 const catalogSample = [
   { obra: 'Tema Demo 1', autores: 'Jay Mansur', generos: 'Regional Mexicano', drive: '#' },
@@ -110,7 +112,55 @@ function setCatalog(rows = catalogSample) {
     .join('');
 }
 
+function setTasks(rows = []) {
+  tasksCache = rows;
+  const list = document.getElementById('tasks-list');
+  if (!list) return;
+
+  list.innerHTML = rows
+    .map((t) => {
+      const assignee = t.assignee ? `Asignado: ${t.assignee}` : 'Sin asignar';
+      const due = t.dueDate ? ` · Fecha: ${t.dueDate}` : '';
+      const status = t.status || 'Pendiente';
+      const canClose = status.toLowerCase() !== 'terminado';
+      return `
+        <li>
+          <div class="task-row">
+            <div>
+              <strong>${t.title || 'Sin título'}</strong>
+              <div class="task-meta">${assignee}${due} · Estatus: ${status}</div>
+            </div>
+            ${canClose ? `<button class="mini-btn" data-task-done="${t.id}">Terminar</button>` : ''}
+          </div>
+        </li>
+      `;
+    })
+    .join('');
+
+  list.querySelectorAll('[data-task-done]').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      await markTaskDone(btn.dataset.taskDone || '');
+    });
+  });
+}
+
+function refreshAssigneeOptions() {
+  const select = document.getElementById('task-assignee');
+  if (!select) return;
+  const current = select.value;
+  const options = contactsCache
+    .map((c) => (c.nombre || '').trim())
+    .filter(Boolean);
+
+  select.innerHTML = `<option value="">Asignar a...</option>${options
+    .map((name) => `<option value="${name}">${name}</option>`)
+    .join('')}`;
+
+  if (options.includes(current)) select.value = current;
+}
+
 function setContacts(rows = contactsSample) {
+  contactsCache = rows;
   const list = document.getElementById('contacts-list');
   list.innerHTML = rows
     .map((c) => {
@@ -122,6 +172,8 @@ function setContacts(rows = contactsSample) {
       return `<li><strong>${c.nombre}</strong>${parts ? ` · ${parts}` : ''}</li>`;
     })
     .join('');
+
+  refreshAssigneeOptions();
 }
 
 function setOauthStatus(text, isError = false) {
@@ -146,6 +198,7 @@ function setAuthGate(locked) {
 function clearSensitiveData() {
   setCatalog([]);
   setContacts([]);
+  setTasks([]);
 }
 
 function setAuthenticated(value) {
@@ -160,6 +213,7 @@ function setAuthenticated(value) {
   if (isAuthenticated) {
     loadCatalogFromApi();
     loadContactsFromNotion();
+    loadTasksFromApi();
     return;
   }
 
@@ -240,6 +294,81 @@ async function loadContactsFromNotion() {
     setContacts(contactsSample);
     const reason = e instanceof Error ? e.message : String(e);
     setStatus('contacts-status', `Sin conexión a Notion/API: ${reason}`, true);
+  }
+}
+
+async function loadTasksFromApi() {
+  if (!isAuthenticated) return;
+  try {
+    if (!API_BASE) throw new Error('apiBaseUrl no configurado');
+    const res = await fetchJson(`${API_BASE}/api/manager/tasks`);
+    const rows = (res.data || []).map((item) => ({
+      id: item.id || '',
+      title: item.title || 'Sin título',
+      assignee: item.assignee || '',
+      dueDate: item.dueDate || '',
+      status: item.status || 'Pendiente'
+    }));
+    setTasks(rows);
+    setStatus('tasks-status', rows.length ? `${rows.length} tasks cargadas.` : 'No hay tasks todavía.');
+  } catch (e) {
+    const reason = e instanceof Error ? e.message : String(e);
+    setTasks([]);
+    setStatus('tasks-status', `No se pudieron cargar tasks: ${reason}`, true);
+  }
+}
+
+async function createTask() {
+  if (!isAuthenticated) return;
+  const titleEl = document.getElementById('task-title');
+  const assigneeEl = document.getElementById('task-assignee');
+  const dueEl = document.getElementById('task-due');
+  if (!titleEl || !assigneeEl || !dueEl) return;
+
+  const title = String(titleEl.value || '').trim();
+  if (!title) {
+    setStatus('tasks-status', 'Escribe un título para la task.', true);
+    return;
+  }
+
+  try {
+    const payload = {
+      title,
+      assignee: String(assigneeEl.value || '').trim(),
+      dueDate: String(dueEl.value || '').trim()
+    };
+
+    const r = await fetch(`${API_BASE}/api/manager/tasks`, {
+      method: 'POST',
+      headers: apiHeaders(),
+      body: JSON.stringify(payload)
+    });
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+
+    titleEl.value = '';
+    dueEl.value = '';
+    setStatus('tasks-status', 'Task creada correctamente.');
+    await loadTasksFromApi();
+  } catch (e) {
+    const reason = e instanceof Error ? e.message : String(e);
+    setStatus('tasks-status', `Error al crear task: ${reason}`, true);
+  }
+}
+
+async function markTaskDone(taskId) {
+  if (!isAuthenticated || !taskId) return;
+  try {
+    const r = await fetch(`${API_BASE}/api/manager/tasks/${taskId}`, {
+      method: 'PATCH',
+      headers: apiHeaders(),
+      body: JSON.stringify({ status: 'Terminado' })
+    });
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    setStatus('tasks-status', 'Task marcada como terminada.');
+    await loadTasksFromApi();
+  } catch (e) {
+    const reason = e instanceof Error ? e.message : String(e);
+    setStatus('tasks-status', `No se pudo cerrar task: ${reason}`, true);
   }
 }
 
@@ -381,6 +510,8 @@ function setupActions() {
   document.getElementById('auth-gate-login').addEventListener('click', startGoogleLogin);
   document.getElementById('refresh-catalog').addEventListener('click', () => loadCatalogFromApi());
   document.getElementById('refresh-contacts').addEventListener('click', () => loadContactsFromNotion());
+  document.getElementById('refresh-tasks').addEventListener('click', () => loadTasksFromApi());
+  document.getElementById('task-create').addEventListener('click', createTask);
 }
 
 function init() {
