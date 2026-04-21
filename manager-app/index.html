@@ -10,7 +10,16 @@
     <link rel="stylesheet" href="./styles.css" />
     <script src="https://accounts.google.com/gsi/client" async defer></script>
   </head>
-  <body>
+  <body class="auth-locked">
+    <div id="auth-gate" class="auth-gate active" role="dialog" aria-modal="true" aria-labelledby="auth-gate-title">
+      <div class="auth-gate-card">
+        <h2 id="auth-gate-title">Acceso requerido</h2>
+        <p>Para ver información del Manager App necesitas iniciar sesión con Google.</p>
+        <button id="auth-gate-login" class="btn">Iniciar sesión con Google</button>
+        <p id="auth-gate-status" class="hint">Sin sesión</p>
+      </div>
+    </div>
+
     <header class="topbar">
       <div>
         <h1>Music Knobs Manager</h1>

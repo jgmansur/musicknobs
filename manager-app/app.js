@@ -22,6 +22,7 @@ let googleTokenClient = null;
 let googleAccessToken = '';
 let googleProfile = null;
 let googleInitInterval = null;
+let isAuthenticated = false;
 
 const catalogSample = [
   { obra: 'Tema Demo 1', autores: 'Jay Mansur', generos: 'Regional Mexicano', drive: '#' },
@@ -128,6 +129,41 @@ function setOauthStatus(text, isError = false) {
   if (!el) return;
   el.textContent = text;
   el.style.color = isError ? '#fda4af' : '';
+
+  const gateStatus = document.getElementById('auth-gate-status');
+  if (gateStatus) {
+    gateStatus.textContent = text;
+    gateStatus.style.color = isError ? '#fda4af' : '';
+  }
+}
+
+function setAuthGate(locked) {
+  const gate = document.getElementById('auth-gate');
+  if (gate) gate.classList.toggle('active', locked);
+  document.body.classList.toggle('auth-locked', locked);
+}
+
+function clearSensitiveData() {
+  setCatalog([]);
+  setContacts([]);
+}
+
+function setAuthenticated(value) {
+  isAuthenticated = Boolean(value);
+  setAuthGate(!isAuthenticated);
+
+  const loginBtn = document.getElementById('google-auth');
+  const signoutBtn = document.getElementById('google-signout');
+  if (loginBtn) loginBtn.disabled = isAuthenticated;
+  if (signoutBtn) signoutBtn.disabled = !isAuthenticated;
+
+  if (isAuthenticated) {
+    loadCatalogFromApi();
+    loadContactsFromNotion();
+    return;
+  }
+
+  clearSensitiveData();
 }
 
 function ensureGoogleOAuthClient() {
@@ -153,8 +189,10 @@ function ensureGoogleOAuthClient() {
         });
         if (!infoResp.ok) throw new Error(`userinfo ${infoResp.status}`);
         googleProfile = await infoResp.json();
+        setAuthenticated(true);
         setOauthStatus(`Conectado: ${googleProfile.email || googleProfile.name || 'usuario'}`);
       } catch {
+        setAuthenticated(true);
         setOauthStatus('Conectado con Google (sin perfil).');
       }
     }
@@ -179,6 +217,7 @@ async function loadAppVersion() {
 }
 
 async function loadContactsFromNotion() {
+  if (!isAuthenticated) return;
   try {
     if (!API_BASE) throw new Error('apiBaseUrl no configurado');
     const res = await fetchJson(`${API_BASE}/api/manager/contacts`);
@@ -205,6 +244,7 @@ async function loadContactsFromNotion() {
 }
 
 async function loadCatalogFromApi() {
+  if (!isAuthenticated) return;
   try {
     if (!API_BASE) throw new Error('apiBaseUrl no configurado');
     const res = await fetchJson(`${API_BASE}/api/manager/catalog`);
@@ -296,7 +336,7 @@ function startGoogleLogin({ auto = false } = {}) {
 }
 
 function autoLoginOnLoad() {
-  if (googleAccessToken || googleProfile) return;
+  if (googleAccessToken || googleProfile || isAuthenticated) return;
   setTimeout(() => startGoogleLogin({ auto: true }), 350);
 }
 
@@ -305,12 +345,14 @@ function signOutGoogle() {
     window.google.accounts.oauth2.revoke(googleAccessToken, () => {
       googleAccessToken = '';
       googleProfile = null;
+      setAuthenticated(false);
       setOauthStatus('Sesión cerrada.');
     });
     return;
   }
   googleAccessToken = '';
   googleProfile = null;
+  setAuthenticated(false);
   setOauthStatus('Sesión cerrada.');
 }
 
@@ -330,6 +372,7 @@ function setupActions() {
   document.getElementById('print-btn').addEventListener('click', () => window.print());
   document.getElementById('google-auth').addEventListener('click', startGoogleLogin);
   document.getElementById('google-signout').addEventListener('click', signOutGoogle);
+  document.getElementById('auth-gate-login').addEventListener('click', startGoogleLogin);
   document.getElementById('refresh-catalog').addEventListener('click', () => loadCatalogFromApi());
   document.getElementById('refresh-contacts').addEventListener('click', () => loadContactsFromNotion());
 }
@@ -338,14 +381,12 @@ function init() {
   loadAppVersion();
   setShareActions();
   setLinks();
-  setCatalog();
-  setContacts();
+  clearSensitiveData();
   setupTabs();
   setupActions();
+  setAuthenticated(false);
   initGoogleOAuth();
   autoLoginOnLoad();
-  loadCatalogFromApi();
-  loadContactsFromNotion();
 }
 
 init();
