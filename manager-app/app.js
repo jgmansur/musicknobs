@@ -218,9 +218,6 @@ function setStatus(id, text, isError = false) {
   if (!el) return;
   el.textContent = text;
   el.classList.toggle('error', Boolean(isError));
-  if (id === 'catalog-status') {
-    el.classList.toggle('autoplay-hint', String(text || '').trim() === CATALOG_AUTOPLAY_HINT);
-  }
 }
 
 function setShareActions() {
@@ -652,7 +649,7 @@ async function loadCatalogTrack(index, { autoplay = false } = {}) {
       stopCatalogProgressTimer();
       updateCatalogPlayerUi();
       setCatalogPlayerStatus(CATALOG_AUTOPLAY_HINT);
-      setStatus('catalog-status', CATALOG_AUTOPLAY_HINT);
+      setStatus('catalog-status', '');
       return;
     }
 

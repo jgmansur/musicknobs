@@ -532,15 +532,15 @@ h1 {
 .status { margin-top: 6px; }
 .status.error { color: #fca5a5; }
 
-.status.autoplay-hint,
 #catalog-player-status.autoplay-hint {
   color: #22c55e;
-  font-size: .92rem;
+  font-size: .9rem;
   font-weight: 800;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   letter-spacing: .01em;
+  line-height: 1.15;
 }
 
 .soft-sep {
