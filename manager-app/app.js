@@ -553,6 +553,21 @@ function playNextCatalogTrack(step = 1) {
   void loadCatalogTrack(next, { autoplay: true });
 }
 
+function playRandomCatalogTrack() {
+  if (!catalogCache.length) return;
+  if (catalogCache.length === 1) {
+    void loadCatalogTrack(0, { autoplay: true });
+    return;
+  }
+
+  const current = catalogPlayer.currentTrackIndex;
+  let next = current;
+  while (next === current) {
+    next = Math.floor(Math.random() * catalogCache.length);
+  }
+  void loadCatalogTrack(next, { autoplay: true });
+}
+
 async function loadCatalogTrack(index, { autoplay = false } = {}) {
   const track = catalogCache[index];
   if (!track) {
@@ -963,6 +978,7 @@ function setupCatalogPlayerControls() {
   const playToggle = document.getElementById('catalog-play-toggle');
   const prevBtn = document.getElementById('catalog-prev');
   const nextBtn = document.getElementById('catalog-next');
+  const randomBtn = document.getElementById('catalog-random');
   const progress = document.getElementById('catalog-player-progress');
   const volume = document.getElementById('catalog-player-volume');
 
@@ -997,6 +1013,12 @@ function setupCatalogPlayerControls() {
   if (nextBtn) {
     nextBtn.addEventListener('click', () => {
       playNextCatalogTrack(1);
+    });
+  }
+
+  if (randomBtn) {
+    randomBtn.addEventListener('click', () => {
+      playRandomCatalogTrack();
     });
   }
 
