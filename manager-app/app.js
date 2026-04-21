@@ -62,7 +62,6 @@ const CONTACTS_PAGE_STEP = 12;
 const MESSAGES_PAGE_STEP = 20;
 const CATALOG_PAGE_STEP = 20;
 const CATALOG_PROGRESS_REFRESH_MS = 350;
-const CATALOG_AUTOPLAY_HINT = '[DALE CLICK A LA CANCIÓN SELECCIONADA]';
 const PUBLIC_TABS = new Set(['catalog', 'links']);
 
 const configuredTracks = Array.isArray(window.MANAGER_TRACKS) ? window.MANAGER_TRACKS : [];
@@ -419,7 +418,6 @@ function setCatalogPlayerStatus(text, isError = false) {
   if (!status) return;
   status.textContent = text;
   status.classList.toggle('error', Boolean(isError));
-  status.classList.toggle('autoplay-hint', String(text || '').trim() === CATALOG_AUTOPLAY_HINT);
 }
 
 function clearCatalogHowl() {
@@ -648,8 +646,8 @@ async function loadCatalogTrack(index, { autoplay = false } = {}) {
       catalogPlayer.pendingPlay = false;
       stopCatalogProgressTimer();
       updateCatalogPlayerUi();
-      setCatalogPlayerStatus(CATALOG_AUTOPLAY_HINT);
-      setStatus('catalog-status', '');
+      setCatalogPlayerStatus('[DALE CLICK A LA CANCIÓN SELECCIONADA]');
+      setStatus('catalog-status', '[DALE CLICK A LA CANCIÓN SELECCIONADA]');
       return;
     }
 
