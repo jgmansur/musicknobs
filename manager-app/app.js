@@ -278,7 +278,6 @@ function syncPlaylistCreateControlsVisibility() {
 }
 
 async function loadPlaylistsFromApi() {
-  if (!isAuthenticated) return;
   try {
     if (!API_BASE) throw new Error('apiBaseUrl no configurado');
     const res = await fetchJson(`${API_BASE}/api/manager/playlists`);
@@ -1567,9 +1566,6 @@ function clearSensitiveData() {
   setContacts([]);
   setTasks([]);
   setMessages([]);
-  playlistsCache = [];
-  selectedPlaylistId = '';
-  renderPlaylists();
 }
 
 function clearStoredAuthSession() {
@@ -1671,9 +1667,21 @@ function handleGoogleTokenSuccess(resp) {
     });
 }
 
+function syncTabVisibility() {
+  document.querySelectorAll('.tab').forEach((t) => {
+    const tabName = t.dataset.tab;
+    if (!isAuthenticated && !isPublicTab(tabName)) {
+      t.style.display = 'none';
+    } else {
+      t.style.display = '';
+    }
+  });
+}
+
 function setAuthenticated(value) {
   isAuthenticated = Boolean(value);
   syncPlaylistCreateControlsVisibility();
+  syncTabVisibility();
 
   const toggleBtn = document.getElementById('google-auth-toggle');
   if (toggleBtn) {
@@ -1695,6 +1703,7 @@ function setAuthenticated(value) {
   tasksHasMore = false;
   clearSensitiveData();
   loadCatalogFromApi();
+  loadPlaylistsFromApi();
   loadLinksFromApi();
   if (!isPublicTab(getActiveTabName())) {
     activateTab('catalog');
