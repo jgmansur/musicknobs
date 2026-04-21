@@ -1289,6 +1289,25 @@ async function updateManagerPlaylist(env, playlistId, body) {
   return { ok: true, trackCount: next.length };
 }
 
+async function deleteManagerPlaylist(env, playlistId) {
+  const notionVersion = env.NOTION_VERSION || "2022-06-28";
+  const notionToken = env.NOTION_TOKEN || "";
+  if (!notionToken) return { error: "NOTION_TOKEN missing" };
+
+  const resp = await fetch(`https://api.notion.com/v1/pages/${playlistId}`, {
+    method: "PATCH",
+    headers: {
+      Authorization: `Bearer ${notionToken}`,
+      "Notion-Version": notionVersion,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ archived: true }),
+  });
+
+  if (!resp.ok) return { error: "Playlist delete failed", details: await resp.text() };
+  return { ok: true };
+}
+
 async function listManagerTasks(env, options = {}) {
   const notionVersion = env.NOTION_VERSION || "2022-06-28";
   const notionToken = env.NOTION_TOKEN || "";
@@ -1955,6 +1974,13 @@ export default {
       if (!playlistId) return json({ error: "playlistId required" }, 400);
       const body = await request.json().catch(() => ({}));
       const result = await updateManagerPlaylist(env, playlistId, body);
+      return json(result, result.error ? 400 : 200);
+    }
+
+    if (request.method === "DELETE" && url.pathname.startsWith("/api/manager/playlists/")) {
+      const playlistId = url.pathname.replace("/api/manager/playlists/", "").trim();
+      if (!playlistId) return json({ error: "playlistId required" }, 400);
+      const result = await deleteManagerPlaylist(env, playlistId);
       return json(result, result.error ? 400 : 200);
     }
 

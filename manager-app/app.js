@@ -55,6 +55,7 @@ let contactsVisibleCount = 12;
 let messagesVisibleCount = 20;
 let catalogVisibleCount = 20;
 let catalogSearchQuery = '';
+let catalogFilterView = 'genres';
 let catalogDeepLinkSongId = '';
 let catalogDeepLinkPlaylistId = '';
 let catalogDeepLinkAutoplay = false;
@@ -260,35 +261,20 @@ function setLinks(rows = socialLinksSample) {
 }
 
 function renderPlaylists() {
-  const list = document.getElementById('playlist-list');
   const filter = document.getElementById('catalog-playlist-filter');
-  if (!list || !filter) return;
+  const selectedLabel = document.getElementById('playlist-selected-label');
+  if (filter) {
+    filter.innerHTML = `<option value="">Selecciona playlist destino</option>${playlistsCache
+      .map((pl) => `<option value="${escapeHtml(pl.id)}" ${selectedPlaylistId === pl.id ? 'selected' : ''}>${escapeHtml(pl.name)} (${Number(pl.trackCount || 0)})</option>`)
+      .join('')}`;
+  }
 
-  filter.innerHTML = `<option value="">Selecciona playlist destino</option>${playlistsCache
-    .map((pl) => `<option value="${escapeHtml(pl.id)}" ${selectedPlaylistId === pl.id ? 'selected' : ''}>${escapeHtml(pl.name)} (${Number(pl.trackCount || 0)})</option>`)
-    .join('')}`;
-
-  list.innerHTML = playlistsCache.length
-    ? playlistsCache
-        .map((pl) => `<li><strong>${escapeHtml(pl.name)}</strong> · ${Number(pl.trackCount || 0)} tracks</li>`)
-        .join('')
-    : '<li>Sin playlists todavía.</li>';
+  const active = playlistsCache.find((pl) => pl.id === selectedPlaylistId);
+  if (selectedLabel) selectedLabel.textContent = `Destino: ${active?.name || 'ninguna'}`;
 }
 
 function syncPlaylistCreateControlsVisibility() {
-  const input = document.getElementById('playlist-name');
-  const createBtn = document.getElementById('playlist-create');
-  const shouldHide = !isAuthenticated;
-
-  if (input) {
-    input.classList.toggle('hidden', shouldHide);
-    input.disabled = shouldHide;
-  }
-
-  if (createBtn) {
-    createBtn.classList.toggle('hidden', shouldHide);
-    createBtn.disabled = shouldHide;
-  }
+  // Controles de playlists viven dentro de la pestaña lateral en renderCatalog.
 }
 
 async function loadPlaylistsFromApi() {
@@ -320,14 +306,13 @@ async function loadPlaylistsFromApi() {
   }
 }
 
-async function createPlaylist() {
-  if (!isAuthenticated) return;
+async function createPlaylist(nameArg = '') {
+  if (!isAuthenticated) return null;
   const input = document.getElementById('playlist-name');
-  if (!input) return;
-  const name = String(input.value || '').trim();
+  const name = String(nameArg || input?.value || '').trim();
   if (!name) {
     setStatus('catalog-status', 'Escribe nombre para la playlist.', true);
-    return;
+    return null;
   }
 
   try {
@@ -337,12 +322,51 @@ async function createPlaylist() {
       body: JSON.stringify({ name, ownerEmail: getViewerEmail() })
     });
     if (!r.ok) throw new Error(`HTTP ${r.status}`);
-    input.value = '';
+    if (input) input.value = '';
+    const paneInput = document.getElementById('playlist-name-pane');
+    if (paneInput) paneInput.value = '';
     setStatus('catalog-status', 'Playlist creada.');
     await loadPlaylistsFromApi();
+    const payload = await r.json().catch(() => ({}));
+    if (payload?.id) {
+      selectedPlaylistId = String(payload.id);
+      renderPlaylists();
+      renderCatalog();
+    }
+    return String(payload?.id || '');
   } catch (e) {
     const reason = e instanceof Error ? e.message : String(e);
     setStatus('catalog-status', `No se pudo crear playlist: ${reason}`, true);
+    return null;
+  }
+}
+
+async function deletePlaylist(playlistId = selectedPlaylistId) {
+  if (!isAuthenticated) return;
+  const targetId = String(playlistId || '').trim();
+  if (!targetId) {
+    setStatus('catalog-status', 'Selecciona una playlist para borrar.', true);
+    return;
+  }
+
+  const target = playlistsCache.find((pl) => pl.id === targetId);
+  const targetName = target?.name || 'playlist';
+  const confirmed = window.confirm(`¿Borrar playlist \"${targetName}\"? Esta acción no se puede deshacer.`);
+  if (!confirmed) return;
+
+  try {
+    const r = await fetch(`${API_BASE}/api/manager/playlists/${targetId}`, {
+      method: 'DELETE',
+      headers: apiHeaders(),
+    });
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    if (selectedPlaylistId === targetId) selectedPlaylistId = '';
+    setStatus('catalog-status', `Playlist borrada: ${targetName}.`);
+    await loadPlaylistsFromApi();
+    renderCatalog();
+  } catch (e) {
+    const reason = e instanceof Error ? e.message : String(e);
+    setStatus('catalog-status', `No se pudo borrar playlist: ${reason}`, true);
   }
 }
 
@@ -367,6 +391,32 @@ async function addSongToPlaylist(songId) {
   } catch (e) {
     const reason = e instanceof Error ? e.message : String(e);
     setStatus('catalog-status', `No se pudo agregar a playlist: ${reason}`, true);
+  }
+}
+
+async function removeSongFromPlaylist(songId) {
+  if (!isAuthenticated || !songId) return;
+  if (!selectedPlaylistId) {
+    setStatus('catalog-status', 'Selecciona una playlist primero.', true);
+    return;
+  }
+
+  const song = catalogCache.find((s) => s.id === songId);
+  if (!song) return;
+
+  try {
+    const r = await fetch(`${API_BASE}/api/manager/playlists/${selectedPlaylistId}`, {
+      method: 'PATCH',
+      headers: apiHeaders(),
+      body: JSON.stringify({ action: 'remove_track', trackId: song.id })
+    });
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    setStatus('catalog-status', `Quitada de playlist: ${song.obra || 'canción'}.`);
+    await loadPlaylistsFromApi();
+    renderCatalog();
+  } catch (e) {
+    const reason = e instanceof Error ? e.message : String(e);
+    setStatus('catalog-status', `No se pudo quitar de playlist: ${reason}`, true);
   }
 }
 
@@ -846,22 +896,52 @@ function renderCatalog() {
   const selectedGenreEl = document.getElementById('catalog-selected-genre');
   const playingNowBtn = document.getElementById('catalog-playing-now');
   const playingNowTitle = document.getElementById('catalog-playing-now-title');
-  if (!genresEl || !songsEl || !selectedGenreEl || !playingNowBtn || !playingNowTitle) return;
+  const filterTabGenres = document.getElementById('catalog-filter-tab-genres');
+  const filterTabPlaylists = document.getElementById('catalog-filter-tab-playlists');
+  if (!genresEl || !songsEl || !selectedGenreEl || !playingNowBtn || !playingNowTitle || !filterTabGenres || !filterTabPlaylists) return;
 
   const genres = Array.from(new Set(catalogCache.flatMap((row) => parseCatalogGenres(row.generos))));
   const allGenres = ['Todas', ...genres.sort((a, b) => a.localeCompare(b, 'es'))];
   if (!allGenres.includes(catalogGenreFilter)) catalogGenreFilter = 'Todas';
 
-  genresEl.innerHTML = `
-    <li>
-      <label class="catalog-genre-label" for="catalog-genre-select">Género</label>
-      <select id="catalog-genre-select" class="catalog-genre-select">
-        ${allGenres
-          .map((g) => `<option value="${escapeHtml(g)}" ${catalogGenreFilter === g ? 'selected' : ''}>${escapeHtml(g)}</option>`)
-          .join('')}
-      </select>
-    </li>
-  `;
+  if (!['genres', 'playlists'].includes(catalogFilterView)) {
+    catalogFilterView = 'genres';
+  }
+
+  filterTabGenres.classList.toggle('active', catalogFilterView === 'genres');
+  filterTabPlaylists.classList.toggle('active', catalogFilterView === 'playlists');
+
+  if (catalogFilterView === 'genres') {
+    genresEl.innerHTML = `
+      <li>
+        <label class="catalog-genre-label" for="catalog-genre-select">Género</label>
+        <select id="catalog-genre-select" class="catalog-genre-select">
+          ${allGenres
+            .map((g) => `<option value="${escapeHtml(g)}" ${catalogGenreFilter === g ? 'selected' : ''}>${escapeHtml(g)}</option>`)
+            .join('')}
+        </select>
+      </li>
+    `;
+  } else {
+    genresEl.innerHTML = `
+      <li>
+        <label class="catalog-genre-label" for="catalog-playlist-select-pane">Playlist</label>
+        <select id="catalog-playlist-select-pane" class="catalog-genre-select">
+          <option value="">Selecciona playlist</option>
+          ${playlistsCache
+            .map((pl) => `<option value="${escapeHtml(pl.id)}" ${selectedPlaylistId === pl.id ? 'selected' : ''}>${escapeHtml(pl.name)} (${Number(pl.trackCount || 0)})</option>`)
+            .join('')}
+        </select>
+        ${isAuthenticated
+          ? `<div class="catalog-playlist-pane-actions">
+              <button class="mini-btn" id="playlist-create-pane" type="button">Crear nueva</button>
+              <button class="mini-btn" id="playlist-delete-pane" type="button">Borrar seleccionada</button>
+            </div>
+            <input id="playlist-name-pane" class="catalog-genre-select" type="text" placeholder="Nombre de nueva playlist" />`
+          : ''}
+      </li>
+    `;
+  }
 
   const byGenre = catalogGenreFilter === 'Todas'
     ? catalogCache
@@ -876,10 +956,17 @@ function renderCatalog() {
         return haystack.includes(catalogSearchQuery.trim().toLowerCase());
       });
 
-  const visibleSongs = bySearch;
+  const selectedPlaylist = playlistsCache.find((pl) => pl.id === selectedPlaylistId);
+  const selectedPlaylistTrackIds = new Set(Array.isArray(selectedPlaylist?.tracks) ? selectedPlaylist.tracks.map((t) => String(t.id || '')) : []);
+
+  const visibleSongs = catalogFilterView === 'playlists'
+    ? bySearch.filter((row) => selectedPlaylistTrackIds.has(String(row.id || '')))
+    : bySearch;
   const pagedSongs = visibleSongs.slice(0, catalogVisibleCount);
 
-  selectedGenreEl.textContent = catalogGenreFilter;
+  selectedGenreEl.textContent = catalogFilterView === 'playlists'
+    ? (selectedPlaylist?.name || 'Playlist')
+    : catalogGenreFilter;
 
   songsEl.innerHTML = pagedSongs.length
     ? pagedSongs
@@ -891,7 +978,11 @@ function renderCatalog() {
                 <span class="catalog-authors"><span class="catalog-authors-text">${escapeHtml(row.autores || '—')}</span></span>
               </button>
               <div class="actions">
-                <button class="mini-btn" data-catalog-add-playlist="${escapeHtml(row.id)}">+</button>
+                ${isAuthenticated && selectedPlaylistId
+                  ? (selectedPlaylistTrackIds.has(String(row.id || ''))
+                      ? `<button class="mini-btn" data-catalog-remove-playlist="${escapeHtml(row.id)}">−</button>`
+                      : `<button class="mini-btn" data-catalog-add-playlist="${escapeHtml(row.id)}">+</button>`)
+                  : '<button class="mini-btn" data-catalog-add-playlist="'+escapeHtml(row.id)+'">+</button>'}
                 ${isAuthenticated
                   ? `<details class="task-actions-menu catalog-share-menu">
                       <summary>
@@ -908,7 +999,7 @@ function renderCatalog() {
           </li>
         `)
         .join('')
-    : '<li>Sin canciones en este género.</li>';
+    : `<li>${catalogFilterView === 'playlists' ? 'Sin canciones en esta playlist.' : 'Sin canciones en este género.'}</li>`;
 
   const genreSelect = document.getElementById('catalog-genre-select');
   if (genreSelect) {
@@ -918,6 +1009,41 @@ function renderCatalog() {
       renderCatalog();
     });
   }
+
+  const playlistPaneSelect = document.getElementById('catalog-playlist-select-pane');
+  if (playlistPaneSelect) {
+    playlistPaneSelect.addEventListener('change', () => {
+      selectedPlaylistId = String(playlistPaneSelect.value || '');
+      catalogVisibleCount = CATALOG_PAGE_STEP;
+      renderPlaylists();
+      renderCatalog();
+    });
+  }
+
+  const playlistCreatePaneBtn = document.getElementById('playlist-create-pane');
+  if (playlistCreatePaneBtn) {
+    playlistCreatePaneBtn.addEventListener('click', () => {
+      const input = document.getElementById('playlist-name-pane');
+      createPlaylist(String(input?.value || ''));
+    });
+  }
+
+  const playlistDeletePaneBtn = document.getElementById('playlist-delete-pane');
+  if (playlistDeletePaneBtn) {
+    playlistDeletePaneBtn.addEventListener('click', () => {
+      deletePlaylist();
+    });
+  }
+
+  filterTabGenres.onclick = () => {
+    catalogFilterView = 'genres';
+    renderCatalog();
+  };
+
+  filterTabPlaylists.onclick = () => {
+    catalogFilterView = 'playlists';
+    renderCatalog();
+  };
 
   songsEl.querySelectorAll('[data-catalog-play]').forEach((btn) => {
     btn.addEventListener('click', () => playCatalogSong(btn.dataset.catalogPlay || ''));
@@ -933,6 +1059,10 @@ function renderCatalog() {
 
   songsEl.querySelectorAll('[data-catalog-add-playlist]').forEach((btn) => {
     btn.addEventListener('click', () => addSongToPlaylist(btn.dataset.catalogAddPlaylist || ''));
+  });
+
+  songsEl.querySelectorAll('[data-catalog-remove-playlist]').forEach((btn) => {
+    btn.addEventListener('click', () => removeSongFromPlaylist(btn.dataset.catalogRemovePlaylist || ''));
   });
 
   const currentSong = getCurrentCatalogSong();
@@ -1437,6 +1567,9 @@ function clearSensitiveData() {
   setContacts([]);
   setTasks([]);
   setMessages([]);
+  playlistsCache = [];
+  selectedPlaylistId = '';
+  renderPlaylists();
 }
 
 function clearStoredAuthSession() {
@@ -2339,16 +2472,6 @@ function setupActions() {
   }
 
   bindClick('refresh-catalog', () => loadCatalogFromApi());
-  bindClick('playlist-create', () => createPlaylist());
-
-  const playlistFilter = document.getElementById('catalog-playlist-filter');
-  if (playlistFilter) {
-    playlistFilter.addEventListener('change', () => {
-      selectedPlaylistId = String(playlistFilter.value || '');
-      catalogVisibleCount = CATALOG_PAGE_STEP;
-      renderCatalog();
-    });
-  }
   const catalogSearch = document.getElementById('catalog-search');
   if (catalogSearch) {
     catalogSearch.addEventListener('input', () => {

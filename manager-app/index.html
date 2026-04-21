@@ -119,24 +119,18 @@
         <div class="actions panel-actions-inline">
           <button id="refresh-catalog" class="btn ghost">Refrescar</button>
         </div>
-        <div class="catalog-playlist-toolbar">
-          <input id="playlist-name" class="field-input" type="text" placeholder="Nueva playlist..." />
-          <button id="playlist-create" class="btn ghost">Crear playlist</button>
-          <select id="catalog-playlist-filter" class="field-input compact-control">
-            <option value="">Selecciona playlist destino</option>
-          </select>
-        </div>
         <div class="task-filters">
           <input id="catalog-search" class="field-input" type="search" placeholder="Buscar canciones (nombre, compositor, género, link...)" />
         </div>
-        <ul id="playlist-list" class="list compact-list playlist-list"></ul>
-        <p class="hint">Vista tipo iPod: géneros, canciones, reproducción y compartir link.</p>
         <p id="catalog-status" class="hint status panel-status-inline" aria-live="polite">Usando muestra local (MVP).</p>
 
         <div class="catalog-shell">
           <div class="catalog-grid">
             <aside class="catalog-pane">
-              <h4>Géneros</h4>
+              <div class="catalog-filter-tabs" role="tablist" aria-label="Filtros de catálogo">
+                <button id="catalog-filter-tab-genres" class="mini-btn active" type="button">Géneros</button>
+                <button id="catalog-filter-tab-playlists" class="mini-btn" type="button">Playlists</button>
+              </div>
               <ul id="catalog-genres" class="list compact-list catalog-genres-list"></ul>
             </aside>
             <section class="catalog-pane">

@@ -753,19 +753,49 @@ a { color: #93c5fd; }
 }
 
 .catalog-playlist-toolbar {
-  display: grid;
-  grid-template-columns: 1fr auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
   gap: .45rem;
   margin: .35rem .6rem .25rem;
 }
 
-.catalog-playlist-toolbar #catalog-playlist-filter {
-  grid-column: 1 / -1;
+.catalog-playlist-toolbar #playlist-selected-label {
+  margin-left: auto;
+}
+
+#playlist-workflow-card {
+  margin: .2rem .6rem .35rem;
+}
+
+.catalog-filter-tabs {
+  display: flex;
+  gap: .35rem;
+  margin-bottom: .45rem;
+}
+
+.catalog-filter-tabs .mini-btn {
+  padding: .24rem .5rem;
+}
+
+.catalog-playlist-pane-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: .35rem;
+  margin-top: .35rem;
 }
 
 .playlist-list {
   margin: .2rem .6rem .25rem;
   padding-left: 1rem;
+}
+
+.playlist-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .45rem;
 }
 
 .catalog-grid {
