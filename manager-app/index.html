@@ -95,12 +95,27 @@
         <p id="oauth-status" class="hint">Sin sesión</p>
       </section>
 
-      <nav class="tabs ios-bottom" aria-label="Secciones">
-        <button class="tab active" data-tab="overview">Overview</button>
-        <button class="tab" data-tab="catalog">Catálogo</button>
-        <button class="tab" data-tab="contacts">Contactos</button>
-        <button class="tab" data-tab="links">Links</button>
-        <button class="tab" data-tab="ops">Ops</button>
+      <nav class="tab-bar" aria-label="Secciones">
+        <button class="tab active" id="tab-btn-overview" data-tab="overview">
+          <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+          <span class="tab-label">Overview</span>
+        </button>
+        <button class="tab" id="tab-btn-catalog" data-tab="catalog">
+          <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 5h16v14H4z"/><path d="M8 9h8M8 13h8M8 17h5"/></svg>
+          <span class="tab-label">Catálogo</span>
+        </button>
+        <button class="tab" id="tab-btn-contacts" data-tab="contacts">
+          <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><path d="M20 8v6M23 11h-6"/></svg>
+          <span class="tab-label">Contactos</span>
+        </button>
+        <button class="tab" id="tab-btn-links" data-tab="links">
+          <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M10 14a5 5 0 0 1 0-7l1.5-1.5a5 5 0 0 1 7 7L17 14"/><path d="M14 10a5 5 0 0 1 0 7L12.5 18.5a5 5 0 0 1-7-7L7 10"/></svg>
+          <span class="tab-label">Links</span>
+        </button>
+        <button class="tab" id="tab-btn-ops" data-tab="ops">
+          <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06A1.7 1.7 0 0 0 15 19.4a1.7 1.7 0 0 0-1 .16 1.7 1.7 0 0 0-.99 1.55V21a2 2 0 1 1-4 0v-.09a1.7 1.7 0 0 0-.99-1.55 1.7 1.7 0 0 0-1-.16 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-.16-1 1.7 1.7 0 0 0-1.55-.99H2.8a2 2 0 1 1 0-4h.09a1.7 1.7 0 0 0 1.55-.99 1.7 1.7 0 0 0 .16-1 1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-.16 1.7 1.7 0 0 0 .99-1.55V2.8a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 .99 1.55 1.7 1.7 0 0 0 1 .16 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.4 9c.07.32.13.66.16 1a1.7 1.7 0 0 0 1.55.99h.09a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.55.99c-.03.34-.09.68-.16 1z"/></svg>
+          <span class="tab-label">Ops</span>
+        </button>
       </nav>
     </main>
 

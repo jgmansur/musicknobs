@@ -21,6 +21,7 @@ const GOOGLE_SCOPES = 'openid email profile';
 let googleTokenClient = null;
 let googleAccessToken = '';
 let googleProfile = null;
+let googleInitInterval = null;
 
 const catalogSample = [
   { obra: 'Tema Demo 1', autores: 'Jay Mansur', generos: 'Regional Mexicano', drive: '#' },
@@ -129,6 +130,39 @@ function setOauthStatus(text, isError = false) {
   el.style.color = isError ? '#fda4af' : '';
 }
 
+function ensureGoogleOAuthClient() {
+  if (googleTokenClient) return true;
+  if (!window.google?.accounts?.oauth2) return false;
+  if (!GOOGLE_CLIENT_ID) {
+    setOauthStatus('OAuth no disponible: falta googleClientId.', true);
+    return false;
+  }
+
+  googleTokenClient = google.accounts.oauth2.initTokenClient({
+    client_id: GOOGLE_CLIENT_ID,
+    scope: GOOGLE_SCOPES,
+    callback: async (resp) => {
+      if (resp?.error) {
+        setOauthStatus(`Error OAuth: ${resp.error}`, true);
+        return;
+      }
+      googleAccessToken = resp.access_token || '';
+      try {
+        const infoResp = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+          headers: { Authorization: `Bearer ${googleAccessToken}` }
+        });
+        if (!infoResp.ok) throw new Error(`userinfo ${infoResp.status}`);
+        googleProfile = await infoResp.json();
+        setOauthStatus(`Conectado: ${googleProfile.email || googleProfile.name || 'usuario'}`);
+      } catch {
+        setOauthStatus('Conectado con Google (sin perfil).');
+      }
+    }
+  });
+
+  return true;
+}
+
 async function loadAppVersion() {
   try {
     const res = await fetch('./version.json', { cache: 'no-store' });
@@ -191,40 +225,63 @@ async function loadCatalogFromApi() {
 }
 
 function initGoogleOAuth() {
-  if (!window.google?.accounts?.oauth2 || !GOOGLE_CLIENT_ID) {
-    setOauthStatus('OAuth no disponible (falta clientId/config).', true);
+  if (!GOOGLE_CLIENT_ID) {
+    setOauthStatus('OAuth no disponible: falta googleClientId en config.', true);
     return;
   }
-  googleTokenClient = google.accounts.oauth2.initTokenClient({
-    client_id: GOOGLE_CLIENT_ID,
-    scope: GOOGLE_SCOPES,
-    callback: async (resp) => {
-      if (resp?.error) {
-        setOauthStatus(`Error OAuth: ${resp.error}`, true);
-        return;
-      }
-      googleAccessToken = resp.access_token || '';
-      try {
-        const infoResp = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
-          headers: { Authorization: `Bearer ${googleAccessToken}` }
-        });
-        if (!infoResp.ok) throw new Error(`userinfo ${infoResp.status}`);
-        googleProfile = await infoResp.json();
-        setOauthStatus(`Conectado: ${googleProfile.email || googleProfile.name || 'usuario'}`);
-      } catch (e) {
-        setOauthStatus('Conectado con Google (sin perfil).');
-      }
-    }
-  });
+
+  if (!window.google?.accounts?.oauth2) {
+    setOauthStatus('Cargando Google OAuth...', false);
+    return;
+  }
+
+  ensureGoogleOAuthClient();
   setOauthStatus('Listo para conectar con Google.');
 }
 
 function requestGoogleToken() {
-  if (!googleTokenClient) {
-    setOauthStatus('OAuth no inicializado.', true);
+  if (!ensureGoogleOAuthClient()) {
+    setOauthStatus('OAuth todavía está cargando, intenta de nuevo.', true);
     return;
   }
   googleTokenClient.requestAccessToken({ prompt: 'consent' });
+}
+
+function startGoogleLogin() {
+  if (ensureGoogleOAuthClient()) {
+    requestGoogleToken();
+    return;
+  }
+
+  const btn = document.getElementById('google-auth');
+  if (!btn) return;
+
+  btn.disabled = true;
+  const prev = btn.textContent;
+  btn.textContent = 'Cargando...';
+  setOauthStatus('Esperando Google OAuth...', false);
+
+  let elapsed = 0;
+  if (googleInitInterval) clearInterval(googleInitInterval);
+
+  googleInitInterval = setInterval(() => {
+    elapsed += 200;
+    if (ensureGoogleOAuthClient()) {
+      clearInterval(googleInitInterval);
+      googleInitInterval = null;
+      btn.disabled = false;
+      btn.textContent = prev;
+      requestGoogleToken();
+      return;
+    }
+    if (elapsed >= 10000) {
+      clearInterval(googleInitInterval);
+      googleInitInterval = null;
+      btn.disabled = false;
+      btn.textContent = prev;
+      setOauthStatus('No se pudo inicializar Google OAuth. Reintenta.', true);
+    }
+  }, 200);
 }
 
 function signOutGoogle() {
@@ -255,7 +312,7 @@ function setupTabs() {
 
 function setupActions() {
   document.getElementById('print-btn').addEventListener('click', () => window.print());
-  document.getElementById('google-auth').addEventListener('click', requestGoogleToken);
+  document.getElementById('google-auth').addEventListener('click', startGoogleLogin);
   document.getElementById('google-signout').addEventListener('click', signOutGoogle);
   document.getElementById('refresh-catalog').addEventListener('click', () => loadCatalogFromApi());
   document.getElementById('refresh-contacts').addEventListener('click', () => loadContactsFromNotion());
