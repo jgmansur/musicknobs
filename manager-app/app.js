@@ -152,10 +152,10 @@ function setAuthenticated(value) {
   isAuthenticated = Boolean(value);
   setAuthGate(!isAuthenticated);
 
-  const loginBtn = document.getElementById('google-auth');
-  const signoutBtn = document.getElementById('google-signout');
-  if (loginBtn) loginBtn.disabled = isAuthenticated;
-  if (signoutBtn) signoutBtn.disabled = !isAuthenticated;
+  const toggleBtn = document.getElementById('google-auth-toggle');
+  if (toggleBtn) {
+    toggleBtn.textContent = isAuthenticated ? 'Cerrar sesión' : 'Login Google';
+  }
 
   if (isAuthenticated) {
     loadCatalogFromApi();
@@ -304,7 +304,7 @@ function startGoogleLogin({ auto = false } = {}) {
     return;
   }
 
-  const btn = document.getElementById('google-auth');
+  const btn = document.getElementById('google-auth-toggle') || document.getElementById('auth-gate-login');
   if (!btn) return;
 
   btn.disabled = true;
@@ -356,6 +356,14 @@ function signOutGoogle() {
   setOauthStatus('Sesión cerrada.');
 }
 
+function handleAuthToggle() {
+  if (isAuthenticated) {
+    signOutGoogle();
+    return;
+  }
+  startGoogleLogin();
+}
+
 function setupTabs() {
   const tabs = document.querySelectorAll('.tab');
   tabs.forEach((tab) => {
@@ -369,9 +377,7 @@ function setupTabs() {
 }
 
 function setupActions() {
-  document.getElementById('print-btn').addEventListener('click', () => window.print());
-  document.getElementById('google-auth').addEventListener('click', startGoogleLogin);
-  document.getElementById('google-signout').addEventListener('click', signOutGoogle);
+  document.getElementById('google-auth-toggle').addEventListener('click', handleAuthToggle);
   document.getElementById('auth-gate-login').addEventListener('click', startGoogleLogin);
   document.getElementById('refresh-catalog').addEventListener('click', () => loadCatalogFromApi());
   document.getElementById('refresh-contacts').addEventListener('click', () => loadContactsFromNotion());

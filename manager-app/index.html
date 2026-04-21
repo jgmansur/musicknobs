@@ -27,9 +27,8 @@
         <p class="subtitle">Versión <span id="app-version">1.0.0</span></p>
       </div>
       <div class="topbar-actions">
-        <button id="google-auth" class="btn">Login Google</button>
-        <button id="google-signout" class="btn ghost">Cerrar sesión</button>
-        <button id="print-btn" class="btn ghost">PDF</button>
+        <button id="google-auth-toggle" class="btn">Login Google</button>
+        <a id="print-btn" class="btn ghost" href="https://jgmansur.github.io/musicknobs/curriculumjay/" target="_blank" rel="noopener">PDF</a>
       </div>
     </header>
     <p id="oauth-status" class="hint oauth-header-status">Sin sesión</p>
@@ -95,15 +94,6 @@
         <ul id="links-list" class="list"></ul>
       </section>
 
-      <section id="tab-ops" class="panel card">
-        <h3>Operación y accesos</h3>
-        <ul class="list">
-          <li>Autenticación: OAuth Google (Manager / Colaboradores).</li>
-          <li>Acción rápida: compartir perfil y catálogo por mail/WhatsApp.</li>
-          <li>PDF: usar botón <strong>PDF</strong> (window.print).</li>
-        </ul>
-      </section>
-
       <nav class="tab-bar" aria-label="Secciones">
         <button class="tab active" id="tab-btn-overview" data-tab="overview">
           <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
@@ -120,10 +110,6 @@
         <button class="tab" id="tab-btn-links" data-tab="links">
           <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M10 14a5 5 0 0 1 0-7l1.5-1.5a5 5 0 0 1 7 7L17 14"/><path d="M14 10a5 5 0 0 1 0 7L12.5 18.5a5 5 0 0 1-7-7L7 10"/></svg>
           <span class="tab-label">Links</span>
-        </button>
-        <button class="tab" id="tab-btn-ops" data-tab="ops">
-          <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06A1.7 1.7 0 0 0 15 19.4a1.7 1.7 0 0 0-1 .16 1.7 1.7 0 0 0-.99 1.55V21a2 2 0 1 1-4 0v-.09a1.7 1.7 0 0 0-.99-1.55 1.7 1.7 0 0 0-1-.16 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-.16-1 1.7 1.7 0 0 0-1.55-.99H2.8a2 2 0 1 1 0-4h.09a1.7 1.7 0 0 0 1.55-.99 1.7 1.7 0 0 0 .16-1 1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-.16 1.7 1.7 0 0 0 .99-1.55V2.8a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 .99 1.55 1.7 1.7 0 0 0 1 .16 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.4 9c.07.32.13.66.16 1a1.7 1.7 0 0 0 1.55.99h.09a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.55.99c-.03.34-.09.68-.16 1z"/></svg>
-          <span class="tab-label">Ops</span>
         </button>
       </nav>
     </main>
