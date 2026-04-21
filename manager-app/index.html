@@ -126,6 +126,9 @@
             <option value="">Todas las playlists</option>
           </select>
         </div>
+        <div class="task-filters">
+          <input id="catalog-search" class="field-input" type="search" placeholder="Buscar canciones (nombre, compositor, género, link...)" />
+        </div>
         <ul id="playlist-list" class="list compact-list playlist-list"></ul>
         <p class="hint">Vista tipo iPod: géneros, canciones, reproducción y compartir link.</p>
         <p id="catalog-status" class="hint status panel-status-inline" aria-live="polite">Usando muestra local (MVP).</p>
@@ -177,10 +180,6 @@
               <span id="catalog-player-duration">0:00</span>
             </div>
 
-            <div class="catalog-player-volume-wrap">
-              <label for="catalog-player-volume">Volumen</label>
-              <input id="catalog-player-volume" type="range" min="0" max="1" step="0.01" value="0.8" aria-label="Control de volumen" />
-            </div>
           </section>
         </div>
       </section>

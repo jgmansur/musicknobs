@@ -858,12 +858,13 @@ a { color: #93c5fd; }
 }
 
 .catalog-song-main strong,
-.catalog-song-main span {
+.catalog-song-main .catalog-authors,
+.catalog-song-main .catalog-authors-text {
   overflow-wrap: normal;
   word-break: normal;
 }
 
-.catalog-song-main span {
+.catalog-song-main .catalog-authors {
   display: block;
   white-space: nowrap;
   overflow: hidden;
@@ -872,18 +873,27 @@ a { color: #93c5fd; }
   font-size: .72rem;
 }
 
+.catalog-song-main .catalog-authors-text {
+  display: inline-block;
+  white-space: nowrap;
+}
+
 /* En canción activa: autores hacen scroll horizontal automático */
-.catalog-song-row.is-active .catalog-song-main span {
+.catalog-song-row.is-active .catalog-song-main .catalog-authors {
   text-overflow: clip;
-  animation: catalog-authors-marquee 8s linear infinite;
+}
+
+.catalog-song-row.is-active .catalog-song-main .catalog-authors-text {
+  padding-inline-start: 100%;
+  animation: catalog-authors-marquee 10s linear infinite;
 }
 
 @keyframes catalog-authors-marquee {
-  0%, 12% {
+  0%, 10% {
     transform: translateX(0%);
   }
-  88%, 100% {
-    transform: translateX(-42%);
+  100% {
+    transform: translateX(-100%);
   }
 }
 

@@ -54,6 +54,7 @@ let selectedPlaylistId = '';
 let contactsVisibleCount = 12;
 let messagesVisibleCount = 20;
 let catalogVisibleCount = 20;
+let catalogSearchQuery = '';
 let catalogDeepLinkSongId = '';
 let catalogDeepLinkAutoplay = false;
 let catalogDeepLinkHandled = false;
@@ -497,7 +498,6 @@ function updateCatalogPlayerUi() {
   const title = document.getElementById('catalog-player-track-title');
   const artist = document.getElementById('catalog-player-track-artist');
   const playBtn = document.getElementById('catalog-play-toggle');
-  const volume = document.getElementById('catalog-player-volume');
   const cover = document.getElementById('catalog-player-cover');
   const coverPlaceholder = document.getElementById('catalog-player-cover-placeholder');
   const progress = document.getElementById('catalog-player-progress');
@@ -512,10 +512,6 @@ function updateCatalogPlayerUi() {
       playBtn.disabled = !track;
       playBtn.textContent = catalogPlayer.isPlaying ? '⏸ Pause' : '▶️ Play';
     }
-  }
-
-  if (volume) {
-    volume.value = String(catalogPlayer.volume);
   }
 
   if (cover && coverPlaceholder) {
@@ -789,11 +785,20 @@ function renderCatalog() {
     ? catalogCache
     : catalogCache.filter((row) => parseCatalogGenres(row.generos).includes(catalogGenreFilter));
 
+  const bySearch = !catalogSearchQuery.trim()
+    ? byGenre
+    : byGenre.filter((row) => {
+        const haystack = [row.obra, row.autores, row.generos, row.drive, row.fileId]
+          .map((v) => String(v || '').toLowerCase())
+          .join(' ');
+        return haystack.includes(catalogSearchQuery.trim().toLowerCase());
+      });
+
   const playlist = playlistsCache.find((pl) => pl.id === selectedPlaylistId);
   const playlistTrackIds = new Set(Array.isArray(playlist?.tracks) ? playlist.tracks.map((t) => String(t.id || '')) : []);
   const visibleSongs = selectedPlaylistId
-    ? byGenre.filter((row) => playlistTrackIds.has(String(row.id || '')))
-    : byGenre;
+    ? bySearch.filter((row) => playlistTrackIds.has(String(row.id || '')))
+    : bySearch;
   const pagedSongs = visibleSongs.slice(0, catalogVisibleCount);
 
   selectedGenreEl.textContent = catalogGenreFilter;
@@ -805,10 +810,10 @@ function renderCatalog() {
             <div class="catalog-song-row ${catalogNowPlayingId === row.id ? 'is-active' : ''}">
               <button class="catalog-song-main" data-catalog-play="${escapeHtml(row.id)}">
                 <strong>${escapeHtml(row.obra || 'Sin título')}</strong>
-                <span>${escapeHtml(row.autores || '—')}</span>
+                <span class="catalog-authors"><span class="catalog-authors-text">${escapeHtml(row.autores || '—')}</span></span>
               </button>
               <div class="actions">
-                <button class="mini-btn" data-catalog-add-playlist="${escapeHtml(row.id)}">+ Playlist</button>
+                <button class="mini-btn" data-catalog-add-playlist="${escapeHtml(row.id)}">+</button>
                 ${isAuthenticated
                   ? `<details class="task-actions-menu catalog-share-menu">
                       <summary>
@@ -980,7 +985,6 @@ function setupCatalogPlayerControls() {
   const nextBtn = document.getElementById('catalog-next');
   const randomBtn = document.getElementById('catalog-random');
   const progress = document.getElementById('catalog-player-progress');
-  const volume = document.getElementById('catalog-player-volume');
 
   if (playToggle) {
     playToggle.addEventListener('click', () => {
@@ -1035,17 +1039,6 @@ function setupCatalogPlayerControls() {
     progress.addEventListener('change', () => {
       catalogPlayer.isSeeking = false;
       refreshCatalogProgressUi();
-    });
-  }
-
-  if (volume) {
-    volume.value = String(catalogPlayer.volume);
-    volume.addEventListener('input', () => {
-      const nextVolume = Math.min(1, Math.max(0, Number(volume.value || 0.8)));
-      catalogPlayer.volume = nextVolume;
-      if (catalogPlayer.howl) {
-        catalogPlayer.howl.volume(nextVolume);
-      }
     });
   }
 
@@ -2236,6 +2229,14 @@ function setupActions() {
   if (playlistFilter) {
     playlistFilter.addEventListener('change', () => {
       selectedPlaylistId = String(playlistFilter.value || '');
+      catalogVisibleCount = CATALOG_PAGE_STEP;
+      renderCatalog();
+    });
+  }
+  const catalogSearch = document.getElementById('catalog-search');
+  if (catalogSearch) {
+    catalogSearch.addEventListener('input', () => {
+      catalogSearchQuery = String(catalogSearch.value || '');
       catalogVisibleCount = CATALOG_PAGE_STEP;
       renderCatalog();
     });
