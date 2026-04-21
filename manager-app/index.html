@@ -121,6 +121,14 @@
           <button id="refresh-catalog" class="btn ghost">Refrescar</button>
           <button id="catalog-load-more" class="btn ghost">Cargar más</button>
         </div>
+        <div class="catalog-playlist-toolbar">
+          <input id="playlist-name" class="field-input" type="text" placeholder="Nueva playlist..." />
+          <button id="playlist-create" class="btn ghost">Crear playlist</button>
+          <select id="catalog-playlist-filter" class="field-input compact-control">
+            <option value="">Todas las playlists</option>
+          </select>
+        </div>
+        <ul id="playlist-list" class="list compact-list playlist-list"></ul>
         <p class="hint">Vista tipo iPod: géneros, canciones, reproducción y compartir link.</p>
         <p id="catalog-status" class="hint status panel-status-inline" aria-live="polite">Usando muestra local (MVP).</p>
 

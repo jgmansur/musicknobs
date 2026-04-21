@@ -49,6 +49,8 @@ let catalogCache = [];
 let catalogGenreFilter = 'Todas';
 let catalogNowPlayingId = '';
 let catalogNowCardOpen = false;
+let playlistsCache = [];
+let selectedPlaylistId = '';
 let contactsVisibleCount = 12;
 let messagesVisibleCount = 20;
 let catalogVisibleCount = 20;
@@ -196,6 +198,100 @@ function setLinks(rows = socialLinksSample) {
     .join('');
 }
 
+function renderPlaylists() {
+  const list = document.getElementById('playlist-list');
+  const filter = document.getElementById('catalog-playlist-filter');
+  if (!list || !filter) return;
+
+  filter.innerHTML = `<option value="">Todas las playlists</option>${playlistsCache
+    .map((pl) => `<option value="${escapeHtml(pl.id)}" ${selectedPlaylistId === pl.id ? 'selected' : ''}>${escapeHtml(pl.name)} (${Number(pl.trackCount || 0)})</option>`)
+    .join('')}`;
+
+  list.innerHTML = playlistsCache.length
+    ? playlistsCache
+        .map((pl) => `<li><strong>${escapeHtml(pl.name)}</strong> · ${Number(pl.trackCount || 0)} tracks</li>`)
+        .join('')
+    : '<li>Sin playlists todavía.</li>';
+}
+
+async function loadPlaylistsFromApi() {
+  if (!isAuthenticated) return;
+  try {
+    if (!API_BASE) throw new Error('apiBaseUrl no configurado');
+    const res = await fetchJson(`${API_BASE}/api/manager/playlists`);
+    playlistsCache = Array.isArray(res.data)
+      ? res.data.map((pl) => ({
+          id: String(pl.id || ''),
+          name: String(pl.name || 'Playlist').trim(),
+          trackCount: Number(pl.trackCount || 0),
+          tracks: Array.isArray(pl.tracks) ? pl.tracks : []
+        }))
+      : [];
+
+    if (selectedPlaylistId && !playlistsCache.some((pl) => pl.id === selectedPlaylistId)) {
+      selectedPlaylistId = '';
+    }
+    renderPlaylists();
+    renderCatalog();
+  } catch (e) {
+    playlistsCache = [];
+    selectedPlaylistId = '';
+    renderPlaylists();
+    const reason = e instanceof Error ? e.message : String(e);
+    setStatus('catalog-status', `No se pudieron cargar playlists: ${reason}`, true);
+  }
+}
+
+async function createPlaylist() {
+  if (!isAuthenticated) return;
+  const input = document.getElementById('playlist-name');
+  if (!input) return;
+  const name = String(input.value || '').trim();
+  if (!name) {
+    setStatus('catalog-status', 'Escribe nombre para la playlist.', true);
+    return;
+  }
+
+  try {
+    const r = await fetch(`${API_BASE}/api/manager/playlists`, {
+      method: 'POST',
+      headers: apiHeaders(),
+      body: JSON.stringify({ name, ownerEmail: getViewerEmail() })
+    });
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    input.value = '';
+    setStatus('catalog-status', 'Playlist creada.');
+    await loadPlaylistsFromApi();
+  } catch (e) {
+    const reason = e instanceof Error ? e.message : String(e);
+    setStatus('catalog-status', `No se pudo crear playlist: ${reason}`, true);
+  }
+}
+
+async function addSongToPlaylist(songId) {
+  if (!isAuthenticated || !songId) return;
+  if (!selectedPlaylistId) {
+    setStatus('catalog-status', 'Selecciona una playlist primero.', true);
+    return;
+  }
+  const song = catalogCache.find((s) => s.id === songId);
+  if (!song) return;
+
+  try {
+    const r = await fetch(`${API_BASE}/api/manager/playlists/${selectedPlaylistId}`, {
+      method: 'PATCH',
+      headers: apiHeaders(),
+      body: JSON.stringify({ action: 'add_track', trackId: song.id, trackTitle: song.obra || 'Track' })
+    });
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    setStatus('catalog-status', `Agregada a playlist: ${song.obra || 'canción'}.`);
+    await loadPlaylistsFromApi();
+  } catch (e) {
+    const reason = e instanceof Error ? e.message : String(e);
+    setStatus('catalog-status', `No se pudo agregar a playlist: ${reason}`, true);
+  }
+}
+
 function parseCatalogGenres(value) {
   return String(value || '')
     .split(/[,|/]/)
@@ -315,9 +411,15 @@ function renderCatalog() {
     </li>
   `;
 
-  const visibleSongs = catalogGenreFilter === 'Todas'
+  const byGenre = catalogGenreFilter === 'Todas'
     ? catalogCache
     : catalogCache.filter((row) => parseCatalogGenres(row.generos).includes(catalogGenreFilter));
+
+  const playlist = playlistsCache.find((pl) => pl.id === selectedPlaylistId);
+  const playlistTrackIds = new Set(Array.isArray(playlist?.tracks) ? playlist.tracks.map((t) => String(t.id || '')) : []);
+  const visibleSongs = selectedPlaylistId
+    ? byGenre.filter((row) => playlistTrackIds.has(String(row.id || '')))
+    : byGenre;
   const pagedSongs = visibleSongs.slice(0, catalogVisibleCount);
 
   selectedGenreEl.textContent = catalogGenreFilter;
@@ -332,6 +434,7 @@ function renderCatalog() {
                 <span>${escapeHtml(row.autores || '—')}</span>
               </button>
               <div class="actions">
+                <button class="mini-btn" data-catalog-add-playlist="${escapeHtml(row.id)}">+ Playlist</button>
                 <button class="mini-btn" data-catalog-share="${escapeHtml(row.id)}">Compartir</button>
               </div>
             </div>
@@ -362,6 +465,10 @@ function renderCatalog() {
 
   songsEl.querySelectorAll('[data-catalog-share]').forEach((btn) => {
     btn.addEventListener('click', () => shareCatalogSong(btn.dataset.catalogShare || ''));
+  });
+
+  songsEl.querySelectorAll('[data-catalog-add-playlist]').forEach((btn) => {
+    btn.addEventListener('click', () => addSongToPlaylist(btn.dataset.catalogAddPlaylist || ''));
   });
 
   const currentSong = getCurrentCatalogSong();
@@ -872,6 +979,7 @@ function setAuthenticated(value) {
   if (isAuthenticated) {
     loadMessagesFromApi();
     loadCatalogFromApi();
+    loadPlaylistsFromApi();
     loadContactsFromNotion();
     loadTasksFromApi();
     loadLinksFromApi();
@@ -1650,10 +1758,20 @@ function setupActions() {
 
   bindClick('refresh-catalog', () => loadCatalogFromApi());
   bindClick('catalog-sync', () => syncCatalogNow());
+  bindClick('playlist-create', () => createPlaylist());
   bindClick('catalog-load-more', () => {
     catalogVisibleCount += CATALOG_PAGE_STEP;
     renderCatalog();
   });
+
+  const playlistFilter = document.getElementById('catalog-playlist-filter');
+  if (playlistFilter) {
+    playlistFilter.addEventListener('change', () => {
+      selectedPlaylistId = String(playlistFilter.value || '');
+      catalogVisibleCount = CATALOG_PAGE_STEP;
+      renderCatalog();
+    });
+  }
   bindClick('refresh-contacts', () => loadContactsFromNotion());
   bindClick('contacts-load-more', () => {
     contactsVisibleCount += CONTACTS_PAGE_STEP;

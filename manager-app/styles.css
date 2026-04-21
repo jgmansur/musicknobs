@@ -743,6 +743,22 @@ a { color: #93c5fd; }
   grid-template-rows: 1fr auto auto;
 }
 
+.catalog-playlist-toolbar {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: .45rem;
+  margin: .35rem .6rem .25rem;
+}
+
+.catalog-playlist-toolbar #catalog-playlist-filter {
+  grid-column: 1 / -1;
+}
+
+.playlist-list {
+  margin: .2rem .6rem .25rem;
+  padding-left: 1rem;
+}
+
 .catalog-grid {
   display: grid;
   grid-template-columns: 220px 1fr;

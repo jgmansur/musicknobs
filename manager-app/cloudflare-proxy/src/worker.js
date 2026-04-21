@@ -17,6 +17,9 @@ const DEFAULT_DRIVE_CATALOG_FOLDER_ID = "1y6RhTb3JnAGQJ8mTcJglr1aeeFYeStbq";
 const CATALOG_AUTOSYNC_TAG = "Catalog AutoSync";
 const TASK_PREFIX = "[ManagerTask] ";
 const MESSAGE_PREFIX = "[ManagerMsg] ";
+const PLAYLIST_PREFIX = "[ManagerPlaylist] ";
+const PLAYLIST_TRACK_PREFIX = "playlist-track:";
+const PLAYLIST_OWNER_PREFIX = "playlist-owner:";
 const SUBTASK_PREFIX = "subtask:";
 const ASSIGNEE_PREFIX = "assignee:";
 const ASSIGNEE_NAME_PREFIX = "assigneeName:";
@@ -896,6 +899,195 @@ function parseSubtasksFromBlocks(blocks = []) {
     .filter(Boolean));
 }
 
+function parsePlaylistTrackLine(raw = "") {
+  const clean = String(raw || "").trim();
+  if (!clean.startsWith(PLAYLIST_TRACK_PREFIX)) return null;
+  const payload = clean.replace(PLAYLIST_TRACK_PREFIX, "").trim();
+  if (!payload) return null;
+  const [idRaw, titleRaw] = payload.split("|");
+  const id = String(idRaw || "").trim();
+  const title = String(titleRaw || "").trim();
+  if (!id) return null;
+  return { id, title: title || id };
+}
+
+function parsePlaylistTracksFromBlocks(blocks = []) {
+  const tracks = blocks
+    .filter((b) => b?.type === "to_do" || b?.type === "paragraph")
+    .map((b) => {
+      const raw = b?.type === "to_do"
+        ? richTextToString(b?.to_do?.rich_text || [])
+        : richTextToString(b?.paragraph?.rich_text || []);
+      return parsePlaylistTrackLine(raw);
+    })
+    .filter(Boolean);
+
+  const byId = new Map();
+  for (const t of tracks) {
+    if (!byId.has(t.id)) byId.set(t.id, t);
+  }
+  return Array.from(byId.values());
+}
+
+function getPlaylistOwner(tags = []) {
+  const hit = (tags || []).find((t) => t.startsWith(PLAYLIST_OWNER_PREFIX)) || "";
+  return hit.replace(PLAYLIST_OWNER_PREFIX, "").trim().toLowerCase();
+}
+
+async function replacePlaylistTracks(pageId, notionToken, notionVersion, tracks = []) {
+  const children = await notionGetPageChildren(pageId, notionToken, notionVersion);
+  const existing = children.filter((b) => b?.type === "to_do" || b?.type === "paragraph");
+
+  for (const block of existing) {
+    const raw = block?.type === "to_do"
+      ? richTextToString(block?.to_do?.rich_text || [])
+      : richTextToString(block?.paragraph?.rich_text || []);
+    if (!String(raw || "").startsWith(PLAYLIST_TRACK_PREFIX)) continue;
+    const resp = await fetch(`https://api.notion.com/v1/blocks/${block.id}`, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${notionToken}`,
+        "Notion-Version": notionVersion,
+      },
+    });
+    if (!resp.ok) throw new Error(await resp.text());
+  }
+
+  if (!tracks.length) return;
+
+  const childBlocks = tracks.map((track) => ({
+    object: "block",
+    type: "to_do",
+    to_do: {
+      checked: false,
+      rich_text: [{
+        type: "text",
+        text: { content: `${PLAYLIST_TRACK_PREFIX}${String(track.id || "").trim()}|${String(track.title || "").trim()}` },
+      }],
+    },
+  }));
+
+  const resp = await fetch(`https://api.notion.com/v1/blocks/${pageId}/children`, {
+    method: "PATCH",
+    headers: {
+      Authorization: `Bearer ${notionToken}`,
+      "Notion-Version": notionVersion,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ children: childBlocks }),
+  });
+
+  if (!resp.ok) throw new Error(await resp.text());
+}
+
+async function listManagerPlaylists(env) {
+  const notionVersion = env.NOTION_VERSION || "2025-09-03";
+  const notionToken = env.NOTION_TOKEN || "";
+  const dbId = env.MANAGER_TASKS_DB_ID || DEFAULT_MANAGER_TASKS_DB_ID;
+
+  if (!notionToken) return { source: "fallback", warning: "NOTION_TOKEN no configurado.", data: [] };
+
+  try {
+    const payload = await notionQuery(dbId, notionToken, notionVersion, { property: "Name", title: { contains: PLAYLIST_PREFIX } }, 80);
+    const rows = await Promise.all((payload.results || []).map(async (page) => {
+      const props = page.properties || {};
+      const tags = getTagNames(props);
+      const children = await notionGetPageChildren(page.id, notionToken, notionVersion);
+      const tracks = parsePlaylistTracksFromBlocks(children);
+      return {
+        id: page.id,
+        name: normalizeTaskTitle(readNotionTitle(props)).replace(/^\[ManagerPlaylist\]\s*/i, "").trim() || "Playlist",
+        owner: getPlaylistOwner(tags),
+        tracks,
+        trackCount: tracks.length,
+        createdAt: page.created_time,
+      };
+    }));
+
+    return { source: "notion", data: rows };
+  } catch (e) {
+    return { source: "error", error: "Playlists query failed", details: String(e?.message || e), data: [] };
+  }
+}
+
+async function createManagerPlaylist(env, body) {
+  const notionVersion = env.NOTION_VERSION || "2025-09-03";
+  const notionToken = env.NOTION_TOKEN || "";
+  const dbId = env.MANAGER_TASKS_DB_ID || DEFAULT_MANAGER_TASKS_DB_ID;
+  if (!notionToken) return { error: "NOTION_TOKEN missing" };
+
+  const name = String(body?.name || "").trim();
+  if (!name) return { error: "name is required" };
+  const ownerEmail = String(body?.ownerEmail || "").trim().toLowerCase();
+
+  const properties = {
+    Name: { title: [{ text: { content: `${PLAYLIST_PREFIX}${name}` } }] },
+    Estatus: { select: { name: "Empezó" } },
+    Prioridad: { select: { name: "-" } },
+    Tipo: { select: { name: "Music Knobs" } },
+    Tags: {
+      multi_select: [
+        { name: "kind:manager-playlist" },
+        ...(ownerEmail ? [{ name: `${PLAYLIST_OWNER_PREFIX}${ownerEmail}` }] : []),
+      ],
+    },
+  };
+
+  const parentShapes = [{ data_source_id: dbId }, { database_id: dbId }];
+  let lastError = "";
+  for (const parent of parentShapes) {
+    const resp = await fetch("https://api.notion.com/v1/pages", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${notionToken}`,
+        "Notion-Version": notionVersion,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ parent, properties }),
+    });
+    if (resp.ok) {
+      const page = await resp.json();
+      return { ok: true, id: page.id };
+    }
+    lastError = await resp.text();
+  }
+  return { error: "Playlist create failed", details: lastError };
+}
+
+async function updateManagerPlaylist(env, playlistId, body) {
+  const notionVersion = env.NOTION_VERSION || "2025-09-03";
+  const notionToken = env.NOTION_TOKEN || "";
+  if (!notionToken) return { error: "NOTION_TOKEN missing" };
+
+  const action = String(body?.action || "add_track").trim();
+  const trackId = String(body?.trackId || "").trim();
+  const trackTitle = String(body?.trackTitle || "").trim();
+  if (["add_track", "remove_track"].includes(action) && !trackId) {
+    return { error: "trackId is required" };
+  }
+
+  const children = await notionGetPageChildren(playlistId, notionToken, notionVersion);
+  const current = parsePlaylistTracksFromBlocks(children);
+  let next = current;
+
+  if (action === "add_track") {
+    if (!current.some((t) => t.id === trackId)) {
+      next = [...current, { id: trackId, title: trackTitle || trackId }];
+    }
+  } else if (action === "remove_track") {
+    next = current.filter((t) => t.id !== trackId);
+  } else {
+    return { error: "Unsupported action" };
+  }
+
+  const same = JSON.stringify(current) === JSON.stringify(next);
+  if (!same) {
+    await replacePlaylistTracks(playlistId, notionToken, notionVersion, next);
+  }
+
+  return { ok: true, trackCount: next.length };
+}
+
 async function listManagerTasks(env, options = {}) {
   const notionVersion = env.NOTION_VERSION || "2025-09-03";
   const notionToken = env.NOTION_TOKEN || "";
@@ -1447,6 +1639,11 @@ export default {
       return json(result, result.error ? 502 : 200);
     }
 
+    if (request.method === "GET" && url.pathname === "/api/manager/playlists") {
+      const result = await listManagerPlaylists(env);
+      return json(result, result.error ? 502 : 200);
+    }
+
     if (request.method === "POST" && url.pathname === "/api/manager/tasks") {
       const body = await request.json().catch(() => ({}));
       const result = await createManagerTask(env, body);
@@ -1456,6 +1653,12 @@ export default {
     if (request.method === "POST" && url.pathname === "/api/manager/messages") {
       const body = await request.json().catch(() => ({}));
       const result = await createManagerMessage(env, body);
+      return json(result, result.error ? 400 : 201);
+    }
+
+    if (request.method === "POST" && url.pathname === "/api/manager/playlists") {
+      const body = await request.json().catch(() => ({}));
+      const result = await createManagerPlaylist(env, body);
       return json(result, result.error ? 400 : 201);
     }
 
@@ -1500,6 +1703,14 @@ export default {
       if (!messageId) return json({ error: "messageId required" }, 400);
       const body = await request.json().catch(() => ({}));
       const result = await updateManagerMessage(env, messageId, body);
+      return json(result, result.error ? 400 : 200);
+    }
+
+    if (request.method === "PATCH" && url.pathname.startsWith("/api/manager/playlists/")) {
+      const playlistId = url.pathname.replace("/api/manager/playlists/", "").trim();
+      if (!playlistId) return json({ error: "playlistId required" }, 400);
+      const body = await request.json().catch(() => ({}));
+      const result = await updateManagerPlaylist(env, playlistId, body);
       return json(result, result.error ? 400 : 200);
     }
 
