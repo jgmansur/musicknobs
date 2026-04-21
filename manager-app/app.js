@@ -59,6 +59,7 @@ const CONTACTS_PAGE_STEP = 12;
 const MESSAGES_PAGE_STEP = 20;
 const CATALOG_PAGE_STEP = 20;
 const CATALOG_PROGRESS_REFRESH_MS = 350;
+const PUBLIC_TABS = new Set(['catalog']);
 
 const configuredTracks = Array.isArray(window.MANAGER_TRACKS) ? window.MANAGER_TRACKS : [];
 
@@ -77,6 +78,30 @@ const catalogPlayer = {
 function isLocalDevHost() {
   const host = String(window.location.hostname || '').toLowerCase();
   return host === 'localhost' || host === '127.0.0.1' || host === '::1';
+}
+
+function isPublicTab(tabName) {
+  return PUBLIC_TABS.has(String(tabName || '').trim().toLowerCase());
+}
+
+function getActiveTabName() {
+  const active = document.querySelector('.tab.active');
+  return String(active?.dataset?.tab || 'overview');
+}
+
+function activateTab(tabName) {
+  const target = String(tabName || '').trim();
+  document.querySelectorAll('.tab').forEach((t) => {
+    t.classList.toggle('active', t.dataset.tab === target);
+  });
+  document.querySelectorAll('.panel').forEach((p) => {
+    p.classList.toggle('active', p.id === `tab-${target}`);
+  });
+}
+
+function updateAuthGateForCurrentTab() {
+  const locked = !isAuthenticated && !isPublicTab(getActiveTabName());
+  setAuthGate(locked);
 }
 
 function shouldBypassAuthForLocalDev() {
@@ -1145,13 +1170,6 @@ function setAuthGate(locked) {
 }
 
 function clearSensitiveData() {
-  clearCatalogHowl();
-  catalogPlayer.currentTrackIndex = -1;
-  catalogNowPlayingId = '';
-  catalogNowCardOpen = false;
-  setCatalogPlayerStatus('Inicia sesión para cargar catálogo.');
-  updateCatalogPlayerUi();
-  setCatalog([]);
   setContacts([]);
   setTasks([]);
   setMessages([]);
@@ -1259,7 +1277,6 @@ function handleGoogleTokenSuccess(resp) {
 
 function setAuthenticated(value) {
   isAuthenticated = Boolean(value);
-  setAuthGate(!isAuthenticated);
 
   const toggleBtn = document.getElementById('google-auth-toggle');
   if (toggleBtn) {
@@ -1273,12 +1290,18 @@ function setAuthenticated(value) {
     loadContactsFromNotion();
     loadTasksFromApi();
     loadLinksFromApi();
+    updateAuthGateForCurrentTab();
     return;
   }
 
   tasksNextCursor = '';
   tasksHasMore = false;
   clearSensitiveData();
+  loadCatalogFromApi();
+  if (!isPublicTab(getActiveTabName())) {
+    activateTab('catalog');
+  }
+  updateAuthGateForCurrentTab();
 }
 
 function ensureGoogleOAuthClient() {
@@ -1712,7 +1735,6 @@ async function toggleSubtaskDone(taskId, subIndex, checked) {
 }
 
 async function loadCatalogFromApi() {
-  if (!isAuthenticated) return;
   try {
     if (!API_BASE) throw new Error('apiBaseUrl no configurado');
     // Solo leemos Notion para evitar duplicados por auto-sync en cada refresh.
@@ -1977,7 +1999,7 @@ function startGoogleLogin({ auto = false } = {}) {
 function autoLoginOnLoad() {
   if (restoreStoredAuthSession()) return;
   if (googleAccessToken || googleProfile || isAuthenticated) return;
-  setTimeout(() => startGoogleLogin({ auto: true }), 350);
+  setOauthStatus('Catálogo público activo. Inicia sesión para usar tabs privadas.');
 }
 
 function signOutGoogle() {
@@ -2012,10 +2034,14 @@ function setupTabs() {
   const tabs = document.querySelectorAll('.tab');
   tabs.forEach((tab) => {
     tab.addEventListener('click', () => {
-      tabs.forEach((t) => t.classList.remove('active'));
-      document.querySelectorAll('.panel').forEach((p) => p.classList.remove('active'));
-      tab.classList.add('active');
-      document.getElementById(`tab-${tab.dataset.tab}`).classList.add('active');
+      const targetTab = String(tab.dataset.tab || 'overview');
+      if (!isAuthenticated && !isPublicTab(targetTab)) {
+        setOauthStatus('Solo Catálogo es público. Inicia sesión con Google para ver esta sección.', true);
+        setAuthGate(false);
+        return;
+      }
+      activateTab(targetTab);
+      updateAuthGateForCurrentTab();
     });
   });
 }
