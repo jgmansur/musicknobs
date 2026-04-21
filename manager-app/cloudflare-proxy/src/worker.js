@@ -1349,7 +1349,13 @@ async function updateManagerTask(env, taskId, body) {
 
   if (hasSubtasks) {
     try {
-      await replaceSubtasks(taskId, notionToken, notionVersion, subtasks);
+      // Guardrail anti-duplicados: solo reescribir subtasks si realmente cambiaron.
+      const currentBlocks = await notionGetPageChildren(taskId, notionToken, notionVersion);
+      const currentSubtasks = parseSubtasksFromBlocks(currentBlocks);
+      const sameSubtasks = JSON.stringify(currentSubtasks) === JSON.stringify(subtasks);
+      if (!sameSubtasks) {
+        await replaceSubtasks(taskId, notionToken, notionVersion, subtasks);
+      }
     } catch (e) {
       return { error: "Task update failed", details: String(e?.message || e) };
     }
