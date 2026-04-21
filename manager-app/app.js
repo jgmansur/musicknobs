@@ -44,10 +44,14 @@ let taskAssigneeUsers = [
 let tasksNextCursor = '';
 let tasksHasMore = false;
 let tasksScope = 'all';
+let catalogCache = [];
+let catalogGenreFilter = 'Todas';
+let catalogNowPlayingId = '';
+let catalogNowCardOpen = false;
 
 const catalogSample = [
-  { obra: 'Tema Demo 1', autores: 'Jay Mansur', generos: 'Regional Mexicano', drive: '#' },
-  { obra: 'Tema Demo 2', autores: 'Jay Mansur, Alejandro De Nigris', generos: 'Pop', drive: '#' }
+  { obra: 'Tema Demo 1', autores: 'Jay Mansur', generos: 'Regional Mexicano', drive: 'https://drive.google.com/file/d/1abCDefghIJkLmNoPqRsTUvwxYZ/view?usp=sharing' },
+  { obra: 'Tema Demo 2', autores: 'Jay Mansur, Alejandro De Nigris', generos: 'Pop', drive: 'https://www.dropbox.com/scl/fi/demo-track.mp3?dl=0' }
 ];
 
 const contactsSample = [
@@ -145,18 +149,221 @@ function setLinks(rows = socialLinksSample) {
     .join('');
 }
 
-function setCatalog(rows = catalogSample) {
-  const body = document.getElementById('catalog-body');
-  body.innerHTML = rows
-    .map((r) => `
-      <tr>
-        <td>${r.obra}</td>
-        <td>${r.autores}</td>
-        <td>${r.generos}</td>
-        <td><a href="${r.drive}" target="_blank" rel="noopener">Abrir</a></td>
-      </tr>
+function parseCatalogGenres(value) {
+  return String(value || '')
+    .split(/[,|/]/)
+    .map((x) => x.trim())
+    .filter(Boolean);
+}
+
+function resolvePlayableAudioUrl(raw) {
+  const input = String(raw || '').trim();
+  if (!input || input === '#') return '';
+
+  try {
+    const u = new URL(input);
+
+    if (u.hostname.includes('drive.google.com')) {
+      const match = u.pathname.match(/\/file\/d\/([^/]+)/);
+      const id = match?.[1] || u.searchParams.get('id') || '';
+      if (id) return `https://drive.google.com/uc?export=download&id=${encodeURIComponent(id)}`;
+    }
+
+    if (u.hostname.includes('dropbox.com')) {
+      u.searchParams.set('raw', '1');
+      u.searchParams.delete('dl');
+      return u.toString();
+    }
+
+    return u.toString();
+  } catch {
+    return input;
+  }
+}
+
+function setCatalogNowCard(song) {
+  const card = document.getElementById('catalog-now-card');
+  if (!card) return;
+  if (!song || !catalogNowCardOpen) {
+    card.classList.add('hidden');
+    card.innerHTML = '';
+    return;
+  }
+
+  const share = song.drive ? `<a href="${escapeHtml(song.drive)}" target="_blank" rel="noopener">Abrir enlace original</a>` : 'Sin enlace';
+  card.innerHTML = `
+    <div class="catalog-now-card-inner">
+      <h4>${escapeHtml(song.obra || 'Sin título')}</h4>
+      <p><strong>Compositores:</strong> ${escapeHtml(song.autores || '—')}</p>
+      <p><strong>Géneros:</strong> ${escapeHtml(song.generos || '—')}</p>
+      <p><strong>Enlace:</strong> ${share}</p>
+    </div>
+  `;
+  card.classList.remove('hidden');
+}
+
+function getCurrentCatalogSong() {
+  return catalogCache.find((s) => s.id === catalogNowPlayingId) || null;
+}
+
+function renderCatalog() {
+  const genresEl = document.getElementById('catalog-genres');
+  const songsEl = document.getElementById('catalog-songs');
+  const selectedGenreEl = document.getElementById('catalog-selected-genre');
+  const playingNowBtn = document.getElementById('catalog-playing-now');
+  const playingNowTitle = document.getElementById('catalog-playing-now-title');
+  if (!genresEl || !songsEl || !selectedGenreEl || !playingNowBtn || !playingNowTitle) return;
+
+  const genres = Array.from(new Set(catalogCache.flatMap((row) => parseCatalogGenres(row.generos))));
+  const allGenres = ['Todas', ...genres.sort((a, b) => a.localeCompare(b, 'es'))];
+  if (!allGenres.includes(catalogGenreFilter)) catalogGenreFilter = 'Todas';
+
+  genresEl.innerHTML = allGenres
+    .map((g) => `
+      <li>
+        <button class="mini-btn ${catalogGenreFilter === g ? 'active' : ''}" data-catalog-genre="${escapeHtml(g)}">${escapeHtml(g)}</button>
+      </li>
     `)
     .join('');
+
+  const visibleSongs = catalogGenreFilter === 'Todas'
+    ? catalogCache
+    : catalogCache.filter((row) => parseCatalogGenres(row.generos).includes(catalogGenreFilter));
+
+  selectedGenreEl.textContent = catalogGenreFilter;
+
+  songsEl.innerHTML = visibleSongs.length
+    ? visibleSongs
+        .map((row) => `
+          <li>
+            <div class="catalog-song-row">
+              <button class="catalog-song-main" data-catalog-play="${escapeHtml(row.id)}">
+                <strong>${escapeHtml(row.obra || 'Sin título')}</strong>
+                <span>${escapeHtml(row.autores || '—')}</span>
+              </button>
+              <div class="actions">
+                <button class="mini-btn" data-catalog-share="${escapeHtml(row.id)}">Compartir</button>
+              </div>
+            </div>
+          </li>
+        `)
+        .join('')
+    : '<li>Sin canciones en este género.</li>';
+
+  genresEl.querySelectorAll('[data-catalog-genre]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      catalogGenreFilter = btn.dataset.catalogGenre || 'Todas';
+      renderCatalog();
+    });
+  });
+
+  songsEl.querySelectorAll('[data-catalog-play]').forEach((btn) => {
+    btn.addEventListener('click', () => playCatalogSong(btn.dataset.catalogPlay || ''));
+  });
+
+  songsEl.querySelectorAll('[data-catalog-share]').forEach((btn) => {
+    btn.addEventListener('click', () => shareCatalogSong(btn.dataset.catalogShare || ''));
+  });
+
+  const currentSong = getCurrentCatalogSong();
+  if (!currentSong) {
+    playingNowBtn.classList.add('hidden');
+    playingNowTitle.textContent = '—';
+    setCatalogNowCard(null);
+  } else {
+    playingNowBtn.classList.remove('hidden');
+    playingNowTitle.textContent = currentSong.obra || 'Sin título';
+    setCatalogNowCard(currentSong);
+  }
+
+  playingNowBtn.onclick = () => {
+    catalogNowCardOpen = !catalogNowCardOpen;
+    setCatalogNowCard(getCurrentCatalogSong());
+  };
+}
+
+function setCatalog(rows = catalogSample) {
+  const normalized = (Array.isArray(rows) ? rows : [])
+    .map((row, i) => ({
+      id: String(row.id || `song-${i + 1}`),
+      obra: String(row.obra || '').trim(),
+      autores: String(row.autores || '').trim(),
+      generos: String(row.generos || '').trim(),
+      drive: String(row.drive || '').trim()
+    }))
+    .filter((row) => Boolean(row.obra || row.drive));
+
+  catalogCache = normalized;
+  if (catalogNowPlayingId && !catalogCache.some((row) => row.id === catalogNowPlayingId)) {
+    catalogNowPlayingId = '';
+    catalogNowCardOpen = false;
+  }
+
+  if (!catalogCache.length) {
+    const audio = document.getElementById('catalog-audio');
+    if (audio) {
+      audio.pause();
+      audio.removeAttribute('src');
+      audio.load();
+    }
+  }
+
+  renderCatalog();
+}
+
+async function shareCatalogSong(songId) {
+  const song = catalogCache.find((row) => row.id === songId);
+  if (!song || !song.drive) {
+    setStatus('catalog-status', 'Esta canción no tiene link para compartir.', true);
+    return;
+  }
+
+  try {
+    const text = `${song.obra || 'Canción'} · ${song.drive}`;
+    if (navigator.share) {
+      await navigator.share({
+        title: song.obra || 'Canción',
+        text,
+        url: song.drive
+      });
+      setStatus('catalog-status', `Link compartido: ${song.obra || 'canción'}.`);
+      return;
+    }
+
+    await navigator.clipboard.writeText(song.drive);
+    setStatus('catalog-status', `Link copiado al portapapeles: ${song.obra || 'canción'}.`);
+  } catch (e) {
+    const reason = e instanceof Error ? e.message : String(e);
+    setStatus('catalog-status', `No se pudo compartir: ${reason}`, true);
+  }
+}
+
+function playCatalogSong(songId) {
+  const song = catalogCache.find((row) => row.id === songId);
+  if (!song) return;
+
+  const audio = document.getElementById('catalog-audio');
+  if (!audio) return;
+
+  const playable = resolvePlayableAudioUrl(song.drive);
+  if (!playable) {
+    setStatus('catalog-status', 'Esta canción no tiene URL reproducible.', true);
+    return;
+  }
+
+  catalogNowPlayingId = song.id;
+  catalogNowCardOpen = false;
+  audio.src = playable;
+  audio.play()
+    .then(() => {
+      setStatus('catalog-status', `Reproduciendo: ${song.obra || 'canción'}.`);
+      renderCatalog();
+    })
+    .catch((err) => {
+      const reason = err instanceof Error ? err.message : String(err);
+      setStatus('catalog-status', `No se pudo reproducir audio: ${reason}`, true);
+      renderCatalog();
+    });
 }
 
 function setTasks(rows = []) {
@@ -248,16 +455,16 @@ function setMessages(rows = []) {
 
   list.innerHTML = rows
     .map((m) => {
-      const author = m.author ? `Por: ${m.author}` : 'Por: Anónimo';
-      const created = m.createdAt ? ` · ${new Date(m.createdAt).toLocaleString('es-MX')}` : '';
+      const author = m.author || 'Anónimo';
+      const created = m.createdAt ? new Date(m.createdAt).toLocaleString('es-MX') : '';
       const label = m.highlighted ? 'Quitar destacado' : 'Destacar';
       const isMine = m.authorEmail && myEmail && m.authorEmail === myEmail;
       return `
-        <li>
+        <li class="${isMine ? 'mine' : 'other'}">
           <div class="chat-bubble ${isMine ? 'mine' : ''}">
             <div class="chat-header">
-              <div class="task-meta">${author}${created}</div>
-              <button class="mini-btn" data-message-feature="${m.id}" data-message-state="${m.highlighted ? '1' : '0'}">${label}</button>
+              <div class="wa-meta">${escapeHtml(author)}${created ? ` · ${escapeHtml(created)}` : ''}</div>
+              <button class="mini-btn message-feature-btn" data-message-feature="${m.id}" data-message-state="${m.highlighted ? '1' : '0'}">${label}</button>
             </div>
             <div class="message-text">${escapeHtml(m.text || 'Sin mensaje')}</div>
           </div>
@@ -277,6 +484,12 @@ function setMessages(rows = []) {
   const clearBtn = document.getElementById('clear-messages-log');
   if (clearBtn) {
     clearBtn.classList.toggle('hidden', !isAdminUser());
+  }
+
+  if (rows.length) {
+    requestAnimationFrame(() => {
+      list.scrollTop = list.scrollHeight;
+    });
   }
 }
 
@@ -922,7 +1135,8 @@ async function loadCatalogFromApi() {
   try {
     if (!API_BASE) throw new Error('apiBaseUrl no configurado');
     const res = await fetchJson(`${API_BASE}/api/manager/catalog`);
-    const rows = (res.data || []).map((item) => ({
+    const rows = (res.data || []).map((item, i) => ({
+      id: item.id || `song-api-${i + 1}`,
       obra: item.obra || 'Sin título',
       autores: item.autores || '—',
       generos: item.generos || '—',
@@ -1200,6 +1414,17 @@ function setupActions() {
   bindClick('refresh-messages-overview', () => loadMessagesFromApi());
   bindClick('message-create', createMessage);
   bindClick('clear-messages-log', clearMessagesLog);
+
+  const messageInput = document.getElementById('message-input');
+  if (messageInput) {
+    messageInput.addEventListener('keydown', (ev) => {
+      if (ev.key === 'Enter' && !ev.shiftKey) {
+        ev.preventDefault();
+        createMessage();
+      }
+    });
+  }
+
   bindClick('refresh-catalog', () => loadCatalogFromApi());
   bindClick('refresh-contacts', () => loadContactsFromNotion());
   bindClick('contact-form-toggle', () => {

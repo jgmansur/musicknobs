@@ -82,43 +82,59 @@
       </section>
 
       <section id="tab-messages" class="panel card">
-        <div class="panel-head">
-          <h3>Mensajes internos</h3>
-          <div class="actions">
-            <button id="refresh-messages" class="btn ghost">Refrescar</button>
-            <button id="clear-messages-log" class="btn ghost hidden">Borrar log</button>
+        <div class="wa-shell">
+          <div class="wa-topbar">
+            <div>
+              <h3>Mensajes internos</h3>
+              <p class="hint">Estilo WhatsApp interno · destacados máx. 3 (rotación).</p>
+            </div>
+            <div class="actions">
+              <button id="refresh-messages" class="btn ghost">Refrescar</button>
+              <button id="clear-messages-log" class="btn ghost hidden">Borrar log</button>
+            </div>
+          </div>
+
+          <p id="messages-status" class="hint status" aria-live="polite">Sin anuncios cargados.</p>
+
+          <ul id="messages-list" class="list compact-list messages-chat-list"></ul>
+
+          <div class="wa-composer">
+            <textarea id="message-input" class="field-input" rows="2" placeholder="Escribe un mensaje..."></textarea>
+            <button id="message-create" class="btn wa-send-btn" aria-label="Enviar mensaje">➤</button>
           </div>
         </div>
-        <p class="hint">Estilo mensajero interno. Puedes destacar hasta 3 anuncios (rotación automática).</p>
-        <p id="messages-status" class="hint status" aria-live="polite">Sin anuncios cargados.</p>
-
-        <div class="task-form-grid">
-          <textarea id="message-input" class="field-input" rows="3" placeholder="Escribe un mensaje..."></textarea>
-          <button id="message-create" class="btn">Enviar mensaje</button>
-        </div>
-
-        <ul id="messages-list" class="list compact-list messages-chat-list"></ul>
       </section>
 
       <section id="tab-catalog" class="panel card">
         <div class="panel-head">
-          <h3>Catálogo de canciones (Google Sheets)</h3>
+          <h3>Catálogo de canciones</h3>
           <button id="refresh-catalog" class="btn ghost">Refrescar</button>
         </div>
-        <p class="hint">Fuente prevista: Google Sheets editable end-to-end vía API / Apps Script.</p>
+        <p class="hint">Vista tipo iPod: géneros, canciones, reproducción y compartir link.</p>
         <p id="catalog-status" class="hint status" aria-live="polite">Usando muestra local (MVP).</p>
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Obra</th>
-                <th>Compositores</th>
-                <th>Géneros</th>
-                <th>Drive</th>
-              </tr>
-            </thead>
-            <tbody id="catalog-body"></tbody>
-          </table>
+
+        <div class="catalog-shell">
+          <div class="catalog-grid">
+            <aside class="catalog-pane">
+              <h4>Géneros</h4>
+              <ul id="catalog-genres" class="list compact-list catalog-genres-list"></ul>
+            </aside>
+            <section class="catalog-pane">
+              <div class="catalog-songs-head">
+                <h4 id="catalog-selected-genre">Todas</h4>
+              </div>
+              <ul id="catalog-songs" class="list compact-list catalog-songs-list"></ul>
+            </section>
+          </div>
+
+          <button id="catalog-playing-now" class="catalog-playing-now hidden" type="button">
+            <strong>Playing now:</strong>
+            <span id="catalog-playing-now-title">—</span>
+          </button>
+
+          <div id="catalog-now-card" class="catalog-now-card hidden"></div>
+
+          <audio id="catalog-audio" preload="none"></audio>
         </div>
       </section>
 

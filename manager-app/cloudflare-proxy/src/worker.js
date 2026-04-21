@@ -11,6 +11,7 @@ const CORS_HEADERS = {
 
 const DEFAULT_MANAGER_TASKS_DB_ID = "6405719e-5f90-4fc0-8eab-d9352387dd07";
 const DEFAULT_SOCIAL_LINKS_DB_ID = "761cbab4-0fef-4aad-aa99-d3aa5e47025c";
+const DEFAULT_CATALOG_DB_ID = "348c1932-ede8-80a1-a852-000b7e0cc2b4";
 const TASK_PREFIX = "[ManagerTask] ";
 const MESSAGE_PREFIX = "[ManagerMsg] ";
 const SUBTASK_PREFIX = "subtask:";
@@ -98,6 +99,88 @@ function readNotionRole(props) {
     }
   }
   return "";
+}
+
+function readNotionSongAuthors(props) {
+  for (const [name, prop] of Object.entries(props)) {
+    const key = name.toLowerCase();
+    if (!["autores", "autor", "composer", "compositor", "writers", "writer"].some((k) => key.includes(k))) continue;
+    if (prop?.type === "multi_select") return (prop.multi_select || []).map((x) => x?.name).filter(Boolean).join(", ");
+    if (prop?.type === "select") return prop.select?.name || "";
+    if (prop?.type === "rich_text") return richTextToString(prop.rich_text);
+    if (prop?.type === "title") return richTextToString(prop.title);
+  }
+  return "";
+}
+
+function readNotionSongGenres(props) {
+  for (const [name, prop] of Object.entries(props)) {
+    const key = name.toLowerCase();
+    if (!["genero", "género", "genre", "genres"].some((k) => key.includes(k))) continue;
+    if (prop?.type === "multi_select") return (prop.multi_select || []).map((x) => x?.name).filter(Boolean).join(", ");
+    if (prop?.type === "select") return prop.select?.name || "";
+    if (prop?.type === "rich_text") return richTextToString(prop.rich_text);
+  }
+  return "";
+}
+
+function readNotionSongUrl(props) {
+  for (const [name, prop] of Object.entries(props)) {
+    const key = name.toLowerCase();
+    if (!["play", "drive", "dropbox", "audio", "url", "link"].some((k) => key.includes(k))) continue;
+    if (prop?.type === "url") return prop.url || "";
+    if (prop?.type === "rich_text") return richTextToString(prop.rich_text);
+  }
+  return "";
+}
+
+async function listCatalogSongs(env) {
+  const notionVersion = env.NOTION_VERSION || "2025-09-03";
+  const notionToken = env.NOTION_TOKEN || "";
+  const dbId = env.MANAGER_CATALOG_DB_ID || DEFAULT_CATALOG_DB_ID;
+
+  if (!notionToken || !dbId) {
+    return {
+      source: "fallback",
+      warning: "NOTION_TOKEN o MANAGER_CATALOG_DB_ID no configurados.",
+      data: SAMPLE_CATALOG,
+    };
+  }
+
+  try {
+    const payload = await notionQueryAdvanced(dbId, notionToken, notionVersion, {
+      pageSize: 200,
+    });
+
+    const data = (payload.results || [])
+      .map((page) => {
+        const props = page.properties || {};
+        const obra = readNotionTitle(props);
+        const autores = readNotionSongAuthors(props);
+        const generos = readNotionSongGenres(props);
+        const drive = readNotionSongUrl(props);
+        return {
+          id: page.id,
+          obra: obra || "Sin título",
+          autores: autores || "—",
+          generos: generos || "—",
+          drive: drive || "",
+        };
+      })
+      .filter((item) => Boolean(item.obra));
+
+    return {
+      source: "notion",
+      data: data.length ? data : SAMPLE_CATALOG,
+    };
+  } catch (e) {
+    return {
+      source: "fallback",
+      warning: "No se pudo leer catálogo desde Notion.",
+      details: String(e?.message || e),
+      data: SAMPLE_CATALOG,
+    };
+  }
 }
 
 function readNotionUrl(props) {
@@ -449,6 +532,26 @@ function applyAssigneeTags(tags = [], assigneeEmail = "", assigneeName = "") {
   return next;
 }
 
+function normalizeSubtasks(input = []) {
+  if (!Array.isArray(input)) return [];
+
+  const byKey = new Map();
+  for (const raw of input) {
+    const title = String(raw?.title || "").trim();
+    if (!title) continue;
+    const key = title.toLowerCase();
+    const done = Boolean(raw?.done);
+    if (!byKey.has(key)) {
+      byKey.set(key, { title, done });
+      continue;
+    }
+    const prev = byKey.get(key);
+    byKey.set(key, { title: prev.title, done: prev.done || done });
+  }
+
+  return Array.from(byKey.values()).slice(0, 30);
+}
+
 async function notionGetPageChildren(pageId, notionToken, notionVersion) {
   let cursor = null;
   const out = [];
@@ -479,7 +582,8 @@ async function notionGetPageChildren(pageId, notionToken, notionVersion) {
 
 async function replaceSubtasks(pageId, notionToken, notionVersion, subtasks = []) {
   const children = await notionGetPageChildren(pageId, notionToken, notionVersion);
-  const existing = children.filter((b) => b?.type === "to_do" && richTextToString(b?.to_do?.rich_text || []).startsWith(SUBTASK_PREFIX));
+  // Borra TODOS los to_do hijos para evitar duplicados heredados (prefijados y legacy sin prefijo).
+  const existing = children.filter((b) => b?.type === "to_do");
 
   for (const block of existing) {
     const resp = await fetch(`https://api.notion.com/v1/blocks/${block.id}`, {
@@ -492,9 +596,10 @@ async function replaceSubtasks(pageId, notionToken, notionVersion, subtasks = []
     if (!resp.ok) throw new Error(await resp.text());
   }
 
-  if (!subtasks.length) return;
+  const normalized = normalizeSubtasks(subtasks);
+  if (!normalized.length) return;
 
-  const childBlocks = subtasks.map((st) => ({
+  const childBlocks = normalized.map((st) => ({
     object: "block",
     type: "to_do",
     to_do: {
@@ -517,17 +622,21 @@ async function replaceSubtasks(pageId, notionToken, notionVersion, subtasks = []
 }
 
 function parseSubtasksFromBlocks(blocks = []) {
-  return blocks
+  return normalizeSubtasks(blocks
     .filter((b) => b?.type === "to_do")
     .map((b) => {
       const raw = richTextToString(b?.to_do?.rich_text || []);
-      if (!raw.startsWith(SUBTASK_PREFIX)) return null;
+      if (!raw) return null;
+      const title = raw.startsWith(SUBTASK_PREFIX)
+        ? raw.replace(SUBTASK_PREFIX, "").trim()
+        : raw.trim();
+      if (!title) return null;
       return {
-        title: raw.replace(SUBTASK_PREFIX, "").trim(),
+        title,
         done: Boolean(b?.to_do?.checked),
       };
     })
-    .filter(Boolean);
+    .filter(Boolean));
 }
 
 async function listManagerTasks(env, options = {}) {
@@ -863,12 +972,9 @@ async function createManagerTask(env, body) {
 
   const assigneeRaw = String(body?.assignee || "").trim().toLowerCase();
   const dueDate = String(body?.dueDate || "").trim();
-  const subtasks = Array.isArray(body?.subtasks)
-    ? body.subtasks
-        .map((s) => ({ title: String(s?.title || "").trim(), done: Boolean(s?.done) }))
-        .filter((s) => s.title)
-        .slice(0, 30)
-    : [];
+  const subtasks = normalizeSubtasks(Array.isArray(body?.subtasks)
+    ? body.subtasks.map((s) => ({ title: String(s?.title || "").trim(), done: Boolean(s?.done) }))
+    : []);
   const users = parseManagerUsers(env);
   const userByEmail = new Map(users.map((u) => [u.email.toLowerCase(), u]));
   const assigneeUser = assigneeRaw ? userByEmail.get(assigneeRaw) : null;
@@ -930,10 +1036,7 @@ async function updateManagerTask(env, taskId, body) {
   const assigneeRaw = String(body?.assignee || "").trim().toLowerCase();
   const hasSubtasks = Array.isArray(body?.subtasks);
   const subtasks = hasSubtasks
-    ? body.subtasks
-        .map((s) => ({ title: String(s?.title || "").trim(), done: Boolean(s?.done) }))
-        .filter((s) => s.title)
-        .slice(0, 30)
+    ? normalizeSubtasks(body.subtasks.map((s) => ({ title: String(s?.title || "").trim(), done: Boolean(s?.done) })))
     : [];
 
   const pageResp = await fetch(`https://api.notion.com/v1/pages/${taskId}`, {
@@ -1034,7 +1137,8 @@ export default {
     }
 
     if (request.method === "GET" && url.pathname === "/api/manager/catalog") {
-      return json({ source: "sample", data: SAMPLE_CATALOG });
+      const result = await listCatalogSongs(env);
+      return json(result, result.error ? 502 : 200);
     }
 
     if (request.method === "GET" && url.pathname === "/api/manager/tasks") {
