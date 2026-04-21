@@ -837,6 +837,18 @@ a { color: #93c5fd; }
   min-width: 0;
 }
 
+.catalog-song-row .actions {
+  display: flex;
+  align-items: center;
+  gap: .3rem;
+  flex-wrap: nowrap;
+  flex: 0 0 auto;
+}
+
+.catalog-song-row .actions > * {
+  flex: 0 0 auto;
+}
+
 .catalog-song-row.is-active {
   border-radius: .55rem;
   background: rgba(251, 191, 36, .08);

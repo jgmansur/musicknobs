@@ -56,8 +56,10 @@ let messagesVisibleCount = 20;
 let catalogVisibleCount = 20;
 let catalogSearchQuery = '';
 let catalogDeepLinkSongId = '';
+let catalogDeepLinkPlaylistId = '';
 let catalogDeepLinkAutoplay = false;
 let catalogDeepLinkHandled = false;
+let catalogRandomMode = false;
 
 const CONTACTS_PAGE_STEP = 12;
 const MESSAGES_PAGE_STEP = 20;
@@ -262,7 +264,7 @@ function renderPlaylists() {
   const filter = document.getElementById('catalog-playlist-filter');
   if (!list || !filter) return;
 
-  filter.innerHTML = `<option value="">Todas las playlists</option>${playlistsCache
+  filter.innerHTML = `<option value="">Selecciona playlist destino</option>${playlistsCache
     .map((pl) => `<option value="${escapeHtml(pl.id)}" ${selectedPlaylistId === pl.id ? 'selected' : ''}>${escapeHtml(pl.name)} (${Number(pl.trackCount || 0)})</option>`)
     .join('')}`;
 
@@ -271,6 +273,22 @@ function renderPlaylists() {
         .map((pl) => `<li><strong>${escapeHtml(pl.name)}</strong> · ${Number(pl.trackCount || 0)} tracks</li>`)
         .join('')
     : '<li>Sin playlists todavía.</li>';
+}
+
+function syncPlaylistCreateControlsVisibility() {
+  const input = document.getElementById('playlist-name');
+  const createBtn = document.getElementById('playlist-create');
+  const shouldHide = !isAuthenticated;
+
+  if (input) {
+    input.classList.toggle('hidden', shouldHide);
+    input.disabled = shouldHide;
+  }
+
+  if (createBtn) {
+    createBtn.classList.toggle('hidden', shouldHide);
+    createBtn.disabled = shouldHide;
+  }
 }
 
 async function loadPlaylistsFromApi() {
@@ -292,6 +310,7 @@ async function loadPlaylistsFromApi() {
     }
     renderPlaylists();
     renderCatalog();
+    applyCatalogDeepLinkIfNeeded();
   } catch (e) {
     playlistsCache = [];
     selectedPlaylistId = '';
@@ -498,6 +517,7 @@ function updateCatalogPlayerUi() {
   const title = document.getElementById('catalog-player-track-title');
   const artist = document.getElementById('catalog-player-track-artist');
   const playBtn = document.getElementById('catalog-play-toggle');
+  const randomBtn = document.getElementById('catalog-random');
   const cover = document.getElementById('catalog-player-cover');
   const coverPlaceholder = document.getElementById('catalog-player-cover-placeholder');
   const progress = document.getElementById('catalog-player-progress');
@@ -512,6 +532,12 @@ function updateCatalogPlayerUi() {
       playBtn.disabled = !track;
       playBtn.textContent = catalogPlayer.isPlaying ? '⏸ Pause' : '▶️ Play';
     }
+  }
+
+  if (randomBtn) {
+    randomBtn.classList.toggle('active', catalogRandomMode);
+    randomBtn.setAttribute('aria-pressed', catalogRandomMode ? 'true' : 'false');
+    randomBtn.textContent = catalogRandomMode ? '🔀 ON' : '🔀';
   }
 
   if (cover && coverPlaceholder) {
@@ -544,6 +570,10 @@ function buildSecureAudioUrl(track) {
 
 function playNextCatalogTrack(step = 1) {
   if (!catalogCache.length) return;
+  if (catalogRandomMode && step > 0) {
+    playRandomCatalogTrack();
+    return;
+  }
   const current = catalogPlayer.currentTrackIndex >= 0 ? catalogPlayer.currentTrackIndex : 0;
   const next = (current + step + catalogCache.length) % catalogCache.length;
   void loadCatalogTrack(next, { autoplay: true });
@@ -562,6 +592,19 @@ function playRandomCatalogTrack() {
     next = Math.floor(Math.random() * catalogCache.length);
   }
   void loadCatalogTrack(next, { autoplay: true });
+}
+
+function toggleCatalogRandomMode() {
+  catalogRandomMode = !catalogRandomMode;
+  updateCatalogPlayerUi();
+
+  if (catalogRandomMode) {
+    setStatus('catalog-status', 'Modo random activado. Se mezclará al avanzar y al terminar cada canción.');
+    playRandomCatalogTrack();
+    return;
+  }
+
+  setStatus('catalog-status', 'Modo random desactivado. Reproducción normal.');
 }
 
 async function loadCatalogTrack(index, { autoplay = false } = {}) {
@@ -717,6 +760,7 @@ function getCurrentCatalogSong() {
 function initCatalogDeepLinkFromUrl() {
   const params = new URLSearchParams(window.location.search || '');
   const songId = String(params.get('song') || '').trim();
+  const playlistId = String(params.get('playlist') || '').trim();
   const autoplay = String(params.get('autoplay') || '').trim();
   const targetTab = String(params.get('tab') || '').trim().toLowerCase();
 
@@ -725,8 +769,9 @@ function initCatalogDeepLinkFromUrl() {
     updateAuthGateForCurrentTab();
   }
 
-  if (!songId) return;
+  if (!songId && !playlistId) return;
   catalogDeepLinkSongId = songId;
+  catalogDeepLinkPlaylistId = playlistId;
   catalogDeepLinkAutoplay = autoplay === '1' || autoplay === 'true';
   catalogDeepLinkHandled = false;
 }
@@ -735,18 +780,55 @@ function buildCatalogListenLink(songId) {
   const url = new URL(window.location.href);
   url.searchParams.set('tab', 'catalog');
   url.searchParams.set('song', String(songId || ''));
+  url.searchParams.delete('playlist');
+  url.searchParams.set('autoplay', '1');
+  return url.toString();
+}
+
+function buildCatalogPlaylistListenLink(playlistId, songId = '') {
+  const url = new URL(window.location.href);
+  url.searchParams.set('tab', 'catalog');
+  url.searchParams.set('playlist', String(playlistId || ''));
+  if (songId) {
+    url.searchParams.set('song', String(songId));
+  } else {
+    url.searchParams.delete('song');
+  }
   url.searchParams.set('autoplay', '1');
   return url.toString();
 }
 
 function applyCatalogDeepLinkIfNeeded() {
-  if (!catalogDeepLinkSongId || catalogDeepLinkHandled) return;
-  const index = catalogCache.findIndex((row) => String(row.id) === String(catalogDeepLinkSongId));
+  if (catalogDeepLinkHandled) return;
+
+  if (catalogDeepLinkPlaylistId && playlistsCache.some((pl) => pl.id === catalogDeepLinkPlaylistId)) {
+    selectedPlaylistId = catalogDeepLinkPlaylistId;
+    renderPlaylists();
+  }
+
+  const playlist = playlistsCache.find((pl) => pl.id === selectedPlaylistId);
+  const fallbackSongId = String(playlist?.tracks?.[0]?.id || '').trim();
+  const targetSongId = String(catalogDeepLinkSongId || fallbackSongId || '').trim();
+
+  if (!targetSongId) {
+    if (catalogDeepLinkPlaylistId) {
+      catalogDeepLinkHandled = true;
+      activateTab('catalog');
+      updateAuthGateForCurrentTab();
+      renderCatalog();
+    }
+    return;
+  }
+
+  const index = catalogCache.findIndex((row) => String(row.id) === targetSongId);
   if (index < 0) return;
 
   const track = catalogCache[index];
   catalogDeepLinkHandled = true;
-  selectedPlaylistId = '';
+  if (catalogDeepLinkPlaylistId && playlistsCache.some((pl) => pl.id === catalogDeepLinkPlaylistId)) {
+    selectedPlaylistId = catalogDeepLinkPlaylistId;
+    renderPlaylists();
+  }
 
   const preferredGenre = parseCatalogGenres(track.generos)[0] || 'Todas';
   catalogGenreFilter = preferredGenre;
@@ -794,11 +876,7 @@ function renderCatalog() {
         return haystack.includes(catalogSearchQuery.trim().toLowerCase());
       });
 
-  const playlist = playlistsCache.find((pl) => pl.id === selectedPlaylistId);
-  const playlistTrackIds = new Set(Array.isArray(playlist?.tracks) ? playlist.tracks.map((t) => String(t.id || '')) : []);
-  const visibleSongs = selectedPlaylistId
-    ? bySearch.filter((row) => playlistTrackIds.has(String(row.id || '')))
-    : bySearch;
+  const visibleSongs = bySearch;
   const pagedSongs = visibleSongs.slice(0, catalogVisibleCount);
 
   selectedGenreEl.textContent = catalogGenreFilter;
@@ -946,6 +1024,36 @@ async function shareCatalogSongForListen(songId) {
   }
 }
 
+async function shareSelectedPlaylistForListen() {
+  const playlist = playlistsCache.find((pl) => pl.id === selectedPlaylistId);
+  if (!playlist) {
+    setStatus('catalog-status', 'Selecciona una playlist para compartir.', true);
+    return;
+  }
+
+  const firstTrackId = String(playlist?.tracks?.[0]?.id || '').trim();
+
+  try {
+    const listenLink = buildCatalogPlaylistListenLink(playlist.id, firstTrackId);
+    const text = `${playlist.name || 'Playlist'} · Escúchala aquí`;
+    if (navigator.share) {
+      await navigator.share({
+        title: playlist.name || 'Playlist',
+        text,
+        url: listenLink
+      });
+      setStatus('catalog-status', `Playlist compartida: ${playlist.name || 'playlist'}.`);
+      return;
+    }
+
+    await navigator.clipboard.writeText(listenLink);
+    setStatus('catalog-status', `Link de playlist copiado: ${playlist.name || 'playlist'}.`);
+  } catch (e) {
+    const reason = e instanceof Error ? e.message : String(e);
+    setStatus('catalog-status', `No se pudo compartir playlist: ${reason}`, true);
+  }
+}
+
 async function shareCatalogSongDrive(songId) {
   const song = catalogCache.find((row) => row.id === songId);
   if (!song || !song.drive) {
@@ -984,6 +1092,7 @@ function setupCatalogPlayerControls() {
   const prevBtn = document.getElementById('catalog-prev');
   const nextBtn = document.getElementById('catalog-next');
   const randomBtn = document.getElementById('catalog-random');
+  const sharePlaylistBtn = document.getElementById('catalog-share-playlist');
   const progress = document.getElementById('catalog-player-progress');
 
   if (playToggle) {
@@ -1022,7 +1131,13 @@ function setupCatalogPlayerControls() {
 
   if (randomBtn) {
     randomBtn.addEventListener('click', () => {
-      playRandomCatalogTrack();
+      toggleCatalogRandomMode();
+    });
+  }
+
+  if (sharePlaylistBtn) {
+    sharePlaylistBtn.addEventListener('click', () => {
+      shareSelectedPlaylistForListen();
     });
   }
 
@@ -1425,6 +1540,7 @@ function handleGoogleTokenSuccess(resp) {
 
 function setAuthenticated(value) {
   isAuthenticated = Boolean(value);
+  syncPlaylistCreateControlsVisibility();
 
   const toggleBtn = document.getElementById('google-auth-toggle');
   if (toggleBtn) {
@@ -2306,6 +2422,7 @@ function init() {
   setupTabs();
   setupCatalogPlayerControls();
   setupActions();
+  syncPlaylistCreateControlsVisibility();
   if (shouldBypassAuthForLocalDev()) {
     enableLocalDevBypassMode();
   } else {
