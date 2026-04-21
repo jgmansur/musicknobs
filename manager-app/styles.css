@@ -859,13 +859,32 @@ a { color: #93c5fd; }
 
 .catalog-song-main strong,
 .catalog-song-main span {
-  overflow-wrap: anywhere;
-  word-break: break-word;
+  overflow-wrap: normal;
+  word-break: normal;
 }
 
 .catalog-song-main span {
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   color: var(--text-soft);
   font-size: .72rem;
+}
+
+/* En canción activa: autores hacen scroll horizontal automático */
+.catalog-song-row.is-active .catalog-song-main span {
+  text-overflow: clip;
+  animation: catalog-authors-marquee 8s linear infinite;
+}
+
+@keyframes catalog-authors-marquee {
+  0%, 12% {
+    transform: translateX(0%);
+  }
+  88%, 100% {
+    transform: translateX(-42%);
+  }
 }
 
 .catalog-share-menu .task-actions-toggle {
