@@ -532,7 +532,7 @@ h1 {
 .status { margin-top: 6px; }
 .status.error { color: #fca5a5; }
 .status.autoplay-hint {
-  color: #22c55e;
+  color: #22c55e !important;
   font-weight: 800;
 }
 
