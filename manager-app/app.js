@@ -67,7 +67,7 @@ const MESSAGES_PAGE_STEP = 20;
 const CATALOG_PAGE_STEP = 20;
 const CATALOG_PROGRESS_REFRESH_MS = 350;
 const CATALOG_AUTOPLAY_HINT = '[DALE CLICK A LA CANCIÓN SELECCIONADA]';
-const PUBLIC_TABS = new Set(['catalog', 'links']);
+const PUBLIC_TABS = new Set(['catalog', 'links', 'book']);
 
 const configuredTracks = Array.isArray(window.MANAGER_TRACKS) ? window.MANAGER_TRACKS : [];
 

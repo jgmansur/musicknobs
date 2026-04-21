@@ -501,6 +501,14 @@ h1 {
   min-height: calc(100vh - 220px);
 }
 
+.book-iframe {
+  width: 100%;
+  height: calc(100dvh - 160px);
+  border: none;
+  display: block;
+  background: white;
+}
+
 .panel-actions-inline {
   padding: .55rem .6rem 0;
 }
