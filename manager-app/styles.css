@@ -165,6 +165,36 @@ h1 {
   gap: .6rem;
 }
 
+.messages-chat-list {
+  margin-top: .7rem;
+  padding-left: 0;
+}
+
+.messages-chat-list > li {
+  list-style: none;
+  border: 0;
+  padding: .4rem 0;
+}
+
+.chat-bubble {
+  border: 1px solid var(--glass-border);
+  border-radius: .9rem;
+  padding: .55rem .65rem;
+  background: rgba(255, 255, 255, .04);
+}
+
+.chat-bubble.mine {
+  border-color: rgba(251, 191, 36, .33);
+  background: rgba(251, 191, 36, .08);
+}
+
+.chat-header {
+  display: flex;
+  justify-content: space-between;
+  gap: .5rem;
+  margin-bottom: .25rem;
+}
+
 .message-text {
   white-space: pre-wrap;
   color: var(--text-main);
@@ -286,6 +316,29 @@ h1 {
   grid-template-columns: 1fr;
 }
 
+.task-filters {
+  display: flex;
+  gap: .55rem;
+  margin-top: .65rem;
+  align-items: center;
+}
+
+.compact-control {
+  max-width: 220px;
+}
+
+.task-form-card {
+  margin-top: .75rem;
+  border: 1px solid var(--glass-border);
+  border-radius: .95rem;
+  padding: .7rem;
+  background: rgba(255,255,255,.03);
+}
+
+.hidden {
+  display: none !important;
+}
+
 .field-input {
   width: 100%;
   border: 1px solid var(--glass-border);
@@ -315,6 +368,19 @@ h1 {
 .task-meta {
   color: var(--text-soft);
   font-size: .75rem;
+}
+
+.subtasks-list {
+  margin: .35rem 0 0;
+  padding-left: 1rem;
+  color: var(--text-soft);
+  font-size: .74rem;
+}
+
+.subtasks-list li {
+  padding: .15rem 0;
+  border: 0;
+  list-style: disc;
 }
 
 .mini-btn {

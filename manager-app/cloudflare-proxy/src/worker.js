@@ -5,7 +5,7 @@ const SAMPLE_CATALOG = [
 
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "GET,POST,PATCH,OPTIONS",
+  "Access-Control-Allow-Methods": "GET,POST,PATCH,DELETE,OPTIONS",
   "Access-Control-Allow-Headers": "Content-Type,Authorization",
 };
 
@@ -13,6 +13,18 @@ const DEFAULT_MANAGER_TASKS_DB_ID = "6405719e-5f90-4fc0-8eab-d9352387dd07";
 const DEFAULT_SOCIAL_LINKS_DB_ID = "761cbab4-0fef-4aad-aa99-d3aa5e47025c";
 const TASK_PREFIX = "[ManagerTask] ";
 const MESSAGE_PREFIX = "[ManagerMsg] ";
+const SUBTASK_PREFIX = "subtask:";
+const ASSIGNEE_PREFIX = "assignee:";
+const ASSIGNEE_NAME_PREFIX = "assigneeName:";
+const AUTHOR_PREFIX = "author:";
+const AUTHOR_EMAIL_PREFIX = "authorEmail:";
+const ADMIN_EMAILS = ["jgmansur2@gmail.com"];
+const CLEAR_LOG_PASSWORD = "9776";
+const DEFAULT_MANAGER_USERS = [
+  { email: "jgmansur2@gmail.com", name: "Jay Mansur" },
+  { email: "xeronimo3@gmail.com", name: "Xeronimo" },
+  { email: "ricardo.calanda@gmail.com", name: "Ricardo" },
+];
 
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
@@ -167,6 +179,10 @@ async function queryNotionContacts(env) {
 }
 
 async function notionQuery(dbOrDataSourceId, notionToken, notionVersion, filter = null, pageSize = 100) {
+  return notionQueryAdvanced(dbOrDataSourceId, notionToken, notionVersion, { filter, pageSize });
+}
+
+async function notionQueryAdvanced(dbOrDataSourceId, notionToken, notionVersion, options = {}) {
   const endpoints = [
     `https://api.notion.com/v1/data_sources/${dbOrDataSourceId}/query`,
     `https://api.notion.com/v1/databases/${dbOrDataSourceId}/query`,
@@ -175,10 +191,12 @@ async function notionQuery(dbOrDataSourceId, notionToken, notionVersion, filter 
   let lastError = "";
   for (const url of endpoints) {
     const body = {
-      page_size: pageSize,
+      page_size: Number(options.pageSize || 100),
       sorts: [{ timestamp: "last_edited_time", direction: "descending" }],
     };
-    if (filter) body.filter = filter;
+    if (options.filter) body.filter = options.filter;
+    if (options.startCursor) body.start_cursor = options.startCursor;
+    if (Array.isArray(options.sorts) && options.sorts.length) body.sorts = options.sorts;
 
     const resp = await fetch(url, {
       method: "POST",
@@ -197,7 +215,132 @@ async function notionQuery(dbOrDataSourceId, notionToken, notionVersion, filter 
   throw new Error(lastError || "Notion query failed");
 }
 
-async function listManagerTasks(env) {
+function parseManagerUsers(env) {
+  const raw = String(env.MANAGER_ALLOWED_USERS || "").trim();
+  if (!raw) return DEFAULT_MANAGER_USERS;
+
+  const parsed = raw
+    .split(",")
+    .map((part) => {
+      const entry = part.trim();
+      if (!entry) return null;
+      if (entry.includes("|")) {
+        const [emailRaw, nameRaw] = entry.split("|");
+        const email = String(emailRaw || "").trim().toLowerCase();
+        const name = String(nameRaw || "").trim() || email;
+        if (!email) return null;
+        return { email, name };
+      }
+      const email = entry.toLowerCase();
+      if (!email) return null;
+      return { email, name: email };
+    })
+    .filter(Boolean);
+
+  return parsed.length ? parsed : DEFAULT_MANAGER_USERS;
+}
+
+function parseAssigneeFromTags(tags = []) {
+  const emailTag = tags.find((t) => t.startsWith(ASSIGNEE_PREFIX)) || "";
+  const nameTag = tags.find((t) => t.startsWith(ASSIGNEE_NAME_PREFIX)) || "";
+  const email = emailTag.replace(/^assignee:/, "").trim().toLowerCase();
+  const name = nameTag.replace(/^assigneeName:/, "").trim();
+  return {
+    assigneeEmail: email,
+    assigneeName: name || email,
+  };
+}
+
+function applyAssigneeTags(tags = [], assigneeEmail = "", assigneeName = "") {
+  const withoutAssignee = tags.filter((t) => !t.startsWith(ASSIGNEE_PREFIX) && !t.startsWith(ASSIGNEE_NAME_PREFIX));
+  if (!assigneeEmail) return withoutAssignee;
+  const next = [...withoutAssignee, `${ASSIGNEE_PREFIX}${assigneeEmail}`];
+  if (assigneeName) next.push(`${ASSIGNEE_NAME_PREFIX}${assigneeName}`);
+  return next;
+}
+
+async function notionGetPageChildren(pageId, notionToken, notionVersion) {
+  let cursor = null;
+  const out = [];
+
+  while (true) {
+    const params = new URLSearchParams({ page_size: "100" });
+    if (cursor) params.set("start_cursor", cursor);
+    const resp = await fetch(`https://api.notion.com/v1/blocks/${pageId}/children?${params.toString()}`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${notionToken}`,
+        "Notion-Version": notionVersion,
+      },
+    });
+
+    if (!resp.ok) {
+      throw new Error(await resp.text());
+    }
+
+    const payload = await resp.json();
+    out.push(...(payload.results || []));
+    if (!payload.has_more || !payload.next_cursor) break;
+    cursor = payload.next_cursor;
+  }
+
+  return out;
+}
+
+async function replaceSubtasks(pageId, notionToken, notionVersion, subtasks = []) {
+  const children = await notionGetPageChildren(pageId, notionToken, notionVersion);
+  const existing = children.filter((b) => b?.type === "to_do" && richTextToString(b?.to_do?.rich_text || []).startsWith(SUBTASK_PREFIX));
+
+  for (const block of existing) {
+    const resp = await fetch(`https://api.notion.com/v1/blocks/${block.id}`, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${notionToken}`,
+        "Notion-Version": notionVersion,
+      },
+    });
+    if (!resp.ok) throw new Error(await resp.text());
+  }
+
+  if (!subtasks.length) return;
+
+  const childBlocks = subtasks.map((st) => ({
+    object: "block",
+    type: "to_do",
+    to_do: {
+      checked: Boolean(st.done),
+      rich_text: [{ type: "text", text: { content: `${SUBTASK_PREFIX}${String(st.title || "").trim()}` } }],
+    },
+  }));
+
+  const resp = await fetch(`https://api.notion.com/v1/blocks/${pageId}/children`, {
+    method: "PATCH",
+    headers: {
+      Authorization: `Bearer ${notionToken}`,
+      "Notion-Version": notionVersion,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ children: childBlocks }),
+  });
+
+  if (!resp.ok) throw new Error(await resp.text());
+}
+
+function parseSubtasksFromBlocks(blocks = []) {
+  return blocks
+    .filter((b) => b?.type === "to_do")
+    .map((b) => {
+      const raw = richTextToString(b?.to_do?.rich_text || []);
+      if (!raw.startsWith(SUBTASK_PREFIX)) return null;
+      return {
+        title: raw.replace(SUBTASK_PREFIX, "").trim(),
+        done: Boolean(b?.to_do?.checked),
+      };
+    })
+    .filter(Boolean);
+}
+
+async function listManagerTasks(env, options = {}) {
   const notionVersion = env.NOTION_VERSION || "2025-09-03";
   const notionToken = env.NOTION_TOKEN || "";
   const dbId = env.MANAGER_TASKS_DB_ID || DEFAULT_MANAGER_TASKS_DB_ID;
@@ -207,30 +350,61 @@ async function listManagerTasks(env) {
   }
 
   try {
-    const payload = await notionQuery(
-      dbId,
-      notionToken,
-      notionVersion,
-      { property: "Name", title: { contains: TASK_PREFIX } },
-      10
-    );
+    const limit = Math.max(1, Math.min(50, Number(options.limit || 10)));
+    const viewerEmail = String(options.viewerEmail || "").trim().toLowerCase();
+    const scope = String(options.scope || "all").toLowerCase();
+    const startCursor = String(options.cursor || "").trim() || undefined;
+    const allUsers = parseManagerUsers(env);
 
-    const data = (payload.results || []).map((page) => {
+    const baseFilter = { property: "Name", title: { contains: TASK_PREFIX } };
+    const filter = scope === "mine" && viewerEmail
+      ? {
+          and: [
+            baseFilter,
+            {
+              property: "Tags",
+              multi_select: { contains: `${ASSIGNEE_PREFIX}${viewerEmail}` },
+            },
+          ],
+        }
+      : baseFilter;
+
+    const payload = await notionQueryAdvanced(dbId, notionToken, notionVersion, {
+      filter,
+      pageSize: limit,
+      startCursor,
+    });
+
+    const data = await Promise.all((payload.results || []).map(async (page) => {
       const props = page.properties || {};
       const status = props?.Estatus?.select?.name || "Pendiente";
       const dueDate = props?.["Date (ToDo)"]?.date?.start || "";
       const tags = (props?.Tags?.multi_select || []).map((t) => t?.name).filter(Boolean);
-      const assigneeTag = tags.find((t) => t.startsWith("assignee:")) || "";
+      const assignee = parseAssigneeFromTags(tags);
+      const subtaskBlocks = await notionGetPageChildren(page.id, notionToken, notionVersion);
+      const subtasks = parseSubtasksFromBlocks(subtaskBlocks);
+
       return {
         id: page.id,
         title: normalizeTaskTitle(readNotionTitle(props)),
-        assignee: assigneeTag.replace(/^assignee:/, ""),
+        assignee: assignee.assigneeName || assignee.assigneeEmail || "",
+        assigneeEmail: assignee.assigneeEmail || "",
         status,
         dueDate,
+        subtasks,
+        subtaskCount: subtasks.length,
       };
-    });
+    }));
 
-    return { source: "notion", data };
+    return {
+      source: "notion",
+      data,
+      users: allUsers,
+      pagination: {
+        nextCursor: payload.next_cursor || null,
+        hasMore: Boolean(payload.has_more),
+      },
+    };
   } catch (e) {
     return { source: "error", error: "Tasks query failed", details: String(e?.message || e), data: [] };
   }
@@ -267,8 +441,13 @@ function getTagNames(props) {
 }
 
 function parseMessageAuthor(tags = []) {
-  const hit = tags.find((t) => t.startsWith("author:")) || "";
+  const hit = tags.find((t) => t.startsWith(AUTHOR_PREFIX)) || "";
   return hit.replace(/^author:/, "").trim();
+}
+
+function parseMessageAuthorEmail(tags = []) {
+  const hit = tags.find((t) => t.startsWith(AUTHOR_EMAIL_PREFIX)) || "";
+  return hit.replace(/^authorEmail:/, "").trim().toLowerCase();
 }
 
 function parseMessageFeatured(tags = []) {
@@ -305,8 +484,10 @@ async function listManagerMessages(env) {
         id: page.id,
         text: normalizeMessageText(readNotionTitle(props)),
         author: parseMessageAuthor(tags),
+        authorEmail: parseMessageAuthorEmail(tags),
         highlighted: parseMessageFeatured(tags),
         createdAt: page.created_time,
+        tags,
       };
     });
 
@@ -326,6 +507,7 @@ async function createManagerMessage(env, body) {
   if (!text) return { error: "text is required" };
 
   const author = String(body?.author || "Anónimo").trim() || "Anónimo";
+  const authorEmail = String(body?.authorEmail || "").trim().toLowerCase();
 
   const properties = {
     Name: { title: [{ text: { content: `${MESSAGE_PREFIX}${text}` } }] },
@@ -333,7 +515,11 @@ async function createManagerMessage(env, body) {
     Prioridad: { select: { name: "Alta" } },
     Tipo: { select: { name: "Music Knobs" } },
     Tags: {
-      multi_select: [{ name: "kind:manager-msg" }, { name: `author:${author}` }],
+      multi_select: [
+        { name: "kind:manager-msg" },
+        { name: `${AUTHOR_PREFIX}${author}` },
+        ...(authorEmail ? [{ name: `${AUTHOR_EMAIL_PREFIX}${authorEmail}` }] : []),
+      ],
     },
   };
 
@@ -389,9 +575,33 @@ async function updateManagerMessage(env, messageId, body) {
 
   if (highlighted && !currentlyHighlighted) {
     const listed = await listManagerMessages(env);
-    const highlightedCount = (listed.data || []).filter((m) => m.highlighted).length;
-    if (highlightedCount >= 2) {
-      return { error: "Máximo 2 mensajes destacados" };
+    const featured = (listed.data || [])
+      .filter((m) => m.highlighted && m.id !== messageId)
+      .sort((a, b) => new Date(a.createdAt || 0).getTime() - new Date(b.createdAt || 0).getTime());
+
+    if (featured.length >= 3) {
+      const toUnfeature = featured[0];
+      const unfeatureResp = await fetch(`https://api.notion.com/v1/pages/${toUnfeature.id}`, {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${notionToken}`,
+          "Notion-Version": notionVersion,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          properties: {
+            Tags: {
+              multi_select: (Array.isArray(toUnfeature.tags) ? toUnfeature.tags : [])
+                .filter((t) => t !== "featured:true")
+                .map((name) => ({ name })),
+            },
+          },
+        }),
+      });
+
+      if (!unfeatureResp.ok) {
+        return { error: "No se pudo rotar mensajes destacados", details: await unfeatureResp.text() };
+      }
     }
   }
 
@@ -417,6 +627,41 @@ async function updateManagerMessage(env, messageId, body) {
   return { ok: true };
 }
 
+async function clearManagerMessages(env, body) {
+  const notionVersion = env.NOTION_VERSION || "2025-09-03";
+  const notionToken = env.NOTION_TOKEN || "";
+  const dbId = env.MANAGER_MESSAGES_DB_ID || DEFAULT_MANAGER_TASKS_DB_ID;
+  if (!notionToken) return { error: "NOTION_TOKEN missing" };
+
+  const password = String(body?.password || "").trim();
+  if (password !== CLEAR_LOG_PASSWORD) return { error: "Password incorrecto" };
+
+  const requesterEmail = String(body?.requesterEmail || "").trim().toLowerCase();
+  if (requesterEmail && !ADMIN_EMAILS.includes(requesterEmail)) {
+    return { error: "Solo admin puede borrar el log" };
+  }
+
+  try {
+    const listed = await notionQuery(dbId, notionToken, notionVersion, { property: "Name", title: { contains: MESSAGE_PREFIX } }, 100);
+    const pages = listed.results || [];
+    for (const page of pages) {
+      const resp = await fetch(`https://api.notion.com/v1/pages/${page.id}`, {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${notionToken}`,
+          "Notion-Version": notionVersion,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ archived: true }),
+      });
+      if (!resp.ok) return { error: "No se pudo borrar log", details: await resp.text() };
+    }
+    return { ok: true, deleted: pages.length };
+  } catch (e) {
+    return { error: "No se pudo borrar log", details: String(e?.message || e) };
+  }
+}
+
 async function createManagerTask(env, body) {
   const notionVersion = env.NOTION_VERSION || "2025-09-03";
   const notionToken = env.NOTION_TOKEN || "";
@@ -426,8 +671,18 @@ async function createManagerTask(env, body) {
   const title = String(body?.title || "").trim();
   if (!title) return { error: "title is required" };
 
-  const assignee = String(body?.assignee || "").trim();
+  const assigneeRaw = String(body?.assignee || "").trim().toLowerCase();
   const dueDate = String(body?.dueDate || "").trim();
+  const subtasks = Array.isArray(body?.subtasks)
+    ? body.subtasks
+        .map((s) => ({ title: String(s?.title || "").trim(), done: Boolean(s?.done) }))
+        .filter((s) => s.title)
+        .slice(0, 30)
+    : [];
+  const users = parseManagerUsers(env);
+  const userByEmail = new Map(users.map((u) => [u.email.toLowerCase(), u]));
+  const assigneeUser = assigneeRaw ? userByEmail.get(assigneeRaw) : null;
+  const assignee = assigneeUser?.email || "";
 
   const properties = {
     Name: { title: [{ text: { content: `${TASK_PREFIX}${title}` } }] },
@@ -436,7 +691,11 @@ async function createManagerTask(env, body) {
     Tipo: { select: { name: "Music Knobs" } },
   };
   if (dueDate) properties["Date (ToDo)"] = { date: { start: dueDate } };
-  if (assignee) properties.Tags = { multi_select: [{ name: `assignee:${assignee}` }] };
+  if (assignee) {
+    const tags = [`${ASSIGNEE_PREFIX}${assignee}`];
+    if (assigneeUser?.name) tags.push(`${ASSIGNEE_NAME_PREFIX}${assigneeUser.name}`);
+    properties.Tags = { multi_select: tags.map((name) => ({ name })) };
+  }
 
   const parentShapes = [{ data_source_id: dbId }, { database_id: dbId }];
   let lastError = "";
@@ -454,6 +713,13 @@ async function createManagerTask(env, body) {
 
     if (resp.ok) {
       const page = await resp.json();
+      if (subtasks.length) {
+        try {
+          await replaceSubtasks(page.id, notionToken, notionVersion, subtasks);
+        } catch (e) {
+          return { error: "Task create failed", details: String(e?.message || e) };
+        }
+      }
       return { ok: true, id: page.id };
     }
 
@@ -468,7 +734,77 @@ async function updateManagerTask(env, taskId, body) {
   const notionToken = env.NOTION_TOKEN || "";
   if (!notionToken) return { error: "NOTION_TOKEN missing" };
 
-  const status = String(body?.status || "").trim() || "Terminado";
+  const status = String(body?.status || "").trim();
+  const title = String(body?.title || "").trim();
+  const dueDate = typeof body?.dueDate === "string" ? body.dueDate.trim() : null;
+  const assigneeRaw = String(body?.assignee || "").trim().toLowerCase();
+  const hasSubtasks = Array.isArray(body?.subtasks);
+  const subtasks = hasSubtasks
+    ? body.subtasks
+        .map((s) => ({ title: String(s?.title || "").trim(), done: Boolean(s?.done) }))
+        .filter((s) => s.title)
+        .slice(0, 30)
+    : [];
+
+  const pageResp = await fetch(`https://api.notion.com/v1/pages/${taskId}`, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${notionToken}`,
+      "Notion-Version": notionVersion,
+      "Content-Type": "application/json",
+    },
+  });
+  if (!pageResp.ok) return { error: "Task lookup failed", details: await pageResp.text() };
+
+  const page = await pageResp.json();
+  const props = page.properties || {};
+  const currentTags = getTagNames(props);
+
+  const properties = {};
+  if (status) properties.Estatus = { select: { name: status } };
+  if (title) properties.Name = { title: [{ text: { content: `${TASK_PREFIX}${title}` } }] };
+
+  if (dueDate !== null) {
+    properties["Date (ToDo)"] = dueDate ? { date: { start: dueDate } } : { date: null };
+  }
+
+  if (assigneeRaw || body?.assignee === "") {
+    const users = parseManagerUsers(env);
+    const userByEmail = new Map(users.map((u) => [u.email.toLowerCase(), u]));
+    const assigneeUser = assigneeRaw ? userByEmail.get(assigneeRaw) : null;
+    const nextTags = applyAssigneeTags(currentTags, assigneeUser?.email || "", assigneeUser?.name || "");
+    properties.Tags = { multi_select: nextTags.map((name) => ({ name })) };
+  }
+
+  if (Object.keys(properties).length) {
+    const resp = await fetch(`https://api.notion.com/v1/pages/${taskId}`, {
+      method: "PATCH",
+      headers: {
+        Authorization: `Bearer ${notionToken}`,
+        "Notion-Version": notionVersion,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ properties }),
+    });
+
+    if (!resp.ok) return { error: "Task update failed", details: await resp.text() };
+  }
+
+  if (hasSubtasks) {
+    try {
+      await replaceSubtasks(taskId, notionToken, notionVersion, subtasks);
+    } catch (e) {
+      return { error: "Task update failed", details: String(e?.message || e) };
+    }
+  }
+
+  return { ok: true };
+}
+
+async function deleteManagerTask(env, taskId) {
+  const notionVersion = env.NOTION_VERSION || "2025-09-03";
+  const notionToken = env.NOTION_TOKEN || "";
+  if (!notionToken) return { error: "NOTION_TOKEN missing" };
 
   const resp = await fetch(`https://api.notion.com/v1/pages/${taskId}`, {
     method: "PATCH",
@@ -477,17 +813,10 @@ async function updateManagerTask(env, taskId, body) {
       "Notion-Version": notionVersion,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({
-      properties: {
-        Estatus: { select: { name: status } },
-      },
-    }),
+    body: JSON.stringify({ archived: true }),
   });
 
-  if (!resp.ok) {
-    return { error: "Task update failed", details: await resp.text() };
-  }
-
+  if (!resp.ok) return { error: "Task delete failed", details: await resp.text() };
   return { ok: true };
 }
 
@@ -513,7 +842,12 @@ export default {
     }
 
     if (request.method === "GET" && url.pathname === "/api/manager/tasks") {
-      const result = await listManagerTasks(env);
+      const result = await listManagerTasks(env, {
+        limit: url.searchParams.get("limit") || "10",
+        cursor: url.searchParams.get("cursor") || "",
+        scope: url.searchParams.get("scope") || "all",
+        viewerEmail: url.searchParams.get("viewer") || "",
+      });
       return json(result, result.error ? 502 : 200);
     }
 
@@ -539,11 +873,24 @@ export default {
       return json(result, result.error ? 400 : 201);
     }
 
+    if (request.method === "POST" && url.pathname === "/api/manager/messages/clear") {
+      const body = await request.json().catch(() => ({}));
+      const result = await clearManagerMessages(env, body);
+      return json(result, result.error ? 400 : 200);
+    }
+
     if (request.method === "PATCH" && url.pathname.startsWith("/api/manager/tasks/")) {
       const taskId = url.pathname.replace("/api/manager/tasks/", "").trim();
       if (!taskId) return json({ error: "taskId required" }, 400);
       const body = await request.json().catch(() => ({}));
       const result = await updateManagerTask(env, taskId, body);
+      return json(result, result.error ? 400 : 200);
+    }
+
+    if (request.method === "DELETE" && url.pathname.startsWith("/api/manager/tasks/")) {
+      const taskId = url.pathname.replace("/api/manager/tasks/", "").trim();
+      if (!taskId) return json({ error: "taskId required" }, 400);
+      const result = await deleteManagerTask(env, taskId);
       return json(result, result.error ? 400 : 200);
     }
 
@@ -555,7 +902,7 @@ export default {
       return json(result, result.error ? 400 : 200);
     }
 
-    if (!["GET", "POST", "PATCH"].includes(request.method)) {
+    if (!["GET", "POST", "PATCH", "DELETE"].includes(request.method)) {
       return json({ error: "Method not allowed" }, 405);
     }
 

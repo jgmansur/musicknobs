@@ -34,55 +34,70 @@
     <p id="oauth-status" class="hint oauth-header-status">Sin sesión</p>
 
     <main class="container">
-      <section class="hero card">
-        <div class="panel-head">
-          <h2>Mensajes internos</h2>
-          <button id="refresh-messages" class="btn ghost">Refrescar</button>
-        </div>
-        <p class="hint">Comunicación interna con log de autor. Puedes destacar hasta 2 anuncios.</p>
-
-        <div class="task-form-grid">
-          <textarea id="message-input" class="field-input" rows="3" placeholder="Escribe un anuncio interno..."></textarea>
-          <button id="message-create" class="btn">Agregar anuncio</button>
-        </div>
-
-        <p id="messages-status" class="hint status" aria-live="polite">Sin anuncios cargados.</p>
-
+      <section id="tab-overview" class="panel card active">
         <div class="featured-box">
-          <h3>Anuncios destacados</h3>
+          <div class="panel-head">
+            <h3>Anuncios destacados</h3>
+            <button id="refresh-messages-overview" class="btn ghost">Refrescar</button>
+          </div>
           <ul id="messages-featured" class="list compact-list"></ul>
         </div>
-
-        <ul id="messages-list" class="list compact-list"></ul>
-      </section>
-
-      <section id="tab-overview" class="panel card active">
-        <h3>Perfil para Manager</h3>
-        <ul class="list">
-          <li>Nombre artístico: <strong>Jay Mansur</strong></li>
-          <li>Roles: Productor musical, compositor, artista</li>
-          <li>Marca principal: Music Knobs</li>
-          <li>Sitio oficial: <a href="https://www.musicknobs.com" target="_blank" rel="noopener">musicknobs.com</a></li>
-        </ul>
 
         <hr class="soft-sep" />
 
         <div class="panel-head">
           <h3>Tasks del Manager (últimos 10)</h3>
-          <button id="refresh-tasks" class="btn ghost">Refrescar</button>
+          <div class="actions">
+            <button id="refresh-tasks" class="btn ghost">Refrescar</button>
+            <button id="task-form-toggle" class="btn">Nueva task</button>
+          </div>
         </div>
 
-        <div class="task-form-grid">
-          <input id="task-title" class="field-input" type="text" placeholder="Nueva tarea..." />
-          <select id="task-assignee" class="field-input">
-            <option value="">Asignar a...</option>
+        <div class="task-filters">
+          <select id="tasks-scope" class="field-input compact-control">
+            <option value="all">Ver: todas</option>
+            <option value="mine">Ver: asignadas a mí</option>
           </select>
-          <input id="task-due" class="field-input" type="date" />
-          <button id="task-create" class="btn">Agregar task</button>
+          <button id="tasks-load-more" class="btn ghost" disabled>Cargar más</button>
+        </div>
+
+        <div id="task-form-card" class="task-form-card hidden">
+          <div class="task-form-grid">
+            <input id="task-title" class="field-input" type="text" placeholder="Nueva tarea..." />
+            <select id="task-assignee" class="field-input">
+              <option value="">Asignar a...</option>
+            </select>
+            <input id="task-due" class="field-input" type="date" />
+            <textarea id="task-subtasks" class="field-input" rows="3" placeholder="Subtasks (una por línea)"></textarea>
+            <div class="actions">
+              <button id="task-create" class="btn">Agregar task</button>
+              <button id="task-cancel-edit" class="btn ghost hidden" type="button">Cancelar edición</button>
+            </div>
+            <input id="task-edit-id" type="hidden" />
+          </div>
         </div>
 
         <p id="tasks-status" class="hint status" aria-live="polite">Sin tareas cargadas.</p>
         <ul id="tasks-list" class="list compact-list"></ul>
+      </section>
+
+      <section id="tab-messages" class="panel card">
+        <div class="panel-head">
+          <h3>Mensajes internos</h3>
+          <div class="actions">
+            <button id="refresh-messages" class="btn ghost">Refrescar</button>
+            <button id="clear-messages-log" class="btn ghost hidden">Borrar log</button>
+          </div>
+        </div>
+        <p class="hint">Estilo mensajero interno. Puedes destacar hasta 3 anuncios (rotación automática).</p>
+        <p id="messages-status" class="hint status" aria-live="polite">Sin anuncios cargados.</p>
+
+        <div class="task-form-grid">
+          <textarea id="message-input" class="field-input" rows="3" placeholder="Escribe un mensaje..."></textarea>
+          <button id="message-create" class="btn">Enviar mensaje</button>
+        </div>
+
+        <ul id="messages-list" class="list compact-list messages-chat-list"></ul>
       </section>
 
       <section id="tab-catalog" class="panel card">
@@ -135,6 +150,10 @@
         <button class="tab" id="tab-btn-catalog" data-tab="catalog">
           <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 5h16v14H4z"/><path d="M8 9h8M8 13h8M8 17h5"/></svg>
           <span class="tab-label">Catálogo</span>
+        </button>
+        <button class="tab" id="tab-btn-messages" data-tab="messages">
+          <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          <span class="tab-label">Mensajes</span>
         </button>
         <button class="tab" id="tab-btn-contacts" data-tab="contacts">
           <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><path d="M20 8v6M23 11h-6"/></svg>
