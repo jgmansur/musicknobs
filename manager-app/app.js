@@ -1107,6 +1107,7 @@ function renderCatalog() {
 
   filterTabPlaylists.onclick = () => {
     catalogFilterView = 'playlists';
+    catalogGenreFilter = 'Todas';
     renderCatalog();
   };
 
