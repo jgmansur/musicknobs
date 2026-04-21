@@ -1757,9 +1757,15 @@ function syncTabVisibility() {
     const tabName = t.dataset.tab;
     if (!isAuthenticated && !isPublicTab(tabName)) {
       t.style.display = 'none';
-    } else {
+     } else {
       t.style.display = '';
-    }
+     }
+  });
+
+  const refreshButtons = ['refresh-catalog', 'refresh-links'];
+  refreshButtons.forEach(id => {
+    const btn = document.getElementById(id);
+    if (btn) btn.style.display = isAuthenticated ? '' : 'none';
   });
 }
 
