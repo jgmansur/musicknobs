@@ -70,6 +70,8 @@ const catalogPlayer = {
   progressTimer: null,
   volume: 0.8,
   isSeeking: false,
+  activeSoundId: null,
+  pendingPlay: false,
 };
 
 function isLocalDevHost() {
@@ -366,7 +368,7 @@ function refreshCatalogProgressUi() {
   if (!progress || !current || !duration || !howl || !howl.state || howl.state() !== 'loaded') return;
 
   const total = Number(howl.duration() || 0);
-  const seek = Number(howl.seek() || 0);
+  const seek = Number(howl.seek(catalogPlayer.activeSoundId || undefined) || 0);
   const percent = total > 0 ? Math.min(100, Math.max(0, (seek / total) * 100)) : 0;
 
   if (!catalogPlayer.isSeeking) {
@@ -398,6 +400,29 @@ function clearCatalogHowl() {
   catalogPlayer.howl = null;
   catalogPlayer.isPlaying = false;
   catalogPlayer.isLoading = false;
+  catalogPlayer.activeSoundId = null;
+  catalogPlayer.pendingPlay = false;
+}
+
+function requestCatalogPlay() {
+  const howl = catalogPlayer.howl;
+  if (!howl) return;
+  if (catalogPlayer.pendingPlay) return;
+
+  const activeId = catalogPlayer.activeSoundId;
+  if (activeId && howl.playing(activeId)) return;
+
+  catalogPlayer.pendingPlay = true;
+  try {
+    if (activeId) {
+      howl.play(activeId);
+      return;
+    }
+    const id = howl.play();
+    catalogPlayer.activeSoundId = typeof id === 'number' ? id : catalogPlayer.activeSoundId;
+  } catch {
+    catalogPlayer.pendingPlay = false;
+  }
 }
 
 function updateCatalogPlayerUi() {
@@ -513,10 +538,12 @@ async function loadCatalogTrack(index, { autoplay = false } = {}) {
     refreshCatalogProgressUi();
   });
 
-  howl.on('play', () => {
+  howl.on('play', (id) => {
     if (catalogPlayer.howl !== howl) return;
+    if (typeof id === 'number') catalogPlayer.activeSoundId = id;
     catalogPlayer.isPlaying = true;
     catalogPlayer.isLoading = false;
+    catalogPlayer.pendingPlay = false;
     setCatalogPlayerStatus('Reproduciendo');
     setStatus('catalog-status', `Reproduciendo: ${track.obra || 'canción'}.`);
     updateCatalogPlayerUi();
@@ -527,6 +554,7 @@ async function loadCatalogTrack(index, { autoplay = false } = {}) {
   howl.on('pause', () => {
     if (catalogPlayer.howl !== howl) return;
     catalogPlayer.isPlaying = false;
+    catalogPlayer.pendingPlay = false;
     setCatalogPlayerStatus('Pausado');
     updateCatalogPlayerUi();
     stopCatalogProgressTimer();
@@ -536,6 +564,7 @@ async function loadCatalogTrack(index, { autoplay = false } = {}) {
   howl.on('stop', () => {
     if (catalogPlayer.howl !== howl) return;
     catalogPlayer.isPlaying = false;
+    catalogPlayer.pendingPlay = false;
     updateCatalogPlayerUi();
     stopCatalogProgressTimer();
     refreshCatalogProgressUi();
@@ -543,6 +572,7 @@ async function loadCatalogTrack(index, { autoplay = false } = {}) {
 
   howl.on('end', () => {
     if (catalogPlayer.howl !== howl) return;
+    catalogPlayer.pendingPlay = false;
     playNextCatalogTrack(1);
   });
 
@@ -550,6 +580,7 @@ async function loadCatalogTrack(index, { autoplay = false } = {}) {
     if (catalogPlayer.howl !== howl) return;
     catalogPlayer.isLoading = false;
     catalogPlayer.isPlaying = false;
+    catalogPlayer.pendingPlay = false;
     stopCatalogProgressTimer();
     updateCatalogPlayerUi();
     setCatalogPlayerStatus('Error al cargar audio', true);
@@ -562,11 +593,7 @@ async function loadCatalogTrack(index, { autoplay = false } = {}) {
   howl.on('playerror', (id, code) => onHowlerError('playerror', id, code));
 
   if (autoplay) {
-    try {
-      howl.play();
-    } catch {
-      // Howler dispara callbacks de error.
-    }
+    requestCatalogPlay();
   }
 }
 
@@ -793,10 +820,11 @@ function setupCatalogPlayerControls() {
         void loadCatalogTrack(catalogPlayer.currentTrackIndex, { autoplay: true });
         return;
       }
-      if (catalogPlayer.howl.playing()) {
-        catalogPlayer.howl.pause();
+      const activeId = catalogPlayer.activeSoundId;
+      if (activeId && catalogPlayer.howl.playing(activeId)) {
+        catalogPlayer.howl.pause(activeId);
       } else {
-        catalogPlayer.howl.play();
+        requestCatalogPlay();
       }
     });
   }
@@ -820,7 +848,7 @@ function setupCatalogPlayerControls() {
       if (!howl || howl.state() !== 'loaded') return;
       const duration = Number(howl.duration() || 0);
       const pct = Math.min(100, Math.max(0, Number(progress.value || 0)));
-      howl.seek((pct / 100) * duration);
+      howl.seek((pct / 100) * duration, catalogPlayer.activeSoundId || undefined);
       refreshCatalogProgressUi();
     });
     progress.addEventListener('change', () => {
