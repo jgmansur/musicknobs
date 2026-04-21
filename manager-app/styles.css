@@ -749,18 +749,14 @@ a { color: #93c5fd; }
   border-radius: .85rem;
   overflow: hidden;
   background: rgba(10, 18, 30, .72);
-  height: 100%;
-  max-height: none;
+  height: auto;
+  max-height: min(68vh, 620px);
   display: grid;
   grid-template-rows: 1fr auto auto;
 }
 
 #tab-catalog.panel-fullscreen {
   min-height: calc(100vh - 260px);
-  height: calc(100vh - 220px);
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
 }
 
 .catalog-playlist-toolbar {
@@ -921,9 +917,6 @@ a { color: #93c5fd; }
   padding: .5rem .55rem;
   display: grid;
   gap: .42rem;
-  position: sticky;
-  bottom: 0;
-  z-index: 3;
 }
 
 .catalog-player-head {
@@ -1109,13 +1102,11 @@ th {
   }
 
   .catalog-shell {
-    height: 100%;
     max-height: none;
   }
 
   #tab-catalog.panel-fullscreen {
     min-height: calc(100vh - 190px);
-    height: calc(100vh - 170px);
   }
 
   .catalog-pane {
