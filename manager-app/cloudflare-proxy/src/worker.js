@@ -475,7 +475,7 @@ function readNotionLinkLabel(props) {
 
 async function queryNotionContacts(env) {
   const notionVersion = env.NOTION_VERSION || "2022-06-28";
-  const dbId = env.MANAGER_CONTACTS_DB_ID || DEFAULT_MANAGER_CONTACTS_DB_ID;
+  const dbId = DEFAULT_MANAGER_CONTACTS_DB_ID;
   const notionToken = env.NOTION_TOKEN || "";
 
   if (!notionToken || !dbId) {
@@ -813,7 +813,7 @@ function buildContactPropertiesFromSchema(schemaProps = {}, input = {}, { includ
 async function createManagerContact(env, body) {
   const notionVersion = env.NOTION_VERSION || "2022-06-28";
   const notionToken = env.NOTION_TOKEN || "";
-  const dbId = env.MANAGER_CONTACTS_DB_ID || DEFAULT_MANAGER_CONTACTS_DB_ID;
+  const dbId = DEFAULT_MANAGER_CONTACTS_DB_ID;
 
   if (!notionToken || !dbId) return { error: "NOTION_TOKEN o MANAGER_CONTACTS_DB_ID missing" };
   const nombre = String(body?.nombre || "").trim();
@@ -859,7 +859,7 @@ async function createManagerContact(env, body) {
 async function updateManagerContact(env, contactId, body) {
   const notionVersion = env.NOTION_VERSION || "2022-06-28";
   const notionToken = env.NOTION_TOKEN || "";
-  const dbId = env.MANAGER_CONTACTS_DB_ID || DEFAULT_MANAGER_CONTACTS_DB_ID;
+  const dbId = DEFAULT_MANAGER_CONTACTS_DB_ID;
 
   if (!notionToken || !dbId) return { error: "NOTION_TOKEN o MANAGER_CONTACTS_DB_ID missing" };
 
