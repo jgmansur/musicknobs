@@ -806,13 +806,6 @@ function renderCatalog() {
         .join('')
     : '<li>Sin canciones en este género.</li>';
 
-  const catalogLoadMoreBtn = document.getElementById('catalog-load-more');
-  if (catalogLoadMoreBtn) {
-    const canLoadMore = visibleSongs.length > pagedSongs.length;
-    catalogLoadMoreBtn.disabled = !canLoadMore;
-    catalogLoadMoreBtn.textContent = canLoadMore ? 'Cargar más' : 'Todo cargado';
-  }
-
   const genreSelect = document.getElementById('catalog-genre-select');
   if (genreSelect) {
     genreSelect.addEventListener('change', () => {
@@ -2209,12 +2202,7 @@ function setupActions() {
   }
 
   bindClick('refresh-catalog', () => loadCatalogFromApi());
-  bindClick('catalog-sync', () => syncCatalogNow());
   bindClick('playlist-create', () => createPlaylist());
-  bindClick('catalog-load-more', () => {
-    catalogVisibleCount += CATALOG_PAGE_STEP;
-    renderCatalog();
-  });
 
   const playlistFilter = document.getElementById('catalog-playlist-filter');
   if (playlistFilter) {
