@@ -10,8 +10,9 @@ const CORS_HEADERS = {
 };
 
 const DEFAULT_MANAGER_TASKS_DB_ID = "6405719e-5f90-4fc0-8eab-d9352387dd07";
-const DEFAULT_SOCIAL_LINKS_DB_ID = "13dc1932-ede8-802e-9d6d-e4ae16d7eb45";
+const DEFAULT_SOCIAL_LINKS_DB_ID = "761cbab4-0fef-4aad-aa99-d3aa5e47025c";
 const TASK_PREFIX = "[ManagerTask] ";
+const MESSAGE_PREFIX = "[ManagerMsg] ";
 
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
@@ -35,6 +36,10 @@ function readNotionTitle(props) {
 
 function normalizeTaskTitle(raw) {
   return String(raw || "").replace(TASK_PREFIX, "").trim();
+}
+
+function normalizeMessageText(raw) {
+  return String(raw || "").replace(MESSAGE_PREFIX, "").trim();
 }
 
 function readNotionEmail(props) {
@@ -257,6 +262,161 @@ async function listSocialLinks(env) {
   }
 }
 
+function getTagNames(props) {
+  return (props?.Tags?.multi_select || []).map((t) => t?.name).filter(Boolean);
+}
+
+function parseMessageAuthor(tags = []) {
+  const hit = tags.find((t) => t.startsWith("author:")) || "";
+  return hit.replace(/^author:/, "").trim();
+}
+
+function parseMessageFeatured(tags = []) {
+  return tags.includes("featured:true");
+}
+
+function applyMessageTagState(tags = [], highlighted = false) {
+  const withoutFeatured = tags.filter((t) => t !== "featured:true");
+  return highlighted ? [...withoutFeatured, "featured:true"] : withoutFeatured;
+}
+
+async function listManagerMessages(env) {
+  const notionVersion = env.NOTION_VERSION || "2025-09-03";
+  const notionToken = env.NOTION_TOKEN || "";
+  const dbId = env.MANAGER_MESSAGES_DB_ID || DEFAULT_MANAGER_TASKS_DB_ID;
+
+  if (!notionToken) {
+    return { source: "fallback", warning: "NOTION_TOKEN no configurado.", data: [] };
+  }
+
+  try {
+    const payload = await notionQuery(
+      dbId,
+      notionToken,
+      notionVersion,
+      { property: "Name", title: { contains: MESSAGE_PREFIX } },
+      40
+    );
+
+    const data = (payload.results || []).map((page) => {
+      const props = page.properties || {};
+      const tags = getTagNames(props);
+      return {
+        id: page.id,
+        text: normalizeMessageText(readNotionTitle(props)),
+        author: parseMessageAuthor(tags),
+        highlighted: parseMessageFeatured(tags),
+        createdAt: page.created_time,
+      };
+    });
+
+    return { source: "notion", data };
+  } catch (e) {
+    return { source: "error", error: "Messages query failed", details: String(e?.message || e), data: [] };
+  }
+}
+
+async function createManagerMessage(env, body) {
+  const notionVersion = env.NOTION_VERSION || "2025-09-03";
+  const notionToken = env.NOTION_TOKEN || "";
+  const dbId = env.MANAGER_MESSAGES_DB_ID || DEFAULT_MANAGER_TASKS_DB_ID;
+
+  if (!notionToken) return { error: "NOTION_TOKEN missing" };
+  const text = String(body?.text || "").trim();
+  if (!text) return { error: "text is required" };
+
+  const author = String(body?.author || "Anónimo").trim() || "Anónimo";
+
+  const properties = {
+    Name: { title: [{ text: { content: `${MESSAGE_PREFIX}${text}` } }] },
+    Estatus: { select: { name: "Empezó" } },
+    Prioridad: { select: { name: "Alta" } },
+    Tipo: { select: { name: "Music Knobs" } },
+    Tags: {
+      multi_select: [{ name: "kind:manager-msg" }, { name: `author:${author}` }],
+    },
+  };
+
+  const parentShapes = [{ data_source_id: dbId }, { database_id: dbId }];
+  let lastError = "";
+
+  for (const parent of parentShapes) {
+    const resp = await fetch("https://api.notion.com/v1/pages", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${notionToken}`,
+        "Notion-Version": notionVersion,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ parent, properties }),
+    });
+
+    if (resp.ok) {
+      const page = await resp.json();
+      return { ok: true, id: page.id };
+    }
+
+    lastError = await resp.text();
+  }
+
+  return { error: "Message create failed", details: lastError };
+}
+
+async function updateManagerMessage(env, messageId, body) {
+  const notionVersion = env.NOTION_VERSION || "2025-09-03";
+  const notionToken = env.NOTION_TOKEN || "";
+  if (!notionToken) return { error: "NOTION_TOKEN missing" };
+
+  const highlighted = Boolean(body?.highlighted);
+
+  const pageResp = await fetch(`https://api.notion.com/v1/pages/${messageId}`, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${notionToken}`,
+      "Notion-Version": notionVersion,
+      "Content-Type": "application/json",
+    },
+  });
+
+  if (!pageResp.ok) {
+    return { error: "Message lookup failed", details: await pageResp.text() };
+  }
+
+  const page = await pageResp.json();
+  const props = page.properties || {};
+  const currentTags = getTagNames(props);
+  const currentlyHighlighted = parseMessageFeatured(currentTags);
+
+  if (highlighted && !currentlyHighlighted) {
+    const listed = await listManagerMessages(env);
+    const highlightedCount = (listed.data || []).filter((m) => m.highlighted).length;
+    if (highlightedCount >= 2) {
+      return { error: "Máximo 2 mensajes destacados" };
+    }
+  }
+
+  const nextTags = applyMessageTagState(currentTags, highlighted);
+  const resp = await fetch(`https://api.notion.com/v1/pages/${messageId}`, {
+    method: "PATCH",
+    headers: {
+      Authorization: `Bearer ${notionToken}`,
+      "Notion-Version": notionVersion,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      properties: {
+        Tags: { multi_select: nextTags.map((name) => ({ name })) },
+      },
+    }),
+  });
+
+  if (!resp.ok) {
+    return { error: "Message update failed", details: await resp.text() };
+  }
+
+  return { ok: true };
+}
+
 async function createManagerTask(env, body) {
   const notionVersion = env.NOTION_VERSION || "2025-09-03";
   const notionToken = env.NOTION_TOKEN || "";
@@ -357,6 +517,11 @@ export default {
       return json(result, result.error ? 502 : 200);
     }
 
+    if (request.method === "GET" && url.pathname === "/api/manager/messages") {
+      const result = await listManagerMessages(env);
+      return json(result, result.error ? 502 : 200);
+    }
+
     if (request.method === "GET" && url.pathname === "/api/manager/social-links") {
       const result = await listSocialLinks(env);
       return json(result, result.error ? 502 : 200);
@@ -368,11 +533,25 @@ export default {
       return json(result, result.error ? 400 : 201);
     }
 
+    if (request.method === "POST" && url.pathname === "/api/manager/messages") {
+      const body = await request.json().catch(() => ({}));
+      const result = await createManagerMessage(env, body);
+      return json(result, result.error ? 400 : 201);
+    }
+
     if (request.method === "PATCH" && url.pathname.startsWith("/api/manager/tasks/")) {
       const taskId = url.pathname.replace("/api/manager/tasks/", "").trim();
       if (!taskId) return json({ error: "taskId required" }, 400);
       const body = await request.json().catch(() => ({}));
       const result = await updateManagerTask(env, taskId, body);
+      return json(result, result.error ? 400 : 200);
+    }
+
+    if (request.method === "PATCH" && url.pathname.startsWith("/api/manager/messages/")) {
+      const messageId = url.pathname.replace("/api/manager/messages/", "").trim();
+      if (!messageId) return json({ error: "messageId required" }, 400);
+      const body = await request.json().catch(() => ({}));
+      const result = await updateManagerMessage(env, messageId, body);
       return json(result, result.error ? 400 : 200);
     }
 

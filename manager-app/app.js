@@ -27,6 +27,7 @@ let googleInitInterval = null;
 let isAuthenticated = false;
 let contactsCache = [];
 let tasksCache = [];
+let messagesCache = [];
 
 const catalogSample = [
   { obra: 'Tema Demo 1', autores: 'Jay Mansur', generos: 'Regional Mexicano', drive: '#' },
@@ -79,18 +80,22 @@ function setStatus(id, text, isError = false) {
 }
 
 function setShareActions() {
+  const mailShare = document.getElementById('mail-share');
+  const waShare = document.getElementById('wa-share');
+  if (!mailShare || !waShare) return;
+
   const subject = encodeURIComponent('Jay Mansur · Perfil para Manager');
   const body = encodeURIComponent(
     `Te comparto el perfil de ${profile.name}\n` +
     `Sitio: ${profile.website}\n` +
     `Contacto: ${profile.email}`
   );
-  document.getElementById('mail-share').href = `mailto:?subject=${subject}&body=${body}`;
+  mailShare.href = `mailto:?subject=${subject}&body=${body}`;
 
   const waText = encodeURIComponent(
     `Perfil Manager de ${profile.name}\n${profile.website}\nContacto: ${profile.email}`
   );
-  document.getElementById('wa-share').href = `https://wa.me/?text=${waText}`;
+  waShare.href = `https://wa.me/?text=${waText}`;
 }
 
 function setLinks(rows = socialLinksSample) {
@@ -152,6 +157,53 @@ function setTasks(rows = []) {
   });
 }
 
+function setMessages(rows = []) {
+  messagesCache = rows;
+  const list = document.getElementById('messages-list');
+  const featuredList = document.getElementById('messages-featured');
+  if (!list || !featuredList) return;
+
+  const featured = rows.filter((m) => Boolean(m.highlighted));
+
+  featuredList.innerHTML = featured.length
+    ? featured
+        .map((m) => `
+          <li>
+            <strong>${m.author || 'Anónimo'}</strong> ·
+            <span>${m.text || 'Sin mensaje'}</span>
+          </li>
+        `)
+        .join('')
+    : '<li>Sin mensajes destacados.</li>';
+
+  list.innerHTML = rows
+    .map((m) => {
+      const author = m.author ? `Por: ${m.author}` : 'Por: Anónimo';
+      const created = m.createdAt ? ` · ${new Date(m.createdAt).toLocaleString('es-MX')}` : '';
+      const label = m.highlighted ? 'Quitar destacado' : 'Destacar';
+      return `
+        <li>
+          <div class="message-row">
+            <div>
+              <div class="message-text">${m.text || 'Sin mensaje'}</div>
+              <div class="task-meta">${author}${created}</div>
+            </div>
+            <button class="mini-btn" data-message-feature="${m.id}" data-message-state="${m.highlighted ? '1' : '0'}">${label}</button>
+          </div>
+        </li>
+      `;
+    })
+    .join('');
+
+  list.querySelectorAll('[data-message-feature]').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      const id = btn.dataset.messageFeature || '';
+      const current = btn.dataset.messageState === '1';
+      await toggleFeaturedMessage(id, !current);
+    });
+  });
+}
+
 function refreshAssigneeOptions() {
   const select = document.getElementById('task-assignee');
   if (!select) return;
@@ -207,6 +259,7 @@ function clearSensitiveData() {
   setCatalog([]);
   setContacts([]);
   setTasks([]);
+  setMessages([]);
   setLinks([]);
 }
 
@@ -220,6 +273,7 @@ function setAuthenticated(value) {
   }
 
   if (isAuthenticated) {
+    loadMessagesFromApi();
     loadCatalogFromApi();
     loadContactsFromNotion();
     loadTasksFromApi();
@@ -403,6 +457,84 @@ async function loadCatalogFromApi() {
   }
 }
 
+async function loadMessagesFromApi() {
+  if (!isAuthenticated) return;
+  try {
+    if (!API_BASE) throw new Error('apiBaseUrl no configurado');
+    const res = await fetchJson(`${API_BASE}/api/manager/messages`);
+    const rows = (res.data || []).map((item) => ({
+      id: item.id || '',
+      text: item.text || '',
+      author: item.author || '',
+      highlighted: Boolean(item.highlighted),
+      createdAt: item.createdAt || ''
+    }));
+    setMessages(rows);
+    setStatus('messages-status', rows.length ? `${rows.length} mensajes cargados.` : 'No hay anuncios todavía.');
+  } catch (e) {
+    setMessages([]);
+    const reason = e instanceof Error ? e.message : String(e);
+    setStatus('messages-status', `No se pudieron cargar anuncios: ${reason}`, true);
+  }
+}
+
+async function createMessage() {
+  if (!isAuthenticated) return;
+  const input = document.getElementById('message-input');
+  if (!input) return;
+
+  const text = String(input.value || '').trim();
+  if (!text) {
+    setStatus('messages-status', 'Escribe un mensaje primero.', true);
+    return;
+  }
+
+  const author = googleProfile?.name || googleProfile?.email || 'Anónimo';
+
+  try {
+    const r = await fetch(`${API_BASE}/api/manager/messages`, {
+      method: 'POST',
+      headers: apiHeaders(),
+      body: JSON.stringify({ text, author })
+    });
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    input.value = '';
+    setStatus('messages-status', 'Anuncio agregado.');
+    await loadMessagesFromApi();
+  } catch (e) {
+    const reason = e instanceof Error ? e.message : String(e);
+    setStatus('messages-status', `No se pudo guardar anuncio: ${reason}`, true);
+  }
+}
+
+async function toggleFeaturedMessage(messageId, highlighted) {
+  if (!isAuthenticated || !messageId) return;
+  try {
+    const r = await fetch(`${API_BASE}/api/manager/messages/${messageId}`, {
+      method: 'PATCH',
+      headers: apiHeaders(),
+      body: JSON.stringify({ highlighted })
+    });
+
+    if (!r.ok) {
+      let reason = `HTTP ${r.status}`;
+      try {
+        const body = await r.json();
+        if (body?.error) reason = `${reason} - ${body.error}`;
+      } catch {
+        // noop
+      }
+      throw new Error(reason);
+    }
+
+    setStatus('messages-status', highlighted ? 'Mensaje destacado.' : 'Mensaje ya no está destacado.');
+    await loadMessagesFromApi();
+  } catch (e) {
+    const reason = e instanceof Error ? e.message : String(e);
+    setStatus('messages-status', `No se pudo actualizar anuncio: ${reason}`, true);
+  }
+}
+
 async function loadLinksFromApi() {
   if (!isAuthenticated) return;
   try {
@@ -544,6 +676,8 @@ function setupTabs() {
 function setupActions() {
   document.getElementById('google-auth-toggle').addEventListener('click', handleAuthToggle);
   document.getElementById('auth-gate-login').addEventListener('click', startGoogleLogin);
+  document.getElementById('refresh-messages').addEventListener('click', () => loadMessagesFromApi());
+  document.getElementById('message-create').addEventListener('click', createMessage);
   document.getElementById('refresh-catalog').addEventListener('click', () => loadCatalogFromApi());
   document.getElementById('refresh-contacts').addEventListener('click', () => loadContactsFromNotion());
   document.getElementById('refresh-links').addEventListener('click', () => loadLinksFromApi());

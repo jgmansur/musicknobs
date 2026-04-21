@@ -35,16 +35,25 @@
 
     <main class="container">
       <section class="hero card">
-        <div class="hero-content">
-          <h2>Pitch Deck Operativo (MVP)</h2>
-          <p>
-            Enfoque mobile-first para managers: perfil, catálogo, contactos, links clave y acciones de envío por correo/WhatsApp.
-          </p>
+        <div class="panel-head">
+          <h2>Mensajes internos</h2>
+          <button id="refresh-messages" class="btn ghost">Refrescar</button>
         </div>
-        <div class="actions">
-          <a id="mail-share" class="btn" href="#">Enviar por Email</a>
-          <a id="wa-share" class="btn ghost" href="#" target="_blank" rel="noopener">Enviar por WhatsApp</a>
+        <p class="hint">Comunicación interna con log de autor. Puedes destacar hasta 2 anuncios.</p>
+
+        <div class="task-form-grid">
+          <textarea id="message-input" class="field-input" rows="3" placeholder="Escribe un anuncio interno..."></textarea>
+          <button id="message-create" class="btn">Agregar anuncio</button>
         </div>
+
+        <p id="messages-status" class="hint status" aria-live="polite">Sin anuncios cargados.</p>
+
+        <div class="featured-box">
+          <h3>Anuncios destacados</h3>
+          <ul id="messages-featured" class="list compact-list"></ul>
+        </div>
+
+        <ul id="messages-list" class="list compact-list"></ul>
       </section>
 
       <section id="tab-overview" class="panel card active">

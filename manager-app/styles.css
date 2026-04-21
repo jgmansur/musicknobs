@@ -146,6 +146,30 @@ h1 {
 .hero h2 { margin: 0 0 6px; font-size: 1rem; }
 .hero p { margin: 0; color: var(--text-soft); }
 
+.featured-box {
+  border: 1px solid rgba(251, 191, 36, .22);
+  background: rgba(251, 191, 36, .08);
+  border-radius: 1rem;
+  padding: .75rem;
+}
+
+.featured-box h3 {
+  margin: 0 0 .45rem;
+  font-size: .86rem;
+}
+
+.message-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: .6rem;
+}
+
+.message-text {
+  white-space: pre-wrap;
+  color: var(--text-main);
+}
+
 .tab-bar {
   position: fixed;
   bottom: 0;
