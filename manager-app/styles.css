@@ -383,6 +383,38 @@ h1 {
   list-style: disc;
 }
 
+.contacts-list {
+  padding-left: 0;
+}
+
+.contacts-list > li {
+  list-style: none;
+}
+
+.contact-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .6rem;
+}
+
+.contact-main {
+  min-width: 0;
+}
+
+.contact-name {
+  font-weight: 700;
+  font-size: .84rem;
+}
+
+.contact-meta {
+  color: var(--text-soft);
+  font-size: .74rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: .35rem;
+}
+
 .mini-btn {
   border: 1px solid var(--glass-border);
   background: rgba(255,255,255,.06);

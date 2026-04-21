@@ -125,11 +125,34 @@
       <section id="tab-contacts" class="panel card">
         <div class="panel-head">
           <h3>Contactos Manager (Notion)</h3>
-          <button id="refresh-contacts" class="btn ghost">Refrescar</button>
+          <div class="actions">
+            <button id="refresh-contacts" class="btn ghost">Refrescar</button>
+            <button id="contact-form-toggle" class="btn">Nuevo contacto</button>
+          </div>
         </div>
         <p class="hint">Fuente prevista: Notion DB para gestión de contactos y seguimiento.</p>
+
+        <div class="task-filters">
+          <input id="contacts-search" class="field-input" type="search" placeholder="Buscar por nombre, rol, correo, teléfono..." />
+        </div>
+
+        <div id="contact-form-card" class="task-form-card hidden">
+          <div class="task-form-grid">
+            <input id="contact-name" class="field-input" type="text" placeholder="Nombre" />
+            <input id="contact-role" class="field-input" type="text" placeholder="Rol" />
+            <input id="contact-email" class="field-input" type="email" placeholder="Correo" />
+            <input id="contact-phone" class="field-input" type="text" placeholder="Teléfono" />
+            <input id="contact-whatsapp" class="field-input" type="url" placeholder="Link WhatsApp (https://wa.me/...)" />
+            <div class="actions">
+              <button id="contact-save" class="btn">Guardar contacto</button>
+              <button id="contact-cancel" class="btn ghost hidden" type="button">Cancelar edición</button>
+            </div>
+            <input id="contact-edit-id" type="hidden" />
+          </div>
+        </div>
+
         <p id="contacts-status" class="hint status" aria-live="polite">Usando muestra local (MVP).</p>
-        <ul id="contacts-list" class="list"></ul>
+        <ul id="contacts-list" class="list compact-list contacts-list"></ul>
       </section>
 
       <section id="tab-links" class="panel card">

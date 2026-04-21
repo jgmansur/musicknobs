@@ -32,6 +32,8 @@ let googleTokenRefreshTimer = null;
 let googleLastRequestInteractive = true;
 let isAuthenticated = false;
 let contactsCache = [];
+let contactsSource = 'api';
+let contactsSearchQuery = '';
 let tasksCache = [];
 let messagesCache = [];
 let taskAssigneeUsers = [
@@ -298,19 +300,67 @@ function refreshAssigneeOptions() {
   if (options.some((u) => u.email === current)) select.value = current;
 }
 
+function normalizeWhatsappLink(value) {
+  const raw = String(value || '').trim();
+  if (!raw) return '';
+  if (/^https?:\/\//i.test(raw)) return raw;
+  const digits = raw.replace(/\D/g, '');
+  if (!digits) return '';
+  return `https://wa.me/${digits}`;
+}
+
+function applyContactsFilter(rows = []) {
+  const q = contactsSearchQuery.trim().toLowerCase();
+  if (!q) return rows;
+  return rows.filter((c) => {
+    const haystack = [c.nombre, c.rol, c.correo, c.telefono, c.whatsapp]
+      .map((v) => String(v || '').toLowerCase())
+      .join(' ');
+    return haystack.includes(q);
+  });
+}
+
 function setContacts(rows = contactsSample) {
   contactsCache = rows;
   const list = document.getElementById('contacts-list');
-  list.innerHTML = rows
+  if (!list) return;
+
+  const filtered = applyContactsFilter(rows);
+
+  list.innerHTML = filtered
     .map((c) => {
       const role = c.rol || 'Contacto';
-      const email = c.correo ? `<a href="mailto:${c.correo}">${c.correo}</a>` : '';
+      const email = c.correo ? `<a href="mailto:${escapeHtml(c.correo)}">${escapeHtml(c.correo)}</a>` : '';
       const phone = c.telefono || '';
-      const whatsapp = c.whatsapp ? `<a href="${c.whatsapp}" target="_blank" rel="noopener">WhatsApp</a>` : '';
+      const whatsappHref = normalizeWhatsappLink(c.whatsapp);
+      const whatsapp = whatsappHref ? `<a href="${whatsappHref}" target="_blank" rel="noopener">WhatsApp</a>` : '';
       const parts = [role, email, phone, whatsapp].filter(Boolean).join(' · ');
-      return `<li><strong>${c.nombre}</strong>${parts ? ` · ${parts}` : ''}</li>`;
+      return `
+        <li>
+          <div class="contact-card">
+            <div class="contact-main">
+              <div class="contact-name">${escapeHtml(c.nombre || 'Sin nombre')}</div>
+              <div class="contact-meta">${parts || 'Sin detalles'}</div>
+            </div>
+            <div class="actions">
+              <button class="mini-btn" data-contact-edit="${c.id || ''}">Editar</button>
+              <button class="mini-btn" data-contact-delete="${c.id || ''}">Borrar</button>
+            </div>
+          </div>
+        </li>
+      `;
     })
     .join('');
+
+  list.querySelectorAll('[data-contact-edit]').forEach((btn) => {
+    btn.addEventListener('click', () => beginEditContact(btn.dataset.contactEdit || ''));
+  });
+
+  list.querySelectorAll('[data-contact-delete]').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      await deleteContact(btn.dataset.contactDelete || '');
+    });
+  });
 
   refreshAssigneeOptions();
 }
@@ -511,7 +561,9 @@ async function loadContactsFromNotion() {
   try {
     if (!API_BASE) throw new Error('apiBaseUrl no configurado');
     const res = await fetchJson(`${API_BASE}/api/manager/contacts`);
+    contactsSource = res.source || 'api';
     const rows = (res.data || []).map((item) => ({
+      id: item.id || '',
       nombre: item.nombre || 'Sin nombre',
       rol: item.rol || '—',
       correo: item.correo || '',
@@ -527,9 +579,128 @@ async function loadContactsFromNotion() {
     setStatus('contacts-status', rows.length ? `${rows.length} contactos cargados desde Notion API.` : 'API sin contactos, usando muestra local.');
   } catch (e) {
     console.warn('No se pudieron cargar contactos desde Notion API:', e);
+    contactsSource = 'fallback';
     setContacts(contactsSample);
     const reason = e instanceof Error ? e.message : String(e);
     setStatus('contacts-status', `Sin conexión a Notion/API: ${reason}`, true);
+  }
+}
+
+function setContactFormVisibility(show) {
+  const card = document.getElementById('contact-form-card');
+  if (!card) return;
+  card.classList.toggle('hidden', !show);
+}
+
+function resetContactForm() {
+  const ids = ['contact-name', 'contact-role', 'contact-email', 'contact-phone', 'contact-whatsapp', 'contact-edit-id'];
+  ids.forEach((id) => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  const saveBtn = document.getElementById('contact-save');
+  const cancelBtn = document.getElementById('contact-cancel');
+  if (saveBtn) saveBtn.textContent = 'Guardar contacto';
+  if (cancelBtn) cancelBtn.classList.add('hidden');
+}
+
+function beginEditContact(contactId) {
+  if (!contactId) {
+    setStatus('contacts-status', 'Este contacto no es editable desde la API actual.', true);
+    return;
+  }
+  const contact = contactsCache.find((c) => c.id === contactId);
+  if (!contact) return;
+
+  setContactFormVisibility(true);
+  const nameEl = document.getElementById('contact-name');
+  const roleEl = document.getElementById('contact-role');
+  const emailEl = document.getElementById('contact-email');
+  const phoneEl = document.getElementById('contact-phone');
+  const waEl = document.getElementById('contact-whatsapp');
+  const editIdEl = document.getElementById('contact-edit-id');
+  const saveBtn = document.getElementById('contact-save');
+  const cancelBtn = document.getElementById('contact-cancel');
+
+  if (nameEl) nameEl.value = contact.nombre || '';
+  if (roleEl) roleEl.value = contact.rol || '';
+  if (emailEl) emailEl.value = contact.correo || '';
+  if (phoneEl) phoneEl.value = contact.telefono || '';
+  if (waEl) waEl.value = contact.whatsapp || '';
+  if (editIdEl) editIdEl.value = contactId;
+  if (saveBtn) saveBtn.textContent = 'Guardar cambios';
+  if (cancelBtn) cancelBtn.classList.remove('hidden');
+}
+
+async function saveContact() {
+  if (!isAuthenticated) return;
+  const nameEl = document.getElementById('contact-name');
+  const roleEl = document.getElementById('contact-role');
+  const emailEl = document.getElementById('contact-email');
+  const phoneEl = document.getElementById('contact-phone');
+  const waEl = document.getElementById('contact-whatsapp');
+  const editIdEl = document.getElementById('contact-edit-id');
+  if (!nameEl || !roleEl || !emailEl || !phoneEl || !waEl || !editIdEl) return;
+
+  const nombre = String(nameEl.value || '').trim();
+  if (!nombre) {
+    setStatus('contacts-status', 'El nombre es obligatorio.', true);
+    return;
+  }
+
+  const payload = {
+    nombre,
+    rol: String(roleEl.value || '').trim(),
+    correo: String(emailEl.value || '').trim(),
+    telefono: String(phoneEl.value || '').trim(),
+    whatsapp: String(waEl.value || '').trim()
+  };
+
+  const editingId = String(editIdEl.value || '').trim();
+
+  try {
+    const endpoint = editingId
+      ? `${API_BASE}/api/manager/contacts/${editingId}`
+      : `${API_BASE}/api/manager/contacts`;
+    const method = editingId ? 'PATCH' : 'POST';
+
+    const r = await fetch(endpoint, {
+      method,
+      headers: apiHeaders(),
+      body: JSON.stringify(payload)
+    });
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+
+    setStatus('contacts-status', editingId ? 'Contacto actualizado.' : 'Contacto creado.');
+    resetContactForm();
+    setContactFormVisibility(false);
+    await loadContactsFromNotion();
+  } catch (e) {
+    const reason = e instanceof Error ? e.message : String(e);
+    setStatus('contacts-status', `No se pudo guardar contacto: ${reason}`, true);
+  }
+}
+
+async function deleteContact(contactId) {
+  if (!isAuthenticated || !contactId) {
+    setStatus('contacts-status', 'Este contacto no es editable desde la API actual.', true);
+    return;
+  }
+
+  const ok = window.confirm('¿Borrar este contacto? Esta acción lo archiva en Notion.');
+  if (!ok) return;
+
+  try {
+    const r = await fetch(`${API_BASE}/api/manager/contacts/${contactId}`, {
+      method: 'DELETE',
+      headers: apiHeaders()
+    });
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    setStatus('contacts-status', 'Contacto borrado.');
+    await loadContactsFromNotion();
+  } catch (e) {
+    const reason = e instanceof Error ? e.message : String(e);
+    setStatus('contacts-status', `No se pudo borrar contacto: ${reason}`, true);
   }
 }
 
@@ -1031,6 +1202,17 @@ function setupActions() {
   bindClick('clear-messages-log', clearMessagesLog);
   bindClick('refresh-catalog', () => loadCatalogFromApi());
   bindClick('refresh-contacts', () => loadContactsFromNotion());
+  bindClick('contact-form-toggle', () => {
+    const card = document.getElementById('contact-form-card');
+    const shouldShow = card?.classList.contains('hidden');
+    setContactFormVisibility(Boolean(shouldShow));
+    if (!shouldShow) resetContactForm();
+  });
+  bindClick('contact-save', saveContact);
+  bindClick('contact-cancel', () => {
+    resetContactForm();
+    setContactFormVisibility(false);
+  });
   bindClick('refresh-links', () => loadLinksFromApi());
   bindClick('refresh-tasks', () => loadTasksFromApi());
   bindClick('task-create', createTask);
@@ -1055,6 +1237,14 @@ function setupActions() {
       loadTasksFromApi();
     });
   }
+
+  const contactsSearch = document.getElementById('contacts-search');
+  if (contactsSearch) {
+    contactsSearch.addEventListener('input', () => {
+      contactsSearchQuery = String(contactsSearch.value || '');
+      setContacts(contactsCache);
+    });
+  }
 }
 
 function init() {
@@ -1062,6 +1252,8 @@ function init() {
   setShareActions();
   setLinks();
   clearSensitiveData();
+  resetContactForm();
+  setContactFormVisibility(false);
   refreshAssigneeOptions();
   resetTaskForm();
   setTaskFormVisibility(false);

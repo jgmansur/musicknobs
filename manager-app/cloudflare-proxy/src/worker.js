@@ -164,6 +164,7 @@ async function queryNotionContacts(env) {
     const data = (payload.results || []).map((page) => {
       const props = page.properties || {};
       return {
+        id: page.id,
         nombre: readNotionTitle(props),
         rol: readNotionRole(props),
         correo: readNotionEmail(props),
@@ -176,6 +177,195 @@ async function queryNotionContacts(env) {
   }
 
   return { source: "error", error: "Notion query failed", details: lastError, data: [] };
+}
+
+function findPropertyKey(props = {}, nameHints = [], allowedTypes = []) {
+  const entries = Object.entries(props || {});
+  for (const [key, value] of entries) {
+    const lower = String(key || "").toLowerCase();
+    if (!nameHints.some((h) => lower.includes(h))) continue;
+    if (allowedTypes.length && !allowedTypes.includes(value?.type)) continue;
+    return key;
+  }
+
+  if (allowedTypes.length) {
+    const byType = entries.find(([, value]) => allowedTypes.includes(value?.type));
+    if (byType) return byType[0];
+  }
+
+  return "";
+}
+
+function buildNotionValueByType(type, rawValue) {
+  const value = String(rawValue || "").trim();
+  if (type === "title") {
+    return { title: value ? [{ text: { content: value } }] : [] };
+  }
+  if (type === "rich_text") {
+    return { rich_text: value ? [{ text: { content: value } }] : [] };
+  }
+  if (type === "email") {
+    return { email: value || null };
+  }
+  if (type === "phone_number") {
+    return { phone_number: value || null };
+  }
+  if (type === "url") {
+    return { url: value || null };
+  }
+  if (type === "select") {
+    return { select: value ? { name: value } : null };
+  }
+  return null;
+}
+
+async function retrieveNotionCollectionSchema(dbOrDataSourceId, notionToken, notionVersion) {
+  const endpoints = [
+    `https://api.notion.com/v1/data_sources/${dbOrDataSourceId}`,
+    `https://api.notion.com/v1/databases/${dbOrDataSourceId}`,
+  ];
+
+  let lastError = "";
+  for (const url of endpoints) {
+    const resp = await fetch(url, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${notionToken}`,
+        "Notion-Version": notionVersion,
+      },
+    });
+    if (resp.ok) return resp.json();
+    lastError = await resp.text();
+  }
+
+  throw new Error(lastError || "Notion schema fetch failed");
+}
+
+function buildContactPropertiesFromSchema(schemaProps = {}, input = {}, { includeTitle = true } = {}) {
+  const titleKey = findPropertyKey(schemaProps, ["name", "nombre", "title"], ["title"]);
+  const roleKey = findPropertyKey(schemaProps, ["rol", "role", "cargo", "puesto"], ["select", "rich_text"]);
+  const emailKey = findPropertyKey(schemaProps, ["correo", "email", "mail"], ["email", "rich_text"]);
+  const phoneKey = findPropertyKey(schemaProps, ["telefono", "teléfono", "phone", "cel", "movil", "móvil"], ["phone_number", "rich_text"]);
+  const waKey = findPropertyKey(schemaProps, ["whatsapp", "wa"], ["url", "rich_text"]);
+
+  const properties = {};
+  if (includeTitle && titleKey) {
+    const type = schemaProps[titleKey]?.type;
+    const value = buildNotionValueByType(type, input.nombre || "");
+    if (value) properties[titleKey] = value;
+  }
+
+  const fieldMap = [
+    { key: roleKey, raw: input.rol || "" },
+    { key: emailKey, raw: input.correo || "" },
+    { key: phoneKey, raw: input.telefono || "" },
+    { key: waKey, raw: input.whatsapp || "" },
+  ];
+
+  for (const field of fieldMap) {
+    if (!field.key) continue;
+    const type = schemaProps[field.key]?.type;
+    const value = buildNotionValueByType(type, field.raw);
+    if (value) properties[field.key] = value;
+  }
+
+  return properties;
+}
+
+async function createManagerContact(env, body) {
+  const notionVersion = env.NOTION_VERSION || "2025-09-03";
+  const notionToken = env.NOTION_TOKEN || "";
+  const dbId = env.MANAGER_CONTACTS_DB_ID || "";
+
+  if (!notionToken || !dbId) return { error: "NOTION_TOKEN o MANAGER_CONTACTS_DB_ID missing" };
+  const nombre = String(body?.nombre || "").trim();
+  if (!nombre) return { error: "nombre is required" };
+
+  try {
+    const schema = await retrieveNotionCollectionSchema(dbId, notionToken, notionVersion);
+    const properties = buildContactPropertiesFromSchema(schema.properties || {}, {
+      nombre,
+      rol: body?.rol,
+      correo: body?.correo,
+      telefono: body?.telefono,
+      whatsapp: body?.whatsapp,
+    }, { includeTitle: true });
+
+    const parentShapes = [{ data_source_id: dbId }, { database_id: dbId }];
+    let lastError = "";
+    for (const parent of parentShapes) {
+      const resp = await fetch("https://api.notion.com/v1/pages", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${notionToken}`,
+          "Notion-Version": notionVersion,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ parent, properties }),
+      });
+      if (resp.ok) {
+        const page = await resp.json();
+        return { ok: true, id: page.id };
+      }
+      lastError = await resp.text();
+    }
+    return { error: "Contact create failed", details: lastError };
+  } catch (e) {
+    return { error: "Contact create failed", details: String(e?.message || e) };
+  }
+}
+
+async function updateManagerContact(env, contactId, body) {
+  const notionVersion = env.NOTION_VERSION || "2025-09-03";
+  const notionToken = env.NOTION_TOKEN || "";
+  const dbId = env.MANAGER_CONTACTS_DB_ID || "";
+
+  if (!notionToken || !dbId) return { error: "NOTION_TOKEN o MANAGER_CONTACTS_DB_ID missing" };
+
+  try {
+    const schema = await retrieveNotionCollectionSchema(dbId, notionToken, notionVersion);
+    const properties = buildContactPropertiesFromSchema(schema.properties || {}, {
+      nombre: body?.nombre,
+      rol: body?.rol,
+      correo: body?.correo,
+      telefono: body?.telefono,
+      whatsapp: body?.whatsapp,
+    }, { includeTitle: Object.prototype.hasOwnProperty.call(body || {}, "nombre") });
+
+    const resp = await fetch(`https://api.notion.com/v1/pages/${contactId}`, {
+      method: "PATCH",
+      headers: {
+        Authorization: `Bearer ${notionToken}`,
+        "Notion-Version": notionVersion,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ properties }),
+    });
+
+    if (!resp.ok) return { error: "Contact update failed", details: await resp.text() };
+    return { ok: true };
+  } catch (e) {
+    return { error: "Contact update failed", details: String(e?.message || e) };
+  }
+}
+
+async function deleteManagerContact(env, contactId) {
+  const notionVersion = env.NOTION_VERSION || "2025-09-03";
+  const notionToken = env.NOTION_TOKEN || "";
+  if (!notionToken) return { error: "NOTION_TOKEN missing" };
+
+  const resp = await fetch(`https://api.notion.com/v1/pages/${contactId}`, {
+    method: "PATCH",
+    headers: {
+      Authorization: `Bearer ${notionToken}`,
+      "Notion-Version": notionVersion,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ archived: true }),
+  });
+
+  if (!resp.ok) return { error: "Contact delete failed", details: await resp.text() };
+  return { ok: true };
 }
 
 async function notionQuery(dbOrDataSourceId, notionToken, notionVersion, filter = null, pageSize = 100) {
@@ -837,6 +1027,12 @@ export default {
       return json(result, result.error ? 502 : 200);
     }
 
+    if (request.method === "POST" && url.pathname === "/api/manager/contacts") {
+      const body = await request.json().catch(() => ({}));
+      const result = await createManagerContact(env, body);
+      return json(result, result.error ? 400 : 201);
+    }
+
     if (request.method === "GET" && url.pathname === "/api/manager/catalog") {
       return json({ source: "sample", data: SAMPLE_CATALOG });
     }
@@ -891,6 +1087,21 @@ export default {
       const taskId = url.pathname.replace("/api/manager/tasks/", "").trim();
       if (!taskId) return json({ error: "taskId required" }, 400);
       const result = await deleteManagerTask(env, taskId);
+      return json(result, result.error ? 400 : 200);
+    }
+
+    if (request.method === "PATCH" && url.pathname.startsWith("/api/manager/contacts/")) {
+      const contactId = url.pathname.replace("/api/manager/contacts/", "").trim();
+      if (!contactId) return json({ error: "contactId required" }, 400);
+      const body = await request.json().catch(() => ({}));
+      const result = await updateManagerContact(env, contactId, body);
+      return json(result, result.error ? 400 : 200);
+    }
+
+    if (request.method === "DELETE" && url.pathname.startsWith("/api/manager/contacts/")) {
+      const contactId = url.pathname.replace("/api/manager/contacts/", "").trim();
+      if (!contactId) return json({ error: "contactId required" }, 400);
+      const result = await deleteManagerContact(env, contactId);
       return json(result, result.error ? 400 : 200);
     }
 
