@@ -2578,7 +2578,11 @@ function setupActions() {
     });
   }
 
-  bindClick('refresh-catalog', () => loadCatalogFromApi());
+  bindClick('refresh-catalog', () => {
+    catalogGenreFilter = 'Todas';
+    catalogFilterView = 'genres';
+    loadCatalogFromApi();
+  });
   const catalogSearch = document.getElementById('catalog-search');
   if (catalogSearch) {
     catalogSearch.addEventListener('input', () => {
