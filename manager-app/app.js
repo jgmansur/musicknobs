@@ -447,11 +447,14 @@ function setTasks(rows = []) {
               <strong>${escapeHtml(t.title || 'Sin título')}</strong>
               <div class="task-meta">${escapeHtml(assignee)}${escapeHtml(due)} · Estatus: ${escapeHtml(status)}</div>
             </div>
-            <div class="actions">
-              ${canClose ? `<button class="mini-btn" data-task-done="${t.id}">Terminar</button>` : ''}
-              <button class="mini-btn" data-task-edit="${t.id}">Editar</button>
-              <button class="mini-btn" data-task-delete="${t.id}">Borrar</button>
-            </div>
+            <details class="task-actions-menu">
+              <summary class="task-actions-toggle" aria-label="Acciones de task">▾</summary>
+              <div class="task-actions-dropdown">
+                ${canClose ? `<button class="mini-btn" data-task-done="${t.id}">Terminar</button>` : ''}
+                <button class="mini-btn" data-task-edit="${t.id}">Editar</button>
+                <button class="mini-btn" data-task-delete="${t.id}">Borrar</button>
+              </div>
+            </details>
           </div>
           ${subtasksHtml}
         </li>
