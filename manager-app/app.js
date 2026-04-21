@@ -129,6 +129,21 @@ function setOauthStatus(text, isError = false) {
   el.style.color = isError ? '#fda4af' : '';
 }
 
+async function loadAppVersion() {
+  try {
+    const res = await fetch('./version.json', { cache: 'no-store' });
+    if (!res.ok) throw new Error(`version HTTP ${res.status}`);
+    const payload = await res.json();
+    const version = String(payload?.version || '').trim();
+    if (!version) return;
+
+    const el = document.getElementById('app-version');
+    if (el) el.textContent = version;
+  } catch (e) {
+    console.warn('No se pudo cargar version.json:', e);
+  }
+}
+
 async function loadContactsFromNotion() {
   try {
     if (!API_BASE) throw new Error('apiBaseUrl no configurado');
@@ -247,6 +262,7 @@ function setupActions() {
 }
 
 function init() {
+  loadAppVersion();
   setShareActions();
   setLinks();
   setCatalog();

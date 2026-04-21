@@ -51,6 +51,22 @@ Con `NOTION_TOKEN` activo, el backend intenta primero `data_sources/{id}/query` 
 - `index.html` — layout y secciones
 - `styles.css` — estilos mobile-first
 - `app.js` — tabs, share actions, data hooks MVP
+- `version.json` — versión visible en UI para identificar cada release
+
+## Release seguro de esta app (solo manager-app)
+
+Para evitar commits mezclados y subir versión en cada publicación:
+
+```bash
+cd /Users/jaystudio/Documents/GitHub/Apps/musicknobs
+./scripts/release_manager_app.sh
+```
+
+Qué hace el script:
+- bloquea release si hay cambios fuera de `manager-app/`
+- incrementa patch en `manager-app/version.json` (ej. `1.0.0` -> `1.0.1`)
+- commit con formato `chore(manager-app): release vX.Y.Z`
+- push a `main`
 
 ## Siguientes pasos
 
