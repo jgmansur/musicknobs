@@ -927,6 +927,8 @@ function applyCatalogDeepLinkIfNeeded() {
 
   activateTab('catalog');
   updateAuthGateForCurrentTab();
+  
+  renderCatalog(); // Asegura de pintar la UI en el modo correcto
 
   void loadCatalogTrack(index, { autoplay: catalogDeepLinkAutoplay });
 }
@@ -1256,18 +1258,20 @@ async function shareSelectedPlaylistForListen() {
 
   try {
     const listenLink = buildCatalogPlaylistListenLink(playlist.id, firstTrackId);
-    const text = `${playlist.name || 'Playlist'} · Escúchala aquí`;
+    const playlistName = playlist.name || 'Playlist';
+    const text = `Escucha la playlist: ${playlistName}\n1. Da click en el link.\n2. Busca la playlist con el nombre: [${playlistName}]\n3. ¡Dale Play!...`;
+    
     if (navigator.share) {
       await navigator.share({
-        title: playlist.name || 'Playlist',
+        title: playlistName,
         text,
         url: listenLink
       });
-      setStatus('catalog-status', `Playlist compartida: ${playlist.name || 'playlist'}.`);
+      setStatus('catalog-status', `Playlist compartida: ${playlistName}.`);
       return;
     }
 
-    await navigator.clipboard.writeText(listenLink);
+    await navigator.clipboard.writeText(`${text}\n\n${listenLink}`);
     setStatus('catalog-status', `Link de playlist copiado: ${playlist.name || 'playlist'}.`);
   } catch (e) {
     const reason = e instanceof Error ? e.message : String(e);
