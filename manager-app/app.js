@@ -203,29 +203,68 @@ function parseCatalogGenres(value) {
     .filter(Boolean);
 }
 
-function resolvePlayableAudioUrl(raw) {
+function resolvePlayableAudioCandidates(raw) {
   const input = String(raw || '').trim();
-  if (!input || input === '#') return '';
+  if (!input || input === '#') return [];
 
   try {
     const u = new URL(input);
 
-    if (u.hostname.includes('drive.google.com')) {
+    if (u.hostname.includes('drive.google.com') || u.hostname.includes('docs.google.com')) {
       const match = u.pathname.match(/\/file\/d\/([^/]+)/);
       const id = match?.[1] || u.searchParams.get('id') || '';
-      if (id) return `https://drive.google.com/uc?export=download&id=${encodeURIComponent(id)}`;
+      if (!id) return [];
+
+      return Array.from(new Set([
+        `https://drive.google.com/uc?export=download&id=${encodeURIComponent(id)}`,
+        `https://drive.google.com/uc?export=open&id=${encodeURIComponent(id)}`,
+        `https://docs.google.com/uc?export=download&id=${encodeURIComponent(id)}`,
+      ]));
     }
 
     if (u.hostname.includes('dropbox.com')) {
       u.searchParams.set('raw', '1');
-      u.searchParams.delete('dl');
-      return u.toString();
+      u.searchParams.set('dl', '1');
+      return [u.toString()];
     }
 
-    return u.toString();
+    return [u.toString()];
   } catch {
-    return input;
+    return [input];
   }
+}
+
+function tryPlayAudioSource(audio, url, timeoutMs = 4500) {
+  return new Promise((resolve) => {
+    let done = false;
+    const finish = (ok) => {
+      if (done) return;
+      done = true;
+      cleanup();
+      resolve(ok);
+    };
+
+    const onCanPlay = () => finish(true);
+    const onError = () => finish(false);
+    const cleanup = () => {
+      audio.removeEventListener('canplay', onCanPlay);
+      audio.removeEventListener('error', onError);
+      clearTimeout(timer);
+    };
+
+    const timer = setTimeout(() => finish(false), timeoutMs);
+
+    audio.addEventListener('canplay', onCanPlay);
+    audio.addEventListener('error', onError);
+    audio.src = url;
+
+    const playAttempt = audio.play();
+    if (playAttempt?.catch) {
+      playAttempt.catch(() => {
+        // Dejamos que onerror/timeout resuelvan.
+      });
+    }
+  });
 }
 
 function setCatalogNowCard(song) {
@@ -415,25 +454,31 @@ function playCatalogSong(songId) {
   const audio = document.getElementById('catalog-audio');
   if (!audio) return;
 
-  const playable = resolvePlayableAudioUrl(song.drive);
-  if (!playable) {
-    setStatus('catalog-status', 'Esta canción no tiene URL reproducible.', true);
+  const candidates = resolvePlayableAudioCandidates(song.drive);
+  if (!candidates.length) {
+    setStatus('catalog-status', 'Esta canción no tiene URL reproducible. Revisa que el campo Play sea link directo a archivo.', true);
     return;
   }
 
   catalogNowPlayingId = song.id;
   catalogNowCardOpen = false;
-  audio.src = playable;
-  audio.play()
-    .then(() => {
-      setStatus('catalog-status', `Reproduciendo: ${song.obra || 'canción'}.`);
-      renderCatalog();
-    })
-    .catch((err) => {
-      const reason = err instanceof Error ? err.message : String(err);
-      setStatus('catalog-status', `No se pudo reproducir audio: ${reason}`, true);
-      renderCatalog();
-    });
+
+  (async () => {
+    for (const url of candidates) {
+      const ok = await tryPlayAudioSource(audio, url);
+      if (ok) {
+        setStatus('catalog-status', `Reproduciendo: ${song.obra || 'canción'}.`);
+        renderCatalog();
+        return;
+      }
+    }
+
+    audio.pause();
+    audio.removeAttribute('src');
+    audio.load();
+    setStatus('catalog-status', 'No se pudo reproducir esta URL. Verifica permisos públicos del archivo en Drive/Dropbox.', true);
+    renderCatalog();
+  })();
 }
 
 function setTasks(rows = []) {
