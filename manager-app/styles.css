@@ -733,14 +733,19 @@ a { color: #93c5fd; }
 }
 
 .catalog-shell {
-  margin-top: .7rem;
+  margin-top: .45rem;
   border: 1px solid var(--glass-border);
-  border-radius: 1rem;
+  border-radius: .85rem;
   overflow: hidden;
   background: rgba(10, 18, 30, .72);
-  height: 100%;
+  height: auto;
+  max-height: min(68vh, 620px);
   display: grid;
   grid-template-rows: 1fr auto auto;
+}
+
+#tab-catalog.panel-fullscreen {
+  min-height: calc(100vh - 260px);
 }
 
 .catalog-playlist-toolbar {
@@ -761,12 +766,14 @@ a { color: #93c5fd; }
 
 .catalog-grid {
   display: grid;
-  grid-template-columns: 220px 1fr;
+  grid-template-columns: 180px 1fr;
   min-height: 0;
+  overflow: hidden;
 }
 
 .catalog-pane {
-  padding: .65rem;
+  padding: .5rem;
+  min-height: 0;
 }
 
 .catalog-pane h4 {
@@ -781,6 +788,8 @@ a { color: #93c5fd; }
 .catalog-songs-list {
   padding-left: 0;
   margin: 0;
+  max-height: 100%;
+  overflow: auto;
 }
 
 .catalog-genres-list > li,
@@ -885,21 +894,21 @@ a { color: #93c5fd; }
 .catalog-player {
   border-top: 1px solid rgba(255,255,255,.08);
   background: rgba(9, 14, 24, .92);
-  padding: .7rem;
+  padding: .5rem .55rem;
   display: grid;
-  gap: .6rem;
+  gap: .42rem;
 }
 
 .catalog-player-head {
   display: grid;
-  grid-template-columns: 54px 1fr;
-  gap: .6rem;
+  grid-template-columns: 44px 1fr;
+  gap: .45rem;
   align-items: center;
 }
 
 .catalog-player-cover-wrap {
-  width: 54px;
-  height: 54px;
+  width: 44px;
+  height: 44px;
   border-radius: .65rem;
   overflow: hidden;
   border: 1px solid var(--glass-border);
@@ -945,19 +954,21 @@ a { color: #93c5fd; }
 
 .catalog-player-controls {
   display: flex;
-  gap: .45rem;
+  gap: .35rem;
 }
 
 .catalog-player-controls .mini-btn {
   flex: 1;
+  padding: .28rem .4rem;
+  font-size: .69rem;
 }
 
 .catalog-player-progress-wrap {
   display: grid;
   grid-template-columns: auto 1fr auto;
   align-items: center;
-  gap: .45rem;
-  font-size: .72rem;
+  gap: .35rem;
+  font-size: .68rem;
   color: var(--text-soft);
 }
 
@@ -971,8 +982,8 @@ a { color: #93c5fd; }
   display: grid;
   grid-template-columns: auto 1fr;
   align-items: center;
-  gap: .55rem;
-  font-size: .72rem;
+  gap: .4rem;
+  font-size: .68rem;
   color: var(--text-soft);
 }
 
@@ -1034,6 +1045,14 @@ th {
 
   .catalog-grid {
     grid-template-columns: 1fr;
+  }
+
+  .catalog-shell {
+    max-height: none;
+  }
+
+  #tab-catalog.panel-fullscreen {
+    min-height: calc(100vh - 190px);
   }
 
   .catalog-pane {

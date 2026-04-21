@@ -506,16 +506,15 @@ async function loadCatalogTrack(index, { autoplay = false } = {}) {
   catalogPlayer.howl = howl;
 
   howl.on('load', () => {
+    if (catalogPlayer.howl !== howl) return;
     catalogPlayer.isLoading = false;
     setCatalogPlayerStatus('Pista lista');
     updateCatalogPlayerUi();
     refreshCatalogProgressUi();
-    if (autoplay) {
-      howl.play();
-    }
   });
 
   howl.on('play', () => {
+    if (catalogPlayer.howl !== howl) return;
     catalogPlayer.isPlaying = true;
     catalogPlayer.isLoading = false;
     setCatalogPlayerStatus('Reproduciendo');
@@ -526,6 +525,7 @@ async function loadCatalogTrack(index, { autoplay = false } = {}) {
   });
 
   howl.on('pause', () => {
+    if (catalogPlayer.howl !== howl) return;
     catalogPlayer.isPlaying = false;
     setCatalogPlayerStatus('Pausado');
     updateCatalogPlayerUi();
@@ -534,6 +534,7 @@ async function loadCatalogTrack(index, { autoplay = false } = {}) {
   });
 
   howl.on('stop', () => {
+    if (catalogPlayer.howl !== howl) return;
     catalogPlayer.isPlaying = false;
     updateCatalogPlayerUi();
     stopCatalogProgressTimer();
@@ -541,10 +542,12 @@ async function loadCatalogTrack(index, { autoplay = false } = {}) {
   });
 
   howl.on('end', () => {
+    if (catalogPlayer.howl !== howl) return;
     playNextCatalogTrack(1);
   });
 
   const onHowlerError = (eventName, id, code) => {
+    if (catalogPlayer.howl !== howl) return;
     catalogPlayer.isLoading = false;
     catalogPlayer.isPlaying = false;
     stopCatalogProgressTimer();
