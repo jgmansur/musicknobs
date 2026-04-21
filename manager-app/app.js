@@ -265,13 +265,16 @@ function renderCatalog() {
   const allGenres = ['Todas', ...genres.sort((a, b) => a.localeCompare(b, 'es'))];
   if (!allGenres.includes(catalogGenreFilter)) catalogGenreFilter = 'Todas';
 
-  genresEl.innerHTML = allGenres
-    .map((g) => `
-      <li>
-        <button class="mini-btn ${catalogGenreFilter === g ? 'active' : ''}" data-catalog-genre="${escapeHtml(g)}">${escapeHtml(g)}</button>
-      </li>
-    `)
-    .join('');
+  genresEl.innerHTML = `
+    <li>
+      <label class="catalog-genre-label" for="catalog-genre-select">Género</label>
+      <select id="catalog-genre-select" class="catalog-genre-select">
+        ${allGenres
+          .map((g) => `<option value="${escapeHtml(g)}" ${catalogGenreFilter === g ? 'selected' : ''}>${escapeHtml(g)}</option>`)
+          .join('')}
+      </select>
+    </li>
+  `;
 
   const visibleSongs = catalogGenreFilter === 'Todas'
     ? catalogCache
@@ -302,16 +305,17 @@ function renderCatalog() {
   if (catalogLoadMoreBtn) {
     const canLoadMore = visibleSongs.length > pagedSongs.length;
     catalogLoadMoreBtn.disabled = !canLoadMore;
-    catalogLoadMoreBtn.textContent = canLoadMore ? 'Cargar más' : 'Sin más';
+    catalogLoadMoreBtn.textContent = canLoadMore ? 'Cargar más' : 'Todo cargado';
   }
 
-  genresEl.querySelectorAll('[data-catalog-genre]').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      catalogGenreFilter = btn.dataset.catalogGenre || 'Todas';
+  const genreSelect = document.getElementById('catalog-genre-select');
+  if (genreSelect) {
+    genreSelect.addEventListener('change', () => {
+      catalogGenreFilter = String(genreSelect.value || 'Todas');
       catalogVisibleCount = CATALOG_PAGE_STEP;
       renderCatalog();
     });
-  });
+  }
 
   songsEl.querySelectorAll('[data-catalog-play]').forEach((btn) => {
     btn.addEventListener('click', () => playCatalogSong(btn.dataset.catalogPlay || ''));
@@ -349,7 +353,17 @@ function setCatalog(rows = catalogSample) {
     }))
     .filter((row) => Boolean(row.obra || row.drive));
 
-  catalogCache = normalized;
+  const byKey = new Map();
+  for (const row of normalized) {
+    const key = [
+      String(row.drive || '').trim().toLowerCase(),
+      String(row.obra || '').trim().toLowerCase(),
+      String(row.autores || '').trim().toLowerCase()
+    ].join('::');
+    if (!byKey.has(key)) byKey.set(key, row);
+  }
+
+  catalogCache = Array.from(byKey.values());
   if (catalogNowPlayingId && !catalogCache.some((row) => row.id === catalogNowPlayingId)) {
     catalogNowPlayingId = '';
     catalogNowCardOpen = false;
@@ -1258,7 +1272,8 @@ async function loadCatalogFromApi() {
   if (!isAuthenticated) return;
   try {
     if (!API_BASE) throw new Error('apiBaseUrl no configurado');
-    const res = await fetchJson(`${API_BASE}/api/manager/catalog?sync=1`);
+    // Solo leemos Notion para evitar duplicados por auto-sync en cada refresh.
+    const res = await fetchJson(`${API_BASE}/api/manager/catalog`);
     const rows = (res.data || []).map((item, i) => ({
       id: item.id || `song-api-${i + 1}`,
       obra: item.obra || 'Sin título',
@@ -1268,7 +1283,7 @@ async function loadCatalogFromApi() {
     }));
     catalogVisibleCount = CATALOG_PAGE_STEP;
     setCatalog(rows.length ? rows : catalogSample);
-    setStatus('catalog-status', rows.length ? `${rows.length} canciones cargadas y sincronizadas.` : 'API sin catálogo, usando muestra local.');
+    setStatus('catalog-status', rows.length ? `${rows.length} canciones cargadas desde Notion.` : 'API sin catálogo, usando muestra local.');
   } catch (e) {
     console.warn('No se pudo cargar catálogo desde API:', e);
     catalogVisibleCount = CATALOG_PAGE_STEP;
@@ -1301,6 +1316,10 @@ async function syncCatalogNow() {
     await loadCatalogFromApi();
   } catch (e) {
     const reason = e instanceof Error ? e.message : String(e);
+    if (/DRIVE_API_KEY o DRIVE_CATALOG_FOLDER_ID missing/i.test(reason)) {
+      setStatus('catalog-status', 'Sync Drive no configurado en backend. Catálogo sigue operando desde Notion.');
+      return;
+    }
     setStatus('catalog-status', `No se pudo sincronizar catálogo: ${reason}`, true);
   }
 }
