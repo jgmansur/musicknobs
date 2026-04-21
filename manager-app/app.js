@@ -967,7 +967,12 @@ function renderCatalog() {
             .join('')}
         </select>
         ${isAuthenticated
-          ? `<div class="catalog-playlist-pane-actions" style="margin-top: 0.5rem;">
+          ? `<div class="catalog-playlist-pane-actions" style="margin-top: 0.5rem; display: flex; flex-direction: column; gap: 0.5rem;">
+              <button class="mini-btn" id="playlist-create-pane-toggle" type="button" style="width: 100%;">Crear nueva playlist</button>
+              <div id="playlist-create-pane-form" class="hidden" style="display: flex; flex-direction: column; gap: 0.25rem;">
+                <input id="playlist-name-pane" class="catalog-genre-select" type="text" placeholder="Nombre..." />
+                <button class="mini-btn" id="playlist-create-pane-submit" type="button" style="background: var(--brand); color: white;">Crear</button>
+              </div>
               <button class="mini-btn" id="playlist-delete-pane" type="button" style="width: 100%;">Borrar seleccionada</button>
             </div>`
           : ''}
@@ -1067,11 +1072,24 @@ function renderCatalog() {
     });
   }
 
-  const playlistCreatePaneBtn = document.getElementById('playlist-create-pane');
-  if (playlistCreatePaneBtn) {
-    playlistCreatePaneBtn.addEventListener('click', () => {
+  const playlistCreatePaneToggleBtn = document.getElementById('playlist-create-pane-toggle');
+  const playlistCreatePaneForm = document.getElementById('playlist-create-pane-form');
+  const playlistCreatePaneSubmit = document.getElementById('playlist-create-pane-submit');
+
+  if (playlistCreatePaneToggleBtn && playlistCreatePaneForm) {
+    playlistCreatePaneToggleBtn.addEventListener('click', () => {
+      playlistCreatePaneForm.classList.toggle('hidden');
       const input = document.getElementById('playlist-name-pane');
-      createPlaylist(String(input?.value || ''));
+      if (!playlistCreatePaneForm.classList.contains('hidden') && input) input.focus();
+    });
+  }
+
+  if (playlistCreatePaneSubmit) {
+    playlistCreatePaneSubmit.addEventListener('click', () => {
+      const input = document.getElementById('playlist-name-pane');
+      if (input && input.value) {
+        createPlaylist(String(input.value.trim()));
+      }
     });
   }
 
