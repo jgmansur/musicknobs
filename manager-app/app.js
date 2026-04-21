@@ -453,6 +453,17 @@ function requestCatalogPlay() {
   }
 }
 
+function isAutoplayInteractionBlock(reasonCode) {
+  const reason = String(reasonCode || '').toLowerCase();
+  if (!reason) return false;
+  return (
+    reason.includes('notallowederror') ||
+    reason.includes('user interaction') ||
+    reason.includes('playback was unable to start') ||
+    reason.includes('interactuar con el documento')
+  );
+}
+
 function updateCatalogPlayerUi() {
   const track = getCatalogPlayerTrackByIndex();
   const title = document.getElementById('catalog-player-track-title');
@@ -606,6 +617,18 @@ async function loadCatalogTrack(index, { autoplay = false } = {}) {
 
   const onHowlerError = (eventName, id, code) => {
     if (catalogPlayer.howl !== howl) return;
+
+    if (eventName === 'playerror' && isAutoplayInteractionBlock(code)) {
+      catalogPlayer.isLoading = false;
+      catalogPlayer.isPlaying = false;
+      catalogPlayer.pendingPlay = false;
+      stopCatalogProgressTimer();
+      updateCatalogPlayerUi();
+      setCatalogPlayerStatus('[DALE CLICK A LA CANCIÓN SELECCIONADA]');
+      setStatus('catalog-status', '[DALE CLICK A LA CANCIÓN SELECCIONADA]');
+      return;
+    }
+
     catalogPlayer.isLoading = false;
     catalogPlayer.isPlaying = false;
     catalogPlayer.pendingPlay = false;
