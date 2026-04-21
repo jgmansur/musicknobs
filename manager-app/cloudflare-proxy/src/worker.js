@@ -24,6 +24,14 @@ const AUTHOR_PREFIX = "author:";
 const AUTHOR_EMAIL_PREFIX = "authorEmail:";
 const ADMIN_EMAILS = ["jgmansur2@gmail.com"];
 const CLEAR_LOG_PASSWORD = "9776";
+const MESSAGE_DEFAULTS = Object.freeze({
+  status: "Ideas por checar",
+  priority: "-",
+});
+const TASK_DEFAULTS = Object.freeze({
+  status: "Empezó",
+  priority: "Alta",
+});
 const DEFAULT_MANAGER_USERS = [
   { email: "jgmansur2@gmail.com", name: "Jay Mansur" },
   { email: "xeronimo3@gmail.com", name: "Xeronimo" },
@@ -1052,8 +1060,9 @@ async function createManagerMessage(env, body) {
 
   const properties = {
     Name: { title: [{ text: { content: `${MESSAGE_PREFIX}${text}` } }] },
-    Estatus: { select: { name: "Ideas por checar" } },
-    Prioridad: { select: { name: "-" } },
+    // Guardrail: mensajes y tasks NO comparten defaults.
+    Estatus: { select: { name: MESSAGE_DEFAULTS.status } },
+    Prioridad: { select: { name: MESSAGE_DEFAULTS.priority } },
     Tipo: { select: { name: "Music Knobs" } },
     Tags: {
       multi_select: [
@@ -1224,8 +1233,9 @@ async function createManagerTask(env, body) {
 
   const properties = {
     Name: { title: [{ text: { content: `${TASK_PREFIX}${title}` } }] },
-    Estatus: { select: { name: "Empezó" } },
-    Prioridad: { select: { name: "Alta" } },
+    // Guardrail: tasks mantienen su flujo operativo propio.
+    Estatus: { select: { name: TASK_DEFAULTS.status } },
+    Prioridad: { select: { name: TASK_DEFAULTS.priority } },
     Tipo: { select: { name: "Music Knobs" } },
   };
   if (dueDate) properties["Date (ToDo)"] = { date: { start: dueDate } };
