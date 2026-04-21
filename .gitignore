@@ -4,3 +4,6 @@ Finance Dashboard 7.6.5 Backup.zip
 *.zip
 scripts/token_rh.pickle
 scripts/token_mt.pickle
+
+# Runtime logs
+finance-v2/api-server/logs/*.log
