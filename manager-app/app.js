@@ -453,14 +453,36 @@ function requestCatalogPlay() {
   }
 }
 
-function isAutoplayInteractionBlock(reasonCode) {
-  const reason = String(reasonCode || '').toLowerCase();
+function extractHowlerReasonText(idOrCode, maybeCode) {
+  const bits = [idOrCode, maybeCode]
+    .flatMap((value) => {
+      if (value == null) return [];
+      if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
+        return [String(value)];
+      }
+      if (typeof value === 'object') {
+        const msg = value.message ? String(value.message) : '';
+        const name = value.name ? String(value.name) : '';
+        const text = String(value);
+        return [msg, name, text].filter(Boolean);
+      }
+      return [String(value)];
+    })
+    .filter(Boolean);
+
+  return bits.join(' | ').toLowerCase();
+}
+
+function isAutoplayInteractionBlock(idOrCode, maybeCode) {
+  const reason = extractHowlerReasonText(idOrCode, maybeCode);
   if (!reason) return false;
   return (
     reason.includes('notallowederror') ||
     reason.includes('user interaction') ||
     reason.includes('playback was unable to start') ||
-    reason.includes('interactuar con el documento')
+    reason.includes('interactuar con el documento') ||
+    reason.includes('gesture') ||
+    reason.includes('play() failed')
   );
 }
 
@@ -618,7 +640,7 @@ async function loadCatalogTrack(index, { autoplay = false } = {}) {
   const onHowlerError = (eventName, id, code) => {
     if (catalogPlayer.howl !== howl) return;
 
-    if (eventName === 'playerror' && isAutoplayInteractionBlock(code)) {
+    if (isAutoplayInteractionBlock(id, code)) {
       catalogPlayer.isLoading = false;
       catalogPlayer.isPlaying = false;
       catalogPlayer.pendingPlay = false;
