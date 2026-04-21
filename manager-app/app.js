@@ -59,7 +59,7 @@ const CONTACTS_PAGE_STEP = 12;
 const MESSAGES_PAGE_STEP = 20;
 const CATALOG_PAGE_STEP = 20;
 const CATALOG_PROGRESS_REFRESH_MS = 350;
-const PUBLIC_TABS = new Set(['catalog']);
+const PUBLIC_TABS = new Set(['catalog', 'links']);
 
 const configuredTracks = Array.isArray(window.MANAGER_TRACKS) ? window.MANAGER_TRACKS : [];
 
@@ -1173,7 +1173,6 @@ function clearSensitiveData() {
   setContacts([]);
   setTasks([]);
   setMessages([]);
-  setLinks([]);
 }
 
 function clearStoredAuthSession() {
@@ -1298,6 +1297,7 @@ function setAuthenticated(value) {
   tasksHasMore = false;
   clearSensitiveData();
   loadCatalogFromApi();
+  loadLinksFromApi();
   if (!isPublicTab(getActiveTabName())) {
     activateTab('catalog');
   }
@@ -1899,7 +1899,6 @@ async function clearMessagesLog() {
 }
 
 async function loadLinksFromApi() {
-  if (!isAuthenticated) return;
   try {
     if (!API_BASE) throw new Error('apiBaseUrl no configurado');
     const res = await fetchJson(`${API_BASE}/api/manager/social-links`);
@@ -1999,7 +1998,7 @@ function startGoogleLogin({ auto = false } = {}) {
 function autoLoginOnLoad() {
   if (restoreStoredAuthSession()) return;
   if (googleAccessToken || googleProfile || isAuthenticated) return;
-  setOauthStatus('Catálogo público activo. Inicia sesión para usar tabs privadas.');
+  setOauthStatus('Catálogo y Links públicos activos. Inicia sesión para usar tabs privadas.');
 }
 
 function signOutGoogle() {
@@ -2036,7 +2035,7 @@ function setupTabs() {
     tab.addEventListener('click', () => {
       const targetTab = String(tab.dataset.tab || 'overview');
       if (!isAuthenticated && !isPublicTab(targetTab)) {
-        setOauthStatus('Solo Catálogo es público. Inicia sesión con Google para ver esta sección.', true);
+        setOauthStatus('Solo Catálogo y Links son públicos. Inicia sesión con Google para ver esta sección.', true);
         setAuthGate(false);
         return;
       }
