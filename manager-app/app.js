@@ -979,9 +979,11 @@ function renderCatalog() {
     ? catalogCache
     : catalogCache.filter((row) => parseCatalogGenres(row.generos).includes(catalogGenreFilter));
 
+  const baseForSearch = catalogFilterView === 'playlists' ? catalogCache : byGenre;
+
   const bySearch = !catalogSearchQuery.trim()
-    ? byGenre
-    : byGenre.filter((row) => {
+    ? baseForSearch
+    : baseForSearch.filter((row) => {
         const haystack = [row.obra, row.autores, row.generos, row.drive, row.fileId]
           .map((v) => String(v || '').toLowerCase())
           .join(' ');
