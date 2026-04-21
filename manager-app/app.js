@@ -1279,6 +1279,33 @@ async function shareSelectedPlaylistForListen() {
   }
 }
 
+async function shareAppProfile() {
+  const url = window.location.href.split('?')[0];
+  const text = `Te comparto el Catálogo y Perfil Manager de Jay Mansur:\n¡Explora música y proyectos!`;
+
+  try {
+    if (navigator.share) {
+      await navigator.share({
+        title: 'Jay Mansur · Perfil Manager',
+        text,
+        url
+      });
+      return;
+    }
+    await navigator.clipboard.writeText(`${text}\n\n${url}`);
+    
+    const statusEl = document.getElementById('oauth-status');
+    if (statusEl) {
+      statusEl.textContent = 'Link de la App copiado al portapapeles.';
+      setTimeout(() => statusEl.textContent = isAuthenticated ? 'Sesión Manager Activa' : 'Sin sesión', 3000);
+    } else {
+      alert('Link de la App copiado al portapapeles.');
+    }
+  } catch (e) {
+    console.warn('No se pudo compartir la app:', e);
+  }
+}
+
 async function shareCatalogSongDrive(songId) {
   const song = catalogCache.find((row) => row.id === songId);
   if (!song || !song.drive) {
@@ -2562,6 +2589,7 @@ function setupActions() {
   };
 
   bindClick('google-auth-toggle', handleAuthToggle);
+  bindClick('share-app-btn', shareAppProfile);
   bindClick('auth-gate-login', startGoogleLogin);
   bindClick('refresh-messages', () => loadMessagesFromApi());
   bindClick('refresh-messages-overview', () => loadMessagesFromApi());
