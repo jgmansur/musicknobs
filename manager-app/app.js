@@ -897,6 +897,8 @@ function applyCatalogDeepLinkIfNeeded() {
   if (!targetSongId) {
     if (catalogDeepLinkPlaylistId) {
       catalogDeepLinkHandled = true;
+      catalogFilterView = 'playlists';
+      catalogGenreFilter = 'Todas';
       activateTab('catalog');
       updateAuthGateForCurrentTab();
       renderCatalog();
@@ -914,8 +916,13 @@ function applyCatalogDeepLinkIfNeeded() {
     renderPlaylists();
   }
 
-  const preferredGenre = parseCatalogGenres(track.generos)[0] || 'Todas';
-  catalogGenreFilter = preferredGenre;
+  if (catalogDeepLinkPlaylistId) {
+    catalogFilterView = 'playlists';
+    catalogGenreFilter = 'Todas';
+  } else {
+    catalogFilterView = 'genres';
+    catalogGenreFilter = parseCatalogGenres(track.generos)[0] || 'Todas';
+  }
   catalogVisibleCount = Math.max(catalogVisibleCount, index + 1, CATALOG_PAGE_STEP);
 
   activateTab('catalog');
