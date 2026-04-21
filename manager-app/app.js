@@ -369,17 +369,13 @@ async function deletePlaylist(playlistId = selectedPlaylistId) {
   }
 }
 
-async function addSongToPlaylist(songId) {
-  if (!isAuthenticated || !songId) return;
-  if (!selectedPlaylistId) {
-    setStatus('catalog-status', 'Selecciona una playlist primero.', true);
-    return;
-  }
+async function addSongToSpecificPlaylist(songId, targetPlaylistId) {
+  if (!isAuthenticated || !songId || !targetPlaylistId) return;
   const song = catalogCache.find((s) => s.id === songId);
   if (!song) return;
 
   try {
-    const r = await fetch(`${API_BASE}/api/manager/playlists/${selectedPlaylistId}`, {
+    const r = await fetch(`${API_BASE}/api/manager/playlists/${targetPlaylistId}`, {
       method: 'PATCH',
       headers: apiHeaders(),
       body: JSON.stringify({ action: 'add_track', trackId: song.id, trackTitle: song.obra || 'Track' })
@@ -387,10 +383,49 @@ async function addSongToPlaylist(songId) {
     if (!r.ok) throw new Error(`HTTP ${r.status}`);
     setStatus('catalog-status', `Agregada a playlist: ${song.obra || 'canción'}.`);
     await loadPlaylistsFromApi();
+    renderCatalog();
   } catch (e) {
     const reason = e instanceof Error ? e.message : String(e);
     setStatus('catalog-status', `No se pudo agregar a playlist: ${reason}`, true);
   }
+}
+
+let pendingPlaylistSongId = '';
+
+function openPlaylistCreateModal(songId) {
+  pendingPlaylistSongId = songId;
+  const modal = document.getElementById('playlist-create-modal');
+  const input = document.getElementById('playlist-modal-name');
+  if (modal) modal.classList.remove('hidden');
+  if (input) {
+    input.value = '';
+    input.focus();
+  }
+}
+
+function closePlaylistCreateModal() {
+  pendingPlaylistSongId = '';
+  const modal = document.getElementById('playlist-create-modal');
+  if (modal) modal.classList.add('hidden');
+}
+
+function setupPlaylistModal() {
+  document.getElementById('playlist-modal-cancel')?.addEventListener('click', closePlaylistCreateModal);
+  document.getElementById('playlist-modal-save')?.addEventListener('click', async () => {
+    const input = document.getElementById('playlist-modal-name');
+    const name = input?.value?.trim();
+    if (!name) {
+      alert('Ponle un nombre a tu playlist');
+      return;
+    }
+    
+    // createPlaylist already sets selectedPlaylistId and re-renders
+    const newPlId = await createPlaylist(name);
+    if (newPlId && pendingPlaylistSongId) {
+       await addSongToSpecificPlaylist(pendingPlaylistSongId, newPlId);
+    }
+    closePlaylistCreateModal();
+  });
 }
 
 async function removeSongFromPlaylist(songId) {
@@ -932,11 +967,9 @@ function renderCatalog() {
             .join('')}
         </select>
         ${isAuthenticated
-          ? `<div class="catalog-playlist-pane-actions">
-              <button class="mini-btn" id="playlist-create-pane" type="button">Crear nueva</button>
-              <button class="mini-btn" id="playlist-delete-pane" type="button">Borrar seleccionada</button>
-            </div>
-            <input id="playlist-name-pane" class="catalog-genre-select" type="text" placeholder="Nombre de nueva playlist" />`
+          ? `<div class="catalog-playlist-pane-actions" style="margin-top: 0.5rem;">
+              <button class="mini-btn" id="playlist-delete-pane" type="button" style="width: 100%;">Borrar seleccionada</button>
+            </div>`
           : ''}
       </li>
     `;
@@ -977,11 +1010,24 @@ function renderCatalog() {
                 <span class="catalog-authors"><span class="catalog-authors-text">${escapeHtml(row.autores || '—')}</span></span>
               </button>
               <div class="actions">
-                ${isAuthenticated && selectedPlaylistId
-                  ? (selectedPlaylistTrackIds.has(String(row.id || ''))
-                      ? `<button class="mini-btn" data-catalog-remove-playlist="${escapeHtml(row.id)}">−</button>`
-                      : `<button class="mini-btn" data-catalog-add-playlist="${escapeHtml(row.id)}">+</button>`)
-                  : '<button class="mini-btn" data-catalog-add-playlist="'+escapeHtml(row.id)+'">+</button>'}
+                ${!isAuthenticated ? '' : (
+                  (catalogFilterView === 'playlists' && selectedPlaylistId && selectedPlaylistTrackIds.has(String(row.id || '')))
+                    ? `<button class="mini-btn" data-catalog-remove-playlist="${escapeHtml(row.id)}">−</button>`
+                    : `<details class="task-actions-menu catalog-playlist-menu">
+                        <summary>
+                          <span class="task-actions-toggle" role="button" aria-label="Añadir a playlist" style="padding: 0 6px;">+</span>
+                        </summary>
+                        <div class="task-actions-dropdown">
+                          <button class="mini-btn" data-catalog-create-playlist-for="${escapeHtml(row.id)}">Crear nueva playlist...</button>
+                          ${playlistsCache.length ? '<hr class="soft-sep" style="margin: 0.25rem 0;" />' : ''}
+                          ${playlistsCache.map(pl => `
+                            <button class="mini-btn" data-catalog-add-to-specific="${escapeHtml(pl.id)}" data-song-id="${escapeHtml(row.id)}">
+                              Añadir a: ${escapeHtml(pl.name)}
+                            </button>
+                          `).join('')}
+                        </div>
+                      </details>`
+                )}
                 ${isAuthenticated
                   ? `<details class="task-actions-menu catalog-share-menu">
                       <summary>
@@ -1056,8 +1102,26 @@ function renderCatalog() {
     btn.addEventListener('click', () => shareCatalogSongDrive(btn.dataset.catalogShareDrive || ''));
   });
 
-  songsEl.querySelectorAll('[data-catalog-add-playlist]').forEach((btn) => {
-    btn.addEventListener('click', () => addSongToPlaylist(btn.dataset.catalogAddPlaylist || ''));
+  songsEl.querySelectorAll('[data-catalog-create-playlist-for]').forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      openPlaylistCreateModal(btn.dataset.catalogCreatePlaylistFor || '');
+      btn.closest('details')?.removeAttribute('open');
+    });
+  });
+
+  songsEl.querySelectorAll('[data-catalog-add-to-specific]').forEach((btn) => {
+    btn.addEventListener('click', async (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const songId = btn.dataset.songId || '';
+      const plId = btn.dataset.catalogAddToSpecific || '';
+      if (songId && plId) {
+        await addSongToSpecificPlaylist(songId, plId);
+      }
+      btn.closest('details')?.removeAttribute('open');
+    });
   });
 
   songsEl.querySelectorAll('[data-catalog-remove-playlist]').forEach((btn) => {
@@ -2544,6 +2608,7 @@ function init() {
   initCatalogDeepLinkFromUrl();
   loadAppVersion();
   setShareActions();
+  setupPlaylistModal();
   setLinks();
   clearSensitiveData();
   resetContactForm();
