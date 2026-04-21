@@ -240,16 +240,27 @@ function initGoogleOAuth() {
 }
 
 function requestGoogleToken() {
-  if (!ensureGoogleOAuthClient()) {
-    setOauthStatus('OAuth todavía está cargando, intenta de nuevo.', true);
-    return;
-  }
-  googleTokenClient.requestAccessToken({ prompt: 'consent' });
+  return requestGoogleTokenWithMode({ interactive: true });
 }
 
-function startGoogleLogin() {
+function requestGoogleTokenWithMode({ interactive }) {
+  if (!ensureGoogleOAuthClient()) {
+    setOauthStatus('OAuth todavía está cargando, intenta de nuevo.', !interactive);
+    return false;
+  }
+
+  try {
+    googleTokenClient.requestAccessToken({ prompt: interactive ? 'consent' : '' });
+    return true;
+  } catch {
+    setOauthStatus('No se pudo abrir Google OAuth. Reintenta.', true);
+    return;
+  }
+}
+
+function startGoogleLogin({ auto = false } = {}) {
   if (ensureGoogleOAuthClient()) {
-    requestGoogleToken();
+    requestGoogleTokenWithMode({ interactive: true });
     return;
   }
 
@@ -259,7 +270,7 @@ function startGoogleLogin() {
   btn.disabled = true;
   const prev = btn.textContent;
   btn.textContent = 'Cargando...';
-  setOauthStatus('Esperando Google OAuth...', false);
+  setOauthStatus(auto ? 'Inicializando login automático...' : 'Esperando Google OAuth...', false);
 
   let elapsed = 0;
   if (googleInitInterval) clearInterval(googleInitInterval);
@@ -271,7 +282,7 @@ function startGoogleLogin() {
       googleInitInterval = null;
       btn.disabled = false;
       btn.textContent = prev;
-      requestGoogleToken();
+      requestGoogleTokenWithMode({ interactive: true });
       return;
     }
     if (elapsed >= 10000) {
@@ -282,6 +293,11 @@ function startGoogleLogin() {
       setOauthStatus('No se pudo inicializar Google OAuth. Reintenta.', true);
     }
   }, 200);
+}
+
+function autoLoginOnLoad() {
+  if (googleAccessToken || googleProfile) return;
+  setTimeout(() => startGoogleLogin({ auto: true }), 350);
 }
 
 function signOutGoogle() {
@@ -327,6 +343,7 @@ function init() {
   setupTabs();
   setupActions();
   initGoogleOAuth();
+  autoLoginOnLoad();
   loadCatalogFromApi();
   loadContactsFromNotion();
 }

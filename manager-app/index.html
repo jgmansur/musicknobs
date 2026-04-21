@@ -17,8 +17,13 @@
         <p class="subtitle">Jay Mansur · Productor / Compositor / Artista</p>
         <p class="subtitle">Versión <span id="app-version">1.0.0</span></p>
       </div>
-      <button id="print-btn" class="btn ghost">PDF</button>
+      <div class="topbar-actions">
+        <button id="google-auth" class="btn">Login Google</button>
+        <button id="google-signout" class="btn ghost">Cerrar sesión</button>
+        <button id="print-btn" class="btn ghost">PDF</button>
+      </div>
     </header>
+    <p id="oauth-status" class="hint oauth-header-status">Sin sesión</p>
 
     <main class="container">
       <section class="hero card">
@@ -88,11 +93,6 @@
           <li>Acción rápida: compartir perfil y catálogo por mail/WhatsApp.</li>
           <li>PDF: usar botón <strong>PDF</strong> (window.print).</li>
         </ul>
-        <div class="actions">
-          <button id="google-auth" class="btn">Conectar con Google</button>
-          <button id="google-signout" class="btn ghost">Cerrar sesión</button>
-        </div>
-        <p id="oauth-status" class="hint">Sin sesión</p>
       </section>
 
       <nav class="tab-bar" aria-label="Secciones">

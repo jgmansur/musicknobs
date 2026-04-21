@@ -21,7 +21,7 @@ body {
 .topbar {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   gap: 12px;
   padding: 16px;
   border-bottom: 1px solid var(--line);
@@ -29,6 +29,17 @@ body {
   top: 0;
   background: rgba(11, 16, 32, 0.9);
   backdrop-filter: blur(8px);
+}
+
+.topbar-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.oauth-header-status {
+  margin: 8px 16px 0;
 }
 
 h1 { margin: 0; font-size: 1.1rem; }
@@ -187,4 +198,15 @@ th { color: var(--muted); font-weight: 600; }
 @media (min-width: 900px) {
   h1 { font-size: 1.25rem; }
   .subtitle { font-size: 0.9rem; }
+}
+
+@media (max-width: 720px) {
+  .topbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .topbar-actions {
+    justify-content: flex-start;
+  }
 }
