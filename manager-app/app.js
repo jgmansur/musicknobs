@@ -58,6 +58,19 @@ let catalogVisibleCount = 20;
 const CONTACTS_PAGE_STEP = 12;
 const MESSAGES_PAGE_STEP = 20;
 const CATALOG_PAGE_STEP = 20;
+const CATALOG_PROGRESS_REFRESH_MS = 350;
+
+const configuredTracks = Array.isArray(window.MANAGER_TRACKS) ? window.MANAGER_TRACKS : [];
+
+const catalogPlayer = {
+  howl: null,
+  currentTrackIndex: -1,
+  isLoading: false,
+  isPlaying: false,
+  progressTimer: null,
+  volume: 0.8,
+  isSeeking: false,
+};
 
 function isLocalDevHost() {
   const host = String(window.location.hostname || '').toLowerCase();
@@ -92,10 +105,20 @@ function enableLocalDevBypassMode() {
   }
 }
 
-const catalogSample = [
-  { obra: 'Tema Demo 1', autores: 'Jay Mansur', generos: 'Regional Mexicano', drive: 'https://drive.google.com/file/d/1abCDefghIJkLmNoPqRsTUvwxYZ/view?usp=sharing' },
-  { obra: 'Tema Demo 2', autores: 'Jay Mansur, Alejandro De Nigris', generos: 'Pop', drive: 'https://www.dropbox.com/scl/fi/demo-track.mp3?dl=0' }
-];
+const catalogSample = configuredTracks.length
+  ? configuredTracks.map((track, index) => ({
+      id: String(track.id || `track-config-${index + 1}`),
+      obra: String(track.title || `Track ${index + 1}`).trim(),
+      autores: String(track.artist || '—').trim(),
+      generos: String(track.genre || '—').trim(),
+      drive: String(track.drive || '').trim(),
+      fileId: String(track.fileId || '').trim(),
+      cover: String(track.cover || '').trim(),
+    }))
+  : [
+      { obra: 'Tema Demo 1', autores: 'Jay Mansur', generos: 'Regional Mexicano', drive: '', fileId: '', cover: '' },
+      { obra: 'Tema Demo 2', autores: 'Jay Mansur, Alejandro De Nigris', generos: 'Pop', drive: '', fileId: '', cover: '' }
+    ];
 
 const contactsSample = [
   {
@@ -299,68 +322,249 @@ function parseCatalogGenres(value) {
     .filter(Boolean);
 }
 
-function resolvePlayableAudioCandidates(raw) {
+function extractDriveFileId(raw) {
   const input = String(raw || '').trim();
-  if (!input || input === '#') return [];
+  if (!input) return '';
+  if (/^[a-zA-Z0-9_-]{20,}$/.test(input)) return input;
 
   try {
-    const u = new URL(input);
-
-    if (u.hostname.includes('drive.google.com') || u.hostname.includes('docs.google.com')) {
-      const match = u.pathname.match(/\/file\/d\/([^/]+)/);
-      const id = match?.[1] || u.searchParams.get('id') || '';
-      if (!id) return [];
-
-      return Array.from(new Set([
-        `https://drive.google.com/uc?export=download&id=${encodeURIComponent(id)}`,
-        `https://drive.google.com/uc?export=open&id=${encodeURIComponent(id)}`,
-        `https://docs.google.com/uc?export=download&id=${encodeURIComponent(id)}`,
-      ]));
-    }
-
-    if (u.hostname.includes('dropbox.com')) {
-      u.searchParams.set('raw', '1');
-      u.searchParams.set('dl', '1');
-      return [u.toString()];
-    }
-
-    return [u.toString()];
+    const parsed = new URL(input);
+    if (!parsed.hostname.includes('google.com')) return '';
+    const pathMatch = parsed.pathname.match(/\/file\/d\/([a-zA-Z0-9_-]{20,})/);
+    if (pathMatch?.[1]) return pathMatch[1];
+    const idQuery = parsed.searchParams.get('id');
+    if (idQuery && /^[a-zA-Z0-9_-]{20,}$/.test(idQuery)) return idQuery;
+    return '';
   } catch {
-    return [input];
+    return '';
   }
 }
 
-function tryPlayAudioSource(audio, url, timeoutMs = 4500) {
-  return new Promise((resolve) => {
-    let done = false;
-    const finish = (ok) => {
-      if (done) return;
-      done = true;
-      cleanup();
-      resolve(ok);
-    };
+function formatTime(seconds) {
+  const safe = Number.isFinite(seconds) ? Math.max(0, Math.floor(seconds)) : 0;
+  const mins = Math.floor(safe / 60);
+  const secs = safe % 60;
+  return `${mins}:${String(secs).padStart(2, '0')}`;
+}
 
-    const onCanPlay = () => finish(true);
-    const onError = () => finish(false);
-    const cleanup = () => {
-      audio.removeEventListener('canplay', onCanPlay);
-      audio.removeEventListener('error', onError);
-      clearTimeout(timer);
-    };
+function getCatalogPlayerTrackByIndex(index = catalogPlayer.currentTrackIndex) {
+  if (index < 0) return null;
+  return catalogCache[index] || null;
+}
 
-    const timer = setTimeout(() => finish(false), timeoutMs);
+function stopCatalogProgressTimer() {
+  if (!catalogPlayer.progressTimer) return;
+  clearInterval(catalogPlayer.progressTimer);
+  catalogPlayer.progressTimer = null;
+}
 
-    audio.addEventListener('canplay', onCanPlay);
-    audio.addEventListener('error', onError);
-    audio.src = url;
+function refreshCatalogProgressUi() {
+  const progress = document.getElementById('catalog-player-progress');
+  const current = document.getElementById('catalog-player-current');
+  const duration = document.getElementById('catalog-player-duration');
+  const howl = catalogPlayer.howl;
+  if (!progress || !current || !duration || !howl || !howl.state || howl.state() !== 'loaded') return;
 
-    const playAttempt = audio.play();
-    if (playAttempt?.catch) {
-      playAttempt.catch(() => {
-        // Dejamos que onerror/timeout resuelvan.
-      });
+  const total = Number(howl.duration() || 0);
+  const seek = Number(howl.seek() || 0);
+  const percent = total > 0 ? Math.min(100, Math.max(0, (seek / total) * 100)) : 0;
+
+  if (!catalogPlayer.isSeeking) {
+    progress.value = `${percent}`;
+  }
+  current.textContent = formatTime(seek);
+  duration.textContent = formatTime(total);
+}
+
+function startCatalogProgressTimer() {
+  stopCatalogProgressTimer();
+  catalogPlayer.progressTimer = setInterval(() => {
+    refreshCatalogProgressUi();
+  }, CATALOG_PROGRESS_REFRESH_MS);
+}
+
+function setCatalogPlayerStatus(text, isError = false) {
+  const status = document.getElementById('catalog-player-status');
+  if (!status) return;
+  status.textContent = text;
+  status.classList.toggle('error', Boolean(isError));
+}
+
+function clearCatalogHowl() {
+  stopCatalogProgressTimer();
+  if (catalogPlayer.howl) {
+    catalogPlayer.howl.unload();
+  }
+  catalogPlayer.howl = null;
+  catalogPlayer.isPlaying = false;
+  catalogPlayer.isLoading = false;
+}
+
+function updateCatalogPlayerUi() {
+  const track = getCatalogPlayerTrackByIndex();
+  const title = document.getElementById('catalog-player-track-title');
+  const artist = document.getElementById('catalog-player-track-artist');
+  const playBtn = document.getElementById('catalog-play-toggle');
+  const volume = document.getElementById('catalog-player-volume');
+  const cover = document.getElementById('catalog-player-cover');
+  const coverPlaceholder = document.getElementById('catalog-player-cover-placeholder');
+  const progress = document.getElementById('catalog-player-progress');
+
+  if (title) title.textContent = track?.obra || 'Selecciona una canción';
+  if (artist) artist.textContent = track?.autores || '—';
+  if (playBtn) {
+    if (catalogPlayer.isLoading) {
+      playBtn.textContent = 'Cargando...';
+      playBtn.disabled = true;
+    } else {
+      playBtn.disabled = !track;
+      playBtn.textContent = catalogPlayer.isPlaying ? '⏸ Pause' : '▶️ Play';
+    }
+  }
+
+  if (volume) {
+    volume.value = String(catalogPlayer.volume);
+  }
+
+  if (cover && coverPlaceholder) {
+    if (track?.cover) {
+      cover.src = track.cover;
+      cover.classList.add('visible');
+      coverPlaceholder.classList.add('hidden');
+    } else {
+      cover.removeAttribute('src');
+      cover.classList.remove('visible');
+      coverPlaceholder.classList.remove('hidden');
+    }
+  }
+
+  if (!track && progress) {
+    progress.value = '0';
+    const current = document.getElementById('catalog-player-current');
+    const duration = document.getElementById('catalog-player-duration');
+    if (current) current.textContent = '0:00';
+    if (duration) duration.textContent = '0:00';
+  }
+}
+
+function buildSecureAudioUrl(track) {
+  if (!track) return '';
+  if (!API_BASE) return '';
+  if (!track.fileId) return '';
+  return `${API_BASE}/api/audio/${encodeURIComponent(track.fileId)}`;
+}
+
+function playNextCatalogTrack(step = 1) {
+  if (!catalogCache.length) return;
+  const current = catalogPlayer.currentTrackIndex >= 0 ? catalogPlayer.currentTrackIndex : 0;
+  const next = (current + step + catalogCache.length) % catalogCache.length;
+  void loadCatalogTrack(next, { autoplay: true });
+}
+
+async function loadCatalogTrack(index, { autoplay = false } = {}) {
+  const track = catalogCache[index];
+  if (!track) {
+    setStatus('catalog-status', 'No existe la pista seleccionada.', true);
+    return;
+  }
+
+  if (!window.Howl) {
+    setStatus('catalog-status', 'Howler no está disponible. Ejecuta npm run sync:howler.', true);
+    return;
+  }
+
+  if (!track.fileId) {
+    setStatus('catalog-status', `La pista "${track.obra || 'sin título'}" no tiene fileId de Google Drive.`, true);
+    setCatalogPlayerStatus('Falta fileId de Google Drive', true);
+    return;
+  }
+
+  const secureUrl = buildSecureAudioUrl(track);
+  if (!secureUrl) {
+    setStatus('catalog-status', 'No hay apiBaseUrl para resolver audio seguro.', true);
+    setCatalogPlayerStatus('apiBaseUrl faltante en config.js', true);
+    return;
+  }
+
+  clearCatalogHowl();
+  catalogPlayer.currentTrackIndex = index;
+  catalogNowPlayingId = track.id;
+  catalogNowCardOpen = false;
+  catalogPlayer.isLoading = true;
+  setCatalogPlayerStatus('Validando permisos y preparando stream...');
+  updateCatalogPlayerUi();
+  renderCatalog();
+
+  const howl = new window.Howl({
+    src: [secureUrl],
+    html5: true,
+    volume: catalogPlayer.volume,
+    preload: true,
+    autoplay: false,
+  });
+
+  catalogPlayer.howl = howl;
+
+  howl.on('load', () => {
+    catalogPlayer.isLoading = false;
+    setCatalogPlayerStatus('Pista lista');
+    updateCatalogPlayerUi();
+    refreshCatalogProgressUi();
+    if (autoplay) {
+      howl.play();
     }
   });
+
+  howl.on('play', () => {
+    catalogPlayer.isPlaying = true;
+    catalogPlayer.isLoading = false;
+    setCatalogPlayerStatus('Reproduciendo');
+    setStatus('catalog-status', `Reproduciendo: ${track.obra || 'canción'}.`);
+    updateCatalogPlayerUi();
+    startCatalogProgressTimer();
+    renderCatalog();
+  });
+
+  howl.on('pause', () => {
+    catalogPlayer.isPlaying = false;
+    setCatalogPlayerStatus('Pausado');
+    updateCatalogPlayerUi();
+    stopCatalogProgressTimer();
+    refreshCatalogProgressUi();
+  });
+
+  howl.on('stop', () => {
+    catalogPlayer.isPlaying = false;
+    updateCatalogPlayerUi();
+    stopCatalogProgressTimer();
+    refreshCatalogProgressUi();
+  });
+
+  howl.on('end', () => {
+    playNextCatalogTrack(1);
+  });
+
+  const onHowlerError = (eventName, id, code) => {
+    catalogPlayer.isLoading = false;
+    catalogPlayer.isPlaying = false;
+    stopCatalogProgressTimer();
+    updateCatalogPlayerUi();
+    setCatalogPlayerStatus('Error al cargar audio', true);
+    const reason = code ? ` (${code})` : '';
+    setStatus('catalog-status', `No se pudo reproducir "${track.obra || 'canción'}"${reason}. Revisa permisos de Google Drive.`, true);
+    console.error(`[howler:${eventName}]`, { id, code, trackId: track.id, fileId: track.fileId });
+  };
+
+  howl.on('loaderror', (id, code) => onHowlerError('loaderror', id, code));
+  howl.on('playerror', (id, code) => onHowlerError('playerror', id, code));
+
+  if (autoplay) {
+    try {
+      howl.play();
+    } catch {
+      // Howler dispara callbacks de error.
+    }
+  }
 }
 
 function setCatalogNowCard(song) {
@@ -373,11 +577,13 @@ function setCatalogNowCard(song) {
   }
 
   const share = song.drive ? `<a href="${escapeHtml(song.drive)}" target="_blank" rel="noopener">Abrir enlace original</a>` : 'Sin enlace';
+  const secure = song.fileId ? 'Audio privado servido por /api/audio/:fileId' : 'Sin fileId configurado';
   card.innerHTML = `
     <div class="catalog-now-card-inner">
       <h4>${escapeHtml(song.obra || 'Sin título')}</h4>
       <p><strong>Compositores:</strong> ${escapeHtml(song.autores || '—')}</p>
       <p><strong>Géneros:</strong> ${escapeHtml(song.generos || '—')}</p>
+      <p><strong>Stream:</strong> ${escapeHtml(secure)}</p>
       <p><strong>Enlace:</strong> ${share}</p>
     </div>
   `;
@@ -428,7 +634,7 @@ function renderCatalog() {
     ? pagedSongs
         .map((row) => `
           <li>
-            <div class="catalog-song-row">
+            <div class="catalog-song-row ${catalogNowPlayingId === row.id ? 'is-active' : ''}">
               <button class="catalog-song-main" data-catalog-play="${escapeHtml(row.id)}">
                 <strong>${escapeHtml(row.obra || 'Sin título')}</strong>
                 <span>${escapeHtml(row.autores || '—')}</span>
@@ -495,13 +701,16 @@ function setCatalog(rows = catalogSample) {
       obra: String(row.obra || '').trim(),
       autores: String(row.autores || '').trim(),
       generos: String(row.generos || '').trim(),
-      drive: String(row.drive || '').trim()
+      drive: String(row.drive || '').trim(),
+      fileId: String(row.fileId || extractDriveFileId(row.drive || '')).trim(),
+      cover: String(row.cover || '').trim(),
     }))
-    .filter((row) => Boolean(row.obra || row.drive));
+    .filter((row) => Boolean(row.obra || row.drive || row.fileId));
 
   const byKey = new Map();
   for (const row of normalized) {
     const key = [
+      String(row.fileId || '').trim().toLowerCase(),
       String(row.drive || '').trim().toLowerCase(),
       String(row.obra || '').trim().toLowerCase(),
       String(row.autores || '').trim().toLowerCase()
@@ -513,17 +722,18 @@ function setCatalog(rows = catalogSample) {
   if (catalogNowPlayingId && !catalogCache.some((row) => row.id === catalogNowPlayingId)) {
     catalogNowPlayingId = '';
     catalogNowCardOpen = false;
+    clearCatalogHowl();
+    catalogPlayer.currentTrackIndex = -1;
+    setCatalogPlayerStatus('Selecciona una canción para iniciar.');
   }
 
   if (!catalogCache.length) {
-    const audio = document.getElementById('catalog-audio');
-    if (audio) {
-      audio.pause();
-      audio.removeAttribute('src');
-      audio.load();
-    }
+    clearCatalogHowl();
+    catalogPlayer.currentTrackIndex = -1;
+    setCatalogPlayerStatus('No hay pistas disponibles.');
   }
 
+  updateCatalogPlayerUi();
   renderCatalog();
 }
 
@@ -555,37 +765,80 @@ async function shareCatalogSong(songId) {
 }
 
 function playCatalogSong(songId) {
-  const song = catalogCache.find((row) => row.id === songId);
-  if (!song) return;
+  const index = catalogCache.findIndex((row) => row.id === songId);
+  if (index < 0) return;
+  void loadCatalogTrack(index, { autoplay: true });
+}
 
-  const audio = document.getElementById('catalog-audio');
-  if (!audio) return;
+function setupCatalogPlayerControls() {
+  const playToggle = document.getElementById('catalog-play-toggle');
+  const prevBtn = document.getElementById('catalog-prev');
+  const nextBtn = document.getElementById('catalog-next');
+  const progress = document.getElementById('catalog-player-progress');
+  const volume = document.getElementById('catalog-player-volume');
 
-  const candidates = resolvePlayableAudioCandidates(song.drive);
-  if (!candidates.length) {
-    setStatus('catalog-status', 'Esta canción no tiene URL reproducible. Revisa que el campo Play sea link directo a archivo.', true);
-    return;
-  }
-
-  catalogNowPlayingId = song.id;
-  catalogNowCardOpen = false;
-
-  (async () => {
-    for (const url of candidates) {
-      const ok = await tryPlayAudioSource(audio, url);
-      if (ok) {
-        setStatus('catalog-status', `Reproduciendo: ${song.obra || 'canción'}.`);
-        renderCatalog();
+  if (playToggle) {
+    playToggle.addEventListener('click', () => {
+      const track = getCatalogPlayerTrackByIndex();
+      if (!track) {
+        if (catalogCache.length) {
+          void loadCatalogTrack(0, { autoplay: true });
+        }
         return;
       }
-    }
+      if (!catalogPlayer.howl) {
+        void loadCatalogTrack(catalogPlayer.currentTrackIndex, { autoplay: true });
+        return;
+      }
+      if (catalogPlayer.howl.playing()) {
+        catalogPlayer.howl.pause();
+      } else {
+        catalogPlayer.howl.play();
+      }
+    });
+  }
 
-    audio.pause();
-    audio.removeAttribute('src');
-    audio.load();
-    setStatus('catalog-status', 'No se pudo reproducir esta URL. Verifica permisos públicos del archivo en Drive/Dropbox.', true);
-    renderCatalog();
-  })();
+  if (prevBtn) {
+    prevBtn.addEventListener('click', () => {
+      playNextCatalogTrack(-1);
+    });
+  }
+
+  if (nextBtn) {
+    nextBtn.addEventListener('click', () => {
+      playNextCatalogTrack(1);
+    });
+  }
+
+  if (progress) {
+    progress.addEventListener('input', () => {
+      catalogPlayer.isSeeking = true;
+      const howl = catalogPlayer.howl;
+      if (!howl || howl.state() !== 'loaded') return;
+      const duration = Number(howl.duration() || 0);
+      const pct = Math.min(100, Math.max(0, Number(progress.value || 0)));
+      howl.seek((pct / 100) * duration);
+      refreshCatalogProgressUi();
+    });
+    progress.addEventListener('change', () => {
+      catalogPlayer.isSeeking = false;
+      refreshCatalogProgressUi();
+    });
+  }
+
+  if (volume) {
+    volume.value = String(catalogPlayer.volume);
+    volume.addEventListener('input', () => {
+      const nextVolume = Math.min(1, Math.max(0, Number(volume.value || 0.8)));
+      catalogPlayer.volume = nextVolume;
+      if (catalogPlayer.howl) {
+        catalogPlayer.howl.volume(nextVolume);
+      }
+    });
+  }
+
+  setCatalogPlayerStatus('Selecciona una canción para iniciar.');
+  updateCatalogPlayerUi();
 }
 
 function setTasks(rows = []) {
@@ -861,6 +1114,12 @@ function setAuthGate(locked) {
 }
 
 function clearSensitiveData() {
+  clearCatalogHowl();
+  catalogPlayer.currentTrackIndex = -1;
+  catalogNowPlayingId = '';
+  catalogNowCardOpen = false;
+  setCatalogPlayerStatus('Inicia sesión para cargar catálogo.');
+  updateCatalogPlayerUi();
   setCatalog([]);
   setContacts([]);
   setTasks([]);
@@ -1432,7 +1691,9 @@ async function loadCatalogFromApi() {
       obra: item.obra || 'Sin título',
       autores: item.autores || '—',
       generos: item.generos || '—',
-      drive: item.drive || '#'
+      drive: item.drive || '',
+      fileId: item.fileId || extractDriveFileId(item.drive || ''),
+      cover: item.cover || ''
     }));
     catalogVisibleCount = CATALOG_PAGE_STEP;
     setCatalog(rows.length ? rows : catalogSample);
@@ -1834,6 +2095,7 @@ function init() {
   resetTaskForm();
   setTaskFormVisibility(false);
   setupTabs();
+  setupCatalogPlayerControls();
   setupActions();
   if (shouldBypassAuthForLocalDev()) {
     enableLocalDevBypassMode();

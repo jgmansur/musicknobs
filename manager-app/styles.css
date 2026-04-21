@@ -824,6 +824,13 @@ a { color: #93c5fd; }
   min-width: 0;
 }
 
+.catalog-song-row.is-active {
+  border-radius: .55rem;
+  background: rgba(251, 191, 36, .08);
+  outline: 1px solid rgba(251, 191, 36, .25);
+  padding: .18rem .22rem;
+}
+
 .catalog-song-main {
   border: 0;
   background: transparent;
@@ -873,6 +880,100 @@ a { color: #93c5fd; }
   margin: .2rem 0;
   color: var(--text-soft);
   font-size: .78rem;
+}
+
+.catalog-player {
+  border-top: 1px solid rgba(255,255,255,.08);
+  background: rgba(9, 14, 24, .92);
+  padding: .7rem;
+  display: grid;
+  gap: .6rem;
+}
+
+.catalog-player-head {
+  display: grid;
+  grid-template-columns: 54px 1fr;
+  gap: .6rem;
+  align-items: center;
+}
+
+.catalog-player-cover-wrap {
+  width: 54px;
+  height: 54px;
+  border-radius: .65rem;
+  overflow: hidden;
+  border: 1px solid var(--glass-border);
+  background: rgba(255,255,255,.04);
+  position: relative;
+}
+
+.catalog-player-cover {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: none;
+}
+
+.catalog-player-cover.visible {
+  display: block;
+}
+
+.catalog-player-cover-placeholder {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-size: 1.25rem;
+  color: var(--text-soft);
+}
+
+.catalog-player-meta {
+  display: grid;
+  gap: .15rem;
+  min-width: 0;
+}
+
+.catalog-player-meta strong,
+.catalog-player-meta span {
+  overflow-wrap: anywhere;
+}
+
+.catalog-player-meta span {
+  color: var(--text-soft);
+  font-size: .74rem;
+}
+
+.catalog-player-controls {
+  display: flex;
+  gap: .45rem;
+}
+
+.catalog-player-controls .mini-btn {
+  flex: 1;
+}
+
+.catalog-player-progress-wrap {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: .45rem;
+  font-size: .72rem;
+  color: var(--text-soft);
+}
+
+.catalog-player-progress-wrap input[type="range"],
+.catalog-player-volume-wrap input[type="range"] {
+  width: 100%;
+  accent-color: var(--primary);
+}
+
+.catalog-player-volume-wrap {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: .55rem;
+  font-size: .72rem;
+  color: var(--text-soft);
 }
 
 table {

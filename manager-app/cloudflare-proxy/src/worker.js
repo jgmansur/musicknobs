@@ -1,6 +1,6 @@
 const SAMPLE_CATALOG = [
-  { obra: "Tema Demo 1", autores: "Jay Mansur", generos: "Regional Mexicano", drive: "#" },
-  { obra: "Tema Demo 2", autores: "Jay Mansur, Alejandro De Nigris", generos: "Pop", drive: "#" },
+  { obra: "Tema Demo 1", autores: "Jay Mansur", generos: "Regional Mexicano", drive: "", fileId: "", cover: "" },
+  { obra: "Tema Demo 2", autores: "Jay Mansur, Alejandro De Nigris", generos: "Pop", drive: "", fileId: "", cover: "" },
 ];
 
 const CORS_HEADERS = {
@@ -42,10 +42,196 @@ const DEFAULT_MANAGER_USERS = [
   { email: "ricardo.calanda@gmail.com", name: "Ricardo" },
 ];
 
+let driveAccessTokenCache = {
+  token: "",
+  expiresAt: 0,
+};
+
 function resolveTaskStatusByAssignee(assigneeEmail) {
   const email = String(assigneeEmail || "").trim().toLowerCase();
   if (!email) return TASK_DEFAULTS.status;
   return email === OWNER_EMAIL ? "Empezó" : "Pendiente";
+}
+
+function base64UrlEncode(input) {
+  const bytes = input instanceof Uint8Array ? input : new TextEncoder().encode(String(input || ""));
+  let str = "";
+  for (let i = 0; i < bytes.length; i += 1) str += String.fromCharCode(bytes[i]);
+  return btoa(str).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
+}
+
+function parseDriveServiceAccount(env) {
+  const b64 = String(env.DRIVE_SERVICE_ACCOUNT_JSON_BASE64 || "").trim();
+  if (b64) {
+    try {
+      return JSON.parse(atob(b64));
+    } catch {
+      throw new Error("DRIVE_SERVICE_ACCOUNT_JSON_BASE64 inválido");
+    }
+  }
+
+  const clientEmail = String(env.DRIVE_SERVICE_ACCOUNT_CLIENT_EMAIL || "").trim();
+  const privateKey = String(env.DRIVE_SERVICE_ACCOUNT_PRIVATE_KEY || "").replace(/\\n/g, "\n").trim();
+  if (!clientEmail || !privateKey) {
+    throw new Error("Faltan credenciales de service account para Google Drive");
+  }
+  return {
+    client_email: clientEmail,
+    private_key: privateKey,
+    token_uri: "https://oauth2.googleapis.com/token",
+  };
+}
+
+async function importPrivateKey(pem) {
+  const cleanPem = String(pem || "")
+    .replace("-----BEGIN PRIVATE KEY-----", "")
+    .replace("-----END PRIVATE KEY-----", "")
+    .replace(/\s+/g, "");
+  const binary = atob(cleanPem);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i += 1) bytes[i] = binary.charCodeAt(i);
+  return crypto.subtle.importKey(
+    "pkcs8",
+    bytes.buffer,
+    { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" },
+    false,
+    ["sign"],
+  );
+}
+
+async function getDriveAccessToken(env) {
+  if (driveAccessTokenCache.token && Date.now() < driveAccessTokenCache.expiresAt - 30_000) {
+    return driveAccessTokenCache.token;
+  }
+
+  const serviceAccount = parseDriveServiceAccount(env);
+  const now = Math.floor(Date.now() / 1000);
+  const header = { alg: "RS256", typ: "JWT" };
+  const payload = {
+    iss: serviceAccount.client_email,
+    scope: "https://www.googleapis.com/auth/drive.readonly",
+    aud: serviceAccount.token_uri || "https://oauth2.googleapis.com/token",
+    iat: now,
+    exp: now + 3600,
+  };
+
+  const encodedHeader = base64UrlEncode(JSON.stringify(header));
+  const encodedPayload = base64UrlEncode(JSON.stringify(payload));
+  const toSign = `${encodedHeader}.${encodedPayload}`;
+  const key = await importPrivateKey(serviceAccount.private_key);
+  const signatureBuffer = await crypto.subtle.sign("RSASSA-PKCS1-v1_5", key, new TextEncoder().encode(toSign));
+  const assertion = `${toSign}.${base64UrlEncode(new Uint8Array(signatureBuffer))}`;
+
+  const tokenResp = await fetch(serviceAccount.token_uri || "https://oauth2.googleapis.com/token", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({
+      grant_type: "urn:ietf:params:oauth:grant-type:jwt-bearer",
+      assertion,
+    }).toString(),
+  });
+
+  if (!tokenResp.ok) {
+    throw new Error(`No se pudo obtener token de Drive (${tokenResp.status})`);
+  }
+
+  const tokenPayload = await tokenResp.json();
+  const accessToken = String(tokenPayload.access_token || "");
+  const expiresIn = Number(tokenPayload.expires_in || 3600);
+  if (!accessToken) throw new Error("Token de Drive vacío");
+
+  driveAccessTokenCache = {
+    token: accessToken,
+    expiresAt: Date.now() + Math.max(60, expiresIn) * 1000,
+  };
+  return accessToken;
+}
+
+function isValidDriveFileId(fileId) {
+  return /^[a-zA-Z0-9_-]{20,}$/.test(String(fileId || ""));
+}
+
+function extractDriveFileId(value) {
+  const input = String(value || "").trim();
+  if (!input) return "";
+  if (isValidDriveFileId(input)) return input;
+
+  try {
+    const parsed = new URL(input);
+    if (!parsed.hostname.includes("google.com")) return "";
+    const pathMatch = parsed.pathname.match(/\/file\/d\/([a-zA-Z0-9_-]{20,})/);
+    if (pathMatch?.[1]) return pathMatch[1];
+    const q = parsed.searchParams.get("id");
+    return isValidDriveFileId(q) ? q : "";
+  } catch {
+    return "";
+  }
+}
+
+async function streamDriveAudioFile(fileId, request, env) {
+  if (!isValidDriveFileId(fileId)) {
+    return json({ error: "fileId inválido" }, 400);
+  }
+
+  try {
+    const token = await getDriveAccessToken(env);
+    const metaResp = await fetch(
+      `https://www.googleapis.com/drive/v3/files/${encodeURIComponent(fileId)}?fields=id,name,mimeType,size,capabilities/canDownload&supportsAllDrives=true`,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      },
+    );
+
+    if (!metaResp.ok) {
+      const status = metaResp.status === 404 ? 404 : 403;
+      return json({ error: "No se pudo validar el archivo en Drive", status: metaResp.status }, status);
+    }
+
+    const metadata = await metaResp.json();
+    const canDownload = Boolean(metadata?.capabilities?.canDownload);
+    if (!canDownload) {
+      return json({ error: "El archivo no permite descarga" }, 403);
+    }
+
+    const reqHeaders = new Headers({ Authorization: `Bearer ${token}` });
+    const range = request.headers.get("Range");
+    if (range) reqHeaders.set("Range", range);
+
+    const mediaResp = await fetch(
+      `https://www.googleapis.com/drive/v3/files/${encodeURIComponent(fileId)}?alt=media&supportsAllDrives=true`,
+      { headers: reqHeaders },
+    );
+
+    if (!mediaResp.ok) {
+      const status = mediaResp.status === 404 ? 404 : 502;
+      return json({ error: "Drive no devolvió el audio", status: mediaResp.status }, status);
+    }
+
+    const responseHeaders = new Headers();
+    responseHeaders.set("Access-Control-Allow-Origin", "*");
+    responseHeaders.set("Access-Control-Allow-Methods", "GET,OPTIONS");
+    responseHeaders.set("Access-Control-Allow-Headers", "Range,Authorization,Content-Type");
+    responseHeaders.set("Accept-Ranges", mediaResp.headers.get("Accept-Ranges") || "bytes");
+    responseHeaders.set("Cache-Control", "private, max-age=60");
+    responseHeaders.set(
+      "Content-Type",
+      mediaResp.headers.get("Content-Type") || metadata?.mimeType || "application/octet-stream",
+    );
+
+    const forwardHeaders = ["Content-Length", "Content-Range", "ETag", "Last-Modified"];
+    forwardHeaders.forEach((h) => {
+      const v = mediaResp.headers.get(h);
+      if (v) responseHeaders.set(h, v);
+    });
+
+    return new Response(mediaResp.body, {
+      status: mediaResp.status,
+      statusText: mediaResp.statusText,
+      headers: responseHeaders,
+    });
+  } catch (e) {
+    return json({ error: "Error interno al solicitar audio seguro", details: String(e?.message || e) }, 500);
+  }
 }
 
 function json(data, status = 200) {
@@ -180,14 +366,35 @@ function readNotionSongUrl(props) {
   for (const [name, prop] of Object.entries(props)) {
     const key = name.toLowerCase();
     if (!["play", "drive", "dropbox", "audio", "url", "link"].some((k) => key.includes(k))) continue;
-    if (prop?.type === "url") return prop.url || "";
-    if (prop?.type === "rich_text") return richTextToString(prop.rich_text);
+    if (prop?.type === "url" && prop.url) return prop.url;
+    if (prop?.type === "rich_text") {
+        const text = richTextToString(prop.rich_text);
+        if (text) return text;
+    }
+  }
+  return "";
+}
+
+function readNotionSongCover(props) {
+  for (const [name, prop] of Object.entries(props)) {
+    const key = name.toLowerCase();
+    if (!["cover", "artwork", "portada", "image", "imagen"].some((k) => key.includes(k))) continue;
+    if (prop?.type === "url" && prop.url) return prop.url;
+    if (prop?.type === "files" && Array.isArray(prop.files) && prop.files.length) {
+      const first = prop.files[0];
+      if (first?.external?.url) return first.external.url;
+      if (first?.file?.url) return first.file.url;
+    }
+    if (prop?.type === "rich_text") {
+      const text = richTextToString(prop.rich_text);
+      if (text) return text;
+    }
   }
   return "";
 }
 
 async function listCatalogSongs(env) {
-  const notionVersion = env.NOTION_VERSION || "2025-09-03";
+  const notionVersion = env.NOTION_VERSION || "2022-06-28";
   const notionToken = env.NOTION_TOKEN || "";
   const dbId = env.MANAGER_CATALOG_DB_ID || DEFAULT_CATALOG_DB_ID;
 
@@ -211,12 +418,16 @@ async function listCatalogSongs(env) {
         const autores = readNotionSongAuthors(props);
         const generos = readNotionSongGenres(props);
         const drive = readNotionSongUrl(props);
+        const fileId = extractDriveFileId(drive);
+        const cover = readNotionSongCover(props);
         return {
           id: page.id,
           obra: obra || "Sin título",
           autores: autores || "—",
           generos: generos || "—",
           drive: drive || "",
+          fileId: fileId || "",
+          cover: cover || "",
         };
       })
       .filter((item) => Boolean(item.obra));
@@ -238,9 +449,12 @@ async function listCatalogSongs(env) {
 function readNotionUrl(props) {
   for (const [name, prop] of Object.entries(props)) {
     const key = name.toLowerCase();
-    if (!["url", "link", "perfil", "profile", "sitio", "web"].some((k) => key.includes(k))) continue;
-    if (prop?.type === "url") return prop.url || "";
-    if (prop?.type === "rich_text") return richTextToString(prop.rich_text);
+    if (!["url", "link", "perfil", "profile", "sitio", "web", "play", "youtube"].some((k) => key.includes(k))) continue;
+    if (prop?.type === "url" && prop.url) return prop.url;
+    if (prop?.type === "rich_text") {
+        const text = richTextToString(prop.rich_text);
+        if (text) return text;
+    }
   }
   return "";
 }
@@ -260,7 +474,7 @@ function readNotionLinkLabel(props) {
 }
 
 async function queryNotionContacts(env) {
-  const notionVersion = env.NOTION_VERSION || "2025-09-03";
+  const notionVersion = env.NOTION_VERSION || "2022-06-28";
   const dbId = env.MANAGER_CONTACTS_DB_ID || DEFAULT_MANAGER_CONTACTS_DB_ID;
   const notionToken = env.NOTION_TOKEN || "";
 
@@ -365,19 +579,6 @@ function buildNotionValueByType(type, rawValue) {
   return null;
 }
 
-function extractDriveFileId(urlValue = "") {
-  const raw = String(urlValue || "").trim();
-  if (!raw) return "";
-  const match = raw.match(/\/file\/d\/([^/]+)/);
-  if (match?.[1]) return match[1];
-  try {
-    const parsed = new URL(raw);
-    return parsed.searchParams.get("id") || "";
-  } catch {
-    return "";
-  }
-}
-
 function isAudioLike(name = "", mimeType = "") {
   const n = String(name || "").toLowerCase();
   const m = String(mimeType || "").toLowerCase();
@@ -449,7 +650,7 @@ function buildCatalogPropertiesFromSchema(schemaProps = {}, input = {}) {
 }
 
 async function syncCatalogFromDrive(env) {
-  const notionVersion = env.NOTION_VERSION || "2025-09-03";
+  const notionVersion = env.NOTION_VERSION || "2022-06-28";
   const notionToken = env.NOTION_TOKEN || "";
   const dbId = env.MANAGER_CATALOG_DB_ID || DEFAULT_CATALOG_DB_ID;
   const driveApiKey = String(env.DRIVE_API_KEY || "").trim();
@@ -610,7 +811,7 @@ function buildContactPropertiesFromSchema(schemaProps = {}, input = {}, { includ
 }
 
 async function createManagerContact(env, body) {
-  const notionVersion = env.NOTION_VERSION || "2025-09-03";
+  const notionVersion = env.NOTION_VERSION || "2022-06-28";
   const notionToken = env.NOTION_TOKEN || "";
   const dbId = env.MANAGER_CONTACTS_DB_ID || DEFAULT_MANAGER_CONTACTS_DB_ID;
 
@@ -656,7 +857,7 @@ async function createManagerContact(env, body) {
 }
 
 async function updateManagerContact(env, contactId, body) {
-  const notionVersion = env.NOTION_VERSION || "2025-09-03";
+  const notionVersion = env.NOTION_VERSION || "2022-06-28";
   const notionToken = env.NOTION_TOKEN || "";
   const dbId = env.MANAGER_CONTACTS_DB_ID || DEFAULT_MANAGER_CONTACTS_DB_ID;
 
@@ -693,7 +894,7 @@ async function updateManagerContact(env, contactId, body) {
 }
 
 async function deleteManagerContact(env, contactId) {
-  const notionVersion = env.NOTION_VERSION || "2025-09-03";
+  const notionVersion = env.NOTION_VERSION || "2022-06-28";
   const notionToken = env.NOTION_TOKEN || "";
   if (!notionToken) return { error: "NOTION_TOKEN missing" };
 
@@ -981,7 +1182,7 @@ async function replacePlaylistTracks(pageId, notionToken, notionVersion, tracks 
 }
 
 async function listManagerPlaylists(env) {
-  const notionVersion = env.NOTION_VERSION || "2025-09-03";
+  const notionVersion = env.NOTION_VERSION || "2022-06-28";
   const notionToken = env.NOTION_TOKEN || "";
   const dbId = env.MANAGER_TASKS_DB_ID || DEFAULT_MANAGER_TASKS_DB_ID;
 
@@ -1011,7 +1212,7 @@ async function listManagerPlaylists(env) {
 }
 
 async function createManagerPlaylist(env, body) {
-  const notionVersion = env.NOTION_VERSION || "2025-09-03";
+  const notionVersion = env.NOTION_VERSION || "2022-06-28";
   const notionToken = env.NOTION_TOKEN || "";
   const dbId = env.MANAGER_TASKS_DB_ID || DEFAULT_MANAGER_TASKS_DB_ID;
   if (!notionToken) return { error: "NOTION_TOKEN missing" };
@@ -1055,7 +1256,7 @@ async function createManagerPlaylist(env, body) {
 }
 
 async function updateManagerPlaylist(env, playlistId, body) {
-  const notionVersion = env.NOTION_VERSION || "2025-09-03";
+  const notionVersion = env.NOTION_VERSION || "2022-06-28";
   const notionToken = env.NOTION_TOKEN || "";
   if (!notionToken) return { error: "NOTION_TOKEN missing" };
 
@@ -1089,7 +1290,7 @@ async function updateManagerPlaylist(env, playlistId, body) {
 }
 
 async function listManagerTasks(env, options = {}) {
-  const notionVersion = env.NOTION_VERSION || "2025-09-03";
+  const notionVersion = env.NOTION_VERSION || "2022-06-28";
   const notionToken = env.NOTION_TOKEN || "";
   const dbId = env.MANAGER_TASKS_DB_ID || DEFAULT_MANAGER_TASKS_DB_ID;
 
@@ -1159,7 +1360,7 @@ async function listManagerTasks(env, options = {}) {
 }
 
 async function listSocialLinks(env) {
-  const notionVersion = env.NOTION_VERSION || "2025-09-03";
+  const notionVersion = env.NOTION_VERSION || "2022-06-28";
   const notionToken = env.NOTION_TOKEN || "";
   const dbId = env.MANAGER_SOCIAL_LINKS_DB_ID || DEFAULT_SOCIAL_LINKS_DB_ID;
 
@@ -1208,7 +1409,7 @@ function applyMessageTagState(tags = [], highlighted = false) {
 }
 
 async function listManagerMessages(env) {
-  const notionVersion = env.NOTION_VERSION || "2025-09-03";
+  const notionVersion = env.NOTION_VERSION || "2022-06-28";
   const notionToken = env.NOTION_TOKEN || "";
   const dbId = env.MANAGER_MESSAGES_DB_ID || DEFAULT_MANAGER_TASKS_DB_ID;
 
@@ -1246,7 +1447,7 @@ async function listManagerMessages(env) {
 }
 
 async function createManagerMessage(env, body) {
-  const notionVersion = env.NOTION_VERSION || "2025-09-03";
+  const notionVersion = env.NOTION_VERSION || "2022-06-28";
   const notionToken = env.NOTION_TOKEN || "";
   const dbId = env.MANAGER_MESSAGES_DB_ID || DEFAULT_MANAGER_TASKS_DB_ID;
 
@@ -1298,7 +1499,7 @@ async function createManagerMessage(env, body) {
 }
 
 async function updateManagerMessage(env, messageId, body) {
-  const notionVersion = env.NOTION_VERSION || "2025-09-03";
+  const notionVersion = env.NOTION_VERSION || "2022-06-28";
   const notionToken = env.NOTION_TOKEN || "";
   if (!notionToken) return { error: "NOTION_TOKEN missing" };
 
@@ -1377,7 +1578,7 @@ async function updateManagerMessage(env, messageId, body) {
 }
 
 async function clearManagerMessages(env, body) {
-  const notionVersion = env.NOTION_VERSION || "2025-09-03";
+  const notionVersion = env.NOTION_VERSION || "2022-06-28";
   const notionToken = env.NOTION_TOKEN || "";
   const dbId = env.MANAGER_MESSAGES_DB_ID || DEFAULT_MANAGER_TASKS_DB_ID;
   if (!notionToken) return { error: "NOTION_TOKEN missing" };
@@ -1412,7 +1613,7 @@ async function clearManagerMessages(env, body) {
 }
 
 async function createManagerTask(env, body) {
-  const notionVersion = env.NOTION_VERSION || "2025-09-03";
+  const notionVersion = env.NOTION_VERSION || "2022-06-28";
   const notionToken = env.NOTION_TOKEN || "";
   const dbId = env.MANAGER_TASKS_DB_ID || DEFAULT_MANAGER_TASKS_DB_ID;
 
@@ -1477,7 +1678,7 @@ async function createManagerTask(env, body) {
 }
 
 async function updateManagerTask(env, taskId, body) {
-  const notionVersion = env.NOTION_VERSION || "2025-09-03";
+  const notionVersion = env.NOTION_VERSION || "2022-06-28";
   const notionToken = env.NOTION_TOKEN || "";
   if (!notionToken) return { error: "NOTION_TOKEN missing" };
 
@@ -1557,7 +1758,7 @@ async function updateManagerTask(env, taskId, body) {
 }
 
 async function deleteManagerTask(env, taskId) {
-  const notionVersion = env.NOTION_VERSION || "2025-09-03";
+  const notionVersion = env.NOTION_VERSION || "2022-06-28";
   const notionToken = env.NOTION_TOKEN || "";
   if (!notionToken) return { error: "NOTION_TOKEN missing" };
 
@@ -1585,6 +1786,49 @@ export default {
 
     if (url.pathname === "/health") {
       return json({ ok: true, service: "manager-app-proxy", provider: "cloudflare-workers" });
+    }
+
+    if (request.method === "GET" && url.pathname.startsWith("/api/audio/")) {
+      const fileId = url.pathname.replace("/api/audio/", "").trim();
+      return streamDriveAudioFile(fileId, request, env);
+    }
+
+    if (request.method === "GET" && url.pathname === "/api/proxy/audio") {
+      const targetUrl = url.searchParams.get("url");
+      if (!targetUrl) return new Response("Missing url param", { status: 400 });
+      if (!targetUrl.startsWith("https://drive.google.com/") && !targetUrl.startsWith("https://docs.google.com/") && !targetUrl.startsWith("https://drive.usercontent.google.com/")) {
+         return new Response("Invalid domain", { status: 400 });
+      }
+
+      const reqHeaders = new Headers();
+      if (request.headers.has("Range")) reqHeaders.set("Range", request.headers.get("Range"));
+      reqHeaders.set("User-Agent", request.headers.get("User-Agent") || "Mozilla/5.0");
+
+      let driveResponse = await fetch(targetUrl, { method: "GET", headers: reqHeaders, redirect: "manual" });
+      
+      // Handle redirect manually to support Range requests properly across hosts if needed
+      if ([301, 302, 303, 307, 308].includes(driveResponse.status)) {
+         const location = driveResponse.headers.get("location");
+         if (location) {
+             driveResponse = await fetch(location, { method: "GET", headers: reqHeaders });
+         }
+      }
+
+      const headers = new Headers(driveResponse.headers);
+      headers.delete("cross-origin-resource-policy");
+      headers.delete("cross-origin-embedder-policy");
+      headers.delete("cross-origin-opener-policy");
+      headers.delete("content-security-policy");
+      headers.delete("x-frame-options");
+      headers.set("Access-Control-Allow-Origin", "*");
+      headers.set("Access-Control-Allow-Methods", "GET, HEAD, OPTIONS");
+      headers.set("Access-Control-Allow-Headers", "Range");
+
+      return new Response(driveResponse.body, {
+        status: driveResponse.status,
+        statusText: driveResponse.statusText,
+        headers
+      });
     }
 
     if (request.method === "GET" && url.pathname === "/api/manager/contacts") {

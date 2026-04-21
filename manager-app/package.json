@@ -1,0 +1,17 @@
+{
+  "name": "manager-app",
+  "version": "1.0.0",
+  "description": "App web mobile-first para operación de manager sobre la carrera de Jay Mansur.",
+  "main": "app.js",
+  "scripts": {
+    "sync:howler": "mkdir -p vendor && cp node_modules/howler/dist/howler.min.js vendor/howler.min.js",
+    "test": "echo \"No tests configured\""
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "howler": "^2.2.4"
+  }
+}

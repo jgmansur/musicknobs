@@ -153,7 +153,36 @@
 
           <div id="catalog-now-card" class="catalog-now-card hidden"></div>
 
-          <audio id="catalog-audio" preload="none"></audio>
+          <section id="catalog-player" class="catalog-player" aria-label="Reproductor de catálogo">
+            <div class="catalog-player-head">
+              <div class="catalog-player-cover-wrap">
+                <img id="catalog-player-cover" class="catalog-player-cover" src="" alt="Cover de la pista" />
+                <div id="catalog-player-cover-placeholder" class="catalog-player-cover-placeholder">♪</div>
+              </div>
+              <div class="catalog-player-meta">
+                <strong id="catalog-player-track-title">Selecciona una canción</strong>
+                <span id="catalog-player-track-artist">—</span>
+                <span id="catalog-player-status" class="hint">Listo para reproducir</span>
+              </div>
+            </div>
+
+            <div class="catalog-player-controls">
+              <button id="catalog-prev" class="mini-btn" type="button" aria-label="Pista anterior">⏮</button>
+              <button id="catalog-play-toggle" class="mini-btn" type="button" aria-label="Play o pause">▶️ Play</button>
+              <button id="catalog-next" class="mini-btn" type="button" aria-label="Siguiente pista">⏭</button>
+            </div>
+
+            <div class="catalog-player-progress-wrap">
+              <span id="catalog-player-current">0:00</span>
+              <input id="catalog-player-progress" type="range" min="0" max="100" value="0" aria-label="Progreso de reproducción" />
+              <span id="catalog-player-duration">0:00</span>
+            </div>
+
+            <div class="catalog-player-volume-wrap">
+              <label for="catalog-player-volume">Volumen</label>
+              <input id="catalog-player-volume" type="range" min="0" max="1" step="0.01" value="0.8" aria-label="Control de volumen" />
+            </div>
+          </section>
         </div>
       </section>
 
@@ -229,6 +258,8 @@
     </main>
 
     <script src="./config.js"></script>
+    <script src="./vendor/howler.min.js"></script>
+    <script src="./tracks.js"></script>
     <script src="./app.js"></script>
   </body>
   </html>
