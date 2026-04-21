@@ -12,6 +12,8 @@ const profile = {
   ]
 };
 
+const socialLinksSample = profile.links.map(([name, url]) => ({ name, url }));
+
 const cfg = window.MANAGER_APP_CONFIG || {};
 const API_BASE = (cfg.apiBaseUrl || '').replace(/\/$/, '');
 const API_TOKEN = cfg.apiToken || '';
@@ -91,10 +93,16 @@ function setShareActions() {
   document.getElementById('wa-share').href = `https://wa.me/?text=${waText}`;
 }
 
-function setLinks() {
+function setLinks(rows = socialLinksSample) {
   const list = document.getElementById('links-list');
-  list.innerHTML = profile.links
-    .map(([name, url]) => `<li><a href="${url}" target="_blank" rel="noopener">${name}</a></li>`)
+  if (!list) return;
+
+  list.innerHTML = rows
+    .map((item) => {
+      const name = item?.name || 'Sin nombre';
+      const url = item?.url || '#';
+      return `<li><a href="${url}" target="_blank" rel="noopener">${name}</a></li>`;
+    })
     .join('');
 }
 
@@ -199,6 +207,7 @@ function clearSensitiveData() {
   setCatalog([]);
   setContacts([]);
   setTasks([]);
+  setLinks([]);
 }
 
 function setAuthenticated(value) {
@@ -214,6 +223,7 @@ function setAuthenticated(value) {
     loadCatalogFromApi();
     loadContactsFromNotion();
     loadTasksFromApi();
+    loadLinksFromApi();
     return;
   }
 
@@ -393,6 +403,32 @@ async function loadCatalogFromApi() {
   }
 }
 
+async function loadLinksFromApi() {
+  if (!isAuthenticated) return;
+  try {
+    if (!API_BASE) throw new Error('apiBaseUrl no configurado');
+    const res = await fetchJson(`${API_BASE}/api/manager/social-links`);
+    const rows = (res.data || [])
+      .map((item) => ({
+        name: item.name || 'Sin nombre',
+        url: item.url || ''
+      }))
+      .filter((item) => Boolean(item.url));
+
+    setLinks(rows.length ? rows : socialLinksSample);
+    const source = res.source || 'api';
+    if (source === 'fallback') {
+      setStatus('links-status', `${rows.length} links cargados (fallback local del backend).`);
+      return;
+    }
+    setStatus('links-status', rows.length ? `${rows.length} links cargados desde Notion API.` : 'API sin links, usando muestra local.');
+  } catch (e) {
+    setLinks(socialLinksSample);
+    const reason = e instanceof Error ? e.message : String(e);
+    setStatus('links-status', `Sin conexión a links/API: ${reason}`, true);
+  }
+}
+
 function initGoogleOAuth() {
   if (!GOOGLE_CLIENT_ID) {
     setOauthStatus('OAuth no disponible: falta googleClientId en config.', true);
@@ -510,6 +546,7 @@ function setupActions() {
   document.getElementById('auth-gate-login').addEventListener('click', startGoogleLogin);
   document.getElementById('refresh-catalog').addEventListener('click', () => loadCatalogFromApi());
   document.getElementById('refresh-contacts').addEventListener('click', () => loadContactsFromNotion());
+  document.getElementById('refresh-links').addEventListener('click', () => loadLinksFromApi());
   document.getElementById('refresh-tasks').addEventListener('click', () => loadTasksFromApi());
   document.getElementById('task-create').addEventListener('click', createTask);
 }

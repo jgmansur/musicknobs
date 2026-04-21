@@ -10,6 +10,7 @@ const CORS_HEADERS = {
 };
 
 const DEFAULT_MANAGER_TASKS_DB_ID = "6405719e-5f90-4fc0-8eab-d9352387dd07";
+const DEFAULT_SOCIAL_LINKS_DB_ID = "13dc1932-ede8-802e-9d6d-e4ae16d7eb45";
 const TASK_PREFIX = "[ManagerTask] ";
 
 function json(data, status = 200) {
@@ -79,6 +80,30 @@ function readNotionRole(props) {
         .join(", ");
     }
   }
+  return "";
+}
+
+function readNotionUrl(props) {
+  for (const [name, prop] of Object.entries(props)) {
+    const key = name.toLowerCase();
+    if (!["url", "link", "perfil", "profile", "sitio", "web"].some((k) => key.includes(k))) continue;
+    if (prop?.type === "url") return prop.url || "";
+    if (prop?.type === "rich_text") return richTextToString(prop.rich_text);
+  }
+  return "";
+}
+
+function readNotionLinkLabel(props) {
+  const fromTitle = readNotionTitle(props);
+  if (fromTitle) return fromTitle;
+
+  for (const [name, prop] of Object.entries(props)) {
+    const key = name.toLowerCase();
+    if (!["red", "network", "nombre", "name", "plataforma", "handle"].some((k) => key.includes(k))) continue;
+    if (prop?.type === "select") return prop.select?.name || "";
+    if (prop?.type === "rich_text") return richTextToString(prop.rich_text);
+  }
+
   return "";
 }
 
@@ -206,6 +231,32 @@ async function listManagerTasks(env) {
   }
 }
 
+async function listSocialLinks(env) {
+  const notionVersion = env.NOTION_VERSION || "2025-09-03";
+  const notionToken = env.NOTION_TOKEN || "";
+  const dbId = env.MANAGER_SOCIAL_LINKS_DB_ID || DEFAULT_SOCIAL_LINKS_DB_ID;
+
+  if (!notionToken) {
+    return { source: "fallback", warning: "NOTION_TOKEN no configurado.", data: [] };
+  }
+
+  try {
+    const payload = await notionQuery(dbId, notionToken, notionVersion, null, 100);
+    const data = (payload.results || [])
+      .map((page, index) => {
+        const props = page.properties || {};
+        const name = readNotionLinkLabel(props) || `Link ${index + 1}`;
+        const url = readNotionUrl(props);
+        return { name, url };
+      })
+      .filter((item) => Boolean(item.url));
+
+    return { source: "notion", data };
+  } catch (e) {
+    return { source: "error", error: "Social links query failed", details: String(e?.message || e), data: [] };
+  }
+}
+
 async function createManagerTask(env, body) {
   const notionVersion = env.NOTION_VERSION || "2025-09-03";
   const notionToken = env.NOTION_TOKEN || "";
@@ -303,6 +354,11 @@ export default {
 
     if (request.method === "GET" && url.pathname === "/api/manager/tasks") {
       const result = await listManagerTasks(env);
+      return json(result, result.error ? 502 : 200);
+    }
+
+    if (request.method === "GET" && url.pathname === "/api/manager/social-links") {
+      const result = await listSocialLinks(env);
       return json(result, result.error ? 502 : 200);
     }
 
