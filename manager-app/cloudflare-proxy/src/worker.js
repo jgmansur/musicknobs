@@ -24,6 +24,7 @@ const AUTHOR_PREFIX = "author:";
 const AUTHOR_EMAIL_PREFIX = "authorEmail:";
 const ADMIN_EMAILS = ["jgmansur2@gmail.com"];
 const CLEAR_LOG_PASSWORD = "9776";
+const OWNER_EMAIL = "jgmansur2@gmail.com";
 const MESSAGE_DEFAULTS = Object.freeze({
   status: "Ideas por checar",
   priority: "-",
@@ -33,10 +34,16 @@ const TASK_DEFAULTS = Object.freeze({
   priority: "Alta",
 });
 const DEFAULT_MANAGER_USERS = [
-  { email: "jgmansur2@gmail.com", name: "Jay Mansur" },
+  { email: OWNER_EMAIL, name: "Jay Mansur" },
   { email: "xeronimo3@gmail.com", name: "Xeronimo" },
   { email: "ricardo.calanda@gmail.com", name: "Ricardo" },
 ];
+
+function resolveTaskStatusByAssignee(assigneeEmail) {
+  const email = String(assigneeEmail || "").trim().toLowerCase();
+  if (!email) return TASK_DEFAULTS.status;
+  return email === OWNER_EMAIL ? "Empezó" : "Pendiente";
+}
 
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
@@ -1234,7 +1241,7 @@ async function createManagerTask(env, body) {
   const properties = {
     Name: { title: [{ text: { content: `${TASK_PREFIX}${title}` } }] },
     // Guardrail: tasks mantienen su flujo operativo propio.
-    Estatus: { select: { name: TASK_DEFAULTS.status } },
+    Estatus: { select: { name: resolveTaskStatusByAssignee(assignee) } },
     Prioridad: { select: { name: TASK_DEFAULTS.priority } },
     Tipo: { select: { name: "Music Knobs" } },
   };
@@ -1319,6 +1326,11 @@ async function updateManagerTask(env, taskId, body) {
     const assigneeUser = assigneeRaw ? userByEmail.get(assigneeRaw) : null;
     const nextTags = applyAssigneeTags(currentTags, assigneeUser?.email || "", assigneeUser?.name || "");
     properties.Tags = { multi_select: nextTags.map((name) => ({ name })) };
+
+    // Regla solicitada: asignado a Jay => Empezó, asignado a otro => Pendiente.
+    if (assigneeUser?.email) {
+      properties.Estatus = { select: { name: resolveTaskStatusByAssignee(assigneeUser.email) } };
+    }
   }
 
   if (Object.keys(properties).length) {

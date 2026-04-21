@@ -102,6 +102,17 @@ h1 {
   font-size: 1.05rem;
   font-weight: 800;
   letter-spacing: -.02em;
+  display: flex;
+  align-items: baseline;
+  gap: .45rem;
+  flex-wrap: wrap;
+}
+
+.title-version {
+  font-size: .74rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  letter-spacing: 0;
 }
 
 .subtitle {
@@ -113,8 +124,19 @@ h1 {
 .topbar-actions {
   display: flex;
   gap: .5rem;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   justify-content: flex-end;
+  align-items: center;
+  margin-left: auto;
+}
+
+/* Header compacto: acciones principales más pequeñas para ganar espacio vertical */
+#google-auth-toggle,
+#print-btn {
+  padding: .46rem .72rem;
+  font-size: .72rem;
+  border-radius: .68rem;
+  line-height: 1.1;
 }
 
 .oauth-header-status {
@@ -799,7 +821,7 @@ th {
     border-right: 0;
   }
 
-  .topbar-actions { justify-content: flex-start; }
+  .topbar-actions { justify-content: flex-end; }
   .oauth-header-status { margin-top: .5rem; }
 
   /* Evita auto-zoom en iOS al enfocar campos de texto */
