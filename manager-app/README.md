@@ -37,6 +37,16 @@ Para online en GitHub Pages, cambia `apiBaseUrl` al URL del Worker, por ejemplo:
 apiBaseUrl: 'https://manager-app-proxy.<tu-subdominio>.workers.dev'
 ```
 
+### Modo dev local sin login Google (solo localhost)
+
+Si OAuth local falla por `redirect_uri_mismatch`, puedes abrir la UI en local sin login agregando este query param:
+
+`http://127.0.0.1:8080/manager-app/?dev_auth_bypass=1`
+
+- Solo funciona en `localhost` / `127.0.0.1`
+- No afecta producción (GitHub Pages)
+- Es para revisión visual/flujo rápido en local
+
 ### Backend (`finance-v2/api-server/.env`)
 
 - `NOTION_TOKEN=...`

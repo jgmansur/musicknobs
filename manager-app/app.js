@@ -22,6 +22,7 @@ const GOOGLE_SCOPES = 'openid email profile';
 const AUTH_STORAGE_KEY = 'managerApp.googleAuth';
 const TOKEN_REFRESH_BUFFER_MS = 5 * 60 * 1000;
 const ADMIN_EMAILS = ['jgmansur2@gmail.com'];
+const DEV_AUTH_BYPASS_LOCAL = Boolean(cfg.devAuthBypassLocal);
 
 let googleTokenClient = null;
 let googleAccessToken = '';
@@ -55,6 +56,39 @@ let catalogVisibleCount = 20;
 const CONTACTS_PAGE_STEP = 12;
 const MESSAGES_PAGE_STEP = 20;
 const CATALOG_PAGE_STEP = 20;
+
+function isLocalDevHost() {
+  const host = String(window.location.hostname || '').toLowerCase();
+  return host === 'localhost' || host === '127.0.0.1' || host === '::1';
+}
+
+function shouldBypassAuthForLocalDev() {
+  if (!isLocalDevHost()) return false;
+  const params = new URLSearchParams(window.location.search || '');
+  const byQuery = params.get('dev_auth_bypass') === '1';
+  return DEV_AUTH_BYPASS_LOCAL || byQuery;
+}
+
+function enableLocalDevBypassMode() {
+  const ownerEmail = ADMIN_EMAILS[0] || 'jgmansur2@gmail.com';
+  googleAccessToken = 'local-dev-bypass';
+  googleTokenExpiryAt = Date.now() + (60 * 60 * 1000);
+  googleProfile = { email: ownerEmail, name: 'Jay Mansur (local dev)' };
+  setAuthenticated(true);
+  setOauthStatus('Modo local activo (sin login Google). Usa ?dev_auth_bypass=1 solo en localhost.');
+
+  const toggleBtn = document.getElementById('google-auth-toggle');
+  if (toggleBtn) {
+    toggleBtn.textContent = 'Dev Local';
+    toggleBtn.disabled = true;
+  }
+
+  const gateBtn = document.getElementById('auth-gate-login');
+  if (gateBtn) {
+    gateBtn.textContent = 'Dev Local';
+    gateBtn.disabled = true;
+  }
+}
 
 const catalogSample = [
   { obra: 'Tema Demo 1', autores: 'Jay Mansur', generos: 'Regional Mexicano', drive: 'https://drive.google.com/file/d/1abCDefghIJkLmNoPqRsTUvwxYZ/view?usp=sharing' },
@@ -1616,9 +1650,13 @@ function init() {
   setTaskFormVisibility(false);
   setupTabs();
   setupActions();
-  setAuthenticated(false);
-  initGoogleOAuth();
-  autoLoginOnLoad();
+  if (shouldBypassAuthForLocalDev()) {
+    enableLocalDevBypassMode();
+  } else {
+    setAuthenticated(false);
+    initGoogleOAuth();
+    autoLoginOnLoad();
+  }
   initNotifications();
 }
 
