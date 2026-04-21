@@ -54,6 +54,9 @@ let selectedPlaylistId = '';
 let contactsVisibleCount = 12;
 let messagesVisibleCount = 20;
 let catalogVisibleCount = 20;
+let catalogDeepLinkSongId = '';
+let catalogDeepLinkAutoplay = false;
+let catalogDeepLinkHandled = false;
 
 const CONTACTS_PAGE_STEP = 12;
 const MESSAGES_PAGE_STEP = 20;
@@ -649,6 +652,50 @@ function getCurrentCatalogSong() {
   return catalogCache.find((s) => s.id === catalogNowPlayingId) || null;
 }
 
+function initCatalogDeepLinkFromUrl() {
+  const params = new URLSearchParams(window.location.search || '');
+  const songId = String(params.get('song') || '').trim();
+  const autoplay = String(params.get('autoplay') || '').trim();
+  const targetTab = String(params.get('tab') || '').trim().toLowerCase();
+
+  if (targetTab === 'catalog') {
+    activateTab('catalog');
+    updateAuthGateForCurrentTab();
+  }
+
+  if (!songId) return;
+  catalogDeepLinkSongId = songId;
+  catalogDeepLinkAutoplay = autoplay === '1' || autoplay === 'true';
+  catalogDeepLinkHandled = false;
+}
+
+function buildCatalogListenLink(songId) {
+  const url = new URL(window.location.href);
+  url.searchParams.set('tab', 'catalog');
+  url.searchParams.set('song', String(songId || ''));
+  url.searchParams.set('autoplay', '1');
+  return url.toString();
+}
+
+function applyCatalogDeepLinkIfNeeded() {
+  if (!catalogDeepLinkSongId || catalogDeepLinkHandled) return;
+  const index = catalogCache.findIndex((row) => String(row.id) === String(catalogDeepLinkSongId));
+  if (index < 0) return;
+
+  const track = catalogCache[index];
+  catalogDeepLinkHandled = true;
+  selectedPlaylistId = '';
+
+  const preferredGenre = parseCatalogGenres(track.generos)[0] || 'Todas';
+  catalogGenreFilter = preferredGenre;
+  catalogVisibleCount = Math.max(catalogVisibleCount, index + 1, CATALOG_PAGE_STEP);
+
+  activateTab('catalog');
+  updateAuthGateForCurrentTab();
+
+  void loadCatalogTrack(index, { autoplay: catalogDeepLinkAutoplay });
+}
+
 function renderCatalog() {
   const genresEl = document.getElementById('catalog-genres');
   const songsEl = document.getElementById('catalog-songs');
@@ -696,7 +743,17 @@ function renderCatalog() {
               </button>
               <div class="actions">
                 <button class="mini-btn" data-catalog-add-playlist="${escapeHtml(row.id)}">+ Playlist</button>
-                <button class="mini-btn" data-catalog-share="${escapeHtml(row.id)}">Compartir</button>
+                ${isAuthenticated
+                  ? `<details class="task-actions-menu catalog-share-menu">
+                      <summary>
+                        <span class="task-actions-toggle" role="button" aria-label="Compartir canción">⋯</span>
+                      </summary>
+                      <div class="task-actions-dropdown">
+                        <button class="mini-btn" data-catalog-share-listen="${escapeHtml(row.id)}">Compartir escucha</button>
+                        <button class="mini-btn" data-catalog-share-drive="${escapeHtml(row.id)}">Compartir Drive</button>
+                      </div>
+                    </details>`
+                  : ''}
               </div>
             </div>
           </li>
@@ -724,8 +781,12 @@ function renderCatalog() {
     btn.addEventListener('click', () => playCatalogSong(btn.dataset.catalogPlay || ''));
   });
 
-  songsEl.querySelectorAll('[data-catalog-share]').forEach((btn) => {
-    btn.addEventListener('click', () => shareCatalogSong(btn.dataset.catalogShare || ''));
+  songsEl.querySelectorAll('[data-catalog-share-listen]').forEach((btn) => {
+    btn.addEventListener('click', () => shareCatalogSongForListen(btn.dataset.catalogShareListen || ''));
+  });
+
+  songsEl.querySelectorAll('[data-catalog-share-drive]').forEach((btn) => {
+    btn.addEventListener('click', () => shareCatalogSongDrive(btn.dataset.catalogShareDrive || ''));
   });
 
   songsEl.querySelectorAll('[data-catalog-add-playlist]').forEach((btn) => {
@@ -790,12 +851,41 @@ function setCatalog(rows = catalogSample) {
 
   updateCatalogPlayerUi();
   renderCatalog();
+  applyCatalogDeepLinkIfNeeded();
 }
 
-async function shareCatalogSong(songId) {
+async function shareCatalogSongForListen(songId) {
+  const song = catalogCache.find((row) => row.id === songId);
+  if (!song) {
+    setStatus('catalog-status', 'No se encontró la canción para compartir.', true);
+    return;
+  }
+
+  try {
+    const listenLink = buildCatalogListenLink(song.id);
+    const text = `${song.obra || 'Canción'} · Escúchala aquí`;
+    if (navigator.share) {
+      await navigator.share({
+        title: song.obra || 'Canción',
+        text,
+        url: listenLink
+      });
+      setStatus('catalog-status', `Link de escucha compartido: ${song.obra || 'canción'}.`);
+      return;
+    }
+
+    await navigator.clipboard.writeText(listenLink);
+    setStatus('catalog-status', `Link de escucha copiado: ${song.obra || 'canción'}.`);
+  } catch (e) {
+    const reason = e instanceof Error ? e.message : String(e);
+    setStatus('catalog-status', `No se pudo compartir para escucha: ${reason}`, true);
+  }
+}
+
+async function shareCatalogSongDrive(songId) {
   const song = catalogCache.find((row) => row.id === songId);
   if (!song || !song.drive) {
-    setStatus('catalog-status', 'Esta canción no tiene link para compartir.', true);
+    setStatus('catalog-status', 'Esta canción no tiene link de Google Drive para compartir.', true);
     return;
   }
 
@@ -807,15 +897,15 @@ async function shareCatalogSong(songId) {
         text,
         url: song.drive
       });
-      setStatus('catalog-status', `Link compartido: ${song.obra || 'canción'}.`);
+      setStatus('catalog-status', `Link de Drive compartido: ${song.obra || 'canción'}.`);
       return;
     }
 
     await navigator.clipboard.writeText(song.drive);
-    setStatus('catalog-status', `Link copiado al portapapeles: ${song.obra || 'canción'}.`);
+    setStatus('catalog-status', `Link de Drive copiado: ${song.obra || 'canción'}.`);
   } catch (e) {
     const reason = e instanceof Error ? e.message : String(e);
-    setStatus('catalog-status', `No se pudo compartir: ${reason}`, true);
+    setStatus('catalog-status', `No se pudo compartir Drive: ${reason}`, true);
   }
 }
 
@@ -2141,6 +2231,7 @@ function setupActions() {
 }
 
 function init() {
+  initCatalogDeepLinkFromUrl();
   loadAppVersion();
   setShareActions();
   setLinks();

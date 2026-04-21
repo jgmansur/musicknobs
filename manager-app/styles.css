@@ -864,6 +864,15 @@ a { color: #93c5fd; }
   font-size: .72rem;
 }
 
+.catalog-share-menu .task-actions-toggle {
+  width: 1.7rem;
+  height: 1.7rem;
+}
+
+.catalog-share-menu .task-actions-dropdown {
+  min-width: 9.5rem;
+}
+
 .catalog-playing-now {
   width: 100%;
   border: 0;
@@ -1016,15 +1025,49 @@ th {
 
 @media (max-width: 720px) {
   .topbar {
-    flex-direction: column;
-    align-items: stretch;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: flex-start;
     border-radius: 0;
     margin: 0;
     border-left: 0;
     border-right: 0;
+    padding: .4rem .55rem;
+    gap: .35rem;
   }
 
-  .topbar-actions { justify-content: flex-end; }
+  .topbar > div:first-child {
+    order: 2;
+    width: 100%;
+  }
+
+  .topbar-actions {
+    order: 1;
+    justify-content: flex-end;
+    margin-left: auto;
+    gap: .28rem;
+  }
+
+  #notify-enable-btn,
+  #google-auth-toggle,
+  #print-btn {
+    padding: .3rem .5rem;
+    font-size: .64rem;
+    border-radius: .6rem;
+    min-height: 30px;
+    white-space: nowrap;
+  }
+
+  h1 {
+    font-size: .92rem;
+  }
+
+  .subtitle {
+    margin-top: .08rem;
+    font-size: .64rem;
+    line-height: 1.2;
+  }
+
   .oauth-header-status { margin-top: .5rem; }
 
   /* Evita auto-zoom en iOS al enfocar campos de texto */
