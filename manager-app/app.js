@@ -14,43 +14,43 @@ const profile = {
 
 const socialLinksSample = profile.links.map(([name, url]) => ({ name, url }));
 const salesKitSample = {
-  title: 'Jay Mansur · Productor / Compositor / Artista',
-  subtitle: 'Paquete comercial para managers, A&R, promotores y partners.',
-  pitch: 'Proyecto artístico con catálogo listo para pitching, presencia digital activa y operación centralizada para acelerar cierres comerciales.',
+  title: 'Manager App a la medida para músicos y productores',
+  subtitle: 'Tu operación musical centralizada en una app con branding propio.',
+  pitch: 'Implementamos una versión personalizada de Manager App para artistas, compositores y productores: catálogo, tasks, contactos, links y flujo comercial listos para tu equipo.',
   offerings: [
-    'Producción musical y composición por proyecto',
-    'Licenciamiento y pitching de catálogo',
-    'Colaboraciones para artistas y marcas',
-    'Paquetes de contenido y estrategia de lanzamiento'
+    'App personalizada con tu branding (logo, colores, nombre)',
+    'Módulos base: Overview, Tasks, Contactos, Catálogo, Links y Venta',
+    'Onboarding inicial para que tu equipo la opere desde el día 1',
+    'Integración de flujos comerciales para compartir y cerrar oportunidades'
   ],
   highlights: [
-    'Catálogo organizado y compartible por links de escucha',
-    'Flujo de trabajo manager-ready (playlists, contactos, tasks)',
-    'Presencia en YouTube, Spotify, Instagram, TikTok y Patreon'
+    'Ahorra tiempo: toda tu operación en un solo lugar',
+    'Imagen profesional para presentar tu proyecto a clientes y aliados',
+    'Escalable: se pueden agregar secciones y automatizaciones bajo cotización'
   ],
   process: [
-    'Diagnóstico rápido del objetivo comercial del cliente',
-    'Selección de canciones y armado de playlist de pitching',
-    'Personalización de propuesta y envío de paquete',
-    'Seguimiento con tasks y registro de contactos'
+    'Descubrimiento: entendemos tu flujo actual y objetivos',
+    'Implementación base: configuramos tu Manager App personalizada',
+    'Ajustes finos: branding, textos, estructura y permisos',
+    'Extras a medida: nuevas secciones o modificaciones (se cotizan por separado)'
   ],
   packages: [
     {
       name: 'Implementación Manager App',
       oneTimePrice: '$25,000 MXN pago único',
       maintenancePrice: '$7,000 MXN / año mantenimiento',
-      description: 'Setup completo del sistema para compositores/artistas + handoff listo para operar.',
-      includes: ['Configuración inicial', 'Personalización base', 'Soporte de arranque']
+      description: 'Setup completo de la app con personalización base para tu proyecto musical.',
+      includes: ['Branding inicial', 'Configuración de módulos base', 'Handoff + soporte de arranque']
     }
   ],
   testimonials: [
     {
-      quote: 'La estructura del catálogo hizo súper fácil compartir opciones correctas para cada prospecto.',
-      by: 'Manager aliado'
+      quote: 'Nos organizó TODO: tareas, catálogo y seguimiento comercial en una sola app.',
+      by: 'Productor independiente'
     },
     {
-      quote: 'Con playlists listas para pitching, el seguimiento comercial se volvió mucho más rápido.',
-      by: 'Equipo A&R'
+      quote: 'La versión con nuestro branding se ve pro y nos ayuda a cerrar más rápido.',
+      by: 'Equipo artístico'
     }
   ],
   ctas: [
