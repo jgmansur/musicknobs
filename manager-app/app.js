@@ -65,7 +65,7 @@ let catalogRandomMode = false;
 const CONTACTS_PAGE_STEP = 12;
 const MESSAGES_PAGE_STEP = 20;
 const CATALOG_PAGE_STEP = 20;
-const CATALOG_PROGRESS_REFRESH_MS = 350;
+const CATALOG_PROGRESS_REFRESH_MS = 900;
 const CATALOG_AUTOPLAY_HINT = '[DALE CLICK A LA CANCIÓN SELECCIONADA]';
 const PUBLIC_TABS = new Set(['catalog', 'links', 'book']);
 
@@ -505,7 +505,10 @@ function refreshCatalogProgressUi() {
   if (!progress || !current || !duration || !howl || !howl.state || howl.state() !== 'loaded') return;
 
   const total = Number(howl.duration() || 0);
-  const seek = Number(howl.seek(catalogPlayer.activeSoundId || undefined) || 0);
+  // Getter correcto de Howler: seek([position], [id]).
+  // Antes se pasaba el soundId como primer argumento, provocando seeks involuntarios
+  // que podían generar micro-cortes (especialmente notable en Bluetooth/CarPlay).
+  const seek = Number(howl.seek(undefined, catalogPlayer.activeSoundId || undefined) || 0);
   const percent = total > 0 ? Math.min(100, Math.max(0, (seek / total) * 100)) : 0;
 
   if (!catalogPlayer.isSeeking) {
