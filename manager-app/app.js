@@ -537,6 +537,11 @@ async function loadSalesKitFromApi() {
   } catch (e) {
     setSalesKit(salesKitSample);
     const reason = e instanceof Error ? e.message : String(e);
+    const isNotFound = /HTTP\s*404/i.test(reason) || /not\s*found/i.test(reason);
+    if (isNotFound) {
+      setStatus('sale-status', 'Paquete de venta activo (modo local).');
+      return;
+    }
     setStatus('sale-status', `Usando paquete local (fallback): ${reason}`);
   }
 }
