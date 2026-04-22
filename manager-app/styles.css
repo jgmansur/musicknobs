@@ -516,6 +516,14 @@ body.tabbar-hidden .catalog-player {
   min-height: calc(100dvh - 220px);
 }
 
+#tab-overview.panel-fullscreen {
+  max-height: calc(100dvh - 220px);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+  padding-bottom: calc(var(--tab-height) + env(safe-area-inset-bottom) + 1.2rem);
+}
+
 .book-panel {
   padding: 0;
   overflow: hidden;
@@ -1343,6 +1351,11 @@ th {
 
   .panel-fullscreen {
     min-height: calc(100dvh - 170px);
+  }
+
+  #tab-overview.panel-fullscreen {
+    max-height: calc(100dvh - 170px);
+    padding-bottom: calc(var(--tab-height) + env(safe-area-inset-bottom) + 1.8rem);
   }
 
   .book-iframe {

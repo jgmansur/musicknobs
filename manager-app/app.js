@@ -36,25 +36,11 @@ const salesKitSample = {
   ],
   packages: [
     {
-      name: 'Starter Pitch',
-      monthlyPrice: '$6,900 MXN / mes',
-      annualPrice: '$69,000 MXN / año',
-      description: 'Paquete express para presentar catálogo y cerrar primeras reuniones.',
-      includes: ['Curaduría de 3-5 tracks', '1 playlist comercial', '1 ronda de ajustes']
-    },
-    {
-      name: 'Growth Artist',
-      monthlyPrice: '$14,900 MXN / mes',
-      annualPrice: '$149,000 MXN / año',
-      description: 'Ideal para escalar presencia y convertir oportunidades con mayor frecuencia.',
-      includes: ['Curaduría de 8-12 tracks', 'Playlists por segmento', 'Soporte de seguimiento comercial']
-    },
-    {
-      name: 'Custom Enterprise',
-      monthlyPrice: 'Cotización personalizada',
-      annualPrice: 'Cotización personalizada',
-      description: 'Implementación a medida para management teams y operaciones multi-campaña.',
-      includes: ['Flujos personalizados', 'Acompañamiento estratégico', 'Integración operativa']
+      name: 'Implementación Manager App',
+      oneTimePrice: '$25,000 MXN pago único',
+      maintenancePrice: '$7,000 MXN / año mantenimiento',
+      description: 'Setup completo del sistema para compositores/artistas + handoff listo para operar.',
+      includes: ['Configuración inicial', 'Personalización base', 'Soporte de arranque']
     }
   ],
   testimonials: [
@@ -122,7 +108,7 @@ let catalogDeepLinkPlaylistId = '';
 let catalogDeepLinkAutoplay = false;
 let catalogDeepLinkHandled = false;
 let catalogRandomMode = false;
-let salesBillingMode = 'monthly';
+let salesBillingMode = 'upfront';
 
 const CONTACTS_PAGE_STEP = 12;
 const MESSAGES_PAGE_STEP = 20;
@@ -413,12 +399,12 @@ function setSalesKit(payload = salesKitSample) {
   const safePackages = packages
     .map((pkg) => ({
       name: String(pkg?.name || '').trim(),
-      monthlyPrice: String(pkg?.monthlyPrice || pkg?.price || '').trim(),
-      annualPrice: String(pkg?.annualPrice || pkg?.price || '').trim(),
+      upfrontPrice: String(pkg?.oneTimePrice || pkg?.upfrontPrice || pkg?.monthlyPrice || pkg?.price || '').trim(),
+      maintenancePrice: String(pkg?.maintenancePrice || pkg?.annualPrice || '').trim(),
       description: String(pkg?.description || '').trim(),
       includes: Array.isArray(pkg?.includes) ? pkg.includes.map((x) => String(x || '').trim()).filter(Boolean).slice(0, 6) : []
     }))
-    .filter((pkg) => pkg.name || pkg.monthlyPrice || pkg.annualPrice || pkg.description)
+    .filter((pkg) => pkg.name || pkg.upfrontPrice || pkg.maintenancePrice || pkg.description)
     .slice(0, 6);
 
   const safeTestimonials = testimonials
@@ -453,17 +439,17 @@ function setSalesKit(payload = salesKitSample) {
 
     <section class="sale-packages">
       <div class="sale-packages-head">
-        <h5 class="sale-section-title">Paquetes sugeridos</h5>
+        <h5 class="sale-section-title">Inversión</h5>
         <div class="sale-billing-toggle" role="tablist" aria-label="Modo de precio">
-          <button type="button" class="mini-btn ${salesBillingMode === 'monthly' ? 'active' : ''}" data-sale-billing="monthly">Mensual</button>
-          <button type="button" class="mini-btn ${salesBillingMode === 'annual' ? 'active' : ''}" data-sale-billing="annual">Anual</button>
+          <button type="button" class="mini-btn ${salesBillingMode === 'upfront' ? 'active' : ''}" data-sale-billing="upfront">Pago único</button>
+          <button type="button" class="mini-btn ${salesBillingMode === 'maintenance' ? 'active' : ''}" data-sale-billing="maintenance">Mantenimiento anual</button>
         </div>
       </div>
       <div class="sale-packages-grid">
         ${safePackages.map((pkg) => `
           <article class="sale-package-card">
             <h6>${escapeHtml(pkg.name || 'Paquete')}</h6>
-            ${(salesBillingMode === 'annual' ? pkg.annualPrice : pkg.monthlyPrice) ? `<p class="sale-package-price">${escapeHtml(salesBillingMode === 'annual' ? pkg.annualPrice : pkg.monthlyPrice)}</p>` : ''}
+            ${(salesBillingMode === 'maintenance' ? pkg.maintenancePrice : pkg.upfrontPrice) ? `<p class="sale-package-price">${escapeHtml(salesBillingMode === 'maintenance' ? pkg.maintenancePrice : pkg.upfrontPrice)}</p>` : ''}
             ${pkg.description ? `<p class="sale-package-desc">${escapeHtml(pkg.description)}</p>` : ''}
             ${pkg.includes.length ? `<ul class="list compact-list">${pkg.includes.map((i) => `<li>${escapeHtml(i)}</li>`).join('')}</ul>` : ''}
           </article>
@@ -494,7 +480,7 @@ function setSalesKit(payload = salesKitSample) {
   root.querySelectorAll('[data-sale-billing]').forEach((btn) => {
     btn.addEventListener('click', () => {
       const nextMode = String(btn.getAttribute('data-sale-billing') || '').trim();
-      if (!['monthly', 'annual'].includes(nextMode) || nextMode === salesBillingMode) return;
+      if (!['upfront', 'maintenance'].includes(nextMode) || nextMode === salesBillingMode) return;
       salesBillingMode = nextMode;
       setSalesKit(payload);
     });
