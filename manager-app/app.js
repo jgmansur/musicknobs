@@ -37,19 +37,22 @@ const salesKitSample = {
   packages: [
     {
       name: 'Starter Pitch',
-      price: 'Desde $6,900 MXN',
+      monthlyPrice: '$6,900 MXN / mes',
+      annualPrice: '$69,000 MXN / año',
       description: 'Paquete express para presentar catálogo y cerrar primeras reuniones.',
       includes: ['Curaduría de 3-5 tracks', '1 playlist comercial', '1 ronda de ajustes']
     },
     {
       name: 'Growth Artist',
-      price: 'Desde $14,900 MXN',
+      monthlyPrice: '$14,900 MXN / mes',
+      annualPrice: '$149,000 MXN / año',
       description: 'Ideal para escalar presencia y convertir oportunidades con mayor frecuencia.',
       includes: ['Curaduría de 8-12 tracks', 'Playlists por segmento', 'Soporte de seguimiento comercial']
     },
     {
       name: 'Custom Enterprise',
-      price: 'Cotización personalizada',
+      monthlyPrice: 'Cotización personalizada',
+      annualPrice: 'Cotización personalizada',
       description: 'Implementación a medida para management teams y operaciones multi-campaña.',
       includes: ['Flujos personalizados', 'Acompañamiento estratégico', 'Integración operativa']
     }
@@ -65,6 +68,7 @@ const salesKitSample = {
     }
   ],
   ctas: [
+    { label: 'Agendar llamada', url: `https://wa.me/${String(profile.whatsapp || '').replace(/\D/g, '')}?text=${encodeURIComponent('Hola Jay, quiero agendar una llamada para revisar el paquete comercial.')}` },
     { label: 'Abrir sitio oficial', url: profile.website },
     { label: 'Enviar email', url: `mailto:${profile.email}` },
     { label: 'WhatsApp directo', url: `https://wa.me/${String(profile.whatsapp || '').replace(/\D/g, '')}` }
@@ -118,6 +122,7 @@ let catalogDeepLinkPlaylistId = '';
 let catalogDeepLinkAutoplay = false;
 let catalogDeepLinkHandled = false;
 let catalogRandomMode = false;
+let salesBillingMode = 'monthly';
 
 const CONTACTS_PAGE_STEP = 12;
 const MESSAGES_PAGE_STEP = 20;
@@ -408,11 +413,12 @@ function setSalesKit(payload = salesKitSample) {
   const safePackages = packages
     .map((pkg) => ({
       name: String(pkg?.name || '').trim(),
-      price: String(pkg?.price || '').trim(),
+      monthlyPrice: String(pkg?.monthlyPrice || pkg?.price || '').trim(),
+      annualPrice: String(pkg?.annualPrice || pkg?.price || '').trim(),
       description: String(pkg?.description || '').trim(),
       includes: Array.isArray(pkg?.includes) ? pkg.includes.map((x) => String(x || '').trim()).filter(Boolean).slice(0, 6) : []
     }))
-    .filter((pkg) => pkg.name || pkg.price || pkg.description)
+    .filter((pkg) => pkg.name || pkg.monthlyPrice || pkg.annualPrice || pkg.description)
     .slice(0, 6);
 
   const safeTestimonials = testimonials
@@ -446,12 +452,18 @@ function setSalesKit(payload = salesKitSample) {
     </section>
 
     <section class="sale-packages">
-      <h5 class="sale-section-title">Paquetes sugeridos</h5>
+      <div class="sale-packages-head">
+        <h5 class="sale-section-title">Paquetes sugeridos</h5>
+        <div class="sale-billing-toggle" role="tablist" aria-label="Modo de precio">
+          <button type="button" class="mini-btn ${salesBillingMode === 'monthly' ? 'active' : ''}" data-sale-billing="monthly">Mensual</button>
+          <button type="button" class="mini-btn ${salesBillingMode === 'annual' ? 'active' : ''}" data-sale-billing="annual">Anual</button>
+        </div>
+      </div>
       <div class="sale-packages-grid">
         ${safePackages.map((pkg) => `
           <article class="sale-package-card">
             <h6>${escapeHtml(pkg.name || 'Paquete')}</h6>
-            ${pkg.price ? `<p class="sale-package-price">${escapeHtml(pkg.price)}</p>` : ''}
+            ${(salesBillingMode === 'annual' ? pkg.annualPrice : pkg.monthlyPrice) ? `<p class="sale-package-price">${escapeHtml(salesBillingMode === 'annual' ? pkg.annualPrice : pkg.monthlyPrice)}</p>` : ''}
             ${pkg.description ? `<p class="sale-package-desc">${escapeHtml(pkg.description)}</p>` : ''}
             ${pkg.includes.length ? `<ul class="list compact-list">${pkg.includes.map((i) => `<li>${escapeHtml(i)}</li>`).join('')}</ul>` : ''}
           </article>
@@ -478,6 +490,15 @@ function setSalesKit(payload = salesKitSample) {
       ${safeCtas.map((cta) => `<a class="btn" href="${escapeHtml(cta.url)}" target="_blank" rel="noopener">${escapeHtml(cta.label)}</a>`).join('')}
     </section>
   `;
+
+  root.querySelectorAll('[data-sale-billing]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const nextMode = String(btn.getAttribute('data-sale-billing') || '').trim();
+      if (!['monthly', 'annual'].includes(nextMode) || nextMode === salesBillingMode) return;
+      salesBillingMode = nextMode;
+      setSalesKit(payload);
+    });
+  });
 }
 
 async function loadSalesKitFromApi() {

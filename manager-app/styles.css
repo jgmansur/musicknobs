@@ -608,6 +608,20 @@ body.tabbar-hidden .catalog-player {
   letter-spacing: .04em;
 }
 
+.sale-packages-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .5rem;
+  flex-wrap: wrap;
+}
+
+.sale-billing-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
+}
+
 .sale-packages-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
