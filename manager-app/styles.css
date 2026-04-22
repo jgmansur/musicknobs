@@ -1226,11 +1226,22 @@ th {
 
   .catalog-shell {
     max-height: none;
+    overflow: visible;
+    padding-bottom: calc(var(--tab-height) + env(safe-area-inset-bottom) + 1.25rem);
   }
 
   #tab-catalog.panel-fullscreen {
     min-height: calc(100dvh - 190px);
-    padding-bottom: calc(var(--tab-height) + env(safe-area-inset-bottom) + 3rem);
+    padding-bottom: calc(var(--tab-height) + env(safe-area-inset-bottom) + 4.8rem);
+  }
+
+  .catalog-player {
+    position: sticky;
+    bottom: calc(var(--tab-height) + env(safe-area-inset-bottom) + .4rem);
+    z-index: 6;
+    margin: 0 .45rem .35rem;
+    border: 1px solid var(--glass-border);
+    border-radius: .85rem;
   }
 
   .catalog-pane {
