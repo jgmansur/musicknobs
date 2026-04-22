@@ -600,6 +600,52 @@ body.tabbar-hidden .catalog-player {
   gap: .45rem;
 }
 
+.sale-section-title {
+  margin: .1rem 0 .45rem;
+  font-size: .82rem;
+  color: var(--text-soft);
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+
+.sale-packages-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: .65rem;
+}
+
+.sale-package-card {
+  border: 1px solid var(--glass-border);
+  border-radius: .9rem;
+  padding: .72rem;
+  background: rgba(255,255,255,.03);
+}
+
+.sale-package-card h6 {
+  margin: 0;
+  font-size: .84rem;
+}
+
+.sale-package-price {
+  margin: .25rem 0 .3rem;
+  color: var(--primary);
+  font-weight: 700;
+  font-size: .8rem;
+}
+
+.sale-package-desc {
+  margin: 0 0 .45rem;
+  color: var(--text-soft);
+  font-size: .76rem;
+}
+
+.sale-process-list {
+  margin: 0;
+  padding-left: 1.2rem;
+  display: grid;
+  gap: .4rem;
+}
+
 .btn {
   border: none;
   background: var(--primary);
@@ -1294,6 +1340,10 @@ th {
   }
 
   .sale-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .sale-packages-grid {
     grid-template-columns: 1fr;
   }
 

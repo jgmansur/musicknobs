@@ -28,6 +28,42 @@ const salesKitSample = {
     'Flujo de trabajo manager-ready (playlists, contactos, tasks)',
     'Presencia en YouTube, Spotify, Instagram, TikTok y Patreon'
   ],
+  process: [
+    'Diagnóstico rápido del objetivo comercial del cliente',
+    'Selección de canciones y armado de playlist de pitching',
+    'Personalización de propuesta y envío de paquete',
+    'Seguimiento con tasks y registro de contactos'
+  ],
+  packages: [
+    {
+      name: 'Starter Pitch',
+      price: 'Desde $6,900 MXN',
+      description: 'Paquete express para presentar catálogo y cerrar primeras reuniones.',
+      includes: ['Curaduría de 3-5 tracks', '1 playlist comercial', '1 ronda de ajustes']
+    },
+    {
+      name: 'Growth Artist',
+      price: 'Desde $14,900 MXN',
+      description: 'Ideal para escalar presencia y convertir oportunidades con mayor frecuencia.',
+      includes: ['Curaduría de 8-12 tracks', 'Playlists por segmento', 'Soporte de seguimiento comercial']
+    },
+    {
+      name: 'Custom Enterprise',
+      price: 'Cotización personalizada',
+      description: 'Implementación a medida para management teams y operaciones multi-campaña.',
+      includes: ['Flujos personalizados', 'Acompañamiento estratégico', 'Integración operativa']
+    }
+  ],
+  testimonials: [
+    {
+      quote: 'La estructura del catálogo hizo súper fácil compartir opciones correctas para cada prospecto.',
+      by: 'Manager aliado'
+    },
+    {
+      quote: 'Con playlists listas para pitching, el seguimiento comercial se volvió mucho más rápido.',
+      by: 'Equipo A&R'
+    }
+  ],
   ctas: [
     { label: 'Abrir sitio oficial', url: profile.website },
     { label: 'Enviar email', url: `mailto:${profile.email}` },
@@ -344,6 +380,9 @@ function setSalesKit(payload = salesKitSample) {
   const pitch = String(payload?.pitch || salesKitSample.pitch || '').trim();
   const offerings = Array.isArray(payload?.offerings) ? payload.offerings : salesKitSample.offerings;
   const highlights = Array.isArray(payload?.highlights) ? payload.highlights : salesKitSample.highlights;
+  const process = Array.isArray(payload?.process) ? payload.process : salesKitSample.process;
+  const packages = Array.isArray(payload?.packages) ? payload.packages : salesKitSample.packages;
+  const testimonials = Array.isArray(payload?.testimonials) ? payload.testimonials : salesKitSample.testimonials;
   const ctas = Array.isArray(payload?.ctas) ? payload.ctas : salesKitSample.ctas;
 
   const safeOfferings = offerings
@@ -360,6 +399,29 @@ function setSalesKit(payload = salesKitSample) {
     .map((item) => ({ label: String(item?.label || '').trim(), url: String(item?.url || '').trim() }))
     .filter((item) => item.label && item.url)
     .slice(0, 4);
+
+  const safeProcess = process
+    .map((item) => String(item || '').trim())
+    .filter(Boolean)
+    .slice(0, 8);
+
+  const safePackages = packages
+    .map((pkg) => ({
+      name: String(pkg?.name || '').trim(),
+      price: String(pkg?.price || '').trim(),
+      description: String(pkg?.description || '').trim(),
+      includes: Array.isArray(pkg?.includes) ? pkg.includes.map((x) => String(x || '').trim()).filter(Boolean).slice(0, 6) : []
+    }))
+    .filter((pkg) => pkg.name || pkg.price || pkg.description)
+    .slice(0, 6);
+
+  const safeTestimonials = testimonials
+    .map((item) => ({
+      quote: String(item?.quote || '').trim(),
+      by: String(item?.by || '').trim()
+    }))
+    .filter((item) => item.quote)
+    .slice(0, 6);
 
   root.innerHTML = `
     <section class="sale-hero">
@@ -379,6 +441,35 @@ function setSalesKit(payload = salesKitSample) {
         <h5>Puntos fuertes</h5>
         <ul class="list compact-list">
           ${safeHighlights.map((item) => `<li>${escapeHtml(item)}</li>`).join('') || '<li>Sin highlights configurados.</li>'}
+        </ul>
+      </article>
+    </section>
+
+    <section class="sale-packages">
+      <h5 class="sale-section-title">Paquetes sugeridos</h5>
+      <div class="sale-packages-grid">
+        ${safePackages.map((pkg) => `
+          <article class="sale-package-card">
+            <h6>${escapeHtml(pkg.name || 'Paquete')}</h6>
+            ${pkg.price ? `<p class="sale-package-price">${escapeHtml(pkg.price)}</p>` : ''}
+            ${pkg.description ? `<p class="sale-package-desc">${escapeHtml(pkg.description)}</p>` : ''}
+            ${pkg.includes.length ? `<ul class="list compact-list">${pkg.includes.map((i) => `<li>${escapeHtml(i)}</li>`).join('')}</ul>` : ''}
+          </article>
+        `).join('')}
+      </div>
+    </section>
+
+    <section class="sale-grid">
+      <article class="sale-card">
+        <h5>Proceso comercial</h5>
+        <ol class="sale-process-list">
+          ${safeProcess.map((step) => `<li>${escapeHtml(step)}</li>`).join('') || '<li>Define proceso comercial.</li>'}
+        </ol>
+      </article>
+      <article class="sale-card">
+        <h5>Prueba social</h5>
+        <ul class="list compact-list">
+          ${safeTestimonials.map((item) => `<li>“${escapeHtml(item.quote)}”${item.by ? ` — <strong>${escapeHtml(item.by)}</strong>` : ''}</li>`).join('') || '<li>Agrega testimonios de clientes.</li>'}
         </ul>
       </article>
     </section>
