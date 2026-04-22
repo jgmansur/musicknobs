@@ -470,7 +470,7 @@ body.tabbar-hidden .container {
 }
 
 body.tabbar-hidden .catalog-player {
-  bottom: calc(env(safe-area-inset-bottom) + .2rem);
+  bottom: calc(env(safe-area-inset-bottom) + .6rem);
 }
 
 .tab {
@@ -1252,8 +1252,8 @@ th {
 
   .catalog-player {
     position: sticky;
-    bottom: calc(var(--tab-height) + env(safe-area-inset-bottom) + .4rem);
-    z-index: 6;
+    bottom: calc(env(safe-area-inset-bottom) + 2.2rem);
+    z-index: 920;
     margin: 0 .45rem .35rem;
     border: 1px solid var(--glass-border);
     border-radius: .85rem;
