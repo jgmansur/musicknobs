@@ -34,6 +34,16 @@ const salesKitSample = {
     'Ajustes de UX, estructura, copy y permisos por rol',
     'Cambios especiales y módulos extra por cotización independiente'
   ],
+  scopeIncluded: [
+    'Branding inicial (logo, nombre y paleta base)',
+    'Configuración de módulos core y estructura inicial',
+    'Onboarding operativo para arranque del equipo'
+  ],
+  scopeExcluded: [
+    'Desarrollos nuevos fuera del alcance base',
+    'Integraciones de terceros no contempladas',
+    'Cambios especiales o módulos extra (se cotizan por separado)'
+  ],
   packages: [
     {
       name: 'Implementación Manager App',
@@ -372,6 +382,8 @@ function setSalesKit(payload = salesKitSample) {
   const offerings = Array.isArray(payload?.offerings) ? payload.offerings : salesKitSample.offerings;
   const highlights = Array.isArray(payload?.highlights) ? payload.highlights : salesKitSample.highlights;
   const process = Array.isArray(payload?.process) ? payload.process : salesKitSample.process;
+  const scopeIncluded = Array.isArray(payload?.scopeIncluded) ? payload.scopeIncluded : salesKitSample.scopeIncluded;
+  const scopeExcluded = Array.isArray(payload?.scopeExcluded) ? payload.scopeExcluded : salesKitSample.scopeExcluded;
   const packages = Array.isArray(payload?.packages) ? payload.packages : salesKitSample.packages;
   const testimonials = Array.isArray(payload?.testimonials) ? payload.testimonials : salesKitSample.testimonials;
   const ctas = Array.isArray(payload?.ctas) ? payload.ctas : salesKitSample.ctas;
@@ -392,6 +404,16 @@ function setSalesKit(payload = salesKitSample) {
     .slice(0, 4);
 
   const safeProcess = process
+    .map((item) => String(item || '').trim())
+    .filter(Boolean)
+    .slice(0, 8);
+
+  const safeScopeIncluded = scopeIncluded
+    .map((item) => String(item || '').trim())
+    .filter(Boolean)
+    .slice(0, 8);
+
+  const safeScopeExcluded = scopeExcluded
     .map((item) => String(item || '').trim())
     .filter(Boolean)
     .slice(0, 8);
@@ -470,6 +492,24 @@ function setSalesKit(payload = salesKitSample) {
           ${safeTestimonials.map((item) => `<li>“${escapeHtml(item.quote)}”${item.by ? ` — <strong>${escapeHtml(item.by)}</strong>` : ''}</li>`).join('') || '<li>Agrega testimonios de clientes.</li>'}
         </ul>
       </article>
+    </section>
+
+    <section class="sale-scope">
+      <h5 class="sale-section-title">Alcance de implementación</h5>
+      <div class="sale-scope-grid">
+        <article class="sale-scope-card included">
+          <h6>Incluye</h6>
+          <ul class="list compact-list">
+            ${safeScopeIncluded.map((item) => `<li>${escapeHtml(item)}</li>`).join('') || '<li>Definir alcance incluido.</li>'}
+          </ul>
+        </article>
+        <article class="sale-scope-card excluded">
+          <h6>No incluye</h6>
+          <ul class="list compact-list">
+            ${safeScopeExcluded.map((item) => `<li>${escapeHtml(item)}</li>`).join('') || '<li>Definir alcance no incluido.</li>'}
+          </ul>
+        </article>
+      </div>
     </section>
 
     <section class="sale-actions">

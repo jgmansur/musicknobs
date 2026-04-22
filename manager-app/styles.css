@@ -668,6 +668,34 @@ body.tabbar-hidden .catalog-player {
   gap: .4rem;
 }
 
+.sale-scope-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: .65rem;
+}
+
+.sale-scope-card {
+  border: 1px solid var(--glass-border);
+  border-radius: .9rem;
+  padding: .72rem;
+  background: rgba(255,255,255,.03);
+}
+
+.sale-scope-card h6 {
+  margin: 0 0 .4rem;
+  font-size: .8rem;
+  text-transform: uppercase;
+  letter-spacing: .03em;
+}
+
+.sale-scope-card.included {
+  border-color: rgba(34,197,94,.25);
+}
+
+.sale-scope-card.excluded {
+  border-color: rgba(248,113,113,.28);
+}
+
 .btn {
   border: none;
   background: var(--primary);
@@ -1371,6 +1399,10 @@ th {
   }
 
   .sale-packages-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .sale-scope-grid {
     grid-template-columns: 1fr;
   }
 
