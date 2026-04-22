@@ -747,6 +747,48 @@ function parseCatalogGenres(value) {
     .filter(Boolean);
 }
 
+function parseCatalogAiTags(value) {
+  if (Array.isArray(value)) {
+    return value.map((x) => String(x || '').trim()).filter(Boolean);
+  }
+  return String(value || '')
+    .split(/[,|]/)
+    .map((x) => x.trim())
+    .filter(Boolean);
+}
+
+function buildCatalogSearchBlob(row = {}) {
+  const tokens = [
+    row.obra,
+    row.autores,
+    row.generos,
+    row.drive,
+    row.fileId,
+    row.letra,
+    row.searchText,
+    row.aiTagsRaw,
+    ...(Array.isArray(row.aiTags) ? row.aiTags : []),
+  ];
+
+  if (row.certificadaIndautor || Number(row.certificadaIndautorCount || 0) > 0) {
+    tokens.push('registrada', 'registrado', 'registro', 'indautor', 'certificada', 'certificado');
+  }
+  if (row.registradaSacm) {
+    tokens.push('sacm', 'registrada en sacm', 'registro sacm');
+  }
+  if (row.registradaBmi) {
+    tokens.push('bmi', 'registrada en bmi', 'registro bmi');
+  }
+  if (row.letra) {
+    tokens.push('con letra', 'lyrics', 'letra disponible');
+  }
+
+  return tokens
+    .map((v) => String(v || '').toLowerCase().trim())
+    .filter(Boolean)
+    .join(' ');
+}
+
 function extractDriveFileId(raw) {
   const input = String(raw || '').trim();
   if (!input) return '';
@@ -1287,9 +1329,7 @@ function renderCatalog() {
   const bySearch = !catalogSearchQuery.trim()
     ? baseForSearch
     : baseForSearch.filter((row) => {
-        const haystack = [row.obra, row.autores, row.generos, row.drive, row.fileId]
-          .map((v) => String(v || '').toLowerCase())
-          .join(' ');
+        const haystack = buildCatalogSearchBlob(row);
         return haystack.includes(catalogSearchQuery.trim().toLowerCase());
       });
 
@@ -1476,6 +1516,14 @@ function setCatalog(rows = catalogSample) {
       drive: String(row.drive || '').trim(),
       fileId: String(row.fileId || extractDriveFileId(row.drive || '')).trim(),
       cover: String(row.cover || '').trim(),
+      letra: String(row.letra || '').trim(),
+      aiTags: parseCatalogAiTags(row.aiTags),
+      aiTagsRaw: String(row.aiTagsRaw || '').trim(),
+      certificadaIndautor: Boolean(row.certificadaIndautor),
+      certificadaIndautorCount: Number(row.certificadaIndautorCount || 0),
+      registradaSacm: Boolean(row.registradaSacm),
+      registradaBmi: Boolean(row.registradaBmi),
+      searchText: String(row.searchText || '').trim(),
     }))
     .filter((row) => Boolean(row.obra || row.drive || row.fileId));
 
@@ -1485,7 +1533,9 @@ function setCatalog(rows = catalogSample) {
       String(row.fileId || '').trim().toLowerCase(),
       String(row.drive || '').trim().toLowerCase(),
       String(row.obra || '').trim().toLowerCase(),
-      String(row.autores || '').trim().toLowerCase()
+      String(row.autores || '').trim().toLowerCase(),
+      String((row.aiTags || []).join('|') || '').trim().toLowerCase(),
+      String(row.aiTagsRaw || '').trim().toLowerCase(),
     ].join('::');
     if (!byKey.has(key)) byKey.set(key, row);
   }
@@ -2575,7 +2625,15 @@ async function loadCatalogFromApi() {
       generos: item.generos || '—',
       drive: item.drive || '',
       fileId: item.fileId || extractDriveFileId(item.drive || ''),
-      cover: item.cover || ''
+      cover: item.cover || '',
+      letra: item.letra || '',
+      aiTags: Array.isArray(item.aiTags) ? item.aiTags : [],
+      aiTagsRaw: item.aiTagsRaw || '',
+      certificadaIndautor: Boolean(item.certificadaIndautor),
+      certificadaIndautorCount: Number(item.certificadaIndautorCount || 0),
+      registradaSacm: Boolean(item.registradaSacm),
+      registradaBmi: Boolean(item.registradaBmi),
+      searchText: item.searchText || '',
     }));
     catalogVisibleCount = CATALOG_PAGE_STEP;
     setCatalog(rows.length ? rows : catalogSample);

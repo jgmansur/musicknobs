@@ -393,6 +393,89 @@ function readNotionSongCover(props) {
   return "";
 }
 
+function readNotionSongLetraUrl(props) {
+  for (const [name, prop] of Object.entries(props)) {
+    const key = name.toLowerCase();
+    if (!["letra", "lyrics", "lyric"].some((k) => key.includes(k))) continue;
+    if (prop?.type === "url" && prop.url) return prop.url;
+    if (prop?.type === "rich_text") {
+      const text = richTextToString(prop.rich_text);
+      if (text) return text;
+    }
+  }
+  return "";
+}
+
+function readNotionSongAiTags(props) {
+  for (const [name, prop] of Object.entries(props)) {
+    const key = name.toLowerCase();
+    if (!["tags para búsqueda ai", "tags para busqueda ai", "ai tags", "search tags"].some((k) => key.includes(k))) continue;
+    if (prop?.type === "multi_select") return (prop.multi_select || []).map((x) => x?.name).filter(Boolean);
+    if (prop?.type === "rich_text") {
+      const text = richTextToString(prop.rich_text);
+      return text ? text.split(",").map((x) => x.trim()).filter(Boolean) : [];
+    }
+  }
+  return [];
+}
+
+function readNotionSongAiTagsRaw(props) {
+  for (const [name, prop] of Object.entries(props)) {
+    const key = name.toLowerCase();
+    if (!["tags ai raw", "tags raw", "ai tags raw"].some((k) => key.includes(k))) continue;
+    if (prop?.type === "rich_text") return richTextToString(prop.rich_text);
+    if (prop?.type === "title") return richTextToString(prop.title);
+    if (prop?.type === "url") return String(prop.url || "").trim();
+    if (prop?.type === "multi_select") return (prop.multi_select || []).map((x) => x?.name).filter(Boolean).join(", ");
+  }
+  return "";
+}
+
+function readNotionSongBool(props, hints = []) {
+  for (const [name, prop] of Object.entries(props)) {
+    const key = name.toLowerCase();
+    if (!hints.some((h) => key.includes(h))) continue;
+    if (prop?.type === "checkbox") return Boolean(prop.checkbox);
+  }
+  return false;
+}
+
+function readNotionSongFilesCount(props, hints = []) {
+  for (const [name, prop] of Object.entries(props)) {
+    const key = name.toLowerCase();
+    if (!hints.some((h) => key.includes(h))) continue;
+    if (prop?.type === "files") return Array.isArray(prop.files) ? prop.files.length : 0;
+  }
+  return 0;
+}
+
+function richTextFromAnyProp(prop) {
+  if (!prop) return "";
+  if (prop.type === "title") return richTextToString(prop.title);
+  if (prop.type === "rich_text") return richTextToString(prop.rich_text);
+  if (prop.type === "select") return prop.select?.name || "";
+  if (prop.type === "multi_select") return (prop.multi_select || []).map((x) => x?.name).filter(Boolean).join(" ");
+  if (prop.type === "url") return prop.url || "";
+  if (prop.type === "checkbox") return prop.checkbox ? "true" : "false";
+  if (prop.type === "date") return prop.date?.start || "";
+  if (prop.type === "files") {
+    const files = Array.isArray(prop.files) ? prop.files : [];
+    return files
+      .map((f) => f?.name || f?.external?.url || f?.file?.url || "")
+      .filter(Boolean)
+      .join(" ");
+  }
+  return "";
+}
+
+function buildCatalogSearchText(props = {}) {
+  return Object.values(props)
+    .map((prop) => richTextFromAnyProp(prop))
+    .filter(Boolean)
+    .join(" ")
+    .trim();
+}
+
 async function listCatalogSongs(env) {
   const notionVersion = env.NOTION_VERSION || "2022-06-28";
   const notionToken = env.NOTION_TOKEN || "";
@@ -420,6 +503,13 @@ async function listCatalogSongs(env) {
         const drive = readNotionSongUrl(props);
         const fileId = extractDriveFileId(drive);
         const cover = readNotionSongCover(props);
+        const letra = readNotionSongLetraUrl(props);
+        const aiTags = readNotionSongAiTags(props);
+        const aiTagsRaw = readNotionSongAiTagsRaw(props);
+        const certificadaIndautorCount = readNotionSongFilesCount(props, ["certificado de indautor", "certificado", "indautor"]);
+        const registradaSacm = readNotionSongBool(props, ["registrada en sacm", "sacm"]);
+        const registradaBmi = readNotionSongBool(props, ["registrada en bmi", "bmi"]);
+        const searchText = buildCatalogSearchText(props);
         return {
           id: page.id,
           obra: obra || "Sin título",
@@ -428,6 +518,14 @@ async function listCatalogSongs(env) {
           drive: drive || "",
           fileId: fileId || "",
           cover: cover || "",
+          letra: letra || "",
+          aiTags,
+          aiTagsRaw: aiTagsRaw || "",
+          certificadaIndautor: certificadaIndautorCount > 0,
+          certificadaIndautorCount,
+          registradaSacm,
+          registradaBmi,
+          searchText,
         };
       })
       .filter((item) => Boolean(item.obra));
