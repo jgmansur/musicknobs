@@ -2933,7 +2933,6 @@ function setupActions() {
     setContactFormVisibility(false);
   });
   bindClick('refresh-links', () => loadLinksFromApi());
-  bindClick('refresh-sale', () => loadSalesKitFromApi());
   bindClick('refresh-tasks', () => loadTasksFromApi());
   bindClick('task-create', createTask);
   bindClick('task-form-toggle', () => {
