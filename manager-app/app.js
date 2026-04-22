@@ -13,6 +13,27 @@ const profile = {
 };
 
 const socialLinksSample = profile.links.map(([name, url]) => ({ name, url }));
+const salesKitSample = {
+  title: 'Jay Mansur · Productor / Compositor / Artista',
+  subtitle: 'Paquete comercial para managers, A&R, promotores y partners.',
+  pitch: 'Proyecto artístico con catálogo listo para pitching, presencia digital activa y operación centralizada para acelerar cierres comerciales.',
+  offerings: [
+    'Producción musical y composición por proyecto',
+    'Licenciamiento y pitching de catálogo',
+    'Colaboraciones para artistas y marcas',
+    'Paquetes de contenido y estrategia de lanzamiento'
+  ],
+  highlights: [
+    'Catálogo organizado y compartible por links de escucha',
+    'Flujo de trabajo manager-ready (playlists, contactos, tasks)',
+    'Presencia en YouTube, Spotify, Instagram, TikTok y Patreon'
+  ],
+  ctas: [
+    { label: 'Abrir sitio oficial', url: profile.website },
+    { label: 'Enviar email', url: `mailto:${profile.email}` },
+    { label: 'WhatsApp directo', url: `https://wa.me/${String(profile.whatsapp || '').replace(/\D/g, '')}` }
+  ]
+};
 
 const cfg = window.MANAGER_APP_CONFIG || {};
 const API_BASE = (cfg.apiBaseUrl || '').replace(/\/$/, '');
@@ -67,7 +88,7 @@ const MESSAGES_PAGE_STEP = 20;
 const CATALOG_PAGE_STEP = 20;
 const CATALOG_PROGRESS_REFRESH_MS = 900;
 const CATALOG_AUTOPLAY_HINT = '[DALE CLICK A LA CANCIÓN SELECCIONADA]';
-const PUBLIC_TABS = new Set(['catalog', 'links', 'book']);
+const PUBLIC_TABS = new Set(['catalog', 'links', 'sale', 'book']);
 const MOBILE_TABBAR_MEDIA_QUERY = '(max-width: 720px)';
 
 const configuredTracks = Array.isArray(window.MANAGER_TRACKS) ? window.MANAGER_TRACKS : [];
@@ -312,6 +333,74 @@ function setLinks(rows = socialLinksSample) {
       return `<li><a href="${url}" target="_blank" rel="noopener">${name}</a></li>`;
     })
     .join('');
+}
+
+function setSalesKit(payload = salesKitSample) {
+  const root = document.getElementById('sale-kit');
+  if (!root) return;
+
+  const title = String(payload?.title || salesKitSample.title || '').trim();
+  const subtitle = String(payload?.subtitle || salesKitSample.subtitle || '').trim();
+  const pitch = String(payload?.pitch || salesKitSample.pitch || '').trim();
+  const offerings = Array.isArray(payload?.offerings) ? payload.offerings : salesKitSample.offerings;
+  const highlights = Array.isArray(payload?.highlights) ? payload.highlights : salesKitSample.highlights;
+  const ctas = Array.isArray(payload?.ctas) ? payload.ctas : salesKitSample.ctas;
+
+  const safeOfferings = offerings
+    .map((item) => String(item || '').trim())
+    .filter(Boolean)
+    .slice(0, 8);
+
+  const safeHighlights = highlights
+    .map((item) => String(item || '').trim())
+    .filter(Boolean)
+    .slice(0, 8);
+
+  const safeCtas = ctas
+    .map((item) => ({ label: String(item?.label || '').trim(), url: String(item?.url || '').trim() }))
+    .filter((item) => item.label && item.url)
+    .slice(0, 4);
+
+  root.innerHTML = `
+    <section class="sale-hero">
+      <h4>${escapeHtml(title)}</h4>
+      <p class="sale-subtitle">${escapeHtml(subtitle)}</p>
+      <p>${escapeHtml(pitch)}</p>
+    </section>
+
+    <section class="sale-grid">
+      <article class="sale-card">
+        <h5>¿Qué se puede vender?</h5>
+        <ul class="list compact-list">
+          ${safeOfferings.map((item) => `<li>${escapeHtml(item)}</li>`).join('') || '<li>Sin servicios configurados.</li>'}
+        </ul>
+      </article>
+      <article class="sale-card">
+        <h5>Puntos fuertes</h5>
+        <ul class="list compact-list">
+          ${safeHighlights.map((item) => `<li>${escapeHtml(item)}</li>`).join('') || '<li>Sin highlights configurados.</li>'}
+        </ul>
+      </article>
+    </section>
+
+    <section class="sale-actions">
+      ${safeCtas.map((cta) => `<a class="btn" href="${escapeHtml(cta.url)}" target="_blank" rel="noopener">${escapeHtml(cta.label)}</a>`).join('')}
+    </section>
+  `;
+}
+
+async function loadSalesKitFromApi() {
+  try {
+    if (!API_BASE) throw new Error('apiBaseUrl no configurado');
+    const res = await fetchJson(`${API_BASE}/api/manager/sales-kit`);
+    const data = res?.data && typeof res.data === 'object' ? res.data : salesKitSample;
+    setSalesKit(data);
+    setStatus('sale-status', 'Paquete de venta cargado.');
+  } catch (e) {
+    setSalesKit(salesKitSample);
+    const reason = e instanceof Error ? e.message : String(e);
+    setStatus('sale-status', `Usando paquete local (fallback): ${reason}`);
+  }
 }
 
 function renderPlaylists() {
@@ -1883,6 +1972,7 @@ function setAuthenticated(value) {
     loadContactsFromNotion();
     loadTasksFromApi();
     loadLinksFromApi();
+    loadSalesKitFromApi();
     updateAuthGateForCurrentTab();
     return;
   }
@@ -1893,6 +1983,7 @@ function setAuthenticated(value) {
   loadCatalogFromApi();
   loadPlaylistsFromApi();
   loadLinksFromApi();
+  loadSalesKitFromApi();
   if (!isPublicTab(getActiveTabName())) {
     activateTab('catalog');
   }
@@ -2699,6 +2790,7 @@ function setupActions() {
     setContactFormVisibility(false);
   });
   bindClick('refresh-links', () => loadLinksFromApi());
+  bindClick('refresh-sale', () => loadSalesKitFromApi());
   bindClick('refresh-tasks', () => loadTasksFromApi());
   bindClick('task-create', createTask);
   bindClick('task-form-toggle', () => {
