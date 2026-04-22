@@ -406,6 +406,63 @@ function readNotionSongLetraUrl(props) {
   return "";
 }
 
+function parseNotionPageIdFromUrl(input) {
+  const value = String(input || "").trim();
+  if (!value) return "";
+
+  // Matches dashed UUID.
+  let m = value.match(/([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})/);
+  if (m?.[1]) return m[1].toLowerCase();
+
+  // Matches compact 32-hex ID.
+  m = value.match(/([0-9a-fA-F]{32})/);
+  if (!m?.[1]) return "";
+  const raw = m[1].toLowerCase();
+  return `${raw.slice(0, 8)}-${raw.slice(8, 12)}-${raw.slice(12, 16)}-${raw.slice(16, 20)}-${raw.slice(20)}`;
+}
+
+async function fetchNotionLyricsTextFromUrl(letraUrl, notionToken, notionVersion, maxChars = 12000) {
+  const pageId = parseNotionPageIdFromUrl(letraUrl);
+  if (!pageId || !notionToken) return "";
+
+  const chunks = [];
+  let cursor = "";
+  let guard = 0;
+  while (guard < 20) {
+    guard += 1;
+    const params = new URLSearchParams({ page_size: "100" });
+    if (cursor) params.set("start_cursor", cursor);
+    const url = `https://api.notion.com/v1/blocks/${pageId}/children?${params.toString()}`;
+
+    const resp = await fetch(url, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${notionToken}`,
+        "Notion-Version": notionVersion,
+      },
+    });
+    if (!resp.ok) break;
+
+    const payload = await resp.json();
+    const blocks = Array.isArray(payload?.results) ? payload.results : [];
+    for (const b of blocks) {
+      const type = b?.type;
+      const rt = b?.[type]?.rich_text;
+      const txt = richTextToString(rt || []).trim();
+      if (!txt) continue;
+      chunks.push(txt);
+      if (chunks.join("\n").length >= maxChars) {
+        return chunks.join("\n").slice(0, maxChars);
+      }
+    }
+
+    if (!payload?.has_more || !payload?.next_cursor) break;
+    cursor = payload.next_cursor;
+  }
+
+  return chunks.join("\n").slice(0, maxChars);
+}
+
 function readNotionSongAiTags(props) {
   for (const [name, prop] of Object.entries(props)) {
     const key = name.toLowerCase();
@@ -494,8 +551,8 @@ async function listCatalogSongs(env) {
       pageSize: 200,
     });
 
-    const data = (payload.results || [])
-      .map((page) => {
+    const data = (await Promise.all((payload.results || [])
+      .map(async (page) => {
         const props = page.properties || {};
         const obra = readNotionTitle(props);
         const autores = readNotionSongAuthors(props);
@@ -504,6 +561,9 @@ async function listCatalogSongs(env) {
         const fileId = extractDriveFileId(drive);
         const cover = readNotionSongCover(props);
         const letra = readNotionSongLetraUrl(props);
+        const lyricsText = letra
+          ? await fetchNotionLyricsTextFromUrl(letra, notionToken, notionVersion)
+          : "";
         const aiTags = readNotionSongAiTags(props);
         const aiTagsRaw = readNotionSongAiTagsRaw(props);
         const certificadaIndautorCount = readNotionSongFilesCount(props, ["certificado de indautor", "certificado", "indautor"]);
@@ -519,6 +579,7 @@ async function listCatalogSongs(env) {
           fileId: fileId || "",
           cover: cover || "",
           letra: letra || "",
+          lyricsText: lyricsText || "",
           aiTags,
           aiTagsRaw: aiTagsRaw || "",
           certificadaIndautor: certificadaIndautorCount > 0,
@@ -527,7 +588,7 @@ async function listCatalogSongs(env) {
           registradaBmi,
           searchText,
         };
-      })
+      })))
       .filter((item) => Boolean(item.obra));
 
     return {
