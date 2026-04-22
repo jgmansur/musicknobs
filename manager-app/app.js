@@ -68,6 +68,7 @@ const CATALOG_PAGE_STEP = 20;
 const CATALOG_PROGRESS_REFRESH_MS = 900;
 const CATALOG_AUTOPLAY_HINT = '[DALE CLICK A LA CANCIÓN SELECCIONADA]';
 const PUBLIC_TABS = new Set(['catalog', 'links', 'book']);
+const MOBILE_TABBAR_MEDIA_QUERY = '(max-width: 720px)';
 
 const configuredTracks = Array.isArray(window.MANAGER_TRACKS) ? window.MANAGER_TRACKS : [];
 
@@ -105,6 +106,59 @@ function activateTab(tabName) {
   document.querySelectorAll('.panel').forEach((p) => {
     p.classList.toggle('active', p.id === `tab-${target}`);
   });
+  updateTabBarVisibilityForCatalogBottom();
+}
+
+function isMobileTabBarViewport() {
+  try {
+    return window.matchMedia(MOBILE_TABBAR_MEDIA_QUERY).matches;
+  } catch {
+    return window.innerWidth <= 720;
+  }
+}
+
+function setTabBarHidden(hidden) {
+  const tabBar = document.querySelector('.tab-bar');
+  if (!tabBar) return;
+  tabBar.classList.toggle('is-hidden', Boolean(hidden));
+  document.body.classList.toggle('tabbar-hidden', Boolean(hidden));
+}
+
+function updateTabBarVisibilityForCatalogBottom() {
+  const activeTab = getActiveTabName();
+  if (!isMobileTabBarViewport() || activeTab !== 'catalog') {
+    setTabBarHidden(false);
+    return;
+  }
+
+  const songsEl = document.getElementById('catalog-songs');
+  const containerEl = document.querySelector('main.container');
+  const threshold = 12;
+
+  let atBottom = false;
+
+  if (songsEl && songsEl.scrollHeight > songsEl.clientHeight + threshold) {
+    atBottom = songsEl.scrollTop + songsEl.clientHeight >= songsEl.scrollHeight - threshold;
+  } else if (containerEl) {
+    atBottom = containerEl.scrollTop + containerEl.clientHeight >= containerEl.scrollHeight - threshold;
+  }
+
+  setTabBarHidden(atBottom);
+}
+
+function setupCatalogTabBarAutoHide() {
+  const containerEl = document.querySelector('main.container');
+  const songsEl = document.getElementById('catalog-songs');
+
+  if (containerEl) {
+    containerEl.addEventListener('scroll', updateTabBarVisibilityForCatalogBottom, { passive: true });
+  }
+  if (songsEl) {
+    songsEl.addEventListener('scroll', updateTabBarVisibilityForCatalogBottom, { passive: true });
+  }
+
+  window.addEventListener('resize', updateTabBarVisibilityForCatalogBottom, { passive: true });
+  updateTabBarVisibilityForCatalogBottom();
 }
 
 function updateAuthGateForCurrentTab() {
@@ -1176,6 +1230,8 @@ function renderCatalog() {
     catalogNowCardOpen = !catalogNowCardOpen;
     setCatalogNowCard(getCurrentCatalogSong());
   };
+
+  updateTabBarVisibilityForCatalogBottom();
 }
 
 function setCatalog(rows = catalogSample) {
@@ -2692,6 +2748,7 @@ function init() {
   setupTabs();
   setupCatalogPlayerControls();
   setupActions();
+  setupCatalogTabBarAutoHide();
   syncPlaylistCreateControlsVisibility();
   if (shouldBypassAuthForLocalDev()) {
     enableLocalDevBypassMode();

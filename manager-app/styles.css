@@ -454,9 +454,24 @@ h1 {
   scrollbar-width: none;
   scroll-snap-type: x proximity;
   z-index: 900;
+  transition: transform .28s ease, opacity .22s ease;
 }
 
 .tab-bar::-webkit-scrollbar { display: none; }
+
+.tab-bar.is-hidden {
+  transform: translateY(calc(100% + env(safe-area-inset-bottom)));
+  opacity: 0;
+  pointer-events: none;
+}
+
+body.tabbar-hidden .container {
+  padding-bottom: calc(1.1rem + env(safe-area-inset-bottom));
+}
+
+body.tabbar-hidden .catalog-player {
+  bottom: calc(env(safe-area-inset-bottom) + .2rem);
+}
 
 .tab {
   flex: 0 0 clamp(4.1rem, 20vw, 5.1rem);
