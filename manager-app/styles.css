@@ -783,7 +783,7 @@ a { color: #93c5fd; }
 #tab-catalog.panel-fullscreen {
   min-height: calc(100dvh - 260px);
   /* Espacio extra para que el player no quede tapado por tab bar/safe area */
-  padding-bottom: calc(var(--tab-height) + env(safe-area-inset-bottom) + .9rem);
+  padding-bottom: calc(var(--tab-height) + env(safe-area-inset-bottom) + 2.4rem);
 }
 
 .catalog-playlist-toolbar {
@@ -1012,7 +1012,7 @@ a { color: #93c5fd; }
 .catalog-player {
   border-top: 1px solid rgba(255,255,255,.08);
   background: rgba(9, 14, 24, .92);
-  padding: .5rem .55rem calc(.7rem + env(safe-area-inset-bottom));
+  padding: .5rem .55rem calc(1.6rem + env(safe-area-inset-bottom));
   display: grid;
   gap: .42rem;
 }
@@ -1230,7 +1230,7 @@ th {
 
   #tab-catalog.panel-fullscreen {
     min-height: calc(100dvh - 190px);
-    padding-bottom: calc(var(--tab-height) + env(safe-area-inset-bottom) + 1.1rem);
+    padding-bottom: calc(var(--tab-height) + env(safe-area-inset-bottom) + 3rem);
   }
 
   .catalog-pane {
