@@ -102,6 +102,11 @@ let taskAssigneeUsers = [
 let tasksNextCursor = '';
 let tasksHasMore = false;
 let tasksScope = 'all';
+let focusTodayTasks = [];
+let focusOverdueTasks = [];
+let focusMode = 'today';
+let focusTodayIndex = 0;
+let focusOverdueIndex = 0;
 let catalogCache = [];
 let catalogGenreFilter = 'Todas';
 let catalogNowPlayingId = '';
@@ -1901,6 +1906,230 @@ function isAdminUser() {
   return ADMIN_EMAILS.includes(email);
 }
 
+function toIsoDateOnly(value) {
+  const raw = String(value || '').trim();
+  if (!raw) return '';
+  return raw.slice(0, 10);
+}
+
+function getTodayIso() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function formatFocusTaskDate(isoDate) {
+  const value = toIsoDateOnly(isoDate);
+  if (!value) return 'Sin fecha';
+  return value;
+}
+
+function getCurrentFocusTask() {
+  const list = focusMode === 'today' ? focusTodayTasks : focusOverdueTasks;
+  if (!list.length) return null;
+  const idx = focusMode === 'today' ? focusTodayIndex : focusOverdueIndex;
+  if (idx < 0 || idx >= list.length) return list[0];
+  return list[idx];
+}
+
+function setFocusMode(nextMode) {
+  focusMode = nextMode === 'overdue' ? 'overdue' : 'today';
+  renderFocusTaskBoard();
+}
+
+function rotateFocusTask(direction = 1) {
+  const list = focusMode === 'today' ? focusTodayTasks : focusOverdueTasks;
+  if (!list.length) {
+    if (focusMode === 'today' && direction > 0 && focusOverdueTasks.length) {
+      focusMode = 'overdue';
+      focusOverdueIndex = 0;
+    }
+    renderFocusTaskBoard();
+    return;
+  }
+
+  const step = direction >= 0 ? 1 : -1;
+  if (focusMode === 'today') {
+    focusTodayIndex = (focusTodayIndex + step + list.length) % list.length;
+  } else {
+    focusOverdueIndex = (focusOverdueIndex + step + list.length) % list.length;
+  }
+  renderFocusTaskBoard();
+}
+
+function renderFocusTaskBoard() {
+  const root = document.getElementById('focus-task-board');
+  const hint = document.getElementById('focus-task-hint');
+  const modeChip = document.getElementById('focus-mode-chip');
+  const progress = document.getElementById('focus-progress');
+  const completeBtn = document.getElementById('focus-complete-btn');
+  if (!root || !hint || !modeChip || !progress || !completeBtn) return;
+
+  root.classList.remove('focus-board-done');
+  const current = getCurrentFocusTask();
+  const list = focusMode === 'today' ? focusTodayTasks : focusOverdueTasks;
+  const idx = focusMode === 'today' ? focusTodayIndex : focusOverdueIndex;
+
+  modeChip.textContent = focusMode === 'today' ? 'HOY' : 'ATRASADAS';
+
+  if (current) {
+    const dueLabel = formatFocusTaskDate(current.dueDate);
+    const assignee = current.assignee || current.assigneeEmail || 'Sin asignar';
+    const hasLink = Boolean(String(current.notionUrl || '').trim());
+    const titleHtml = hasLink
+      ? `<a class="focus-task-link" href="${escapeHtml(current.notionUrl)}" target="_blank" rel="noopener">${escapeHtml(current.title || 'Sin título')}</a>`
+      : escapeHtml(current.title || 'Sin título');
+    const extraInfoNote = current.hasExtraInfo
+      ? '<p class="focus-task-note">ℹ️ Esta task tiene más información dentro de la nota en Notion.</p>'
+      : '';
+    root.innerHTML = `
+      <article class="focus-task-card" data-focus-task-id="${escapeHtml(current.id || '')}">
+        <h2 class="focus-task-title">${titleHtml}</h2>
+        <p class="focus-task-meta">${escapeHtml(assignee)} · ${escapeHtml(dueLabel)} · ${escapeHtml(current.status || '')} · ${escapeHtml(current.priority || '')}</p>
+        ${extraInfoNote}
+      </article>
+    `;
+    progress.textContent = `${idx + 1}/${list.length}`;
+    hint.textContent = focusMode === 'today'
+      ? 'Modo HOY: si lo saltas, vuelve a aparecer al cerrar el ciclo.'
+      : 'Modo ATRASADAS: backlog pendiente por resolver.';
+    completeBtn.disabled = false;
+    completeBtn.textContent = 'Completar task';
+    return;
+  }
+
+  if (focusMode === 'today') {
+    root.classList.add('focus-board-done');
+    root.innerHTML = '<article class="focus-task-card"><h2 class="focus-task-title">Terminaste por hoy ✅</h2><p class="focus-task-meta">Fondo azul = todo el plan del día está cerrado.</p></article>';
+    progress.textContent = '0/0';
+    hint.textContent = focusOverdueTasks.length
+      ? 'Dale a ➡ para entrar al backlog (tasks con fecha pasada).'
+      : 'No hay backlog con fecha pasada.';
+    completeBtn.disabled = true;
+    completeBtn.textContent = 'Sin task activa';
+    return;
+  }
+
+  root.innerHTML = '<article class="focus-task-card"><h2 class="focus-task-title">Sin tasks atrasadas 🎯</h2><p class="focus-task-meta">No hay pendientes de días anteriores con este filtro.</p></article>';
+  progress.textContent = '0/0';
+  hint.textContent = 'Dale a ⬅ para regresar al modo HOY.';
+  completeBtn.disabled = true;
+  completeBtn.textContent = 'Sin task activa';
+}
+
+function mapTaskApiItem(item = {}) {
+  return {
+    id: item.id || '',
+    title: item.title || 'Sin título',
+    assignee: item.assignee || '',
+    assigneeEmail: item.assigneeEmail || '',
+    dueDate: item.dueDate || '',
+    status: item.status || 'Pendiente',
+    priority: item.priority || '',
+    tipo: item.tipo || '',
+    notionUrl: item.notionUrl || '',
+    hasExtraInfo: Boolean(item.hasExtraInfo),
+    subtasks: Array.isArray(item.subtasks) ? item.subtasks : []
+  };
+}
+
+function splitFocusBuckets(rows = []) {
+  const todayIso = getTodayIso();
+  const today = [];
+  const overdue = [];
+
+  rows.forEach((task) => {
+    const status = String(task.status || '').trim().toLowerCase();
+    const priority = String(task.priority || '').trim().toLowerCase();
+    if (status !== 'empezó' || priority !== 'alta') return;
+
+    const due = toIsoDateOnly(task.dueDate);
+    if (!due) return;
+    if (due === todayIso) {
+      today.push(task);
+      return;
+    }
+    if (due < todayIso) {
+      overdue.push(task);
+    }
+  });
+
+  today.sort((a, b) => String(a.title || '').localeCompare(String(b.title || ''), 'es'));
+  overdue.sort((a, b) => String(a.dueDate || '').localeCompare(String(b.dueDate || '')) || String(a.title || '').localeCompare(String(b.title || ''), 'es'));
+
+  return { today, overdue };
+}
+
+async function loadFocusTasks({ keepMode = true } = {}) {
+  if (!isAuthenticated) {
+    focusTodayTasks = [];
+    focusOverdueTasks = [];
+    focusMode = 'today';
+    focusTodayIndex = 0;
+    focusOverdueIndex = 0;
+    renderFocusTaskBoard();
+    return;
+  }
+
+  try {
+    if (!API_BASE) throw new Error('apiBaseUrl no configurado');
+    const params = new URLSearchParams({
+      limit: '50',
+      scope: 'mine',
+      viewer: getViewerEmail()
+    });
+    const res = await fetchJson(`${API_BASE}/api/manager/tasks?${params.toString()}`);
+    const rows = (res.data || []).map(mapTaskApiItem);
+    const buckets = splitFocusBuckets(rows);
+    focusTodayTasks = buckets.today;
+    focusOverdueTasks = buckets.overdue;
+
+    if (!keepMode) {
+      focusMode = 'today';
+      focusTodayIndex = 0;
+      focusOverdueIndex = 0;
+    } else {
+      if (focusMode === 'today') {
+        focusTodayIndex = Math.min(focusTodayIndex, Math.max(0, focusTodayTasks.length - 1));
+      } else {
+        focusOverdueIndex = Math.min(focusOverdueIndex, Math.max(0, focusOverdueTasks.length - 1));
+      }
+    }
+
+    const who = isAdminUser() ? 'admin' : 'usuario';
+    const statusText = `Focus (${who}): ${focusTodayTasks.length} de hoy · ${focusOverdueTasks.length} atrasadas.`;
+    setStatus('focus-status', statusText, false);
+  } catch (e) {
+    focusTodayTasks = [];
+    focusOverdueTasks = [];
+    focusMode = 'today';
+    focusTodayIndex = 0;
+    focusOverdueIndex = 0;
+    const reason = e instanceof Error ? e.message : String(e);
+    setStatus('focus-status', `No se pudo sincronizar focus tasks: ${reason}`, true);
+  }
+
+  renderFocusTaskBoard();
+}
+
+async function completeCurrentFocusTask() {
+  if (!isAuthenticated) return;
+  const current = getCurrentFocusTask();
+  if (!current?.id) return;
+
+  try {
+    const r = await fetch(`${API_BASE}/api/manager/tasks/${current.id}`, {
+      method: 'PATCH',
+      headers: apiHeaders(),
+      body: JSON.stringify({ status: 'Terminado' })
+    });
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    setStatus('focus-status', 'Task completada. Sincronizando...');
+    await Promise.all([loadFocusTasks({ keepMode: true }), loadTasksFromApi()]);
+  } catch (e) {
+    const reason = e instanceof Error ? e.message : String(e);
+    setStatus('focus-status', `No se pudo completar task: ${reason}`, true);
+  }
+}
+
 function refreshAssigneeOptions() {
   const select = document.getElementById('task-assignee');
   if (!select) return;
@@ -2033,6 +2262,12 @@ function clearSensitiveData() {
   setContacts([]);
   setTasks([]);
   setMessages([]);
+  focusTodayTasks = [];
+  focusOverdueTasks = [];
+  focusMode = 'today';
+  focusTodayIndex = 0;
+  focusOverdueIndex = 0;
+  renderFocusTaskBoard();
 }
 
 function clearStoredAuthSession() {
@@ -2137,6 +2372,10 @@ function handleGoogleTokenSuccess(resp) {
 function syncTabVisibility() {
   document.querySelectorAll('.tab').forEach((t) => {
     const tabName = t.dataset.tab;
+    if (tabName === 'focus') {
+      t.style.display = isAuthenticated ? '' : 'none';
+      return;
+    }
     if (!isAuthenticated && !isPublicTab(tabName)) {
       t.style.display = 'none';
      } else {
@@ -2156,6 +2395,10 @@ function setAuthenticated(value) {
   syncPlaylistCreateControlsVisibility();
   syncTabVisibility();
 
+   if (getActiveTabName() === 'focus' && !isAuthenticated) {
+    activateTab(isAuthenticated ? 'overview' : 'catalog');
+  }
+
   const toggleBtn = document.getElementById('google-auth-toggle');
   if (toggleBtn) {
     toggleBtn.textContent = isAuthenticated ? 'Cerrar sesión' : 'Login Google';
@@ -2167,6 +2410,7 @@ function setAuthenticated(value) {
     loadPlaylistsFromApi();
     loadContactsFromNotion();
     loadTasksFromApi();
+    loadFocusTasks({ keepMode: false });
     loadLinksFromApi();
     loadSalesKitFromApi();
     updateAuthGateForCurrentTab();
@@ -2488,15 +2732,7 @@ async function loadTasksFromApi({ append = false } = {}) {
       : taskAssigneeUsers;
     refreshAssigneeOptions();
 
-    const rows = (res.data || []).map((item) => ({
-      id: item.id || '',
-      title: item.title || 'Sin título',
-      assignee: item.assignee || '',
-      assigneeEmail: item.assigneeEmail || '',
-      dueDate: item.dueDate || '',
-      status: item.status || 'Pendiente',
-      subtasks: Array.isArray(item.subtasks) ? item.subtasks : []
-    }));
+    const rows = (res.data || []).map(mapTaskApiItem);
 
     tasksNextCursor = res?.pagination?.nextCursor || '';
     tasksHasMore = Boolean(res?.pagination?.hasMore);
@@ -2553,7 +2789,7 @@ async function createTask() {
     resetTaskForm();
     setTaskFormVisibility(false);
     setStatus('tasks-status', editingTaskId ? 'Task actualizada correctamente.' : 'Task creada correctamente.');
-    await loadTasksFromApi();
+    await Promise.all([loadTasksFromApi(), loadFocusTasks({ keepMode: true })]);
   } catch (e) {
     const reason = e instanceof Error ? e.message : String(e);
     setStatus('tasks-status', `Error al guardar task: ${reason}`, true);
@@ -2570,7 +2806,7 @@ async function markTaskDone(taskId) {
     });
     if (!r.ok) throw new Error(`HTTP ${r.status}`);
     setStatus('tasks-status', 'Task marcada como terminada.');
-    await loadTasksFromApi();
+    await Promise.all([loadTasksFromApi(), loadFocusTasks({ keepMode: true })]);
   } catch (e) {
     const reason = e instanceof Error ? e.message : String(e);
     setStatus('tasks-status', `No se pudo cerrar task: ${reason}`, true);
@@ -2589,7 +2825,7 @@ async function deleteTask(taskId) {
     });
     if (!r.ok) throw new Error(`HTTP ${r.status}`);
     setStatus('tasks-status', 'Task borrada.');
-    await loadTasksFromApi();
+    await Promise.all([loadTasksFromApi(), loadFocusTasks({ keepMode: true })]);
   } catch (e) {
     const reason = e instanceof Error ? e.message : String(e);
     setStatus('tasks-status', `No se pudo borrar task: ${reason}`, true);
@@ -2996,6 +3232,11 @@ function setupActions() {
   });
   bindClick('refresh-links', () => loadLinksFromApi());
   bindClick('refresh-tasks', () => loadTasksFromApi());
+  bindClick('focus-sync', () => loadFocusTasks({ keepMode: true }));
+  bindClick('focus-next', () => rotateFocusTask(1));
+  bindClick('focus-prev', () => rotateFocusTask(-1));
+  bindClick('focus-complete-btn', completeCurrentFocusTask);
+  bindClick('focus-switch-mode', () => setFocusMode(focusMode === 'today' ? 'overdue' : 'today'));
   bindClick('task-create', createTask);
   bindClick('task-form-toggle', () => {
     const card = document.getElementById('task-form-card');

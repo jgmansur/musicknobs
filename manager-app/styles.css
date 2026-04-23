@@ -516,6 +516,119 @@ body.tabbar-hidden .catalog-player {
   min-height: calc(100dvh - 220px);
 }
 
+.focus-panel {
+  min-height: calc(100dvh - 220px);
+  background: linear-gradient(180deg, #7f1d1d 0%, #991b1b 100%);
+  color: #fff;
+  border-radius: 1.25rem;
+  border: 1px solid rgba(255, 255, 255, .2);
+  display: flex;
+  flex-direction: column;
+  gap: .8rem;
+  padding: .9rem;
+}
+
+.focus-toolbar {
+  display: flex;
+  gap: .5rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.focus-chip {
+  margin-left: auto;
+  padding: .2rem .6rem;
+  border-radius: 999px;
+  background: rgba(255,255,255,.2);
+  font-size: .75rem;
+  font-weight: 700;
+  letter-spacing: .03em;
+}
+
+.focus-board {
+  flex: 1;
+  min-height: 260px;
+  border-radius: 1rem;
+  border: 1px solid rgba(255,255,255,.25);
+  background: rgba(127, 29, 29, .35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 1rem;
+}
+
+.focus-board.focus-board-done {
+  background: linear-gradient(180deg, #1d4ed8 0%, #1e3a8a 100%);
+}
+
+.focus-task-card {
+  width: min(760px, 100%);
+}
+
+.focus-task-title {
+  margin: 0;
+  color: #fff;
+  font-size: 18px;
+  line-height: 1.45;
+  font-weight: 800;
+}
+
+.focus-task-link,
+.focus-task-link:visited,
+.focus-task-link:hover,
+.focus-task-link:active {
+  color: #fff;
+  text-decoration: underline;
+}
+
+.focus-task-note {
+  margin: .55rem 0 0;
+  color: rgba(255,255,255,.95);
+  font-size: .78rem;
+}
+
+.focus-task-meta {
+  margin: .7rem 0 0;
+  color: rgba(255,255,255,.9);
+  font-size: .84rem;
+}
+
+.focus-controls {
+  display: grid;
+  grid-template-columns: 64px 1fr 64px;
+  gap: .7rem;
+  align-items: center;
+}
+
+.focus-arrow {
+  width: 64px;
+  height: 64px;
+  border: 1px solid rgba(255,255,255,.35);
+  border-radius: .85rem;
+  background: rgba(0,0,0,.25);
+  color: #fff;
+  font-size: 1.3rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.focus-complete {
+  width: 100%;
+}
+
+.focus-progress,
+.focus-hint {
+  margin: 0;
+  color: rgba(255,255,255,.92);
+  text-align: center;
+  font-size: .82rem;
+}
+
+#focus-status.hint {
+  color: rgba(255,255,255,.92);
+}
+
 #tab-overview.panel-fullscreen {
   max-height: calc(100dvh - 220px);
   overflow-y: auto;

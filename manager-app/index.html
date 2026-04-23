@@ -101,6 +101,26 @@
         <ul id="tasks-list" class="list compact-list"></ul>
       </section>
 
+      <section id="tab-focus" class="panel panel-fullscreen focus-panel">
+        <div class="focus-toolbar">
+          <button id="focus-sync" class="btn ghost">Sincronizar Notion</button>
+          <button id="focus-switch-mode" class="btn ghost">Cambiar modo</button>
+          <span id="focus-mode-chip" class="focus-chip">HOY</span>
+        </div>
+        <p id="focus-status" class="hint status panel-status-inline" aria-live="polite">Focus listo.</p>
+
+        <div id="focus-task-board" class="focus-board" aria-live="polite"></div>
+
+        <div class="focus-controls">
+          <button id="focus-prev" class="focus-arrow" aria-label="Task anterior">⬅</button>
+          <button id="focus-complete-btn" class="btn focus-complete">Completar task</button>
+          <button id="focus-next" class="focus-arrow" aria-label="Task siguiente">➡</button>
+        </div>
+
+        <p id="focus-progress" class="focus-progress">0/0</p>
+        <p id="focus-task-hint" class="focus-hint">Solo visible para admin.</p>
+      </section>
+
       <section id="tab-messages" class="panel panel-fullscreen">
         <div class="wa-shell">
           <div class="wa-header">
@@ -260,6 +280,10 @@
         <button class="tab active" id="tab-btn-overview" data-tab="overview">
           <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
           <span class="tab-label">Overview</span>
+        </button>
+        <button class="tab" id="tab-btn-focus" data-tab="focus" style="display:none;">
+          <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3l2.8 5.7L21 9.6l-4.5 4.4 1.1 6.3L12 17.4 6.4 20.3l1.1-6.3L3 9.6l6.2-.9z"/></svg>
+          <span class="tab-label">Focus</span>
         </button>
         <button class="tab" id="tab-btn-catalog" data-tab="catalog">
           <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 5h16v14H4z"/><path d="M8 9h8M8 13h8M8 17h5"/></svg>

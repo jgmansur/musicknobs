@@ -1259,6 +1259,42 @@ function parseSubtasksFromBlocks(blocks = []) {
     .filter(Boolean));
 }
 
+function detectExtraTaskInfo(blocks = []) {
+  return (blocks || []).some((b) => {
+    if (!b || b.type === "to_do") return false;
+    if (b.has_children) return true;
+
+    const blockPayload = b[b.type] || {};
+    const text = richTextToString(blockPayload?.rich_text || []);
+    if (text) return true;
+
+    // Bloques no-textuales que implican contenido adicional en la nota.
+    return [
+      "code",
+      "equation",
+      "image",
+      "video",
+      "audio",
+      "file",
+      "pdf",
+      "bookmark",
+      "embed",
+      "table",
+      "table_row",
+      "callout",
+      "quote",
+      "toggle",
+      "numbered_list_item",
+      "bulleted_list_item",
+      "heading_1",
+      "heading_2",
+      "heading_3",
+      "heading_4",
+      "paragraph",
+    ].includes(String(b.type || ""));
+  });
+}
+
 function parsePlaylistTrackLine(raw = "") {
   const clean = String(raw || "").trim();
   if (!clean.startsWith(PLAYLIST_TRACK_PREFIX)) return null;
@@ -1505,11 +1541,14 @@ async function listManagerTasks(env, options = {}) {
     const data = await Promise.all((payload.results || []).map(async (page) => {
       const props = page.properties || {};
       const status = props?.Estatus?.select?.name || "Pendiente";
+      const priority = props?.Prioridad?.select?.name || "";
+      const tipo = props?.Tipo?.select?.name || "";
       const dueDate = props?.["Date (ToDo)"]?.date?.start || "";
       const tags = (props?.Tags?.multi_select || []).map((t) => t?.name).filter(Boolean);
       const assignee = parseAssigneeFromTags(tags);
       const subtaskBlocks = await notionGetPageChildren(page.id, notionToken, notionVersion);
       const subtasks = parseSubtasksFromBlocks(subtaskBlocks);
+      const hasExtraInfo = detectExtraTaskInfo(subtaskBlocks);
 
       return {
         id: page.id,
@@ -1517,7 +1556,11 @@ async function listManagerTasks(env, options = {}) {
         assignee: assignee.assigneeName || assignee.assigneeEmail || "",
         assigneeEmail: assignee.assigneeEmail || "",
         status,
+        priority,
+        tipo,
         dueDate,
+        notionUrl: String(page.url || ""),
+        hasExtraInfo,
         subtasks,
         subtaskCount: subtasks.length,
       };
