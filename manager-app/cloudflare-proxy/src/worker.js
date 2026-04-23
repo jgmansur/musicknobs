@@ -1601,9 +1601,9 @@ async function listManagerFocusTasks(env, options = {}) {
 
     const baseFilter = {
       and: [
-        { property: "Name", title: { contains: TASK_PREFIX } },
         { property: "Estatus", select: { equals: "Empezó" } },
         { property: "Prioridad", select: { equals: "Alta" } },
+        { property: "Date (ToDo)", date: { is_not_empty: true } },
       ],
     };
 
