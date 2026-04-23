@@ -1580,6 +1580,117 @@ async function listManagerTasks(env, options = {}) {
   }
 }
 
+function toIsoDateOnly(value) {
+  return String(value || "").trim().slice(0, 10);
+}
+
+async function listManagerFocusTasks(env, options = {}) {
+  const notionVersion = env.NOTION_VERSION || "2022-06-28";
+  const notionToken = env.NOTION_TOKEN || "";
+  const dbId = env.MANAGER_TASKS_DB_ID || DEFAULT_MANAGER_TASKS_DB_ID;
+
+  if (!notionToken) {
+    return { source: "fallback", warning: "NOTION_TOKEN no configurado.", today: [], overdue: [] };
+  }
+
+  try {
+    const viewerEmail = String(options.viewerEmail || "").trim().toLowerCase();
+    const scope = String(options.scope || "all").toLowerCase();
+    const allUsers = parseManagerUsers(env);
+    const todayIso = new Date().toISOString().slice(0, 10);
+
+    const baseFilter = {
+      and: [
+        { property: "Name", title: { contains: TASK_PREFIX } },
+        { property: "Estatus", select: { equals: "Empezó" } },
+        { property: "Prioridad", select: { equals: "Alta" } },
+      ],
+    };
+
+    const filter = scope === "mine" && viewerEmail
+      ? {
+          and: [
+            ...baseFilter.and,
+            { property: "Tags", multi_select: { contains: `${ASSIGNEE_PREFIX}${viewerEmail}` } },
+          ],
+        }
+      : baseFilter;
+
+    const pages = [];
+    let cursor = undefined;
+    let guard = 0;
+
+    while (guard < 20) {
+      const payload = await notionQueryAdvanced(dbId, notionToken, notionVersion, {
+        filter,
+        pageSize: 100,
+        startCursor: cursor,
+      });
+
+      pages.push(...(payload.results || []));
+      if (!payload.has_more || !payload.next_cursor) break;
+      cursor = payload.next_cursor;
+      guard += 1;
+    }
+
+    const rows = await Promise.all((pages || []).map(async (page) => {
+      const props = page.properties || {};
+      const status = props?.Estatus?.select?.name || "Pendiente";
+      const priority = props?.Prioridad?.select?.name || "";
+      const tipo = props?.Tipo?.select?.name || "";
+      const dueDate = props?.["Date (ToDo)"]?.date?.start || "";
+      const tags = (props?.Tags?.multi_select || []).map((t) => t?.name).filter(Boolean);
+      const assignee = parseAssigneeFromTags(tags);
+      const subtaskBlocks = await notionGetPageChildren(page.id, notionToken, notionVersion);
+      const subtasks = parseSubtasksFromBlocks(subtaskBlocks);
+      const hasExtraInfo = detectExtraTaskInfo(subtaskBlocks);
+
+      return {
+        id: page.id,
+        title: normalizeTaskTitle(readNotionTitle(props)),
+        assignee: assignee.assigneeName || assignee.assigneeEmail || "",
+        assigneeEmail: assignee.assigneeEmail || "",
+        status,
+        priority,
+        tipo,
+        dueDate,
+        notionUrl: String(page.url || ""),
+        hasExtraInfo,
+        subtasks,
+        subtaskCount: subtasks.length,
+      };
+    }));
+
+    const today = [];
+    const overdue = [];
+    for (const task of rows) {
+      const due = toIsoDateOnly(task?.dueDate);
+      if (!due) continue;
+      if (due === todayIso) {
+        today.push(task);
+        continue;
+      }
+      if (due < todayIso) overdue.push(task);
+    }
+
+    today.sort((a, b) => String(a?.title || "").localeCompare(String(b?.title || ""), "es"));
+    overdue.sort((a, b) => String(a?.dueDate || "").localeCompare(String(b?.dueDate || "")) || String(a?.title || "").localeCompare(String(b?.title || ""), "es"));
+
+    return {
+      source: "notion",
+      today,
+      overdue,
+      users: allUsers,
+      counts: {
+        today: today.length,
+        overdue: overdue.length,
+      },
+    };
+  } catch (e) {
+    return { source: "error", error: "Focus tasks query failed", details: String(e?.message || e), today: [], overdue: [] };
+  }
+}
+
 async function listSocialLinks(env) {
   const notionVersion = env.NOTION_VERSION || "2022-06-28";
   const notionToken = env.NOTION_TOKEN || "";
@@ -2088,6 +2199,14 @@ export default {
       const result = await listManagerTasks(env, {
         limit: url.searchParams.get("limit") || "10",
         cursor: url.searchParams.get("cursor") || "",
+        scope: url.searchParams.get("scope") || "all",
+        viewerEmail: url.searchParams.get("viewer") || "",
+      });
+      return json(result, result.error ? 502 : 200);
+    }
+
+    if (request.method === "GET" && url.pathname === "/api/manager/tasks/focus") {
+      const result = await listManagerFocusTasks(env, {
         scope: url.searchParams.get("scope") || "all",
         viewerEmail: url.searchParams.get("viewer") || "",
       });
