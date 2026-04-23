@@ -17,7 +17,37 @@ import sys
 import base64
 import os
 import subprocess
+import time
+import re
 from datetime import datetime
+
+ALLOWED_FORMAS_PAGO = {
+    'Santander',
+    'BBVA',
+    'Bank of America',
+    'Tarjeta de Crédito LikeU',
+    'cuenta Mariel',
+    'efectivo',
+    'cetes',
+    'Mifel',
+    'bitcoin',
+}
+
+FORMA_PAGO_ALIASES = {
+    'santander': 'Santander',
+    'bbva': 'BBVA',
+    'bank of america': 'Bank of America',
+    'boa': 'Bank of America',
+    'tarjeta de credito likeu': 'Tarjeta de Crédito LikeU',
+    'tarjeta de crédito likeu': 'Tarjeta de Crédito LikeU',
+    'likeu': 'Tarjeta de Crédito LikeU',
+    'tarjeta likeu': 'Tarjeta de Crédito LikeU',
+    'cuenta mariel': 'cuenta Mariel',
+    'efectivo': 'efectivo',
+    'cetes': 'cetes',
+    'mifel': 'Mifel',
+    'bitcoin': 'bitcoin',
+}
 
 def load_credentials():
     env_path = '/Users/jaystudio/Documents/GitHub/Apps/musicknobs/finance-mcp-server/.env'
@@ -84,6 +114,45 @@ def drive_url_from_local_path(path):
         return ''
     return f'https://drive.google.com/file/d/{file_id}/view'
 
+def wait_for_drive_url(path, timeout_seconds=180, interval_seconds=5):
+    """Espera a que DriveFS exponga item-id y devuelve URL."""
+    path = (path or '').strip()
+    if not path:
+        return ''
+    deadline = time.time() + max(0, int(timeout_seconds or 0))
+    while True:
+        url = drive_url_from_local_path(path)
+        if url:
+            return url
+        if time.time() >= deadline:
+            return ''
+        time.sleep(max(1, int(interval_seconds or 1)))
+
+def get_recibo_source_path(data):
+    recibo = (data.get('recibo') or '').strip()
+    if recibo and not is_url(recibo):
+        return recibo
+    return (data.get('recibo_path') or data.get('recibo_local_path') or '').strip()
+
+def normalize_forma_pago(raw):
+    raw = (raw or '').strip()
+    if not raw:
+        return ''
+
+    normalized_key = raw.lower()
+    if normalized_key in FORMA_PAGO_ALIASES:
+        return FORMA_PAGO_ALIASES[normalized_key]
+
+    for option in ALLOWED_FORMAS_PAGO:
+        if raw.lower() == option.lower():
+            return option
+
+    allowed = ', '.join(sorted(ALLOWED_FORMAS_PAGO))
+    raise ValueError(
+        f"Forma de pago no permitida: '{raw}'. Usa una existente: {allowed}. "
+        "Si necesitas una nueva, debe pedirse explícitamente."
+    )
+
 def resolve_recibo_value(data):
     """Acepta URL directa o path local de un archivo sincronizado con Google Drive."""
     recibo = (data.get('recibo') or '').strip()
@@ -110,20 +179,64 @@ def append_row(service, spreadsheet_id, sheet_name, values):
     updated = result.get('updates', {}).get('updatedRows', 0)
     return updated
 
+def append_row_with_meta(service, spreadsheet_id, sheet_name, values):
+    body = {'values': [values]}
+    result = service.spreadsheets().values().append(
+        spreadsheetId=spreadsheet_id,
+        range=f'{sheet_name}!A:Z',
+        valueInputOption='USER_ENTERED',
+        insertDataOption='INSERT_ROWS',
+        body=body
+    ).execute()
+    updates = result.get('updates', {})
+    return {
+        'updated_rows': updates.get('updatedRows', 0),
+        'updated_range': updates.get('updatedRange', ''),
+    }
+
+def extract_row_number(updated_range):
+    if not updated_range:
+        return None
+    match = re.search(r'![A-Z]+(\d+):[A-Z]+\d+', updated_range)
+    if not match:
+        return None
+    return int(match.group(1))
+
 def write_gastos(service, env_vars, data):
     """
     Columnas: Fecha, Lugar, Concepto, Monto, Tipo, Forma de Pago, Recibos
     """
+    forma_pago = normalize_forma_pago(data.get('forma_pago', ''))
+    receipt_input_path = get_recibo_source_path(data)
+    recibo_url = resolve_recibo_value(data)
     row = [
         format_date(data.get('fecha')),
         data.get('lugar', ''),
         data.get('concepto', ''),
         format_amount(data.get('monto', 0)),
         data.get('tipo', 'Gasto'),
-        data.get('forma_pago', ''),
-        resolve_recibo_value(data)
+        forma_pago,
+        recibo_url
     ]
-    return append_row(service, env_vars['SPREADSHEET_LOG_ID'], 'Hoja 1', row)
+    result = append_row_with_meta(service, env_vars['SPREADSHEET_LOG_ID'], 'Hoja 1', row)
+
+    if not recibo_url and receipt_input_path:
+        wait_seconds = int(os.getenv('FINANCE_RECIBO_WAIT_SECONDS', '180'))
+        wait_interval = int(os.getenv('FINANCE_RECIBO_WAIT_INTERVAL_SECONDS', '5'))
+        delayed_url = wait_for_drive_url(receipt_input_path, wait_seconds, wait_interval)
+        target_row = extract_row_number(result.get('updated_range'))
+        if delayed_url and target_row:
+            service.spreadsheets().values().update(
+                spreadsheetId=env_vars['SPREADSHEET_LOG_ID'],
+                range=f'Hoja 1!G{target_row}',
+                valueInputOption='USER_ENTERED',
+                body={'values': [[delayed_url]]}
+            ).execute()
+            print(f"INFO: Link de recibo aplicado en Hoja 1!G{target_row}")
+        elif receipt_input_path:
+            print("WARNING: No se pudo obtener link de Drive dentro del tiempo de espera")
+
+    return result.get('updated_rows', 0)
 
 def write_fijos(service, env_vars, data):
     """
@@ -230,7 +343,11 @@ def main():
     service = get_sheets_service(env_vars)
 
     writer = SHEET_WRITERS[args.sheet]
-    rows_added = writer(service, env_vars, data)
+    try:
+        rows_added = writer(service, env_vars, data)
+    except ValueError as e:
+        print(f"ERROR: {e}")
+        sys.exit(1)
 
     if rows_added:
         print(f"OK: {rows_added} fila(s) agregada(s) a '{args.sheet}'")

@@ -7903,26 +7903,16 @@ function propiedades_bindEvents() {
         propiedades_render();
     });
 
-    document.getElementById('prop-upload-foto')?.addEventListener('change', async () => {
-        const url = await propiedades_uploadFirstFile('prop-upload-foto');
-        if (url) document.getElementById('prop-foto-url').value = url;
-    });
-    document.getElementById('prop-upload-escritura')?.addEventListener('change', async () => {
-        const url = await propiedades_uploadFirstFile('prop-upload-escritura');
-        if (url) document.getElementById('prop-escritura-url').value = url;
-    });
-    document.getElementById('prop-upload-extra1')?.addEventListener('change', async () => {
-        const url = await propiedades_uploadFirstFile('prop-upload-extra1');
-        if (url) document.getElementById('prop-doc1-url').value = url;
-    });
-    document.getElementById('prop-upload-extra2')?.addEventListener('change', async () => {
-        const url = await propiedades_uploadFirstFile('prop-upload-extra2');
-        if (url) document.getElementById('prop-doc2-url').value = url;
-    });
-    document.getElementById('prop-upload-extra3')?.addEventListener('change', async () => {
-        const url = await propiedades_uploadFirstFile('prop-upload-extra3');
-        if (url) document.getElementById('prop-doc3-url').value = url;
-    });
+    document.getElementById('prop-upload-foto')?.addEventListener('change', () =>
+        propiedades_uploadAndAssign('prop-upload-foto', 'prop-foto-url', 'fotoUrl'));
+    document.getElementById('prop-upload-escritura')?.addEventListener('change', () =>
+        propiedades_uploadAndAssign('prop-upload-escritura', 'prop-escritura-url', 'escrituraUrl'));
+    document.getElementById('prop-upload-extra1')?.addEventListener('change', () =>
+        propiedades_uploadAndAssign('prop-upload-extra1', 'prop-doc1-url', 'docExtra1Url'));
+    document.getElementById('prop-upload-extra2')?.addEventListener('change', () =>
+        propiedades_uploadAndAssign('prop-upload-extra2', 'prop-doc2-url', 'docExtra2Url'));
+    document.getElementById('prop-upload-extra3')?.addEventListener('change', () =>
+        propiedades_uploadAndAssign('prop-upload-extra3', 'prop-doc3-url', 'docExtra3Url'));
 
     document.getElementById('prop-open-sheet')?.addEventListener('click', () => {
         const selected = propiedades_getSelected();
@@ -8819,6 +8809,41 @@ async function propiedades_uploadFirstFile(inputId) {
     if (feedback) feedback.innerText = `✅ Archivo cargado: ${first.name}`;
     input.value = '';
     return link;
+}
+
+async function propiedades_uploadAndAssign(inputId, targetInputId, itemField) {
+    const feedback = document.getElementById('prop-file-feedback');
+    try {
+        const url = await propiedades_uploadFirstFile(inputId);
+        if (!url) return;
+
+        const target = document.getElementById(targetInputId);
+        if (target) target.value = url;
+
+        const editId = (document.getElementById('prop-edit-id')?.value || '').trim();
+        if (!editId) {
+            if (feedback) feedback.innerText = '✅ Archivo cargado. Ahora guarda la propiedad para persistir el link.';
+            return;
+        }
+
+        const idx = propiedadesState.items.findIndex((x) => x.id === editId);
+        if (idx === -1) {
+            if (feedback) feedback.innerText = '✅ Archivo cargado. Guarda la propiedad para refrescar datos.';
+            return;
+        }
+
+        propiedadesState.items[idx] = {
+            ...propiedadesState.items[idx],
+            [itemField]: url,
+            updatedAt: normalizeDateString(new Date().toLocaleDateString('en-CA')),
+        };
+        await propiedades_saveSheet();
+        if (feedback) feedback.innerText = '✅ Archivo cargado y link guardado.';
+    } catch (e) {
+        console.error('propiedades_uploadAndAssign:', e);
+        if (feedback) feedback.innerText = '❌ Error subiendo archivo. Intenta de nuevo.';
+        showToast('❌ No se pudo subir el documento');
+    }
 }
 
 // =============================================
