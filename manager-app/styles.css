@@ -522,10 +522,13 @@ body.tabbar-hidden .catalog-player {
   color: #fff;
   border-radius: 1.25rem;
   border: 1px solid rgba(255, 255, 255, .2);
-  display: flex;
   flex-direction: column;
   gap: .8rem;
   padding: .9rem;
+}
+
+.panel.focus-panel.active {
+  display: flex;
 }
 
 .focus-toolbar {
