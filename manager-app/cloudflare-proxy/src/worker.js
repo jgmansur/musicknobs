@@ -1313,6 +1313,21 @@ function detectExtraTaskInfo(blocks = []) {
   });
 }
 
+function extractTaskPreview(blocks = [], maxChars = 180) {
+  const text = (blocks || [])
+    .filter((b) => b && b.type !== "to_do")
+    .map((b) => {
+      const payload = b?.[b.type] || {};
+      return richTextToString(payload?.rich_text || []);
+    })
+    .map((t) => String(t || "").replace(/\s+/g, " ").trim())
+    .find(Boolean) || "";
+
+  if (!text) return "";
+  if (text.length <= maxChars) return text;
+  return `${text.slice(0, maxChars).trim()}`;
+}
+
 function parsePlaylistTrackLine(raw = "") {
   const clean = String(raw || "").trim();
   if (!clean.startsWith(PLAYLIST_TRACK_PREFIX)) return null;
@@ -1538,17 +1553,7 @@ async function listManagerTasks(env, options = {}) {
     const allUsers = parseManagerUsers(env);
 
     const baseFilter = { property: TASK_SHOW_IN_MANAGER_PROPERTY, checkbox: { equals: true } };
-    const filter = scope === "mine" && viewerEmail
-      ? {
-          and: [
-            baseFilter,
-            {
-              property: TASK_ASSIGNEES_PROPERTY,
-              multi_select: { contains: `${viewerEmail}` },
-            },
-          ],
-        }
-      : baseFilter;
+    const filter = baseFilter;
 
     const payload = await notionQueryAdvanced(dbId, notionToken, notionVersion, {
       filter,
@@ -1566,6 +1571,7 @@ async function listManagerTasks(env, options = {}) {
       const subtaskBlocks = await notionGetPageChildren(page.id, notionToken, notionVersion);
       const subtasks = parseSubtasksFromBlocks(subtaskBlocks);
       const hasExtraInfo = detectExtraTaskInfo(subtaskBlocks);
+      const taskPreview = extractTaskPreview(subtaskBlocks);
 
       return {
         id: page.id,
@@ -1579,14 +1585,19 @@ async function listManagerTasks(env, options = {}) {
         dueDate,
         notionUrl: String(page.url || ""),
         hasExtraInfo,
+        taskPreview,
         subtasks,
         subtaskCount: subtasks.length,
       };
     }));
 
+    const filteredData = scope === "mine" && viewerEmail
+      ? data.filter((row) => Array.isArray(row?.assigneeEmails) && row.assigneeEmails.includes(viewerEmail))
+      : data;
+
     return {
       source: "notion",
-      data,
+      data: filteredData,
       users: allUsers,
       pagination: {
         nextCursor: payload.next_cursor || null,
@@ -1626,14 +1637,7 @@ async function listManagerFocusTasks(env, options = {}) {
       ],
     };
 
-    const filter = scope === "mine" && viewerEmail
-      ? {
-          and: [
-            ...baseFilter.and,
-            { property: TASK_ASSIGNEES_PROPERTY, multi_select: { contains: `${viewerEmail}` } },
-          ],
-        }
-      : baseFilter;
+    const filter = baseFilter;
 
     const pages = [];
     let cursor = undefined;
@@ -1662,6 +1666,7 @@ async function listManagerFocusTasks(env, options = {}) {
       const subtaskBlocks = await notionGetPageChildren(page.id, notionToken, notionVersion);
       const subtasks = parseSubtasksFromBlocks(subtaskBlocks);
       const hasExtraInfo = detectExtraTaskInfo(subtaskBlocks);
+      const taskPreview = extractTaskPreview(subtaskBlocks);
 
       return {
         id: page.id,
@@ -1675,14 +1680,19 @@ async function listManagerFocusTasks(env, options = {}) {
         dueDate,
         notionUrl: String(page.url || ""),
         hasExtraInfo,
+        taskPreview,
         subtasks,
         subtaskCount: subtasks.length,
       };
     }));
 
+    const scopedRows = scope === "mine" && viewerEmail
+      ? rows.filter((row) => Array.isArray(row?.assigneeEmails) && row.assigneeEmails.includes(viewerEmail))
+      : rows;
+
     const today = [];
     const overdue = [];
-    for (const task of rows) {
+    for (const task of scopedRows) {
       const due = toIsoDateOnly(task?.dueDate);
       if (!due) continue;
       if (due === todayIso) {

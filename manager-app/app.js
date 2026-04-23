@@ -1974,16 +1974,21 @@ function renderFocusTaskBoard() {
     const dueLabel = formatFocusTaskDate(current.dueDate);
     const assignee = current.assignee || current.assigneeEmail || 'Sin asignar';
     const hasLink = Boolean(String(current.notionUrl || '').trim());
+    const preview = String(current.taskPreview || '').trim();
     const titleHtml = hasLink
       ? `<a class="focus-task-link" href="${escapeHtml(current.notionUrl)}" target="_blank" rel="noopener">${escapeHtml(current.title || 'Sin título')}</a>`
       : escapeHtml(current.title || 'Sin título');
+    const previewHtml = preview
+      ? `<p class="focus-task-note">${escapeHtml(preview)}${current.hasExtraInfo ? '…' : ''}</p>`
+      : '';
     const extraInfoNote = current.hasExtraInfo
-      ? '<p class="focus-task-note">ℹ️ Esta task tiene más información dentro de la nota en Notion.</p>'
+      ? '<p class="focus-task-note">ℹ️ Hay más información en la nota de Notion.</p>'
       : '';
     root.innerHTML = `
       <article class="focus-task-card" data-focus-task-id="${escapeHtml(current.id || '')}">
         <h2 class="focus-task-title">${titleHtml}</h2>
         <p class="focus-task-meta">${escapeHtml(assignee)} · ${escapeHtml(dueLabel)} · ${escapeHtml(current.status || '')} · ${escapeHtml(current.priority || '')}</p>
+        ${previewHtml}
         ${extraInfoNote}
       </article>
     `;
@@ -2027,6 +2032,7 @@ function mapTaskApiItem(item = {}) {
     tipo: item.tipo || '',
     notionUrl: item.notionUrl || '',
     hasExtraInfo: Boolean(item.hasExtraInfo),
+    taskPreview: item.taskPreview || '',
     subtasks: Array.isArray(item.subtasks) ? item.subtasks : []
   };
 }
