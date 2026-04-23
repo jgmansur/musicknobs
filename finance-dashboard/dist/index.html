@@ -18,6 +18,21 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script>
+      // polyfill: driveCreateFolder was missing from bundle built 2026-04-19
+      window.__driveCreateFolderPolyfill = true;
+      async function driveCreateFolder(name, parentId = null) {
+        const body = { name, mimeType: 'application/vnd.google-apps.folder' };
+        if (parentId) body.parents = [parentId];
+        const r = await authFetch('https://www.googleapis.com/drive/v3/files?fields=id,name', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        });
+        if (!r.ok) throw new Error('Folder create failed (' + r.status + ')');
+        return (await r.json()).id || '';
+      }
+    </script>
     <script type="module" crossorigin src="./assets/index-BaNKTUpn.js"></script>
     <link rel="stylesheet" crossorigin href="./assets/index-C0lf-SeF.css">
   </head>
@@ -1046,28 +1061,28 @@
 
               <div class="autos-file-row" style="margin-top:.45rem;">
                 <label for="prop-upload-escritura" class="secondary-btn autos-file-btn">📄 Subir escritura (foto/PDF)</label>
-                <input id="prop-upload-escritura" type="file" class="autos-file-native" accept="image/*,application/pdf" capture="environment">
+                <input id="prop-upload-escritura" type="file" class="autos-file-native" accept="image/*,application/pdf">
               </div>
               <input id="prop-escritura-nombre" class="field-input" style="margin-top:.45rem;" placeholder="Nombre documento escritura">
               <input id="prop-escritura-url" class="field-input" style="margin-top:.45rem;" placeholder="URL escritura">
 
               <div class="autos-file-row" style="margin-top:.45rem;">
                 <label for="prop-upload-extra1" class="secondary-btn autos-file-btn">📎 Documento extra 1</label>
-                <input id="prop-upload-extra1" type="file" class="autos-file-native" accept="image/*,application/pdf" capture="environment">
+                <input id="prop-upload-extra1" type="file" class="autos-file-native" accept="image/*,application/pdf">
               </div>
               <input id="prop-doc1-nombre" class="field-input" style="margin-top:.45rem;" placeholder="Nombre doc extra 1">
               <input id="prop-doc1-url" class="field-input" style="margin-top:.45rem;" placeholder="URL doc extra 1">
 
               <div class="autos-file-row" style="margin-top:.45rem;">
                 <label for="prop-upload-extra2" class="secondary-btn autos-file-btn">📎 Documento extra 2</label>
-                <input id="prop-upload-extra2" type="file" class="autos-file-native" accept="image/*,application/pdf" capture="environment">
+                <input id="prop-upload-extra2" type="file" class="autos-file-native" accept="image/*,application/pdf">
               </div>
               <input id="prop-doc2-nombre" class="field-input" style="margin-top:.45rem;" placeholder="Nombre doc extra 2">
               <input id="prop-doc2-url" class="field-input" style="margin-top:.45rem;" placeholder="URL doc extra 2">
 
               <div class="autos-file-row" style="margin-top:.45rem;">
                 <label for="prop-upload-extra3" class="secondary-btn autos-file-btn">📎 Documento extra 3</label>
-                <input id="prop-upload-extra3" type="file" class="autos-file-native" accept="image/*,application/pdf" capture="environment">
+                <input id="prop-upload-extra3" type="file" class="autos-file-native" accept="image/*,application/pdf">
               </div>
               <input id="prop-doc3-nombre" class="field-input" style="margin-top:.45rem;" placeholder="Nombre doc extra 3">
               <input id="prop-doc3-url" class="field-input" style="margin-top:.45rem;" placeholder="URL doc extra 3">
