@@ -2031,6 +2031,57 @@ function mapTaskApiItem(item = {}) {
   };
 }
 
+function splitFocusBuckets(rows = []) {
+  const todayIso = getTodayIso();
+  const today = [];
+  const overdue = [];
+
+  rows.forEach((task) => {
+    const status = String(task.status || '').trim().toLowerCase();
+    const priority = String(task.priority || '').trim().toLowerCase();
+    if (status !== 'empezó' || priority !== 'alta') return;
+
+    const due = toIsoDateOnly(task.dueDate);
+    if (!due) return;
+    if (due === todayIso) {
+      today.push(task);
+      return;
+    }
+    if (due < todayIso) overdue.push(task);
+  });
+
+  today.sort((a, b) => String(a.title || '').localeCompare(String(b.title || ''), 'es'));
+  overdue.sort((a, b) => String(a.dueDate || '').localeCompare(String(b.dueDate || '')) || String(a.title || '').localeCompare(String(b.title || ''), 'es'));
+
+  return { today, overdue };
+}
+
+async function fetchFocusBucketsFallback({ scope = 'all', viewerEmail = '' } = {}) {
+  const rows = [];
+  let cursor = '';
+  let pageCount = 0;
+
+  while (pageCount < 6) {
+    const params = new URLSearchParams({
+      limit: '50',
+      scope,
+      viewer: viewerEmail
+    });
+    if (cursor) params.set('cursor', cursor);
+
+    const res = await fetchJson(`${API_BASE}/api/manager/tasks?${params.toString()}`);
+    rows.push(...(res.data || []).map(mapTaskApiItem));
+
+    const nextCursor = String(res?.pagination?.nextCursor || '').trim();
+    const hasMore = Boolean(res?.pagination?.hasMore) && Boolean(nextCursor);
+    if (!hasMore) break;
+    cursor = nextCursor;
+    pageCount += 1;
+  }
+
+  return splitFocusBuckets(rows);
+}
+
 async function loadFocusTasks({ keepMode = true } = {}) {
   if (!isAuthenticated) {
     focusTodayTasks = [];
@@ -2046,10 +2097,19 @@ async function loadFocusTasks({ keepMode = true } = {}) {
     if (!API_BASE) throw new Error('apiBaseUrl no configurado');
     const viewerEmail = getViewerEmail();
     const scope = isAdminUser() ? 'all' : 'mine';
-    const params = new URLSearchParams({ scope, viewer: viewerEmail });
-    const res = await fetchJson(`${API_BASE}/api/manager/tasks/focus?${params.toString()}`);
-    focusTodayTasks = (res.today || []).map(mapTaskApiItem);
-    focusOverdueTasks = (res.overdue || []).map(mapTaskApiItem);
+    let usedFallback = false;
+
+    try {
+      const params = new URLSearchParams({ scope, viewer: viewerEmail });
+      const res = await fetchJson(`${API_BASE}/api/manager/tasks/focus?${params.toString()}`);
+      focusTodayTasks = (res.today || []).map(mapTaskApiItem);
+      focusOverdueTasks = (res.overdue || []).map(mapTaskApiItem);
+    } catch {
+      const buckets = await fetchFocusBucketsFallback({ scope, viewerEmail });
+      focusTodayTasks = buckets.today;
+      focusOverdueTasks = buckets.overdue;
+      usedFallback = true;
+    }
 
     if (!keepMode) {
       focusMode = 'today';
@@ -2064,7 +2124,9 @@ async function loadFocusTasks({ keepMode = true } = {}) {
     }
 
     const who = isAdminUser() ? 'admin' : 'usuario';
-    const statusText = `Focus (${who}): ${focusTodayTasks.length} de hoy · ${focusOverdueTasks.length} atrasadas.`;
+    const statusText = usedFallback
+      ? `Focus (${who}): ${focusTodayTasks.length} de hoy · ${focusOverdueTasks.length} atrasadas. (modo compatibilidad)`
+      : `Focus (${who}): ${focusTodayTasks.length} de hoy · ${focusOverdueTasks.length} atrasadas.`;
     setStatus('focus-status', statusText, false);
   } catch (e) {
     focusTodayTasks = [];
