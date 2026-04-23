@@ -618,6 +618,9 @@ body.tabbar-hidden .catalog-player {
   font-size: 1.3rem;
   font-weight: 800;
   cursor: pointer;
+  touch-action: manipulation;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 .focus-complete {

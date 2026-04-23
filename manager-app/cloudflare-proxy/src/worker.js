@@ -50,6 +50,38 @@ let driveAccessTokenCache = {
   expiresAt: 0,
 };
 
+const focusTasksCache = new Map();
+const FOCUS_CACHE_TTL_MS = 45_000;
+
+function makeFocusCacheKey(options = {}) {
+  const scope = String(options.scope || "all").trim().toLowerCase();
+  const viewerEmail = String(options.viewerEmail || "").trim().toLowerCase();
+  return `${scope}::${viewerEmail}`;
+}
+
+function getCachedFocusTasks(options = {}) {
+  const key = makeFocusCacheKey(options);
+  const hit = focusTasksCache.get(key);
+  if (!hit) return null;
+  if (Date.now() >= Number(hit.expiresAt || 0)) {
+    focusTasksCache.delete(key);
+    return null;
+  }
+  return hit.value || null;
+}
+
+function setCachedFocusTasks(options = {}, value = null) {
+  const key = makeFocusCacheKey(options);
+  focusTasksCache.set(key, {
+    value,
+    expiresAt: Date.now() + FOCUS_CACHE_TTL_MS,
+  });
+}
+
+function clearFocusTasksCache() {
+  focusTasksCache.clear();
+}
+
 function resolveTaskStatusByAssignee(assigneeEmail) {
   const email = String(assigneeEmail || "").trim().toLowerCase();
   if (!email) return TASK_DEFAULTS.status;
@@ -1633,6 +1665,8 @@ async function listManagerFocusTasks(env, options = {}) {
   try {
     const viewerEmail = String(options.viewerEmail || "").trim().toLowerCase();
     const scope = String(options.scope || "all").toLowerCase();
+    const cached = getCachedFocusTasks({ scope, viewerEmail });
+    if (cached) return cached;
     const allUsers = parseManagerUsers(env);
     const todayIso = new Date().toISOString().slice(0, 10);
 
@@ -1713,7 +1747,7 @@ async function listManagerFocusTasks(env, options = {}) {
     today.sort((a, b) => String(a?.title || "").localeCompare(String(b?.title || ""), "es"));
     overdue.sort((a, b) => String(a?.dueDate || "").localeCompare(String(b?.dueDate || "")) || String(a?.title || "").localeCompare(String(b?.title || ""), "es"));
 
-    return {
+    const response = {
       source: "notion",
       today,
       overdue,
@@ -1723,6 +1757,8 @@ async function listManagerFocusTasks(env, options = {}) {
         overdue: overdue.length,
       },
     };
+    setCachedFocusTasks({ scope, viewerEmail }, response);
+    return response;
   } catch (e) {
     return { source: "error", error: "Focus tasks query failed", details: String(e?.message || e), today: [], overdue: [] };
   }
@@ -2044,6 +2080,7 @@ async function createManagerTask(env, body) {
           return { error: "Task create failed", details: String(e?.message || e) };
         }
       }
+      clearFocusTasksCache();
       return { ok: true, id: page.id };
     }
 
@@ -2096,6 +2133,9 @@ async function updateManagerTask(env, taskId, body) {
     properties[assigneePropertyKey] = assigneeUser?.email
       ? { multi_select: [{ name: assigneeUser.email }] }
       : { multi_select: [] };
+    if (assigneeUser?.email) {
+      properties[TASK_SHOW_IN_MANAGER_PROPERTY] = { checkbox: true };
+    }
 
     // Regla solicitada: asignado a Jay => Empezó, asignado a otro => Pendiente.
     if (assigneeUser?.email) {
@@ -2115,6 +2155,7 @@ async function updateManagerTask(env, taskId, body) {
     });
 
     if (!resp.ok) return { error: "Task update failed", details: await resp.text() };
+    clearFocusTasksCache();
   }
 
   if (hasSubtasks) {
@@ -2150,6 +2191,7 @@ async function deleteManagerTask(env, taskId) {
   });
 
   if (!resp.ok) return { error: "Task delete failed", details: await resp.text() };
+  clearFocusTasksCache();
   return { ok: true };
 }
 

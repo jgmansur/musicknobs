@@ -2437,6 +2437,7 @@ function syncTabVisibility() {
 }
 
 function setAuthenticated(value) {
+  const wasAuthenticated = isAuthenticated;
   isAuthenticated = Boolean(value);
   syncPlaylistCreateControlsVisibility();
   syncTabVisibility();
@@ -2451,6 +2452,9 @@ function setAuthenticated(value) {
   }
 
   if (isAuthenticated) {
+    if (!wasAuthenticated) {
+      activateTab('focus');
+    }
     loadMessagesFromApi();
     loadCatalogFromApi();
     loadPlaylistsFromApi();
@@ -2474,6 +2478,29 @@ function setAuthenticated(value) {
     activateTab('catalog');
   }
   updateAuthGateForCurrentTab();
+}
+
+function bindAntiZoomForFocusArrows() {
+  const arrowIds = ['focus-next', 'focus-prev'];
+  arrowIds.forEach((id) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+
+    el.style.touchAction = 'manipulation';
+    let lastTouchEnd = 0;
+
+    el.addEventListener('touchend', (ev) => {
+      const now = Date.now();
+      if (now - lastTouchEnd <= 350) {
+        ev.preventDefault();
+      }
+      lastTouchEnd = now;
+    }, { passive: false });
+
+    el.addEventListener('dblclick', (ev) => {
+      ev.preventDefault();
+    });
+  });
 }
 
 function ensureGoogleOAuthClient() {
@@ -3283,6 +3310,7 @@ function setupActions() {
   bindClick('focus-prev', () => rotateFocusTask(-1));
   bindClick('focus-complete-btn', completeCurrentFocusTask);
   bindClick('focus-switch-mode', () => setFocusMode(focusMode === 'today' ? 'overdue' : 'today'));
+  bindAntiZoomForFocusArrows();
   bindClick('task-create', createTask);
   bindClick('task-form-toggle', () => {
     const card = document.getElementById('task-form-card');
