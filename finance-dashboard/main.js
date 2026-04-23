@@ -21,7 +21,7 @@ const DEUDAS_RECIBOS_FOLDER_ID = '157KDn-vbkuHH1L8xbaJBGz-oKmT7p5a9';
 const SPREADSHEET_RSM_ID = '14VsoPHGNTSUSbzMOqGWs2qSL-pGywPgjUoHD3MqIJfo'; // Recibos Salud Mariel
 const SALDOS_SHEET_ID    = '1-cX_qxld3ioSpcO9lEBPg90Db6AyK7SczpJTvj7rw4U'; // Saldos (fuente de verdad — Claude accede vía service account)
 const RSM_FOLDER_ID = '1-ZfeWQ-Rmh-Wm2WMCkULkN6MQWBuxYnj';
-const APP_VERSION  = 'v8.2.6';
+const APP_VERSION  = 'v8.2.7';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -2344,6 +2344,19 @@ async function driveCreateSpreadsheet(name, parentId) {
     });
     if (!r.ok) throw { status: r.status, message: await r.text() };
     return (await r.json()).id;
+}
+
+async function driveCreateFolder(name, parentId = null) {
+    const body = { name, mimeType: 'application/vnd.google-apps.folder' };
+    if (parentId) body.parents = [parentId];
+    const r = await authFetch('https://www.googleapis.com/drive/v3/files?fields=id,name', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+    });
+    if (!r.ok) throw new Error(`Folder create failed (${r.status}): ${await r.text()}`);
+    const data = await r.json();
+    return data.id || '';
 }
 
 // Upload a File object to a Drive folder and return the sharing URL
@@ -8842,7 +8855,8 @@ async function propiedades_uploadAndAssign(inputId, targetInputId, itemField) {
     } catch (e) {
         console.error('propiedades_uploadAndAssign:', e);
         if (feedback) feedback.innerText = '❌ Error subiendo archivo. Intenta de nuevo.';
-        showToast('❌ No se pudo subir el documento');
+        const detail = (e?.message || e?.status || '').toString().trim();
+        showToast(detail ? `❌ No se pudo subir el documento (${detail.slice(0, 90)})` : '❌ No se pudo subir el documento');
     }
 }
 
