@@ -25,6 +25,8 @@ const ASSIGNEE_PREFIX = "assignee:";
 const ASSIGNEE_NAME_PREFIX = "assigneeName:";
 const AUTHOR_PREFIX = "author:";
 const AUTHOR_EMAIL_PREFIX = "authorEmail:";
+const TASK_ASSIGNEES_PROPERTY = "Asignar Usuarios";
+const TASK_SHOW_IN_MANAGER_PROPERTY = "Mostrar en Manager App";
 const ADMIN_EMAILS = ["jgmansur2@gmail.com"];
 const CLEAR_LOG_PASSWORD = "9776";
 const OWNER_EMAIL = "jgmansur2@gmail.com";
@@ -1144,6 +1146,22 @@ function parseAssigneeFromTags(tags = []) {
   };
 }
 
+function parseAssigneesFromProperty(props = {}, users = []) {
+  const userByEmail = new Map((users || []).map((u) => [String(u?.email || "").toLowerCase(), String(u?.name || u?.email || "")]));
+  const emails = (props?.[TASK_ASSIGNEES_PROPERTY]?.multi_select || [])
+    .map((item) => String(item?.name || "").trim().toLowerCase())
+    .filter(Boolean);
+
+  const uniqueEmails = Array.from(new Set(emails));
+  const names = uniqueEmails.map((email) => userByEmail.get(email) || email);
+  return {
+    emails: uniqueEmails,
+    names,
+    primaryEmail: uniqueEmails[0] || "",
+    label: names.join(", "),
+  };
+}
+
 function applyAssigneeTags(tags = [], assigneeEmail = "", assigneeName = "") {
   const withoutAssignee = tags.filter((t) => !t.startsWith(ASSIGNEE_PREFIX) && !t.startsWith(ASSIGNEE_NAME_PREFIX));
   if (!assigneeEmail) return withoutAssignee;
@@ -1519,14 +1537,14 @@ async function listManagerTasks(env, options = {}) {
     const startCursor = String(options.cursor || "").trim() || undefined;
     const allUsers = parseManagerUsers(env);
 
-    const baseFilter = { property: "Name", title: { contains: TASK_PREFIX } };
+    const baseFilter = { property: TASK_SHOW_IN_MANAGER_PROPERTY, checkbox: { equals: true } };
     const filter = scope === "mine" && viewerEmail
       ? {
           and: [
             baseFilter,
             {
-              property: "Tags",
-              multi_select: { contains: `${ASSIGNEE_PREFIX}${viewerEmail}` },
+              property: TASK_ASSIGNEES_PROPERTY,
+              multi_select: { contains: `${viewerEmail}` },
             },
           ],
         }
@@ -1544,8 +1562,7 @@ async function listManagerTasks(env, options = {}) {
       const priority = props?.Prioridad?.select?.name || "";
       const tipo = props?.Tipo?.select?.name || "";
       const dueDate = props?.["Date (ToDo)"]?.date?.start || "";
-      const tags = (props?.Tags?.multi_select || []).map((t) => t?.name).filter(Boolean);
-      const assignee = parseAssigneeFromTags(tags);
+      const assignees = parseAssigneesFromProperty(props, allUsers);
       const subtaskBlocks = await notionGetPageChildren(page.id, notionToken, notionVersion);
       const subtasks = parseSubtasksFromBlocks(subtaskBlocks);
       const hasExtraInfo = detectExtraTaskInfo(subtaskBlocks);
@@ -1553,8 +1570,9 @@ async function listManagerTasks(env, options = {}) {
       return {
         id: page.id,
         title: normalizeTaskTitle(readNotionTitle(props)),
-        assignee: assignee.assigneeName || assignee.assigneeEmail || "",
-        assigneeEmail: assignee.assigneeEmail || "",
+        assignee: assignees.label,
+        assigneeEmail: assignees.primaryEmail,
+        assigneeEmails: assignees.emails,
         status,
         priority,
         tipo,
@@ -1604,6 +1622,7 @@ async function listManagerFocusTasks(env, options = {}) {
         { property: "Estatus", select: { equals: "Empezó" } },
         { property: "Prioridad", select: { equals: "Alta" } },
         { property: "Date (ToDo)", date: { is_not_empty: true } },
+        { property: TASK_SHOW_IN_MANAGER_PROPERTY, checkbox: { equals: true } },
       ],
     };
 
@@ -1611,7 +1630,7 @@ async function listManagerFocusTasks(env, options = {}) {
       ? {
           and: [
             ...baseFilter.and,
-            { property: "Tags", multi_select: { contains: `${ASSIGNEE_PREFIX}${viewerEmail}` } },
+            { property: TASK_ASSIGNEES_PROPERTY, multi_select: { contains: `${viewerEmail}` } },
           ],
         }
       : baseFilter;
@@ -1639,8 +1658,7 @@ async function listManagerFocusTasks(env, options = {}) {
       const priority = props?.Prioridad?.select?.name || "";
       const tipo = props?.Tipo?.select?.name || "";
       const dueDate = props?.["Date (ToDo)"]?.date?.start || "";
-      const tags = (props?.Tags?.multi_select || []).map((t) => t?.name).filter(Boolean);
-      const assignee = parseAssigneeFromTags(tags);
+      const assignees = parseAssigneesFromProperty(props, allUsers);
       const subtaskBlocks = await notionGetPageChildren(page.id, notionToken, notionVersion);
       const subtasks = parseSubtasksFromBlocks(subtaskBlocks);
       const hasExtraInfo = detectExtraTaskInfo(subtaskBlocks);
@@ -1648,8 +1666,9 @@ async function listManagerFocusTasks(env, options = {}) {
       return {
         id: page.id,
         title: normalizeTaskTitle(readNotionTitle(props)),
-        assignee: assignee.assigneeName || assignee.assigneeEmail || "",
-        assigneeEmail: assignee.assigneeEmail || "",
+        assignee: assignees.label,
+        assigneeEmail: assignees.primaryEmail,
+        assigneeEmails: assignees.emails,
         status,
         priority,
         tipo,
@@ -1969,12 +1988,11 @@ async function createManagerTask(env, body) {
     Estatus: { select: { name: resolveTaskStatusByAssignee(assignee) } },
     Prioridad: { select: { name: TASK_DEFAULTS.priority } },
     Tipo: { select: { name: "Music Knobs" } },
+    [TASK_SHOW_IN_MANAGER_PROPERTY]: { checkbox: true },
   };
   if (dueDate) properties["Date (ToDo)"] = { date: { start: dueDate } };
   if (assignee) {
-    const tags = [`${ASSIGNEE_PREFIX}${assignee}`];
-    if (assigneeUser?.name) tags.push(`${ASSIGNEE_NAME_PREFIX}${assigneeUser.name}`);
-    properties.Tags = { multi_select: tags.map((name) => ({ name })) };
+    properties[TASK_ASSIGNEES_PROPERTY] = { multi_select: [{ name: assignee }] };
   }
 
   const parentShapes = [{ data_source_id: dbId }, { database_id: dbId }];
@@ -2035,7 +2053,6 @@ async function updateManagerTask(env, taskId, body) {
 
   const page = await pageResp.json();
   const props = page.properties || {};
-  const currentTags = getTagNames(props);
 
   const properties = {};
   if (status) properties.Estatus = { select: { name: status } };
@@ -2049,8 +2066,9 @@ async function updateManagerTask(env, taskId, body) {
     const users = parseManagerUsers(env);
     const userByEmail = new Map(users.map((u) => [u.email.toLowerCase(), u]));
     const assigneeUser = assigneeRaw ? userByEmail.get(assigneeRaw) : null;
-    const nextTags = applyAssigneeTags(currentTags, assigneeUser?.email || "", assigneeUser?.name || "");
-    properties.Tags = { multi_select: nextTags.map((name) => ({ name })) };
+    properties[TASK_ASSIGNEES_PROPERTY] = assigneeUser?.email
+      ? { multi_select: [{ name: assigneeUser.email }] }
+      : { multi_select: [] };
 
     // Regla solicitada: asignado a Jay => Empezó, asignado a otro => Pendiente.
     if (assigneeUser?.email) {
