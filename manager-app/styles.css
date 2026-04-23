@@ -470,7 +470,7 @@ body.tabbar-hidden .container {
 }
 
 body.tabbar-hidden .catalog-player {
-  bottom: calc(env(safe-area-inset-bottom) + .35rem);
+  bottom: calc(env(safe-area-inset-bottom) + .6rem);
 }
 
 .tab {
@@ -1532,22 +1532,21 @@ th {
   .catalog-shell {
     max-height: none;
     overflow: visible;
+    padding-bottom: calc(var(--tab-height) + env(safe-area-inset-bottom) + 1.25rem);
   }
 
   #tab-catalog.panel-fullscreen {
     min-height: calc(100dvh - 190px);
-    padding-bottom: calc(var(--tab-height) + env(safe-area-inset-bottom) + 8rem);
+    padding-bottom: calc(var(--tab-height) + env(safe-area-inset-bottom) + 4.8rem);
   }
 
   .catalog-player {
-    position: fixed;
-    bottom: calc(var(--tab-height) + env(safe-area-inset-bottom));
-    left: .45rem;
-    right: .45rem;
+    position: sticky;
+    bottom: calc(env(safe-area-inset-bottom) + 2.2rem);
     z-index: 920;
+    margin: 0 .45rem .35rem;
     border: 1px solid var(--glass-border);
     border-radius: .85rem;
-    padding-bottom: .5rem;
   }
 
   .catalog-pane {
