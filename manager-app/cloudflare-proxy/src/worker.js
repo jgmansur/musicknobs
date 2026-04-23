@@ -1592,7 +1592,7 @@ async function listManagerTasks(env, options = {}) {
     const startCursor = String(options.cursor || "").trim() || undefined;
     const allUsers = parseManagerUsers(env);
 
-    const baseFilter = { property: TASK_SHOW_IN_MANAGER_PROPERTY, checkbox: { equals: true } };
+    const baseFilter = { property: "Name", title: { contains: TASK_PREFIX } };
     const filter = baseFilter;
 
     const payload = await notionQueryAdvanced(dbId, notionToken, notionVersion, {
