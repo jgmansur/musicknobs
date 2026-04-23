@@ -26,6 +26,7 @@ const ASSIGNEE_NAME_PREFIX = "assigneeName:";
 const AUTHOR_PREFIX = "author:";
 const AUTHOR_EMAIL_PREFIX = "authorEmail:";
 const TASK_ASSIGNEES_PROPERTY = "Asignar Usuarios";
+const TASK_ASSIGNEES_PROPERTY_LEGACY = "Asignar Usuario";
 const TASK_SHOW_IN_MANAGER_PROPERTY = "Mostrar en Manager App";
 const ADMIN_EMAILS = ["jgmansur2@gmail.com"];
 const CLEAR_LOG_PASSWORD = "9776";
@@ -1148,7 +1149,8 @@ function parseAssigneeFromTags(tags = []) {
 
 function parseAssigneesFromProperty(props = {}, users = []) {
   const userByEmail = new Map((users || []).map((u) => [String(u?.email || "").toLowerCase(), String(u?.name || u?.email || "")]));
-  const emails = (props?.[TASK_ASSIGNEES_PROPERTY]?.multi_select || [])
+  const assigneeProp = props?.[TASK_ASSIGNEES_PROPERTY] || props?.[TASK_ASSIGNEES_PROPERTY_LEGACY] || { multi_select: [] };
+  const emails = (assigneeProp?.multi_select || [])
     .map((item) => String(item?.name || "").trim().toLowerCase())
     .filter(Boolean);
 
@@ -1160,6 +1162,12 @@ function parseAssigneesFromProperty(props = {}, users = []) {
     primaryEmail: uniqueEmails[0] || "",
     label: names.join(", "),
   };
+}
+
+function resolveTaskAssigneePropertyKey(props = {}) {
+  if (props?.[TASK_ASSIGNEES_PROPERTY]?.type === "multi_select") return TASK_ASSIGNEES_PROPERTY;
+  if (props?.[TASK_ASSIGNEES_PROPERTY_LEGACY]?.type === "multi_select") return TASK_ASSIGNEES_PROPERTY_LEGACY;
+  return findPropertyKey(props, ["asignar usuario", "asignar usuarios"], ["multi_select"]) || TASK_ASSIGNEES_PROPERTY;
 }
 
 function applyAssigneeTags(tags = [], assigneeEmail = "", assigneeName = "") {
@@ -1991,6 +1999,14 @@ async function createManagerTask(env, body) {
   const userByEmail = new Map(users.map((u) => [u.email.toLowerCase(), u]));
   const assigneeUser = assigneeRaw ? userByEmail.get(assigneeRaw) : null;
   const assignee = assigneeUser?.email || "";
+  let assigneePropertyKey = TASK_ASSIGNEES_PROPERTY;
+
+  try {
+    const schema = await retrieveNotionCollectionSchema(dbId, notionToken, notionVersion);
+    assigneePropertyKey = resolveTaskAssigneePropertyKey(schema?.properties || {});
+  } catch {
+    // fallback al nombre por defecto
+  }
 
   const properties = {
     Name: { title: [{ text: { content: `${TASK_PREFIX}${title}` } }] },
@@ -2002,7 +2018,7 @@ async function createManagerTask(env, body) {
   };
   if (dueDate) properties["Date (ToDo)"] = { date: { start: dueDate } };
   if (assignee) {
-    properties[TASK_ASSIGNEES_PROPERTY] = { multi_select: [{ name: assignee }] };
+    properties[assigneePropertyKey] = { multi_select: [{ name: assignee }] };
   }
 
   const parentShapes = [{ data_source_id: dbId }, { database_id: dbId }];
@@ -2063,6 +2079,7 @@ async function updateManagerTask(env, taskId, body) {
 
   const page = await pageResp.json();
   const props = page.properties || {};
+  const assigneePropertyKey = resolveTaskAssigneePropertyKey(props);
 
   const properties = {};
   if (status) properties.Estatus = { select: { name: status } };
@@ -2076,7 +2093,7 @@ async function updateManagerTask(env, taskId, body) {
     const users = parseManagerUsers(env);
     const userByEmail = new Map(users.map((u) => [u.email.toLowerCase(), u]));
     const assigneeUser = assigneeRaw ? userByEmail.get(assigneeRaw) : null;
-    properties[TASK_ASSIGNEES_PROPERTY] = assigneeUser?.email
+    properties[assigneePropertyKey] = assigneeUser?.email
       ? { multi_select: [{ name: assigneeUser.email }] }
       : { multi_select: [] };
 
