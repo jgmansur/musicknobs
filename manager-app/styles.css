@@ -512,6 +512,14 @@ body.tabbar-hidden .catalog-player {
 .panel { display: none; }
 .panel.active { display: block; }
 
+#tab-focus:not(.active) {
+  display: none !important;
+}
+
+#tab-focus.active {
+  display: flex !important;
+}
+
 .panel-fullscreen {
   min-height: calc(100dvh - 220px);
 }
@@ -525,10 +533,6 @@ body.tabbar-hidden .catalog-player {
   flex-direction: column;
   gap: .8rem;
   padding: .9rem;
-}
-
-.panel.focus-panel.active {
-  display: flex;
 }
 
 .focus-toolbar {
