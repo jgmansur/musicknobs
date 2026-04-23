@@ -2031,33 +2031,6 @@ function mapTaskApiItem(item = {}) {
   };
 }
 
-function splitFocusBuckets(rows = []) {
-  const todayIso = getTodayIso();
-  const today = [];
-  const overdue = [];
-
-  rows.forEach((task) => {
-    const status = String(task.status || '').trim().toLowerCase();
-    const priority = String(task.priority || '').trim().toLowerCase();
-    if (status !== 'empezó' || priority !== 'alta') return;
-
-    const due = toIsoDateOnly(task.dueDate);
-    if (!due) return;
-    if (due === todayIso) {
-      today.push(task);
-      return;
-    }
-    if (due < todayIso) {
-      overdue.push(task);
-    }
-  });
-
-  today.sort((a, b) => String(a.title || '').localeCompare(String(b.title || ''), 'es'));
-  overdue.sort((a, b) => String(a.dueDate || '').localeCompare(String(b.dueDate || '')) || String(a.title || '').localeCompare(String(b.title || ''), 'es'));
-
-  return { today, overdue };
-}
-
 async function loadFocusTasks({ keepMode = true } = {}) {
   if (!isAuthenticated) {
     focusTodayTasks = [];
@@ -2071,16 +2044,12 @@ async function loadFocusTasks({ keepMode = true } = {}) {
 
   try {
     if (!API_BASE) throw new Error('apiBaseUrl no configurado');
-    const params = new URLSearchParams({
-      limit: '50',
-      scope: 'mine',
-      viewer: getViewerEmail()
-    });
-    const res = await fetchJson(`${API_BASE}/api/manager/tasks?${params.toString()}`);
-    const rows = (res.data || []).map(mapTaskApiItem);
-    const buckets = splitFocusBuckets(rows);
-    focusTodayTasks = buckets.today;
-    focusOverdueTasks = buckets.overdue;
+    const viewerEmail = getViewerEmail();
+    const scope = isAdminUser() ? 'all' : 'mine';
+    const params = new URLSearchParams({ scope, viewer: viewerEmail });
+    const res = await fetchJson(`${API_BASE}/api/manager/tasks/focus?${params.toString()}`);
+    focusTodayTasks = (res.today || []).map(mapTaskApiItem);
+    focusOverdueTasks = (res.overdue || []).map(mapTaskApiItem);
 
     if (!keepMode) {
       focusMode = 'today';
@@ -2108,6 +2077,15 @@ async function loadFocusTasks({ keepMode = true } = {}) {
   }
 
   renderFocusTaskBoard();
+}
+
+async function manualSyncFocusTasks() {
+  if (!isAuthenticated) return;
+  setStatus('focus-status', 'Sincronizando focus tasks con Notion...');
+  await Promise.all([
+    loadFocusTasks({ keepMode: true }),
+    loadTasksFromApi()
+  ]);
 }
 
 async function completeCurrentFocusTask() {
@@ -3232,7 +3210,7 @@ function setupActions() {
   });
   bindClick('refresh-links', () => loadLinksFromApi());
   bindClick('refresh-tasks', () => loadTasksFromApi());
-  bindClick('focus-sync', () => loadFocusTasks({ keepMode: true }));
+  bindClick('focus-sync', manualSyncFocusTasks);
   bindClick('focus-next', () => rotateFocusTask(1));
   bindClick('focus-prev', () => rotateFocusTask(-1));
   bindClick('focus-complete-btn', completeCurrentFocusTask);
