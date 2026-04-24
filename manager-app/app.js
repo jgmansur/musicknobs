@@ -2146,7 +2146,7 @@ async function loadFocusTasks({ keepMode = true } = {}) {
   try {
     if (!API_BASE) throw new Error('apiBaseUrl no configurado');
     const viewerEmail = getViewerEmail();
-    const scope = isAdminUser() ? 'all' : 'mine';
+    const scope = 'mine';
     let usedFallback = false;
 
     try {
