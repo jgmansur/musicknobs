@@ -1,6 +1,6 @@
 {
   "name": "manager-app",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "App web mobile-first para operación de manager sobre la carrera de Jay Mansur.",
   "main": "app.js",
   "scripts": {
