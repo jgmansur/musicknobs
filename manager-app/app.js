@@ -1838,7 +1838,7 @@ function setMessages(rows = []) {
   messagesCache = rows;
   const list = document.getElementById('messages-list');
   const featuredList = document.getElementById('messages-featured');
-  const loadMoreBtn = document.getElementById('messages-load-more');
+
   if (!list || !featuredList) return;
 
   const myEmail = String(googleProfile?.email || '').trim().toLowerCase();
@@ -1888,12 +1888,6 @@ function setMessages(rows = []) {
       `;
     })
     .join('');
-
-  if (loadMoreBtn) {
-    const canLoadMore = rows.length > visibleRows.length;
-    loadMoreBtn.disabled = !canLoadMore;
-    loadMoreBtn.textContent = canLoadMore ? 'Cargar más' : 'Sin más';
-  }
 
   list.querySelectorAll('[data-message-feature]').forEach((btn) => {
     btn.addEventListener('click', async () => {
@@ -3393,10 +3387,7 @@ function setupActions() {
   bindClick('auth-gate-login', startGoogleLogin);
   bindClick('refresh-messages', () => loadMessagesFromApi());
   bindClick('refresh-messages-overview', () => loadMessagesFromApi());
-  bindClick('messages-load-more', () => {
-    messagesVisibleCount += MESSAGES_PAGE_STEP;
-    setMessages(messagesCache);
-  });
+  // messages-load-more removed from UI — load-more handled via scroll
   bindClick('message-create', createMessage);
   bindClick('clear-messages-log', clearMessagesLog);
   bindClick('message-edit-save', saveEditMessage);

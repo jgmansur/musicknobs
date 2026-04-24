@@ -1469,11 +1469,11 @@ th {
   font-size: .68rem;
 }
 
-/* ── Messages tab fullscreen — sin contenedor card ── */
+/* ── Messages tab fullscreen — sin header, sin contenedor card ── */
 #tab-messages.active {
   display: flex !important;
   flex-direction: column;
-  height: calc(100dvh - 220px);
+  height: calc(100dvh - var(--tab-height) - env(safe-area-inset-bottom) - 130px);
   padding: 0 !important;
   overflow: hidden;
   background: #0b141a;
@@ -1486,10 +1486,6 @@ th {
   border-radius: 0;
   flex: 1;
   min-height: 0;
-}
-
-#tab-messages .wa-composer {
-  padding-bottom: max(10px, env(safe-area-inset-bottom));
 }
 
 @media (min-width: 900px) {
@@ -1566,7 +1562,7 @@ th {
   .oauth-header-status { margin-top: .5rem; }
 
   #tab-messages.active {
-    height: calc(100dvh - 170px);
+    height: calc(100dvh - var(--tab-height) - env(safe-area-inset-bottom) - 90px);
   }
 
   /* Evita auto-zoom en iOS al enfocar campos de texto */
