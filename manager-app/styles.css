@@ -1469,6 +1469,29 @@ th {
   font-size: .68rem;
 }
 
+/* ── Messages tab fullscreen — sin contenedor card ── */
+#tab-messages.active {
+  display: flex !important;
+  flex-direction: column;
+  height: calc(100dvh - 220px);
+  padding: 0 !important;
+  overflow: hidden;
+  background: #0b141a;
+  border-radius: 0;
+  border: none;
+  box-shadow: none;
+}
+
+#tab-messages .wa-shell {
+  border-radius: 0;
+  flex: 1;
+  min-height: 0;
+}
+
+#tab-messages .wa-composer {
+  padding-bottom: max(10px, env(safe-area-inset-bottom));
+}
+
 @media (min-width: 900px) {
   h1 { font-size: 1.15rem; }
   .subtitle { font-size: 0.78rem; }
@@ -1541,6 +1564,10 @@ th {
   }
 
   .oauth-header-status { margin-top: .5rem; }
+
+  #tab-messages.active {
+    height: calc(100dvh - 170px);
+  }
 
   /* Evita auto-zoom en iOS al enfocar campos de texto */
   .field-input,
