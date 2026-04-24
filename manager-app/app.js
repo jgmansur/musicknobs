@@ -2,7 +2,7 @@ const profile = {
   name: 'Jay Mansur',
   website: 'https://www.musicknobs.com',
   email: 'jgmansur2@gmail.com',
-  whatsapp: '+528621417374',
+  whatsapp: '+528343537539',
   links: [
     ['YouTube Music Knobs', 'https://www.youtube.com/@musicknobs'],
     ['Instagram Music Knobs', 'https://www.instagram.com/musicknobs/'],
@@ -94,6 +94,8 @@ let contactsSource = 'api';
 let contactsSearchQuery = '';
 let tasksCache = [];
 let messagesCache = [];
+const seenMessageIds = new Set();
+const seenTaskIds = new Set();
 let taskAssigneeUsers = [
   { email: 'jgmansur2@gmail.com', name: 'Jay Mansur' },
   { email: 'xeronimo3@gmail.com', name: 'Xeronimo' },
@@ -1859,14 +1861,25 @@ function setMessages(rows = []) {
     .map((m) => {
       const author = m.author || 'Anónimo';
       const created = m.createdAt ? new Date(m.createdAt).toLocaleString('es-MX') : '';
-      const label = m.highlighted ? 'Quitar destacado' : 'Destacar';
       const isMine = m.authorEmail && myEmail && m.authorEmail === myEmail;
+      const starClass = m.highlighted ? 'active' : '';
+      const starIcon = m.highlighted ? '★' : '☆';
+      const editBtn = isMine
+        ? `<button class="message-action-btn message-edit-btn" data-message-edit="${m.id}" data-message-text="${escapeHtml(m.text || '')}" title="Editar">✎</button>`
+        : '';
+      const deleteBtn = isMine
+        ? `<button class="message-action-btn message-delete-btn" data-message-delete="${m.id}" title="Borrar">🗑</button>`
+        : '';
       return `
         <li class="${isMine ? 'mine' : 'other'}">
           <div class="chat-bubble ${isMine ? 'mine' : ''}">
             <div class="chat-header">
               <div class="wa-meta">${escapeHtml(author)}${created ? ` · ${escapeHtml(created)}` : ''}</div>
-              <button class="mini-btn message-feature-btn" data-message-feature="${m.id}" data-message-state="${m.highlighted ? '1' : '0'}">${label}</button>
+              <div style="display:flex;align-items:center;gap:2px;">
+                ${editBtn}
+                ${deleteBtn}
+                <button class="message-star-btn ${starClass}" data-message-feature="${m.id}" data-message-state="${m.highlighted ? '1' : '0'}" title="${m.highlighted ? 'Quitar destacado' : 'Destacar'}">${starIcon}</button>
+              </div>
             </div>
             <div class="message-text">${escapeHtml(m.text || 'Sin mensaje')}</div>
           </div>
@@ -1886,6 +1899,21 @@ function setMessages(rows = []) {
       const id = btn.dataset.messageFeature || '';
       const current = btn.dataset.messageState === '1';
       await toggleFeaturedMessage(id, !current);
+    });
+  });
+
+  list.querySelectorAll('[data-message-edit]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const id = btn.dataset.messageEdit || '';
+      const text = btn.dataset.messageText || '';
+      openEditMessageModal(id, text);
+    });
+  });
+
+  list.querySelectorAll('[data-message-delete]').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      const id = btn.dataset.messageDelete || '';
+      await deleteMessageConfirm(id);
     });
   });
 
@@ -2902,6 +2930,7 @@ async function createTask() {
     resetTaskForm();
     setTaskFormVisibility(false);
     setStatus('tasks-status', editingTaskId ? 'Task actualizada correctamente.' : 'Task creada correctamente.');
+    if (!editingTaskId) maybeNotify('Nueva task', title);
     await Promise.all([loadTasksFromApi(), loadFocusTasks({ keepMode: true })]);
   } catch (e) {
     const reason = e instanceof Error ? e.message : String(e);
@@ -2919,6 +2948,7 @@ async function markTaskDone(taskId) {
     });
     if (!r.ok) throw new Error(`HTTP ${r.status}`);
     setStatus('tasks-status', 'Task marcada como terminada.');
+    maybeNotify('Task completada ✓', '');
     await Promise.all([loadTasksFromApi(), loadFocusTasks({ keepMode: true })]);
   } catch (e) {
     const reason = e instanceof Error ? e.message : String(e);
@@ -3078,6 +3108,7 @@ async function createMessage() {
     if (!r.ok) throw new Error(`HTTP ${r.status}`);
     input.value = '';
     setStatus('messages-status', 'Anuncio agregado.');
+    maybeNotify('Nuevo mensaje', `${googleProfile?.name || 'Alguien'}: ${text.slice(0, 80)}`);
     await loadMessagesFromApi();
   } catch (e) {
     const reason = e instanceof Error ? e.message : String(e);
@@ -3110,6 +3141,59 @@ async function toggleFeaturedMessage(messageId, highlighted) {
   } catch (e) {
     const reason = e instanceof Error ? e.message : String(e);
     setStatus('messages-status', `No se pudo actualizar anuncio: ${reason}`, true);
+  }
+}
+
+function openEditMessageModal(id, text) {
+  const modal = document.getElementById('message-edit-modal');
+  const idEl = document.getElementById('message-edit-id');
+  const textEl = document.getElementById('message-edit-text');
+  if (!modal || !idEl || !textEl) return;
+  idEl.value = id;
+  textEl.value = text;
+  modal.classList.remove('hidden');
+  setTimeout(() => textEl.focus(), 50);
+}
+
+function closeEditMessageModal() {
+  const modal = document.getElementById('message-edit-modal');
+  if (modal) modal.classList.add('hidden');
+}
+
+async function saveEditMessage() {
+  const id = String(document.getElementById('message-edit-id')?.value || '').trim();
+  const text = String(document.getElementById('message-edit-text')?.value || '').trim();
+  if (!id || !text) return;
+  try {
+    const r = await fetch(`${API_BASE}/api/manager/messages/${id}`, {
+      method: 'PATCH',
+      headers: apiHeaders(),
+      body: JSON.stringify({ text })
+    });
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    closeEditMessageModal();
+    setStatus('messages-status', 'Mensaje actualizado.');
+    await loadMessagesFromApi();
+  } catch (e) {
+    const reason = e instanceof Error ? e.message : String(e);
+    setStatus('messages-status', `No se pudo actualizar mensaje: ${reason}`, true);
+  }
+}
+
+async function deleteMessageConfirm(id) {
+  if (!id || !isAuthenticated) return;
+  if (!window.confirm('¿Borrar este mensaje?')) return;
+  try {
+    const r = await fetch(`${API_BASE}/api/manager/messages/${id}`, {
+      method: 'DELETE',
+      headers: apiHeaders()
+    });
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    setStatus('messages-status', 'Mensaje borrado.');
+    await loadMessagesFromApi();
+  } catch (e) {
+    const reason = e instanceof Error ? e.message : String(e);
+    setStatus('messages-status', `No se pudo borrar mensaje: ${reason}`, true);
   }
 }
 
@@ -3303,6 +3387,8 @@ function setupActions() {
   });
   bindClick('message-create', createMessage);
   bindClick('clear-messages-log', clearMessagesLog);
+  bindClick('message-edit-save', saveEditMessage);
+  bindClick('message-edit-cancel', closeEditMessageModal);
 
   const messageInput = document.getElementById('message-input');
   if (messageInput) {
@@ -3410,6 +3496,17 @@ function init() {
     autoLoginOnLoad();
   }
   initNotifications();
+}
+
+function maybeNotify(title, body) {
+  if (Notification.permission !== 'granted') return;
+  try {
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.ready.then((reg) => reg.showNotification(title, { body, icon: 'icon-192.png' })).catch(() => {});
+    } else {
+      new Notification(title, { body, icon: 'icon-192.png' });
+    }
+  } catch { /* silently fail */ }
 }
 
 function initNotifications() {

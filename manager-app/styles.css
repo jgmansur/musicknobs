@@ -419,7 +419,7 @@ h1 {
 
 .wa-send-btn {
   background: #00a884;
-  color: #111b21;
+  color: #fff;
   width: 40px;
   height: 40px;
   border-radius: 50%;
@@ -429,6 +429,32 @@ h1 {
   padding: 10px;
   transition: opacity 0.2s;
 }
+
+.message-star-btn {
+  background: transparent;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  padding: 2px 4px;
+  line-height: 1;
+  opacity: 0.6;
+  transition: opacity 0.2s;
+}
+.message-star-btn:hover { opacity: 1; }
+.message-star-btn.active { opacity: 1; color: #f5c518; }
+
+.message-action-btn {
+  background: transparent;
+  border: none;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 2px 5px;
+  border-radius: 4px;
+  opacity: 0.5;
+  transition: opacity 0.2s, background 0.2s;
+  color: #aebac1;
+}
+.message-action-btn:hover { opacity: 1; background: rgba(255,255,255,0.08); }
 
 .wa-send-btn:hover {
   background: #02c49a;

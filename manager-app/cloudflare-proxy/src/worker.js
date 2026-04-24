@@ -1908,59 +1908,69 @@ async function updateManagerMessage(env, messageId, body) {
   const notionToken = env.NOTION_TOKEN || "";
   if (!notionToken) return { error: "NOTION_TOKEN missing" };
 
+  const hasHighlighted = body !== null && typeof body === 'object' && 'highlighted' in body;
   const highlighted = Boolean(body?.highlighted);
+  const textBody = typeof body?.text === 'string' ? body.text.trim() : null;
 
-  const pageResp = await fetch(`https://api.notion.com/v1/pages/${messageId}`, {
-    method: "GET",
-    headers: {
-      Authorization: `Bearer ${notionToken}`,
-      "Notion-Version": notionVersion,
-      "Content-Type": "application/json",
-    },
-  });
+  const properties = {};
 
-  if (!pageResp.ok) {
-    return { error: "Message lookup failed", details: await pageResp.text() };
-  }
+  if (hasHighlighted) {
+    const pageResp = await fetch(`https://api.notion.com/v1/pages/${messageId}`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${notionToken}`,
+        "Notion-Version": notionVersion,
+        "Content-Type": "application/json",
+      },
+    });
 
-  const page = await pageResp.json();
-  const props = page.properties || {};
-  const currentTags = getTagNames(props);
-  const currentlyHighlighted = parseMessageFeatured(currentTags);
+    if (!pageResp.ok) return { error: "Message lookup failed", details: await pageResp.text() };
 
-  if (highlighted && !currentlyHighlighted) {
-    const listed = await listManagerMessages(env);
-    const featured = (listed.data || [])
-      .filter((m) => m.highlighted && m.id !== messageId)
-      .sort((a, b) => new Date(a.createdAt || 0).getTime() - new Date(b.createdAt || 0).getTime());
+    const page = await pageResp.json();
+    const currentTags = getTagNames(page.properties || {});
+    const currentlyHighlighted = parseMessageFeatured(currentTags);
 
-    if (featured.length >= 3) {
-      const toUnfeature = featured[0];
-      const unfeatureResp = await fetch(`https://api.notion.com/v1/pages/${toUnfeature.id}`, {
-        method: "PATCH",
-        headers: {
-          Authorization: `Bearer ${notionToken}`,
-          "Notion-Version": notionVersion,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          properties: {
-            Tags: {
-              multi_select: (Array.isArray(toUnfeature.tags) ? toUnfeature.tags : [])
-                .filter((t) => t !== "featured:true")
-                .map((name) => ({ name })),
-            },
+    if (highlighted && !currentlyHighlighted) {
+      const listed = await listManagerMessages(env);
+      const featured = (listed.data || [])
+        .filter((m) => m.highlighted && m.id !== messageId)
+        .sort((a, b) => new Date(a.createdAt || 0).getTime() - new Date(b.createdAt || 0).getTime());
+
+      if (featured.length >= 3) {
+        const toUnfeature = featured[0];
+        const unfeatureResp = await fetch(`https://api.notion.com/v1/pages/${toUnfeature.id}`, {
+          method: "PATCH",
+          headers: {
+            Authorization: `Bearer ${notionToken}`,
+            "Notion-Version": notionVersion,
+            "Content-Type": "application/json",
           },
-        }),
-      });
+          body: JSON.stringify({
+            properties: {
+              Tags: {
+                multi_select: (Array.isArray(toUnfeature.tags) ? toUnfeature.tags : [])
+                  .filter((t) => t !== "featured:true")
+                  .map((name) => ({ name })),
+              },
+            },
+          }),
+        });
 
-      if (!unfeatureResp.ok) {
-        return { error: "No se pudo rotar mensajes destacados", details: await unfeatureResp.text() };
+        if (!unfeatureResp.ok) {
+          return { error: "No se pudo rotar mensajes destacados", details: await unfeatureResp.text() };
+        }
       }
     }
+
+    properties.Tags = { multi_select: applyMessageTagState(currentTags, highlighted).map((name) => ({ name })) };
   }
 
-  const nextTags = applyMessageTagState(currentTags, highlighted);
+  if (textBody !== null) {
+    properties.Name = { title: [{ text: { content: `${MESSAGE_PREFIX}${textBody}` } }] };
+  }
+
+  if (Object.keys(properties).length === 0) return { ok: true };
+
   const resp = await fetch(`https://api.notion.com/v1/pages/${messageId}`, {
     method: "PATCH",
     headers: {
@@ -1968,18 +1978,33 @@ async function updateManagerMessage(env, messageId, body) {
       "Notion-Version": notionVersion,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({
-      properties: {
-        Tags: { multi_select: nextTags.map((name) => ({ name })) },
-      },
-    }),
+    body: JSON.stringify({ properties }),
   });
 
-  if (!resp.ok) {
-    return { error: "Message update failed", details: await resp.text() };
-  }
-
+  if (!resp.ok) return { error: "Message update failed", details: await resp.text() };
   return { ok: true };
+}
+
+async function deleteManagerMessage(env, messageId) {
+  const notionVersion = env.NOTION_VERSION || "2022-06-28";
+  const notionToken = env.NOTION_TOKEN || "";
+  if (!notionToken) return { error: "NOTION_TOKEN missing" };
+
+  try {
+    const resp = await fetch(`https://api.notion.com/v1/pages/${messageId}`, {
+      method: "PATCH",
+      headers: {
+        Authorization: `Bearer ${notionToken}`,
+        "Notion-Version": notionVersion,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ archived: true }),
+    });
+    if (!resp.ok) return { error: "Message delete failed", details: await resp.text() };
+    return { ok: true };
+  } catch (e) {
+    return { error: "Message delete failed", details: String(e?.message || e) };
+  }
 }
 
 async function clearManagerMessages(env, body) {
@@ -2374,6 +2399,13 @@ export default {
       if (!messageId) return json({ error: "messageId required" }, 400);
       const body = await request.json().catch(() => ({}));
       const result = await updateManagerMessage(env, messageId, body);
+      return json(result, result.error ? 400 : 200);
+    }
+
+    if (request.method === "DELETE" && url.pathname.startsWith("/api/manager/messages/")) {
+      const messageId = url.pathname.replace("/api/manager/messages/", "").trim();
+      if (!messageId) return json({ error: "messageId required" }, 400);
+      const result = await deleteManagerMessage(env, messageId);
       return json(result, result.error ? 400 : 200);
     }
 

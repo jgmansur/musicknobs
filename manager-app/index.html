@@ -7,7 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="./styles.css?v=focusfix404v2" />
+    <link rel="stylesheet" href="./styles.css?v=1.1.2" />
     <link rel="manifest" href="./manifest.json" />
     <link rel="icon" type="image/png" href="./icon-32.png" />
     <link rel="apple-touch-icon" href="./icon-180.png" />
@@ -22,6 +22,19 @@
         <p>Para ver información del Manager App necesitas iniciar sesión con Google.</p>
         <button id="auth-gate-login" class="btn">Iniciar sesión con Google</button>
         <p id="auth-gate-status" class="hint">Sin sesión</p>
+      </div>
+    </div>
+
+    <!-- Modal para editar mensaje -->
+    <div id="message-edit-modal" class="auth-gate hidden" role="dialog" aria-modal="true">
+      <div class="auth-gate-card">
+        <h2>Editar mensaje</h2>
+        <input type="hidden" id="message-edit-id" />
+        <textarea id="message-edit-text" class="field-input" rows="4" style="margin: 1rem 0; width: 100%; resize: vertical;"></textarea>
+        <div class="actions" style="justify-content: center;">
+          <button class="btn" id="message-edit-save">Actualizar</button>
+          <button class="btn ghost" id="message-edit-cancel">Cancelar</button>
+        </div>
       </div>
     </div>
 
