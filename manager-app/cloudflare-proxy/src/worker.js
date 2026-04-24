@@ -1668,7 +1668,7 @@ async function listManagerFocusTasks(env, options = {}) {
     const cached = getCachedFocusTasks({ scope, viewerEmail });
     if (cached) return cached;
     const allUsers = parseManagerUsers(env);
-    const todayIso = new Date().toISOString().slice(0, 10);
+    const todayIso = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' });
 
     const baseFilter = {
       and: [

@@ -621,6 +621,13 @@ body.tabbar-hidden .catalog-player {
   touch-action: manipulation;
   -webkit-user-select: none;
   user-select: none;
+  transition: opacity .2s;
+}
+
+.focus-arrow:disabled {
+  opacity: .25;
+  cursor: default;
+  pointer-events: none;
 }
 
 .focus-complete {

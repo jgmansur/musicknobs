@@ -1913,7 +1913,7 @@ function toIsoDateOnly(value) {
 }
 
 function getTodayIso() {
-  return new Date().toISOString().slice(0, 10);
+  return new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' });
 }
 
 function formatFocusTaskDate(isoDate) {
@@ -1961,12 +1961,18 @@ function renderFocusTaskBoard() {
   const modeChip = document.getElementById('focus-mode-chip');
   const progress = document.getElementById('focus-progress');
   const completeBtn = document.getElementById('focus-complete-btn');
+  const prevBtn = document.getElementById('focus-prev');
+  const nextBtn = document.getElementById('focus-next');
   if (!root || !hint || !modeChip || !progress || !completeBtn) return;
 
   root.classList.remove('focus-board-done');
   const current = getCurrentFocusTask();
   const list = focusMode === 'today' ? focusTodayTasks : focusOverdueTasks;
   const idx = focusMode === 'today' ? focusTodayIndex : focusOverdueIndex;
+
+  const canNavigate = list.length > 1;
+  if (prevBtn) prevBtn.disabled = !canNavigate;
+  if (nextBtn) nextBtn.disabled = !canNavigate;
 
   modeChip.textContent = focusMode === 'today' ? 'HOY' : 'ATRASADAS';
 
