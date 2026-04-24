@@ -21,7 +21,7 @@ const DEUDAS_RECIBOS_FOLDER_ID = '157KDn-vbkuHH1L8xbaJBGz-oKmT7p5a9';
 const SPREADSHEET_RSM_ID = '14VsoPHGNTSUSbzMOqGWs2qSL-pGywPgjUoHD3MqIJfo'; // Recibos Salud Mariel
 const SALDOS_SHEET_ID    = '1-cX_qxld3ioSpcO9lEBPg90Db6AyK7SczpJTvj7rw4U'; // Saldos (fuente de verdad — Claude accede vía service account)
 const RSM_FOLDER_ID = '1-ZfeWQ-Rmh-Wm2WMCkULkN6MQWBuxYnj';
-const APP_VERSION  = 'v8.2.8';
+const APP_VERSION  = 'v8.2.9';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -3834,7 +3834,7 @@ window.fijos_togglePagoPart = async function(id, partIndex, options = {}) {
         // 2) If marking one part as PAID -> append partial entry to Control de Gastos
         if (nowPartPaid && !options.skipControlLog) {
             const fecha    = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD
-            const lugar    = 'Gasto Fijo';
+            const lugar    = item.tipo === 'ingreso' ? 'Ingreso Fijo' : 'Gasto Fijo';
             const concepto = `${item.concepto} (${partIndex + 1}/${item.pagosMes})`;
             const monto    = partAmountOriginal;
             const tipo     = item.tipo === 'ingreso' ? 'Ingreso' : 'Gasto';
@@ -3912,7 +3912,8 @@ window.fijos_togglePagoPart = async function(id, partIndex, options = {}) {
                 const targetConcepto = `${item.concepto} (${partIndex + 1}/${item.pagosMes})`;
                 for (let i = logRows.length - 1; i >= 0; i--) {
                     const r = logRows[i];
-                    if ((r[1] || '') === 'Gasto Fijo' && (r[2] || '') === targetConcepto) {
+                    const expectedLugar = item.tipo === 'ingreso' ? 'Ingreso Fijo' : 'Gasto Fijo';
+                    if ((r[1] || '') === expectedLugar && (r[2] || '') === targetConcepto) {
                         foundRowIndex = i;
                         break;
                     }
@@ -8012,7 +8013,7 @@ async function propiedades_seedInitialData() {
         valorCatastral: '',
         valorComercial: '',
         valorInvestigado: '',
-        fuenteValoracion: 'Placeholder local (sin API)',
+        fuenteValoracion: 'Estimación automática (mercado MX 2025)',
         predialMensual: '',
         mantenimientoMensual: '',
         miPorcentaje: '100',
@@ -8066,7 +8067,7 @@ function propiedades_rowToItem(row, map) {
         valorCatastral: (propiedades_getCell(row, map, 'valorCatastral', '') || '').toString(),
         valorComercial: (propiedades_getCell(row, map, 'valorComercial', '') || '').toString(),
         valorInvestigado: (propiedades_getCell(row, map, 'valorInvestigado', '') || '').toString(),
-        fuenteValoracion: (propiedades_getCell(row, map, 'fuenteValoracion', 'Placeholder local (sin API)') || 'Placeholder local (sin API)').toString(),
+        fuenteValoracion: (propiedades_getCell(row, map, 'fuenteValoracion', 'Estimación automática (mercado MX 2025)') || 'Estimación automática (mercado MX 2025)').toString(),
         predialMensual: (propiedades_getCell(row, map, 'predialMensual', '') || '').toString(),
         mantenimientoMensual: (propiedades_getCell(row, map, 'mantenimientoMensual', '') || '').toString(),
         miPorcentaje: (propiedades_getCell(row, map, 'miPorcentaje', '100') || '100').toString(),
@@ -8101,7 +8102,7 @@ function propiedades_itemToRow(item, headers) {
         valorCatastral: item.valorCatastral || '',
         valorComercial: item.valorComercial || '',
         valorInvestigado: item.valorInvestigado || '',
-        fuenteValoracion: item.fuenteValoracion || 'Placeholder local (sin API)',
+        fuenteValoracion: item.fuenteValoracion || 'Estimación automática (mercado MX 2025)',
         predialMensual: item.predialMensual || '',
         mantenimientoMensual: item.mantenimientoMensual || '',
         miPorcentaje: item.miPorcentaje || '100',
@@ -8227,7 +8228,7 @@ function propiedades_render() {
             <div class="plan-bucket-row"><span>Mi porcentaje</span><strong>${miPorcentaje.toFixed(2)}%</strong></div>
             <div class="plan-bucket-row"><span>Mi parte ingreso</span><strong class="text-success">+${formatCurrency(miIngreso)}</strong></div>
           </div>
-          <div class="estudio-entry-notes">${selected.fuenteValoracion || 'Placeholder local (sin API externa). La valoración automática se basa en zona + m2 de construcción + m2 de terreno y puede variar.'}</div>
+          <div class="estudio-entry-notes">${selected.valorComercial ? (selected.fuenteValoracion || 'Valor ingresado manualmente.') : `⚠️ Estimación automática (sin API). Basada en precios de mercado México 2025 por m² según zona. Para mayor precisión, investiga en Inmuebles24 o Lamudi e ingresa el "Valor Comercial" manualmente.`}</div>
         </div>
 
         <div class="prop-detail-block" data-prop-edit-section="owners">
@@ -8409,7 +8410,7 @@ function propiedades_openSheet(id, section = 'all') {
     document.getElementById('prop-valor-catastral').value = item?.valorCatastral || '';
     document.getElementById('prop-valor-comercial').value = item?.valorComercial || '';
     document.getElementById('prop-valor-investigado').value = item?.valorInvestigado || '';
-    document.getElementById('prop-fuente').value = item?.fuenteValoracion || 'Placeholder local (sin API)';
+    document.getElementById('prop-fuente').value = item?.fuenteValoracion || 'Estimación automática (mercado MX 2025)';
     document.getElementById('prop-predial').value = item?.predialMensual || '';
     document.getElementById('prop-mantenimiento').value = item?.mantenimientoMensual || '';
     document.getElementById('prop-foto-url').value = item?.fotoUrl || '';
@@ -8472,15 +8473,32 @@ function propiedades_parseMoneyLines(raw) {
 }
 
 function propiedades_estimarValorComercial(input) {
-    const compra = Math.max(0, parseSheetValue(input.valorCompra));
     const m2c = Math.max(0, parseSheetValue(input.metrosConstruccion));
     const m2t = Math.max(0, parseSheetValue(input.metrosTerreno));
     const zona = (input.zona || '').toString().toLowerCase();
-    let zoneFactor = 1;
-    if (zona.includes('premium') || zona.includes('centro') || zona.includes('victoria')) zoneFactor = 1.15;
-    if (zona.includes('terreno') || zona.includes('rural')) zoneFactor = 0.92;
-    const base = compra + (m2c * 8200) + (m2t * 2900);
-    return Math.round(base * zoneFactor);
+
+    // Precios por m² en MXN (mercado actual México 2025)
+    // Premium: zonas turísticas/centro SMA, Polanco, Condesa, etc.
+    // Rural: terrenos sin urbanizar
+    let precioM2c, precioM2t;
+    if (zona.includes('premium') || zona.includes('centro') || zona.includes('victoria') || zona.includes('colonia') || zona.includes('polanco') || zona.includes('condesa') || zona.includes('roma')) {
+        precioM2c = 22000;
+        precioM2t = 10000;
+    } else if (zona.includes('terreno') || zona.includes('rural') || zona.includes('campo') || zona.includes('ejido')) {
+        precioM2c = 10000;
+        precioM2t = 2500;
+    } else {
+        precioM2c = 15000;
+        precioM2t = 5500;
+    }
+
+    // Si no hay datos de m², usar valor de compra como fallback
+    if (m2c === 0 && m2t === 0) {
+        const compra = Math.max(0, parseSheetValue(input.valorCompra));
+        return Math.round(compra * 1.1); // +10% apreciación mínima sobre compra
+    }
+
+    return Math.round((m2c * precioM2c) + (m2t * precioM2t));
 }
 
 function propiedades_isYoOwnerName(name) {
@@ -8557,7 +8575,7 @@ async function propiedades_save() {
             valorCatastral: (document.getElementById('prop-valor-catastral').value || '').trim(),
             valorComercial: (document.getElementById('prop-valor-comercial').value || '').trim(),
             valorInvestigado: (document.getElementById('prop-valor-investigado').value || '').trim(),
-            fuenteValoracion: (document.getElementById('prop-fuente').value || '').trim() || 'Placeholder local (sin API)',
+            fuenteValoracion: (document.getElementById('prop-fuente').value || '').trim() || 'Estimación automática (mercado MX 2025)',
             predialMensual: (document.getElementById('prop-predial').value || '').trim(),
             mantenimientoMensual: (document.getElementById('prop-mantenimiento').value || '').trim(),
             miPorcentaje: String(propiedades_miParticipacionPct({ owners, miPorcentaje: existing?.miPorcentaje || 0 })),
