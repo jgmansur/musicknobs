@@ -1865,7 +1865,7 @@ function setMessages(rows = []) {
       const starClass = m.highlighted ? 'active' : '';
       const starIcon = m.highlighted ? '★' : '☆';
       const editBtn = isMine
-        ? `<button class="message-action-btn message-edit-btn" data-message-edit="${m.id}" data-message-text="${escapeHtml(m.text || '')}" title="Editar">✎</button>`
+        ? `<button class="message-action-btn message-edit-btn" data-message-edit="${m.id}" title="Editar">✎</button>`
         : '';
       const deleteBtn = isMine
         ? `<button class="message-action-btn message-delete-btn" data-message-delete="${m.id}" title="Borrar">🗑</button>`
@@ -1905,8 +1905,8 @@ function setMessages(rows = []) {
   list.querySelectorAll('[data-message-edit]').forEach((btn) => {
     btn.addEventListener('click', () => {
       const id = btn.dataset.messageEdit || '';
-      const text = btn.dataset.messageText || '';
-      openEditMessageModal(id, text);
+      const msg = messagesCache.find((m) => m.id === id);
+      openEditMessageModal(id, msg?.text || '');
     });
   });
 
