@@ -2176,10 +2176,10 @@ async function postponeCurrentFocusTask() {
   const current = getCurrentFocusTask();
   if (!current?.id) return;
 
-  const tomorrow = new Date();
-  tomorrow.setDate(tomorrow.getDate() + 1);
-  tomorrow.setHours(9, 0, 0, 0);
-  const tomorrowIso = tomorrow.toISOString().slice(0, 10);
+  const tomorrowDate = new Date(new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' }) + 'T00:00:00');
+  tomorrowDate.setDate(tomorrowDate.getDate() + 1);
+  const dateStr = tomorrowDate.toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' });
+  const tomorrowIso = `${dateStr}T09:00:00.000-06:00`;
 
   try {
     const r = await fetch(`${API_BASE}/api/manager/tasks/${current.id}`, {
