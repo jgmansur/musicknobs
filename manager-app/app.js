@@ -3192,6 +3192,8 @@ async function saveEditMessage() {
 async function deleteMessageConfirm(id) {
   if (!id || !isAuthenticated) return;
   if (!window.confirm('¿Borrar este mensaje?')) return;
+  messagesCache = messagesCache.filter((m) => m.id !== id);
+  setMessages(messagesCache);
   try {
     const r = await fetch(`${API_BASE}/api/manager/messages/${id}`, {
       method: 'DELETE',
@@ -3203,6 +3205,7 @@ async function deleteMessageConfirm(id) {
   } catch (e) {
     const reason = e instanceof Error ? e.message : String(e);
     setStatus('messages-status', `No se pudo borrar mensaje: ${reason}`, true);
+    await loadMessagesFromApi();
   }
 }
 
