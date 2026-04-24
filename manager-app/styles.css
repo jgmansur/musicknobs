@@ -642,6 +642,27 @@ body.tabbar-hidden .catalog-player {
   font-size: .82rem;
 }
 
+.focus-postpone {
+  width: 100%;
+  background: rgba(0,0,0,.25);
+  border: 1px solid rgba(255,255,255,.3);
+  color: rgba(255,255,255,.85);
+  font-size: .82rem;
+  padding: .5rem 1rem;
+  margin-top: .4rem;
+}
+
+.focus-postpone:hover:not(:disabled) {
+  background: rgba(255,255,255,.1);
+  color: #fff;
+}
+
+.focus-postpone:disabled {
+  opacity: .3;
+  cursor: default;
+  pointer-events: none;
+}
+
 #focus-status.hint {
   color: rgba(255,255,255,.92);
 }

@@ -1961,9 +1961,15 @@ function renderFocusTaskBoard() {
   const modeChip = document.getElementById('focus-mode-chip');
   const progress = document.getElementById('focus-progress');
   const completeBtn = document.getElementById('focus-complete-btn');
+  const postponeBtn = document.getElementById('focus-postpone-btn');
   const prevBtn = document.getElementById('focus-prev');
   const nextBtn = document.getElementById('focus-next');
   if (!root || !hint || !modeChip || !progress || !completeBtn) return;
+
+  const isAfter9pm = new Date().getHours() >= 21;
+  if (postponeBtn) {
+    postponeBtn.classList.toggle('hidden', !isAfter9pm);
+  }
 
   root.classList.remove('focus-board-done');
   const current = getCurrentFocusTask();
@@ -2004,6 +2010,7 @@ function renderFocusTaskBoard() {
       : 'Modo ATRASADAS: backlog pendiente por resolver.';
     completeBtn.disabled = false;
     completeBtn.textContent = 'Completar task';
+    if (postponeBtn) postponeBtn.disabled = false;
     return;
   }
 
@@ -2016,6 +2023,7 @@ function renderFocusTaskBoard() {
       : 'No hay backlog con fecha pasada.';
     completeBtn.disabled = true;
     completeBtn.textContent = 'Sin task activa';
+    if (postponeBtn) postponeBtn.disabled = true;
     return;
   }
 
@@ -2024,6 +2032,7 @@ function renderFocusTaskBoard() {
   hint.textContent = 'Dale a ⬅ para regresar al modo HOY.';
   completeBtn.disabled = true;
   completeBtn.textContent = 'Sin task activa';
+  if (postponeBtn) postponeBtn.disabled = true;
 }
 
 function mapTaskApiItem(item = {}) {
@@ -2160,6 +2169,31 @@ async function manualSyncFocusTasks() {
     loadFocusTasks({ keepMode: true }),
     loadTasksFromApi()
   ]);
+}
+
+async function postponeCurrentFocusTask() {
+  if (!isAuthenticated) return;
+  const current = getCurrentFocusTask();
+  if (!current?.id) return;
+
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  tomorrow.setHours(9, 0, 0, 0);
+  const tomorrowIso = tomorrow.toISOString().slice(0, 10);
+
+  try {
+    const r = await fetch(`${API_BASE}/api/manager/tasks/${current.id}`, {
+      method: 'PATCH',
+      headers: apiHeaders(),
+      body: JSON.stringify({ dueDate: tomorrowIso })
+    });
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    setStatus('focus-status', `Task movida a mañana (${tomorrowIso}). Sincronizando...`);
+    await Promise.all([loadFocusTasks({ keepMode: true }), loadTasksFromApi()]);
+  } catch (e) {
+    const reason = e instanceof Error ? e.message : String(e);
+    setStatus('focus-status', `No se pudo posponer task: ${reason}`, true);
+  }
 }
 
 async function completeCurrentFocusTask() {
@@ -3315,6 +3349,7 @@ function setupActions() {
   bindClick('focus-next', () => rotateFocusTask(1));
   bindClick('focus-prev', () => rotateFocusTask(-1));
   bindClick('focus-complete-btn', completeCurrentFocusTask);
+  bindClick('focus-postpone-btn', postponeCurrentFocusTask);
   bindClick('focus-switch-mode', () => setFocusMode(focusMode === 'today' ? 'overdue' : 'today'));
   bindAntiZoomForFocusArrows();
   bindClick('task-create', createTask);
