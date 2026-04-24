@@ -94,6 +94,7 @@ let contactsSource = 'api';
 let contactsSearchQuery = '';
 let tasksCache = [];
 let messagesCache = [];
+let isSendingMessage = false;
 const seenMessageIds = new Set();
 const seenTaskIds = new Set();
 let taskAssigneeUsers = [
@@ -3074,6 +3075,7 @@ async function loadMessagesFromApi() {
       highlighted: Boolean(item.highlighted),
       createdAt: item.createdAt || ''
     }));
+    rows.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
     messagesVisibleCount = MESSAGES_PAGE_STEP;
     setMessages(rows);
     setStatus('messages-status', rows.length ? `${rows.length} mensajes cargados.` : 'No hay anuncios todavía.');
@@ -3086,7 +3088,7 @@ async function loadMessagesFromApi() {
 }
 
 async function createMessage() {
-  if (!isAuthenticated) return;
+  if (!isAuthenticated || isSendingMessage) return;
   const input = document.getElementById('message-input');
   if (!input) return;
 
@@ -3098,6 +3100,10 @@ async function createMessage() {
 
   const author = googleProfile?.name || googleProfile?.email || 'Anónimo';
   const authorEmail = String(googleProfile?.email || '').trim().toLowerCase();
+
+  isSendingMessage = true;
+  const sendBtn = document.getElementById('message-create');
+  if (sendBtn) sendBtn.disabled = true;
 
   try {
     const r = await fetch(`${API_BASE}/api/manager/messages`, {
@@ -3113,6 +3119,9 @@ async function createMessage() {
   } catch (e) {
     const reason = e instanceof Error ? e.message : String(e);
     setStatus('messages-status', `No se pudo guardar anuncio: ${reason}`, true);
+  } finally {
+    isSendingMessage = false;
+    if (sendBtn) sendBtn.disabled = false;
   }
 }
 
