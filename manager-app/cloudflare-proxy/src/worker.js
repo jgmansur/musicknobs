@@ -1181,12 +1181,36 @@ function parseAssigneeFromTags(tags = []) {
 
 function parseAssigneesFromProperty(props = {}, users = []) {
   const userByEmail = new Map((users || []).map((u) => [String(u?.email || "").toLowerCase(), String(u?.name || u?.email || "")]));
-  const assigneeProp = props?.[TASK_ASSIGNEES_PROPERTY] || props?.[TASK_ASSIGNEES_PROPERTY_LEGACY] || { multi_select: [] };
-  const emails = (assigneeProp?.multi_select || [])
-    .map((item) => String(item?.name || "").trim().toLowerCase())
-    .filter(Boolean);
+  const userByName = new Map((users || []).map((u) => [String(u?.name || "").toLowerCase(), String(u?.email || "").toLowerCase()]));
 
-  const uniqueEmails = Array.from(new Set(emails));
+  const assigneeProp = props?.[TASK_ASSIGNEES_PROPERTY] || props?.[TASK_ASSIGNEES_PROPERTY_LEGACY] || {};
+
+  const rawEmails = [];
+
+  // multi_select: values are email strings stored as option names
+  if (Array.isArray(assigneeProp?.multi_select)) {
+    for (const item of assigneeProp.multi_select) {
+      const val = String(item?.name || "").trim().toLowerCase();
+      if (!val) continue;
+      if (val.includes("@")) {
+        rawEmails.push(val);
+      } else {
+        // value is a display name — look up by name
+        const found = userByName.get(val);
+        if (found) rawEmails.push(found);
+      }
+    }
+  }
+
+  // people: Notion native user property — read person.email
+  if (Array.isArray(assigneeProp?.people)) {
+    for (const person of assigneeProp.people) {
+      const email = String(person?.person?.email || person?.id || "").trim().toLowerCase();
+      if (email && email.includes("@")) rawEmails.push(email);
+    }
+  }
+
+  const uniqueEmails = Array.from(new Set(rawEmails));
   const names = uniqueEmails.map((email) => userByEmail.get(email) || email);
   return {
     emails: uniqueEmails,
