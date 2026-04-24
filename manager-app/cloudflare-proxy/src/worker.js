@@ -1187,25 +1187,29 @@ function parseAssigneesFromProperty(props = {}, users = []) {
 
   const rawEmails = [];
 
-  // multi_select: values are email strings stored as option names
+  const resolveVal = (val) => {
+    if (!val) return;
+    if (val.includes("@")) { rawEmails.push(val); return; }
+    const found = userByName.get(val);
+    if (found) rawEmails.push(found);
+  };
+
+  // select: single value
+  if (assigneeProp?.select?.name) {
+    resolveVal(String(assigneeProp.select.name).trim().toLowerCase());
+  }
+
+  // multi_select: values are email or name strings
   if (Array.isArray(assigneeProp?.multi_select)) {
     for (const item of assigneeProp.multi_select) {
-      const val = String(item?.name || "").trim().toLowerCase();
-      if (!val) continue;
-      if (val.includes("@")) {
-        rawEmails.push(val);
-      } else {
-        // value is a display name — look up by name
-        const found = userByName.get(val);
-        if (found) rawEmails.push(found);
-      }
+      resolveVal(String(item?.name || "").trim().toLowerCase());
     }
   }
 
   // people: Notion native user property — read person.email
   if (Array.isArray(assigneeProp?.people)) {
     for (const person of assigneeProp.people) {
-      const email = String(person?.person?.email || person?.id || "").trim().toLowerCase();
+      const email = String(person?.person?.email || "").trim().toLowerCase();
       if (email && email.includes("@")) rawEmails.push(email);
     }
   }
@@ -1656,7 +1660,10 @@ async function listManagerTasks(env, options = {}) {
     }));
 
     const filteredData = scope === "mine" && viewerEmail
-      ? data.filter((row) => Array.isArray(row?.assigneeEmails) && row.assigneeEmails.includes(viewerEmail))
+      ? data.filter((row) => {
+          const emails = Array.isArray(row?.assigneeEmails) ? row.assigneeEmails : [];
+          return emails.length === 0 || emails.includes(viewerEmail);
+        })
       : data;
 
     return {
@@ -1753,7 +1760,10 @@ async function listManagerFocusTasks(env, options = {}) {
     }));
 
     const scopedRows = scope === "mine" && viewerEmail
-      ? rows.filter((row) => Array.isArray(row?.assigneeEmails) && row.assigneeEmails.includes(viewerEmail))
+      ? rows.filter((row) => {
+          const emails = Array.isArray(row?.assigneeEmails) ? row.assigneeEmails : [];
+          return emails.length === 0 || emails.includes(viewerEmail);
+        })
       : rows;
 
     const today = [];
