@@ -3151,13 +3151,13 @@ function openEditMessageModal(id, text) {
   if (!modal || !idEl || !textEl) return;
   idEl.value = id;
   textEl.value = text;
-  modal.classList.remove('hidden');
+  modal.classList.add('active');
   setTimeout(() => textEl.focus(), 50);
 }
 
 function closeEditMessageModal() {
   const modal = document.getElementById('message-edit-modal');
-  if (modal) modal.classList.add('hidden');
+  if (modal) modal.classList.remove('active');
 }
 
 async function saveEditMessage() {
