@@ -156,10 +156,6 @@ h1 {
   flex-shrink: 0;
 }
 
-body.messages-active {
-  overflow: hidden;
-}
-
 .container {
   padding: 1rem;
   padding-bottom: calc(var(--tab-height) + 2rem + env(safe-area-inset-bottom));
