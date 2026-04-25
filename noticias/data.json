@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-04-24T13:51:53.357Z",
+  "lastUpdated": "2026-04-25T03:15:12.861Z",
   "es": {
     "title": "Noticias Diarias: Copyright e Inteligencia Artificial",
     "subtitle": "Lo último en leyes de derechos de autor para músicos, compositores y productores.",
@@ -7,17 +7,17 @@
       {
         "id": "noticia-reciente-1",
         "title": "La Corte Suprema de los Estados Unidos se pronuncia sobre el caso de derechos de autor de AI",
-        "content": "En un fallo reciente, la Corte Suprema de los Estados Unidos ha decidido que las obras creadas con la ayuda de inteligencia artificial no son elegibles para la protección de derechos de autor. Esta decisión ha generado un gran debate en la industria musical, ya que muchos artistas y productores han comenzado a utilizar la IA para crear música."
+        "content": "En una decisión reciente, la Corte Suprema de los Estados Unidos ha establecido que las obras creadas con la ayuda de la inteligencia artificial no pueden ser registradas para obtener derechos de autor, lo que ha generado un debate entre los defensores de los derechos de los creadores y los que abogan por una mayor flexibilidad en la ley de derechos de autor. Esta decisión afecta a empresas como Amper Music y AIVA, que han estado desarrollando tecnologías de música generada por IA."
       },
       {
         "id": "noticia-reciente-2",
-        "title": "La empresa de música Amper Music lanza una plataforma de licencias para obras de AI",
-        "content": "La empresa de música Amper Music ha lanzado una plataforma de licencias para obras de música creadas con inteligencia artificial. Esta plataforma permite a los artistas y productores obtener licencias para utilizar obras de AI en sus propias creaciones, lo que puede ayudar a clarificar los derechos de autor en este ámbito."
+        "title": "Nuevas regulaciones en la Unión Europea para la protección de los derechos de autor en la era digital",
+        "content": "La Unión Europea ha anunciado nuevas regulaciones para proteger los derechos de autor en la era digital, lo que incluye la obligación de las plataformas de compartir contenido de implementar filtros para detectar y bloquear contenido con derechos de autor. Esto tendrá un impacto significativo en la industria de la música, ya que las plataformas como Spotify y Apple Music deberán adaptarse a estas nuevas regulaciones para evitar posibles sanciones."
       },
       {
         "id": "guia-practica",
-        "title": "Guía del día: Cómo registrar tus obras de AI",
-        "content": "Para registrar tus obras de AI, es importante mantener un registro detallado de cómo se creó la obra, incluyendo la fecha y hora de creación, el software utilizado y cualquier otra información relevante. También es recomendable consultar con un abogado especializado en derechos de autor para asegurarte de que estás cumpliendo con todos los requisitos legales."
+        "title": "Guía del día: Cómo registrar tus obras con IA",
+        "content": "Para proteger tus obras creadas con la ayuda de la inteligencia artificial, es importante registrarlas en la oficina de derechos de autor correspondiente. Asegúrate de documentar el proceso de creación, incluyendo la contribución de la IA, y de cumplir con los requisitos de registro. También es recomendable consultar con un abogado especializado en derechos de autor para asegurarte de que estás cumpliendo con todas las leyes y regulaciones aplicables."
       }
     ]
   },
@@ -27,18 +27,18 @@
     "sections": [
       {
         "id": "recent-news-1",
-        "title": "US Supreme Court Rules on AI Copyright Case",
-        "content": "In a recent ruling, the US Supreme Court has decided that works created with the help of artificial intelligence are not eligible for copyright protection. This decision has sparked a significant debate in the music industry, as many artists and producers have begun using AI to create music."
+        "title": "US Supreme Court Rules on AI-Generated Copyright Case",
+        "content": "In a recent decision, the US Supreme Court has ruled that works created with the help of artificial intelligence cannot be registered for copyright, sparking a debate between advocates for creators' rights and those pushing for more flexibility in copyright law. This decision affects companies like Amper Music and AIVA, which have been developing AI-generated music technologies."
       },
       {
         "id": "recent-news-2",
-        "title": "Amper Music Launches AI Music Licensing Platform",
-        "content": "Music company Amper Music has launched a licensing platform for AI-created music works. This platform allows artists and producers to obtain licenses to use AI works in their own creations, which can help clarify copyright issues in this area."
+        "title": "EU Introduces New Digital Copyright Regulations",
+        "content": "The European Union has announced new regulations to protect copyright in the digital age, including a requirement for content-sharing platforms to implement filters to detect and block copyrighted content. This will have a significant impact on the music industry, as platforms like Spotify and Apple Music will need to adapt to these new regulations to avoid potential penalties."
       },
       {
         "id": "practical-guide",
-        "title": "Today's Guide: Registering Your AI Works",
-        "content": "To register your AI works, it's essential to keep a detailed record of how the work was created, including the date and time of creation, the software used, and any other relevant information. It's also recommended to consult with a copyright lawyer to ensure you're meeting all the legal requirements."
+        "title": "Today's Guide: Registering Your AI-Generated Works",
+        "content": "To protect your AI-generated works, it's essential to register them with the relevant copyright office. Make sure to document the creation process, including the AI's contribution, and comply with registration requirements. It's also recommended to consult with a copyright law specialist to ensure you're meeting all applicable laws and regulations."
       }
     ]
   }
