@@ -21,7 +21,7 @@ const DEUDAS_RECIBOS_FOLDER_ID = '157KDn-vbkuHH1L8xbaJBGz-oKmT7p5a9';
 const SPREADSHEET_RSM_ID = '14VsoPHGNTSUSbzMOqGWs2qSL-pGywPgjUoHD3MqIJfo'; // Recibos Salud Mariel
 const SALDOS_SHEET_ID    = '1-cX_qxld3ioSpcO9lEBPg90Db6AyK7SczpJTvj7rw4U'; // Saldos (fuente de verdad — Claude accede vía service account)
 const RSM_FOLDER_ID = '1-ZfeWQ-Rmh-Wm2WMCkULkN6MQWBuxYnj';
-const APP_VERSION  = 'v8.2.13';
+const APP_VERSION  = 'v8.2.14';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -4479,15 +4479,16 @@ function planner_render() {
         .length;
     const showBalance = plannerState.summaryShowBalance;
     const balanceTotal = Number(balance_getTotal()) || 0;
-    const displayAmount = showBalance ? balanceTotal : projectedBalanceFinal;
+    const coverage = (balanceTotal + balancePendingFixedIncome) - balancePendingFixed;
+    const displayAmount = showBalance ? balanceTotal : coverage;
     summaryEl.innerText = fmt.format(displayAmount);
     summaryEl.classList.toggle('text-danger', displayAmount < 0);
     summaryEl.classList.toggle('text-success', displayAmount >= 0);
     const labelEl = document.getElementById('plan-summary-label');
     if (labelEl) labelEl.innerText = showBalance ? 'Balance Disponible' : 'Te falta para cubrir gastos fijos';
     subEl.innerText = showBalance
-        ? `Balance actual en cuentas · toca la tarjeta para volver al planificador`
-        : `Balance proyectado final (balance actual - pagos pendientes) · ${fixedIncomeCount} ingresos fijos activos · Asignado ${fmt.format(plannerState.totals.assigned)} de ${fmt.format(activeIncomeTotal)}`;
+        ? `Balance actual en cuentas · toca la tarjeta para volver`
+        : `Balance actual + ingresos pendientes − gastos pendientes · ${fixedIncomeCount} ingresos fijos activos · Asignado ${fmt.format(plannerState.totals.assigned)} de ${fmt.format(activeIncomeTotal)}`;
 
     groupsEl.innerHTML = plannerState.incomes.map((income, idx) => {
         if (!income.isBalanceSource && doneSet.has(income.key)) return '';
