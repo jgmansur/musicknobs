@@ -21,7 +21,7 @@ const DEUDAS_RECIBOS_FOLDER_ID = '157KDn-vbkuHH1L8xbaJBGz-oKmT7p5a9';
 const SPREADSHEET_RSM_ID = '14VsoPHGNTSUSbzMOqGWs2qSL-pGywPgjUoHD3MqIJfo'; // Recibos Salud Mariel
 const SALDOS_SHEET_ID    = '1-cX_qxld3ioSpcO9lEBPg90Db6AyK7SczpJTvj7rw4U'; // Saldos (fuente de verdad — Claude accede vía service account)
 const RSM_FOLDER_ID = '1-ZfeWQ-Rmh-Wm2WMCkULkN6MQWBuxYnj';
-const APP_VERSION  = 'v8.2.23';
+const APP_VERSION  = 'v8.2.24';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -13730,7 +13730,7 @@ function skills_populate(skills) {
         const cat = catFilter?.value || '';
         const ai = aiFilter?.value || '';
         const filtered = (_skillsData || []).filter(s => {
-            const matchQ = !q || s.name.toLowerCase().includes(q) || (s.description||'').toLowerCase().includes(q);
+            const matchQ = !q || [s.name, s.description, s.trigger, s.howToUse, s.category, s.scope, ...(s.ais||[])].some(v => (v||'').toLowerCase().includes(q));
             const matchCat = !cat || s.category === cat;
             const matchAi = !ai || (s.ais || []).includes(ai);
             return matchQ && matchCat && matchAi;
