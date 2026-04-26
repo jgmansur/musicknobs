@@ -21,7 +21,7 @@ const DEUDAS_RECIBOS_FOLDER_ID = '157KDn-vbkuHH1L8xbaJBGz-oKmT7p5a9';
 const SPREADSHEET_RSM_ID = '14VsoPHGNTSUSbzMOqGWs2qSL-pGywPgjUoHD3MqIJfo'; // Recibos Salud Mariel
 const SALDOS_SHEET_ID    = '1-cX_qxld3ioSpcO9lEBPg90Db6AyK7SczpJTvj7rw4U'; // Saldos (fuente de verdad — Claude accede vía service account)
 const RSM_FOLDER_ID = '1-ZfeWQ-Rmh-Wm2WMCkULkN6MQWBuxYnj';
-const APP_VERSION  = 'v8.2.17';
+const APP_VERSION  = 'v8.2.18';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -2978,7 +2978,7 @@ function hormiga_setTabActive(tab) {
 }
 
 function hormiga_renderGastosTab(placeName) {
-    const entries = hormigaPanelState.gastos.filter(g => hormiga_normalizePlace(g.lugar) === placeName);
+    const entries = hormigaPanelState.gastos.filter(g => hormiga_normalizePlace(g.lugar, g.concepto) === placeName);
     const grouped = {};
     entries.forEach(g => {
         const key = hormiga_normalizeConcept(g.concepto) || placeName.toLowerCase();
@@ -2989,16 +2989,24 @@ function hormiga_renderGastosTab(placeName) {
 }
 
 function hormiga_renderProductosTab(placeName) {
-    const entries = hormigaPanelState.gastos.filter(g => hormiga_normalizePlace(g.lugar) === placeName);
-    const grouped = {};
+    const entries = hormigaPanelState.gastos.filter(g => hormiga_normalizePlace(g.lugar, g.concepto) === placeName);
+    const productTotals = {};
     entries.forEach(g => {
-        const stripped = hormiga_stripPartLabel(g.concepto);
-        const key = hormiga_normalizeConcept(stripped) || placeName.toLowerCase();
-        const displayName = stripped.charAt(0).toUpperCase() + stripped.slice(1) || key;
-        if (!grouped[key]) grouped[key] = { nombre: displayName, monto: 0 };
-        grouped[key].monto += g.monto;
+        const text = (g.concepto || '').toString();
+        const matched = HORMIGA_PRODUCT_RULES.filter(r => r.test.test(text));
+        if (matched.length) {
+            matched.forEach(r => {
+                if (!productTotals[r.label]) productTotals[r.label] = { nombre: r.label, monto: 0 };
+                productTotals[r.label].monto += g.monto;
+            });
+        } else {
+            const stripped = hormiga_stripPartLabel(text);
+            const name = stripped.charAt(0).toUpperCase() + stripped.slice(1).toLowerCase() || 'Varios';
+            if (!productTotals[name]) productTotals[name] = { nombre: name, monto: 0 };
+            productTotals[name].monto += g.monto;
+        }
     });
-    hormiga_renderBars(Object.values(grouped).sort((a, b) => b.monto - a.monto), false);
+    hormiga_renderBars(Object.values(productTotals).sort((a, b) => b.monto - a.monto), false);
 }
 
 window.hormiga_showTab = function(tab) {
