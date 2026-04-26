@@ -1,5 +1,5 @@
 {
-  "updated": "2026-04-20",
+  "updated": "2026-04-26",
   "roby": {
     "nombre": "Roberta",
     "grado": "3° de Primaria",
@@ -31,7 +31,7 @@
       }
     ],
     "analysis": {
-      "updated": "2026-04-18",
+      "updated": "2026-04-26",
       "trimestre": "2do Trimestre 2025-2026",
       "escuela": "Centro Educativo Naciones Unidas",
       "docente_esp": "Lucero López Ortíz",
@@ -96,15 +96,19 @@
       "conducta": "Excelente — comportamiento respetuoso, responsable y participativo en todas las áreas evaluadas.",
       "advertencias": [
         "Reading/Inglés con 6.5 — área más débil, requiere refuerzo en comprensión lectora en inglés.",
-        "Organización de material escolar marcada 'En ocasiones' — trabajar hábitos de orden en casa."
+        "Organización de material escolar marcada 'En ocasiones' — trabajar hábitos de orden en casa.",
+        "Terapia sensorial activa — asegurar continuidad semanal sin interrupciones prolongadas para sostener el progreso."
       ],
       "consejos": [
-        "Dedicar 15 minutos diarios a lectura en inglés para fortalecer comprensión.",
-        "Establecer una rutina de preparación de mochila la noche anterior.",
+        "Continuar la terapia de integración sensorial semanalmente — hay progresión documentada clara.",
+        "Reforzar en casa la respiración nasal (objetivo constante de terapia): practicar 5 min antes de dormir.",
+        "La rutina de mochila la noche anterior apoya tanto el objetivo escolar como el de terapia (organización).",
+        "Dedicar 15 minutos diarios a lectura en inglés — área más débil académica (6.5 en Reading).",
+        "Cuando dé una instrucción, pedir que repita lo que entendió antes de actuar — refuerza el objetivo de terapia.",
         "El español va bien (8.3) — mantener el hábito de lectura en español.",
-        "Su desarrollo emocional y conducta son un punto muy fuerte — reconocérselo."
+        "Reconocerle explícitamente su desarrollo emocional y conducta — es su punto más fuerte."
       ],
-      "observaciones": "Roberta muestra un perfil socioemocional muy sólido: empática, respetuosa y perseverante. El área académica que más necesita atención es Reading en inglés. En general es una alumna comprometida con buen rendimiento."
+      "observaciones": "Roberta muestra un perfil socioemocional muy sólido: empática, respetuosa y perseverante. Está en terapia de integración sensorial semanal (centro Juego) desde agosto 2025, trabajando atención/permanencia, coordinación de fuerza, respiración nasal y estimulación vestibular. Las áreas de oportunidad escolar (organización de material, completar tareas) son consistentes con los objetivos de terapia y muestran trabajo activo. Su fortaleza más clara sigue siendo el área socioemocional y la conducta positiva en el aula."
     },
     "historial": [
       {
@@ -184,7 +188,68 @@
         "observaciones": "Roberta muestra un perfil socioemocional muy sólido: empática, respetuosa y perseverante. El área académica que más necesita atención es Reading en inglés. En general es una alumna comprometida con buen rendimiento."
       }
     ],
-    "terapias": []
+    "terapias": [
+      {
+        "nombre": "Terapia de Integración Sensorial",
+        "centro": "Juego",
+        "terapeuta": "—",
+        "objetivo": "Integración sensorial, atención y permanencia, coordinación y distribución de fuerza corporal, respiración nasal, estimulación vestibular",
+        "inicio": "2025-08",
+        "frecuencia": "Semanal",
+        "nivel": 48,
+        "areas": [
+          "Masaje de presión profunda",
+          "Respiración nasal / Lengua al paladar",
+          "Atención y permanencia",
+          "Coordinación y distribución de fuerza",
+          "Estimulación vestibular (rampas, rollit)",
+          "Escucha de instrucciones completas"
+        ],
+        "avances": [
+          {
+            "fecha": "2025-11-11",
+            "nota": "Sesión de adaptación inicial. Masaje de presión, medición de tiempos en actividad, saltos con peso. Trabajo frente al espejo y comunicación. Respiración nasal."
+          },
+          {
+            "fecha": "2025-11-28",
+            "nota": "Masaje de presión. Fuerza corporal y distribución. Coordinación visual. Permanencia y seguridad."
+          },
+          {
+            "fecha": "2025-12-03",
+            "nota": "Masaje de presión. Atención con movimientos avanzados de manos. Refuerzo de indicaciones claras y masaje profundo."
+          },
+          {
+            "fecha": "2025-12-12",
+            "nota": "Masaje de presión. Avances en atención. Planeación de actividades en secuencia. Indicaciones claras de ser necesario."
+          },
+          {
+            "fecha": "2026-01-26",
+            "nota": "Masaje de presión. Restauración de actividades previas, organización en área. Trabajo de permanencia."
+          },
+          {
+            "fecha": "2026-02-10",
+            "nota": "Planeación de actividades. Respiración nasal, distribución corporal. Juegos con pelota. Masaje de presión profunda."
+          },
+          {
+            "fecha": "2026-02-25",
+            "nota": "Coordinación y paciencia corporal. Distribución de energía en músculos para equilibrio y balance. Aprendizaje clave: esperar la indicación completa antes de actuar. Masaje de presión."
+          },
+          {
+            "fecha": "2026-03-11",
+            "nota": "Sesión activa. Masaje de presión en cara y distribución de peso. Respiración nasal y lengua al paladar. Actividades de rampas y rollit/jostle (estimulación vestibular)."
+          },
+          {
+            "fecha": "2026-03-19",
+            "nota": "Planificación activa. Permanencia en nivel de actividad. Rampas, masaje, rollit/jostle vestibular."
+          },
+          {
+            "fecha": "2026-03-25",
+            "nota": "Atención y permanencia sentada. Fuerza y distribución corporal. Arco, olla, respiración nasal. Salto con cuerda y fuerza abdominal. Masaje entre almohadas (enrollar). Trabajo de escucha activa y actividad acuática."
+          }
+        ],
+        "notas": "Terapia de integración sensorial en centro Juego (inicio ~agosto 2025). Las 10 sesiones documentadas (nov 2025 – mar 2026) muestran progresión clara: de actividades de adaptación básica a ejercicios de mayor complejidad (salto con cuerda, fuerza abdominal, vestibular avanzado). El masaje de presión profunda y la respiración nasal son constantes en cada sesión. Área activa: seguir instrucciones completas antes de actuar — mejorando consistentemente."
+      }
+    ]
   },
   "hans": {
     "nombre": "Hans",
