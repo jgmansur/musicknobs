@@ -21,7 +21,7 @@ const DEUDAS_RECIBOS_FOLDER_ID = '157KDn-vbkuHH1L8xbaJBGz-oKmT7p5a9';
 const SPREADSHEET_RSM_ID = '14VsoPHGNTSUSbzMOqGWs2qSL-pGywPgjUoHD3MqIJfo'; // Recibos Salud Mariel
 const SALDOS_SHEET_ID    = '1-cX_qxld3ioSpcO9lEBPg90Db6AyK7SczpJTvj7rw4U'; // Saldos (fuente de verdad — Claude accede vía service account)
 const RSM_FOLDER_ID = '1-ZfeWQ-Rmh-Wm2WMCkULkN6MQWBuxYnj';
-const APP_VERSION  = 'v8.2.22';
+const APP_VERSION  = 'v8.2.23';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -13780,12 +13780,27 @@ function skills_renderGrid(skills) {
 }
 
 function skills_copyName(name, btn) {
-    navigator.clipboard.writeText(name).then(() => {
+    function onSuccess() {
         const orig = btn.textContent;
         btn.textContent = '✓ Copiado';
         btn.style.background = 'rgba(52,211,153,.2)';
         setTimeout(() => { btn.textContent = orig; btn.style.background = 'rgba(255,255,255,.08)'; }, 1500);
-    });
+    }
+    function fallback() {
+        const ta = document.createElement('textarea');
+        ta.value = name;
+        ta.style.cssText = 'position:fixed;top:-9999px;left:-9999px;opacity:0;';
+        document.body.appendChild(ta);
+        ta.focus();
+        ta.select();
+        try { document.execCommand('copy'); onSuccess(); } catch(e) { /* no-op */ }
+        document.body.removeChild(ta);
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(name).then(onSuccess).catch(fallback);
+    } else {
+        fallback();
+    }
 }
 
 function skills_openSheet(name) {
