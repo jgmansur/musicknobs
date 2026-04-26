@@ -1824,6 +1824,10 @@
             <button id="hormiga-back-btn" class="mini-btn hidden" onclick="hormiga_backToOverview()" style="font-size:0.8rem;">← Volver</button>
             <h4 id="hormiga-section-title" class="sheet-title" style="margin:0;font-size:0.95rem;">Gastos Frecuentes</h4>
           </div>
+          <div id="hormiga-view-toggle" class="hidden" style="display:flex;gap:0.4rem;margin-top:0.5rem;">
+            <button id="hormiga-tab-gastos" class="mini-btn active" onclick="hormiga_showTab('gastos')">Gastos</button>
+            <button id="hormiga-tab-productos" class="mini-btn" onclick="hormiga_showTab('productos')">Productos</button>
+          </div>
           <div id="hormiga-bars-container" style="display: flex; flex-direction: column; gap: 0.75rem; margin-top:0.6rem;">
             <!-- Barras se insertan dinámicamente aquí -->
           </div>

@@ -21,7 +21,7 @@ const DEUDAS_RECIBOS_FOLDER_ID = '157KDn-vbkuHH1L8xbaJBGz-oKmT7p5a9';
 const SPREADSHEET_RSM_ID = '14VsoPHGNTSUSbzMOqGWs2qSL-pGywPgjUoHD3MqIJfo'; // Recibos Salud Mariel
 const SALDOS_SHEET_ID    = '1-cX_qxld3ioSpcO9lEBPg90Db6AyK7SczpJTvj7rw4U'; // Saldos (fuente de verdad — Claude accede vía service account)
 const RSM_FOLDER_ID = '1-ZfeWQ-Rmh-Wm2WMCkULkN6MQWBuxYnj';
-const APP_VERSION  = 'v8.2.16';
+const APP_VERSION  = 'v8.2.17';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -2909,7 +2909,7 @@ async function fixed_confirmWaive(id, partIndex, source) {
 // =============================================
 // HORMIGA PANEL DETAIL
 // =============================================
-const hormigaPanelState = { gastos: [], total: 0, prevTotal: 0, monthName: '', prevMonthName: '' };
+const hormigaPanelState = { gastos: [], total: 0, prevTotal: 0, monthName: '', prevMonthName: '', currentPlace: null, currentTab: 'gastos' };
 
 function hormiga_openPanel() {
     document.getElementById('hormiga-panel').classList.remove('hidden');
@@ -2931,6 +2931,10 @@ function hormiga_normalizePlace(rawLugar) {
 
 function hormiga_normalizeConcept(raw) {
     return (raw || '').toString().normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim() || 'Sin concepto';
+}
+
+function hormiga_stripPartLabel(concepto) {
+    return (concepto || '').toString().replace(/\s*\(\d+\/\d+\)\s*/g, '').trim();
 }
 
 function hormiga_renderBars(arr, drillable) {
@@ -2965,7 +2969,15 @@ function hormiga_renderOverview() {
     hormiga_renderBars(arr, true);
 }
 
-window.hormiga_drillPlace = function(placeName) {
+function hormiga_setTabActive(tab) {
+    hormigaPanelState.currentTab = tab;
+    const gBtn = document.getElementById('hormiga-tab-gastos');
+    const pBtn = document.getElementById('hormiga-tab-productos');
+    if (gBtn) gBtn.classList.toggle('active', tab === 'gastos');
+    if (pBtn) pBtn.classList.toggle('active', tab === 'productos');
+}
+
+function hormiga_renderGastosTab(placeName) {
     const entries = hormigaPanelState.gastos.filter(g => hormiga_normalizePlace(g.lugar) === placeName);
     const grouped = {};
     entries.forEach(g => {
@@ -2973,19 +2985,50 @@ window.hormiga_drillPlace = function(placeName) {
         if (!grouped[key]) grouped[key] = { nombre: key, monto: 0 };
         grouped[key].monto += g.monto;
     });
-    const arr = Object.values(grouped).sort((a, b) => b.monto - a.monto);
+    hormiga_renderBars(Object.values(grouped).sort((a, b) => b.monto - a.monto), false);
+}
+
+function hormiga_renderProductosTab(placeName) {
+    const entries = hormigaPanelState.gastos.filter(g => hormiga_normalizePlace(g.lugar) === placeName);
+    const grouped = {};
+    entries.forEach(g => {
+        const stripped = hormiga_stripPartLabel(g.concepto);
+        const key = hormiga_normalizeConcept(stripped) || placeName.toLowerCase();
+        const displayName = stripped.charAt(0).toUpperCase() + stripped.slice(1) || key;
+        if (!grouped[key]) grouped[key] = { nombre: displayName, monto: 0 };
+        grouped[key].monto += g.monto;
+    });
+    hormiga_renderBars(Object.values(grouped).sort((a, b) => b.monto - a.monto), false);
+}
+
+window.hormiga_showTab = function(tab) {
+    hormiga_setTabActive(tab);
+    const place = hormigaPanelState.currentPlace;
+    if (!place) return;
+    if (tab === 'gastos') hormiga_renderGastosTab(place);
+    else hormiga_renderProductosTab(place);
+};
+
+window.hormiga_drillPlace = function(placeName) {
+    hormigaPanelState.currentPlace = placeName;
     const titleEl = document.getElementById('hormiga-section-title');
     const backBtn = document.getElementById('hormiga-back-btn');
+    const toggleEl = document.getElementById('hormiga-view-toggle');
     if (titleEl) titleEl.innerText = placeName;
     if (backBtn) backBtn.classList.remove('hidden');
-    hormiga_renderBars(arr, false);
+    if (toggleEl) toggleEl.classList.remove('hidden');
+    hormiga_setTabActive('gastos');
+    hormiga_renderGastosTab(placeName);
 };
 
 window.hormiga_backToOverview = function() {
+    hormigaPanelState.currentPlace = null;
     const titleEl = document.getElementById('hormiga-section-title');
     const backBtn = document.getElementById('hormiga-back-btn');
+    const toggleEl = document.getElementById('hormiga-view-toggle');
     if (titleEl) titleEl.innerText = 'Gastos Frecuentes';
     if (backBtn) backBtn.classList.add('hidden');
+    if (toggleEl) toggleEl.classList.add('hidden');
     hormiga_renderOverview();
 };
 
@@ -3002,10 +3045,13 @@ function renderHormigaPanel(gastos, total, prevTotal = 0, monthName = '', prevMo
         prevEl.style.color = prevTotal === 0 ? 'var(--text-muted)'
             : total > prevTotal ? 'var(--accent-orange)' : 'var(--accent-green)';
     }
+    hormigaPanelState.currentPlace = null;
     const titleEl = document.getElementById('hormiga-section-title');
     const backBtn = document.getElementById('hormiga-back-btn');
+    const toggleEl = document.getElementById('hormiga-view-toggle');
     if (titleEl) titleEl.innerText = 'Gastos Frecuentes';
     if (backBtn) backBtn.classList.add('hidden');
+    if (toggleEl) toggleEl.classList.add('hidden');
     hormiga_renderOverview();
 }
 
