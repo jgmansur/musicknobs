@@ -21,7 +21,7 @@ const DEUDAS_RECIBOS_FOLDER_ID = '157KDn-vbkuHH1L8xbaJBGz-oKmT7p5a9';
 const SPREADSHEET_RSM_ID = '14VsoPHGNTSUSbzMOqGWs2qSL-pGywPgjUoHD3MqIJfo'; // Recibos Salud Mariel
 const SALDOS_SHEET_ID    = '1-cX_qxld3ioSpcO9lEBPg90Db6AyK7SczpJTvj7rw4U'; // Saldos (fuente de verdad — Claude accede vía service account)
 const RSM_FOLDER_ID = '1-ZfeWQ-Rmh-Wm2WMCkULkN6MQWBuxYnj';
-const APP_VERSION  = 'v8.2.14';
+const APP_VERSION  = 'v8.2.15';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -5539,8 +5539,8 @@ async function autos_refreshCarValuationIfNeeded(car, options = {}) {
         if (!meliToken) meli_updateDebugInfo({ valuationPhase: 'valuation_no_token' });
         await ensureUsdMxnRateForTransactions();
         const valuationUrls = [
-            `https://api.mercadolibre.com/sites/MLM/search?limit=50&q=${encodeURIComponent(query)}`,
-            `https://api.mercadolibre.com/sites/MLM/search?category=MLM1744&limit=50&q=${encodeURIComponent(query)}`,
+            `https://api.mercadolibre.com/sites/MLM/search?category=MLM1744&condition=used&limit=50&q=${encodeURIComponent(query)}`,
+            `https://api.mercadolibre.com/sites/MLM/search?condition=used&limit=50&q=${encodeURIComponent(query)}`,
         ];
         let data = null;
         let lastError = '';
@@ -5588,7 +5588,7 @@ async function autos_refreshCarValuationIfNeeded(car, options = {}) {
             if (amount <= 0) continue;
             const currency = parseCurrencyCode((row?.currency_id || 'MXN').toString().toUpperCase());
             const mxn = convertTransactionAmountToMxn(amount, currency);
-            if (mxn > 0) prices.push(mxn);
+            if (mxn >= 50000 && mxn <= 4000000) prices.push(mxn);
         }
         prices.sort((a, b) => a - b);
         meli_updateDebugInfo({ valuationResultsCount: results.length, valuationPricesCount: prices.length });
@@ -7399,18 +7399,17 @@ function estudio_parseYear(value) {
 
 function estudio_ageYears(item) {
     const now = new Date();
-    let ageFromDate = 0;
     const purchaseDate = normalizeDateString(item?.fechaCompra || '');
     if (purchaseDate) {
         const d = new Date(purchaseDate);
-        if (!Number.isNaN(d.getTime())) {
+        if (!Number.isNaN(d.getTime()) && d < now) {
             const months = (now.getFullYear() - d.getFullYear()) * 12 + (now.getMonth() - d.getMonth());
-            ageFromDate = Math.max(0, months / 12);
+            const age = Math.max(0, months / 12);
+            if (age > 0) return age;
         }
     }
     const y = estudio_parseYear(item?.anioCompra || '');
-    const ageFromYear = y ? Math.max(0, now.getFullYear() - y + 0.5) : 0;
-    return Math.max(ageFromDate, ageFromYear);
+    return y ? Math.max(0, now.getFullYear() - y + 0.5) : 0;
 }
 
 function estudio_depreciationProfile(item, kind = 'inventario') {
