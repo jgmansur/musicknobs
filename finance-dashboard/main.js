@@ -21,7 +21,7 @@ const DEUDAS_RECIBOS_FOLDER_ID = '157KDn-vbkuHH1L8xbaJBGz-oKmT7p5a9';
 const SPREADSHEET_RSM_ID = '14VsoPHGNTSUSbzMOqGWs2qSL-pGywPgjUoHD3MqIJfo'; // Recibos Salud Mariel
 const SALDOS_SHEET_ID    = '1-cX_qxld3ioSpcO9lEBPg90Db6AyK7SczpJTvj7rw4U'; // Saldos (fuente de verdad — Claude accede vía service account)
 const RSM_FOLDER_ID = '1-ZfeWQ-Rmh-Wm2WMCkULkN6MQWBuxYnj';
-const APP_VERSION  = 'v8.2.19';
+const APP_VERSION  = 'v8.2.20';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -13467,6 +13467,8 @@ function escolar_renderChild(child, key) {
     const avatarEmoji = key === 'roby' ? '👧' : '👦';
     const docsHtml = escolar_renderDocs(child.documentos || []);
     const analysisHtml = escolar_renderAnalysis(child.analysis);
+    const terapiasHtml = escolar_renderTerapias(child.terapias || []);
+    const historialHtml = escolar_renderHistorial(child.historial || [], child.analysis);
 
     return `
     <div class="glass escolar-card">
@@ -13486,11 +13488,19 @@ function escolar_renderChild(child, key) {
         </div>
         <div class="escolar-analysis">
             <div class="escolar-analysis-header">
-                <h4>📊 Análisis</h4>
+                <h4>📊 Análisis Académico</h4>
                 ${child.analysis ? `<span class="escolar-updated">Actualizado: ${child.analysis.updated || '—'}</span>` : ''}
             </div>
             ${analysisHtml}
         </div>
+        ${terapiasHtml ? `<div class="escolar-analysis" style="margin-top:.6rem">
+            <div class="escolar-analysis-header"><h4>🧠 Terapias</h4></div>
+            ${terapiasHtml}
+        </div>` : ''}
+        ${historialHtml ? `<div class="escolar-analysis" style="margin-top:.6rem">
+            <div class="escolar-analysis-header"><h4>📅 Historial</h4></div>
+            ${historialHtml}
+        </div>` : ''}
     </div>`;
 }
 
@@ -13525,6 +13535,68 @@ function escolar_renderDocs(docs) {
             <span class="escolar-file-date">${d.modified || ''}</span>
         </div>`;
     }).join('');
+}
+
+function escolar_renderTerapias(terapias) {
+    if (!terapias || !terapias.length) {
+        return `<div class="escolar-empty" style="font-size:.75rem">Sin terapias registradas.<br><span style="font-size:.68rem;opacity:.6">Agregar en escolaridad.json → terapias[]</span></div>`;
+    }
+
+    const nivelColor = n => {
+        if (n >= 80) return '#34d399';
+        if (n >= 50) return '#fbbf24';
+        return '#f87171';
+    };
+
+    return terapias.map(t => {
+        const pct = Math.min(100, Math.max(0, t.nivel || 0));
+        const color = nivelColor(pct);
+        const avancesHtml = (t.avances || []).length
+            ? t.avances.map(a => `<div style="display:flex;gap:.4rem;align-items:flex-start;font-size:.72rem;padding:.2rem 0;border-bottom:1px solid rgba(255,255,255,.04)">
+                <span style="color:var(--text-muted);white-space:nowrap;min-width:5rem">${a.fecha || ''}</span>
+                <span style="color:var(--text-soft)">${a.nota}</span>
+              </div>`).join('')
+            : '';
+
+        return `<div style="background:rgba(255,255,255,.04);border-radius:.65rem;padding:.6rem .8rem;margin-bottom:.5rem">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.3rem">
+                <span style="font-weight:600;font-size:.82rem">${t.nombre || 'Sin nombre'}</span>
+                <span style="font-size:.7rem;color:${color};font-weight:700">${pct}%</span>
+            </div>
+            ${t.terapeuta ? `<div style="font-size:.72rem;color:var(--text-muted);margin-bottom:.3rem">👤 ${t.terapeuta}${t.frecuencia ? ` · ${t.frecuencia}` : ''}${t.inicio ? ` · desde ${t.inicio}` : ''}</div>` : ''}
+            ${t.objetivo ? `<div style="font-size:.73rem;color:var(--text-soft);margin-bottom:.4rem">🎯 ${t.objetivo}</div>` : ''}
+            <div style="height:4px;background:rgba(255,255,255,.08);border-radius:2px;margin-bottom:.5rem">
+                <div style="height:4px;width:${pct}%;background:${color};border-radius:2px;transition:width .4s"></div>
+            </div>
+            ${avancesHtml ? `<div style="margin-top:.3rem">${avancesHtml}</div>` : ''}
+            ${t.notas ? `<p style="font-size:.72rem;color:var(--text-muted);margin-top:.35rem;font-style:italic">${t.notas}</p>` : ''}
+        </div>`;
+    }).join('');
+}
+
+function escolar_renderHistorial(historial, currentAnalysis) {
+    if (!historial || !historial.length) return '';
+    const trimestres = [...historial];
+    if (currentAnalysis && !trimestres.some(h => h.trimestre === currentAnalysis.trimestre)) {
+        trimestres.push(currentAnalysis);
+    }
+    if (trimestres.length <= 1) return '';
+
+    const sorted = trimestres.slice().sort((a, b) => (a.updated || '').localeCompare(b.updated || ''));
+    return `<div style="display:flex;flex-direction:column;gap:.3rem">
+        ${sorted.map((h, i) => {
+            const isLatest = i === sorted.length - 1;
+            const prom = h.promedio?.toFixed(1) ?? '—';
+            const color = h.promedio >= 9 ? '#34d399' : h.promedio >= 7 ? '#fbbf24' : '#f87171';
+            return `<div style="display:flex;justify-content:space-between;align-items:center;font-size:.75rem;padding:.25rem .4rem;border-radius:.4rem;background:${isLatest ? 'rgba(59,130,246,.08)' : 'transparent'}">
+                <span style="color:var(--text-soft)">${h.trimestre || '—'}</span>
+                <div style="display:flex;gap:.6rem;align-items:center">
+                    <span style="color:${color};font-weight:700">${prom}</span>
+                    ${isLatest ? '<span style="font-size:.62rem;background:rgba(59,130,246,.2);color:#93c5fd;padding:1px 5px;border-radius:3px">actual</span>' : ''}
+                </div>
+            </div>`;
+        }).join('')}
+    </div>`;
 }
 
 function escolar_renderAnalysis(analysis) {
