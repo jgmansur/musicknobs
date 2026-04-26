@@ -1820,8 +1820,11 @@
             </div>
           </div>
 
-          <h4 class="sheet-title" style="margin-top: 1rem; font-size: 0.95rem;">Gastos Frecuentes</h4>
-          <div id="hormiga-bars-container" style="display: flex; flex-direction: column; gap: 0.75rem;">
+          <div style="display:flex;align-items:center;gap:0.5rem;margin-top:1rem;">
+            <button id="hormiga-back-btn" class="mini-btn hidden" onclick="hormiga_backToOverview()" style="font-size:0.8rem;">← Volver</button>
+            <h4 id="hormiga-section-title" class="sheet-title" style="margin:0;font-size:0.95rem;">Gastos Frecuentes</h4>
+          </div>
+          <div id="hormiga-bars-container" style="display: flex; flex-direction: column; gap: 0.75rem; margin-top:0.6rem;">
             <!-- Barras se insertan dinámicamente aquí -->
           </div>
         </div>

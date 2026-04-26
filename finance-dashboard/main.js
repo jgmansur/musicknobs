@@ -21,7 +21,7 @@ const DEUDAS_RECIBOS_FOLDER_ID = '157KDn-vbkuHH1L8xbaJBGz-oKmT7p5a9';
 const SPREADSHEET_RSM_ID = '14VsoPHGNTSUSbzMOqGWs2qSL-pGywPgjUoHD3MqIJfo'; // Recibos Salud Mariel
 const SALDOS_SHEET_ID    = '1-cX_qxld3ioSpcO9lEBPg90Db6AyK7SczpJTvj7rw4U'; // Saldos (fuente de verdad — Claude accede vía service account)
 const RSM_FOLDER_ID = '1-ZfeWQ-Rmh-Wm2WMCkULkN6MQWBuxYnj';
-const APP_VERSION  = 'v8.2.15';
+const APP_VERSION  = 'v8.2.16';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -2909,6 +2909,8 @@ async function fixed_confirmWaive(id, partIndex, source) {
 // =============================================
 // HORMIGA PANEL DETAIL
 // =============================================
+const hormigaPanelState = { gastos: [], total: 0, prevTotal: 0, monthName: '', prevMonthName: '' };
+
 function hormiga_openPanel() {
     document.getElementById('hormiga-panel').classList.remove('hidden');
     document.body.style.overflow = 'hidden';
@@ -2919,7 +2921,76 @@ function hormiga_closePanel() {
     document.body.style.overflow = '';
 }
 
+function hormiga_normalizePlace(rawLugar) {
+    const raw = (rawLugar || '').toString().trim();
+    const n = raw.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+    if (!n) return 'Varios';
+    if (n.includes('oxxo')) return 'Oxxo';
+    return raw.charAt(0).toUpperCase() + raw.slice(1).toLowerCase();
+}
+
+function hormiga_normalizeConcept(raw) {
+    return (raw || '').toString().normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim() || 'Sin concepto';
+}
+
+function hormiga_renderBars(arr, drillable) {
+    const container = document.getElementById('hormiga-bars-container');
+    if (!arr.length) {
+        container.innerHTML = '<p class="text-muted" style="text-align:center;font-size:0.85rem">No hay registros</p>';
+        return;
+    }
+    const maxMonto = arr[0].monto;
+    container.innerHTML = arr.map(item => {
+        const pct = Math.max(5, (item.monto / maxMonto) * 100);
+        const safeName = item.nombre.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+        const clickAttr = drillable ? `onclick="hormiga_drillPlace('${safeName}')" style="cursor:pointer;"` : '';
+        const hint = drillable ? `<span style="font-size:0.7rem;opacity:0.45;margin-left:3px;">›</span>` : '';
+        return `<div class="progress-bar-container" ${clickAttr}>
+            <div class="pb-header">
+                <span class="pb-name">${item.nombre}${hint}</span>
+                <span class="pb-amount">${formatCurrency(item.monto)}</span>
+            </div>
+            <div class="pb-track"><div class="pb-fill" style="width:${pct}%"></div></div>
+        </div>`;
+    }).join('');
+}
+
+function hormiga_renderOverview() {
+    const agrupados = {};
+    hormigaPanelState.gastos.forEach(g => {
+        const key = hormiga_normalizePlace(g.lugar);
+        agrupados[key] = (agrupados[key] || 0) + g.monto;
+    });
+    const arr = Object.keys(agrupados).map(k => ({ nombre: k, monto: agrupados[k] })).sort((a, b) => b.monto - a.monto);
+    hormiga_renderBars(arr, true);
+}
+
+window.hormiga_drillPlace = function(placeName) {
+    const entries = hormigaPanelState.gastos.filter(g => hormiga_normalizePlace(g.lugar) === placeName);
+    const grouped = {};
+    entries.forEach(g => {
+        const key = hormiga_normalizeConcept(g.concepto) || placeName.toLowerCase();
+        if (!grouped[key]) grouped[key] = { nombre: key, monto: 0 };
+        grouped[key].monto += g.monto;
+    });
+    const arr = Object.values(grouped).sort((a, b) => b.monto - a.monto);
+    const titleEl = document.getElementById('hormiga-section-title');
+    const backBtn = document.getElementById('hormiga-back-btn');
+    if (titleEl) titleEl.innerText = placeName;
+    if (backBtn) backBtn.classList.remove('hidden');
+    hormiga_renderBars(arr, false);
+};
+
+window.hormiga_backToOverview = function() {
+    const titleEl = document.getElementById('hormiga-section-title');
+    const backBtn = document.getElementById('hormiga-back-btn');
+    if (titleEl) titleEl.innerText = 'Gastos Frecuentes';
+    if (backBtn) backBtn.classList.add('hidden');
+    hormiga_renderOverview();
+};
+
 function renderHormigaPanel(gastos, total, prevTotal = 0, monthName = '', prevMonthName = '') {
+    Object.assign(hormigaPanelState, { gastos, total, prevTotal, monthName, prevMonthName });
     const currLabel = document.getElementById('bs-hormiga-label');
     const prevLabel = document.getElementById('bs-hormiga-prev-label');
     if (currLabel) currLabel.innerText = monthName ? `${monthName} (Actual)` : 'Este Mes';
@@ -2928,52 +2999,14 @@ function renderHormigaPanel(gastos, total, prevTotal = 0, monthName = '', prevMo
     const prevEl = document.getElementById('bs-hormiga-prev');
     if (prevEl) {
         prevEl.innerText = formatCurrency(prevTotal);
-        // Color hint: if current > previous month, spending is up (danger); equal or less = okay
         prevEl.style.color = prevTotal === 0 ? 'var(--text-muted)'
             : total > prevTotal ? 'var(--accent-orange)' : 'var(--accent-green)';
     }
-    
-    // Agrupar por lugar/concepto
-    const agrupados = {};
-    const normalizeHormigaPlace = (rawLugar) => {
-        const raw = (rawLugar || '').toString().trim();
-        const normalized = raw
-            .normalize('NFD')
-            .replace(/[\u0300-\u036f]/g, '')
-            .toLowerCase();
-        if (!normalized) return 'Varios';
-        // Regla solicitada: agrupar cualquier variante de Oxxo como un solo lugar
-        if (normalized.includes('oxxo')) return 'Oxxo';
-        return raw.charAt(0).toUpperCase() + raw.slice(1).toLowerCase();
-    };
-    gastos.forEach(g => {
-        const key = normalizeHormigaPlace(g.lugar);
-        agrupados[key] = (agrupados[key] || 0) + g.monto;
-    });
-
-    const arr = Object.keys(agrupados).map(k => ({ nombre: k, monto: agrupados[k] }));
-    arr.sort((a,b) => b.monto - a.monto); // Mayor gasto primero
-
-    const container = document.getElementById('hormiga-bars-container');
-    if (!arr.length) {
-        container.innerHTML = '<p class="text-muted" style="text-align:center;font-size:0.85rem">No hay registros aún</p>';
-        return;
-    }
-    const maxMonto = arr[0].monto;
-
-    container.innerHTML = arr.map(item => {
-        const pct = Math.max(5, (item.monto / maxMonto) * 100);
-        return `
-        <div class="progress-bar-container">
-            <div class="pb-header">
-                <span class="pb-name">${item.nombre}</span>
-                <span class="pb-amount">${formatCurrency(item.monto)}</span>
-            </div>
-            <div class="pb-track">
-                <div class="pb-fill" style="width: ${pct}%"></div>
-            </div>
-        </div>`;
-    }).join('');
+    const titleEl = document.getElementById('hormiga-section-title');
+    const backBtn = document.getElementById('hormiga-back-btn');
+    if (titleEl) titleEl.innerText = 'Gastos Frecuentes';
+    if (backBtn) backBtn.classList.add('hidden');
+    hormiga_renderOverview();
 }
 
 // Chart mode: 'daily' | 'monthly'
