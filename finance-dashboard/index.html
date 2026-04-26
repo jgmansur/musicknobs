@@ -635,11 +635,11 @@
            VIEW: PLAN DE PAGOS (Tab 5)
            ══════════════════════════════════ -->
       <div id="view-plan" class="view">
-        <div class="glass balance-card">
-          <p class="balance-label">Planificador de Pagos por Ingreso</p>
+        <div class="glass balance-card" onclick="planner_toggleSummary()" style="cursor:pointer;">
+          <p id="plan-summary-label" class="balance-label">Te falta para cubrir gastos fijos</p>
           <h2 id="plan-summary" class="balance-amount">$0.00</h2>
           <div id="plan-summary-sub" class="diff-label">Cargando entradas fijas...</div>
-          <button class="secondary-btn plan-reset-btn" onclick="planner_resetAssignments()">Reiniciar movimientos manuales</button>
+          <button class="secondary-btn plan-reset-btn" onclick="event.stopPropagation(); planner_resetAssignments()">Reiniciar movimientos manuales</button>
         </div>
         <div id="plan-income-groups" class="movimientos-list glass" style="margin-top:1rem;"></div>
       </div>
