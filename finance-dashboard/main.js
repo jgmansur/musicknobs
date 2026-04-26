@@ -21,7 +21,7 @@ const DEUDAS_RECIBOS_FOLDER_ID = '157KDn-vbkuHH1L8xbaJBGz-oKmT7p5a9';
 const SPREADSHEET_RSM_ID = '14VsoPHGNTSUSbzMOqGWs2qSL-pGywPgjUoHD3MqIJfo'; // Recibos Salud Mariel
 const SALDOS_SHEET_ID    = '1-cX_qxld3ioSpcO9lEBPg90Db6AyK7SczpJTvj7rw4U'; // Saldos (fuente de verdad — Claude accede vía service account)
 const RSM_FOLDER_ID = '1-ZfeWQ-Rmh-Wm2WMCkULkN6MQWBuxYnj';
-const APP_VERSION  = 'v8.2.25';
+const APP_VERSION  = 'v8.2.26';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -13695,6 +13695,11 @@ async function skills_cargarVista() {
     const grid = document.getElementById('skills-grid');
     if (!grid) return;
     grid.innerHTML = '<div style="color:rgba(255,255,255,.4);text-align:center;padding:2rem;">Cargando skills...</div>';
+    // Wire sheet close controls once
+    const backdrop = document.getElementById('skills-sheet-backdrop');
+    const closeBtn = document.querySelector('#skills-sheet button');
+    if (backdrop && !backdrop._wired) { backdrop._wired = true; backdrop.addEventListener('click', skills_closeSheet); }
+    if (closeBtn && !closeBtn._wired) { closeBtn._wired = true; closeBtn.addEventListener('click', skills_closeSheet); }
     try {
         const resp = await fetch('./public/skills.json?v=' + APP_VERSION);
         const json = await resp.json();
