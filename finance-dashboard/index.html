@@ -1822,7 +1822,8 @@
 
           <div style="display:flex;align-items:center;gap:0.5rem;margin-top:1rem;">
             <button id="hormiga-back-btn" class="mini-btn hidden" onclick="hormiga_backToOverview()" style="font-size:0.8rem;">← Volver</button>
-            <h4 id="hormiga-section-title" class="sheet-title" style="margin:0;font-size:0.95rem;">Gastos Frecuentes</h4>
+            <h4 id="hormiga-section-title" class="sheet-title" style="margin:0;font-size:0.95rem;flex:1;">Gastos Frecuentes</h4>
+            <button id="hormiga-edit-btn" class="icon-btn" onclick="hormiga_openEditor()" title="Editar grupos de productos" style="font-size:0.9rem;padding:0.25rem 0.45rem;">⚙️</button>
           </div>
           <div id="hormiga-view-toggle" class="hidden" style="display:flex;gap:0.4rem;margin-top:0.5rem;">
             <button id="hormiga-tab-gastos" class="mini-btn active" onclick="hormiga_showTab('gastos')">Gastos</button>
@@ -1830,6 +1831,24 @@
           </div>
           <div id="hormiga-bars-container" style="display: flex; flex-direction: column; gap: 0.75rem; margin-top:0.6rem;">
             <!-- Barras se insertan dinámicamente aquí -->
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ HORMIGA TAXONOMY EDITOR PANEL ══ -->
+      <div id="hormiga-editor-panel" class="bottom-sheet hidden">
+        <div id="hormiga-editor-overlay" class="bottom-sheet-overlay" onclick="hormiga_closeEditor()"></div>
+        <div class="bottom-sheet-content glass hormiga-panel-inner">
+          <div class="sheet-handle"></div>
+          <div class="balance-panel-header">
+            <h3 class="balance-panel-title">⚙️ Grupos de Productos</h3>
+            <button class="icon-btn" onclick="hormiga_closeEditor()" aria-label="Cerrar">✕</button>
+          </div>
+          <p style="font-size:0.8rem;opacity:0.6;margin:0.3rem 0 0.8rem;">Personalizá los grupos para la vista de Productos.</p>
+          <div id="hormiga-editor-list" style="display:flex;flex-direction:column;gap:0.6rem;max-height:55vh;overflow-y:auto;padding-right:2px;"></div>
+          <div style="margin-top:1rem;display:flex;flex-direction:column;gap:0.4rem;">
+            <button class="mini-btn" onclick="hormiga_addGroup()" style="width:100%;padding:0.45rem;">+ Agregar Grupo</button>
+            <button class="mini-btn" onclick="hormiga_resetTaxonomy()" style="width:100%;padding:0.45rem;font-size:0.78rem;opacity:0.65;">↺ Restaurar predeterminados</button>
           </div>
         </div>
       </div>

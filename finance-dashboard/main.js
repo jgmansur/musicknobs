@@ -21,7 +21,7 @@ const DEUDAS_RECIBOS_FOLDER_ID = '157KDn-vbkuHH1L8xbaJBGz-oKmT7p5a9';
 const SPREADSHEET_RSM_ID = '14VsoPHGNTSUSbzMOqGWs2qSL-pGywPgjUoHD3MqIJfo'; // Recibos Salud Mariel
 const SALDOS_SHEET_ID    = '1-cX_qxld3ioSpcO9lEBPg90Db6AyK7SczpJTvj7rw4U'; // Saldos (fuente de verdad — Claude accede vía service account)
 const RSM_FOLDER_ID = '1-ZfeWQ-Rmh-Wm2WMCkULkN6MQWBuxYnj';
-const APP_VERSION  = 'v8.2.18';
+const APP_VERSION  = 'v8.2.19';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -2921,11 +2921,45 @@ function hormiga_closePanel() {
     document.body.style.overflow = '';
 }
 
-function hormiga_normalizePlace(rawLugar) {
+// Default product taxonomy — user overrides persisted in localStorage 'hormiga_taxonomy_overrides'
+const HORMIGA_PRODUCT_RULES_DEFAULT = [
+    { label: 'Terea Blue',           keywords: ['terea'] },
+    { label: 'Zyn',                  keywords: ['zyn'] },
+    { label: 'Cigarro',              keywords: ['cigarro', 'cigarette', 'cigarillo'] },
+    { label: 'Coca-Cola / Refresco', keywords: ['coca', 'coca-cola', 'cocacola', 'refresco', 'sprite', 'pepsi', 'fanta', '7up', 'sidral', 'limonada', 'tamarindo', 'mangonada', 'jarrito'] },
+    { label: 'Agua',                 keywords: ['agua'] },
+    { label: 'Cerveza',              keywords: ['cerveza', 'chela', 'caguama', 'caguamon', 'modelo', 'corona', 'tecate', 'victoria', 'michelada', 'pacifico', 'indio', 'clara'] },
+    { label: 'Licor / Spirits',      keywords: ['mezcal', 'tequila', 'ron', 'vodka', 'whisky', 'brandy', 'vino', 'wine', 'ginebra', 'sotol'] },
+    { label: 'Cafe',                 keywords: ['cafe', 'nescafe', 'capuchino', 'latte', 'americano', 'frappuccino'] },
+    { label: 'Dulces / Botana',      keywords: ['dulce', 'chicle', 'paleta', 'chocolate', 'snack', 'papas', 'botana', 'chicharron', 'doritos', 'cheetos', 'ruffles', 'tostitos', 'pringles', 'gomita', 'mazapan', 'glorias'] },
+    { label: 'Comida / Antojo',      keywords: ['torta', 'taco', 'burger', 'hamburguesa', 'pizza', 'sushi', 'pollo', 'burrito', 'quesadilla', 'enchilada', 'tamal', 'elote', 'esquite', 'hotdog', 'sandwich'] },
+];
+
+function hormiga_getProductRules() {
+    const overrides = JSON.parse(localStorage.getItem('hormiga_taxonomy_overrides') || '[]');
+    const labelMap = {};
+    HORMIGA_PRODUCT_RULES_DEFAULT.forEach(r => { labelMap[r.label] = { ...r }; });
+    overrides.forEach(r => { labelMap[r.label] = { ...r }; });
+    return Object.values(labelMap)
+        .filter(r => r.keywords && r.keywords.length > 0)
+        .map(r => ({
+            label: r.label,
+            keywords: r.keywords,
+            test: new RegExp(r.keywords.map(k => k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|'), 'i'),
+        }));
+}
+
+function hormiga_normalizePlace(rawLugar, concepto) {
+    const c = (concepto || '').toString().normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+    if (c.includes('en el oxxo') || /^oxxo/i.test(concepto || '')) return 'Oxxo';
     const raw = (rawLugar || '').toString().trim();
     const n = raw.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
     if (!n) return 'Varios';
     if (n.includes('oxxo')) return 'Oxxo';
+    if (n.includes('brasilia')) return 'Brasilia';
+    if (n.includes('dany') || n.includes('trova')) return 'Dany Trova';
+    if (n.includes('cine') || n.includes('cinemex') || n.includes('cinepolis')) return 'Cine';
+    if (n.includes('cenu')) return 'Tiendita CENU';
     return raw.charAt(0).toUpperCase() + raw.slice(1).toLowerCase();
 }
 
@@ -2962,7 +2996,7 @@ function hormiga_renderBars(arr, drillable) {
 function hormiga_renderOverview() {
     const agrupados = {};
     hormigaPanelState.gastos.forEach(g => {
-        const key = hormiga_normalizePlace(g.lugar);
+        const key = hormiga_normalizePlace(g.lugar, g.concepto);
         agrupados[key] = (agrupados[key] || 0) + g.monto;
     });
     const arr = Object.keys(agrupados).map(k => ({ nombre: k, monto: agrupados[k] })).sort((a, b) => b.monto - a.monto);
@@ -2993,7 +3027,7 @@ function hormiga_renderProductosTab(placeName) {
     const productTotals = {};
     entries.forEach(g => {
         const text = (g.concepto || '').toString();
-        const matched = HORMIGA_PRODUCT_RULES.filter(r => r.test.test(text));
+        const matched = hormiga_getProductRules().filter(r => r.test.test(text));
         if (matched.length) {
             matched.forEach(r => {
                 if (!productTotals[r.label]) productTotals[r.label] = { nombre: r.label, monto: 0 };
@@ -3039,6 +3073,124 @@ window.hormiga_backToOverview = function() {
     if (toggleEl) toggleEl.classList.add('hidden');
     hormiga_renderOverview();
 };
+// ── HORMIGA TAXONOMY EDITOR ──────────────────────────────────────────────────
+function hormiga_getOverrides() {
+    return JSON.parse(localStorage.getItem('hormiga_taxonomy_overrides') || '[]');
+}
+
+function hormiga_saveOverrides(overrides) {
+    localStorage.setItem('hormiga_taxonomy_overrides', JSON.stringify(overrides));
+}
+
+window.hormiga_openEditor = function() {
+    document.getElementById('hormiga-editor-panel').classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+    hormiga_renderEditorList();
+};
+
+window.hormiga_closeEditor = function() {
+    document.getElementById('hormiga-editor-panel').classList.add('hidden');
+    document.body.style.overflow = '';
+};
+
+function hormiga_renderEditorList() {
+    const rules = hormiga_getProductRules();
+    const overrides = hormiga_getOverrides();
+    const overrideLabels = new Set(overrides.map(r => r.label));
+    const defaultLabels = new Set(HORMIGA_PRODUCT_RULES_DEFAULT.map(r => r.label));
+    const container = document.getElementById('hormiga-editor-list');
+    if (!container) return;
+    container.innerHTML = rules.map(rule => {
+        const isCustom = overrideLabels.has(rule.label) && !defaultLabels.has(rule.label);
+        const isModified = overrideLabels.has(rule.label) && defaultLabels.has(rule.label);
+        const badge = isCustom
+            ? '<span style="font-size:0.65rem;background:var(--accent-blue,#3b82f6);color:#fff;padding:1px 5px;border-radius:4px;margin-left:5px;">nuevo</span>'
+            : isModified
+            ? '<span style="font-size:0.65rem;background:var(--accent-orange,#f59e0b);color:#fff;padding:1px 5px;border-radius:4px;margin-left:5px;">editado</span>'
+            : '';
+        const labelSafe = rule.label.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+        const kwHtml = rule.keywords.map(kw => {
+            const kwSafe = kw.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+            return `<span style="display:inline-flex;align-items:center;gap:2px;background:rgba(255,255,255,0.1);border-radius:4px;padding:2px 6px;font-size:0.75rem;">${kw}<span onclick="hormiga_removeKeyword('${labelSafe}','${kwSafe}')" style="cursor:pointer;margin-left:3px;opacity:0.7;line-height:1;">×</span></span>`;
+        }).join('');
+        return `<div style="background:rgba(255,255,255,0.05);border-radius:8px;padding:0.6rem 0.8rem;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.4rem;">
+                <span style="font-size:0.85rem;font-weight:600;">${rule.label}${badge}</span>
+                <div style="display:flex;gap:0.3rem;">
+                    <button class="mini-btn" onclick="hormiga_addKeywordPrompt('${labelSafe}')" style="font-size:0.7rem;padding:2px 8px;">+ kw</button>
+                    <button class="mini-btn" onclick="hormiga_deleteGroup('${labelSafe}')" style="font-size:0.7rem;padding:2px 8px;opacity:0.7;">🗑</button>
+                </div>
+            </div>
+            <div style="display:flex;flex-wrap:wrap;gap:4px;">${kwHtml}</div>
+        </div>`;
+    }).join('');
+}
+
+window.hormiga_addKeywordPrompt = function(label) {
+    const kw = prompt('Agregar palabra clave al grupo "' + label + '":');
+    if (!kw || !kw.trim()) return;
+    const overrides = hormiga_getOverrides();
+    const defRule = HORMIGA_PRODUCT_RULES_DEFAULT.find(r => r.label === label);
+    const idx = overrides.findIndex(r => r.label === label);
+    if (idx >= 0) {
+        if (!overrides[idx].keywords.includes(kw.trim())) overrides[idx].keywords.push(kw.trim());
+    } else if (defRule) {
+        overrides.push({ label, keywords: [...defRule.keywords, kw.trim()] });
+    } else {
+        overrides.push({ label, keywords: [kw.trim()] });
+    }
+    hormiga_saveOverrides(overrides);
+    hormiga_renderEditorList();
+};
+
+window.hormiga_removeKeyword = function(label, kw) {
+    const overrides = hormiga_getOverrides();
+    const defRule = HORMIGA_PRODUCT_RULES_DEFAULT.find(r => r.label === label);
+    const idx = overrides.findIndex(r => r.label === label);
+    const currentKws = idx >= 0 ? overrides[idx].keywords : (defRule ? defRule.keywords : []);
+    const newKws = currentKws.filter(k => k !== kw);
+    if (idx >= 0) { overrides[idx].keywords = newKws; }
+    else { overrides.push({ label, keywords: newKws }); }
+    hormiga_saveOverrides(overrides);
+    hormiga_renderEditorList();
+};
+
+window.hormiga_deleteGroup = function(label) {
+    if (!confirm('\u00bfEliminar el grupo "' + label + '"?')) return;
+    const overrides = hormiga_getOverrides();
+    const isDefault = HORMIGA_PRODUCT_RULES_DEFAULT.some(r => r.label === label);
+    const idx = overrides.findIndex(r => r.label === label);
+    if (isDefault) {
+        if (idx >= 0) overrides[idx].keywords = [];
+        else overrides.push({ label, keywords: [] });
+    } else {
+        if (idx >= 0) overrides.splice(idx, 1);
+    }
+    hormiga_saveOverrides(overrides);
+    hormiga_renderEditorList();
+};
+
+window.hormiga_addGroup = function() {
+    const name = prompt('Nombre del nuevo grupo:');
+    if (!name || !name.trim()) return;
+    const kws = prompt('Palabras clave para "' + name.trim() + '" (separadas por coma):');
+    if (!kws) return;
+    const keywords = kws.split(',').map(k => k.trim()).filter(Boolean);
+    if (!keywords.length) return;
+    const overrides = hormiga_getOverrides();
+    const idx = overrides.findIndex(r => r.label === name.trim());
+    if (idx >= 0) { overrides[idx].keywords = [...new Set([...overrides[idx].keywords, ...keywords])]; }
+    else { overrides.push({ label: name.trim(), keywords }); }
+    hormiga_saveOverrides(overrides);
+    hormiga_renderEditorList();
+};
+
+window.hormiga_resetTaxonomy = function() {
+    if (!confirm('\u00bfRestaurar todos los grupos a predeterminados? Se perder\u00e1n los cambios personalizados.')) return;
+    localStorage.removeItem('hormiga_taxonomy_overrides');
+    hormiga_renderEditorList();
+};
+// ── END HORMIGA TAXONOMY EDITOR ──────────────────────────────────────────────
 
 function renderHormigaPanel(gastos, total, prevTotal = 0, monthName = '', prevMonthName = '') {
     Object.assign(hormigaPanelState, { gastos, total, prevTotal, monthName, prevMonthName });
