@@ -21,7 +21,7 @@ const DEUDAS_RECIBOS_FOLDER_ID = '157KDn-vbkuHH1L8xbaJBGz-oKmT7p5a9';
 const SPREADSHEET_RSM_ID = '14VsoPHGNTSUSbzMOqGWs2qSL-pGywPgjUoHD3MqIJfo'; // Recibos Salud Mariel
 const SALDOS_SHEET_ID    = '1-cX_qxld3ioSpcO9lEBPg90Db6AyK7SczpJTvj7rw4U'; // Saldos (fuente de verdad — Claude accede vía service account)
 const RSM_FOLDER_ID = '1-ZfeWQ-Rmh-Wm2WMCkULkN6MQWBuxYnj';
-const APP_VERSION  = 'v8.2.24';
+const APP_VERSION  = 'v8.2.25';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -13722,6 +13722,18 @@ function skills_populate(skills) {
 
     skills_renderGrid(skills);
 
+    // Event delegation — copy + details
+    const grid = document.getElementById('skills-grid');
+    if (grid && !grid._skillsDelegated) {
+        grid._skillsDelegated = true;
+        grid.addEventListener('click', e => {
+            const copyBtn = e.target.closest('[data-copy]');
+            if (copyBtn) { skills_copyName(copyBtn.dataset.copy, copyBtn); return; }
+            const detailBtn = e.target.closest('[data-details]');
+            if (detailBtn) { skills_openSheet(detailBtn.dataset.details); return; }
+        });
+    }
+
     // Wire up filters
     const search = document.getElementById('skills-search');
     const aiFilter = document.getElementById('skills-filter-ai');
@@ -13761,19 +13773,20 @@ function skills_renderGrid(skills) {
         'SDD / Arquitectura': '#fbbf24',
     };
 
-    grid.innerHTML = skills.map((s, i) => {
+    grid.innerHTML = skills.map(s => {
         const color = catColors[s.category] || '#94a3b8';
         const aisHtml = (s.ais || []).map(ai => `<span style="font-size:.68rem;padding:.15rem .45rem;border-radius:.35rem;background:rgba(255,255,255,.08);color:rgba(255,255,255,.6);">${ai}</span>`).join(' ');
-        const desc = s.description ? s.description.slice(0, 110) + (s.description.length > 110 ? '…' : '') : '';
+        const desc = s.description ? s.description.slice(0, 110) + (s.description.length > 110 ? '\u2026' : '') : '';
+        const safeName = s.name.replace(/&/g,'&amp;').replace(/"/g,'&quot;');
         return `<div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:.75rem;padding:.85rem 1rem;display:flex;flex-direction:column;gap:.4rem;">
           <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:.5rem;flex-wrap:wrap;">
-            <button onclick="skills_copyName('${s.name.replace(/'/g,"\'")}',this)" style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:.5rem;padding:.3rem .7rem;color:inherit;cursor:pointer;font-size:.82rem;font-weight:600;font-family:monospace;transition:background .15s;" title="Click para copiar">${s.name}</button>
+            <button data-copy="${safeName}" style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:.5rem;padding:.3rem .7rem;color:inherit;cursor:pointer;font-size:.82rem;font-weight:600;font-family:monospace;transition:background .15s;" title="Click para copiar">${s.name}</button>
             <span style="font-size:.7rem;padding:.15rem .55rem;border-radius:1rem;background:${color}22;color:${color};border:1px solid ${color}44;white-space:nowrap;">${s.category}</span>
           </div>
           ${desc ? `<p style="margin:0;font-size:.79rem;color:rgba(255,255,255,.55);line-height:1.4;">${desc}</p>` : ''}
           <div style="display:flex;justify-content:space-between;align-items:center;gap:.4rem;flex-wrap:wrap;margin-top:.1rem;">
             <div style="display:flex;gap:.3rem;flex-wrap:wrap;">${aisHtml}</div>
-            <button onclick='skills_openSheet(${JSON.stringify(s.name)})' style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:.45rem;padding:.2rem .6rem;color:rgba(255,255,255,.7);cursor:pointer;font-size:.75rem;">Detalles</button>
+            <button data-details="${safeName}" style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:.45rem;padding:.2rem .6rem;color:rgba(255,255,255,.7);cursor:pointer;font-size:.75rem;">Detalles</button>
           </div>
         </div>`;
     }).join('');
