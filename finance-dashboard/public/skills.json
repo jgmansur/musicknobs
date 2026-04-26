@@ -1,0 +1,593 @@
+{
+  "updated": "2026-04-26",
+  "skills": [
+    {
+      "name": "asistente-diario",
+      "trigger": "",
+      "description": "Un asistente personal que se ejecuta a las 7am o cuando el usuario diga 'que hay para hoy', 'cuales son los pendientes', 'que tengo que hacer hoy'. Resume correos, eventos, finanzas y proyectos.",
+      "category": "Notion / Memoria",
+      "scope": "Global",
+      "ais": [
+        "Claude",
+        "Gemini",
+        "OpenCode"
+      ],
+      "howToUse": "",
+      "version": "1.0"
+    },
+    {
+      "name": "branch-pr",
+      "trigger": "When creating a pull request, opening a PR, or preparing changes for review.",
+      "description": "PR creation workflow for Agent Teams Lite following the issue-first enforcement system.",
+      "category": "Sistema",
+      "scope": "Global",
+      "ais": [
+        "Claude",
+        "Gemini",
+        "OpenCode"
+      ],
+      "howToUse": "Use this skill when:\n- Creating a pull request for any change\n- Preparing a branch for submission\n- Helping a contributor open a PR\n\n---",
+      "version": "2.0"
+    },
+    {
+      "name": "content-music-knobs/notion",
+      "trigger": "\"crea la página de Notion\", \"sube a Notion el guion\", \"agrega a Notion\".",
+      "description": "Crea automáticamente una página de video en la base de datos ARCHIVO de Notion para Music Knobs. Puebla todas las propiedades de la plantilla y agrega el guion completo en el cuerpo de la página con l",
+      "category": "Distribución / Contenido",
+      "scope": "Global",
+      "ais": [
+        "Claude",
+        "Gemini",
+        "OpenCode"
+      ],
+      "howToUse": "",
+      "version": "1.0"
+    },
+    {
+      "name": "content-music-knobs/pipeline",
+      "trigger": "\"pipeline de contenido\", \"flujo completo de video\", \"crea un video completo\".",
+      "description": "Orquesta el pipeline completo de producción de contenido para Music Knobs: busca temas en tendencia → escribe guion con voz de Jay → crea página en Notion → exporta a archivo local para teleprompter. ",
+      "category": "Distribución / Contenido",
+      "scope": "Global",
+      "ais": [
+        "Claude",
+        "Gemini",
+        "OpenCode"
+      ],
+      "howToUse": "",
+      "version": "1.0"
+    },
+    {
+      "name": "content-music-knobs/script",
+      "trigger": "\"escríbeme un guion\", \"guion para video\", \"escribe el script\", \"redacta el guion\".",
+      "description": "Escribe guiones de 10-12 minutos para videos de Music Knobs con la voz y estilo exacto de Jay Mansur. Revisa videos previos para evitar repetición, estructura el guion en secciones marcadas para telep",
+      "category": "Distribución / Contenido",
+      "scope": "Global",
+      "ais": [
+        "Claude",
+        "Gemini",
+        "OpenCode"
+      ],
+      "howToUse": "",
+      "version": "1.0"
+    },
+    {
+      "name": "content-music-knobs",
+      "trigger": "",
+      "description": "[Descripción corta de la skill]",
+      "category": "Distribución / Contenido",
+      "scope": "Global",
+      "ais": [
+        "Claude",
+        "Gemini",
+        "OpenCode"
+      ],
+      "howToUse": "-",
+      "version": "1.0"
+    },
+    {
+      "name": "content-music-knobs/topics",
+      "trigger": "\"busca temas\", \"temas en tendencia\", \"qué video hacer\", \"dame ideas de videos\".",
+      "description": "Busca temas en tendencia relevantes para el canal Music Knobs (producción musical, AI en música, derechos, DAWs, plugins). Usa YouTube API, Google Trends, Reddit y RSS de medios especializados para ge",
+      "category": "Distribución / Contenido",
+      "scope": "Global",
+      "ais": [
+        "Claude",
+        "Gemini",
+        "OpenCode"
+      ],
+      "howToUse": "",
+      "version": "1.0"
+    },
+    {
+      "name": "creador-de-habilidades",
+      "trigger": "",
+      "description": "Útil para crear y configurar nuevas habilidades (skills) para Antigravity en idioma español. Define la estructura de carpetas, código y el archivo SKILL.md.",
+      "category": "Sistema",
+      "scope": "Global",
+      "ais": [
+        "Claude",
+        "Gemini",
+        "OpenCode"
+      ],
+      "howToUse": "",
+      "version": "1.0"
+    },
+    {
+      "name": "creative-music-knobs",
+      "trigger": "",
+      "description": "Especializada en la PRE-PRODUCCIÓN de contenidos para Music Knobs. Incluye ideación de temas basados en tendencias de la industria y redacción de guiones con el perfil de voz \"Analista de la Industria",
+      "category": "Distribución / Contenido",
+      "scope": "Global",
+      "ais": [
+        "Claude",
+        "Gemini",
+        "OpenCode"
+      ],
+      "howToUse": "",
+      "version": "1.0"
+    },
+    {
+      "name": "cv-updater",
+      "trigger": "Cuando el usuario dice \"actualiza mi CV\", \"formatea mi CV\", \"sincroniza mi curriculum\".",
+      "description": "Sincroniza el CV (Markdown -> Google Docs -> Web Premium -> GitHub) automáticamente.",
+      "category": "Desarrollo",
+      "scope": "Global",
+      "ais": [
+        "Claude",
+        "Gemini",
+        "OpenCode"
+      ],
+      "howToUse": "- Para actualizar el CV en Google Docs y generar la versión web premium en GitHub simultáneamente.\n- El script toma archivos Markdown (`.md`) como fuente única de verdad.",
+      "version": "2.0"
+    },
+    {
+      "name": "distribution-mansur-tech/edit",
+      "trigger": "\"edita la info de este video de mansur tech\", link de YouTube del canal tech.",
+      "description": "Edita la metadata de videos EXISTENTES en YouTube para el canal Mansur Tech. Extrae transcript con yt-dlp, genera timestamps reales, descripción SEO tech y actualiza título, descripción y tags via You",
+      "category": "Distribución / Contenido",
+      "scope": "Global",
+      "ais": [
+        "Claude",
+        "Gemini",
+        "OpenCode"
+      ],
+      "howToUse": "- Cuando el usuario diga \"edita la info de este video\" + link de Mansur Tech\n- Cuando el usuario pase una URL de un video del canal tech de Jay\n- Para actualizar descripción, capítulos, tags o título de un video ya publicado",
+      "version": "1.0"
+    },
+    {
+      "name": "distribution-mansur-tech/reels",
+      "trigger": "Se activa al finalizar el skill de subida, o cuando el usuario diga",
+      "description": "Crea Reels/Shorts de YouTube a partir de videos de Mansur Tech. Identifica momentos clave con el transcript, recorta clips con ffmpeg, los formatea a vertical 9:16 y los sube al canal Mansur Tech como",
+      "category": "Distribución / Contenido",
+      "scope": "Global",
+      "ais": [
+        "Claude",
+        "Gemini",
+        "OpenCode"
+      ],
+      "howToUse": "",
+      "version": "1.0"
+    },
+    {
+      "name": "distribution-mansur-tech",
+      "trigger": "",
+      "description": "Especializada en la DISTRIBUCIÓN de contenidos para el canal Mansur Tech. Incluye transcripción con timestamps, generación de thumbnail tech-focused, descripción SEO y subida a YouTube. El video llega",
+      "category": "Distribución / Contenido",
+      "scope": "Global",
+      "ais": [
+        "Claude",
+        "Gemini",
+        "OpenCode"
+      ],
+      "howToUse": "- Cuando el usuario mencione \"mansur tech\", \"canal de tech\", \"subir al canal de tech\"\n- Cuando el usuario pase un archivo `.mp4` o `.m4v` para el canal Mansur Tech\n- Cuando el usuario diga \"post-producción de mansur tech\"\n\n---",
+      "version": "1.0"
+    },
+    {
+      "name": "distribution-music-knobs/edit",
+      "trigger": "\"edita la info de este video\", \"actualiza el video\", link de YouTube existente.",
+      "description": "Edita la metadata de videos EXISTENTES en YouTube para Music Knobs. Extrae el transcript con yt-dlp, genera timestamps reales, descripción SEO y actualiza título, descripción y tags via YouTube Data A",
+      "category": "Distribución / Contenido",
+      "scope": "Global",
+      "ais": [
+        "Claude",
+        "Gemini",
+        "OpenCode"
+      ],
+      "howToUse": "- Cuando el usuario diga \"edita la info de este video\" + link de YouTube\n- Cuando el usuario pase una URL `youtube.com/watch?v=...` o un video ID\n- Para actualizar descripción, capítulos, tags de un video ya publicado",
+      "version": "1.0"
+    },
+    {
+      "name": "distribution-music-knobs/reels",
+      "trigger": "Se activa al finalizar el skill de subida de video, o cuando el usuario",
+      "description": "Crea Reels/Shorts de YouTube a partir de videos largos de Music Knobs. Identifica momentos clave con el transcript, recorta clips con ffmpeg, los formatea a vertical 9:16 y los sube a YouTube como Sho",
+      "category": "Distribución / Contenido",
+      "scope": "Global",
+      "ais": [
+        "Claude",
+        "Gemini",
+        "OpenCode"
+      ],
+      "howToUse": "",
+      "version": "1.0"
+    },
+    {
+      "name": "distribution-music-knobs",
+      "trigger": "",
+      "description": "Especializada en la POST-PRODUCCIÓN y DISTRIBUCIÓN de contenidos para Music Knobs. Incluye generación de thumbnails, optimización SEO (títulos y descripciones) y automatización de la subida a YouTube.",
+      "category": "Distribución / Contenido",
+      "scope": "Global",
+      "ais": [
+        "Claude",
+        "Gemini",
+        "OpenCode"
+      ],
+      "howToUse": "- Cuando el usuario mencione \"subir video\", \"distribuir\", \"publicar en YouTube\", \"thumbnail\", \"descripción SEO\"\n- Cuando el usuario mencione un archivo `.mp4` o `.m4v` del canal Music Knobs\n- Cuando el usuario diga \"post-producción\" de Music Knobs\n\n---",
+      "version": "4.0"
+    },
+    {
+      "name": "distribution-roby-hans/edit",
+      "trigger": "\"edita la info de este video de los niños\", \"actualiza el video de roby hans\", link de YouTube del canal.",
+      "description": "Edita la metadata de videos EXISTENTES en YouTube para el canal Roby & Hans Place. Extrae el transcript con yt-dlp, genera timestamps reales, descripción kid-friendly y actualiza título, descripción y",
+      "category": "Distribución / Contenido",
+      "scope": "Global",
+      "ais": [
+        "Claude",
+        "Gemini",
+        "OpenCode"
+      ],
+      "howToUse": "- Cuando el usuario diga \"edita la info de este video\" + link del canal Roby & Hans\n- Cuando el usuario pase una URL `youtube.com/watch?v=...` de un video de los niños\n- Para actualizar descripción, capítulos, tags o título de un video ya publicado en el canal kids",
+      "version": "1.0"
+    },
+    {
+      "name": "distribution-roby-hans/reels",
+      "trigger": "Se activa al finalizar el skill de subida, o cuando el usuario diga",
+      "description": "Crea Reels/Shorts de YouTube a partir de videos de gaming de Roby & Hans. Identifica momentos emocionantes con el transcript, recorta clips con ffmpeg, los formatea a vertical 9:16 y los sube al canal",
+      "category": "Distribución / Contenido",
+      "scope": "Global",
+      "ais": [
+        "Claude",
+        "Gemini",
+        "OpenCode"
+      ],
+      "howToUse": "",
+      "version": "1.0"
+    },
+    {
+      "name": "distribution-roby-hans",
+      "trigger": "",
+      "description": "Especializada en la POST-PRODUCCIÓN y DISTRIBUCIÓN de videos de gaming de los hijos de Jay (Roby & Hans). Incluye moderación de contenido inapropiado, edición inteligente para mantener los momentos má",
+      "category": "Distribución / Contenido",
+      "scope": "Global",
+      "ais": [
+        "Claude",
+        "Gemini",
+        "OpenCode"
+      ],
+      "howToUse": "- Cuando el usuario mencione \"roby\", \"hans\", \"los niños\", \"canal de los niños\", \"video de gaming de los niños\"\n- Cuando el usuario mencione un archivo `.mp4` o `.m4v` de los hijos jugando videojuegos\n- Cuando el usuario diga \"subir al canal de roby y hans\"\n\n---",
+      "version": "1.0"
+    },
+    {
+      "name": "distribution-roby-hans/thumbnail",
+      "trigger": "",
+      "description": "Genera y sube thumbnails a los videos del canal Roby & Hans Place via YouTube Data API. Cubre generación con Nano Banana (Gemini), guardado a disco y subida con apply_thumbnails_rh.py.",
+      "category": "Distribución / Contenido",
+      "scope": "Global",
+      "ais": [
+        "Claude",
+        "Gemini",
+        "OpenCode"
+      ],
+      "howToUse": "",
+      "version": "1.0"
+    },
+    {
+      "name": "finance-dashboard",
+      "trigger": "",
+      "description": "(sin descripción)",
+      "category": "Finanzas",
+      "scope": "Global",
+      "ais": [
+        "Claude",
+        "Gemini",
+        "OpenCode"
+      ],
+      "howToUse": "",
+      "version": "1.0"
+    },
+    {
+      "name": "finance-dashboard-auto-release",
+      "trigger": "cuando el usuario pida subir/publicar/release/deploy de finance dashboard o confirmar cambios online de esta app.",
+      "description": "Publica automáticamente iteraciones de Finance Dashboard en GitHub Pages con versionado visible en cada release.",
+      "category": "Finanzas",
+      "scope": "Global",
+      "ais": [
+        "Claude",
+        "Gemini",
+        "OpenCode"
+      ],
+      "howToUse": "- Cambios en `finance-dashboard/` que deben quedar visibles online.\n- Usuario pide “súbelo a github”, “publícalo”, “release/deploy finance dashboard”.\n- Se requiere evidencia de versión para confirmar servidor actualizado.",
+      "version": "1.0"
+    },
+    {
+      "name": "finance-intake",
+      "trigger": "",
+      "description": "(sin descripción)",
+      "category": "Finanzas",
+      "scope": "Global",
+      "ais": [
+        "Claude",
+        "Gemini",
+        "OpenCode"
+      ],
+      "howToUse": "",
+      "version": "1.0"
+    },
+    {
+      "name": "finance-receipt-itemization",
+      "trigger": "cuando Jay mande foto/PDF de ticket o pida guardar un gasto desde recibo.",
+      "description": "Estandariza el registro de gastos desde recibos con concepto itemizado.",
+      "category": "Finanzas",
+      "scope": "Global",
+      "ais": [
+        "Claude",
+        "Gemini",
+        "OpenCode"
+      ],
+      "howToUse": "- Cuando el gasto se captura desde ticket, foto o PDF de recibo.\n- Cuando se vaya a guardar en `Control de Gastos` con `finance_write.py`.\n- Cuando haya que reconstruir el detalle de compra para análisis posterior.",
+      "version": "1.0"
+    },
+    {
+      "name": "finance-receipt-telegram-intake",
+      "trigger": "cuando el usuario mande una foto de recibo, diga \"te mandé recibo\", \"lee este ticket\", \"registra este gasto\" o pida OCR de comprobantes.",
+      "description": "Procesa fotos de recibos enviadas por Telegram: guarda evidencia, extrae datos y registra gasto en Finance v2.",
+      "category": "Finanzas",
+      "scope": "Global",
+      "ais": [
+        "Claude",
+        "Gemini",
+        "OpenCode"
+      ],
+      "howToUse": "- El usuario envía foto de recibo/ticket/comprobante desde Telegram.\n- El usuario pide \"analiza este recibo\" o \"registra este gasto\".\n- Hay que guardar evidencia de respaldo antes de registrar el gasto.\n- Si el archivo analizado no es un recibo, primero hay que preguntar qué quiere hacer con la información extraída.",
+      "version": "1.0"
+    },
+    {
+      "name": "go-testing",
+      "trigger": "When writing Go tests, using teatest, or adding test coverage.",
+      "description": "Go testing patterns for Gentleman.Dots, including Bubbletea TUI testing.",
+      "category": "Desarrollo",
+      "scope": "Global",
+      "ais": [
+        "Claude",
+        "Gemini",
+        "OpenCode"
+      ],
+      "howToUse": "Use this skill when:\n- Writing Go unit tests\n- Testing Bubbletea TUI components\n- Creating table-driven tests\n- Adding integration tests\n- Using golden file testing\n\n---",
+      "version": "1.0"
+    },
+    {
+      "name": "hise-expert",
+      "trigger": "",
+      "description": "Experto en desarrollo de instrumentos virtuales con HISE (Human-Instrument-Software-Environment). Proporciona HiseScript optimizado, gestión de SampleMaps XML y diseño de interfaces premium con LAF (L",
+      "category": "Música / HISE",
+      "scope": "Global",
+      "ais": [
+        "Claude",
+        "Gemini",
+        "OpenCode"
+      ],
+      "howToUse": "",
+      "version": "1.0"
+    },
+    {
+      "name": "issue-creation",
+      "trigger": "When creating a GitHub issue, reporting a bug, or requesting a feature.",
+      "description": "Issue creation workflow for Agent Teams Lite following the issue-first enforcement system.",
+      "category": "Sistema",
+      "scope": "Global",
+      "ais": [
+        "Claude",
+        "Gemini",
+        "OpenCode"
+      ],
+      "howToUse": "Use this skill when:\n- Creating a GitHub issue (bug report or feature request)\n- Helping a contributor file an issue\n- Triaging or approving issues as a maintainer\n\n---",
+      "version": "1.0"
+    },
+    {
+      "name": "judgment-day",
+      "trigger": "When user says \"judgment day\", \"judgment-day\", \"review adversarial\", \"dual review\",",
+      "description": "Parallel adversarial review protocol that launches two independent blind judge sub-agents simultaneously to review the same target, synthesizes their findings, applies fixes, and re-judges until both ",
+      "category": "Sistema",
+      "scope": "Global",
+      "ais": [
+        "Claude",
+        "Gemini",
+        "OpenCode"
+      ],
+      "howToUse": "- User explicitly asks for \"judgment day\", \"judgment-day\", or equivalent trigger phrases\n- After significant implementations before merging\n- When high-confidence review of code, features, or architecture is needed\n- When a single reviewer might miss edge cases or have blind spots\n- When the cost of a production bug is higher than the cost of two review rounds",
+      "version": "1.4"
+    },
+    {
+      "name": "kids-escolaridad",
+      "trigger": "\"analiza la escolaridad\", \"análisis de los niños\", \"actualiza las notas de roby/hans\",",
+      "description": "Analiza toda la documentación escolar y de terapias de Roby y Hans desde Google Drive, transcribe documentos escritos a mano, construye el análisis integral acumulativo y actualiza escolaridad.json en",
+      "category": "Familia / Kids",
+      "scope": "Global",
+      "ais": [
+        "Claude",
+        "Gemini",
+        "OpenCode"
+      ],
+      "howToUse": "- Usuario pide analizar o actualizar la escolaridad o terapias de Roby o Hans.\n- Hay documentos nuevos (PDFs o fotos HEIC/JPG) en la carpeta de Google Drive.\n- Se quiere actualizar el tab Escolaridad del Finance Dashboard.\n- Se necesita transcribir notas de terapia escritas a mano.",
+      "version": "1.0"
+    },
+    {
+      "name": "manager-app-auto-release",
+      "trigger": "cuando el usuario pida iterar/arreglar/cambiar Manager App, revisar deploy, subir cambios, publicar o hacer release de manager app.",
+      "description": "Publica automáticamente iteraciones de Manager App a GitHub Pages con bump de versión en cada release.",
+      "category": "Desarrollo",
+      "scope": "Global",
+      "ais": [
+        "Claude",
+        "Gemini",
+        "OpenCode"
+      ],
+      "howToUse": "- Cambios en `manager-app/` que deben quedar visibles en GitHub Pages.\n- Usuario pide \"súbelo\", \"publícalo\", \"release\", \"no preguntes y hazlo\" para Manager App.\n- Se necesita validar que la versión desplegada cambió realmente en servidor.",
+      "version": "1.0"
+    },
+    {
+      "name": "manager-catalog-sync",
+      "trigger": "",
+      "description": "Sincroniza la carpeta local de Google Drive (audio y portadas) con la base de datos Catálogo en Notion. Elimina archivos huérfanos.",
+      "category": "Desarrollo",
+      "scope": "Global",
+      "ais": [
+        "Claude",
+        "Gemini",
+        "OpenCode"
+      ],
+      "howToUse": "",
+      "version": "1.0"
+    },
+    {
+      "name": "manager-catalog-sync-antiguo",
+      "trigger": "\"sincroniza catálogo antiguo\", \"sync catálogo viejo\", \"actualiza antiguo catálogo\".",
+      "description": "Sincroniza un catálogo musical antiguo desde una carpeta elegida por el usuario hacia Notion (DB: \"Antiguo Catálogo de Canciones\"), evitando duplicados por nombre, priorizando archivos MASTER reciente",
+      "category": "Desarrollo",
+      "scope": "Global",
+      "ais": [
+        "Claude",
+        "Gemini",
+        "OpenCode"
+      ],
+      "howToUse": "",
+      "version": "1.0"
+    },
+    {
+      "name": "memoria-rapida",
+      "trigger": "Cuando el usuario diga \"lee la memoria\", \"qué hicimos\", \"recuérdame\", \"busca en la memoria\", o cuando necesites guardar contexto.",
+      "description": "Protocolo ultra-rápido para operaciones de memoria. Lee y escribe en Engram SQLite (~/.engram/engram.db) — fuente única de verdad para todos los AIs (Claude, OpenCode, Gemini, ChatGPT).",
+      "category": "Notion / Memoria",
+      "scope": "Global",
+      "ais": [
+        "Claude",
+        "Gemini",
+        "OpenCode"
+      ],
+      "howToUse": "- Cada vez que inicies un task o cambies de contexto y necesites recuperar el estado anterior.\n- Siempre que el usuario diga variaciones de \"recordar\", \"qué hicimos\", \"acordate\".\n- Cuando averigües algo valioso (patrones, soluciones, decisiones, URLs, configuraciones) que debas persistir.",
+      "version": "2.0"
+    },
+    {
+      "name": "notion-antigravity",
+      "trigger": "",
+      "description": "Conexión premium y robusta con el Second Brain del usuario en Notion. Úsala para consultar tareas pendientes, actualizar estados de proyectos y gestionar el archivo personal.",
+      "category": "Notion / Memoria",
+      "scope": "Global",
+      "ais": [
+        "Claude",
+        "Gemini",
+        "OpenCode"
+      ],
+      "howToUse": "",
+      "version": "1.0"
+    },
+    {
+      "name": "notion-reminder-intake",
+      "trigger": "cualquier petición de recordatorio personal con fecha/hora.",
+      "description": "Crea recordatorios en Notion (DB Archivo) cuando Jay diga \"recuérdame\", \"acuérdame\", \"no olvides\", \"remind me\" o frases equivalentes.",
+      "category": "Notion / Memoria",
+      "scope": "Global",
+      "ais": [
+        "Claude",
+        "Gemini",
+        "OpenCode"
+      ],
+      "howToUse": "- Cuando el usuario pida explícitamente recordar algo: \"recuérdame\", \"acuérdame\", \"no olvides\", \"remíndame\", \"remind me\".\n- Cuando el usuario indique una fecha relativa: \"mañana\", \"el viernes\", \"en 2 horas\", \"a las 4\".\n- Cuando se deba crear un task nuevo en Notion `archivo` para un recordatorio.",
+      "version": "1.0"
+    },
+    {
+      "name": "process-documentation",
+      "trigger": "",
+      "description": "Documenta procesos, configuraciones, integraciones y automatizaciones completadas en la base de datos ARCHIVO de Notion. Crea dos páginas: documentación técnica del proceso y guía de uso para operador",
+      "category": "Sistema",
+      "scope": "Global",
+      "ais": [
+        "Claude",
+        "Gemini",
+        "OpenCode"
+      ],
+      "howToUse": "",
+      "version": "1.0"
+    },
+    {
+      "name": "shorts-generator",
+      "trigger": "",
+      "description": "Especializada en la creación de YouTube Shorts, Reels y TikToks a partir de videos largos horizontales. Automatiza la transcripción, selección de momentos interesantes y el crop vertical (9:16).",
+      "category": "Distribución / Contenido",
+      "scope": "Global",
+      "ais": [
+        "Claude",
+        "Gemini",
+        "OpenCode"
+      ],
+      "howToUse": "",
+      "version": "1.0"
+    },
+    {
+      "name": "skill-creator",
+      "trigger": "When user asks to create a new skill, add agent instructions, or document patterns for AI.",
+      "description": "Creates new AI agent skills following the Agent Skills spec.",
+      "category": "Sistema",
+      "scope": "Global",
+      "ais": [
+        "Claude",
+        "Gemini",
+        "OpenCode"
+      ],
+      "howToUse": "{Bullet points of when to use this skill}",
+      "version": "1.0"
+    },
+    {
+      "name": "skill-registry",
+      "trigger": "When user says \"update skills\", \"skill registry\", \"actualizar skills\", \"update registry\", or after installing/removing skills.",
+      "description": "Create or update the skill registry for the current project. Scans user skills and project conventions, writes .atl/skill-registry.md, and saves to engram if available.",
+      "category": "Sistema",
+      "scope": "Global",
+      "ais": [
+        "Claude",
+        "Gemini",
+        "OpenCode"
+      ],
+      "howToUse": "",
+      "version": "1.0"
+    },
+    {
+      "name": "snippet-saver",
+      "trigger": "cuando el usuario pida guardar un snippet, función, componente o patrón de código.",
+      "description": "Guarda snippets de código como páginas en la Notion DB \"Snippets para Web Apps\".",
+      "category": "Sistema",
+      "scope": "Global",
+      "ais": [
+        "Claude",
+        "Gemini",
+        "OpenCode"
+      ],
+      "howToUse": "- Usuario dice \"guarda un snippet de X\", \"guarda esta función\", \"guarda el código de X\"\n- Usuario dice \"guarda el player\", \"guarda el componente de X\", \"quiero guardar esto como template\"\n- Al terminar una feature importante que el usuario quiera reutilizar en otras apps",
+      "version": "1.0"
+    },
+    {
+      "name": "transcriptor-multimedia",
+      "trigger": "",
+      "description": "Habilidad para- Transcribe archivos de audio y video.",
+      "category": "Sistema",
+      "scope": "Global",
+      "ais": [
+        "Claude",
+        "Gemini",
+        "OpenCode"
+      ],
+      "howToUse": "",
+      "version": "1.0"
+    }
+  ]
+}

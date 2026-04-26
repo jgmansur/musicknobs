@@ -21,7 +21,7 @@ const DEUDAS_RECIBOS_FOLDER_ID = '157KDn-vbkuHH1L8xbaJBGz-oKmT7p5a9';
 const SPREADSHEET_RSM_ID = '14VsoPHGNTSUSbzMOqGWs2qSL-pGywPgjUoHD3MqIJfo'; // Recibos Salud Mariel
 const SALDOS_SHEET_ID    = '1-cX_qxld3ioSpcO9lEBPg90Db6AyK7SczpJTvj7rw4U'; // Saldos (fuente de verdad — Claude accede vía service account)
 const RSM_FOLDER_ID = '1-ZfeWQ-Rmh-Wm2WMCkULkN6MQWBuxYnj';
-const APP_VERSION  = 'v8.2.21';
+const APP_VERSION  = 'v8.2.22';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -1835,6 +1835,7 @@ function showTab(name) {
         if (name === 'prompts')   prompts_cargarVista();
         if (name === 'estudio')   estudio_cargarVista();
         if (name === 'escolar')   escolar_cargarVista();
+        if (name === 'skills')    skills_cargarVista();
     }
 }
 
@@ -13681,4 +13682,136 @@ function escolar_renderAnalysis(analysis) {
     const obsHtml = observaciones ? `<p style="font-size:.78rem;color:var(--text-soft);margin-top:.65rem;padding:.5rem .65rem;background:rgba(255,255,255,.03);border-radius:.5rem">${observaciones}</p>` : '';
 
     return statsHtml + materiasHtml + desarrolloHtml + habitosHtml + conductaHtml + warningsHtml + consejosHtml + obsHtml;
+}
+
+
+// =============================================
+// SKILLS TAB
+// =============================================
+
+let _skillsData = null;
+
+async function skills_cargarVista() {
+    const grid = document.getElementById('skills-grid');
+    if (!grid) return;
+    grid.innerHTML = '<div style="color:rgba(255,255,255,.4);text-align:center;padding:2rem;">Cargando skills...</div>';
+    try {
+        const resp = await fetch('./public/skills.json?v=' + APP_VERSION);
+        const json = await resp.json();
+        _skillsData = json.skills || [];
+        skills_populate(_skillsData);
+    } catch(e) {
+        grid.innerHTML = '<div style="color:#f87171;">Error cargando skills: ' + e.message + '</div>';
+    }
+}
+
+function skills_populate(skills) {
+    const countEl = document.getElementById('skills-count');
+    if (countEl) countEl.textContent = skills.length + ' skills disponibles';
+
+    // Populate category filter
+    const catFilter = document.getElementById('skills-filter-cat');
+    if (catFilter && catFilter.options.length === 1) {
+        const cats = [...new Set(skills.map(s => s.category))].sort();
+        cats.forEach(cat => {
+            const opt = document.createElement('option');
+            opt.value = cat; opt.textContent = cat;
+            catFilter.appendChild(opt);
+        });
+    }
+
+    skills_renderGrid(skills);
+
+    // Wire up filters
+    const search = document.getElementById('skills-search');
+    const aiFilter = document.getElementById('skills-filter-ai');
+    function applyFilters() {
+        const q = (search?.value || '').toLowerCase();
+        const cat = catFilter?.value || '';
+        const ai = aiFilter?.value || '';
+        const filtered = (_skillsData || []).filter(s => {
+            const matchQ = !q || s.name.toLowerCase().includes(q) || (s.description||'').toLowerCase().includes(q);
+            const matchCat = !cat || s.category === cat;
+            const matchAi = !ai || (s.ais || []).includes(ai);
+            return matchQ && matchCat && matchAi;
+        });
+        skills_renderGrid(filtered);
+    }
+    if (search) search.addEventListener('input', applyFilters);
+    if (catFilter) catFilter.addEventListener('change', applyFilters);
+    if (aiFilter) aiFilter.addEventListener('change', applyFilters);
+}
+
+function skills_renderGrid(skills) {
+    const grid = document.getElementById('skills-grid');
+    if (!grid) return;
+    if (!skills.length) {
+        grid.innerHTML = '<div style="color:rgba(255,255,255,.4);text-align:center;padding:2rem;">No hay skills con ese filtro.</div>';
+        return;
+    }
+
+    const catColors = {
+        'Distribución / Contenido': '#818cf8',
+        'Finanzas': '#34d399',
+        'Sistema': '#94a3b8',
+        'Desarrollo': '#fb923c',
+        'Notion / Memoria': '#c084fc',
+        'Familia / Kids': '#f472b6',
+        'Música / HISE': '#f87171',
+        'SDD / Arquitectura': '#fbbf24',
+    };
+
+    grid.innerHTML = skills.map((s, i) => {
+        const color = catColors[s.category] || '#94a3b8';
+        const aisHtml = (s.ais || []).map(ai => `<span style="font-size:.68rem;padding:.15rem .45rem;border-radius:.35rem;background:rgba(255,255,255,.08);color:rgba(255,255,255,.6);">${ai}</span>`).join(' ');
+        const desc = s.description ? s.description.slice(0, 110) + (s.description.length > 110 ? '…' : '') : '';
+        return `<div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:.75rem;padding:.85rem 1rem;display:flex;flex-direction:column;gap:.4rem;">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:.5rem;flex-wrap:wrap;">
+            <button onclick="skills_copyName('${s.name.replace(/'/g,"\'")}',this)" style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:.5rem;padding:.3rem .7rem;color:inherit;cursor:pointer;font-size:.82rem;font-weight:600;font-family:monospace;transition:background .15s;" title="Click para copiar">${s.name}</button>
+            <span style="font-size:.7rem;padding:.15rem .55rem;border-radius:1rem;background:${color}22;color:${color};border:1px solid ${color}44;white-space:nowrap;">${s.category}</span>
+          </div>
+          ${desc ? `<p style="margin:0;font-size:.79rem;color:rgba(255,255,255,.55);line-height:1.4;">${desc}</p>` : ''}
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:.4rem;flex-wrap:wrap;margin-top:.1rem;">
+            <div style="display:flex;gap:.3rem;flex-wrap:wrap;">${aisHtml}</div>
+            <button onclick='skills_openSheet(${JSON.stringify(s.name)})' style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:.45rem;padding:.2rem .6rem;color:rgba(255,255,255,.7);cursor:pointer;font-size:.75rem;">Detalles</button>
+          </div>
+        </div>`;
+    }).join('');
+}
+
+function skills_copyName(name, btn) {
+    navigator.clipboard.writeText(name).then(() => {
+        const orig = btn.textContent;
+        btn.textContent = '✓ Copiado';
+        btn.style.background = 'rgba(52,211,153,.2)';
+        setTimeout(() => { btn.textContent = orig; btn.style.background = 'rgba(255,255,255,.08)'; }, 1500);
+    });
+}
+
+function skills_openSheet(name) {
+    const skill = (_skillsData || []).find(s => s.name === name);
+    if (!skill) return;
+
+    document.getElementById('sheet-name').textContent = skill.name;
+    const catColors = {'Distribución / Contenido':'#818cf8','Finanzas':'#34d399','Sistema':'#94a3b8','Desarrollo':'#fb923c','Notion / Memoria':'#c084fc','Familia / Kids':'#f472b6','Música / HISE':'#f87171','SDD / Arquitectura':'#fbbf24'};
+    const color = catColors[skill.category] || '#94a3b8';
+    const aisHtml = (skill.ais || []).map(ai => `<span style="padding:.2rem .55rem;border-radius:.4rem;background:rgba(255,255,255,.08);font-size:.78rem;">${ai}</span>`).join(' ');
+    document.getElementById('sheet-body').innerHTML = `
+      <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:.85rem;">
+        <span style="padding:.2rem .6rem;border-radius:1rem;background:${color}22;color:${color};border:1px solid ${color}44;font-size:.75rem;">${skill.category}</span>
+        <span style="padding:.2rem .6rem;border-radius:1rem;background:rgba(255,255,255,.07);font-size:.75rem;color:rgba(255,255,255,.6);">${skill.scope} · v${skill.version}</span>
+      </div>
+      ${skill.description ? `<p style="margin:0 0 .85rem;font-size:.84rem;color:rgba(255,255,255,.75);line-height:1.5;">${skill.description}</p>` : ''}
+      ${skill.trigger ? `<div style="margin-bottom:.75rem;"><span style="font-size:.72rem;text-transform:uppercase;color:rgba(255,255,255,.4);letter-spacing:.05em;">Trigger</span><p style="margin:.25rem 0 0;font-size:.82rem;color:rgba(255,255,255,.65);line-height:1.5;">${skill.trigger}</p></div>` : ''}
+      ${skill.howToUse ? `<div style="margin-bottom:.75rem;"><span style="font-size:.72rem;text-transform:uppercase;color:rgba(255,255,255,.4);letter-spacing:.05em;">Cómo usar</span><p style="margin:.25rem 0 0;font-size:.82rem;color:rgba(255,255,255,.65);line-height:1.5;">${skill.howToUse}</p></div>` : ''}
+      <div><span style="font-size:.72rem;text-transform:uppercase;color:rgba(255,255,255,.4);letter-spacing:.05em;">AIs instalados</span><div style="margin:.3rem 0 0;display:flex;gap:.4rem;flex-wrap:wrap;">${aisHtml}</div></div>`;
+    document.getElementById('skills-sheet').style.display = 'block';
+    document.getElementById('skills-sheet-backdrop').style.display = 'block';
+    document.body.style.overflow = 'hidden';
+}
+
+function skills_closeSheet() {
+    document.getElementById('skills-sheet').style.display = 'none';
+    document.getElementById('skills-sheet-backdrop').style.display = 'none';
+    document.body.style.overflow = '';
 }
