@@ -21,7 +21,7 @@ const DEUDAS_RECIBOS_FOLDER_ID = '157KDn-vbkuHH1L8xbaJBGz-oKmT7p5a9';
 const SPREADSHEET_RSM_ID = '14VsoPHGNTSUSbzMOqGWs2qSL-pGywPgjUoHD3MqIJfo'; // Recibos Salud Mariel
 const SALDOS_SHEET_ID    = '1-cX_qxld3ioSpcO9lEBPg90Db6AyK7SczpJTvj7rw4U'; // Saldos (fuente de verdad — Claude accede vía service account)
 const RSM_FOLDER_ID = '1-ZfeWQ-Rmh-Wm2WMCkULkN6MQWBuxYnj';
-const APP_VERSION  = 'v8.2.11';
+const APP_VERSION  = 'v8.2.12';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -4506,7 +4506,7 @@ function planner_render() {
                 const canMovePrev = prevIdx !== currentIdx;
                 const canMoveNext = nextIdx !== currentIdx;
                 return `<div class="plan-expense-row">
-                    <div>
+                    <div onclick="planner_markExpensePaid('${e.key}')" style="cursor:pointer;flex:1;">
                         <div class="plan-expense-title">${e.concept}${e.partLabel ? ` (${e.partLabel})` : ''}</div>
                         <div class="plan-expense-meta">Dia ${e.day} · ${e.budgetCategory}</div>
                     </div>
@@ -4566,6 +4566,20 @@ async function planner_cargarVista() {
         plannerState.loading = false;
     }
 }
+
+window.planner_markExpensePaid = async function(expenseKey) {
+    let concept = expenseKey;
+    for (const expenses of plannerState.assignedByIncome) {
+        const exp = expenses.find(e => e.key === expenseKey);
+        if (exp) { concept = exp.concept + (exp.partLabel ? ` (${exp.partLabel})` : ''); break; }
+    }
+    if (!confirm(`¿Marcar "${concept}" como pagado?`)) return;
+    const parts = expenseKey.split(':');
+    const fixedId = parseInt(parts[0], 10);
+    const partIndex = parseInt(parts[1], 10) - 1;
+    await window.fijos_togglePagoPart(fixedId, partIndex);
+    planner_cargarVista();
+};
 
 window.planner_moveExpense = function(expenseKey, direction) {
     const curr = plannerState.assignments[expenseKey];
