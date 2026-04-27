@@ -2303,7 +2303,7 @@ function setContacts(rows = contactsSample) {
     .map((c) => {
       const role = c.rol || 'Contacto';
       const email = c.correo ? `<a href="mailto:${escapeHtml(c.correo)}">${escapeHtml(c.correo)}</a>` : '';
-      const phone = c.telefono || '';
+      const phone = c.telefono ? `<a href="tel:${escapeHtml(c.telefono.replace(/[\s\-().]/g, ''))}">${escapeHtml(c.telefono)}</a>` : '';
       const whatsappHref = normalizeWhatsappLink(c.whatsapp);
       const whatsapp = whatsappHref ? `<a href="${whatsappHref}" target="_blank" rel="noopener">WhatsApp</a>` : '';
       const igHref = normalizeInstagramLink(c.instagram);
