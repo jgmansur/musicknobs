@@ -142,16 +142,23 @@ def best_match(query, items, threshold=0.4):
     query_lower = query.lower()
     best = None
     best_score = 0
+    best_name_len = 0
     for item in items:
         name = item['concepto'].lower()
-        # Exact substring primero
+        # Exact substring: prefer the longest (most specific) fijo name
         if query_lower in name or name in query_lower:
             score = 1.0
+            # Tie-break: prefer longer fijo name (more specific match)
+            if score > best_score or (score == best_score and len(name) > best_name_len):
+                best_score = score
+                best_name_len = len(name)
+                best = item
         else:
             score = SequenceMatcher(None, query_lower, name).ratio()
-        if score > best_score:
-            best_score = score
-            best = item
+            if score > best_score:
+                best_score = score
+                best_name_len = len(name)
+                best = item
     if best_score >= threshold:
         return best, best_score
     return None, 0
