@@ -34,6 +34,7 @@ const DEFAULT_MANAGER_CONTACTS_DB_ID = "c4d6cef4-ddcc-436a-9576-402994a4ddac";
 const MANAGER_CONTACTS_DB_ID = process.env.MANAGER_CONTACTS_DB_ID || DEFAULT_MANAGER_CONTACTS_DB_ID;
 const DEFAULT_MANAGER_CATALOG_DB_ID = "348c1932-ede8-8031-ac87-f876cd74a82b";
 const MANAGER_CATALOG_DB_ID = process.env.MANAGER_CATALOG_DB_ID || DEFAULT_MANAGER_CATALOG_DB_ID;
+const SKILLS_DB_ID = process.env.SKILLS_DB_ID || "3373d4f4-dc22-440e-9f54-a9f0fac5d822";
 
 const GOOGLE_DRIVE_CANCIONES_DIR = "/Users/jaystudio/Library/CloudStorage/GoogleDrive-jgmansur2@gmail.com/My Drive/Manager App/Canciones";
 
@@ -377,6 +378,30 @@ app.get("/api/manager/catalog", async (req, reply) => {
     return { data };
   } catch (e: any) {
     return reply.code(500).send({ error: "Catalog error", details: String(e?.message || e), data: [] });
+  }
+});
+
+app.get("/api/skills", async (req, reply) => {
+  if (!NOTION_TOKEN) return { skills: [] };
+  try {
+    const payload = await queryNotionDatabase(SKILLS_DB_ID);
+    const skills = (payload.results || []).map((page: any) => {
+      const props = page.properties || {};
+      return {
+        name: notionRichTextToString(props["Nombre"]?.title || []),
+        description: notionRichTextToString(props["Descripción"]?.rich_text || []),
+        category: props["Categoría"]?.select?.name || "",
+        scope: props["Scope"]?.select?.name || "",
+        ais: (props["AIs Instalados"]?.multi_select || []).map((x: any) => x.name),
+        trigger: notionRichTextToString(props["Trigger"]?.rich_text || []),
+        howTo: notionRichTextToString(props["Cómo usar"]?.rich_text || []),
+        skillPath: notionRichTextToString(props["Ruta SKILL.md"]?.rich_text || []),
+        version: notionRichTextToString(props["Versión"]?.rich_text || []),
+      };
+    }).filter((s: any) => s.name);
+    return { skills };
+  } catch (e: any) {
+    return reply.code(500).send({ error: "Skills error", details: String(e?.message || e), skills: [] });
   }
 });
 
