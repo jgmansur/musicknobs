@@ -1228,7 +1228,12 @@ function parseAssigneesFromProperty(props = {}, users = []) {
 function resolveTaskAssigneePropertyKey(props = {}) {
   if (props?.[TASK_ASSIGNEES_PROPERTY]?.type === "multi_select") return TASK_ASSIGNEES_PROPERTY;
   if (props?.[TASK_ASSIGNEES_PROPERTY_LEGACY]?.type === "multi_select") return TASK_ASSIGNEES_PROPERTY_LEGACY;
-  return findPropertyKey(props, ["asignar usuario", "asignar usuarios"], ["multi_select"]) || TASK_ASSIGNEES_PROPERTY;
+  // Solo buscar por nombre — no usar fallback por tipo para evitar matchear "Género" u otras multi_select
+  const byName = Object.keys(props || {}).find((k) => {
+    const lower = k.toLowerCase();
+    return lower.includes("asignar usuario") || lower.includes("asignar usuarios");
+  });
+  return byName || TASK_ASSIGNEES_PROPERTY_LEGACY;
 }
 
 function applyAssigneeTags(tags = [], assigneeEmail = "", assigneeName = "") {
@@ -2114,14 +2119,6 @@ async function createManagerTask(env, body) {
   const userByEmail = new Map(users.map((u) => [u.email.toLowerCase(), u]));
   const assigneeUser = assigneeRaw ? userByEmail.get(assigneeRaw) : null;
   const assignee = assigneeUser?.email || "";
-  let assigneePropertyKey = TASK_ASSIGNEES_PROPERTY;
-
-  try {
-    const schema = await retrieveNotionCollectionSchema(dbId, notionToken, notionVersion);
-    assigneePropertyKey = resolveTaskAssigneePropertyKey(schema?.properties || {});
-  } catch {
-    // fallback al nombre por defecto
-  }
 
   const properties = {
     Name: { title: [{ text: { content: `${TASK_PREFIX}${title}` } }] },
@@ -2134,7 +2131,7 @@ async function createManagerTask(env, body) {
   };
   if (dueDate) properties["Date (ToDo)"] = { date: { start: dueDate } };
   if (assignee) {
-    properties[assigneePropertyKey] = { multi_select: [{ name: assignee }] };
+    properties[TASK_ASSIGNEES_PROPERTY_LEGACY] = { multi_select: [{ name: assignee }] };
   }
 
   const parentShapes = [{ data_source_id: dbId }, { database_id: dbId }];
@@ -2218,7 +2215,7 @@ async function updateManagerTask(env, taskId, body) {
     const users = parseManagerUsers(env);
     const userByEmail = new Map(users.map((u) => [u.email.toLowerCase(), u]));
     const assigneeUser = assigneeRaw ? userByEmail.get(assigneeRaw) : null;
-    properties[TASK_ASSIGNEES_PROPERTY] = assigneeUser?.email
+    properties[assigneePropertyKey] = assigneeUser?.email
       ? { multi_select: [{ name: assigneeUser.email }] }
       : { multi_select: [] };
 
