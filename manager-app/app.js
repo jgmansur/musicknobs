@@ -2252,6 +2252,8 @@ async function openFocusEditModal() {
   const assigneeSel = document.getElementById('focus-edit-assignee');
 
   tipoSel.innerHTML = statusSel.innerHTML = prioridadSel.innerHTML = assigneeSel.innerHTML = '<option value="">Cargando...</option>';
+  document.getElementById('focus-edit-delete-confirm')?.classList.add('hidden');
+  document.getElementById('focus-edit-delete')?.classList.remove('hidden');
   modal.classList.add('active');
 
   try {
@@ -2276,6 +2278,35 @@ async function openFocusEditModal() {
 
 function closeFocusEditModal() {
   document.getElementById('focus-edit-modal')?.classList.remove('active');
+  document.getElementById('focus-edit-delete-confirm')?.classList.add('hidden');
+}
+
+function showFocusEditDeleteConfirm() {
+  document.getElementById('focus-edit-delete-confirm')?.classList.remove('hidden');
+  document.getElementById('focus-edit-delete')?.classList.add('hidden');
+}
+
+async function confirmDeleteFocusTask() {
+  const id = document.getElementById('focus-edit-id')?.value;
+  if (!id) return;
+
+  const yesBtn = document.getElementById('focus-edit-delete-confirm-yes');
+  if (yesBtn) { yesBtn.disabled = true; yesBtn.textContent = 'Borrando...'; }
+
+  try {
+    const r = await fetch(`${API_BASE}/api/manager/tasks/${id}`, {
+      method: 'DELETE',
+      headers: apiHeaders()
+    });
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    closeFocusEditModal();
+    setStatus('focus-status', 'Task borrada. Sincronizando...');
+    await Promise.all([loadFocusTasks({ keepMode: true }), loadTasksFromApi()]);
+  } catch (e) {
+    const reason = e instanceof Error ? e.message : String(e);
+    setStatus('focus-status', `No se pudo borrar: ${reason}`, true);
+    if (yesBtn) { yesBtn.disabled = false; yesBtn.textContent = 'Sí, borrar'; }
+  }
 }
 
 async function saveFocusEditTask() {
@@ -3665,6 +3696,12 @@ function setupActions() {
   bindClick('focus-status', openFocusEditModal);
   bindClick('focus-edit-save', saveFocusEditTask);
   bindClick('focus-edit-cancel', closeFocusEditModal);
+  bindClick('focus-edit-delete', showFocusEditDeleteConfirm);
+  bindClick('focus-edit-delete-confirm-yes', confirmDeleteFocusTask);
+  bindClick('focus-edit-delete-confirm-no', () => {
+    document.getElementById('focus-edit-delete-confirm')?.classList.add('hidden');
+    document.getElementById('focus-edit-delete')?.classList.remove('hidden');
+  });
   bindClick('focus-new-task-trigger', openFocusNewTaskModal);
   bindClick('focus-new-task-save', createFocusTask);
   bindClick('focus-new-task-cancel', closeFocusNewTaskModal);

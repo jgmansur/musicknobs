@@ -7,7 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="./styles.css?v=1.1.26" />
+    <link rel="stylesheet" href="./styles.css?v=1.1.27" />
     <link rel="manifest" href="./manifest.json" />
     <link rel="icon" type="image/png" href="./icon-32.png" />
     <link rel="apple-touch-icon" href="./icon-180.png" />
@@ -98,6 +98,16 @@
         <div class="actions" style="justify-content:center;">
           <button class="btn" id="focus-edit-save">Guardar</button>
           <button class="btn ghost" id="focus-edit-cancel">Cancelar</button>
+        </div>
+        <div id="focus-edit-delete-zone" style="margin-top:.9rem; text-align:center;">
+          <button class="btn focus-edit-delete-btn" id="focus-edit-delete">🗑 Borrar task</button>
+          <div id="focus-edit-delete-confirm" class="hidden" style="margin-top:.6rem;">
+            <span style="font-size:.82rem; color:rgba(255,255,255,.7);">¿Seguro? Esta acción archiva el task en Notion.</span>
+            <div style="display:flex; gap:.6rem; justify-content:center; margin-top:.5rem;">
+              <button class="btn focus-edit-delete-btn" id="focus-edit-delete-confirm-yes">Sí, borrar</button>
+              <button class="btn ghost" id="focus-edit-delete-confirm-no">No</button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -401,6 +411,6 @@
     <script src="./config.js"></script>
     <script src="./vendor/howler.min.js"></script>
     <script src="./tracks.js?v=salesfix404v1"></script>
-    <script src="./app.js?v=1.1.26"></script>
+    <script src="./app.js?v=1.1.27"></script>
   </body>
   </html>
