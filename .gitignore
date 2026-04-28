@@ -7,3 +7,4 @@ scripts/token_mt.pickle
 
 # Runtime logs
 finance-v2/api-server/logs/*.log
+finance-v2/api-server/dist/
