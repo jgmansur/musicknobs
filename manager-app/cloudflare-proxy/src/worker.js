@@ -1225,15 +1225,23 @@ function parseAssigneesFromProperty(props = {}, users = []) {
   };
 }
 
+const ASSIGNEE_WRITABLE_TYPES = ["multi_select", "select"];
+
 function resolveTaskAssigneePropertyKey(props = {}) {
-  if (props?.[TASK_ASSIGNEES_PROPERTY]?.type === "multi_select") return TASK_ASSIGNEES_PROPERTY;
-  if (props?.[TASK_ASSIGNEES_PROPERTY_LEGACY]?.type === "multi_select") return TASK_ASSIGNEES_PROPERTY_LEGACY;
-  // Solo buscar por nombre — no usar fallback por tipo para evitar matchear "Género" u otras multi_select
+  if (ASSIGNEE_WRITABLE_TYPES.includes(props?.[TASK_ASSIGNEES_PROPERTY]?.type)) return TASK_ASSIGNEES_PROPERTY;
+  if (ASSIGNEE_WRITABLE_TYPES.includes(props?.[TASK_ASSIGNEES_PROPERTY_LEGACY]?.type)) return TASK_ASSIGNEES_PROPERTY_LEGACY;
+  // Solo buscar por nombre — no usar fallback por tipo para evitar matchear "Genero" u otras multi_select
   const byName = Object.keys(props || {}).find((k) => {
     const lower = k.toLowerCase();
     return lower.includes("asignar usuario") || lower.includes("asignar usuarios");
   });
   return byName || TASK_ASSIGNEES_PROPERTY_LEGACY;
+}
+
+function buildAssigneeNotionValue(props, key, email) {
+  const type = props?.[key]?.type;
+  if (type === "select") return email ? { select: { name: email } } : { select: null };
+  return email ? { multi_select: [{ name: email }] } : { multi_select: [] };
 }
 
 function applyAssigneeTags(tags = [], assigneeEmail = "", assigneeName = "") {
@@ -2121,13 +2129,13 @@ async function createManagerTask(env, body) {
   const assignee = assigneeUser?.email || "";
 
   // Resolver el key del campo de asignación desde el schema real de la DB.
-  // Si el schema no resuelve a un nombre confiable, no enviamos el campo para no bloquear la creación.
   let assigneePropertyKey = "";
+  let schemaProps = {};
   try {
     const schema = await retrieveNotionCollectionSchema(dbId, notionToken, notionVersion);
-    const resolved = resolveTaskAssigneePropertyKey(schema?.properties || {});
-    // Solo usar el key si matcheó por nombre, no por fallback genérico.
-    if (resolved && (schema?.properties?.[resolved]?.type === "multi_select")) {
+    schemaProps = schema?.properties || {};
+    const resolved = resolveTaskAssigneePropertyKey(schemaProps);
+    if (resolved && ASSIGNEE_WRITABLE_TYPES.includes(schemaProps?.[resolved]?.type)) {
       assigneePropertyKey = resolved;
     }
   } catch {
@@ -2136,7 +2144,6 @@ async function createManagerTask(env, body) {
 
   const properties = {
     Name: { title: [{ text: { content: `${TASK_PREFIX}${title}` } }] },
-    // Guardrail: tasks mantienen su flujo operativo propio.
     Estatus: { select: { name: resolveTaskStatusByAssignee(assignee) } },
     Prioridad: { select: { name: TASK_DEFAULTS.priority } },
     Tipo: { select: { name: tipoRaw || "Music Knobs" } },
@@ -2145,7 +2152,7 @@ async function createManagerTask(env, body) {
   };
   if (dueDate) properties["Date (ToDo)"] = { date: { start: dueDate } };
   if (assignee && assigneePropertyKey) {
-    properties[assigneePropertyKey] = { multi_select: [{ name: assignee }] };
+    properties[assigneePropertyKey] = buildAssigneeNotionValue(schemaProps, assigneePropertyKey, assignee);
   }
 
   const parentShapes = [{ data_source_id: dbId }, { database_id: dbId }];
@@ -2229,9 +2236,7 @@ async function updateManagerTask(env, taskId, body) {
     const users = parseManagerUsers(env);
     const userByEmail = new Map(users.map((u) => [u.email.toLowerCase(), u]));
     const assigneeUser = assigneeRaw ? userByEmail.get(assigneeRaw) : null;
-    properties[assigneePropertyKey] = assigneeUser?.email
-      ? { multi_select: [{ name: assigneeUser.email }] }
-      : { multi_select: [] };
+    properties[assigneePropertyKey] = buildAssigneeNotionValue(props, assigneePropertyKey, assigneeUser?.email || "");
 
     // Solo auto-resolver status por assignee si status NO viene explícito en el body.
     if (assigneeUser?.email && !status) {
