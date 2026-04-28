@@ -2087,6 +2087,7 @@ async function createManagerTask(env, body) {
 
   const assigneeRaw = String(body?.assignee || "").trim().toLowerCase();
   const dueDate = String(body?.dueDate || "").trim();
+  const tipoRaw = String(body?.tipo || "").trim();
   const subtasks = normalizeSubtasks(Array.isArray(body?.subtasks)
     ? body.subtasks.map((s) => ({ title: String(s?.title || "").trim(), done: Boolean(s?.done) }))
     : []);
@@ -2108,7 +2109,7 @@ async function createManagerTask(env, body) {
     // Guardrail: tasks mantienen su flujo operativo propio.
     Estatus: { select: { name: resolveTaskStatusByAssignee(assignee) } },
     Prioridad: { select: { name: TASK_DEFAULTS.priority } },
-    Tipo: { select: { name: "Music Knobs" } },
+    Tipo: { select: { name: tipoRaw || "Music Knobs" } },
     [TASK_SHOW_IN_MANAGER_PROPERTY]: { checkbox: true },
   };
   if (dueDate) properties["Date (ToDo)"] = { date: { start: dueDate } };
@@ -2338,6 +2339,19 @@ export default {
         return json(result, result.error ? 400 : 200);
       } catch (e) {
         return json({ error: "Catalog sync failed", details: String(e?.message || e) }, 500);
+      }
+    }
+
+    if (request.method === "GET" && url.pathname === "/api/manager/tasks/tipo-options") {
+      const notionToken = env.NOTION_TOKEN || "";
+      const notionVersion = env.NOTION_VERSION || "2022-06-28";
+      const dbId = env.MANAGER_TASKS_DB_ID || DEFAULT_MANAGER_TASKS_DB_ID;
+      try {
+        const schema = await retrieveNotionCollectionSchema(dbId, notionToken, notionVersion);
+        const options = (schema?.properties?.Tipo?.select?.options || []).map((o) => o.name).filter(Boolean);
+        return json({ options });
+      } catch (e) {
+        return json({ options: [], error: String(e?.message || e) });
       }
     }
 

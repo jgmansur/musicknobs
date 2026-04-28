@@ -50,6 +50,25 @@
       </div>
     </div>
 
+    <!-- Modal para crear nueva task desde Focus -->
+    <div id="focus-new-task-modal" class="auth-gate" role="dialog" aria-modal="true" aria-labelledby="focus-new-task-title">
+      <div class="auth-gate-card">
+        <h2 id="focus-new-task-title">Nueva task</h2>
+        <input type="text" id="focus-new-task-name" class="field-input" placeholder="Título de la task..." style="margin:.8rem 0;" />
+        <select id="focus-new-task-tipo" class="field-input" style="margin-bottom:.8rem;">
+          <option value="">Cargando tipos...</option>
+        </select>
+        <div style="display:flex; gap:.7rem; margin-bottom:1.2rem;">
+          <input type="date" id="focus-new-task-date" class="field-input" style="flex:1;" />
+          <input type="time" id="focus-new-task-time" class="field-input" style="width:110px;" />
+        </div>
+        <div class="actions" style="justify-content:center;">
+          <button class="btn" id="focus-new-task-save">Crear task</button>
+          <button class="btn ghost" id="focus-new-task-cancel">Cancelar</button>
+        </div>
+      </div>
+    </div>
+
     <!-- Modal para reagendar task de Focus -->
     <div id="focus-reschedule-modal" class="auth-gate" role="dialog" aria-modal="true" aria-labelledby="focus-reschedule-title">
       <div class="auth-gate-card">
@@ -135,6 +154,7 @@
           <button id="focus-sync" class="btn ghost">Sincronizar Notion</button>
           <button id="focus-switch-mode" class="btn ghost">Hoy</button>
           <button id="focus-reschedule-trigger" class="btn ghost" title="Reagendar task" aria-label="Reagendar task">📅</button>
+          <button id="focus-new-task-trigger" class="btn ghost" title="Nueva task" aria-label="Nueva task">＋</button>
         </div>
         <p id="focus-status" class="hint status panel-status-inline" aria-live="polite">Focus listo.</p>
 

@@ -2223,6 +2223,75 @@ async function postponeCurrentFocusTask() {
   }
 }
 
+async function openFocusNewTaskModal() {
+  const modal = document.getElementById('focus-new-task-modal');
+  const nameInput = document.getElementById('focus-new-task-name');
+  const tipoSelect = document.getElementById('focus-new-task-tipo');
+  const dateInput = document.getElementById('focus-new-task-date');
+  const timeInput = document.getElementById('focus-new-task-time');
+  if (!modal || !nameInput || !tipoSelect || !dateInput || !timeInput) return;
+
+  nameInput.value = '';
+  const todayMx = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' });
+  dateInput.value = todayMx;
+  timeInput.value = '09:00';
+
+  tipoSelect.innerHTML = '<option value="">Cargando...</option>';
+  modal.classList.add('active');
+  nameInput.focus();
+
+  try {
+    const res = await fetchJson(`${API_BASE}/api/manager/tasks/tipo-options`);
+    const options = Array.isArray(res.options) ? res.options : [];
+    tipoSelect.innerHTML = options.length
+      ? options.map((o) => `<option value="${escapeHtml(o)}">${escapeHtml(o)}</option>`).join('')
+      : '<option value="">Sin opciones</option>';
+  } catch {
+    tipoSelect.innerHTML = '<option value="">Error al cargar</option>';
+  }
+}
+
+function closeFocusNewTaskModal() {
+  document.getElementById('focus-new-task-modal')?.classList.remove('active');
+}
+
+async function createFocusTask() {
+  if (!isAuthenticated) return;
+  const nameInput = document.getElementById('focus-new-task-name');
+  const tipoSelect = document.getElementById('focus-new-task-tipo');
+  const dateInput = document.getElementById('focus-new-task-date');
+  const timeInput = document.getElementById('focus-new-task-time');
+
+  const title = String(nameInput?.value || '').trim();
+  if (!title) {
+    nameInput?.focus();
+    return;
+  }
+  const tipo = String(tipoSelect?.value || '').trim();
+  const time = timeInput?.value || '09:00';
+  const dueDate = dateInput?.value ? `${dateInput.value}T${time}:00.000-06:00` : '';
+
+  const saveBtn = document.getElementById('focus-new-task-save');
+  if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = 'Creando...'; }
+
+  try {
+    const r = await fetch(`${API_BASE}/api/manager/tasks`, {
+      method: 'POST',
+      headers: apiHeaders(),
+      body: JSON.stringify({ title, tipo, dueDate, assignee: 'jgmansur2@gmail.com' })
+    });
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    closeFocusNewTaskModal();
+    setStatus('focus-status', `Task "${title}" creada. Sincronizando...`);
+    await Promise.all([loadFocusTasks({ keepMode: true }), loadTasksFromApi()]);
+  } catch (e) {
+    const reason = e instanceof Error ? e.message : String(e);
+    setStatus('focus-status', `No se pudo crear la task: ${reason}`, true);
+  } finally {
+    if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = 'Crear task'; }
+  }
+}
+
 function openFocusRescheduleModal() {
   const current = getCurrentFocusTask();
   if (!current?.id) return;
@@ -3499,6 +3568,9 @@ function setupActions() {
   bindClick('focus-prev', () => rotateFocusTask(-1));
   bindClick('focus-complete-btn', completeCurrentFocusTask);
   bindClick('focus-postpone-btn', postponeCurrentFocusTask);
+  bindClick('focus-new-task-trigger', openFocusNewTaskModal);
+  bindClick('focus-new-task-save', createFocusTask);
+  bindClick('focus-new-task-cancel', closeFocusNewTaskModal);
   bindClick('focus-reschedule-trigger', openFocusRescheduleModal);
   bindClick('focus-reschedule-save', rescheduleCurrentFocusTask);
   bindClick('focus-reschedule-cancel', closeFocusRescheduleModal);
