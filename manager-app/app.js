@@ -2021,14 +2021,12 @@ function renderFocusTaskBoard() {
       : '';
     root.innerHTML = `
       <article class="focus-task-card" data-focus-task-id="${escapeHtml(current.id || '')}">
-        <button class="focus-reschedule-btn" id="focus-reschedule-trigger" title="Reagendar task" aria-label="Reagendar task">📅</button>
         <h2 class="focus-task-title">${titleHtml}</h2>
         <p class="focus-task-meta">${escapeHtml(assignee)} · ${escapeHtml(dueLabel)} · ${escapeHtml(current.status || '')} · ${escapeHtml(current.priority || '')}</p>
         ${previewHtml}
         ${extraInfoNote}
       </article>
     `;
-    document.getElementById('focus-reschedule-trigger')?.addEventListener('click', () => openFocusRescheduleModal());
     progress.textContent = `${idx + 1}/${list.length}`;
     hint.textContent = focusMode === 'today'
       ? 'Modo HOY: si lo saltas, vuelve a aparecer al cerrar el ciclo.'
@@ -2237,12 +2235,12 @@ function openFocusRescheduleModal() {
   dateInput.value = todayMx;
   timeInput.value = '09:00';
 
-  modal.classList.remove('hidden');
+  modal.classList.add('active');
   dateInput.focus();
 }
 
 function closeFocusRescheduleModal() {
-  document.getElementById('focus-reschedule-modal')?.classList.add('hidden');
+  document.getElementById('focus-reschedule-modal')?.classList.remove('active');
 }
 
 async function rescheduleCurrentFocusTask() {
@@ -3497,6 +3495,7 @@ function setupActions() {
   bindClick('focus-prev', () => rotateFocusTask(-1));
   bindClick('focus-complete-btn', completeCurrentFocusTask);
   bindClick('focus-postpone-btn', postponeCurrentFocusTask);
+  bindClick('focus-reschedule-trigger', openFocusRescheduleModal);
   bindClick('focus-reschedule-save', rescheduleCurrentFocusTask);
   bindClick('focus-reschedule-cancel', closeFocusRescheduleModal);
   bindClick('focus-switch-mode', () => setFocusMode(focusMode === 'today' ? 'overdue' : 'today'));

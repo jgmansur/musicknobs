@@ -51,7 +51,7 @@
     </div>
 
     <!-- Modal para reagendar task de Focus -->
-    <div id="focus-reschedule-modal" class="auth-gate hidden" role="dialog" aria-modal="true" aria-labelledby="focus-reschedule-title">
+    <div id="focus-reschedule-modal" class="auth-gate" role="dialog" aria-modal="true" aria-labelledby="focus-reschedule-title">
       <div class="auth-gate-card">
         <h2 id="focus-reschedule-title">Reagendar task</h2>
         <p id="focus-reschedule-task-name" style="margin:.4rem 0 1rem; color:rgba(255,255,255,.75); font-size:.88rem; line-height:1.4;"></p>
@@ -134,6 +134,7 @@
         <div class="focus-toolbar">
           <button id="focus-sync" class="btn ghost">Sincronizar Notion</button>
           <button id="focus-switch-mode" class="btn ghost">Hoy</button>
+          <button id="focus-reschedule-trigger" class="btn ghost" title="Reagendar task" aria-label="Reagendar task">📅 Reagendar</button>
         </div>
         <p id="focus-status" class="hint status panel-status-inline" aria-live="polite">Focus listo.</p>
 
