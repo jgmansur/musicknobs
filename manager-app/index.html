@@ -50,6 +50,58 @@
       </div>
     </div>
 
+    <!-- Modal para editar task desde Focus -->
+    <div id="focus-edit-modal" class="auth-gate" role="dialog" aria-modal="true" aria-labelledby="focus-edit-title">
+      <div class="auth-gate-card" style="width:min(520px,100%); text-align:left;">
+        <h2 id="focus-edit-title" style="text-align:center; margin-bottom:1.2rem;">Editar task</h2>
+        <input type="hidden" id="focus-edit-id" />
+
+        <label class="focus-edit-label">Título</label>
+        <input type="text" id="focus-edit-name" class="field-input" style="margin-bottom:.9rem;" />
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:.7rem; margin-bottom:.9rem;">
+          <div>
+            <label class="focus-edit-label">Tipo</label>
+            <select id="focus-edit-tipo" class="field-input"></select>
+          </div>
+          <div>
+            <label class="focus-edit-label">Estatus</label>
+            <select id="focus-edit-status" class="field-input"></select>
+          </div>
+          <div>
+            <label class="focus-edit-label">Prioridad</label>
+            <select id="focus-edit-prioridad" class="field-input"></select>
+          </div>
+          <div>
+            <label class="focus-edit-label">Asignar Usuario</label>
+            <select id="focus-edit-assignee" class="field-input"></select>
+          </div>
+        </div>
+
+        <label class="focus-edit-label">Date (ToDo)</label>
+        <div style="display:flex; gap:.7rem; margin-bottom:.9rem;">
+          <input type="date" id="focus-edit-date" class="field-input" style="flex:1;" />
+          <input type="time" id="focus-edit-time" class="field-input" style="width:110px;" />
+        </div>
+
+        <div style="display:flex; gap:1.4rem; margin-bottom:1.2rem;">
+          <label class="focus-edit-check-label">
+            <input type="checkbox" id="focus-edit-focus-only" />
+            Focus Only
+          </label>
+          <label class="focus-edit-check-label">
+            <input type="checkbox" id="focus-edit-show-in-manager" />
+            Mostrar en Manager App
+          </label>
+        </div>
+
+        <div class="actions" style="justify-content:center;">
+          <button class="btn" id="focus-edit-save">Guardar</button>
+          <button class="btn ghost" id="focus-edit-cancel">Cancelar</button>
+        </div>
+      </div>
+    </div>
+
     <!-- Modal para crear nueva task desde Focus -->
     <div id="focus-new-task-modal" class="auth-gate" role="dialog" aria-modal="true" aria-labelledby="focus-new-task-title">
       <div class="auth-gate-card">

@@ -1641,6 +1641,8 @@ async function listManagerTasks(env, options = {}) {
       const priority = props?.Prioridad?.select?.name || "";
       const tipo = props?.Tipo?.select?.name || "";
       const dueDate = props?.["Date (ToDo)"]?.date?.start || "";
+      const focusOnly = Boolean(props?.[TASK_FOCUS_ONLY_PROPERTY]?.checkbox);
+      const showInManager = Boolean(props?.[TASK_SHOW_IN_MANAGER_PROPERTY]?.checkbox);
       const assignees = parseAssigneesFromProperty(props, allUsers);
       const subtaskBlocks = await notionGetPageChildren(page.id, notionToken, notionVersion);
       const subtasks = parseSubtasksFromBlocks(subtaskBlocks);
@@ -1657,6 +1659,8 @@ async function listManagerTasks(env, options = {}) {
         priority,
         tipo,
         dueDate,
+        focusOnly,
+        showInManager,
         notionUrl: String(page.url || ""),
         hasExtraInfo,
         taskPreview,
@@ -1741,6 +1745,8 @@ async function listManagerFocusTasks(env, options = {}) {
       const priority = props?.Prioridad?.select?.name || "";
       const tipo = props?.Tipo?.select?.name || "";
       const dueDate = props?.["Date (ToDo)"]?.date?.start || "";
+      const focusOnly = Boolean(props?.[TASK_FOCUS_ONLY_PROPERTY]?.checkbox);
+      const showInManager = Boolean(props?.[TASK_SHOW_IN_MANAGER_PROPERTY]?.checkbox);
       const assignees = parseAssigneesFromProperty(props, allUsers);
       const subtaskBlocks = await notionGetPageChildren(page.id, notionToken, notionVersion);
       const subtasks = parseSubtasksFromBlocks(subtaskBlocks);
@@ -1757,6 +1763,8 @@ async function listManagerFocusTasks(env, options = {}) {
         priority,
         tipo,
         dueDate,
+        focusOnly,
+        showInManager,
         notionUrl: String(page.url || ""),
         hasExtraInfo,
         taskPreview,
@@ -2167,6 +2175,10 @@ async function updateManagerTask(env, taskId, body) {
   const title = String(body?.title || "").trim();
   const dueDate = typeof body?.dueDate === "string" ? body.dueDate.trim() : null;
   const assigneeRaw = String(body?.assignee || "").trim().toLowerCase();
+  const tipoRaw = String(body?.tipo || "").trim();
+  const prioridadRaw = String(body?.prioridad || "").trim();
+  const hasFocusOnly = "focusOnly" in (body || {});
+  const hasShowInManager = "showInManager" in (body || {});
   const hasSubtasks = Array.isArray(body?.subtasks);
   const subtasks = hasSubtasks
     ? normalizeSubtasks(body.subtasks.map((s) => ({ title: String(s?.title || "").trim(), done: Boolean(s?.done) })))
@@ -2189,6 +2201,10 @@ async function updateManagerTask(env, taskId, body) {
   const properties = {};
   if (status) properties.Estatus = { select: { name: status } };
   if (title) properties.Name = { title: [{ text: { content: `${TASK_PREFIX}${title}` } }] };
+  if (tipoRaw) properties.Tipo = { select: { name: tipoRaw } };
+  if (prioridadRaw) properties.Prioridad = { select: { name: prioridadRaw } };
+  if (hasFocusOnly) properties[TASK_FOCUS_ONLY_PROPERTY] = { checkbox: Boolean(body.focusOnly) };
+  if (hasShowInManager) properties[TASK_SHOW_IN_MANAGER_PROPERTY] = { checkbox: Boolean(body.showInManager) };
 
   if (dueDate !== null) {
     properties["Date (ToDo)"] = dueDate ? { date: { start: dueDate } } : { date: null };
@@ -2198,15 +2214,12 @@ async function updateManagerTask(env, taskId, body) {
     const users = parseManagerUsers(env);
     const userByEmail = new Map(users.map((u) => [u.email.toLowerCase(), u]));
     const assigneeUser = assigneeRaw ? userByEmail.get(assigneeRaw) : null;
-    properties[assigneePropertyKey] = assigneeUser?.email
+    properties[TASK_ASSIGNEES_PROPERTY] = assigneeUser?.email
       ? { multi_select: [{ name: assigneeUser.email }] }
       : { multi_select: [] };
-    if (assigneeUser?.email) {
-      properties[TASK_SHOW_IN_MANAGER_PROPERTY] = { checkbox: true };
-    }
 
-    // Regla solicitada: asignado a Jay => Empezó, asignado a otro => Pendiente.
-    if (assigneeUser?.email) {
+    // Solo auto-resolver status por assignee si status NO viene explícito en el body.
+    if (assigneeUser?.email && !status) {
       properties.Estatus = { select: { name: resolveTaskStatusByAssignee(assigneeUser.email) } };
     }
   }
@@ -2360,6 +2373,26 @@ export default {
         return json({ options });
       } catch (e) {
         return json({ options: [], error: String(e?.message || e) });
+      }
+    }
+
+    if (request.method === "GET" && url.pathname === "/api/manager/tasks/field-options") {
+      const notionToken = env.NOTION_TOKEN || "";
+      const notionVersion = env.NOTION_VERSION || "2022-06-28";
+      const dbId = env.MANAGER_TASKS_DB_ID || DEFAULT_MANAGER_TASKS_DB_ID;
+      try {
+        const schema = await retrieveNotionCollectionSchema(dbId, notionToken, notionVersion);
+        const props = schema?.properties || {};
+        const pickNames = (key) => (props?.[key]?.select?.options || []).map((o) => o.name).filter(Boolean);
+        const users = parseManagerUsers(env).map((u) => ({ email: u.email, name: u.name || u.email }));
+        return json({
+          tipo: pickNames("Tipo"),
+          status: pickNames("Estatus"),
+          prioridad: pickNames("Prioridad"),
+          users,
+        });
+      } catch (e) {
+        return json({ tipo: [], status: [], prioridad: [], users: [], error: String(e?.message || e) });
       }
     }
 

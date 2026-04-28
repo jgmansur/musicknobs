@@ -2005,7 +2005,7 @@ function renderFocusTaskBoard() {
   if (prevBtn) prevBtn.disabled = !canNavigate;
   if (nextBtn) nextBtn.disabled = !canNavigate;
 
-  modeChip.textContent = focusMode === 'today' ? 'Hoy' : 'Atrasadas';
+  modeChip.textContent = focusMode === 'today' ? 'Hoy' : 'BLG';
 
   if (current) {
     const dueLabel = formatFocusTaskDate(current.dueDate);
@@ -2037,8 +2037,11 @@ function renderFocusTaskBoard() {
     completeBtn.textContent = 'Completar task';
     if (postponeBtn) postponeBtn.disabled = false;
     if (rescheduleBtn) rescheduleBtn.disabled = false;
+    document.getElementById('focus-status')?.classList.add('clickable');
     return;
   }
+
+  document.getElementById('focus-status')?.classList.remove('clickable');
 
   if (focusMode === 'today') {
     root.classList.add('focus-board-done');
@@ -2073,6 +2076,8 @@ function mapTaskApiItem(item = {}) {
     status: item.status || 'Pendiente',
     priority: item.priority || '',
     tipo: item.tipo || '',
+    focusOnly: Boolean(item.focusOnly),
+    showInManager: item.showInManager !== undefined ? Boolean(item.showInManager) : true,
     notionUrl: item.notionUrl || '',
     hasExtraInfo: Boolean(item.hasExtraInfo),
     taskPreview: item.taskPreview || '',
@@ -2221,6 +2226,94 @@ async function postponeCurrentFocusTask() {
   } catch (e) {
     const reason = e instanceof Error ? e.message : String(e);
     setStatus('focus-status', `No se pudo posponer task: ${reason}`, true);
+  }
+}
+
+async function openFocusEditModal() {
+  const current = getCurrentFocusTask();
+  if (!current?.id) return;
+
+  const modal = document.getElementById('focus-edit-modal');
+  if (!modal) return;
+
+  document.getElementById('focus-edit-id').value = current.id;
+  document.getElementById('focus-edit-name').value = current.title || '';
+
+  const dateStr = current.dueDate ? current.dueDate.slice(0, 10) : '';
+  const timeStr = current.dueDate ? (current.dueDate.slice(11, 16) || '09:00') : '09:00';
+  document.getElementById('focus-edit-date').value = dateStr;
+  document.getElementById('focus-edit-time').value = timeStr;
+  document.getElementById('focus-edit-focus-only').checked = Boolean(current.focusOnly);
+  document.getElementById('focus-edit-show-in-manager').checked = current.showInManager !== false;
+
+  const tipoSel = document.getElementById('focus-edit-tipo');
+  const statusSel = document.getElementById('focus-edit-status');
+  const prioridadSel = document.getElementById('focus-edit-prioridad');
+  const assigneeSel = document.getElementById('focus-edit-assignee');
+
+  tipoSel.innerHTML = statusSel.innerHTML = prioridadSel.innerHTML = assigneeSel.innerHTML = '<option value="">Cargando...</option>';
+  modal.classList.add('active');
+
+  try {
+    const res = await fetchJson(`${API_BASE}/api/manager/tasks/field-options`);
+    const makeOptions = (arr, current) => arr.map((o) =>
+      `<option value="${escapeHtml(o)}"${o === current ? ' selected' : ''}>${escapeHtml(o)}</option>`
+    ).join('');
+
+    tipoSel.innerHTML = makeOptions(res.tipo || [], current.tipo);
+    statusSel.innerHTML = makeOptions(res.status || [], current.status);
+    prioridadSel.innerHTML = makeOptions(res.prioridad || [], current.priority);
+
+    const users = res.users || [];
+    assigneeSel.innerHTML = `<option value="">Sin asignar</option>` +
+      users.map((u) =>
+        `<option value="${escapeHtml(u.email)}"${u.email === current.assigneeEmail ? ' selected' : ''}>${escapeHtml(u.name || u.email)}</option>`
+      ).join('');
+  } catch {
+    tipoSel.innerHTML = statusSel.innerHTML = prioridadSel.innerHTML = '<option value="">Error</option>';
+  }
+}
+
+function closeFocusEditModal() {
+  document.getElementById('focus-edit-modal')?.classList.remove('active');
+}
+
+async function saveFocusEditTask() {
+  if (!isAuthenticated) return;
+  const id = document.getElementById('focus-edit-id')?.value;
+  if (!id) return;
+
+  const title = String(document.getElementById('focus-edit-name')?.value || '').trim();
+  if (!title) { document.getElementById('focus-edit-name')?.focus(); return; }
+
+  const tipo = document.getElementById('focus-edit-tipo')?.value || '';
+  const status = document.getElementById('focus-edit-status')?.value || '';
+  const prioridad = document.getElementById('focus-edit-prioridad')?.value || '';
+  const assignee = document.getElementById('focus-edit-assignee')?.value || '';
+  const dateVal = document.getElementById('focus-edit-date')?.value || '';
+  const timeVal = document.getElementById('focus-edit-time')?.value || '09:00';
+  const dueDate = dateVal ? `${dateVal}T${timeVal}:00.000-06:00` : '';
+  const focusOnly = document.getElementById('focus-edit-focus-only')?.checked ?? false;
+  const showInManager = document.getElementById('focus-edit-show-in-manager')?.checked ?? true;
+
+  const saveBtn = document.getElementById('focus-edit-save');
+  if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = 'Guardando...'; }
+
+  try {
+    const r = await fetch(`${API_BASE}/api/manager/tasks/${id}`, {
+      method: 'PATCH',
+      headers: apiHeaders(),
+      body: JSON.stringify({ title, tipo, status, prioridad, assignee, dueDate, focusOnly, showInManager })
+    });
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    closeFocusEditModal();
+    setStatus('focus-status', 'Task actualizada. Sincronizando...');
+    await Promise.all([loadFocusTasks({ keepMode: true }), loadTasksFromApi()]);
+  } catch (e) {
+    const reason = e instanceof Error ? e.message : String(e);
+    setStatus('focus-status', `No se pudo guardar: ${reason}`, true);
+  } finally {
+    if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = 'Guardar'; }
   }
 }
 
@@ -3569,6 +3662,9 @@ function setupActions() {
   bindClick('focus-prev', () => rotateFocusTask(-1));
   bindClick('focus-complete-btn', completeCurrentFocusTask);
   bindClick('focus-postpone-btn', postponeCurrentFocusTask);
+  bindClick('focus-status', openFocusEditModal);
+  bindClick('focus-edit-save', saveFocusEditTask);
+  bindClick('focus-edit-cancel', closeFocusEditModal);
   bindClick('focus-new-task-trigger', openFocusNewTaskModal);
   bindClick('focus-new-task-save', createFocusTask);
   bindClick('focus-new-task-cancel', closeFocusNewTaskModal);

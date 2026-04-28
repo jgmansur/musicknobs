@@ -725,6 +725,34 @@ body.tabbar-hidden .catalog-player {
   color: rgba(255,255,255,.92);
 }
 
+#focus-status.hint.clickable {
+  cursor: pointer;
+  text-decoration: underline dotted rgba(255,255,255,.5);
+}
+
+#focus-status.hint.clickable:hover {
+  color: #fff;
+}
+
+.focus-edit-label {
+  display: block;
+  font-size: .75rem;
+  color: rgba(255,255,255,.6);
+  margin-bottom: .3rem;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+
+.focus-edit-check-label {
+  display: flex;
+  align-items: center;
+  gap: .45rem;
+  font-size: .85rem;
+  color: rgba(255,255,255,.85);
+  cursor: pointer;
+  user-select: none;
+}
+
 #tab-overview.panel-fullscreen {
   max-height: calc(100dvh - 220px);
   overflow-y: auto;
