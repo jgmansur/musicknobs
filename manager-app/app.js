@@ -1985,6 +1985,7 @@ function renderFocusTaskBoard() {
   const progress = document.getElementById('focus-progress');
   const completeBtn = document.getElementById('focus-complete-btn');
   const postponeBtn = document.getElementById('focus-postpone-btn');
+  const rescheduleBtn = document.getElementById('focus-reschedule-trigger');
   const prevBtn = document.getElementById('focus-prev');
   const nextBtn = document.getElementById('focus-next');
   if (!root || !hint || !modeChip || !progress || !completeBtn) return;
@@ -2034,6 +2035,7 @@ function renderFocusTaskBoard() {
     completeBtn.disabled = false;
     completeBtn.textContent = 'Completar task';
     if (postponeBtn) postponeBtn.disabled = false;
+    if (rescheduleBtn) rescheduleBtn.disabled = false;
     return;
   }
 
@@ -2047,6 +2049,7 @@ function renderFocusTaskBoard() {
     completeBtn.disabled = true;
     completeBtn.textContent = 'Sin task activa';
     if (postponeBtn) postponeBtn.disabled = true;
+    if (rescheduleBtn) rescheduleBtn.disabled = true;
     return;
   }
 
@@ -2056,6 +2059,7 @@ function renderFocusTaskBoard() {
   completeBtn.disabled = true;
   completeBtn.textContent = 'Sin task activa';
   if (postponeBtn) postponeBtn.disabled = true;
+  if (rescheduleBtn) rescheduleBtn.disabled = true;
 }
 
 function mapTaskApiItem(item = {}) {
