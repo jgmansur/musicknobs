@@ -2094,7 +2094,7 @@ function splitFocusBuckets(rows = []) {
     if (due < todayIso) overdue.push(task);
   });
 
-  today.sort((a, b) => String(a.title || '').localeCompare(String(b.title || ''), 'es'));
+  today.sort((a, b) => String(a.dueDate || '').localeCompare(String(b.dueDate || '')) || String(a.title || '').localeCompare(String(b.title || ''), 'es'));
   overdue.sort((a, b) => String(a.dueDate || '').localeCompare(String(b.dueDate || '')) || String(a.title || '').localeCompare(String(b.title || ''), 'es'));
 
   return { today, overdue };
