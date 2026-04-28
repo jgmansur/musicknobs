@@ -1641,6 +1641,7 @@ async function listManagerTasks(env, options = {}) {
       const priority = props?.Prioridad?.select?.name || "";
       const tipo = props?.Tipo?.select?.name || "";
       const dueDate = props?.["Date (ToDo)"]?.date?.start || "";
+      const dueEndDate = props?.["Date (ToDo)"]?.date?.end || "";
       const focusOnly = Boolean(props?.[TASK_FOCUS_ONLY_PROPERTY]?.checkbox);
       const showInManager = Boolean(props?.[TASK_SHOW_IN_MANAGER_PROPERTY]?.checkbox);
       const assignees = parseAssigneesFromProperty(props, allUsers);
@@ -1659,6 +1660,7 @@ async function listManagerTasks(env, options = {}) {
         priority,
         tipo,
         dueDate,
+        dueEndDate,
         focusOnly,
         showInManager,
         notionUrl: String(page.url || ""),
@@ -1745,6 +1747,7 @@ async function listManagerFocusTasks(env, options = {}) {
       const priority = props?.Prioridad?.select?.name || "";
       const tipo = props?.Tipo?.select?.name || "";
       const dueDate = props?.["Date (ToDo)"]?.date?.start || "";
+      const dueEndDate = props?.["Date (ToDo)"]?.date?.end || "";
       const focusOnly = Boolean(props?.[TASK_FOCUS_ONLY_PROPERTY]?.checkbox);
       const showInManager = Boolean(props?.[TASK_SHOW_IN_MANAGER_PROPERTY]?.checkbox);
       const assignees = parseAssigneesFromProperty(props, allUsers);
@@ -1763,6 +1766,7 @@ async function listManagerFocusTasks(env, options = {}) {
         priority,
         tipo,
         dueDate,
+        dueEndDate,
         focusOnly,
         showInManager,
         notionUrl: String(page.url || ""),

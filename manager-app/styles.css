@@ -659,6 +659,11 @@ body.tabbar-hidden .catalog-player {
   font-size: .84rem;
 }
 
+.focus-task-time {
+  font-weight: 600;
+  color: #fff;
+}
+
 .focus-controls {
   display: grid;
   grid-template-columns: 64px 1fr 64px;

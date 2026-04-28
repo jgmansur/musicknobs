@@ -1946,6 +1946,24 @@ function formatFocusTaskDate(isoDate) {
   return value;
 }
 
+function formatFocusTaskTime(startIso, endIso) {
+  const extractTime = (iso) => {
+    const raw = String(iso || '').trim();
+    if (!raw || raw.length <= 10) return '';
+    const timePart = raw.slice(11, 16);
+    if (!timePart || timePart === '00:00') return '';
+    const [h, m] = timePart.split(':').map(Number);
+    const suffix = h >= 12 ? 'pm' : 'am';
+    const hour = h % 12 || 12;
+    return m === 0 ? `${hour}${suffix}` : `${hour}:${m.toString().padStart(2, '0')}${suffix}`;
+  };
+  const start = extractTime(startIso);
+  const end = extractTime(endIso);
+  if (!start) return '';
+  if (!end) return start;
+  return `${start} - ${end}`;
+}
+
 function getCurrentFocusTask() {
   const list = focusMode === 'today' ? focusTodayTasks : focusOverdueTasks;
   if (!list.length) return null;
@@ -2009,12 +2027,16 @@ function renderFocusTaskBoard() {
 
   if (current) {
     const dueLabel = formatFocusTaskDate(current.dueDate);
+    const timeLabel = formatFocusTaskTime(current.dueDate, current.dueEndDate);
     const assignee = current.assignee || current.assigneeEmail || 'Sin asignar';
     const hasLink = Boolean(String(current.notionUrl || '').trim());
     const preview = String(current.taskPreview || '').trim();
     const titleHtml = hasLink
       ? `<a class="focus-task-link" href="${escapeHtml(current.notionUrl)}" target="_blank" rel="noopener">${escapeHtml(current.title || 'Sin título')}</a>`
       : escapeHtml(current.title || 'Sin título');
+    const timeHtml = timeLabel
+      ? `<span class="focus-task-time">${escapeHtml(timeLabel)}</span>`
+      : '';
     const previewHtml = preview
       ? `<p class="focus-task-note">${escapeHtml(preview)}${current.hasExtraInfo ? '…' : ''}</p>`
       : '';
@@ -2024,7 +2046,7 @@ function renderFocusTaskBoard() {
     root.innerHTML = `
       <article class="focus-task-card" data-focus-task-id="${escapeHtml(current.id || '')}">
         <h2 class="focus-task-title">${titleHtml}</h2>
-        <p class="focus-task-meta">${escapeHtml(assignee)} · ${escapeHtml(dueLabel)} · ${escapeHtml(current.status || '')} · ${escapeHtml(current.priority || '')}</p>
+        <p class="focus-task-meta">${escapeHtml(assignee)} · ${escapeHtml(dueLabel)}${timeHtml ? ' · ' : ''}${timeHtml} · ${escapeHtml(current.status || '')} · ${escapeHtml(current.priority || '')}</p>
         ${previewHtml}
         ${extraInfoNote}
       </article>
@@ -2073,6 +2095,7 @@ function mapTaskApiItem(item = {}) {
     assignee: item.assignee || '',
     assigneeEmail: item.assigneeEmail || '',
     dueDate: item.dueDate || '',
+    dueEndDate: item.dueEndDate || '',
     status: item.status || 'Pendiente',
     priority: item.priority || '',
     tipo: item.tipo || '',
