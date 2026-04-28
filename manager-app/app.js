@@ -3112,7 +3112,7 @@ async function toggleSubtaskDone(taskId, subIndex, checked) {
       body: JSON.stringify({ subtasks: next })
     });
     if (!r.ok) throw new Error(`HTTP ${r.status}`);
-    await loadTasksFromApi();
+    await Promise.all([loadTasksFromApi(), loadFocusTasks({ keepMode: true })]);
   } catch (e) {
     const reason = e instanceof Error ? e.message : String(e);
     setStatus('tasks-status', `No se pudo actualizar subtask: ${reason}`, true);
@@ -3562,7 +3562,7 @@ function setupActions() {
     setContactFormVisibility(false);
   });
   bindClick('refresh-links', () => loadLinksFromApi());
-  bindClick('refresh-tasks', () => loadTasksFromApi());
+  bindClick('refresh-tasks', () => Promise.all([loadTasksFromApi(), loadFocusTasks({ keepMode: true })]));
   bindClick('focus-sync', manualSyncFocusTasks);
   bindClick('focus-next', () => rotateFocusTask(1));
   bindClick('focus-prev', () => rotateFocusTask(-1));
