@@ -28,6 +28,7 @@ const AUTHOR_EMAIL_PREFIX = "authorEmail:";
 const TASK_ASSIGNEES_PROPERTY = "Asignar Usuarios";
 const TASK_ASSIGNEES_PROPERTY_LEGACY = "Asignar Usuario";
 const TASK_SHOW_IN_MANAGER_PROPERTY = "Mostrar en Manager App";
+const TASK_FOCUS_ONLY_PROPERTY = "Focus Only";
 const ADMIN_EMAILS = ["jgmansur2@gmail.com"];
 const CLEAR_LOG_PASSWORD = "9776";
 const OWNER_EMAIL = "jgmansur2@gmail.com";
@@ -1620,7 +1621,12 @@ async function listManagerTasks(env, options = {}) {
     const startCursor = String(options.cursor || "").trim() || undefined;
     const allUsers = parseManagerUsers(env);
 
-    const baseFilter = { property: "Name", title: { contains: TASK_PREFIX } };
+    const baseFilter = {
+      and: [
+        { property: "Name", title: { contains: TASK_PREFIX } },
+        { property: TASK_FOCUS_ONLY_PROPERTY, checkbox: { equals: false } },
+      ]
+    };
     const filter = baseFilter;
 
     const payload = await notionQueryAdvanced(dbId, notionToken, notionVersion, {
@@ -2088,6 +2094,7 @@ async function createManagerTask(env, body) {
   const assigneeRaw = String(body?.assignee || "").trim().toLowerCase();
   const dueDate = String(body?.dueDate || "").trim();
   const tipoRaw = String(body?.tipo || "").trim();
+  const focusOnly = Boolean(body?.focusOnly);
   const subtasks = normalizeSubtasks(Array.isArray(body?.subtasks)
     ? body.subtasks.map((s) => ({ title: String(s?.title || "").trim(), done: Boolean(s?.done) }))
     : []);
@@ -2111,6 +2118,7 @@ async function createManagerTask(env, body) {
     Prioridad: { select: { name: TASK_DEFAULTS.priority } },
     Tipo: { select: { name: tipoRaw || "Music Knobs" } },
     [TASK_SHOW_IN_MANAGER_PROPERTY]: { checkbox: true },
+    [TASK_FOCUS_ONLY_PROPERTY]: { checkbox: focusOnly },
   };
   if (dueDate) properties["Date (ToDo)"] = { date: { start: dueDate } };
   if (assignee) {

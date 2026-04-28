@@ -2279,7 +2279,7 @@ async function createFocusTask() {
     const r = await fetch(`${API_BASE}/api/manager/tasks`, {
       method: 'POST',
       headers: apiHeaders(),
-      body: JSON.stringify({ title, tipo, dueDate, assignee: 'jgmansur2@gmail.com' })
+      body: JSON.stringify({ title, tipo, dueDate, assignee: 'jgmansur2@gmail.com', focusOnly: tipo !== 'Hnos. Mansur' })
     });
     if (!r.ok) throw new Error(`HTTP ${r.status}`);
     closeFocusNewTaskModal();
