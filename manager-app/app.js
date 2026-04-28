@@ -172,6 +172,7 @@ function activateTab(tabName) {
   document.querySelectorAll('.panel').forEach((p) => {
     p.classList.toggle('active', p.id === `tab-${target}`);
   });
+  document.body.classList.toggle('focus-active', target === 'focus');
   updateTabBarVisibilityForCatalogBottom();
 }
 
