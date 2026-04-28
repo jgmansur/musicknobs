@@ -1981,7 +1981,7 @@ function rotateFocusTask(direction = 1) {
 function renderFocusTaskBoard() {
   const root = document.getElementById('focus-task-board');
   const hint = document.getElementById('focus-task-hint');
-  const modeChip = document.getElementById('focus-mode-chip');
+  const modeChip = document.getElementById('focus-switch-mode');
   const progress = document.getElementById('focus-progress');
   const completeBtn = document.getElementById('focus-complete-btn');
   const postponeBtn = document.getElementById('focus-postpone-btn');
@@ -2003,7 +2003,7 @@ function renderFocusTaskBoard() {
   if (prevBtn) prevBtn.disabled = !canNavigate;
   if (nextBtn) nextBtn.disabled = !canNavigate;
 
-  modeChip.textContent = focusMode === 'today' ? 'HOY' : 'ATRASADAS';
+  modeChip.textContent = focusMode === 'today' ? 'Hoy' : 'Atrasadas';
 
   if (current) {
     const dueLabel = formatFocusTaskDate(current.dueDate);
