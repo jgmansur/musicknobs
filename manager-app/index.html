@@ -50,6 +50,22 @@
       </div>
     </div>
 
+    <!-- Modal para reagendar task de Focus -->
+    <div id="focus-reschedule-modal" class="auth-gate hidden" role="dialog" aria-modal="true" aria-labelledby="focus-reschedule-title">
+      <div class="auth-gate-card">
+        <h2 id="focus-reschedule-title">Reagendar task</h2>
+        <p id="focus-reschedule-task-name" style="margin:.4rem 0 1rem; color:rgba(255,255,255,.75); font-size:.88rem; line-height:1.4;"></p>
+        <div style="display:flex; gap:.7rem; margin-bottom:1.2rem;">
+          <input type="date" id="focus-reschedule-date" class="field-input" style="flex:1;" />
+          <input type="time" id="focus-reschedule-time" class="field-input" style="width:110px;" />
+        </div>
+        <div class="actions" style="justify-content:center;">
+          <button class="btn" id="focus-reschedule-save">Guardar</button>
+          <button class="btn ghost" id="focus-reschedule-cancel">Cancelar</button>
+        </div>
+      </div>
+    </div>
+
 
     <header class="topbar">
       <div>

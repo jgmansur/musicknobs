@@ -596,7 +596,35 @@ body.tabbar-hidden .catalog-player {
 }
 
 .focus-task-card {
+  position: relative;
   width: min(760px, 100%);
+}
+
+.focus-reschedule-btn {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255,255,255,.12);
+  border: 1px solid rgba(255,255,255,.25);
+  border-radius: .55rem;
+  color: #fff;
+  font-size: 1.05rem;
+  cursor: pointer;
+  transition: background .18s;
+  padding: 0;
+}
+
+.focus-reschedule-btn:hover {
+  background: rgba(255,255,255,.22);
+}
+
+.focus-reschedule-btn:active {
+  background: rgba(255,255,255,.3);
 }
 
 .focus-task-title {

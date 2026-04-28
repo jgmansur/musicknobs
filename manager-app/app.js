@@ -2021,12 +2021,14 @@ function renderFocusTaskBoard() {
       : '';
     root.innerHTML = `
       <article class="focus-task-card" data-focus-task-id="${escapeHtml(current.id || '')}">
+        <button class="focus-reschedule-btn" id="focus-reschedule-trigger" title="Reagendar task" aria-label="Reagendar task">📅</button>
         <h2 class="focus-task-title">${titleHtml}</h2>
         <p class="focus-task-meta">${escapeHtml(assignee)} · ${escapeHtml(dueLabel)} · ${escapeHtml(current.status || '')} · ${escapeHtml(current.priority || '')}</p>
         ${previewHtml}
         ${extraInfoNote}
       </article>
     `;
+    document.getElementById('focus-reschedule-trigger')?.addEventListener('click', () => openFocusRescheduleModal());
     progress.textContent = `${idx + 1}/${list.length}`;
     hint.textContent = focusMode === 'today'
       ? 'Modo HOY: si lo saltas, vuelve a aparecer al cerrar el ciclo.'
@@ -2216,6 +2218,62 @@ async function postponeCurrentFocusTask() {
   } catch (e) {
     const reason = e instanceof Error ? e.message : String(e);
     setStatus('focus-status', `No se pudo posponer task: ${reason}`, true);
+  }
+}
+
+function openFocusRescheduleModal() {
+  const current = getCurrentFocusTask();
+  if (!current?.id) return;
+
+  const modal = document.getElementById('focus-reschedule-modal');
+  const nameEl = document.getElementById('focus-reschedule-task-name');
+  const dateInput = document.getElementById('focus-reschedule-date');
+  const timeInput = document.getElementById('focus-reschedule-time');
+  if (!modal || !dateInput || !timeInput) return;
+
+  if (nameEl) nameEl.textContent = current.title || 'Sin título';
+
+  const todayMx = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' });
+  dateInput.value = todayMx;
+  timeInput.value = '09:00';
+
+  modal.classList.remove('hidden');
+  dateInput.focus();
+}
+
+function closeFocusRescheduleModal() {
+  document.getElementById('focus-reschedule-modal')?.classList.add('hidden');
+}
+
+async function rescheduleCurrentFocusTask() {
+  if (!isAuthenticated) return;
+  const current = getCurrentFocusTask();
+  if (!current?.id) return;
+
+  const dateInput = document.getElementById('focus-reschedule-date');
+  const timeInput = document.getElementById('focus-reschedule-time');
+  if (!dateInput?.value) {
+    setStatus('focus-status', 'Seleccioná una fecha para reagendar.', true);
+    return;
+  }
+
+  const time = timeInput?.value || '09:00';
+  const isoDate = `${dateInput.value}T${time}:00.000-06:00`;
+
+  closeFocusRescheduleModal();
+
+  try {
+    const r = await fetch(`${API_BASE}/api/manager/tasks/${current.id}`, {
+      method: 'PATCH',
+      headers: apiHeaders(),
+      body: JSON.stringify({ dueDate: isoDate })
+    });
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    setStatus('focus-status', `Task reagendada para ${dateInput.value} ${time}. Sincronizando...`);
+    await Promise.all([loadFocusTasks({ keepMode: true }), loadTasksFromApi()]);
+  } catch (e) {
+    const reason = e instanceof Error ? e.message : String(e);
+    setStatus('focus-status', `No se pudo reagendar: ${reason}`, true);
   }
 }
 
@@ -3439,6 +3497,8 @@ function setupActions() {
   bindClick('focus-prev', () => rotateFocusTask(-1));
   bindClick('focus-complete-btn', completeCurrentFocusTask);
   bindClick('focus-postpone-btn', postponeCurrentFocusTask);
+  bindClick('focus-reschedule-save', rescheduleCurrentFocusTask);
+  bindClick('focus-reschedule-cancel', closeFocusRescheduleModal);
   bindClick('focus-switch-mode', () => setFocusMode(focusMode === 'today' ? 'overdue' : 'today'));
   bindAntiZoomForFocusArrows();
   bindClick('task-create', createTask);

@@ -11,7 +11,6 @@ App web mobile-first para operación de manager sobre la carrera de Jay Mansur.
 - Secciones preparadas para integrar:
   - Google OAuth (flujo token client en frontend)
   - Notion DB (Contactos) vía endpoint backend
-  - Google Sheets (Catálogo) vía endpoint backend
 
 ## Integraciones activas ahora
 
@@ -19,6 +18,50 @@ App web mobile-first para operación de manager sobre la carrera de Jay Mansur.
 - Carga de contactos desde `GET /api/manager/contacts`.
 - Carga de catálogo desde `GET /api/manager/catalog`.
 - Reproductor seguro con **Howler** + endpoint backend `GET /api/audio/:fileId`.
+
+## Catálogo AI Search (híbrido)
+
+El catálogo usa un modelo híbrido de búsqueda:
+
+1. **`Tags para Búsqueda AI` (multi-select curado)**
+   - Taxonomía controlada para filtros y consistencia.
+   - Ejemplos: `mood:triste`, `tema:desamor`, `contenido:explícita`, `target:mujer`.
+
+2. **`Tags AI Raw` (texto CSV extendido)**
+   - Long-tail semántico para búsquedas más profundas.
+   - Incluye tags adicionales y `kw:*` derivados del contenido de letra.
+
+### ¿Por qué híbrido?
+
+- Notion `multi_select` tiene límites prácticos (opciones/elementos por request).
+- El campo CSV permite crecer semánticamente sin romper esos límites.
+- El frontend busca en **ambos** campos.
+
+### Pipeline de enriquecimiento
+
+Script fuente de verdad:
+
+```bash
+python3 /Users/jaystudio/skills/global/manager-catalog-sync/scripts/sync_catalog.py --skip-lyrics
+```
+
+Ese sync actualiza:
+- `Tags para Búsqueda AI`
+- `Tags AI Raw`
+- (y, cuando no se usa `--skip-lyrics`, también crea/vincula letras)
+
+## Búsqueda por verso (lyrics search)
+
+Ya está habilitada en producción.
+
+- El backend (`cloudflare-proxy/src/worker.js`) lee la URL de `Letra` de cada canción.
+- Extrae el texto de bloques de la página en Notion y lo expone como `lyricsText` en `GET /api/manager/catalog`.
+- El frontend (`app.js`) indexa `lyricsText` dentro del `buildCatalogSearchBlob`.
+
+### Comportamiento actual de búsqueda
+
+- Usa `includes` (substring): funciona excelente con fragmentos contiguos del verso.
+- Si escribes palabras sueltas fuera de orden, puede no hacer match (no es fuzzy/tokenized todavía).
 
 ## Reproducción de audio segura (Google Drive privado)
 
@@ -95,6 +138,7 @@ Con `NOTION_TOKEN` activo, el backend intenta primero `data_sources/{id}/query` 
 - `version.json` — versión visible en UI para identificar cada release
 - `cloudflare-proxy/src/worker.js` — API segura para stream de Drive
 - `cloudflare-proxy/.dev.vars.example` — plantilla de variables locales
+- `cloudflare-proxy/wrangler.toml` — configuración de deploy del Worker
 
 ## Flujo local (frontend + worker)
 
@@ -152,7 +196,7 @@ Qué hace el script:
 ## Siguientes pasos
 
 1. Configurar OAuth en Google Cloud (orígenes del Manager App)
-2. Conectar catálogo real (Sheets API / Apps Script)
+2. (Opcional) agregar búsqueda fuzzy/tokenized para versos no contiguos
 3. Definir DB final de contactos manager en Notion y setear `MANAGER_CONTACTS_DB_ID`
 4. Añadir log de envíos (email/WhatsApp)
 
