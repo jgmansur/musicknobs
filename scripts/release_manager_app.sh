@@ -49,6 +49,10 @@ print(new_version)
 PY
 )"
 
+# Cache-bust: actualizar query params de app.js y styles.css en index.html
+sed -i '' "s|styles\.css?v=[^\"']*|styles.css?v=${NEXT_VERSION}|g" manager-app/index.html
+sed -i '' "s|app\.js?v=[^\"']*|app.js?v=${NEXT_VERSION}|g" manager-app/index.html
+
 git add manager-app
 git commit -m "chore(manager-app): release v${NEXT_VERSION}"
 git push origin main
