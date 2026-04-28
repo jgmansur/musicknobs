@@ -2120,6 +2120,20 @@ async function createManagerTask(env, body) {
   const assigneeUser = assigneeRaw ? userByEmail.get(assigneeRaw) : null;
   const assignee = assigneeUser?.email || "";
 
+  // Resolver el key del campo de asignación desde el schema real de la DB.
+  // Si el schema no resuelve a un nombre confiable, no enviamos el campo para no bloquear la creación.
+  let assigneePropertyKey = "";
+  try {
+    const schema = await retrieveNotionCollectionSchema(dbId, notionToken, notionVersion);
+    const resolved = resolveTaskAssigneePropertyKey(schema?.properties || {});
+    // Solo usar el key si matcheó por nombre, no por fallback genérico.
+    if (resolved && (schema?.properties?.[resolved]?.type === "multi_select")) {
+      assigneePropertyKey = resolved;
+    }
+  } catch {
+    // Si el schema falla, se crea el task sin assignee field (seguro).
+  }
+
   const properties = {
     Name: { title: [{ text: { content: `${TASK_PREFIX}${title}` } }] },
     // Guardrail: tasks mantienen su flujo operativo propio.
@@ -2130,8 +2144,8 @@ async function createManagerTask(env, body) {
     [TASK_FOCUS_ONLY_PROPERTY]: { checkbox: focusOnly },
   };
   if (dueDate) properties["Date (ToDo)"] = { date: { start: dueDate } };
-  if (assignee) {
-    properties[TASK_ASSIGNEES_PROPERTY_LEGACY] = { multi_select: [{ name: assignee }] };
+  if (assignee && assigneePropertyKey) {
+    properties[assigneePropertyKey] = { multi_select: [{ name: assignee }] };
   }
 
   const parentShapes = [{ data_source_id: dbId }, { database_id: dbId }];
