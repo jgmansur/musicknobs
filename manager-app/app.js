@@ -2359,7 +2359,11 @@ async function saveFocusEditTask() {
       headers: apiHeaders(),
       body: JSON.stringify({ title, tipo, status, prioridad, assignee, dueDate, focusOnly, showInManager })
     });
-    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    if (!r.ok) {
+      let detail = `HTTP ${r.status}`;
+      try { const body = await r.json(); detail += ` — ${body.error || ''} ${body.details || ''}`.trim(); } catch {}
+      throw new Error(detail);
+    }
     closeFocusEditModal();
     setStatus('focus-status', 'Task actualizada. Sincronizando...');
     await Promise.all([loadFocusTasks({ keepMode: true }), loadTasksFromApi()]);
