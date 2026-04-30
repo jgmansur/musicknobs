@@ -2,7 +2,7 @@
 // MK COMPOSER — main.js
 // =============================================
 
-const APP_VERSION = 'v1.0.0';
+const APP_VERSION = 'v1.0.1';
 const CLIENT_ID   = '427918095213-6cbm5sgcfn6o8qosg6qe1r6u9toj66dp.apps.googleusercontent.com';
 const SCOPES      = 'https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile';
 
@@ -351,21 +351,13 @@ function showGhostSuggestion(text) {
     clearGhostSuggestion();
     if (!text) return;
     currentSuggestion = text;
-    const editor = document.getElementById('editor-input');
-    const ghost  = document.createElement('span');
-    ghost.className = 'ghost-suggestion';
-    ghost.textContent = ' ' + text;
-    ghost.contentEditable = 'false';
-    editor.appendChild(ghost);
 
-    // Show hint
+    // Show suggestion in hint bar — no DOM injection inside contenteditable (breaks in Safari/iOS)
     const hint = document.getElementById('hint-text');
-    hint.innerHTML = `<span class="kbd">Tab</span> aceptar &nbsp;·&nbsp; <span class="kbd">Esc</span> saltar`;
+    hint.innerHTML = `<span class="suggestion-preview">${escapeHtml(text)}</span><span class="hint-actions">&nbsp;·&nbsp;<span class="kbd">Tab</span> aceptar&nbsp;·&nbsp;<span class="kbd">Esc</span> saltar</span>`;
 }
 
 function clearGhostSuggestion() {
-    const editor = document.getElementById('editor-input');
-    editor.querySelectorAll('.ghost-suggestion').forEach(el => el.remove());
     currentSuggestion = '';
     const hint = document.getElementById('hint-text');
     hint.textContent = 'Escribe y la IA sugerirá la siguiente línea…';
