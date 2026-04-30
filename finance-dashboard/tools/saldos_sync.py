@@ -87,8 +87,8 @@ def save_to_engram(payload: dict):
             import os
             sync_id = base64.b16encode(os.urandom(8)).decode().lower()
             conn.execute(
-                "INSERT INTO observations (title, content, topic_key, session_id, sync_id, created_at, updated_at) "
-                "VALUES (?, ?, ?, 'saldos-sync', ?, ?, ?)",
+                "INSERT INTO observations (title, content, topic_key, session_id, sync_id, created_at, updated_at, type) "
+                "VALUES (?, ?, ?, 'saldos-sync', ?, ?, ?, 'manual')",
                 (title, content, topic_key, sync_id, now, now)
             )
         conn.commit()

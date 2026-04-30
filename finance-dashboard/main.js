@@ -21,7 +21,7 @@ const DEUDAS_RECIBOS_FOLDER_ID = '157KDn-vbkuHH1L8xbaJBGz-oKmT7p5a9';
 const SPREADSHEET_RSM_ID = '14VsoPHGNTSUSbzMOqGWs2qSL-pGywPgjUoHD3MqIJfo'; // Recibos Salud Mariel
 const SALDOS_SHEET_ID    = '1-cX_qxld3ioSpcO9lEBPg90Db6AyK7SczpJTvj7rw4U'; // Saldos (fuente de verdad — Claude accede vía service account)
 const RSM_FOLDER_ID = '1-ZfeWQ-Rmh-Wm2WMCkULkN6MQWBuxYnj';
-const APP_VERSION  = 'v8.2.29';
+const APP_VERSION  = 'v8.2.30';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -186,6 +186,12 @@ let tokenRequestInteractive = true;
 let tokenRequestWatchdog = null;
 let currentTab  = 'dashboard';
 let tabInited   = { dashboard: false, gastos: false, fijos: false, deudas: false, plan: false, autos: false, propiedades: false, recuerdos: false, rsm: false, documentos: false, estados: false, pelo: false, prompts: false, estudio: false, escolar: false };
+
+function markGastosStale() {
+    tabInited.gastos = false;
+    tabInited.dashboard = false;
+    if (currentTab === 'dashboard') fetchAndProcess();
+}
 const MELI_ACCESS_TOKEN_KEY = 'meli_access_token_v1';
 const MELI_REFRESH_TOKEN_KEY = 'meli_refresh_token_v1';
 const MELI_EXPIRES_AT_KEY = 'meli_expires_at_v1';
@@ -2926,14 +2932,15 @@ function hormiga_closePanel() {
 const HORMIGA_PRODUCT_RULES_DEFAULT = [
     { label: 'Terea Blue',           keywords: ['terea'] },
     { label: 'Zyn',                  keywords: ['zyn'] },
-    { label: 'Cigarro',              keywords: ['cigarro', 'cigarette', 'cigarillo'] },
-    { label: 'Coca-Cola / Refresco', keywords: ['coca', 'coca-cola', 'cocacola', 'refresco', 'sprite', 'pepsi', 'fanta', '7up', 'sidral', 'limonada', 'tamarindo', 'mangonada', 'jarrito'] },
-    { label: 'Agua',                 keywords: ['agua'] },
-    { label: 'Cerveza',              keywords: ['cerveza', 'chela', 'caguama', 'caguamon', 'modelo', 'corona', 'tecate', 'victoria', 'michelada', 'pacifico', 'indio', 'clara'] },
-    { label: 'Licor / Spirits',      keywords: ['mezcal', 'tequila', 'ron', 'vodka', 'whisky', 'brandy', 'vino', 'wine', 'ginebra', 'sotol'] },
-    { label: 'Cafe',                 keywords: ['cafe', 'nescafe', 'capuchino', 'latte', 'americano', 'frappuccino'] },
-    { label: 'Dulces / Botana',      keywords: ['dulce', 'chicle', 'paleta', 'chocolate', 'snack', 'papas', 'botana', 'chicharron', 'doritos', 'cheetos', 'ruffles', 'tostitos', 'pringles', 'gomita', 'mazapan', 'glorias'] },
-    { label: 'Comida / Antojo',      keywords: ['torta', 'taco', 'burger', 'hamburguesa', 'pizza', 'sushi', 'pollo', 'burrito', 'quesadilla', 'enchilada', 'tamal', 'elote', 'esquite', 'hotdog', 'sandwich'] },
+    { label: 'Cigarro',              keywords: ['cigarro', 'cigarette', 'cigarillo', 'tabaco', 'marlboro', 'camel', 'delicados', 'benson'] },
+    { label: 'Coca-Cola / Refresco', keywords: ['coca', 'coca-cola', 'cocacola', 'refresco', 'sprite', 'pepsi', 'fanta', '7up', 'sidral', 'limonada', 'tamarindo', 'mangonada', 'jarrito', 'naranjada', 'horchata', 'jamaica', 'tepache', 'boing', 'jumex', 'sangria', 'agua fresca'] },
+    { label: 'Agua',                 keywords: ['agua', 'ciel', 'epura', 'bonafont', 'electropura', 'garrafon'] },
+    { label: 'Cerveza',              keywords: ['cerveza', 'chela', 'caguama', 'caguamon', 'modelo', 'corona', 'tecate', 'victoria', 'michelada', 'pacifico', 'indio', 'clara', 'xx', 'dos equis', 'bohemia', 'sol', 'carta blanca', 'negro modelo', 'heineken', 'barrilito'] },
+    { label: 'Licor / Spirits',      keywords: ['mezcal', 'tequila', 'ron', 'vodka', 'whisky', 'whiskey', 'brandy', 'vino', 'wine', 'ginebra', 'sotol', 'gin', 'champagne', 'cava', 'margarita', 'mojito', 'coctail', 'coctel', 'destilado', 'licor', 'amaretto'] },
+    { label: 'Cafe',                 keywords: ['cafe', 'nescafe', 'capuchino', 'latte', 'americano', 'frappuccino', 'espresso', 'macchiato', 'te ', 'matcha', 'chai', 'chocolate caliente', 'cacao', 'starbucks', 'oxxo cafe', 'peet', 'cafe bola negra', 'expresso'] },
+    { label: 'Dulces / Botana',      keywords: ['dulce', 'chicle', 'paleta', 'chocolate', 'snack', 'papas', 'botana', 'chicharron', 'doritos', 'cheetos', 'ruffles', 'tostitos', 'pringles', 'gomita', 'mazapan', 'glorias', 'takis', 'lucas', 'miguelito', 'pelon', 'pulparindo', 'skwinkles', 'luneta', 'vero', 'de la rosa', 'kranky', 'carlos v', 'kit kat', 'm&m', 'snickers', 'twix', 'milky way', 'obleas', 'cacahuate', 'nuez', 'pistache', 'pepitas'] },
+    { label: 'Comida / Antojo',      keywords: ['torta', 'taco', 'burger', 'hamburguesa', 'pizza', 'sushi', 'pollo', 'burrito', 'quesadilla', 'enchilada', 'tamal', 'elote', 'esquite', 'hotdog', 'sandwich', 'sope', 'tostada', 'flauta', 'memela', 'gordita', 'nieve', 'helado', 'raspado', 'paleta de hielo', 'dona', 'donut', 'pan dulce', 'bimbo', 'gansito', 'submarino', 'marinela', 'pastel', 'cuernito', 'concha'] },
+    { label: 'Entretenimiento',      keywords: ['cine', 'cinemex', 'cinepolis', 'brincolines', 'boliche', 'arcade', 'juego', 'trampolín', 'trampolin', 'parque', 'museo', 'teatro', 'concierto', 'spotify', 'netflix', 'disney', 'apple tv', 'youtube premium', 'crunchyroll'] },
 ];
 
 function hormiga_getProductRules() {
@@ -4143,7 +4150,7 @@ window.fijos_togglePagoPart = async function(id, partIndex, options = {}) {
                 }
             }
 
-            tabInited.gastos = false;
+            markGastosStale();
             if (!options.silent) showToast('✅ Pago registrado en Control de Gastos');
         } else if (!nowPartPaid && !wasPartWaived) {
             // UN-SYNC: remove matching partial entry in Control de Gastos
@@ -4162,7 +4169,7 @@ window.fijos_togglePagoPart = async function(id, partIndex, options = {}) {
                 }
                 if (foundRowIndex !== -1) {
                     await sheetsDeleteRow(SPREADSHEET_LOG_ID, logSheetId, foundRowIndex);
-                    tabInited.gastos = false;
+                    markGastosStale();
                     if (!options.silent) showToast('\uD83D\uDDD1\uFE0F Pago eliminado de Control de Gastos');
                     
                     // INTEGRACIÓN: Restaurar saldo a la Deuda Original
@@ -5182,7 +5189,7 @@ async function autos_deleteCarById(carId) {
                     for (const row0 of deleteRows.sort((a, b) => b - a)) {
                         await sheetsDeleteRow(SPREADSHEET_LOG_ID, logSheetId, row0);
                     }
-                    tabInited.gastos = false;
+                    markGastosStale();
                 }
             }
         } catch (e) {
@@ -7297,7 +7304,7 @@ async function autos_saveRepair() {
     await autos_syncRepairToLog(repair);
     autos_closeRepairSheet();
     autos_render();
-    tabInited.gastos = false;
+    markGastosStale();
     showToast('✅ Reparacion guardada');
 }
 
@@ -7373,7 +7380,7 @@ window.autos_deleteRepair = async function(repairId) {
         if (found !== -1) {
             const logSheetId = await getSheetId(SPREADSHEET_LOG_ID, 'Hoja 1');
             await sheetsDeleteRow(SPREADSHEET_LOG_ID, logSheetId, found + 1);
-            tabInited.gastos = false;
+            markGastosStale();
         }
     } catch (e) {
         console.warn('No se pudo borrar sincronizacion en Control de Gastos:', e);
@@ -7896,7 +7903,7 @@ async function estudio_saveInventario() {
     }
     estudio_closeInventarioSheet();
     estudio_render();
-    tabInited.gastos = false;
+    markGastosStale();
     showToast('✅ Equipo guardado');
 }
 
@@ -7977,7 +7984,7 @@ async function estudio_savePlugin() {
     }
     estudio_closePluginSheet();
     estudio_render();
-    tabInited.gastos = false;
+    markGastosStale();
     showToast('✅ Plugin guardado');
 }
 
@@ -8094,7 +8101,7 @@ window.estudio_deleteInventario = async function(id) {
         if (idx !== -1) {
             const logSheetId = await getSheetId(SPREADSHEET_LOG_ID, 'Hoja 1');
             await sheetsDeleteRow(SPREADSHEET_LOG_ID, logSheetId, idx + 1);
-            tabInited.gastos = false;
+            markGastosStale();
         }
     } catch (e) {
         console.warn('No se pudo borrar gasto sincronizado de inventario:', e);
@@ -8122,7 +8129,7 @@ window.estudio_deletePlugin = async function(id) {
         if (idx !== -1) {
             const logSheetId = await getSheetId(SPREADSHEET_LOG_ID, 'Hoja 1');
             await sheetsDeleteRow(SPREADSHEET_LOG_ID, logSheetId, idx + 1);
-            tabInited.gastos = false;
+            markGastosStale();
         }
     } catch (e) {
         console.warn('No se pudo borrar gasto sincronizado de plugin:', e);
