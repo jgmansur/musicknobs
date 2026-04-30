@@ -2,7 +2,7 @@
 // MK COMPOSER — main.js
 // =============================================
 
-const APP_VERSION = 'v1.0.5';
+const APP_VERSION = 'v1.0.6';
 const CLIENT_ID   = '427918095213-6cbm5sgcfn6o8qosg6qe1r6u9toj66dp.apps.googleusercontent.com';
 const SCOPES      = 'https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile';
 
@@ -485,7 +485,7 @@ async function requestSuggestion() {
     const context = lines.slice(-6).join('\n');
 
     const cfg = getConfig();
-    const model = cfg.model || 'llama-3.1-70b-versatile';
+    const model = cfg.model || 'llama-3.3-70b-versatile';
 
     isStreaming = true;
     setAIThinking(true);
