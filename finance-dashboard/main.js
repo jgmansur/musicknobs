@@ -12,6 +12,8 @@ const CLIENT_ID = '427918095213-6cbm5sgcfn6o8qosg6qe1r6u9toj66dp.apps.googleuser
 const SCOPES = 'https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/drive';
 const SPREADSHEET_LOG_ID   = '1pn1bsxj2LaoySXAVUvqfEJY1VR4R_T8NsTOqQnVW5Xw'; // Control de Gastos
 const RECEIPT_ITEMS_SHEET = 'Receipt Items';
+const PRODUCT_GROUPS_SHEET = 'Product Groups';
+const PRODUCT_GROUPS_HEADERS = ['grupo_producto', 'aliases', 'hormiga_default', 'notas', 'updated_at'];
 const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // Gastos Fijos
 const SPREADSHEET_DEUDAS_ID = '1dKxhgqazskm15lx0f6FNCA0gpJ7i5glfxkusiH3b0Uk'; // Control de Deudas
 const SPREADSHEET_AUTOS_ID = SPREADSHEET_DEUDAS_ID; // Autos + Reparaciones live in same workbook
@@ -22,7 +24,7 @@ const DEUDAS_RECIBOS_FOLDER_ID = '157KDn-vbkuHH1L8xbaJBGz-oKmT7p5a9';
 const SPREADSHEET_RSM_ID = '14VsoPHGNTSUSbzMOqGWs2qSL-pGywPgjUoHD3MqIJfo'; // Recibos Salud Mariel
 const SALDOS_SHEET_ID    = '1-cX_qxld3ioSpcO9lEBPg90Db6AyK7SczpJTvj7rw4U'; // Saldos (fuente de verdad — Claude accede vía service account)
 const RSM_FOLDER_ID = '1-ZfeWQ-Rmh-Wm2WMCkULkN6MQWBuxYnj';
-const APP_VERSION  = 'v8.2.35';
+const APP_VERSION  = 'v8.2.36';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -2509,12 +2511,13 @@ async function fetchAndProcess() {
     status.innerText = 'Sincronizando...'; status.style.color = 'var(--primary)';
     try {
         await ensureUsdMxnRateForTransactions();
-        const [logData, fixedData, receiptItemRows] = await Promise.all([
+        const [logData, fixedData, receiptItemRows, productGroupRows] = await Promise.all([
             sheetsGet(SPREADSHEET_LOG_ID, 'Hoja 1!A2:H'),
             sheetsGet(SPREADSHEET_FIXED_ID, 'Hoja 1!A2:P'),  // H=estado pagos, I=periodicidad, J=inicio, K=pagador, L=budget, M=moneda, N=waive, O=linkGroup, P=fechasPago
-            sheetsGet(SPREADSHEET_LOG_ID, `${RECEIPT_ITEMS_SHEET}!A2:P`).catch(() => [])
+            sheetsGet(SPREADSHEET_LOG_ID, `${RECEIPT_ITEMS_SHEET}!A2:P`).catch(() => []),
+            sheetsGet(SPREADSHEET_LOG_ID, `${PRODUCT_GROUPS_SHEET}!A2:E`).catch(() => [])
         ]);
-        processAndRender(logData, fixedData, receiptItemRows);
+        processAndRender(logData, fixedData, receiptItemRows, productGroupRows);
         status.innerText = 'Sincronizado ✓'; status.style.color = 'var(--accent-green)';
     } catch (err) {
         if (err.status === 401) {
@@ -2527,8 +2530,9 @@ async function fetchAndProcess() {
     }
 }
 
-function processAndRender(logRows, fixedRows, receiptItemRows = []) {
+function processAndRender(logRows, fixedRows, receiptItemRows = [], productGroupRows = []) {
     balance_updateLogNetFromRows(logRows);
+    productGroups_setRows(productGroupRows);
     receiptItems_setRows(receiptItemRows);
     const hormigaKeywords = [
         'oxxo','coca','cigarros','snacks','gomitas','tiendita','starbucks','seven','7-eleven','extra',
@@ -2949,6 +2953,22 @@ async function fixed_confirmWaive(id, partIndex, source) {
 // =============================================
 const hormigaPanelState = { gastos: [], total: 0, prevTotal: 0, monthName: '', prevMonthName: '', currentPlace: null, currentTab: 'gastos' };
 const receiptItemsState = { rows: [], search: '' };
+const productGroupsState = { rows: [], byName: new Map() };
+
+function productGroups_setRows(rows = []) {
+    productGroupsState.rows = rows.map((row, i) => {
+        const name = (row[0] || '').toString().trim();
+        return {
+            rowNum: i + 2,
+            name,
+            aliases: (row[1] || '').toString().split('|').map(x => x.trim()).filter(Boolean),
+            hormigaRaw: (row[2] || '').toString().trim().toLowerCase(),
+            notas: row[3] || '',
+            updatedAt: row[4] || '',
+        };
+    }).filter(group => group.name);
+    productGroupsState.byName = new Map(productGroupsState.rows.map(group => [receiptItems_normalizeForMatch(group.name), group]));
+}
 
 function receiptItems_setRows(rows = []) {
     receiptItemsState.rows = rows.map((row, i) => {
@@ -2978,6 +2998,10 @@ function receiptItems_setRows(rows = []) {
     receiptItems_updateButton();
 }
 
+function productGroups_find(groupName) {
+    return productGroupsState.byName.get(receiptItems_normalizeForMatch(groupName));
+}
+
 function receiptItems_normalizeForMatch(value) {
     return (value || '').toString()
         .normalize('NFD')
@@ -2988,7 +3012,7 @@ function receiptItems_normalizeForMatch(value) {
 function receiptItems_inferProductGroup(item) {
     const text = receiptItems_normalizeForMatch(`${item.productNormalized} ${item.productRaw} ${item.categoria} ${item.subcategoria}`);
     const groups = [
-        { name: 'Terea Blue', keywords: ['terea'] },
+        { name: 'Terea', keywords: ['terea'] },
         { name: 'Zyn', keywords: ['zyn'] },
         { name: 'Coca-Cola / Refresco', keywords: ['coca', 'cocacola', 'refresco', 'sprite', 'pepsi', 'fanta', 'sidral', 'jarrito'] },
         { name: 'Botanas', keywords: ['sabritas', 'doritos', 'totopos', 'papas', 'chips', 'briske', 'botana', 'cheetos', 'ruffles', 'tostitos'] },
@@ -3003,6 +3027,60 @@ function receiptItems_inferProductGroup(item) {
     ];
     const found = groups.find(group => group.keywords.some(keyword => text.includes(keyword)));
     return found?.name || item.productNormalized || item.productRaw || 'Producto sin nombre';
+}
+
+function productGroups_defaultDecision(groupName, items = []) {
+    const name = receiptItems_normalizeForMatch(groupName);
+    const defaultNo = ['pollo', 'carne de res', 'cerdo', 'lacteos', 'frutas y verduras', 'despensa'];
+    const defaultYes = ['terea', 'zyn', 'coca-cola / refresco', 'botanas', 'dulces / pan dulce', 'cafe'];
+    if (defaultNo.includes(name)) return false;
+    if (defaultYes.includes(name)) return true;
+    if (items.length) return items.some(item => receiptItems_isAutoHormiga(item));
+    return null;
+}
+
+function productGroups_getDecision(groupName, items = []) {
+    const saved = productGroups_find(groupName);
+    const savedDecision = receiptItems_parseBoolish(saved?.hormigaRaw);
+    if (savedDecision !== null) return savedDecision;
+    const defaultDecision = productGroups_defaultDecision(groupName, items);
+    return defaultDecision === null ? false : defaultDecision;
+}
+
+function productGroups_decisionLabel(groupName, items = []) {
+    const saved = productGroups_find(groupName);
+    const savedDecision = receiptItems_parseBoolish(saved?.hormigaRaw);
+    if (savedDecision !== null) return savedDecision ? 'manual: hormiga' : 'manual: no hormiga';
+    return productGroups_getDecision(groupName, items) ? 'auto: hormiga' : 'auto: no hormiga';
+}
+
+function productGroups_buildCatalog() {
+    const grouped = {};
+    const currentRows = new Set(receiptItems_currentMonthRows().map(item => item.rowNum));
+    receiptItemsState.rows.forEach(item => {
+        const name = item.grupoProducto || item.productNormalized || item.productRaw || 'Producto sin nombre';
+        if (!grouped[name]) {
+            grouped[name] = { name, items: [], aliases: new Set(), comercios: new Set(), totalAll: 0, totalMonth: 0, countMonth: 0, latestDate: '' };
+        }
+        grouped[name].items.push(item);
+        grouped[name].aliases.add(item.productNormalized || item.productRaw || name);
+        if (item.productRaw) grouped[name].aliases.add(item.productRaw);
+        if (item.comercio) grouped[name].comercios.add(item.comercio);
+        grouped[name].totalAll += Math.max(0, item.totalItem || 0);
+        if (currentRows.has(item.rowNum)) {
+            grouped[name].totalMonth += Math.max(0, item.totalItem || 0);
+            grouped[name].countMonth += 1;
+        }
+        if ((item.fecha || '') > grouped[name].latestDate) grouped[name].latestDate = item.fecha || '';
+    });
+    return Object.values(grouped).map(group => ({
+        ...group,
+        aliasesList: Array.from(group.aliases).filter(Boolean).slice(0, 8),
+        comerciosList: Array.from(group.comercios).filter(Boolean).slice(0, 4),
+        countAll: group.items.length,
+        isHormiga: productGroups_getDecision(group.name, group.items),
+        decisionLabel: productGroups_decisionLabel(group.name, group.items),
+    })).sort((a, b) => (b.totalMonth - a.totalMonth) || (b.totalAll - a.totalAll) || a.name.localeCompare(b.name));
 }
 
 function receiptItems_currentMonthRows() {
@@ -3025,9 +3103,9 @@ function receiptItems_filteredRows() {
 function receiptItems_updateButton() {
     const btn = document.getElementById('hormiga-receipt-items-btn');
     if (!btn) return;
-    const rows = receiptItems_currentMonthRows();
-    btn.innerText = rows.length ? `Receipt Items (${rows.length})` : 'Receipt Items';
-    btn.title = rows.length ? 'Ver productos extraidos de recibos' : 'No hay productos itemizados este mes todavia';
+    const groups = productGroups_buildCatalog();
+    btn.innerText = groups.length ? `Grupos de productos (${groups.length})` : 'Grupos de productos';
+    btn.title = groups.length ? 'Clasificar productos aprendidos' : 'No hay productos itemizados todavia';
 }
 
 function receiptItems_escapeHtml(value) {
@@ -3055,9 +3133,12 @@ function receiptItems_isAutoHormiga(item) {
 }
 
 function receiptItems_isEffectiveHormiga(item) {
+    const groupName = item.grupoProducto || item.productNormalized || item.productRaw || 'Producto sin nombre';
+    const group = productGroups_find(groupName);
+    if (receiptItems_parseBoolish(group?.hormigaRaw) !== null) return productGroups_getDecision(groupName, [item]);
     if (item.hormigaOverride === 'yes') return true;
     if (item.hormigaOverride === 'no') return false;
-    return receiptItems_isAutoHormiga(item);
+    return productGroups_getDecision(groupName, [item]);
 }
 
 async function receiptItems_toggleHormiga(rowNum, checked) {
@@ -3093,6 +3174,78 @@ async function receiptItems_toggleHormiga(rowNum, checked) {
 
 window.receiptItems_toggleHormiga = receiptItems_toggleHormiga;
 
+async function productGroups_ensureSheet() {
+    try {
+        await sheetsGet(SPREADSHEET_LOG_ID, `${PRODUCT_GROUPS_SHEET}!A1:A1`);
+    } catch (_) {
+        const url = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_LOG_ID}:batchUpdate`;
+        const r = await authFetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ requests: [{ addSheet: { properties: { title: PRODUCT_GROUPS_SHEET } } }] }),
+        });
+        if (!r.ok) throw { status: r.status, message: await r.text() };
+    }
+    const head = await sheetsGet(SPREADSHEET_LOG_ID, `${PRODUCT_GROUPS_SHEET}!A1:E1`).catch(() => []);
+    if (!head.length || !head[0]?.[0]) {
+        await sheetsUpdate(SPREADSHEET_LOG_ID, `${PRODUCT_GROUPS_SHEET}!A1:E1`, [PRODUCT_GROUPS_HEADERS]);
+    }
+}
+
+async function productGroups_reloadRows() {
+    const rows = await sheetsGet(SPREADSHEET_LOG_ID, `${PRODUCT_GROUPS_SHEET}!A2:E`).catch(() => []);
+    productGroups_setRows(rows);
+}
+
+window.productGroups_toggleHormiga = async function(encodedGroupName, checked) {
+    const groupName = decodeURIComponent(encodedGroupName);
+    const catalogGroup = productGroups_buildCatalog().find(group => group.name === groupName);
+    const previousRows = [...productGroupsState.rows];
+    const existing = productGroups_find(groupName);
+    const nextRaw = checked ? 'yes' : 'no';
+    const aliases = (catalogGroup?.aliasesList || []).join('|');
+    const now = new Date().toISOString();
+    if (existing) {
+        existing.hormigaRaw = nextRaw;
+        existing.aliases = catalogGroup?.aliasesList || existing.aliases;
+        existing.updatedAt = now;
+    } else {
+        productGroupsState.rows.push({ rowNum: null, name: groupName, aliases: catalogGroup?.aliasesList || [], hormigaRaw: nextRaw, notas: '', updatedAt: now });
+        productGroupsState.byName = new Map(productGroupsState.rows.map(group => [receiptItems_normalizeForMatch(group.name), group]));
+    }
+    receiptItems_renderPanel();
+    renderHormigaPanel(
+        hormigaPanelState.gastos,
+        hormigaPanelState.total,
+        hormigaPanelState.prevTotal,
+        hormigaPanelState.monthName,
+        hormigaPanelState.prevMonthName
+    );
+    try {
+        await productGroups_ensureSheet();
+        const row = [groupName, aliases, nextRaw, existing?.notas || '', now];
+        const saved = productGroups_find(groupName);
+        if (saved?.rowNum) await sheetsUpdate(SPREADSHEET_LOG_ID, `${PRODUCT_GROUPS_SHEET}!A${saved.rowNum}:E${saved.rowNum}`, [row]);
+        else await sheetsAppend(SPREADSHEET_LOG_ID, `${PRODUCT_GROUPS_SHEET}!A:E`, [row]);
+        await productGroups_reloadRows();
+        receiptItems_updateButton();
+        receiptItems_renderPanel();
+        showToast(checked ? '✅ Grupo marcado como hormiga' : '✅ Grupo marcado como no hormiga');
+    } catch (e) {
+        productGroups_setRows(previousRows.map(group => [group.name, group.aliases.join('|'), group.hormigaRaw, group.notas, group.updatedAt]));
+        receiptItems_renderPanel();
+        renderHormigaPanel(
+            hormigaPanelState.gastos,
+            hormigaPanelState.total,
+            hormigaPanelState.prevTotal,
+            hormigaPanelState.monthName,
+            hormigaPanelState.prevMonthName
+        );
+        showToast('⚠️ No se pudo guardar el grupo');
+        console.warn('productGroups_toggleHormiga failed:', e);
+    }
+};
+
 function receiptItems_openPanel() {
     document.getElementById('receipt-items-panel')?.classList.remove('hidden');
     document.body.style.overflow = 'hidden';
@@ -3105,41 +3258,47 @@ function receiptItems_closePanel() {
 }
 
 function receiptItems_renderPanel() {
-    const rows = receiptItems_filteredRows().sort((a, b) => (b.fecha || '').localeCompare(a.fecha || ''));
-    const total = rows.reduce((sum, item) => sum + Math.max(0, item.totalItem || 0), 0);
+    const q = receiptItemsState.search;
+    const allGroups = productGroups_buildCatalog();
+    const groups = q ? allGroups.filter(group => [
+        group.name,
+        group.aliasesList.join(' '),
+        group.comerciosList.join(' '),
+        group.decisionLabel,
+    ].some(value => (value || '').toString().toLowerCase().includes(q))) : allGroups;
+    const total = groups.reduce((sum, group) => sum + Math.max(0, group.totalMonth || 0), 0);
     const totalEl = document.getElementById('receipt-items-total');
     const countEl = document.getElementById('receipt-items-count');
     const listEl = document.getElementById('receipt-items-list');
     const emptyEl = document.getElementById('receipt-items-empty');
     if (totalEl) totalEl.innerText = formatCurrency(total);
-    if (countEl) countEl.innerText = `${rows.length} producto${rows.length === 1 ? '' : 's'} este mes`;
+    if (countEl) countEl.innerText = `${groups.length} grupo${groups.length === 1 ? '' : 's'}`;
     if (!listEl || !emptyEl) return;
-    emptyEl.classList.toggle('hidden', rows.length > 0);
-    listEl.innerHTML = rows.slice(0, 120).map(item => {
-        const safeReceipt = receiptItems_safeUrl(item.recibo);
-        const receiptLink = safeReceipt ? `<a href="${receiptItems_escapeHtml(safeReceipt)}" target="_blank" class="receipt-item-link">Recibo</a>` : '';
-        const label = receiptItems_escapeHtml(item.productNormalized || item.productRaw || 'Producto sin nombre');
-        const effectiveHormiga = receiptItems_isEffectiveHormiga(item);
-        const autoHormiga = receiptItems_isAutoHormiga(item);
-        const overrideLabel = item.hormigaOverride === 'yes'
-            ? 'manual: hormiga'
-            : item.hormigaOverride === 'no'
-            ? 'manual: no hormiga'
-            : autoHormiga ? 'auto: hormiga' : 'auto: no hormiga';
-        const meta = [item.comercio, item.grupoProducto, item.categoria, item.subcategoria, overrideLabel, item.confianza ? `confianza ${item.confianza}` : '']
+    emptyEl.classList.toggle('hidden', groups.length > 0);
+    listEl.innerHTML = groups.slice(0, 120).map(group => {
+        const aliases = group.aliasesList.filter(alias => alias !== group.name).slice(0, 5).join(', ');
+        const comercios = group.comerciosList.join(', ');
+        const encodedName = encodeURIComponent(group.name).replace(/'/g, '%27');
+        const meta = [
+            aliases ? `alias: ${aliases}` : '',
+            comercios ? `lugares: ${comercios}` : '',
+            `${group.countAll} compra${group.countAll === 1 ? '' : 's'} historica${group.countAll === 1 ? '' : 's'}`,
+            group.countMonth ? `${group.countMonth} este mes` : 'sin compras este mes',
+            group.decisionLabel,
+        ]
             .filter(Boolean).join(' · ');
         return `<div class="receipt-item-row">
-            <label class="receipt-item-check" title="Incluir en Top productos hormiga">
-                <input type="checkbox" ${effectiveHormiga ? 'checked' : ''} onchange="receiptItems_toggleHormiga(${item.rowNum}, this.checked)">
+            <label class="receipt-item-check" title="Clasificar grupo como gasto hormiga">
+                <input type="checkbox" ${group.isHormiga ? 'checked' : ''} onchange="productGroups_toggleHormiga('${encodedName}', this.checked)">
                 <span></span>
             </label>
             <div class="receipt-item-main">
-                <span class="receipt-item-name">${label}</span>
-                <span class="receipt-item-meta">${receiptItems_escapeHtml(item.fecha || 'Sin fecha')} · ${receiptItems_escapeHtml(meta || 'Sin categoria')}</span>
+                <span class="receipt-item-name">${receiptItems_escapeHtml(group.name)}</span>
+                <span class="receipt-item-meta">${receiptItems_escapeHtml(meta)}</span>
             </div>
             <div class="receipt-item-side">
-                <span class="receipt-item-amount">${formatCurrency(item.totalItem || 0)}</span>
-                ${receiptLink}
+                <span class="receipt-item-amount">${formatCurrency(group.totalMonth || 0)}</span>
+                <span class="receipt-item-link">${formatCurrency(group.totalAll || 0)} hist.</span>
             </div>
         </div>`;
     }).join('');
@@ -3157,7 +3316,7 @@ function hormiga_closePanel() {
 
 // Default product taxonomy — user overrides persisted in localStorage 'hormiga_taxonomy_overrides'
 const HORMIGA_PRODUCT_RULES_DEFAULT = [
-    { label: 'Terea Blue',           keywords: ['terea'] },
+    { label: 'Terea',                keywords: ['terea'] },
     { label: 'Zyn',                  keywords: ['zyn'] },
     { label: 'Cigarro',              keywords: ['cigarro', 'cigarette', 'cigarillo', 'tabaco', 'marlboro', 'camel', 'delicados', 'benson'] },
     { label: 'Coca-Cola / Refresco', keywords: ['coca', 'coca-cola', 'cocacola', 'refresco', 'sprite', 'pepsi', 'fanta', '7up', 'sidral', 'limonada', 'tamarindo', 'mangonada', 'jarrito', 'naranjada', 'horchata', 'jamaica', 'tepache', 'boing', 'jumex', 'sangria', 'agua fresca'] },
