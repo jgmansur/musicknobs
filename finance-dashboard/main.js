@@ -21,7 +21,7 @@ const DEUDAS_RECIBOS_FOLDER_ID = '157KDn-vbkuHH1L8xbaJBGz-oKmT7p5a9';
 const SPREADSHEET_RSM_ID = '14VsoPHGNTSUSbzMOqGWs2qSL-pGywPgjUoHD3MqIJfo'; // Recibos Salud Mariel
 const SALDOS_SHEET_ID    = '1-cX_qxld3ioSpcO9lEBPg90Db6AyK7SczpJTvj7rw4U'; // Saldos (fuente de verdad — Claude accede vía service account)
 const RSM_FOLDER_ID = '1-ZfeWQ-Rmh-Wm2WMCkULkN6MQWBuxYnj';
-const APP_VERSION  = 'v8.2.30';
+const APP_VERSION  = 'v8.2.31';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -2636,6 +2636,27 @@ function processAndRender(logRows, fixedRows) {
         const isAutoRepair = (row[5] || '').toString().toLowerCase().includes('auto - reparaciones') || concepto.includes('autolog#') || lugar.startsWith('auto ');
         const isImprevisto = isAutoRepair || imprevistoKeywords.some(k => concepto.includes(k) || lugar.includes(k));
         if (isImprevisto) {
+            // Farmacia bypass: if the place is a pharmacy but the concept only lists
+            // hormiga items (snacks/drinks) with no medicine words, count as hormiga instead.
+            const isFarmaciaPlace = lugar.includes('farmacia');
+            if (isFarmaciaPlace && !isAutoRepair) {
+                const medicineWords = ['medicina', 'medicinas', 'pastilla', 'pastillas', 'medicamento', 'analgesico', 'antibiotico', 'ampolleta', 'jarabe', 'tableta', 'capsula', 'suero'];
+                const hasMedicineInConcept = medicineWords.some(k => concepto.includes(k));
+                const hasHormigaInConcept = hormigaKeywords.some(k => concepto.includes(k));
+                if (hasHormigaInConcept && !hasMedicineInConcept) {
+                    const parsedDate = parseSheetDate(fecha);
+                    const formattedDate = normalizeDateString(fecha);
+                    hormigaChartData.push({ x: formattedDate, y: monto });
+                    if (parsedDate.getMonth() === currentMonth && parsedDate.getFullYear() === currentYear) {
+                        hormigaTotal += monto;
+                        hormigaGastos.push({ lugar: lugarRaw || 'Farmacia', concepto: conceptoRaw || '', monto });
+                    }
+                    if (parsedDate.getMonth() === prevMonth && parsedDate.getFullYear() === prevYear) {
+                        hormigaPrevTotal += monto;
+                    }
+                    return;
+                }
+            }
             const parsedDate = parseSheetDate(fecha);
             if (parsedDate.getMonth() === currentMonth && parsedDate.getFullYear() === currentYear) {
                 imprevistoTotal += monto;
