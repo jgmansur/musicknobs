@@ -21,7 +21,7 @@ const DEUDAS_RECIBOS_FOLDER_ID = '157KDn-vbkuHH1L8xbaJBGz-oKmT7p5a9';
 const SPREADSHEET_RSM_ID = '14VsoPHGNTSUSbzMOqGWs2qSL-pGywPgjUoHD3MqIJfo'; // Recibos Salud Mariel
 const SALDOS_SHEET_ID    = '1-cX_qxld3ioSpcO9lEBPg90Db6AyK7SczpJTvj7rw4U'; // Saldos (fuente de verdad — Claude accede vía service account)
 const RSM_FOLDER_ID = '1-ZfeWQ-Rmh-Wm2WMCkULkN6MQWBuxYnj';
-const APP_VERSION  = 'v8.2.31';
+const APP_VERSION  = 'v8.2.32';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -2989,6 +2989,7 @@ function hormiga_normalizePlace(rawLugar, concepto) {
     if (n.includes('dany') || n.includes('trova')) return 'Dany Trova';
     if (n.includes('cine') || n.includes('cinemex') || n.includes('cinepolis')) return 'Cine';
     if (n.includes('cenu')) return 'Tiendita CENU';
+    if (n.includes('farmacia guadalajara') || n.includes('farmacias guadalajara')) return 'Farmacias Guadalajara';
     return raw.charAt(0).toUpperCase() + raw.slice(1).toLowerCase();
 }
 
