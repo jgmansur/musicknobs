@@ -2,7 +2,7 @@
 // MK COMPOSER — main.js
 // =============================================
 
-const APP_VERSION = 'v1.0.4';
+const APP_VERSION = 'v1.0.5';
 const CLIENT_ID   = '427918095213-6cbm5sgcfn6o8qosg6qe1r6u9toj66dp.apps.googleusercontent.com';
 const SCOPES      = 'https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile';
 
@@ -40,7 +40,13 @@ function showToast(msg, dur = 2500) {
 }
 
 function getConfig() {
-    return JSON.parse(localStorage.getItem(CONFIG_KEY) || '{"model":"llama-3.1-70b-versatile","defaultGenre":""}');
+    const cfg = JSON.parse(localStorage.getItem(CONFIG_KEY) || '{}');
+    if (!cfg.model || cfg.model === 'llama-3.1-70b-versatile') {
+        cfg.model = 'llama-3.3-70b-versatile';
+        saveConfig(cfg);
+    }
+    if (!cfg.defaultGenre) cfg.defaultGenre = '';
+    return cfg;
 }
 function saveConfig(cfg) {
     localStorage.setItem(CONFIG_KEY, JSON.stringify(cfg));
