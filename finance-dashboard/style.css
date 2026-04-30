@@ -1213,6 +1213,75 @@ select.field-input { background-image: url("data:image/svg+xml,%3Csvg xmlns='htt
   border-radius: 99px; transition: width 0.4s ease-out;
 }
 
+.receipt-items-access-btn {
+  width: 100%;
+  margin-top: 0.85rem;
+  padding: 0.55rem 0.75rem;
+  font-weight: 700;
+}
+.receipt-items-panel-inner {
+  max-height: 86vh;
+}
+.receipt-items-search-wrap {
+  margin: 0.85rem 0 0.55rem;
+}
+.receipt-items-empty {
+  margin: 1rem 0;
+  text-align: center;
+  font-size: 0.82rem;
+}
+.receipt-items-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  max-height: 48vh;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+.receipt-item-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.65rem 0.75rem;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 12px;
+  background: rgba(255,255,255,0.04);
+}
+.receipt-item-main {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+}
+.receipt-item-name {
+  color: var(--text-main);
+  font-size: 0.86rem;
+  font-weight: 700;
+}
+.receipt-item-meta {
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  line-height: 1.35;
+}
+.receipt-item-side {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.25rem;
+  flex-shrink: 0;
+}
+.receipt-item-amount {
+  color: var(--accent-orange);
+  font-size: 0.84rem;
+  font-weight: 800;
+}
+.receipt-item-link {
+  color: var(--primary);
+  font-size: 0.7rem;
+  text-decoration: none;
+}
+
 /* =============================================
    PLANIFICADOR
    ============================================= */

@@ -1844,6 +1844,10 @@
             </div>
           </div>
 
+          <button id="hormiga-receipt-items-btn" class="mini-btn receipt-items-access-btn" type="button">
+            Receipt Items
+          </button>
+
           <div style="display:flex;align-items:center;gap:0.5rem;margin-top:1rem;">
             <button id="hormiga-back-btn" class="mini-btn hidden" onclick="hormiga_backToOverview()" style="font-size:0.8rem;">← Volver</button>
             <h4 id="hormiga-section-title" class="sheet-title" style="margin:0;font-size:0.95rem;flex:1;">Gastos Frecuentes</h4>
@@ -1856,6 +1860,41 @@
           <div id="hormiga-bars-container" style="display: flex; flex-direction: column; gap: 0.75rem; margin-top:0.6rem;">
             <!-- Barras se insertan dinámicamente aquí -->
           </div>
+        </div>
+      </div>
+
+      <!-- ══ RECEIPT ITEMS PANEL ══ -->
+      <div id="receipt-items-panel" class="bottom-sheet hidden">
+        <div id="receipt-items-panel-overlay" class="bottom-sheet-overlay"></div>
+        <div class="bottom-sheet-content glass hormiga-panel-inner receipt-items-panel-inner">
+          <div class="sheet-handle"></div>
+          <div class="balance-panel-header">
+            <h3 class="balance-panel-title">Receipt Items</h3>
+            <button id="receipt-items-panel-close" class="icon-btn" aria-label="Cerrar">✕</button>
+          </div>
+
+          <div class="balance-summary-row">
+            <div class="balance-summary-card balance-summary-card--total glass-subtle">
+              <span class="bs-label">Productos itemizados</span>
+              <span id="receipt-items-total" class="bs-amount text-danger">$0.00</span>
+            </div>
+            <div class="balance-summary-card glass-subtle">
+              <span class="bs-label">Cobertura</span>
+              <span id="receipt-items-count" class="bs-amount" style="color:var(--text-muted)">0 productos este mes</span>
+            </div>
+          </div>
+
+          <div class="search-wrap receipt-items-search-wrap">
+            <span class="search-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            </span>
+            <input id="receipt-items-search" type="text" class="search-input search-input--icon" placeholder="Buscar producto, comercio o categoria...">
+          </div>
+
+          <p id="receipt-items-empty" class="text-muted receipt-items-empty">
+            Todavia no hay productos itemizados. Cuando el intake de recibos escriba en la hoja Receipt Items, apareceran aqui.
+          </p>
+          <div id="receipt-items-list" class="receipt-items-list"></div>
         </div>
       </div>
 

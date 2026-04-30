@@ -11,6 +11,7 @@ const CLIENT_ID = '427918095213-6cbm5sgcfn6o8qosg6qe1r6u9toj66dp.apps.googleuser
 // OAuth: add drive scope for creating the accounts spreadsheet in Drive
 const SCOPES = 'https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/drive';
 const SPREADSHEET_LOG_ID   = '1pn1bsxj2LaoySXAVUvqfEJY1VR4R_T8NsTOqQnVW5Xw'; // Control de Gastos
+const RECEIPT_ITEMS_SHEET = 'Receipt Items';
 const SPREADSHEET_FIXED_ID = '1EoK2KTAKAkAtdaeTVYBU1Gf3K-B7PuHzFpA4Pd39hWA'; // Gastos Fijos
 const SPREADSHEET_DEUDAS_ID = '1dKxhgqazskm15lx0f6FNCA0gpJ7i5glfxkusiH3b0Uk'; // Control de Deudas
 const SPREADSHEET_AUTOS_ID = SPREADSHEET_DEUDAS_ID; // Autos + Reparaciones live in same workbook
@@ -21,7 +22,7 @@ const DEUDAS_RECIBOS_FOLDER_ID = '157KDn-vbkuHH1L8xbaJBGz-oKmT7p5a9';
 const SPREADSHEET_RSM_ID = '14VsoPHGNTSUSbzMOqGWs2qSL-pGywPgjUoHD3MqIJfo'; // Recibos Salud Mariel
 const SALDOS_SHEET_ID    = '1-cX_qxld3ioSpcO9lEBPg90Db6AyK7SczpJTvj7rw4U'; // Saldos (fuente de verdad — Claude accede vía service account)
 const RSM_FOLDER_ID = '1-ZfeWQ-Rmh-Wm2WMCkULkN6MQWBuxYnj';
-const APP_VERSION  = 'v8.2.32';
+const APP_VERSION  = 'v8.2.33';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -620,6 +621,13 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('kpi-hormiga-card')?.addEventListener('click', hormiga_openPanel);
     document.getElementById('hormiga-panel-close')?.addEventListener('click', hormiga_closePanel);
     document.getElementById('hormiga-panel-overlay')?.addEventListener('click', hormiga_closePanel);
+    document.getElementById('hormiga-receipt-items-btn')?.addEventListener('click', receiptItems_openPanel);
+    document.getElementById('receipt-items-panel-close')?.addEventListener('click', receiptItems_closePanel);
+    document.getElementById('receipt-items-panel-overlay')?.addEventListener('click', receiptItems_closePanel);
+    document.getElementById('receipt-items-search')?.addEventListener('input', (e) => {
+        receiptItemsState.search = e.target.value.toLowerCase().trim();
+        receiptItems_renderPanel();
+    });
     document.getElementById('kpi-fixed-card')?.addEventListener('click', fixed_openPanel);
     document.getElementById('fixed-panel-close')?.addEventListener('click', fixed_closePanel);
     document.getElementById('fixed-panel-overlay')?.addEventListener('click', fixed_closePanel);
@@ -2501,11 +2509,12 @@ async function fetchAndProcess() {
     status.innerText = 'Sincronizando...'; status.style.color = 'var(--primary)';
     try {
         await ensureUsdMxnRateForTransactions();
-        const [logData, fixedData] = await Promise.all([
+        const [logData, fixedData, receiptItemRows] = await Promise.all([
             sheetsGet(SPREADSHEET_LOG_ID, 'Hoja 1!A2:H'),
-            sheetsGet(SPREADSHEET_FIXED_ID, 'Hoja 1!A2:P')  // H=estado pagos, I=periodicidad, J=inicio, K=pagador, L=budget, M=moneda, N=waive, O=linkGroup, P=fechasPago
+            sheetsGet(SPREADSHEET_FIXED_ID, 'Hoja 1!A2:P'),  // H=estado pagos, I=periodicidad, J=inicio, K=pagador, L=budget, M=moneda, N=waive, O=linkGroup, P=fechasPago
+            sheetsGet(SPREADSHEET_LOG_ID, `${RECEIPT_ITEMS_SHEET}!A2:M`).catch(() => [])
         ]);
-        processAndRender(logData, fixedData);
+        processAndRender(logData, fixedData, receiptItemRows);
         status.innerText = 'Sincronizado ✓'; status.style.color = 'var(--accent-green)';
     } catch (err) {
         if (err.status === 401) {
@@ -2518,8 +2527,9 @@ async function fetchAndProcess() {
     }
 }
 
-function processAndRender(logRows, fixedRows) {
+function processAndRender(logRows, fixedRows, receiptItemRows = []) {
     balance_updateLogNetFromRows(logRows);
+    receiptItems_setRows(receiptItemRows);
     const hormigaKeywords = [
         'oxxo','coca','cigarros','snacks','gomitas','tiendita','starbucks','seven','7-eleven','extra',
         'dulces','chicles','golosinas','chocolate','tamarindos','cine','brincolines',
@@ -2938,6 +2948,107 @@ async function fixed_confirmWaive(id, partIndex, source) {
 // HORMIGA PANEL DETAIL
 // =============================================
 const hormigaPanelState = { gastos: [], total: 0, prevTotal: 0, monthName: '', prevMonthName: '', currentPlace: null, currentTab: 'gastos' };
+const receiptItemsState = { rows: [], search: '' };
+
+function receiptItems_setRows(rows = []) {
+    receiptItemsState.rows = rows.map((row, i) => {
+        const total = parseSheetValue(row[9]);
+        return {
+            rowNum: i + 2,
+            fecha: normalizeDateString(row[0] || ''),
+            receiptId: row[1] || '',
+            comercio: row[2] || '',
+            productRaw: row[3] || '',
+            productNormalized: row[4] || row[3] || '',
+            categoria: row[5] || '',
+            subcategoria: row[6] || '',
+            cantidad: parseSheetValue(row[7]) || 1,
+            precioUnitario: parseSheetValue(row[8]),
+            totalItem: Number.isFinite(total) ? total : 0,
+            formaPago: row[10] || '',
+            recibo: row[11] || '',
+            confianza: row[12] || '',
+        };
+    }).filter(item => item.productNormalized || item.productRaw || item.totalItem);
+    receiptItems_updateButton();
+}
+
+function receiptItems_currentMonthRows() {
+    const now = new Date();
+    return receiptItemsState.rows.filter(item => {
+        const d = parseSheetDate(item.fecha);
+        return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+    });
+}
+
+function receiptItems_filteredRows() {
+    const q = receiptItemsState.search;
+    const rows = receiptItems_currentMonthRows();
+    if (!q) return rows;
+    return rows.filter(item => [
+        item.comercio, item.productRaw, item.productNormalized, item.categoria, item.subcategoria, item.formaPago
+    ].some(value => (value || '').toString().toLowerCase().includes(q)));
+}
+
+function receiptItems_updateButton() {
+    const btn = document.getElementById('hormiga-receipt-items-btn');
+    if (!btn) return;
+    const rows = receiptItems_currentMonthRows();
+    btn.innerText = rows.length ? `Receipt Items (${rows.length})` : 'Receipt Items';
+    btn.title = rows.length ? 'Ver productos extraidos de recibos' : 'No hay productos itemizados este mes todavia';
+}
+
+function receiptItems_escapeHtml(value) {
+    return (value || '').toString().replace(/[&<>'"]/g, ch => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
+    }[ch]));
+}
+
+function receiptItems_safeUrl(value) {
+    const url = (value || '').toString().trim();
+    return /^https?:\/\//i.test(url) ? url : '';
+}
+
+function receiptItems_openPanel() {
+    document.getElementById('receipt-items-panel')?.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+    receiptItems_renderPanel();
+}
+
+function receiptItems_closePanel() {
+    document.getElementById('receipt-items-panel')?.classList.add('hidden');
+    document.body.style.overflow = '';
+}
+
+function receiptItems_renderPanel() {
+    const rows = receiptItems_filteredRows().sort((a, b) => (b.fecha || '').localeCompare(a.fecha || ''));
+    const total = rows.reduce((sum, item) => sum + Math.max(0, item.totalItem || 0), 0);
+    const totalEl = document.getElementById('receipt-items-total');
+    const countEl = document.getElementById('receipt-items-count');
+    const listEl = document.getElementById('receipt-items-list');
+    const emptyEl = document.getElementById('receipt-items-empty');
+    if (totalEl) totalEl.innerText = formatCurrency(total);
+    if (countEl) countEl.innerText = `${rows.length} producto${rows.length === 1 ? '' : 's'} este mes`;
+    if (!listEl || !emptyEl) return;
+    emptyEl.classList.toggle('hidden', rows.length > 0);
+    listEl.innerHTML = rows.slice(0, 120).map(item => {
+        const safeReceipt = receiptItems_safeUrl(item.recibo);
+        const receiptLink = safeReceipt ? `<a href="${receiptItems_escapeHtml(safeReceipt)}" target="_blank" class="receipt-item-link">Recibo</a>` : '';
+        const label = receiptItems_escapeHtml(item.productNormalized || item.productRaw || 'Producto sin nombre');
+        const meta = [item.comercio, item.categoria, item.subcategoria, item.confianza ? `confianza ${item.confianza}` : '']
+            .filter(Boolean).join(' · ');
+        return `<div class="receipt-item-row">
+            <div class="receipt-item-main">
+                <span class="receipt-item-name">${label}</span>
+                <span class="receipt-item-meta">${receiptItems_escapeHtml(item.fecha || 'Sin fecha')} · ${receiptItems_escapeHtml(meta || 'Sin categoria')}</span>
+            </div>
+            <div class="receipt-item-side">
+                <span class="receipt-item-amount">${formatCurrency(item.totalItem || 0)}</span>
+                ${receiptLink}
+            </div>
+        </div>`;
+    }).join('');
+}
 
 function hormiga_openPanel() {
     document.getElementById('hormiga-panel').classList.remove('hidden');
