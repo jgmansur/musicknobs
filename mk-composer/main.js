@@ -612,6 +612,9 @@ function onAuthReady() {
 // =============================================
 document.addEventListener('DOMContentLoaded', () => {
 
+    // Always sync version display from APP_VERSION constant
+    document.getElementById('header-subtitle').textContent = `Music Knobs | ${APP_VERSION}`;
+
     // Check auth
     if (!isTokenValid()) {
         showLoginModal();
