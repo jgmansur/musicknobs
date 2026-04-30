@@ -22,7 +22,7 @@ const DEUDAS_RECIBOS_FOLDER_ID = '157KDn-vbkuHH1L8xbaJBGz-oKmT7p5a9';
 const SPREADSHEET_RSM_ID = '14VsoPHGNTSUSbzMOqGWs2qSL-pGywPgjUoHD3MqIJfo'; // Recibos Salud Mariel
 const SALDOS_SHEET_ID    = '1-cX_qxld3ioSpcO9lEBPg90Db6AyK7SczpJTvj7rw4U'; // Saldos (fuente de verdad — Claude accede vía service account)
 const RSM_FOLDER_ID = '1-ZfeWQ-Rmh-Wm2WMCkULkN6MQWBuxYnj';
-const APP_VERSION  = 'v8.2.33';
+const APP_VERSION  = 'v8.2.34';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -3112,7 +3112,7 @@ function hormiga_stripPartLabel(concepto) {
     return (concepto || '').toString().replace(/\s*\(\d+\/\d+\)\s*/g, '').trim();
 }
 
-function hormiga_renderBars(arr, drillable) {
+function hormiga_renderBars(arr, drillable, drillTarget = 'place') {
     const container = document.getElementById('hormiga-bars-container');
     if (!arr.length) {
         container.innerHTML = '<p class="text-muted" style="text-align:center;font-size:0.85rem">No hay registros</p>';
@@ -3122,7 +3122,8 @@ function hormiga_renderBars(arr, drillable) {
     container.innerHTML = arr.map(item => {
         const pct = Math.max(5, (item.monto / maxMonto) * 100);
         const safeName = item.nombre.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
-        const clickAttr = drillable ? `onclick="hormiga_drillPlace('${safeName}')" style="cursor:pointer;"` : '';
+        const drillFn = drillTarget === 'product' ? 'hormiga_drillProduct' : 'hormiga_drillPlace';
+        const clickAttr = drillable ? `onclick="${drillFn}('${safeName}')" style="cursor:pointer;"` : '';
         const hint = drillable ? `<span style="font-size:0.7rem;opacity:0.45;margin-left:3px;">›</span>` : '';
         return `<div class="progress-bar-container" ${clickAttr}>
             <div class="pb-header">
@@ -3134,7 +3135,43 @@ function hormiga_renderBars(arr, drillable) {
     }).join('');
 }
 
+function hormiga_receiptItemIsHormiga(item) {
+    const text = [item.productRaw, item.productNormalized, item.categoria, item.subcategoria]
+        .join(' ')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase();
+    if (text.includes('gasto hormiga')) return true;
+    return hormiga_getProductRules().some(rule => rule.test.test(text));
+}
+
+function hormiga_getReceiptHormigaRows() {
+    return receiptItems_currentMonthRows().filter(item => item.totalItem > 0 && hormiga_receiptItemIsHormiga(item));
+}
+
+function hormiga_renderProductOverview() {
+    const rows = hormiga_getReceiptHormigaRows();
+    if (!rows.length) return false;
+    const grouped = {};
+    rows.forEach(item => {
+        const key = item.productNormalized || item.productRaw || 'Producto sin nombre';
+        if (!grouped[key]) grouped[key] = { nombre: key, monto: 0 };
+        grouped[key].monto += item.totalItem;
+    });
+    hormiga_renderBars(Object.values(grouped).sort((a, b) => b.monto - a.monto), true, 'product');
+    return true;
+}
+
 function hormiga_renderOverview() {
+    const titleEl = document.getElementById('hormiga-section-title');
+    const editBtn = document.getElementById('hormiga-edit-btn');
+    if (hormiga_renderProductOverview()) {
+        if (titleEl) titleEl.innerText = 'Top productos hormiga';
+        if (editBtn) editBtn.title = 'Editar grupos de fallback por palabras clave';
+        return;
+    }
+    if (titleEl) titleEl.innerText = 'Gastos Frecuentes';
+    if (editBtn) editBtn.title = 'Editar grupos de productos';
     const agrupados = {};
     hormigaPanelState.gastos.forEach(g => {
         const key = hormiga_normalizePlace(g.lugar, g.concepto);
@@ -3204,12 +3241,31 @@ window.hormiga_drillPlace = function(placeName) {
     hormiga_renderGastosTab(placeName);
 };
 
+window.hormiga_drillProduct = function(productName) {
+    const titleEl = document.getElementById('hormiga-section-title');
+    const backBtn = document.getElementById('hormiga-back-btn');
+    const toggleEl = document.getElementById('hormiga-view-toggle');
+    if (titleEl) titleEl.innerText = productName;
+    if (backBtn) backBtn.classList.remove('hidden');
+    if (toggleEl) toggleEl.classList.add('hidden');
+
+    const grouped = {};
+    hormiga_getReceiptHormigaRows()
+        .filter(item => (item.productNormalized || item.productRaw || 'Producto sin nombre') === productName)
+        .forEach(item => {
+            const key = item.comercio || 'Sin comercio';
+            if (!grouped[key]) grouped[key] = { nombre: key, monto: 0 };
+            grouped[key].monto += item.totalItem;
+        });
+    hormiga_renderBars(Object.values(grouped).sort((a, b) => b.monto - a.monto), false);
+};
+
 window.hormiga_backToOverview = function() {
     hormigaPanelState.currentPlace = null;
     const titleEl = document.getElementById('hormiga-section-title');
     const backBtn = document.getElementById('hormiga-back-btn');
     const toggleEl = document.getElementById('hormiga-view-toggle');
-    if (titleEl) titleEl.innerText = 'Gastos Frecuentes';
+    if (titleEl) titleEl.innerText = 'Top productos hormiga';
     if (backBtn) backBtn.classList.add('hidden');
     if (toggleEl) toggleEl.classList.add('hidden');
     hormiga_renderOverview();
