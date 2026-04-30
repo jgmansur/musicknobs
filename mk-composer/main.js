@@ -2,7 +2,7 @@
 // MK COMPOSER — main.js
 // =============================================
 
-const APP_VERSION = 'v1.0.2';
+const APP_VERSION = 'v1.0.3';
 const CLIENT_ID   = '427918095213-6cbm5sgcfn6o8qosg6qe1r6u9toj66dp.apps.googleusercontent.com';
 const SCOPES      = 'https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile';
 
@@ -352,15 +352,18 @@ function showGhostSuggestion(text) {
     if (!text) return;
     currentSuggestion = text;
 
-    // Show suggestion in hint bar — no DOM injection inside contenteditable (breaks in Safari/iOS)
+    const bar  = document.getElementById('suggestion-hint');
     const hint = document.getElementById('hint-text');
-    hint.innerHTML = `<span class="suggestion-preview">${escapeHtml(text)}</span><span class="hint-actions">&nbsp;·&nbsp;<span class="kbd">Tab</span> aceptar&nbsp;·&nbsp;<span class="kbd">Esc</span> saltar</span>`;
+    bar.classList.add('has-suggestion');
+    hint.innerHTML = `<span class="suggestion-preview">${escapeHtml(text)}</span><span class="hint-actions">&nbsp;&nbsp;<span class="kbd">Tab</span> aceptar&nbsp;<span class="kbd">Esc</span> saltar</span>`;
 }
 
 function clearGhostSuggestion() {
     currentSuggestion = '';
+    const bar  = document.getElementById('suggestion-hint');
     const hint = document.getElementById('hint-text');
-    hint.textContent = 'Escribe y la IA sugerirá la siguiente línea…';
+    if (bar)  bar.classList.remove('has-suggestion');
+    if (hint) hint.textContent = 'Escribe y la IA sugerirá la siguiente línea…';
 }
 
 function acceptGhostSuggestion() {
@@ -684,4 +687,22 @@ document.addEventListener('DOMContentLoaded', () => {
         editor.dataset.empty = editor.textContent.trim() === '' ? 'true' : 'false';
     });
     editor.dataset.empty = 'true';
+
+    // Float suggestion bar above iOS virtual keyboard using Visual Viewport API
+    function updateSuggestionBarPosition() {
+        const bar = document.getElementById('suggestion-hint');
+        if (!bar || !window.visualViewport) return;
+        const keyboardHeight = window.innerHeight - window.visualViewport.height - window.visualViewport.offsetTop;
+        if (keyboardHeight > 80) {
+            bar.style.bottom = (keyboardHeight + 8) + 'px';
+            bar.style.transition = 'none';
+        } else {
+            bar.style.bottom = '';
+            bar.style.transition = '';
+        }
+    }
+    if (window.visualViewport) {
+        window.visualViewport.addEventListener('resize', updateSuggestionBarPosition);
+        window.visualViewport.addEventListener('scroll', updateSuggestionBarPosition);
+    }
 });

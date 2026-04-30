@@ -316,15 +316,38 @@ body {
   user-select: none;
 }
 
-.suggestion-hint {
-  display: flex; align-items: center; gap: .5rem;
-  margin-top: .6rem; min-height: 1.6rem;
-  font-size: .75rem; color: var(--text-muted);
+/* Suggestion bar — fixed, floats above keyboard on iOS via JS */
+#suggestion-hint {
+  position: fixed;
+  left: 1.25rem; right: 1.25rem;
+  bottom: calc(var(--tab-height) + env(safe-area-inset-bottom) + 0.5rem);
+  z-index: 850;
+  background: rgba(11, 17, 32, 0.97);
+  border: 1px solid rgba(168, 85, 247, 0.2);
+  border-radius: 1rem;
+  padding: 0.65rem 1rem;
+  display: flex; align-items: center; gap: 0.5rem;
+  min-height: 2.75rem;
+  font-size: 0.8rem; color: var(--text-muted);
+  box-shadow: 0 -2px 20px rgba(0,0,0,0.35);
+  transition: border-color 0.2s;
+  /* backdrop-filter safe — this element is a direct child of body */
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
 }
-.suggestion-hint .kbd {
-  display: inline-block; padding: .1rem .45rem;
-  background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.1);
-  border-radius: .35rem; font-size: .68rem; font-family: monospace;
+#suggestion-hint.has-suggestion {
+  border-color: rgba(168, 85, 247, 0.45);
+  box-shadow: 0 -2px 24px rgba(168, 85, 247, 0.12), 0 -2px 8px rgba(0,0,0,0.4);
+}
+#hint-text {
+  flex: 1;
+  font-size: 0.8rem;
+  line-height: 1.4;
+}
+.kbd {
+  display: inline-block; padding: .15rem .5rem;
+  background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.12);
+  border-radius: .4rem; font-size: .7rem; font-family: monospace;
   color: var(--text-soft);
 }
 .ai-thinking {

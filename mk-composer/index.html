@@ -16,7 +16,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <link rel="stylesheet" href="./style.css">
-  <script src="./main.js?v=1.0.2" defer></script>
+  <script src="./main.js?v=1.0.3" defer></script>
 </head>
 <body>
 <div id="app">
@@ -81,10 +81,6 @@
           data-placeholder="Empieza a escribir tu canción..."
         ></div>
 
-        <!-- Suggestion hint bar -->
-        <div class="suggestion-hint" id="suggestion-hint">
-          <span id="hint-text" style="color:var(--text-muted);font-size:.73rem;">Escribe y la IA sugerirá la siguiente línea…</span>
-        </div>
       </div>
     </div>
   </div>
@@ -191,6 +187,11 @@
   </nav>
 
 </div><!-- /#app -->
+
+<!-- ── SUGGESTION BAR (fixed, floats above keyboard on iOS) ── -->
+<div id="suggestion-hint">
+  <span id="hint-text">Escribe y la IA sugerirá la siguiente línea…</span>
+</div>
 
 <!-- ── LOGIN MODAL ── -->
 <div id="modal-backdrop"></div>
