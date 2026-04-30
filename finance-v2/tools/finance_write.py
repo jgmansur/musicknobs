@@ -25,7 +25,8 @@ RECEIPT_ITEMS_SHEET = 'Receipt Items'
 RECEIPT_ITEMS_HEADERS = [
     'fecha', 'recibo_id', 'comercio', 'producto_raw', 'producto_normalizado',
     'categoria', 'subcategoria', 'cantidad', 'precio_unitario', 'total_item',
-    'forma_pago', 'recibo', 'confianza'
+    'forma_pago', 'recibo', 'confianza', 'grupo_producto', 'hormiga_auto',
+    'hormiga_override'
 ]
 
 ALLOWED_FORMAS_PAGO = {
@@ -369,7 +370,8 @@ def write_receipt_items(service, env_vars, data):
     Sheet Receipt Items en SPREADSHEET_LOG_ID.
     Columnas: fecha, recibo_id, comercio, producto_raw, producto_normalizado,
               categoria, subcategoria, cantidad, precio_unitario, total_item,
-              forma_pago, recibo, confianza
+              forma_pago, recibo, confianza, grupo_producto, hormiga_auto,
+              hormiga_override
     """
     spreadsheet_id = env_vars['SPREADSHEET_LOG_ID']
     ensure_headers(service, spreadsheet_id, RECEIPT_ITEMS_SHEET, RECEIPT_ITEMS_HEADERS)
@@ -403,6 +405,9 @@ def write_receipt_items(service, env_vars, data):
             item.get('forma_pago') or forma_pago,
             item.get('recibo') or recibo_url,
             item.get('confianza', item.get('confidence', '')),
+            item.get('grupo_producto', item.get('product_group', '')),
+            item.get('hormiga_auto', ''),
+            item.get('hormiga_override', ''),
         ])
     if not rows:
         return 0
