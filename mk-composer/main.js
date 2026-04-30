@@ -2,7 +2,7 @@
 // MK COMPOSER — main.js
 // =============================================
 
-const APP_VERSION = 'v1.0.1';
+const APP_VERSION = 'v1.0.2';
 const CLIENT_ID   = '427918095213-6cbm5sgcfn6o8qosg6qe1r6u9toj66dp.apps.googleusercontent.com';
 const SCOPES      = 'https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile';
 
