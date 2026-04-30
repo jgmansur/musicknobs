@@ -21,6 +21,13 @@ import time
 import re
 from datetime import datetime
 
+RECEIPT_ITEMS_SHEET = 'Receipt Items'
+RECEIPT_ITEMS_HEADERS = [
+    'fecha', 'recibo_id', 'comercio', 'producto_raw', 'producto_normalizado',
+    'categoria', 'subcategoria', 'cantidad', 'precio_unitario', 'total_item',
+    'forma_pago', 'recibo', 'confianza'
+]
+
 ALLOWED_FORMAS_PAGO = {
     'Santander',
     'BBVA',
@@ -179,6 +186,17 @@ def append_row(service, spreadsheet_id, sheet_name, values):
     updated = result.get('updates', {}).get('updatedRows', 0)
     return updated
 
+def append_rows(service, spreadsheet_id, sheet_name, rows):
+    body = {'values': rows}
+    result = service.spreadsheets().values().append(
+        spreadsheetId=spreadsheet_id,
+        range=f'{sheet_name}!A:Z',
+        valueInputOption='USER_ENTERED',
+        insertDataOption='INSERT_ROWS',
+        body=body
+    ).execute()
+    return result.get('updates', {}).get('updatedRows', 0)
+
 def append_row_with_meta(service, spreadsheet_id, sheet_name, values):
     body = {'values': [values]}
     result = service.spreadsheets().values().append(
@@ -193,6 +211,34 @@ def append_row_with_meta(service, spreadsheet_id, sheet_name, values):
         'updated_rows': updates.get('updatedRows', 0),
         'updated_range': updates.get('updatedRange', ''),
     }
+
+def ensure_sheet_tab(service, spreadsheet_id, sheet_name):
+    meta = service.spreadsheets().get(
+        spreadsheetId=spreadsheet_id,
+        fields='sheets.properties.title'
+    ).execute()
+    titles = {s['properties']['title'] for s in meta.get('sheets', [])}
+    if sheet_name in titles:
+        return
+    service.spreadsheets().batchUpdate(
+        spreadsheetId=spreadsheet_id,
+        body={'requests': [{'addSheet': {'properties': {'title': sheet_name}}}]}
+    ).execute()
+
+def ensure_headers(service, spreadsheet_id, sheet_name, headers):
+    ensure_sheet_tab(service, spreadsheet_id, sheet_name)
+    existing = service.spreadsheets().values().get(
+        spreadsheetId=spreadsheet_id,
+        range=f'{sheet_name}!A1:{chr(64 + len(headers))}1'
+    ).execute().get('values', [])
+    if existing and existing[0][:len(headers)] == headers:
+        return
+    service.spreadsheets().values().update(
+        spreadsheetId=spreadsheet_id,
+        range=f'{sheet_name}!A1:{chr(64 + len(headers))}1',
+        valueInputOption='USER_ENTERED',
+        body={'values': [headers]}
+    ).execute()
 
 def extract_row_number(updated_range):
     if not updated_range:
@@ -310,13 +356,66 @@ def write_pelo(service, env_vars, data):
     ]
     return append_row(service, env_vars['SPREADSHEET_AUTOS_ID'], 'PeloLog', row)
 
+def normalize_receipt_items(data):
+    items = data.get('items') or data.get('receipt_items') or []
+    if isinstance(items, dict):
+        items = [items]
+    if not isinstance(items, list):
+        raise ValueError('receipt_items debe ser una lista de productos')
+    return items
+
+def write_receipt_items(service, env_vars, data):
+    """
+    Sheet Receipt Items en SPREADSHEET_LOG_ID.
+    Columnas: fecha, recibo_id, comercio, producto_raw, producto_normalizado,
+              categoria, subcategoria, cantidad, precio_unitario, total_item,
+              forma_pago, recibo, confianza
+    """
+    spreadsheet_id = env_vars['SPREADSHEET_LOG_ID']
+    ensure_headers(service, spreadsheet_id, RECEIPT_ITEMS_SHEET, RECEIPT_ITEMS_HEADERS)
+    items = normalize_receipt_items(data)
+    if not items:
+        return 0
+
+    receipt_id = data.get('recibo_id') or data.get('receipt_id') or f"receipt-{datetime.now().strftime('%Y%m%d%H%M%S')}"
+    fecha = format_date(data.get('fecha'))
+    comercio = data.get('comercio') or data.get('lugar', '')
+    forma_pago = normalize_forma_pago(data.get('forma_pago', '')) if data.get('forma_pago') else ''
+    recibo_url = resolve_recibo_value(data)
+    rows = []
+    for item in items:
+        if not isinstance(item, dict):
+            continue
+        total_item = format_amount(item.get('total_item', item.get('total', item.get('monto', 0))))
+        if total_item <= 0:
+            continue
+        rows.append([
+            format_date(item.get('fecha') or fecha),
+            item.get('recibo_id') or receipt_id,
+            item.get('comercio') or comercio,
+            item.get('producto_raw') or item.get('producto') or item.get('raw') or '',
+            item.get('producto_normalizado') or item.get('normalizado') or item.get('producto') or '',
+            item.get('categoria', ''),
+            item.get('subcategoria', ''),
+            format_amount(item.get('cantidad', 1)),
+            format_amount(item.get('precio_unitario', item.get('unitario', 0))),
+            total_item,
+            item.get('forma_pago') or forma_pago,
+            item.get('recibo') or recibo_url,
+            item.get('confianza', item.get('confidence', '')),
+        ])
+    if not rows:
+        return 0
+    return append_rows(service, spreadsheet_id, RECEIPT_ITEMS_SHEET, rows)
+
 SHEET_WRITERS = {
     'gastos': write_gastos,
     'fijos': write_fijos,
     'deudas': write_deudas,
     'recuerdos': write_recuerdos,
     'rsm': write_rsm,
-    'pelo': write_pelo
+    'pelo': write_pelo,
+    'receipt_items': write_receipt_items,
 }
 
 def main():
