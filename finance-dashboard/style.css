@@ -1248,6 +1248,44 @@ select.field-input { background-image: url("data:image/svg+xml,%3Csvg xmlns='htt
   border-radius: 12px;
   background: rgba(255,255,255,0.04);
 }
+.receipt-item-check {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  flex: 0 0 22px;
+  margin-top: 0.05rem;
+  cursor: pointer;
+}
+.receipt-item-check input {
+  position: absolute;
+  opacity: 0;
+  inset: 0;
+  cursor: pointer;
+}
+.receipt-item-check span {
+  width: 20px;
+  height: 20px;
+  border: 1px solid rgba(255,255,255,0.24);
+  border-radius: 7px;
+  background: rgba(255,255,255,0.05);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.02);
+}
+.receipt-item-check input:checked + span {
+  background: var(--primary);
+  border-color: var(--primary);
+}
+.receipt-item-check input:checked + span::after {
+  content: '✓';
+  display: block;
+  color: #0b1120;
+  font-size: 0.82rem;
+  font-weight: 900;
+  line-height: 19px;
+  text-align: center;
+}
 .receipt-item-main {
   display: flex;
   flex-direction: column;

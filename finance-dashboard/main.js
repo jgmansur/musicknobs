@@ -22,7 +22,7 @@ const DEUDAS_RECIBOS_FOLDER_ID = '157KDn-vbkuHH1L8xbaJBGz-oKmT7p5a9';
 const SPREADSHEET_RSM_ID = '14VsoPHGNTSUSbzMOqGWs2qSL-pGywPgjUoHD3MqIJfo'; // Recibos Salud Mariel
 const SALDOS_SHEET_ID    = '1-cX_qxld3ioSpcO9lEBPg90Db6AyK7SczpJTvj7rw4U'; // Saldos (fuente de verdad — Claude accede vía service account)
 const RSM_FOLDER_ID = '1-ZfeWQ-Rmh-Wm2WMCkULkN6MQWBuxYnj';
-const APP_VERSION  = 'v8.2.34';
+const APP_VERSION  = 'v8.2.35';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -2512,7 +2512,7 @@ async function fetchAndProcess() {
         const [logData, fixedData, receiptItemRows] = await Promise.all([
             sheetsGet(SPREADSHEET_LOG_ID, 'Hoja 1!A2:H'),
             sheetsGet(SPREADSHEET_FIXED_ID, 'Hoja 1!A2:P'),  // H=estado pagos, I=periodicidad, J=inicio, K=pagador, L=budget, M=moneda, N=waive, O=linkGroup, P=fechasPago
-            sheetsGet(SPREADSHEET_LOG_ID, `${RECEIPT_ITEMS_SHEET}!A2:M`).catch(() => [])
+            sheetsGet(SPREADSHEET_LOG_ID, `${RECEIPT_ITEMS_SHEET}!A2:P`).catch(() => [])
         ]);
         processAndRender(logData, fixedData, receiptItemRows);
         status.innerText = 'Sincronizado ✓'; status.style.color = 'var(--accent-green)';
@@ -2953,7 +2953,7 @@ const receiptItemsState = { rows: [], search: '' };
 function receiptItems_setRows(rows = []) {
     receiptItemsState.rows = rows.map((row, i) => {
         const total = parseSheetValue(row[9]);
-        return {
+        const item = {
             rowNum: i + 2,
             fecha: normalizeDateString(row[0] || ''),
             receiptId: row[1] || '',
@@ -2968,9 +2968,41 @@ function receiptItems_setRows(rows = []) {
             formaPago: row[10] || '',
             recibo: row[11] || '',
             confianza: row[12] || '',
+            grupoProducto: row[13] || '',
+            hormigaAutoRaw: row[14] || '',
+            hormigaOverride: (row[15] || '').toString().trim().toLowerCase(),
         };
+        item.grupoProducto = item.grupoProducto || receiptItems_inferProductGroup(item);
+        return item;
     }).filter(item => item.productNormalized || item.productRaw || item.totalItem);
     receiptItems_updateButton();
+}
+
+function receiptItems_normalizeForMatch(value) {
+    return (value || '').toString()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase();
+}
+
+function receiptItems_inferProductGroup(item) {
+    const text = receiptItems_normalizeForMatch(`${item.productNormalized} ${item.productRaw} ${item.categoria} ${item.subcategoria}`);
+    const groups = [
+        { name: 'Terea Blue', keywords: ['terea'] },
+        { name: 'Zyn', keywords: ['zyn'] },
+        { name: 'Coca-Cola / Refresco', keywords: ['coca', 'cocacola', 'refresco', 'sprite', 'pepsi', 'fanta', 'sidral', 'jarrito'] },
+        { name: 'Botanas', keywords: ['sabritas', 'doritos', 'totopos', 'papas', 'chips', 'briske', 'botana', 'cheetos', 'ruffles', 'tostitos'] },
+        { name: 'Dulces / Pan dulce', keywords: ['gansito', 'pinguinos', 'brownie', 'brownies', 'chocolate', 'milka', 'alfajor', 'dulce'] },
+        { name: 'Cafe', keywords: ['cafe', 'garat', 'starbucks', 'latte', 'capuchino'] },
+        { name: 'Pollo', keywords: ['pollo', 'pechuga', 'filete de pollo'] },
+        { name: 'Carne de res', keywords: ['rib eye', 'bistec', 'sirloin', 'molida res', 'res suprema'] },
+        { name: 'Cerdo', keywords: ['cerdo', 'chuleta'] },
+        { name: 'Lacteos', keywords: ['queso', 'yogur', 'chobani', 'mantequilla', 'lincott'] },
+        { name: 'Frutas y verduras', keywords: ['mango', 'uva', 'aguacate', 'jitomate', 'champinon', 'champinones'] },
+        { name: 'Despensa', keywords: ['huevo', 'cereal', 'granola', 'aceitunas', 'ziploc', 'pan croneat'] },
+    ];
+    const found = groups.find(group => group.keywords.some(keyword => text.includes(keyword)));
+    return found?.name || item.productNormalized || item.productRaw || 'Producto sin nombre';
 }
 
 function receiptItems_currentMonthRows() {
@@ -3009,6 +3041,58 @@ function receiptItems_safeUrl(value) {
     return /^https?:\/\//i.test(url) ? url : '';
 }
 
+function receiptItems_parseBoolish(value) {
+    const raw = (value || '').toString().trim().toLowerCase();
+    if (['yes', 'true', 'si', 'sí', '1', 'auto'].includes(raw)) return true;
+    if (['no', 'false', '0'].includes(raw)) return false;
+    return null;
+}
+
+function receiptItems_isAutoHormiga(item) {
+    const fromSheet = receiptItems_parseBoolish(item.hormigaAutoRaw);
+    if (fromSheet !== null) return fromSheet;
+    return hormiga_receiptItemIsHormigaAuto(item);
+}
+
+function receiptItems_isEffectiveHormiga(item) {
+    if (item.hormigaOverride === 'yes') return true;
+    if (item.hormigaOverride === 'no') return false;
+    return receiptItems_isAutoHormiga(item);
+}
+
+async function receiptItems_toggleHormiga(rowNum, checked) {
+    const item = receiptItemsState.rows.find(row => row.rowNum === rowNum);
+    if (!item) return;
+    const previous = item.hormigaOverride;
+    item.hormigaOverride = checked ? 'yes' : 'no';
+    receiptItems_renderPanel();
+    renderHormigaPanel(
+        hormigaPanelState.gastos,
+        hormigaPanelState.total,
+        hormigaPanelState.prevTotal,
+        hormigaPanelState.monthName,
+        hormigaPanelState.prevMonthName
+    );
+    try {
+        await sheetsUpdate(SPREADSHEET_LOG_ID, `${RECEIPT_ITEMS_SHEET}!P${rowNum}`, [[item.hormigaOverride]]);
+        showToast(checked ? '✅ Marcado como gasto hormiga' : '✅ Quitado de gasto hormiga');
+    } catch (e) {
+        item.hormigaOverride = previous;
+        receiptItems_renderPanel();
+        renderHormigaPanel(
+            hormigaPanelState.gastos,
+            hormigaPanelState.total,
+            hormigaPanelState.prevTotal,
+            hormigaPanelState.monthName,
+            hormigaPanelState.prevMonthName
+        );
+        showToast('⚠️ No se pudo guardar el cambio');
+        console.warn('receiptItems_toggleHormiga failed:', e);
+    }
+}
+
+window.receiptItems_toggleHormiga = receiptItems_toggleHormiga;
+
 function receiptItems_openPanel() {
     document.getElementById('receipt-items-panel')?.classList.remove('hidden');
     document.body.style.overflow = 'hidden';
@@ -3035,9 +3119,20 @@ function receiptItems_renderPanel() {
         const safeReceipt = receiptItems_safeUrl(item.recibo);
         const receiptLink = safeReceipt ? `<a href="${receiptItems_escapeHtml(safeReceipt)}" target="_blank" class="receipt-item-link">Recibo</a>` : '';
         const label = receiptItems_escapeHtml(item.productNormalized || item.productRaw || 'Producto sin nombre');
-        const meta = [item.comercio, item.categoria, item.subcategoria, item.confianza ? `confianza ${item.confianza}` : '']
+        const effectiveHormiga = receiptItems_isEffectiveHormiga(item);
+        const autoHormiga = receiptItems_isAutoHormiga(item);
+        const overrideLabel = item.hormigaOverride === 'yes'
+            ? 'manual: hormiga'
+            : item.hormigaOverride === 'no'
+            ? 'manual: no hormiga'
+            : autoHormiga ? 'auto: hormiga' : 'auto: no hormiga';
+        const meta = [item.comercio, item.grupoProducto, item.categoria, item.subcategoria, overrideLabel, item.confianza ? `confianza ${item.confianza}` : '']
             .filter(Boolean).join(' · ');
         return `<div class="receipt-item-row">
+            <label class="receipt-item-check" title="Incluir en Top productos hormiga">
+                <input type="checkbox" ${effectiveHormiga ? 'checked' : ''} onchange="receiptItems_toggleHormiga(${item.rowNum}, this.checked)">
+                <span></span>
+            </label>
             <div class="receipt-item-main">
                 <span class="receipt-item-name">${label}</span>
                 <span class="receipt-item-meta">${receiptItems_escapeHtml(item.fecha || 'Sin fecha')} · ${receiptItems_escapeHtml(meta || 'Sin categoria')}</span>
@@ -3135,7 +3230,7 @@ function hormiga_renderBars(arr, drillable, drillTarget = 'place') {
     }).join('');
 }
 
-function hormiga_receiptItemIsHormiga(item) {
+function hormiga_receiptItemIsHormigaAuto(item) {
     const text = [item.productRaw, item.productNormalized, item.categoria, item.subcategoria]
         .join(' ')
         .normalize('NFD')
@@ -3146,7 +3241,7 @@ function hormiga_receiptItemIsHormiga(item) {
 }
 
 function hormiga_getReceiptHormigaRows() {
-    return receiptItems_currentMonthRows().filter(item => item.totalItem > 0 && hormiga_receiptItemIsHormiga(item));
+    return receiptItems_currentMonthRows().filter(item => item.totalItem > 0 && receiptItems_isEffectiveHormiga(item));
 }
 
 function hormiga_renderProductOverview() {
@@ -3154,7 +3249,7 @@ function hormiga_renderProductOverview() {
     if (!rows.length) return false;
     const grouped = {};
     rows.forEach(item => {
-        const key = item.productNormalized || item.productRaw || 'Producto sin nombre';
+        const key = item.grupoProducto || item.productNormalized || item.productRaw || 'Producto sin nombre';
         if (!grouped[key]) grouped[key] = { nombre: key, monto: 0 };
         grouped[key].monto += item.totalItem;
     });
@@ -3251,7 +3346,7 @@ window.hormiga_drillProduct = function(productName) {
 
     const grouped = {};
     hormiga_getReceiptHormigaRows()
-        .filter(item => (item.productNormalized || item.productRaw || 'Producto sin nombre') === productName)
+        .filter(item => (item.grupoProducto || item.productNormalized || item.productRaw || 'Producto sin nombre') === productName)
         .forEach(item => {
             const key = item.comercio || 'Sin comercio';
             if (!grouped[key]) grouped[key] = { nombre: key, monto: 0 };
