@@ -2,7 +2,7 @@
 // MK COMPOSER — main.js
 // =============================================
 
-const APP_VERSION = 'v1.0.3';
+const APP_VERSION = 'v1.0.4';
 const CLIENT_ID   = '427918095213-6cbm5sgcfn6o8qosg6qe1r6u9toj66dp.apps.googleusercontent.com';
 const SCOPES      = 'https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile';
 
@@ -355,7 +355,11 @@ function showGhostSuggestion(text) {
     const bar  = document.getElementById('suggestion-hint');
     const hint = document.getElementById('hint-text');
     bar.classList.add('has-suggestion');
-    hint.innerHTML = `<span class="suggestion-preview">${escapeHtml(text)}</span><span class="hint-actions">&nbsp;&nbsp;<span class="kbd">Tab</span> aceptar&nbsp;<span class="kbd">Esc</span> saltar</span>`;
+    // Trigger entrance animation
+    bar.classList.remove('suggestion-pop');
+    void bar.offsetWidth; // force reflow
+    bar.classList.add('suggestion-pop');
+    hint.innerHTML = `<span class="suggestion-label">💡</span><span class="suggestion-preview">${escapeHtml(text)}</span><span class="hint-actions"><span class="kbd">Tab</span> aceptar</span>`;
 }
 
 function clearGhostSuggestion() {
@@ -499,23 +503,29 @@ async function requestSuggestion() {
             }),
         });
 
-        if (!res.ok) { isStreaming = false; setAIThinking(false); return; }
+        if (!res.ok) {
+            const errBody = await res.text().catch(() => '');
+            showToast(`⚠️ Groq ${res.status}: ${errBody.slice(0, 60) || 'error'}`);
+            return;
+        }
 
         const data = await res.json();
         let suggestion = (data.choices?.[0]?.message?.content || '').trim();
 
         // Clean up common AI artifacts
         suggestion = suggestion
-            .replace(/^["'"'"]|["'"'"]$/g, '')  // Remove surrounding quotes
+            .replace(/^["""'']|["""'']$/g, '')
             .replace(/^(Siguiente línea:|Línea:|Respuesta:)\s*/i, '')
-            .replace(/\n.*/s, '')  // Only first line
+            .replace(/\n[\s\S]*/g, '')  // Only first line (no /s flag for older Safari)
             .trim();
 
         if (suggestion && suggestion.length > 2) {
             showGhostSuggestion(suggestion);
+        } else {
+            showToast('IA no devolvió sugerencia válida');
         }
     } catch (err) {
-        console.warn('Groq error:', err);
+        showToast(`⚠️ Error red: ${String(err).slice(0, 50)}`);
     } finally {
         isStreaming = false;
         setAIThinking(false);

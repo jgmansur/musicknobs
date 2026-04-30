@@ -336,13 +336,42 @@ body {
   backdrop-filter: blur(20px);
 }
 #suggestion-hint.has-suggestion {
-  border-color: rgba(168, 85, 247, 0.45);
-  box-shadow: 0 -2px 24px rgba(168, 85, 247, 0.12), 0 -2px 8px rgba(0,0,0,0.4);
+  border-color: rgba(168, 85, 247, 0.6);
+  background: rgba(20, 10, 40, 0.98);
+  box-shadow: 0 -4px 28px rgba(168, 85, 247, 0.2), 0 -2px 8px rgba(0,0,0,0.5);
+}
+@keyframes suggestion-pop {
+  0%   { transform: translateY(8px); opacity: 0; }
+  60%  { transform: translateY(-3px); opacity: 1; }
+  100% { transform: translateY(0);   opacity: 1; }
+}
+#suggestion-hint.suggestion-pop {
+  animation: suggestion-pop 0.28s ease-out forwards;
 }
 #hint-text {
   flex: 1;
-  font-size: 0.8rem;
+  font-size: 0.82rem;
   line-height: 1.4;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+.suggestion-label {
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+.suggestion-preview {
+  color: #d8b4fe;
+  font-style: italic;
+  font-weight: 600;
+  font-size: 0.92rem;
+  flex: 1;
+}
+.hint-actions {
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  flex-shrink: 0;
 }
 .kbd {
   display: inline-block; padding: .15rem .5rem;
