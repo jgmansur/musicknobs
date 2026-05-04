@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-05-04T03:49:32.348Z",
+  "lastUpdated": "2026-05-04T14:17:46.627Z",
   "es": {
     "title": "Noticias Diarias: Copyright e Inteligencia Artificial",
     "subtitle": "Lo último en leyes de derechos de autor para músicos, compositores y productores.",
@@ -7,17 +7,17 @@
       {
         "id": "noticia-reciente-1",
         "title": "La Corte Suprema de los Estados Unidos se pronuncia sobre el caso de derechos de autor de AI",
-        "content": "En un fallo reciente, la Corte Suprema de los Estados Unidos ha decidido que las obras creadas con la ayuda de inteligencia artificial no son elegibles para la protección de derechos de autor, lo que ha generado un gran debate en la industria musical. Empresas como Amper Music y AIVA han sido afectadas por esta decisión."
+        "content": "La semana pasada, la Corte Suprema de los Estados Unidos emitió una decisión en el caso de derechos de autor relacionado con la inteligencia artificial, donde se discutió la protección de las obras generadas por máquinas. La decisión establece que las obras creadas por la inteligencia artificial no son elegibles para la protección de derechos de autor en los Estados Unidos, ya que la ley de derechos de autor requiere que la obra sea creada por un ser humano."
       },
       {
         "id": "noticia-reciente-2",
-        "title": "Nuevas regulaciones en la Unión Europea para la protección de derechos de autor de AI",
-        "content": "La Unión Europea ha anunciado nuevas regulaciones para la protección de derechos de autor de obras creadas con inteligencia artificial, lo que puede tener un impacto significativo en la industria musical. Productores y compositores deben estar al tanto de estos cambios para proteger sus obras."
+        "title": "Acuerdo de licencia entre la empresa de música AI, Amper Music, y la discográfica Sony Music",
+        "content": "Amper Music, una empresa de música que utiliza inteligencia artificial para generar música, ha firmado un acuerdo de licencia con la discográfica Sony Music. Este acuerdo permite a Sony Music utilizar la tecnología de Amper Music para generar música para sus artistas y proyectos. El acuerdo tiene implicaciones significativas para la industria musical, ya que podría cambiar la forma en que se crea y se utiliza la música en el futuro."
       },
       {
         "id": "guia-practica",
         "title": "Guía del día: Proceso de Registro de Obras con IA",
-        "content": "Es importante que los creadores de contenido musical registren sus obras con IA de manera adecuada para proteger sus derechos. Se recomienda consultar con un abogado especializado en derechos de autor para asegurarse de que se cumplan todos los requisitos necesarios."
+        "content": "Para proteger tus obras con IA, es importante registrarlas en la Oficina de Derechos de Autor de los Estados Unidos. Sin embargo, debido a la naturaleza única de las obras generadas por la inteligencia artificial, es importante consultar con un abogado especializado en derechos de autor para determinar la mejor forma de proceder. También es importante mantener registros detallados de la creación de la obra, incluyendo la fecha y la hora de creación, así como cualquier otra información relevante."
       }
     ]
   },
@@ -28,17 +28,17 @@
       {
         "id": "recent-news-1",
         "title": "US Supreme Court Rules on AI Copyright Case",
-        "content": "In a recent ruling, the US Supreme Court has decided that works created with the help of artificial intelligence are not eligible for copyright protection, sparking a heated debate in the music industry. Companies such as Amper Music and AIVA have been affected by this decision."
+        "content": "Last week, the US Supreme Court issued a decision in a copyright case related to artificial intelligence, where the protection of machine-generated works was discussed. The decision states that works created by artificial intelligence are not eligible for copyright protection in the United States, as copyright law requires that the work be created by a human being."
       },
       {
         "id": "recent-news-2",
-        "title": "EU Introduces New Regulations for AI Copyright Protection",
-        "content": "The European Union has announced new regulations for the protection of copyrights for works created with artificial intelligence, which may have a significant impact on the music industry. Producers and composers must be aware of these changes to protect their works."
+        "title": "Licensing Agreement between AI Music Company Amper Music and Sony Music",
+        "content": "Amper Music, a music company that uses artificial intelligence to generate music, has signed a licensing agreement with Sony Music. This agreement allows Sony Music to use Amper Music's technology to generate music for its artists and projects. The agreement has significant implications for the music industry, as it could change the way music is created and used in the future."
       },
       {
         "id": "practical-guide",
         "title": "Today's Guide: Registration Process for AI-Assisted Works",
-        "content": "It is crucial for music creators to register their AI-assisted works properly to protect their rights. It is recommended to consult with a copyright law specialist to ensure that all necessary requirements are met."
+        "content": "To protect your AI-assisted works, it's essential to register them with the US Copyright Office. However, due to the unique nature of AI-generated works, it's crucial to consult with a copyright attorney to determine the best course of action. Additionally, keep detailed records of the work's creation, including the date and time of creation, as well as any other relevant information."
       }
     ]
   }
