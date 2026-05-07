@@ -24,7 +24,7 @@ const DEUDAS_RECIBOS_FOLDER_ID = '157KDn-vbkuHH1L8xbaJBGz-oKmT7p5a9';
 const SPREADSHEET_RSM_ID = '14VsoPHGNTSUSbzMOqGWs2qSL-pGywPgjUoHD3MqIJfo'; // Recibos Salud Mariel
 const SALDOS_SHEET_ID    = '1-cX_qxld3ioSpcO9lEBPg90Db6AyK7SczpJTvj7rw4U'; // Saldos (fuente de verdad — Claude accede vía service account)
 const RSM_FOLDER_ID = '1-ZfeWQ-Rmh-Wm2WMCkULkN6MQWBuxYnj';
-const APP_VERSION  = 'v8.2.36';
+const APP_VERSION  = 'v8.2.37';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -573,7 +573,12 @@ document.addEventListener('DOMContentLoaded', () => {
     // Refresh
     document.getElementById('refresh-btn').addEventListener('click', async () => {
         if (!accessToken) { showLoginModal(); return; }
-        if (currentTab === 'documentos') await documentos_syncNewFromDrive();
+        if (currentTab === 'documentos') {
+            const added = await documentos_syncNewFromDrive();
+            if (typeof added === 'number') {
+                showToast(added > 0 ? `✅ ${added} documento${added !== 1 ? 's' : ''} nuevo${added !== 1 ? 's' : ''} agregado${added !== 1 ? 's' : ''}` : '✅ Documentos al día, nada nuevo');
+            }
+        }
         refreshCurrentTab();
     });
 
@@ -11016,9 +11021,17 @@ async function documentos_syncNewFromDrive() {
         ...familyFiles.map((f) => ({ ...f, _folderId: DOCS_FAMILY_FOLDER_ID })),
         ...papaFiles.map((f) => ({ ...f, _folderId: DOCS_PAPA_FOLDER_ID })),
     ];
-    const existingIds = new Set((docsState.items || []).map((d) => d.driveFileId).filter(Boolean));
-    const newFiles = allDriveFiles.filter((f) => f.id && !existingIds.has(f.id));
-    if (!newFiles.length) return;
+    const isRealDriveId = (v) => { if (!v) return false; try { return isNaN(Number(v)) && String(v).length > 10; } catch { return false; } };
+    const existingIds = new Set((docsState.items || []).map((d) => d.driveFileId).filter(isRealDriveId));
+    const existingTitles = new Set((docsState.items || []).map((d) => (d.title || '').trim().toLowerCase()));
+    const newFiles = allDriveFiles.filter((f) => {
+        if (!f.id) return false;
+        if (existingIds.has(f.id)) return false;
+        const title = documentos_stripExt(f.name || '').trim().toLowerCase();
+        if (existingTitles.has(title)) return false;
+        return true;
+    });
+    if (!newFiles.length) return 0;
     const letter = autos_colLetter(DOCS_HEADERS.length);
     const rows = newFiles.map((f) => {
         const member = documentos_guessMemberFromName(f.path || f.name || '');
@@ -11038,6 +11051,7 @@ async function documentos_syncNewFromDrive() {
         ];
     });
     await sheetsAppend(SPREADSHEET_AUTOS_ID, `${DOCS_SHEET}!A:${letter}`, rows);
+    return rows.length;
 }
 
 async function documentos_seedProfiles() {
