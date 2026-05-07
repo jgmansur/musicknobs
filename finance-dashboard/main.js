@@ -24,7 +24,7 @@ const DEUDAS_RECIBOS_FOLDER_ID = '157KDn-vbkuHH1L8xbaJBGz-oKmT7p5a9';
 const SPREADSHEET_RSM_ID = '14VsoPHGNTSUSbzMOqGWs2qSL-pGywPgjUoHD3MqIJfo'; // Recibos Salud Mariel
 const SALDOS_SHEET_ID    = '1-cX_qxld3ioSpcO9lEBPg90Db6AyK7SczpJTvj7rw4U'; // Saldos (fuente de verdad — Claude accede vía service account)
 const RSM_FOLDER_ID = '1-ZfeWQ-Rmh-Wm2WMCkULkN6MQWBuxYnj';
-const APP_VERSION  = 'v8.2.37';
+const APP_VERSION  = 'v8.2.38';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -11109,8 +11109,9 @@ function documentos_render() {
         .filter((d) => docsState.selectedMember === 'all' || d.member === docsState.selectedMember)
         .filter((d) => {
             if (!docsState.search) return true;
-            const hay = `${d.title} ${d.type} ${d.tags} ${d.notes}`.toLowerCase();
-            return hay.includes(docsState.search);
+            const normStr = (s) => (s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+            const hay = normStr(`${d.title} ${d.type} ${d.tags} ${d.notes}`);
+            return hay.includes(normStr(docsState.search));
         })
         .sort((a, b) => a.title.localeCompare(b.title, 'es', { sensitivity: 'base' }));
 
