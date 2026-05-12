@@ -24,7 +24,7 @@ const DEUDAS_RECIBOS_FOLDER_ID = '157KDn-vbkuHH1L8xbaJBGz-oKmT7p5a9';
 const SPREADSHEET_RSM_ID = '14VsoPHGNTSUSbzMOqGWs2qSL-pGywPgjUoHD3MqIJfo'; // Recibos Salud Mariel
 const SALDOS_SHEET_ID    = '1-cX_qxld3ioSpcO9lEBPg90Db6AyK7SczpJTvj7rw4U'; // Saldos (fuente de verdad — Claude accede vía service account)
 const RSM_FOLDER_ID = '1-ZfeWQ-Rmh-Wm2WMCkULkN6MQWBuxYnj';
-const APP_VERSION  = 'v8.2.38';
+const APP_VERSION  = 'v8.2.39';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -3875,9 +3875,14 @@ async function gastos_guardar() {
     const monto    = document.getElementById('g-monto').value;
     const idFila   = document.getElementById('g-id-fila').value;
     const moneda   = parseCurrencyCode(document.getElementById('g-currency').value);
+    const formaSel = document.getElementById('g-forma-pago').value;
+    const hasRecibo = document.getElementById('g-fotos-input').files.length > 0;
 
-    if (!lugar || !monto) {
-        status.innerText = '⚠️ Falta Lugar o Monto'; status.style.color = 'var(--accent-orange)'; return;
+    if (!formaSel || formaSel === '-') {
+        status.innerText = '⚠️ Selecciona una Forma de Pago'; status.style.color = 'var(--accent-orange)'; return;
+    }
+    if (!hasRecibo && (!lugar || !monto)) {
+        status.innerText = '⚠️ Falta Lugar o Monto (o adjunta un recibo)'; status.style.color = 'var(--accent-orange)'; return;
     }
     btn.disabled = true; btn.innerText = idFila ? 'Actualizando...' : 'Guardando...';
     const fecha    = new Date().toLocaleDateString('en-CA');
@@ -3952,6 +3957,7 @@ function gastos_cancelar() {
     document.getElementById('g-concepto').value = '';
     document.getElementById('g-monto').value = '';
     document.getElementById('g-currency').value = 'MXN';
+    document.getElementById('g-forma-pago').value = '-';
     const fi = document.getElementById('g-fotos-input');
     if (fi) fi.value = '';
     const fb = document.getElementById('g-fotos-feedback');
