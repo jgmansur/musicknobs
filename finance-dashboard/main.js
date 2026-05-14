@@ -24,7 +24,7 @@ const DEUDAS_RECIBOS_FOLDER_ID = '157KDn-vbkuHH1L8xbaJBGz-oKmT7p5a9';
 const SPREADSHEET_RSM_ID = '14VsoPHGNTSUSbzMOqGWs2qSL-pGywPgjUoHD3MqIJfo'; // Recibos Salud Mariel
 const SALDOS_SHEET_ID    = '1-cX_qxld3ioSpcO9lEBPg90Db6AyK7SczpJTvj7rw4U'; // Saldos (fuente de verdad — Claude accede vía service account)
 const RSM_FOLDER_ID = '1-ZfeWQ-Rmh-Wm2WMCkULkN6MQWBuxYnj';
-const APP_VERSION  = 'v8.2.39';
+const APP_VERSION  = 'v8.2.40';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -4902,6 +4902,9 @@ async function fijos_guardar() {
 const PLANNER_OVERRIDES_KEY = 'planner_assignments_v1';
 const PLANNER_DONE_INCOMES_KEY = 'planner_done_incomes_v1';
 const PLANNER_RESET_MARKER_KEY = 'planner_reset_marker_v1';
+const PLANNER_PREFERRED_KEY = 'planner_preferred_v1';
+const PLANNER_SKIP_PREFERRED_KEY = 'planner_skip_preferred_v1';
+const PLANNER_PREFERRED_SEED_MARKER_KEY = 'planner_preferred_seed_v1';
 const plannerState = {
     loading: false,
     monthKey: '',
@@ -4964,6 +4967,68 @@ function planner_writeDoneIncomes(monthKey, doneIncomeKeys) {
         const all = raw ? JSON.parse(raw) : {};
         all[monthKey] = Array.from(new Set((doneIncomeKeys || []).map(x => `${x}`)));
         localStorage.setItem(PLANNER_DONE_INCOMES_KEY, JSON.stringify(all));
+    } catch (_) {}
+}
+
+function planner_readPreferred() {
+    try {
+        const raw = localStorage.getItem(PLANNER_PREFERRED_KEY);
+        const data = raw ? JSON.parse(raw) : {};
+        return (data && typeof data === 'object') ? data : {};
+    } catch (_) { return {}; }
+}
+
+function planner_writePreferred(map) {
+    try {
+        localStorage.setItem(PLANNER_PREFERRED_KEY, JSON.stringify(map || {}));
+    } catch (_) {}
+}
+
+function planner_readSkipPreferred(monthKey) {
+    try {
+        const raw = localStorage.getItem(PLANNER_SKIP_PREFERRED_KEY);
+        const all = raw ? JSON.parse(raw) : {};
+        return !!(all && all[monthKey]);
+    } catch (_) { return false; }
+}
+
+function planner_setSkipPreferred(monthKey, val) {
+    try {
+        const raw = localStorage.getItem(PLANNER_SKIP_PREFERRED_KEY);
+        const all = raw ? JSON.parse(raw) : {};
+        if (val) all[monthKey] = true;
+        else delete all[monthKey];
+        localStorage.setItem(PLANNER_SKIP_PREFERRED_KEY, JSON.stringify(all));
+    } catch (_) {}
+}
+
+function planner_incomeRefForIndex(incomes, idx) {
+    if (idx < 0 || idx >= incomes.length) return null;
+    const income = incomes[idx];
+    return income.isBalanceSource ? 'balance' : `inc-${income.id}`;
+}
+
+function planner_indexForIncomeRef(incomes, ref) {
+    if (!ref) return -1;
+    return incomes.findIndex(i =>
+        (ref === 'balance' && i.isBalanceSource) ||
+        (!i.isBalanceSource && `inc-${i.id}` === ref)
+    );
+}
+
+function planner_seedPreferredFromCurrentMonthIfNeeded(monthKey, incomes) {
+    try {
+        if (localStorage.getItem(PLANNER_PREFERRED_SEED_MARKER_KEY)) return;
+        const overrides = planner_readOverrides(monthKey);
+        if (overrides && Object.keys(overrides).length) {
+            const preferred = {};
+            Object.entries(overrides).forEach(([expKey, idx]) => {
+                const ref = planner_incomeRefForIndex(incomes, Number(idx));
+                if (ref) preferred[expKey] = ref;
+            });
+            planner_writePreferred(preferred);
+        }
+        localStorage.setItem(PLANNER_PREFERRED_SEED_MARKER_KEY, '1');
     } catch (_) {}
 }
 
@@ -5062,16 +5127,24 @@ function planner_buildModel(items, monthKey) {
 
     expenses.sort((a, b) => a.day - b.day || a.fixedId - b.fixedId);
 
+    planner_seedPreferredFromCurrentMonthIfNeeded(monthKey, incomes);
+
     const savedOverrides = planner_readOverrides(monthKey);
     const doneIncomeKeys = planner_readDoneIncomes(monthKey);
     const doneSet = new Set(doneIncomeKeys);
     const hasSavedOverrides = Object.keys(savedOverrides).length > 0;
+    const preferredMap = planner_readPreferred();
+    const skipPreferred = planner_readSkipPreferred(monthKey);
     const assignments = {};
     let assignedByIncome = incomes.map(() => []);
     const autoIncomes = fixedIncomes.length ? fixedIncomes : incomes;
     expenses.forEach(exp => {
         let idx = planner_assignIndexByDay(exp.day, autoIncomes);
         if (fixedIncomes.length) idx += 1;
+        if (!skipPreferred) {
+            const prefIdx = planner_indexForIncomeRef(incomes, preferredMap[exp.key]);
+            if (prefIdx >= 0) idx = prefIdx;
+        }
         const manualIdx = Number(savedOverrides[exp.key]);
         if (!Number.isNaN(manualIdx) && manualIdx >= 0 && manualIdx < incomes.length) {
             idx = manualIdx;
@@ -5357,12 +5430,31 @@ window.planner_resetAssignments = function() {
     const monthKey = plannerState.monthKey;
     const current = planner_readOverrides(monthKey);
     const currentDone = planner_readDoneIncomes(monthKey);
-    if (!Object.keys(current).length && !currentDone.length) return;
+    const wasSkipping = planner_readSkipPreferred(monthKey);
+    if (!Object.keys(current).length && !currentDone.length && wasSkipping) return;
     planner_writeOverrides(monthKey, {});
     planner_writeDoneIncomes(monthKey, []);
+    planner_setSkipPreferred(monthKey, true);
     Object.assign(plannerState, planner_buildModel(fijosState.allItems, monthKey));
     planner_render();
-    showToast('↺ Asignaciones manuales reiniciadas');
+    showToast('↺ Acomodo por fecha aplicado (default ignorado este mes)');
+};
+
+window.planner_saveAsPreferred = function() {
+    if (!plannerState.monthKey) return;
+    const monthKey = plannerState.monthKey;
+    const incomes = plannerState.incomes || [];
+    if (!incomes.length) return;
+    const preferred = {};
+    Object.entries(plannerState.assignments || {}).forEach(([expKey, idx]) => {
+        const ref = planner_incomeRefForIndex(incomes, Number(idx));
+        if (ref) preferred[expKey] = ref;
+    });
+    planner_writePreferred(preferred);
+    planner_setSkipPreferred(monthKey, false);
+    Object.assign(plannerState, planner_buildModel(fijosState.allItems, monthKey));
+    planner_render();
+    showToast('⭐ Acomodo guardado como predeterminado');
 };
 
 // =============================================
