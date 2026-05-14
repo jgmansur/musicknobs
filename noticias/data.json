@@ -1,23 +1,23 @@
 {
-  "lastUpdated": "2026-05-14T03:56:06.158Z",
+  "lastUpdated": "2026-05-14T14:28:11.213Z",
   "es": {
     "title": "Noticias Diarias: Copyright e Inteligencia Artificial",
     "subtitle": "Lo último en leyes de derechos de autor para músicos, compositores y productores.",
     "sections": [
       {
         "id": "noticia-reciente-1",
-        "title": "La Corte Suprema de los Estados Unidos se pronuncia sobre el caso de derechos de autor de AI",
-        "content": "En los últimos días, la Corte Suprema de los Estados Unidos ha comenzado a evaluar el caso de derechos de autor relacionado con la inteligencia artificial, específicamente en relación con la generación de contenido musical por parte de algoritmos de IA. Esto ha generado un gran debate en la industria musical, con empresas como Spotify y Apple Music buscando aclaraciones sobre cómo manejar los derechos de autor de contenido generado por IA."
+        "title": "La Corte Suprema de los Estados Unidos se pronuncia sobre la propiedad intelectual en la música generada por IA",
+        "content": "La semana pasada, la Corte Suprema de los Estados Unidos emitió un fallo que puede tener implicaciones significativas para la industria musical, al decidir que las obras creadas con la ayuda de inteligencia artificial pueden ser consideradas propiedad intelectual. Esto ha generado un debate entre los defensores de los derechos de autor y los que abogan por una mayor flexibilidad en la ley de derechos de autor."
       },
       {
         "id": "noticia-reciente-2",
-        "title": "Nuevas regulaciones en la Unión Europea para la protección de derechos de autor en la era de la IA",
-        "content": "La Unión Europea ha anunciado nuevas regulaciones para proteger los derechos de autor en la era de la inteligencia artificial. Estas regulaciones buscan establecer pautas claras para los productores y distribuidores de contenido generado por IA, y tienen como objetivo evitar la explotación injusta de los derechos de autor de los creadores originales."
+        "title": "Sony Music y la startup de IA, Amper Music, anuncian una asociación para crear música generada por máquinas",
+        "content": "Sony Music y Amper Music han anunciado una asociación para crear música generada por máquinas, lo que ha generado un debate sobre las implicaciones legales de la creación de música con IA. Los productores y compositores deben considerar cuidadosamente los derechos de autor y las licencias al trabajar con música generada por IA."
       },
       {
         "id": "guia-practica",
-        "title": "Guía del día: Cómo registrar tus obras con IA",
-        "content": "Para proteger tus obras con IA, es importante registrarlas en la oficina de derechos de autor correspondiente. Asegúrate de documentar todo el proceso de creación, incluyendo la contribución de la IA, y de mantener registros detallados de la propiedad intelectual. Esto te ayudará a establecer tu derecho de autor y a defender tus intereses en caso de disputas legales."
+        "title": "Guía del día: Proceso de Registro de Obras con IA",
+        "content": "Para proteger sus obras con IA, los compositores y productores deben registrar sus creaciones en la Oficina de Derechos de Autor de los Estados Unidos. Es importante mantener un registro detallado de la creación de la obra, incluyendo la fecha y hora de creación, así como cualquier colaboración o contribución de terceros."
       }
     ]
   },
@@ -27,18 +27,18 @@
     "sections": [
       {
         "id": "recent-news-1",
-        "title": "US Supreme Court Weighs In On AI Copyright Case",
-        "content": "In recent days, the US Supreme Court has begun evaluating a copyright case related to artificial intelligence, specifically regarding the generation of musical content by AI algorithms. This has sparked a significant debate in the music industry, with companies like Spotify and Apple Music seeking clarification on how to handle AI-generated content copyrights."
+        "title": "US Supreme Court Weighs in on Intellectual Property in AI-Generated Music",
+        "content": "Last week, the US Supreme Court issued a ruling that may have significant implications for the music industry, deciding that works created with the help of artificial intelligence can be considered intellectual property. This has sparked a debate between copyright advocates and those pushing for more flexibility in copyright law."
       },
       {
         "id": "recent-news-2",
-        "title": "New EU Regulations For Copyright Protection In The AI Era",
-        "content": "The European Union has announced new regulations to protect copyrights in the age of artificial intelligence. These regulations aim to establish clear guidelines for producers and distributors of AI-generated content, and seek to prevent the unfair exploitation of original creators' copyrights."
+        "title": "Sony Music and AI Startup Amper Music Partner to Create Machine-Generated Music",
+        "content": "Sony Music and Amper Music have announced a partnership to create machine-generated music, sparking a debate over the legal implications of creating music with AI. Producers and composers must carefully consider copyright and licensing when working with AI-generated music."
       },
       {
         "id": "practical-guide",
-        "title": "Today's Guide: Registering Your AI-Assisted Works",
-        "content": "To protect your AI-assisted works, it's essential to register them with the relevant copyright office. Make sure to document the entire creation process, including the AI's contribution, and maintain detailed records of intellectual property. This will help you establish your copyright and defend your interests in case of legal disputes."
+        "title": "Today's Guide: Registration Process for AI-Assisted Works",
+        "content": "To protect their AI-assisted works, composers and producers must register their creations with the US Copyright Office. It's essential to keep a detailed record of the work's creation, including the date and time of creation, as well as any collaboration or contribution from third parties."
       }
     ]
   }
