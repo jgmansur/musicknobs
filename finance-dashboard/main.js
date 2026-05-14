@@ -24,7 +24,7 @@ const DEUDAS_RECIBOS_FOLDER_ID = '157KDn-vbkuHH1L8xbaJBGz-oKmT7p5a9';
 const SPREADSHEET_RSM_ID = '14VsoPHGNTSUSbzMOqGWs2qSL-pGywPgjUoHD3MqIJfo'; // Recibos Salud Mariel
 const SALDOS_SHEET_ID    = '1-cX_qxld3ioSpcO9lEBPg90Db6AyK7SczpJTvj7rw4U'; // Saldos (fuente de verdad — Claude accede vía service account)
 const RSM_FOLDER_ID = '1-ZfeWQ-Rmh-Wm2WMCkULkN6MQWBuxYnj';
-const APP_VERSION  = 'v8.2.40';
+const APP_VERSION  = 'v8.2.41';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -13822,7 +13822,18 @@ window.deudas_toggleCuota = async function(id, idx) {
         // Find matching Gasto Fijo to first MARK AS PAID (logging)
         const cuotaConcepto = `${item.concepto} - Cuota ${idx + 1}/${item.cuotas.n}`;
         let fijo = fijosState.allItems.find(f => (f.concepto || '').trim() === cuotaConcepto);
-        
+
+        if (!fijo) {
+            // fijosState may be empty (tab never opened) or stale. Force reload and retry.
+            try {
+                showToast('🔄 Sincronizando Gastos Fijos...');
+                await fijos_cargarDatos();
+                fijo = fijosState.allItems.find(f => (f.concepto || '').trim() === cuotaConcepto);
+            } catch (e) {
+                console.error('Error reloading fijos before cuota toggle:', e);
+            }
+        }
+
         if (fijo) {
             showToast('🔄 Registrando en Control de Gastos...');
             // Need to ensure fijos_togglePagoPart is available globally or we call it
