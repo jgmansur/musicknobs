@@ -3561,7 +3561,7 @@ function requestGoogleTokenWithMode({ interactive }) {
 
   try {
     googleLastRequestInteractive = Boolean(interactive);
-    googleTokenClient.requestAccessToken({ prompt: interactive ? 'consent' : '' });
+    googleTokenClient.requestAccessToken({ prompt: interactive ? 'select_account' : '' });
     return true;
   } catch {
     setOauthStatus('No se pudo abrir Google OAuth. Reintenta.', true);
