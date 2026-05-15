@@ -24,7 +24,7 @@ const DEUDAS_RECIBOS_FOLDER_ID = '157KDn-vbkuHH1L8xbaJBGz-oKmT7p5a9';
 const SPREADSHEET_RSM_ID = '14VsoPHGNTSUSbzMOqGWs2qSL-pGywPgjUoHD3MqIJfo'; // Recibos Salud Mariel
 const SALDOS_SHEET_ID    = '1-cX_qxld3ioSpcO9lEBPg90Db6AyK7SczpJTvj7rw4U'; // Saldos (fuente de verdad — Claude accede vía service account)
 const RSM_FOLDER_ID = '1-ZfeWQ-Rmh-Wm2WMCkULkN6MQWBuxYnj';
-const APP_VERSION  = 'v8.2.41';
+const APP_VERSION  = 'v8.2.42';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -188,7 +188,7 @@ let tokenRequestInFlight = null;
 let tokenRequestInteractive = true;
 let tokenRequestWatchdog = null;
 let currentTab  = 'dashboard';
-let tabInited   = { dashboard: false, gastos: false, fijos: false, deudas: false, plan: false, autos: false, propiedades: false, recuerdos: false, rsm: false, documentos: false, estados: false, pelo: false, prompts: false, estudio: false, escolar: false };
+let tabInited   = { dashboard: false, gastos: false, fijos: false, deudas: false, plan: false, autos: false, propiedades: false, recuerdos: false, ipv: false, rsm: false, documentos: false, estados: false, pelo: false, prompts: false, estudio: false, escolar: false };
 
 function markGastosStale() {
     tabInited.gastos = false;
@@ -593,6 +593,7 @@ document.addEventListener('DOMContentLoaded', () => {
     autos_bindEvents();
     propiedades_bindEvents();
     recuerdos_bindEvents();
+    ipv_bindEvents();
     rsm_bindEvents();
     documentos_bindEvents();
     estados_bindEvents();
@@ -645,7 +646,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Helper para obtener tab inicial desde el hash de la URL
     function getInitialTabFromHash() {
         const hash = (window.location.hash || '').replace('#', '').toLowerCase();
-        const validTabs = ['dashboard', 'gastos', 'fijos', 'deudas', 'plan', 'autos', 'estudio', 'propiedades', 'recuerdos', 'rsm', 'documentos', 'estados', 'pelo', 'prompts', 'escolar'];
+        const validTabs = ['dashboard', 'gastos', 'fijos', 'deudas', 'plan', 'autos', 'estudio', 'propiedades', 'recuerdos', 'ipv', 'rsm', 'documentos', 'estados', 'pelo', 'prompts', 'escolar'];
         return validTabs.includes(hash) ? hash : 'dashboard';
     }
 
@@ -1849,6 +1850,7 @@ function showTab(name) {
         if (name === 'autos')     autos_cargarVista();
         if (name === 'propiedades') propiedades_cargarVista();
         if (name === 'recuerdos') recuerdos_cargarVista();
+        if (name === 'ipv')       ipv_cargarVista();
         if (name === 'rsm')       rsm_cargarVista();
         if (name === 'documentos') documentos_cargarVista();
         if (name === 'estados') estados_cargarVista();
@@ -10444,6 +10446,346 @@ async function recuerdos_borrar(rowNum) {
     } catch (e) {
         console.error('recuerdos_borrar:', e);
         showToast('⚠️ Error al borrar recuerdo');
+    }
+}
+
+// =============================================
+// IPV MODULE — Ideas Para Videos (Notion-backed via api-server 8788)
+// =============================================
+
+const IPV_API_BASE = (location.hostname === '127.0.0.1' || location.hostname === 'localhost')
+    ? 'http://127.0.0.1:8788'
+    : 'https://manager-app-proxy.musicknobs.workers.dev';
+
+const ipvState = {
+    items: [],
+    loaded: false,
+    loading: false,
+    search: '',
+    sort: 'desc',
+    filterCanal: '',
+    filterEstatus: '',
+    visibleCount: 10,
+    limit: 10,
+    debounceTimer: null,
+    editId: '',
+};
+
+function ipv_bindEvents() {
+    document.getElementById('ipv-btn-guardar')?.addEventListener('click', ipv_guardarNuevo);
+    document.getElementById('ipv-btn-reload')?.addEventListener('click', () => {
+        ipvState.loaded = false;
+        ipv_cargarVista();
+    });
+    document.getElementById('ipv-canal')?.addEventListener('change', (e) => {
+        const isMK = e.target.value === 'Music Knobs';
+        const avatarSel = document.getElementById('ipv-avatar');
+        if (avatarSel) avatarSel.disabled = !isMK;
+        if (avatarSel && !isMK) avatarSel.value = '';
+    });
+    document.getElementById('ipv-search')?.addEventListener('input', (e) => {
+        ipvState.search = (e.target.value || '').trim();
+        if (ipvState.debounceTimer) clearTimeout(ipvState.debounceTimer);
+        ipvState.debounceTimer = setTimeout(() => ipv_render(true), 300);
+    });
+    document.getElementById('ipv-sort')?.addEventListener('change', (e) => {
+        ipvState.sort = (e.target.value || 'desc');
+        ipv_render(true);
+    });
+    document.getElementById('ipv-filter-canal')?.addEventListener('change', (e) => {
+        ipvState.filterCanal = e.target.value || '';
+        ipv_render(true);
+    });
+    document.getElementById('ipv-filter-estatus')?.addEventListener('change', (e) => {
+        ipvState.filterEstatus = e.target.value || '';
+        ipv_render(true);
+    });
+    document.getElementById('ipv-btn-more')?.addEventListener('click', () => {
+        ipvState.visibleCount += ipvState.limit;
+        ipv_render(false);
+    });
+
+    document.getElementById('ipv-list')?.addEventListener('click', (e) => {
+        const editBtn = e.target.closest('[data-ipv-edit]');
+        if (editBtn) {
+            ipv_abrirEdicion(editBtn.dataset.ipvEdit);
+            return;
+        }
+        const delBtn = e.target.closest('[data-ipv-del]');
+        if (delBtn) {
+            ipv_borrar(delBtn.dataset.ipvDel);
+            return;
+        }
+    });
+
+    document.getElementById('ipv-edit-overlay')?.addEventListener('click', () => {
+        document.getElementById('ipv-edit-sheet')?.classList.add('hidden');
+    });
+    document.getElementById('ipv-edit-cancel')?.addEventListener('click', () => {
+        document.getElementById('ipv-edit-sheet')?.classList.add('hidden');
+    });
+    document.getElementById('ipv-edit-save')?.addEventListener('click', ipv_guardarEdicion);
+    document.getElementById('ipv-edit-canal')?.addEventListener('change', (e) => {
+        const isMK = e.target.value === 'Music Knobs';
+        const avatarSel = document.getElementById('ipv-edit-avatar');
+        if (avatarSel) avatarSel.disabled = !isMK;
+        if (avatarSel && !isMK) avatarSel.value = '';
+    });
+}
+
+async function ipv_cargarVista() {
+    if (ipvState.loading) return;
+    ipvState.loading = true;
+    const listEl = document.getElementById('ipv-list');
+    if (listEl) listEl.innerHTML = '<div class="loading-spinner">⏳ Cargando ideas...</div>';
+    try {
+        await ipv_loadData();
+        ipv_render(true);
+    } catch (e) {
+        console.error('ipv_cargarVista:', e);
+        if (listEl) listEl.innerHTML = `<div class="empty-state text-danger">❌ Error cargando IPV. ¿API server en 8788 activo?</div>`;
+    } finally {
+        ipvState.loading = false;
+    }
+}
+
+async function ipv_loadData() {
+    const resp = await fetch(`${IPV_API_BASE}/api/ipv/list`);
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    const json = await resp.json();
+    ipvState.items = (json.data || []).map((x) => ({
+        ...x,
+        _ts: x.creado ? new Date(x.creado).getTime() : 0,
+    }));
+    ipvState.loaded = true;
+}
+
+function ipv_escapeHtml(s) {
+    return (s || '').toString()
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+function ipv_formatFecha(iso) {
+    if (!iso) return '';
+    try {
+        const d = new Date(iso);
+        return d.toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' });
+    } catch { return iso; }
+}
+
+function ipv_canalColor(canal) {
+    if (canal === 'Music Knobs') return '#ef4444';
+    if (canal === 'Mansur Tech') return '#3b82f6';
+    if (canal === 'Roby & Hans Place') return '#22c55e';
+    return '#6b7280';
+}
+
+function ipv_estatusColor(estatus) {
+    if (estatus === 'Idea') return '#3b82f6';
+    if (estatus === 'En guion') return '#eab308';
+    if (estatus === 'Grabado') return '#f97316';
+    if (estatus === 'Publicado') return '#22c55e';
+    if (estatus === 'Descartado') return '#9ca3af';
+    return '#6b7280';
+}
+
+function ipv_getFiltered() {
+    const q = (ipvState.search || '').toLowerCase();
+    let arr = ipvState.items.filter((it) => {
+        if (ipvState.filterCanal && it.canal !== ipvState.filterCanal) return false;
+        if (ipvState.filterEstatus && it.estatus !== ipvState.filterEstatus) return false;
+        if (q) {
+            const hay = `${it.idea} ${it.notas} ${it.canal} ${it.avatar}`.toLowerCase();
+            if (!hay.includes(q)) return false;
+        }
+        return true;
+    });
+    arr.sort((a, b) => ipvState.sort === 'asc' ? a._ts - b._ts : b._ts - a._ts);
+    return arr;
+}
+
+function ipv_render(resetPagination = false) {
+    const listEl = document.getElementById('ipv-list');
+    if (!listEl) return;
+    if (resetPagination) ipvState.visibleCount = ipvState.limit;
+
+    const filtered = ipv_getFiltered();
+    const totalEl = document.getElementById('ipv-total');
+    if (totalEl) totalEl.innerText = String(filtered.length);
+    const subEl = document.getElementById('ipv-subtitle');
+    if (subEl) subEl.innerText = (ipvState.search || ipvState.filterCanal || ipvState.filterEstatus)
+        ? `Filtro activo: ${filtered.length}`
+        : `Total: ${ipvState.items.length}`;
+
+    const visible = filtered.slice(0, ipvState.visibleCount);
+    if (!visible.length) {
+        listEl.innerHTML = '<div class="empty-state">No hay ideas encontradas.</div>';
+    } else {
+        listEl.innerHTML = visible.map((item) => {
+            const ideaHtml = ipv_escapeHtml(item.idea);
+            const notasHtml = ipv_escapeHtml(item.notas).replace(/\n/g, '<br>');
+            const canalBadge = item.canal
+                ? `<span style="background:${ipv_canalColor(item.canal)}22;color:${ipv_canalColor(item.canal)};padding:.15rem .45rem;border-radius:.35rem;font-size:.7rem;font-weight:600;">${ipv_escapeHtml(item.canal)}</span>`
+                : '';
+            const avatarBadge = item.avatar
+                ? `<span style="background:rgba(139,92,246,.15);color:#8b5cf6;padding:.15rem .45rem;border-radius:.35rem;font-size:.7rem;">${ipv_escapeHtml(item.avatar)}</span>`
+                : '';
+            const estatusBadge = item.estatus
+                ? `<span style="background:${ipv_estatusColor(item.estatus)}22;color:${ipv_estatusColor(item.estatus)};padding:.15rem .45rem;border-radius:.35rem;font-size:.7rem;">${ipv_escapeHtml(item.estatus)}</span>`
+                : '';
+            const prioBadge = item.prioridad && item.prioridad !== 'Media'
+                ? `<span style="background:rgba(${item.prioridad === 'Alta' ? '239,68,68' : '156,163,175'},.15);color:${item.prioridad === 'Alta' ? '#ef4444' : '#9ca3af'};padding:.15rem .45rem;border-radius:.35rem;font-size:.7rem;">${item.prioridad}</span>`
+                : '';
+            return `
+            <div class="movimiento-card" style="cursor:default;align-items:flex-start;flex-direction:column;gap:.4rem;">
+              <div style="display:flex;gap:.35rem;flex-wrap:wrap;align-items:center;">
+                ${canalBadge}${avatarBadge}${estatusBadge}${prioBadge}
+                <span class="diff-label" style="font-size:.7rem;">📅 ${ipv_formatFecha(item.creado)}</span>
+              </div>
+              <div class="mc-concepto" style="font-weight:600;font-size:.88rem;color:var(--text-main);">${ideaHtml || '<span style="opacity:.7;">(Sin titulo)</span>'}</div>
+              ${notasHtml ? `<div style="white-space:pre-wrap;font-size:.78rem;color:var(--text-secondary);opacity:.85;">${notasHtml}</div>` : ''}
+              <div style="display:flex;gap:.45rem;flex-wrap:wrap;">
+                <button class="mini-btn" data-ipv-edit="${item.id}">✏️ Editar</button>
+                <button class="mini-btn mini-btn-danger" data-ipv-del="${item.id}">🗑️ Borrar</button>
+                ${item.url ? `<a class="mini-btn" href="${item.url}" target="_blank" rel="noopener">🔗 Notion</a>` : ''}
+              </div>
+            </div>`;
+        }).join('');
+    }
+
+    const moreBtn = document.getElementById('ipv-btn-more');
+    if (moreBtn) {
+        moreBtn.classList.toggle('hidden', ipvState.visibleCount >= filtered.length);
+        if (!moreBtn.classList.contains('hidden')) {
+            const left = Math.max(0, filtered.length - ipvState.visibleCount);
+            moreBtn.innerText = `Ver mas (${left})`;
+        }
+    }
+}
+
+function ipv_setStatus(msg = '') {
+    const el = document.getElementById('ipv-status');
+    if (el) el.innerText = msg;
+}
+
+async function ipv_guardarNuevo() {
+    const ideaEl = document.getElementById('ipv-idea');
+    const canalEl = document.getElementById('ipv-canal');
+    const avatarEl = document.getElementById('ipv-avatar');
+    const prioEl = document.getElementById('ipv-prioridad');
+    const estatusEl = document.getElementById('ipv-estatus');
+    const notasEl = document.getElementById('ipv-notas');
+    const btn = document.getElementById('ipv-btn-guardar');
+    if (!ideaEl || !canalEl || !btn) return;
+
+    const idea = (ideaEl.value || '').trim();
+    const canal = canalEl.value;
+    if (!idea) { ipv_setStatus('Escribe la idea.'); return; }
+    if (!canal) { ipv_setStatus('Selecciona un canal.'); return; }
+
+    const body = {
+        idea,
+        canal,
+        avatar: (canal === 'Music Knobs' && avatarEl?.value) ? avatarEl.value : undefined,
+        prioridad: prioEl?.value || 'Media',
+        estatus: estatusEl?.value || 'Idea',
+        notas: (notasEl?.value || '').trim(),
+    };
+
+    btn.disabled = true;
+    btn.innerText = 'Guardando...';
+    try {
+        const resp = await fetch(`${IPV_API_BASE}/api/ipv/create`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body),
+        });
+        if (!resp.ok) {
+            const err = await resp.text();
+            throw new Error(err);
+        }
+        ideaEl.value = '';
+        if (notasEl) notasEl.value = '';
+        ipv_setStatus('¡Idea guardada!');
+        showToast('✅ Idea guardada en Notion');
+        await ipv_loadData();
+        ipv_render(true);
+        setTimeout(() => ipv_setStatus(''), 3000);
+    } catch (e) {
+        console.error('ipv_guardarNuevo:', e);
+        ipv_setStatus('Error al guardar la idea');
+        showToast('⚠️ Error guardando idea');
+    } finally {
+        btn.disabled = false;
+        btn.innerText = 'Guardar idea';
+    }
+}
+
+function ipv_abrirEdicion(id) {
+    const item = ipvState.items.find((x) => x.id === id);
+    if (!item) return;
+    ipvState.editId = id;
+    document.getElementById('ipv-edit-id').value = id;
+    document.getElementById('ipv-edit-idea').value = item.idea || '';
+    document.getElementById('ipv-edit-canal').value = item.canal || 'Music Knobs';
+    const avatarSel = document.getElementById('ipv-edit-avatar');
+    if (avatarSel) {
+        avatarSel.value = item.avatar || '';
+        avatarSel.disabled = (item.canal !== 'Music Knobs');
+    }
+    document.getElementById('ipv-edit-prioridad').value = item.prioridad || 'Media';
+    document.getElementById('ipv-edit-estatus').value = item.estatus || 'Idea';
+    document.getElementById('ipv-edit-notas').value = item.notas || '';
+    document.getElementById('ipv-edit-sheet')?.classList.remove('hidden');
+}
+
+async function ipv_guardarEdicion() {
+    const id = ipvState.editId;
+    if (!id) return;
+    const body = {
+        idea: document.getElementById('ipv-edit-idea').value.trim(),
+        canal: document.getElementById('ipv-edit-canal').value,
+        avatar: document.getElementById('ipv-edit-avatar').value || null,
+        prioridad: document.getElementById('ipv-edit-prioridad').value,
+        estatus: document.getElementById('ipv-edit-estatus').value,
+        notas: document.getElementById('ipv-edit-notas').value,
+    };
+    if (body.canal !== 'Music Knobs') body.avatar = null;
+
+    const btn = document.getElementById('ipv-edit-save');
+    if (btn) { btn.disabled = true; btn.innerText = 'Guardando...'; }
+    try {
+        const resp = await fetch(`${IPV_API_BASE}/api/ipv/update/${id}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body),
+        });
+        if (!resp.ok) throw new Error(await resp.text());
+        document.getElementById('ipv-edit-sheet')?.classList.add('hidden');
+        showToast('✅ Idea actualizada');
+        await ipv_loadData();
+        ipv_render(true);
+    } catch (e) {
+        console.error('ipv_guardarEdicion:', e);
+        showToast('⚠️ Error actualizando idea');
+    } finally {
+        if (btn) { btn.disabled = false; btn.innerText = 'Guardar cambios'; }
+    }
+}
+
+async function ipv_borrar(id) {
+    if (!id) return;
+    if (!confirm('¿Borrar esta idea?')) return;
+    try {
+        const resp = await fetch(`${IPV_API_BASE}/api/ipv/delete/${id}`, { method: 'DELETE' });
+        if (!resp.ok) throw new Error(await resp.text());
+        showToast('🗑️ Idea eliminada');
+        await ipv_loadData();
+        ipv_render(true);
+    } catch (e) {
+        console.error('ipv_borrar:', e);
+        showToast('⚠️ Error al borrar idea');
     }
 }
 

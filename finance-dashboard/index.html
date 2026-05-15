@@ -1615,6 +1615,149 @@
       </div>
 
       <!-- ══════════════════════════════════
+           VIEW: IPV (Ideas Para Videos)
+           ══════════════════════════════════ -->
+      <div id="view-ipv" class="view">
+        <main class="dashboard-grid">
+          <section class="kpi-row">
+            <div class="kpi-card glass">
+              <div class="kpi-icon" style="background:rgba(239,68,68,.15);color:#ef4444">🎬</div>
+              <div class="kpi-data">
+                <span class="label">Ideas para Videos</span>
+                <h2 id="ipv-total" class="text-success">0</h2>
+                <span id="ipv-subtitle" class="diff-label">Music Knobs · Mansur Tech · Roby & Hans</span>
+              </div>
+            </div>
+          </section>
+
+          <div class="main-content-row">
+            <section class="glass" style="display:grid;gap:.7rem;align-content:start;">
+              <div class="section-header" style="display:flex;justify-content:space-between;align-items:center;gap:.5rem;">
+                <h3>Nueva Idea</h3>
+              </div>
+              <input id="ipv-idea" type="text" class="field-input" placeholder="Idea del video (titulo corto)">
+              <div class="form-row-2" style="grid-template-columns:1fr 1fr;gap:.5rem;">
+                <select id="ipv-canal" class="field-input">
+                  <option value="">Canal...</option>
+                  <option value="Music Knobs">Music Knobs</option>
+                  <option value="Mansur Tech">Mansur Tech</option>
+                  <option value="Roby & Hans Place">Roby & Hans Place</option>
+                </select>
+                <select id="ipv-avatar" class="field-input">
+                  <option value="">Avatar (opcional)</option>
+                  <option value="Productor">Productor</option>
+                  <option value="Cantante">Cantante</option>
+                  <option value="Compositor">Compositor</option>
+                  <option value="Músico de sesión">Músico de sesión</option>
+                  <option value="Artista autogestionado">Artista autogestionado</option>
+                  <option value="Industria">Industria</option>
+                  <option value="General">General</option>
+                </select>
+              </div>
+              <div class="form-row-2" style="grid-template-columns:1fr 1fr;gap:.5rem;">
+                <select id="ipv-prioridad" class="field-input">
+                  <option value="Media">Prioridad: Media</option>
+                  <option value="Alta">Prioridad: Alta</option>
+                  <option value="Baja">Prioridad: Baja</option>
+                </select>
+                <select id="ipv-estatus" class="field-input">
+                  <option value="Idea">Estatus: Idea</option>
+                  <option value="En guion">En guion</option>
+                  <option value="Grabado">Grabado</option>
+                  <option value="Publicado">Publicado</option>
+                  <option value="Descartado">Descartado</option>
+                </select>
+              </div>
+              <textarea id="ipv-notas" class="field-input" rows="4" placeholder="Notas, angulo, referencias..."></textarea>
+              <button id="ipv-btn-guardar" class="primary-btn" style="width:100%;">Guardar idea</button>
+              <div id="ipv-status" class="diff-label"></div>
+            </section>
+
+            <section class="glass" style="display:grid;gap:.65rem;align-content:start;">
+              <div class="section-header" style="display:flex;justify-content:space-between;align-items:center;gap:.5rem;">
+                <h3>Historial</h3>
+                <button id="ipv-btn-reload" class="secondary-btn" style="margin-bottom:0;">↻ Refrescar</button>
+              </div>
+              <div class="form-row-2" style="grid-template-columns:1fr auto;gap:.5rem;">
+                <input id="ipv-search" type="search" class="field-input" placeholder="Buscar...">
+                <select id="ipv-sort" class="field-input" style="min-width:138px;">
+                  <option value="desc">Mas recientes</option>
+                  <option value="asc">Mas antiguos</option>
+                </select>
+              </div>
+              <div class="form-row-2" style="grid-template-columns:1fr 1fr;gap:.5rem;">
+                <select id="ipv-filter-canal" class="field-input">
+                  <option value="">Todos los canales</option>
+                  <option value="Music Knobs">Music Knobs</option>
+                  <option value="Mansur Tech">Mansur Tech</option>
+                  <option value="Roby & Hans Place">Roby & Hans Place</option>
+                </select>
+                <select id="ipv-filter-estatus" class="field-input">
+                  <option value="">Todos los estatus</option>
+                  <option value="Idea">Idea</option>
+                  <option value="En guion">En guion</option>
+                  <option value="Grabado">Grabado</option>
+                  <option value="Publicado">Publicado</option>
+                  <option value="Descartado">Descartado</option>
+                </select>
+              </div>
+              <div id="ipv-list" class="accounts-list"></div>
+              <button id="ipv-btn-more" class="secondary-btn hidden" style="width:100%;">Ver mas</button>
+            </section>
+          </div>
+        </main>
+
+        <div id="ipv-edit-sheet" class="bottom-sheet hidden">
+          <div id="ipv-edit-overlay" class="bottom-sheet-overlay"></div>
+          <div class="bottom-sheet-content glass">
+            <div class="sheet-handle"></div>
+            <div class="balance-panel-header">
+              <h3 class="balance-panel-title">Editar Idea</h3>
+              <button class="icon-btn" onclick="document.getElementById('ipv-edit-sheet').classList.add('hidden')">✕</button>
+            </div>
+            <input id="ipv-edit-id" type="hidden">
+            <input id="ipv-edit-idea" type="text" class="field-input" placeholder="Idea">
+            <div class="form-row-2" style="grid-template-columns:1fr 1fr;gap:.5rem;margin-top:.5rem;">
+              <select id="ipv-edit-canal" class="field-input">
+                <option value="Music Knobs">Music Knobs</option>
+                <option value="Mansur Tech">Mansur Tech</option>
+                <option value="Roby & Hans Place">Roby & Hans Place</option>
+              </select>
+              <select id="ipv-edit-avatar" class="field-input">
+                <option value="">Avatar (opcional)</option>
+                <option value="Productor">Productor</option>
+                <option value="Cantante">Cantante</option>
+                <option value="Compositor">Compositor</option>
+                <option value="Músico de sesión">Músico de sesión</option>
+                <option value="Artista autogestionado">Artista autogestionado</option>
+                <option value="Industria">Industria</option>
+                <option value="General">General</option>
+              </select>
+            </div>
+            <div class="form-row-2" style="grid-template-columns:1fr 1fr;gap:.5rem;margin-top:.5rem;">
+              <select id="ipv-edit-prioridad" class="field-input">
+                <option value="Alta">Alta</option>
+                <option value="Media">Media</option>
+                <option value="Baja">Baja</option>
+              </select>
+              <select id="ipv-edit-estatus" class="field-input">
+                <option value="Idea">Idea</option>
+                <option value="En guion">En guion</option>
+                <option value="Grabado">Grabado</option>
+                <option value="Publicado">Publicado</option>
+                <option value="Descartado">Descartado</option>
+              </select>
+            </div>
+            <textarea id="ipv-edit-notas" class="field-input" rows="5" placeholder="Notas" style="margin-top:.5rem;"></textarea>
+            <div class="form-actions" style="margin-top:.8rem;">
+              <button id="ipv-edit-cancel" class="secondary-btn" style="flex:1;">Cancelar</button>
+              <button id="ipv-edit-save" class="primary-btn" style="flex:1;">Guardar cambios</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════════════
            VIEW: RSM
            ══════════════════════════════════ -->
       <div id="view-rsm" class="view">
@@ -1992,6 +2135,10 @@
         <button class="tab" id="tab-recuerdos" data-tab="recuerdos">
           <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 4h12a2 2 0 0 1 2 2v14l-4-2-4 2-4-2-4 2V6a2 2 0 0 1 2-2z"/><path d="M9 9h6M9 13h6"/></svg>
           <span class="tab-label">Recuerdos</span>
+        </button>
+        <button class="tab" id="tab-ipv" data-tab="ipv">
+          <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polygon points="9 5 19 12 9 19 9 5"/><path d="M3 5v14"/></svg>
+          <span class="tab-label">IPV</span>
         </button>
         <button class="tab" id="tab-rsm" data-tab="rsm">
           <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 3h10l4 4v14H6z"/><path d="M14 3v5h5"/><path d="M9 13h6"/><path d="M9 17h6"/></svg>
