@@ -2206,11 +2206,6 @@ async function loadFocusTasks({ keepMode = true } = {}) {
       : `Focus (${who}): ${focusTodayTasks.length} de hoy · ${focusOverdueTasks.length} atrasadas.`;
     setStatus('focus-status', statusText, false);
   } catch (e) {
-    focusTodayTasks = [];
-    focusOverdueTasks = [];
-    focusMode = 'today';
-    focusTodayIndex = 0;
-    focusOverdueIndex = 0;
     const reason = e instanceof Error ? e.message : String(e);
     setStatus('focus-status', `No se pudo sincronizar focus tasks: ${reason}`, true);
   }
@@ -3161,7 +3156,6 @@ async function loadTasksFromApi({ append = false } = {}) {
     const reason = e instanceof Error ? e.message : String(e);
     tasksNextCursor = '';
     tasksHasMore = false;
-    setTasks([]);
     setStatus('tasks-status', `No se pudieron cargar tasks: ${reason}`, true);
   }
 }
