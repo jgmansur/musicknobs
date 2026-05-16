@@ -507,6 +507,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // 5. Draw Frame LAST so it always sits on top
         drawFrame();
+
+        console.log('[thumb] render → logos:', logos.length, 'frame:', toggleFrameInput.checked, 'thickness:', frameThicknessInput.value);
     }
 
     function drawFrame() {
