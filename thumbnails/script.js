@@ -42,6 +42,14 @@ document.addEventListener('DOMContentLoaded', () => {
     let showVsBadge = false;
     let startX, startY;
 
+    // Logos
+    const logoUpload = document.getElementById('logo-upload');
+    const addLogoBtn = document.getElementById('add-logo-btn');
+    const logosListEl = document.getElementById('logos-list');
+    const logos = []; // {id, img, x, y, scale, rotation, baseW, baseH, isDragging, rowEl}
+    let logoSeq = 0;
+    let selectedLogoId = null;
+
     // --- 1. PROMPT GENERATOR LOGIC ---
     const formOptions = {
         concept: document.getElementById('video-concept'),
@@ -277,6 +285,136 @@ document.addEventListener('DOMContentLoaded', () => {
         renderCanvas();
     });
 
+    // --- LOGOS ---
+    addLogoBtn.addEventListener('click', () => logoUpload.click());
+    logoUpload.addEventListener('change', (e) => {
+        const files = Array.from(e.target.files || []);
+        files.forEach(addLogoFromFile);
+        logoUpload.value = '';
+    });
+
+    function addLogoFromFile(file) {
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            const img = new Image();
+            img.onload = () => {
+                const id = ++logoSeq;
+                // Initial scale: fit ~25% of canvas width
+                const targetW = canvas.width * 0.25;
+                const scale = Math.min(1, targetW / img.width);
+                const logo = {
+                    id,
+                    img,
+                    x: canvas.width / 2 - (img.width * scale) / 2,
+                    y: canvas.height / 2 - (img.height * scale) / 2,
+                    scale,
+                    rotation: 0,
+                    baseW: img.width,
+                    baseH: img.height,
+                    isDragging: false,
+                    name: file.name
+                };
+                logos.push(logo);
+                addLogoRow(logo);
+                selectedLogoId = id;
+                renderCanvas();
+            };
+            img.src = ev.target.result;
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function addLogoRow(logo) {
+        const row = document.createElement('div');
+        row.className = 'logo-row';
+        row.dataset.id = logo.id;
+        row.innerHTML = `
+            <img class="logo-thumb" src="${logo.img.src}" alt="${logo.name}">
+            <div class="logo-controls">
+                <div class="logo-slider-row" title="Tamaño">
+                    <i class="fa-solid fa-up-right-and-down-left-from-center"></i>
+                    <input type="range" class="logo-scale" min="5" max="300" value="${Math.round(logo.scale * 100)}">
+                </div>
+                <div class="logo-slider-row" title="Rotación">
+                    <i class="fa-solid fa-rotate"></i>
+                    <input type="range" class="logo-rotate" min="-180" max="180" value="0">
+                </div>
+            </div>
+            <button type="button" class="logo-delete" title="Eliminar"><i class="fa-solid fa-trash"></i></button>
+        `;
+
+        const scaleInput = row.querySelector('.logo-scale');
+        const rotateInput = row.querySelector('.logo-rotate');
+        const deleteBtn = row.querySelector('.logo-delete');
+        const thumb = row.querySelector('.logo-thumb');
+
+        scaleInput.addEventListener('input', (e) => {
+            logo.scale = parseInt(e.target.value) / 100;
+            renderCanvas();
+        });
+        rotateInput.addEventListener('input', (e) => {
+            logo.rotation = parseInt(e.target.value);
+            renderCanvas();
+        });
+        deleteBtn.addEventListener('click', () => {
+            const idx = logos.findIndex(l => l.id === logo.id);
+            if (idx >= 0) logos.splice(idx, 1);
+            row.remove();
+            if (selectedLogoId === logo.id) selectedLogoId = null;
+            renderCanvas();
+        });
+        thumb.addEventListener('click', () => {
+            // Bring to front
+            const idx = logos.findIndex(l => l.id === logo.id);
+            if (idx >= 0) {
+                const [item] = logos.splice(idx, 1);
+                logos.push(item);
+            }
+            selectedLogoId = logo.id;
+            updateLogoSelection();
+            renderCanvas();
+        });
+
+        logo.rowEl = row;
+        logosListEl.appendChild(row);
+        updateLogoSelection();
+    }
+
+    function updateLogoSelection() {
+        document.querySelectorAll('.logo-row').forEach(r => {
+            r.classList.toggle('selected', parseInt(r.dataset.id) === selectedLogoId);
+        });
+    }
+
+    function drawLogos() {
+        logos.forEach(logo => {
+            const w = logo.baseW * logo.scale;
+            const h = logo.baseH * logo.scale;
+            const cx = logo.x + w / 2;
+            const cy = logo.y + h / 2;
+            ctx.save();
+            ctx.translate(cx, cy);
+            ctx.rotate(logo.rotation * Math.PI / 180);
+            ctx.drawImage(logo.img, -w / 2, -h / 2, w, h);
+            ctx.restore();
+        });
+    }
+
+    // Hit-test logo respecting rotation (transform mouse into logo local space)
+    function hitTestLogo(logo, px, py) {
+        const w = logo.baseW * logo.scale;
+        const h = logo.baseH * logo.scale;
+        const cx = logo.x + w / 2;
+        const cy = logo.y + h / 2;
+        const cos = Math.cos(-logo.rotation * Math.PI / 180);
+        const sin = Math.sin(-logo.rotation * Math.PI / 180);
+        const dx = px - cx;
+        const dy = py - cy;
+        const lx = dx * cos - dy * sin;
+        const ly = dx * sin + dy * cos;
+        return lx >= -w / 2 && lx <= w / 2 && ly >= -h / 2 && ly <= h / 2;
+    }
+
     function renderCanvas() {
         if (!currentBgImage) return;
 
@@ -354,6 +492,9 @@ document.addEventListener('DOMContentLoaded', () => {
             ctx.restore();
         });
 
+        // 4. Draw Logos (on top of texts)
+        drawLogos();
+
         if (showVsBadge) drawVSBadge();
     }
 
@@ -392,6 +533,17 @@ document.addEventListener('DOMContentLoaded', () => {
         const pos = getMousePos(e);
         startX = pos.x;
         startY = pos.y;
+        // Try logos first (top-most rendered last → iterate reverse)
+        for (let i = logos.length - 1; i >= 0; i--) {
+            const logo = logos[i];
+            if (hitTestLogo(logo, pos.x, pos.y)) {
+                logo.isDragging = true;
+                selectedLogoId = logo.id;
+                updateLogoSelection();
+                canvas.style.cursor = 'move';
+                return;
+            }
+        }
         for (let i = texts.length - 1; i >= 0; i--) {
             const item = texts[i];
             if (!item.text) continue;
@@ -416,30 +568,46 @@ document.addEventListener('DOMContentLoaded', () => {
                 item.y += dy;
             }
         });
+        logos.forEach(logo => {
+            if (logo.isDragging) {
+                dragging = true;
+                const dx = pos.x - startX;
+                const dy = pos.y - startY;
+                logo.x += dx;
+                logo.y += dy;
+            }
+        });
         if (dragging) {
             startX = pos.x;
             startY = pos.y;
             renderCanvas();
         } else {
             let hovering = false;
-            for (let i = 0; i < texts.length; i++) {
-                const item = texts[i];
-                if (item.text && pos.x >= item.x - 20 && pos.x <= item.x + item.width + 20 &&
-                    pos.y >= item.y - 20 && pos.y <= item.y + item.height + 20) {
-                    hovering = true;
-                    break;
+            for (let i = logos.length - 1; i >= 0; i--) {
+                if (hitTestLogo(logos[i], pos.x, pos.y)) { hovering = true; break; }
+            }
+            if (!hovering) {
+                for (let i = 0; i < texts.length; i++) {
+                    const item = texts[i];
+                    if (item.text && pos.x >= item.x - 20 && pos.x <= item.x + item.width + 20 &&
+                        pos.y >= item.y - 20 && pos.y <= item.y + item.height + 20) {
+                        hovering = true;
+                        break;
+                    }
                 }
             }
             canvas.style.cursor = hovering ? 'grab' : 'default';
         }
     });
 
-    canvas.addEventListener('mouseup', () => { 
-        texts.forEach(t => t.isDragging = false); 
-        canvas.style.cursor = 'default'; 
+    canvas.addEventListener('mouseup', () => {
+        texts.forEach(t => t.isDragging = false);
+        logos.forEach(l => l.isDragging = false);
+        canvas.style.cursor = 'default';
     });
-    canvas.addEventListener('mouseout', () => { 
-        texts.forEach(t => t.isDragging = false); 
+    canvas.addEventListener('mouseout', () => {
+        texts.forEach(t => t.isDragging = false);
+        logos.forEach(l => l.isDragging = false);
     });
 
     downloadBtn.addEventListener('click', () => {

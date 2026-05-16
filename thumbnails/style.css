@@ -294,6 +294,96 @@ canvas:active {
   cursor: not-allowed;
 }
 
+/* Logos Section */
+.logos-section {
+  border-top: 1px solid var(--panel-border);
+  padding-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.logos-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.logos-header label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.logos-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.logo-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 0.5rem;
+  border-radius: 8px;
+  border: 1px solid var(--panel-border);
+}
+
+.logo-row.selected {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent);
+}
+
+.logo-thumb {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.logo-row .logo-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  flex-grow: 1;
+  min-width: 0;
+}
+
+.logo-row .logo-slider-row {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.logo-row .logo-slider-row input[type="range"] {
+  flex-grow: 1;
+  min-width: 0;
+}
+
+.logo-row .logo-delete {
+  background: var(--danger);
+  color: white;
+  border: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  cursor: pointer;
+  flex-shrink: 0;
+  font-size: 0.8rem;
+}
+
 /* Responsive */
 @media (max-width: 1024px) {
   .app-container {
