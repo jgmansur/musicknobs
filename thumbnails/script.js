@@ -568,37 +568,37 @@ document.addEventListener('DOMContentLoaded', () => {
         const t = parseInt(frameThicknessInput.value) || 0;
         const corner = Math.max(0, parseInt(frameCornerInput.value) || 0);
         if (t <= 0) return;
-        ctx.save();
-        ctx.fillStyle = frameColorInput.value;
-        ctx.shadowColor = 'transparent';
+        const frameLayer = document.createElement('canvas');
+        frameLayer.width = canvas.width;
+        frameLayer.height = canvas.height;
+        const fctx = frameLayer.getContext('2d');
 
-        // Draw frame ring (without covering existing canvas content)
+        // 1) Paint solid frame layer
+        fctx.fillStyle = frameColorInput.value;
+        fctx.fillRect(0, 0, frameLayer.width, frameLayer.height);
+
+        // 2) Punch transparent hole in the center (optionally rounded)
         const innerX = t;
         const innerY = t;
-        const innerW = canvas.width - t * 2;
-        const innerH = canvas.height - t * 2;
+        const innerW = frameLayer.width - t * 2;
+        const innerH = frameLayer.height - t * 2;
         const maxCorner = Math.max(0, Math.min(corner, innerW / 2, innerH / 2));
 
         if (innerW > 0 && innerH > 0) {
-            ctx.beginPath();
-            // Outer rect (clockwise)
-            ctx.rect(0, 0, canvas.width, canvas.height);
-
-            // Inner hole (counter-clockwise via separate subpath + evenodd fill)
-            if (typeof ctx.roundRect === 'function' && maxCorner > 0) {
-                ctx.roundRect(innerX, innerY, innerW, innerH, maxCorner);
+            fctx.save();
+            fctx.globalCompositeOperation = 'destination-out';
+            if (typeof fctx.roundRect === 'function' && maxCorner > 0) {
+                fctx.beginPath();
+                fctx.roundRect(innerX, innerY, innerW, innerH, maxCorner);
+                fctx.fill();
             } else {
-                ctx.rect(innerX, innerY, innerW, innerH);
+                fctx.fillRect(innerX, innerY, innerW, innerH);
             }
-
-            // Fill only ring area; keep center untouched
-            ctx.fill('evenodd');
-        } else {
-            // Very thick frame edge case: fill whole canvas
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            fctx.restore();
         }
 
-        ctx.restore();
+        // 3) Composite prepared frame above all content
+        ctx.drawImage(frameLayer, 0, 0);
     }
 
     function drawVSBadge() {
