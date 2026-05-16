@@ -208,6 +208,13 @@ textarea:focus {
   font-weight: 700;
 }
 
+.line-font-select {
+  max-width: 150px;
+  min-width: 120px;
+  padding: 0.55rem 0.6rem;
+  font-size: 0.8rem;
+}
+
 input[type="color"] {
   -webkit-appearance: none;
   border: none;

@@ -22,7 +22,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const rotate1Input = document.getElementById('rotate-1');
     const rotate2Input = document.getElementById('rotate-2');
     
-    const fontSelect = document.getElementById('font-family');
+    const font0Select = document.getElementById('font-0');
+    const font1Select = document.getElementById('font-1');
+    const font2Select = document.getElementById('font-2');
     const addVsBtn = document.getElementById('add-vs-btn');
 
     // Advanced Config
@@ -54,7 +56,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const toggleFrameInput = document.getElementById('toggle-frame');
     const frameColorInput = document.getElementById('frame-color');
     const frameThicknessInput = document.getElementById('frame-thickness');
-    [toggleFrameInput, frameColorInput, frameThicknessInput].forEach(el => {
+    const frameCornerInput = document.getElementById('frame-corner');
+    const logoLayerInput = document.getElementById('logo-layer');
+    [toggleFrameInput, frameColorInput, frameThicknessInput, frameCornerInput, logoLayerInput].forEach(el => {
         el.addEventListener('input', renderCanvas);
         el.addEventListener('change', renderCanvas);
     });
@@ -298,7 +302,20 @@ document.addEventListener('DOMContentLoaded', () => {
     applySliderPolish(size1Input, 130, 10);
     applySliderPolish(size2Input, 130, 10);
 
-    fontSelect.addEventListener('change', renderCanvas);
+    async function loadFontAndRender(fontName) {
+        try {
+            await document.fonts.load(`900 80px "${fontName}"`);
+        } catch (_) {
+            // If loading fails, still force render with fallback
+        }
+        renderCanvas();
+    }
+
+    [font0Select, font1Select, font2Select].forEach(selectEl => {
+        selectEl.addEventListener('change', (e) => {
+            loadFontAndRender(e.target.value);
+        });
+    });
 
     addVsBtn.addEventListener('click', () => {
         showVsBadge = !showVsBadge;
@@ -475,11 +492,20 @@ document.addEventListener('DOMContentLoaded', () => {
         ctx.fillStyle = gradient;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        // 3. Draw Texts
+        // 3. Draw Logos below text (optional)
+        if (logoLayerInput.value === 'below') {
+            drawLogos();
+        }
+
+        // 4. Draw Texts
         texts.forEach((item, index) => {
             if (!item.text.trim()) return;
 
-            const fontName = fontSelect.value;
+            const fontName = index === 0
+                ? font0Select.value
+                : index === 1
+                    ? font1Select.value
+                    : font2Select.value;
             let fontSize;
             if (index === 0) fontSize = size0Input.value;
             else if (index === 1) fontSize = size1Input.value;
@@ -526,26 +552,49 @@ document.addEventListener('DOMContentLoaded', () => {
             ctx.restore();
         });
 
-        // 4. Draw Logos (on top of texts)
-        drawLogos();
+        // 5. Draw Logos on top of text (optional)
+        if (logoLayerInput.value !== 'below') {
+            drawLogos();
+        }
 
         if (showVsBadge) drawVSBadge();
 
-        // 5. Draw Frame LAST so it always sits on top
+        // 6. Draw Frame LAST so it always sits on top
         drawFrame();
     }
 
     function drawFrame() {
         if (!toggleFrameInput.checked) return;
         const t = parseInt(frameThicknessInput.value) || 0;
+        const corner = Math.max(0, parseInt(frameCornerInput.value) || 0);
         if (t <= 0) return;
         ctx.save();
         ctx.fillStyle = frameColorInput.value;
         ctx.shadowColor = 'transparent';
-        ctx.fillRect(0, 0, canvas.width, t);                       // top
-        ctx.fillRect(0, canvas.height - t, canvas.width, t);       // bottom
-        ctx.fillRect(0, 0, t, canvas.height);                      // left
-        ctx.fillRect(canvas.width - t, 0, t, canvas.height);       // right
+
+        // Draw full frame
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Carve inner hole, optionally with rounded corners
+        const innerX = t;
+        const innerY = t;
+        const innerW = canvas.width - t * 2;
+        const innerH = canvas.height - t * 2;
+        const maxCorner = Math.max(0, Math.min(corner, innerW / 2, innerH / 2));
+
+        if (innerW > 0 && innerH > 0) {
+            ctx.globalCompositeOperation = 'destination-out';
+            if (typeof ctx.roundRect === 'function' && maxCorner > 0) {
+                ctx.beginPath();
+                ctx.roundRect(innerX, innerY, innerW, innerH, maxCorner);
+                ctx.fill();
+            } else {
+                // Fallback without roundRect support
+                ctx.fillRect(innerX, innerY, innerW, innerH);
+            }
+            ctx.globalCompositeOperation = 'source-over';
+        }
+
         ctx.restore();
     }
 
@@ -672,4 +721,3 @@ document.addEventListener('DOMContentLoaded', () => {
         document.body.removeChild(link);
     });
 });
-
