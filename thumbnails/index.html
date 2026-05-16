@@ -165,13 +165,29 @@
                             "VS"</button>
                     </div>
 
+                    <div class="frame-section" style="border-top: 1px solid var(--panel-border); padding-top: 1rem; display: flex; flex-direction: column; gap: 0.6rem;">
+                        <label style="font-size: 0.85rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; display:flex; align-items:center; gap:0.4rem;">
+                            <i class="fa-solid fa-border-all"></i> Marco
+                        </label>
+                        <div style="display:flex; gap:0.8rem; align-items:center; flex-wrap:wrap;">
+                            <label style="display:flex; align-items:center; gap:0.4rem; cursor:pointer; font-size:0.85rem;">
+                                <input type="checkbox" id="toggle-frame"> Activar
+                            </label>
+                            <input type="color" id="frame-color" value="#E74C3C" title="Color del marco">
+                            <label style="display:flex; align-items:center; gap:0.4rem; font-size:0.8rem; color:var(--text-muted); flex-grow:1;">
+                                Grosor:
+                                <input type="range" id="frame-thickness" min="5" max="120" value="35" style="flex-grow:1;">
+                            </label>
+                        </div>
+                    </div>
+
                     <div class="logos-section">
                         <div class="logos-header">
                             <label><i class="fa-solid fa-images"></i> Logos / Imágenes</label>
-                            <input type="file" id="logo-upload" accept="image/png, image/jpeg, image/webp" multiple hidden>
-                            <button type="button" id="add-logo-btn" class="btn-micro" style="background: var(--accent);">
+                            <input type="file" id="logo-upload" accept="image/png, image/jpeg, image/webp" multiple style="position:absolute; left:-9999px; width:1px; height:1px; opacity:0;">
+                            <label for="logo-upload" id="add-logo-btn" class="btn-micro" style="background: var(--accent); display:inline-flex; align-items:center; gap:0.3rem;">
                                 <i class="fa-solid fa-plus"></i> Agregar
-                            </button>
+                            </label>
                         </div>
                         <div id="logos-list" class="logos-list"></div>
                     </div>

@@ -50,6 +50,15 @@ document.addEventListener('DOMContentLoaded', () => {
     let logoSeq = 0;
     let selectedLogoId = null;
 
+    // Frame
+    const toggleFrameInput = document.getElementById('toggle-frame');
+    const frameColorInput = document.getElementById('frame-color');
+    const frameThicknessInput = document.getElementById('frame-thickness');
+    [toggleFrameInput, frameColorInput, frameThicknessInput].forEach(el => {
+        el.addEventListener('input', renderCanvas);
+        el.addEventListener('change', renderCanvas);
+    });
+
     // --- 1. PROMPT GENERATOR LOGIC ---
     const formOptions = {
         concept: document.getElementById('video-concept'),
@@ -285,8 +294,7 @@ document.addEventListener('DOMContentLoaded', () => {
         renderCanvas();
     });
 
-    // --- LOGOS ---
-    addLogoBtn.addEventListener('click', () => logoUpload.click());
+    // --- LOGOS --- (label[for=logo-upload] triggers the input natively)
     logoUpload.addEventListener('change', (e) => {
         const files = Array.from(e.target.files || []);
         files.forEach(addLogoFromFile);
@@ -496,6 +504,23 @@ document.addEventListener('DOMContentLoaded', () => {
         drawLogos();
 
         if (showVsBadge) drawVSBadge();
+
+        // 5. Draw Frame LAST so it always sits on top
+        drawFrame();
+    }
+
+    function drawFrame() {
+        if (!toggleFrameInput.checked) return;
+        const t = parseInt(frameThicknessInput.value) || 0;
+        if (t <= 0) return;
+        ctx.save();
+        ctx.fillStyle = frameColorInput.value;
+        ctx.shadowColor = 'transparent';
+        ctx.fillRect(0, 0, canvas.width, t);                       // top
+        ctx.fillRect(0, canvas.height - t, canvas.width, t);       // bottom
+        ctx.fillRect(0, 0, t, canvas.height);                      // left
+        ctx.fillRect(canvas.width - t, 0, t, canvas.height);       // right
+        ctx.restore();
     }
 
     function drawVSBadge() {
