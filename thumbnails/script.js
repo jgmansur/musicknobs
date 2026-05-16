@@ -572,10 +572,7 @@ document.addEventListener('DOMContentLoaded', () => {
         ctx.fillStyle = frameColorInput.value;
         ctx.shadowColor = 'transparent';
 
-        // Draw full frame
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-        // Carve inner hole, optionally with rounded corners
+        // Draw frame ring (without covering existing canvas content)
         const innerX = t;
         const innerY = t;
         const innerW = canvas.width - t * 2;
@@ -583,16 +580,22 @@ document.addEventListener('DOMContentLoaded', () => {
         const maxCorner = Math.max(0, Math.min(corner, innerW / 2, innerH / 2));
 
         if (innerW > 0 && innerH > 0) {
-            ctx.globalCompositeOperation = 'destination-out';
+            ctx.beginPath();
+            // Outer rect (clockwise)
+            ctx.rect(0, 0, canvas.width, canvas.height);
+
+            // Inner hole (counter-clockwise via separate subpath + evenodd fill)
             if (typeof ctx.roundRect === 'function' && maxCorner > 0) {
-                ctx.beginPath();
                 ctx.roundRect(innerX, innerY, innerW, innerH, maxCorner);
-                ctx.fill();
             } else {
-                // Fallback without roundRect support
-                ctx.fillRect(innerX, innerY, innerW, innerH);
+                ctx.rect(innerX, innerY, innerW, innerH);
             }
-            ctx.globalCompositeOperation = 'source-over';
+
+            // Fill only ring area; keep center untouched
+            ctx.fill('evenodd');
+        } else {
+            // Very thick frame edge case: fill whole canvas
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
         }
 
         ctx.restore();
