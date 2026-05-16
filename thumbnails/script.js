@@ -58,6 +58,12 @@ document.addEventListener('DOMContentLoaded', () => {
         el.addEventListener('input', renderCanvas);
         el.addEventListener('change', renderCanvas);
     });
+    // Double click resets frame thickness
+    frameThicknessInput.addEventListener('dblclick', (e) => {
+        e.preventDefault();
+        frameThicknessInput.value = 35;
+        renderCanvas();
+    });
 
     // --- 1. PROMPT GENERATOR LOGIC ---
     const formOptions = {
@@ -259,6 +265,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 renderCanvas();
             }
         });
+
+        // Reset shortcut: double click
+        input.addEventListener('dblclick', (e) => {
+            e.preventDefault();
+            input.value = defaultValue;
+            renderCanvas();
+        });
     }
 
     // Connect text inputs to canvas rendering
@@ -356,12 +369,25 @@ document.addEventListener('DOMContentLoaded', () => {
         const deleteBtn = row.querySelector('.logo-delete');
         const thumb = row.querySelector('.logo-thumb');
 
+        const defaultScalePct = parseInt(scaleInput.value);
         scaleInput.addEventListener('input', (e) => {
             logo.scale = parseInt(e.target.value) / 100;
             renderCanvas();
         });
+        scaleInput.addEventListener('dblclick', (e) => {
+            e.preventDefault();
+            scaleInput.value = defaultScalePct;
+            logo.scale = defaultScalePct / 100;
+            renderCanvas();
+        });
         rotateInput.addEventListener('input', (e) => {
             logo.rotation = parseInt(e.target.value);
+            renderCanvas();
+        });
+        rotateInput.addEventListener('dblclick', (e) => {
+            e.preventDefault();
+            rotateInput.value = 0;
+            logo.rotation = 0;
             renderCanvas();
         });
         deleteBtn.addEventListener('click', () => {
@@ -507,8 +533,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // 5. Draw Frame LAST so it always sits on top
         drawFrame();
-
-        console.log('[thumb] render → logos:', logos.length, 'frame:', toggleFrameInput.checked, 'thickness:', frameThicknessInput.value);
     }
 
     function drawFrame() {
