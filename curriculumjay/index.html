@@ -193,7 +193,7 @@
                 <p>📧 <a href="mailto:jgmansur2@gmail.com">jgmansur2@gmail.com</a> | 📍 San Miguel de Allende, Guanajuato, México</p>
 <hr>
 <h2>Perfil Profesional</h2>
-<p>Licenciado en Mercadotecnia, Productor Musical de élite, Podcaster y Autor con más de 25 años de trayectoria. Especialista senior en Ingeniería de Mezcla y Masterización, experto en Pro Tools, Logic Pro y Ableton Live. Creador de contenido educativo enfocado en la nueva generación de productores a través de plataformas digitales. Experto en producción integral de podcasts, desde el diseño sonoro y flujos de trabajo hasta la optimización para plataformas de streaming. Combina una sólida visión comercial con dominio técnico avanzado en Final Cut Pro, OBS e Inteligencia Artificial aplicada a la producción y el desarrollo.</p>
+<p>Perfil dual con más de 25 años en la industria musical y una segunda especialidad activa en ingeniería de software construida con AI como co-piloto. Productor Musical de élite, Podcaster y Autor, experto senior en Mezcla y Masterización (Pro Tools, Logic Pro, Ableton Live). En paralelo, diseña y opera aplicaciones full-stack en producción —dashboards financieros, APIs REST, servidores MCP, agentes y pipelines de automatización— integrando modelos de lenguaje (Claude, Gemini, GPT) con servicios reales (Notion, Google Workspace, Cloudflare, Firebase). Combina visión comercial, dominio audiovisual (Final Cut Pro, OBS) y una práctica madura de desarrollo asistido por AI orientada a resolver problemas concretos de negocio, no a prototipos desechables.</p>
 <h2>Experiencia Profesional</h2>
 <h3>Productor Independiente & Colaborador</h3>
 <p><strong>2011 — Presente | México (San Miguel de Allende)</strong></p>
@@ -228,18 +228,59 @@
 <li>  <strong>Tema: Mis Celos</strong>: David Bustamante (España).</li>
 <li>  <strong>Tema: La Diferencia</strong>: Mojito Lite (Colombia), Chenoa (España).</li>
 </ul>
+<h2>Ingeniería de Software con AI</h2>
+<p>Desarrollador full-stack que utiliza AI como co-piloto para construir y mantener sistemas reales en producción. Más allá de "usar ChatGPT", diseña arquitectura, integra servicios, opera infraestructura y resuelve problemas concretos del día a día.</p>
+<h3>Aplicaciones en Producción</h3>
+<ul>
+<li>  <strong>Finance Dashboard</strong> (v7.8.x) — Dashboard financiero familiar con planeación, multi-moneda MXN/USD y tracking de Cetes/Bitcoin. Vanilla JS + Vite, backend serverless en Cloudflare Workers, Google Sheets como fuente de datos. Desplegado en GitHub Pages, en uso diario desde hace más de 8 meses.</li>
+<li>  <strong>Manager App</strong> (v1.1.x) — App mobile-first para gestión de catálogo musical y carrera. React + Howler.js, Worker en Cloudflare como backend, Notion como base de datos, OAuth de Google y streaming seguro de audio desde Google Drive vía Service Account.</li>
+<li>  <strong>Finance v2 API Server</strong> — API REST en TypeScript (Fastify + zod + sql.js) que alimenta Dashboard y Manager App. Daemonizada en macOS con LaunchAgent (KeepAlive), credenciales en macOS Keychain (sin archivos `.env` en el repositorio).</li>
+<li>  <strong>Finance MCP Server</strong> — Servidor MCP (Model Context Protocol) en Node.js + Fastify, desplegado en Fly.io. Doble transporte HTTP + stdio, consumido simultáneamente por Claude, Gemini y widgets nativos de iOS.</li>
+<li>  <strong>Elussila Gallery</strong> — Galería de arte en Next.js 16 + Firebase, con flujo de upload vía OAuth de Google Drive. Desplegado en Vercel.</li>
+<li>  <strong>MK Composer</strong> (v1.0.x) — PWA de asistencia a composición con Groq/LLaMA, OAuth de Google y Google Sheets como backend de catálogo.</li>
+</ul>
+<h3>Infraestructura AI y Sistemas de Agentes</h3>
+<ul>
+<li>  <strong>Memoria persistente multi-AI (Engram)</strong> — Sistema SQLite con observaciones, *topic keys* y relaciones (<em>supersedes / conflicts / scoped</em>) compartido entre Claude Code, Gemini, OpenCode y ChatGPT a través de máquinas distintas. Permite a cualquier agente recuperar el contexto y decisiones de cualquier otro.</li>
+<li>  <strong>+43 *skills* modulares de agente</strong> — Biblioteca propia de capacidades para Claude Code y Antigravity con delegación a sub-agentes, orquestación y cambio de contexto controlado.</li>
+<li>  <strong>Spec-Driven Development end-to-end</strong> — Flujo explorar → proponer → especificar → diseñar → tareas → implementar → verificar → archivar, con artefactos persistidos en memoria y trazabilidad por cambio.</li>
+<li>  <strong>Coordinación multi-modelo</strong> — Claude + Gemini + OpenCode operando sobre un mismo SQLite como fuente única de verdad, sin reentrenamientos, sin servicios cloud propietarios.</li>
+</ul>
+<h3>Automatizaciones en Producción 24/7</h3>
+<ul>
+<li>  <strong>Briefings matutino y vespertino</strong> (Python) — Agregan Gmail + Notion + Google Sheets y entregan resumen vía Notion, Telegram y notificación nativa de macOS.</li>
+<li>  <strong>Bot de recibos en Telegram</strong> — OCR + visión, archivado en Google Drive, registro itemizado en Sheets para análisis de "gasto hormiga".</li>
+<li>  <strong>Pipeline de video automatizado</strong> — ffmpeg + Whisper + selección de *highlights* con AI + YouTube API → publicación automática de Shorts.</li>
+<li>  <strong>Puente OpenCode ↔ Telegram</strong> — Control remoto de Claude Code desde el celular.</li>
+<li>  <strong>Workers de Cloudflare</strong> como proxy autenticado entre apps y Notion/Drive.</li>
+</ul>
+<h3>Patrones de Ingeniería Aplicados</h3>
+<ul>
+<li>  *Evidence-first ledger* — toda transacción financiera obliga a un artefacto verificable antes de registrarse.</li>
+<li>  *Stateless secrets* — credenciales en macOS Keychain, nunca en archivos del repositorio.</li>
+<li>  *Webhook bridges* event-driven para sincronización entre servicios.</li>
+<li>  Arquitectura híbrida: edge compute (Cloudflare) + serverless + SQLite como backend persistente.</li>
+<li>  OAuth completo (Google Drive, YouTube, Gmail, Calendar) tanto en navegador como en backend.</li>
+</ul>
+<h3>Stack Técnico</h3>
+<p><strong>Lenguajes:</strong> TypeScript, JavaScript, Python.</p>
+<p><strong>Frontend:</strong> React, Next.js, Vite, PWA, Vanilla JS.</p>
+<p><strong>Backend:</strong> Node.js, Fastify, Cloudflare Workers, Firebase, SQLite, sql.js.</p>
+<p><strong>Infraestructura:</strong> Fly.io, Vercel, GitHub Pages, macOS LaunchAgents.</p>
+<p><strong>Integraciones:</strong> Notion API, Google APIs (Sheets, Drive, YouTube, Gmail, Calendar), MCP (Model Context Protocol), Whisper, ffmpeg, OAuth 2.0.</p>
+<p><strong>Modelos AI:</strong> Claude (Anthropic), Gemini (Google), GPT (OpenAI), Groq/LLaMA.</p>
 <h2>Habilidades Clave</h2>
 <ul>
 <li>  <strong>Producción y Audio</strong>: Experto en Pro Tools, Logic Pro y Ableton Live. Especialista en procesos avanzados de mezcla y masterización. Dominio de flujos de trabajo para podcasts (captura, edición, post-producción y distribución).</li>
 <li>  <strong>Negocio Musical</strong>: Conocimiento experto de regalías, derechos de autor y funcionamiento interno de editoras y disqueras.</li>
 <li>  <strong>Contenido Visual</strong>: Manejo avanzado de Final Cut Pro y OBS. Producción de videos optimizados para YouTube y TikTok.</li>
-<li>  <strong>Ingeniería Asistida por IA y Desarrollo Web</strong>: Creación y orquestación de aplicaciones web avanzadas utilizando frameworks modernos, bases de datos y herramientas de orquestación de IA (como Antigravity). Dominio de entornos de terminal y herramientas CLI de inteligencia artificial (ej. Open Code), interactuando eficazmente con múltiples modelos de lenguaje (LLMs) para la automatización, desarrollo de software y solución de problemas complejos.</li>
+<li>  <strong>Ingeniería de Software con AI</strong>: Desarrollo full-stack asistido por AI, diseño de arquitectura, integración de servicios (Notion, Google, Cloudflare, Firebase), construcción de servidores MCP, automatización 24/7 y operación de infraestructura local-first. Detalle en la sección anterior.</li>
 </ul>
 <h2>Educación</h2>
 <ul>
 <li>  <strong>Mix with the Masters</strong> — Certificado (2013)</li>
 <li>  <strong>Academia de Amparo Rubín</strong> — Producción y Composición (1995-1999)</li>
-<li>  <strong>Licenciado en Mercadotecnia</strong> — (Graduación esperada: Mayo 2026)</li>
+<li>  <strong>Licenciado en Mercadotecnia</strong> — Carrera concluida; en espera de fecha de ceremonia de graduación.</li>
 </ul>
 <h2>Información Adicional</h2>
 <ul>
