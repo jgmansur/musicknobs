@@ -507,26 +507,46 @@ document.addEventListener('DOMContentLoaded', () => {
         const yOffset = parseInt(bgYOffsetInput.value) || 0;
         const centerShiftY = ((canvas.height - currentBgImage.height * ratio) / 2) + yOffset;
 
-        // Apply blur ONLY to the background image (portable: downscale+upscale trick — works in Safari)
+        // Apply blur ONLY to the background image (portable: multi-pass 50% downscales — works in Safari, sin pixelado)
         const blurPx = parseInt(bgBlurInput.value) || 0;
         if (blurPx > 0) {
-            const scale = 1 / (1 + blurPx * 0.4);
-            const offW = Math.max(1, Math.floor(canvas.width * scale));
-            const offH = Math.max(1, Math.floor(canvas.height * scale));
-            const off = document.createElement('canvas');
-            off.width = offW;
-            off.height = offH;
-            const offCtx = off.getContext('2d');
-            offCtx.imageSmoothingEnabled = true;
-            offCtx.imageSmoothingQuality = 'high';
-            offCtx.drawImage(
+            // Stage: render the bg image at full canvas size with correct positioning
+            const stage = document.createElement('canvas');
+            stage.width = canvas.width;
+            stage.height = canvas.height;
+            const stageCtx = stage.getContext('2d');
+            stageCtx.imageSmoothingEnabled = true;
+            stageCtx.imageSmoothingQuality = 'high';
+            stageCtx.drawImage(
                 currentBgImage, 0, 0, currentBgImage.width, currentBgImage.height,
-                centerShiftX * scale, centerShiftY * scale,
-                currentBgImage.width * ratio * scale, currentBgImage.height * ratio * scale
+                centerShiftX, centerShiftY,
+                currentBgImage.width * ratio, currentBgImage.height * ratio
             );
+
+            // Multi-pass: cada pasada baja 50% con bilinear → acumula como un box-blur (3 pases ≈ gaussian)
+            const passes = Math.min(6, Math.ceil(blurPx / 5));
+            let current = stage;
+            let w = current.width;
+            let h = current.height;
+            for (let i = 0; i < passes; i++) {
+                const nw = Math.max(2, Math.floor(w / 2));
+                const nh = Math.max(2, Math.floor(h / 2));
+                const next = document.createElement('canvas');
+                next.width = nw;
+                next.height = nh;
+                const nctx = next.getContext('2d');
+                nctx.imageSmoothingEnabled = true;
+                nctx.imageSmoothingQuality = 'high';
+                nctx.drawImage(current, 0, 0, nw, nh);
+                current = next;
+                w = nw;
+                h = nh;
+            }
+
+            // Upscale final al canvas principal — smoothing alto = blur suave
             ctx.imageSmoothingEnabled = true;
             ctx.imageSmoothingQuality = 'high';
-            ctx.drawImage(off, 0, 0, offW, offH, 0, 0, canvas.width, canvas.height);
+            ctx.drawImage(current, 0, 0, w, h, 0, 0, canvas.width, canvas.height);
         } else {
             ctx.drawImage(currentBgImage, 0, 0, currentBgImage.width, currentBgImage.height,
                 centerShiftX, centerShiftY, currentBgImage.width * ratio, currentBgImage.height * ratio);
