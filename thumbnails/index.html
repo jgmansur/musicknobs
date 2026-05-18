@@ -228,6 +228,15 @@
                         <label style="display: flex; flex-direction: column; gap: 0.3rem;"><i class="fa-solid fa-arrows-up-down"></i> Posición Fondo (Y): <input
                                 type="range" id="bg-y-offset" min="-500" max="500" value="0"
                                 style="width: 120px;"></label>
+                        <label style="display: flex; flex-direction: column; gap: 0.3rem;"><i class="fa-solid fa-circle-half-stroke"></i> Velo: <input
+                                type="range" id="vignette-intensity" min="0" max="100" value="80"
+                                style="width: 100px;"></label>
+                        <label style="display: flex; flex-direction: column; gap: 0.3rem;" title="Lado oscuro del velo">Lado:
+                            <select id="vignette-side" style="background: rgba(0,0,0,0.3); color: white; border: 1px solid var(--panel-border); border-radius: 6px; padding: 0.2rem;">
+                                <option value="left" selected>Izquierda</option>
+                                <option value="right">Derecha</option>
+                            </select>
+                        </label>
                         <label style="display: flex; flex-direction: column; gap: 0.3rem;">Separación: <input
                                 type="range" id="letter-spacing" min="-5" max="30" value="0"
                                 style="width: 80px;"></label>

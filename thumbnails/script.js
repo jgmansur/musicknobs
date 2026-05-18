@@ -32,6 +32,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const toggleShadowInput = document.getElementById('toggle-shadow');
     const toggleStrokeInput = document.getElementById('toggle-stroke');
     const bgYOffsetInput = document.getElementById('bg-y-offset');
+    const vignetteIntensityInput = document.getElementById('vignette-intensity');
+    const vignetteSideInput = document.getElementById('vignette-side');
 
     // Text objects to handle dragging
     const texts = [
@@ -294,6 +296,8 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Apply Global Slider Polish
     applySliderPolish(bgYOffsetInput, 0, 10);
+    applySliderPolish(vignetteIntensityInput, 80, 5);
+    vignetteSideInput.addEventListener('change', renderCanvas);
     applySliderPolish(letterSpacingInput, 0, 2); // Reduced range for fine movement
     applySliderPolish(rotate0Input, 0, 5);      // Balanced range for rotation
     applySliderPolish(rotate1Input, 0, 5);
@@ -485,12 +489,18 @@ document.addEventListener('DOMContentLoaded', () => {
         ctx.drawImage(currentBgImage, 0, 0, currentBgImage.width, currentBgImage.height,
             centerShiftX, centerShiftY, currentBgImage.width * ratio, currentBgImage.height * ratio);
 
-        // 2. Add Vignette
-        const gradient = ctx.createLinearGradient(0, 0, canvas.width * 0.6, 0);
-        gradient.addColorStop(0, "rgba(0,0,0,0.8)");
-        gradient.addColorStop(1, "rgba(0,0,0,0)");
-        ctx.fillStyle = gradient;
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        // 2. Add Vignette (intensidad y lado controlados por UI)
+        const vignetteAlpha = (parseInt(vignetteIntensityInput.value) || 0) / 100;
+        if (vignetteAlpha > 0) {
+            const side = vignetteSideInput.value;
+            const startX = side === 'right' ? canvas.width : 0;
+            const endX = side === 'right' ? canvas.width * 0.4 : canvas.width * 0.6;
+            const gradient = ctx.createLinearGradient(startX, 0, endX, 0);
+            gradient.addColorStop(0, `rgba(0,0,0,${vignetteAlpha})`);
+            gradient.addColorStop(1, "rgba(0,0,0,0)");
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
 
         // 3. Draw Logos below text (optional)
         if (logoLayerInput.value === 'below') {
