@@ -491,6 +491,81 @@ document.addEventListener('DOMContentLoaded', () => {
         return lx >= -w / 2 && lx <= w / 2 && ly >= -h / 2 && ly <= h / 2;
     }
 
+    // --- BLUR HELPERS (híbrido: ctx.filter en Chrome, box blur JS en Safari) ---
+    const canvasFilterSupported = (() => {
+        const c = document.createElement('canvas').getContext('2d');
+        c.filter = 'blur(1px)';
+        return c.filter === 'blur(1px)';
+    })();
+
+    // Box blur 1D con suma corrida — O(W*H) por pasada, no depende del radio
+    function boxBlurH(src, dst, w, h, r) {
+        const win = r * 2 + 1;
+        for (let y = 0; y < h; y++) {
+            let sumR = 0, sumG = 0, sumB = 0, sumA = 0;
+            // Inicializa ventana en el borde izquierdo (clamp)
+            for (let x = -r; x <= r; x++) {
+                const cx = x < 0 ? 0 : (x >= w ? w - 1 : x);
+                const i = (y * w + cx) * 4;
+                sumR += src[i]; sumG += src[i + 1]; sumB += src[i + 2]; sumA += src[i + 3];
+            }
+            for (let x = 0; x < w; x++) {
+                const o = (y * w + x) * 4;
+                dst[o] = sumR / win;
+                dst[o + 1] = sumG / win;
+                dst[o + 2] = sumB / win;
+                dst[o + 3] = sumA / win;
+                // Desliza ventana: agrega el de la derecha, quita el de la izquierda
+                const xOut = x - r < 0 ? 0 : x - r;
+                const xIn = x + r + 1 >= w ? w - 1 : x + r + 1;
+                const iOut = (y * w + xOut) * 4;
+                const iIn = (y * w + xIn) * 4;
+                sumR += src[iIn] - src[iOut];
+                sumG += src[iIn + 1] - src[iOut + 1];
+                sumB += src[iIn + 2] - src[iOut + 2];
+                sumA += src[iIn + 3] - src[iOut + 3];
+            }
+        }
+    }
+    function boxBlurV(src, dst, w, h, r) {
+        const win = r * 2 + 1;
+        for (let x = 0; x < w; x++) {
+            let sumR = 0, sumG = 0, sumB = 0, sumA = 0;
+            for (let y = -r; y <= r; y++) {
+                const cy = y < 0 ? 0 : (y >= h ? h - 1 : y);
+                const i = (cy * w + x) * 4;
+                sumR += src[i]; sumG += src[i + 1]; sumB += src[i + 2]; sumA += src[i + 3];
+            }
+            for (let y = 0; y < h; y++) {
+                const o = (y * w + x) * 4;
+                dst[o] = sumR / win;
+                dst[o + 1] = sumG / win;
+                dst[o + 2] = sumB / win;
+                dst[o + 3] = sumA / win;
+                const yOut = y - r < 0 ? 0 : y - r;
+                const yIn = y + r + 1 >= h ? h - 1 : y + r + 1;
+                const iOut = (yOut * w + x) * 4;
+                const iIn = (yIn * w + x) * 4;
+                sumR += src[iIn] - src[iOut];
+                sumG += src[iIn + 1] - src[iOut + 1];
+                sumB += src[iIn + 2] - src[iOut + 2];
+                sumA += src[iIn + 3] - src[iOut + 3];
+            }
+        }
+    }
+    // 3 pasadas de box blur ≈ gaussiano (teorema del límite central)
+    function applyGaussianBlurJS(imageData, radius) {
+        if (radius < 1) return;
+        const r = Math.max(1, Math.round(radius / 3));
+        const w = imageData.width, h = imageData.height;
+        const src = imageData.data;
+        const tmp = new Uint8ClampedArray(src.length);
+        for (let p = 0; p < 3; p++) {
+            boxBlurH(src, tmp, w, h, r);
+            boxBlurV(tmp, src, w, h, r);
+        }
+    }
+
     function renderCanvas() {
         if (!currentBgImage) return;
 
@@ -507,46 +582,25 @@ document.addEventListener('DOMContentLoaded', () => {
         const yOffset = parseInt(bgYOffsetInput.value) || 0;
         const centerShiftY = ((canvas.height - currentBgImage.height * ratio) / 2) + yOffset;
 
-        // Apply blur ONLY to the background image (portable: multi-pass 50% downscales — works in Safari, sin pixelado)
+        // Blur híbrido: ctx.filter en Chrome (GPU, perfecto), box blur JS en Safari (calidad gaussiana equivalente)
         const blurPx = parseInt(bgBlurInput.value) || 0;
-        if (blurPx > 0) {
-            // Stage: render the bg image at full canvas size with correct positioning
+        if (blurPx > 0 && canvasFilterSupported) {
+            ctx.filter = `blur(${blurPx}px)`;
+            ctx.drawImage(currentBgImage, 0, 0, currentBgImage.width, currentBgImage.height,
+                centerShiftX, centerShiftY, currentBgImage.width * ratio, currentBgImage.height * ratio);
+            ctx.filter = 'none';
+        } else if (blurPx > 0) {
+            // Fallback Safari: render a stage canvas → 3-pass box blur (≈ gaussiano) → drawImage
             const stage = document.createElement('canvas');
             stage.width = canvas.width;
             stage.height = canvas.height;
             const stageCtx = stage.getContext('2d');
-            stageCtx.imageSmoothingEnabled = true;
-            stageCtx.imageSmoothingQuality = 'high';
-            stageCtx.drawImage(
-                currentBgImage, 0, 0, currentBgImage.width, currentBgImage.height,
-                centerShiftX, centerShiftY,
-                currentBgImage.width * ratio, currentBgImage.height * ratio
-            );
-
-            // Multi-pass: cada pasada baja 50% con bilinear → acumula como un box-blur (3 pases ≈ gaussian)
-            const passes = Math.min(6, Math.ceil(blurPx / 5));
-            let current = stage;
-            let w = current.width;
-            let h = current.height;
-            for (let i = 0; i < passes; i++) {
-                const nw = Math.max(2, Math.floor(w / 2));
-                const nh = Math.max(2, Math.floor(h / 2));
-                const next = document.createElement('canvas');
-                next.width = nw;
-                next.height = nh;
-                const nctx = next.getContext('2d');
-                nctx.imageSmoothingEnabled = true;
-                nctx.imageSmoothingQuality = 'high';
-                nctx.drawImage(current, 0, 0, nw, nh);
-                current = next;
-                w = nw;
-                h = nh;
-            }
-
-            // Upscale final al canvas principal — smoothing alto = blur suave
-            ctx.imageSmoothingEnabled = true;
-            ctx.imageSmoothingQuality = 'high';
-            ctx.drawImage(current, 0, 0, w, h, 0, 0, canvas.width, canvas.height);
+            stageCtx.drawImage(currentBgImage, 0, 0, currentBgImage.width, currentBgImage.height,
+                centerShiftX, centerShiftY, currentBgImage.width * ratio, currentBgImage.height * ratio);
+            const imgData = stageCtx.getImageData(0, 0, stage.width, stage.height);
+            applyGaussianBlurJS(imgData, blurPx);
+            stageCtx.putImageData(imgData, 0, 0);
+            ctx.drawImage(stage, 0, 0);
         } else {
             ctx.drawImage(currentBgImage, 0, 0, currentBgImage.width, currentBgImage.height,
                 centerShiftX, centerShiftY, currentBgImage.width * ratio, currentBgImage.height * ratio);
