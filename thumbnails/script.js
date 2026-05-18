@@ -492,10 +492,28 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- BLUR HELPERS (híbrido: ctx.filter en Chrome, box blur JS en Safari) ---
+    // Detección REAL — Safari acepta la propiedad pero no la aplica al renderizar.
+    // Hay que dibujar un pixel y verificar si el blur lo bleed-eó a vecinos.
     const canvasFilterSupported = (() => {
-        const c = document.createElement('canvas').getContext('2d');
-        c.filter = 'blur(1px)';
-        return c.filter === 'blur(1px)';
+        try {
+            const src = document.createElement('canvas');
+            src.width = 5; src.height = 1;
+            const sctx = src.getContext('2d');
+            sctx.fillStyle = '#fff';
+            sctx.fillRect(2, 0, 1, 1); // pixel central blanco, resto transparente
+
+            const dst = document.createElement('canvas');
+            dst.width = 5; dst.height = 1;
+            const dctx = dst.getContext('2d');
+            dctx.filter = 'blur(2px)';
+            dctx.drawImage(src, 0, 0);
+
+            const px = dctx.getImageData(0, 0, 5, 1).data;
+            // Si el filter aplicó, el blanco central se bleed a los píxeles 1 y 3 (que estaban transparentes)
+            return (px[4] > 0) || (px[12] > 0);
+        } catch (e) {
+            return false;
+        }
     })();
 
     // Box blur 1D con suma corrida — O(W*H) por pasada, no depende del radio
