@@ -34,6 +34,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const bgYOffsetInput = document.getElementById('bg-y-offset');
     const vignetteIntensityInput = document.getElementById('vignette-intensity');
     const vignetteSideInput = document.getElementById('vignette-side');
+    const bgBlurInput = document.getElementById('bg-blur');
 
     // Text objects to handle dragging
     const texts = [
@@ -203,10 +204,13 @@ document.addEventListener('DOMContentLoaded', () => {
         renderCanvas();
     });
 
-    // Handle Image Upload
-    imageUpload.addEventListener('change', handleImageUpload);
+    // Handle Image Upload (file picker — first load)
+    imageUpload.addEventListener('change', (e) => {
+        const file = e.target.files && e.target.files[0];
+        if (file) loadBgImageFromFile(file);
+    });
 
-    // Drag & Drop for upload area
+    // Drag & Drop for upload area (first load)
     uploadArea.addEventListener('dragover', (e) => {
         e.preventDefault();
         uploadArea.classList.add('dragover');
@@ -215,33 +219,49 @@ document.addEventListener('DOMContentLoaded', () => {
     uploadArea.addEventListener('drop', (e) => {
         e.preventDefault();
         uploadArea.classList.remove('dragover');
-        if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-            imageUpload.files = e.dataTransfer.files;
-            handleImageUpload({ target: imageUpload });
-        }
+        const file = e.dataTransfer.files && e.dataTransfer.files[0];
+        if (file) loadBgImageFromFile(file);
     });
 
-    function handleImageUpload(e) {
-        const file = e.target.files[0];
-        if (!file) return;
+    // Drag & Drop on canvas — REPLACE bg image without touching texts/logos
+    canvasWrapper.addEventListener('dragover', (e) => {
+        if (!currentBgImage) return;
+        e.preventDefault();
+        canvasWrapper.classList.add('dragover-replace');
+    });
+    canvasWrapper.addEventListener('dragleave', () => {
+        canvasWrapper.classList.remove('dragover-replace');
+    });
+    canvasWrapper.addEventListener('drop', (e) => {
+        if (!currentBgImage) return;
+        e.preventDefault();
+        canvasWrapper.classList.remove('dragover-replace');
+        const file = e.dataTransfer.files && e.dataTransfer.files[0];
+        if (file) loadBgImageFromFile(file, { replaceOnly: true });
+    });
 
+    function loadBgImageFromFile(file, { replaceOnly = false } = {}) {
+        if (!file || !file.type.startsWith('image/')) return;
         const reader = new FileReader();
         reader.onload = (event) => {
             const img = new Image();
             img.onload = () => {
                 currentBgImage = img;
-                uploadArea.style.display = 'none';
-                textTools.style.display = 'flex';
-                canvasWrapper.style.display = 'block';
-                downloadBtn.disabled = false;
 
-                // Set default texts if empty
-                if (!text0Input.value) text0Input.value = "DESCUBRE EL";
-                if (!text1Input.value) text1Input.value = "NUEVO SECRETO";
-                if (!text2Input.value) text2Input.value = "DE MEZCLA";
-                texts[0].text = text0Input.value;
-                texts[1].text = text1Input.value;
-                texts[2].text = text2Input.value;
+                if (!replaceOnly) {
+                    uploadArea.style.display = 'none';
+                    textTools.style.display = 'flex';
+                    canvasWrapper.style.display = 'block';
+                    downloadBtn.disabled = false;
+
+                    // Set default texts if empty
+                    if (!text0Input.value) text0Input.value = "DESCUBRE EL";
+                    if (!text1Input.value) text1Input.value = "NUEVO SECRETO";
+                    if (!text2Input.value) text2Input.value = "DE MEZCLA";
+                    texts[0].text = text0Input.value;
+                    texts[1].text = text1Input.value;
+                    texts[2].text = text2Input.value;
+                }
 
                 renderCanvas();
             };
@@ -298,6 +318,7 @@ document.addEventListener('DOMContentLoaded', () => {
     applySliderPolish(bgYOffsetInput, 0, 10);
     applySliderPolish(vignetteIntensityInput, 80, 5);
     vignetteSideInput.addEventListener('change', renderCanvas);
+    applySliderPolish(bgBlurInput, 0, 2);
     applySliderPolish(letterSpacingInput, 0, 2); // Reduced range for fine movement
     applySliderPolish(rotate0Input, 0, 5);      // Balanced range for rotation
     applySliderPolish(rotate1Input, 0, 5);
@@ -486,8 +507,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const yOffset = parseInt(bgYOffsetInput.value) || 0;
         const centerShiftY = ((canvas.height - currentBgImage.height * ratio) / 2) + yOffset;
 
+        // Apply blur ONLY to the background image (reset after)
+        const blurPx = parseInt(bgBlurInput.value) || 0;
+        if (blurPx > 0) ctx.filter = `blur(${blurPx}px)`;
         ctx.drawImage(currentBgImage, 0, 0, currentBgImage.width, currentBgImage.height,
             centerShiftX, centerShiftY, currentBgImage.width * ratio, currentBgImage.height * ratio);
+        ctx.filter = 'none';
 
         // 2. Add Vignette (intensidad y lado controlados por UI)
         const vignetteAlpha = (parseInt(vignetteIntensityInput.value) || 0) / 100;

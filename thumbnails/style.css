@@ -247,6 +247,28 @@ input[type="color"]::-webkit-color-swatch { border: 2px solid white; border-radi
   box-shadow: 0 10px 30px rgba(0,0,0,0.5);
   border: 1px solid var(--panel-border);
   display: none; /* hidden until image uploaded */
+  transition: box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.canvas-wrapper.dragover-replace {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(94, 106, 210, 0.45), 0 10px 30px rgba(0,0,0,0.5);
+}
+
+.canvas-wrapper.dragover-replace::after {
+  content: "Suelta para reemplazar la foto de fondo";
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.55);
+  color: white;
+  font-family: 'Outfit', sans-serif;
+  font-weight: 600;
+  font-size: 1.1rem;
+  pointer-events: none;
+  letter-spacing: 0.5px;
 }
 
 canvas {
