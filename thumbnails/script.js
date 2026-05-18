@@ -507,12 +507,30 @@ document.addEventListener('DOMContentLoaded', () => {
         const yOffset = parseInt(bgYOffsetInput.value) || 0;
         const centerShiftY = ((canvas.height - currentBgImage.height * ratio) / 2) + yOffset;
 
-        // Apply blur ONLY to the background image (reset after)
+        // Apply blur ONLY to the background image (portable: downscale+upscale trick — works in Safari)
         const blurPx = parseInt(bgBlurInput.value) || 0;
-        if (blurPx > 0) ctx.filter = `blur(${blurPx}px)`;
-        ctx.drawImage(currentBgImage, 0, 0, currentBgImage.width, currentBgImage.height,
-            centerShiftX, centerShiftY, currentBgImage.width * ratio, currentBgImage.height * ratio);
-        ctx.filter = 'none';
+        if (blurPx > 0) {
+            const scale = 1 / (1 + blurPx * 0.4);
+            const offW = Math.max(1, Math.floor(canvas.width * scale));
+            const offH = Math.max(1, Math.floor(canvas.height * scale));
+            const off = document.createElement('canvas');
+            off.width = offW;
+            off.height = offH;
+            const offCtx = off.getContext('2d');
+            offCtx.imageSmoothingEnabled = true;
+            offCtx.imageSmoothingQuality = 'high';
+            offCtx.drawImage(
+                currentBgImage, 0, 0, currentBgImage.width, currentBgImage.height,
+                centerShiftX * scale, centerShiftY * scale,
+                currentBgImage.width * ratio * scale, currentBgImage.height * ratio * scale
+            );
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = 'high';
+            ctx.drawImage(off, 0, 0, offW, offH, 0, 0, canvas.width, canvas.height);
+        } else {
+            ctx.drawImage(currentBgImage, 0, 0, currentBgImage.width, currentBgImage.height,
+                centerShiftX, centerShiftY, currentBgImage.width * ratio, currentBgImage.height * ratio);
+        }
 
         // 2. Add Vignette (intensidad y lado controlados por UI)
         const vignetteAlpha = (parseInt(vignetteIntensityInput.value) || 0) / 100;
