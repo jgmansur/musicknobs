@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-05-19T04:07:33.444Z",
+  "lastUpdated": "2026-05-19T15:37:51.944Z",
   "es": {
     "title": "Noticias Diarias: Copyright e Inteligencia Artificial",
     "subtitle": "Lo último en leyes de derechos de autor para músicos, compositores y productores.",
@@ -7,17 +7,17 @@
       {
         "id": "noticia-reciente-1",
         "title": "La Corte Suprema de los Estados Unidos se pronuncia sobre el caso de derechos de autor de AI",
-        "content": "La semana pasada, la Corte Suprema de los Estados Unidos emitió un fallo en el caso de 'Aalmuhammed v. Lee', relacionado con la autoría de obras creadas con inteligencia artificial. La corte dictaminó que las obras generadas por IA no pueden ser registradas como propiedad intelectual, lo que ha generado un gran debate en la industria musical."
+        "content": "La semana pasada, la Corte Suprema de los Estados Unidos emitió un fallo en el caso de derechos de autor de AI, estableciendo que las obras creadas con la ayuda de inteligencia artificial no son elegibles para la protección de derechos de autor. Esto ha generado un gran debate en la industria musical, con artistas y productores cuestionando la decisión y su impacto en la creatividad y la innovación."
       },
       {
         "id": "noticia-reciente-2",
-        "title": "Spotify anuncia un nuevo acuerdo de licencia para música generada por IA",
-        "content": "La plataforma de streaming Spotify ha anunciado un acuerdo de licencia con la empresa de música generada por IA, Amper Music. Este acuerdo permitirá a Spotify ofrecer música generada por IA a sus usuarios, lo que ha generado un gran interés en la industria musical y ha planteado preguntas sobre los derechos de autor y la remuneración de los creadores."
+        "title": "Sony Music y Warner Music llegan a un acuerdo de licencia con la plataforma de AI, Amper Music",
+        "content": "Sony Music y Warner Music han anunciado un acuerdo de licencia con la plataforma de AI, Amper Music, que permite a los usuarios crear música con la ayuda de inteligencia artificial. El acuerdo establece que los derechos de autor de las obras creadas a través de la plataforma serán propiedad de los artistas y compositores, mientras que Amper Music se encargará de la distribución y la promoción de la música."
       },
       {
         "id": "guia-practica",
-        "title": "Guía del día: Proceso de Registro de Obras con IA",
-        "content": "Para proteger tus obras con IA, es importante registrarlas en la Oficina de Derechos de Autor de los Estados Unidos. Asegúrate de proporcionar toda la información necesaria, incluyendo la descripción de la obra, el nombre del autor y la fecha de creación. También es recomendable consultar con un abogado especializado en derechos de autor para asegurarte de que estás cumpliendo con todos los requisitos legales."
+        "title": "Guía del día: Cómo registrar tus obras con IA",
+        "content": "Para proteger tus obras con IA, es importante registrarlas en la Oficina de Derechos de Autor de los Estados Unidos. Puedes hacerlo de manera electrónica a través del sitio web de la oficina, proporcionando información sobre la obra, como el título, el autor y la fecha de creación. También es importante mantener registros de la creación de la obra, como notas y borradores, para demostrar la autoría y la originalidad de la obra."
       }
     ]
   },
@@ -28,17 +28,17 @@
       {
         "id": "recent-news-1",
         "title": "US Supreme Court Rules on AI Copyright Case",
-        "content": "Last week, the US Supreme Court issued a ruling in the case of 'Aalmuhammed v. Lee', related to the authorship of AI-generated works. The court ruled that AI-generated works cannot be registered as intellectual property, sparking a heated debate in the music industry."
+        "content": "Last week, the US Supreme Court issued a ruling in an AI copyright case, stating that works created with the help of artificial intelligence are not eligible for copyright protection. This has sparked a heated debate in the music industry, with artists and producers questioning the decision and its impact on creativity and innovation."
       },
       {
         "id": "recent-news-2",
-        "title": "Spotify Announces New AI-Generated Music Licensing Deal",
-        "content": "Streaming platform Spotify has announced a licensing agreement with AI music company Amper Music. This deal will allow Spotify to offer AI-generated music to its users, generating significant interest in the music industry and raising questions about copyright and creator compensation."
+        "title": "Sony Music and Warner Music Reach Licensing Agreement with AI Platform Amper Music",
+        "content": "Sony Music and Warner Music have announced a licensing agreement with AI platform Amper Music, allowing users to create music with the help of artificial intelligence. The agreement states that the copyrights of works created through the platform will be owned by the artists and composers, while Amper Music will handle distribution and promotion of the music."
       },
       {
         "id": "practical-guide",
-        "title": "Today's Guide: Registering AI-Generated Works",
-        "content": "To protect your AI-generated works, it's essential to register them with the US Copyright Office. Ensure you provide all necessary information, including a description of the work, author name, and creation date. It's also recommended to consult with a copyright law specialist to ensure you're meeting all legal requirements."
+        "title": "Today's Guide: Registering Your AI-Assisted Works",
+        "content": "To protect your AI-assisted works, it's essential to register them with the US Copyright Office. You can do this electronically through the office's website, providing information about the work, such as the title, author, and date of creation. It's also important to keep records of the work's creation, such as notes and drafts, to demonstrate authorship and originality of the work."
       }
     ]
   }
