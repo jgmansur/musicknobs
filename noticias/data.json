@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-05-21T04:17:13.990Z",
+  "lastUpdated": "2026-05-21T15:41:22.040Z",
   "es": {
     "title": "Noticias Diarias: Copyright e Inteligencia Artificial",
     "subtitle": "Lo último en leyes de derechos de autor para músicos, compositores y productores.",
@@ -7,17 +7,17 @@
       {
         "id": "noticia-reciente-1",
         "title": "La Corte Suprema de los Estados Unidos se pronuncia sobre el caso de derechos de autor de AI",
-        "content": "En un fallo reciente, la Corte Suprema de los Estados Unidos ha decidido no revisar el caso de los derechos de autor de las obras generadas por inteligencia artificial, lo que deja en manos de los tribunales inferiores la decisión sobre la protección de estas obras. Esto ha generado un debate intenso en la industria musical, con empresas como Spotify y Apple Music buscando claridad sobre cómo manejar las licencias de música generada por AI."
+        "content": "En un fallo reciente, la Corte Suprema de los Estados Unidos ha decidido que las obras creadas por inteligencia artificial no pueden ser registradas para obtener derechos de autor, lo que ha generado un debate entre los defensores de la propiedad intelectual y los desarrolladores de tecnología de IA. Esta decisión ha sido vista como un paso hacia la clarificación de las leyes de derechos de autor en la era digital."
       },
       {
         "id": "noticia-reciente-2",
-        "title": "La Unión Europea aprueba nuevas regulaciones para la protección de los derechos de autor en la era digital",
-        "content": "La Unión Europea ha aprobado un conjunto de regulaciones destinadas a actualizar las leyes de derechos de autor en la era digital, lo que incluye disposiciones específicas para la protección de las obras generadas por inteligencia artificial. Esto podría tener un impacto significativo en la industria musical, ya que los productores y compositores buscarán asegurarse de que sus obras sean protegidas de manera efectiva en el mercado digital."
+        "title": "Acuerdo de licencia entre Spotify y la empresa de IA, Amper Music",
+        "content": "Spotify ha anunciado un acuerdo de licencia con Amper Music, una empresa que utiliza inteligencia artificial para crear música personalizada. Este acuerdo permitirá a Spotify ofrecer contenido musical generado por IA a sus usuarios, lo que ha generado expectación en la industria musical sobre el futuro de la creación de contenido con ayuda de tecnología de IA."
       },
       {
         "id": "guia-practica",
-        "title": "Guía del día: Cómo registrar tus obras con IA",
-        "content": "Para proteger tus obras generadas con inteligencia artificial, es importante registrarlas en la oficina de derechos de autor correspondiente. Asegúrate de proporcionar toda la información necesaria, incluyendo la descripción de la obra, el nombre del autor y la fecha de creación. También es recomendable consultar con un abogado especializado en derechos de autor para asegurarte de que estás cumpliendo con todos los requisitos legales."
+        "title": "Guía del día: Proceso de Registro de Obras con IA",
+        "content": "Aunque la Corte Suprema de los Estados Unidos ha decidido que las obras creadas por IA no pueden ser registradas para obtener derechos de autor, los creadores de contenido pueden seguir protegiendo sus obras mediante el registro de los elementos humanos que contribuyen a la creación de la obra, como la selección de parámetros o la edición del contenido generado por IA. Es importante consultar con un experto en derechos de autor para determinar la mejor estrategia de protección para cada caso específico."
       }
     ]
   },
@@ -27,18 +27,18 @@
     "sections": [
       {
         "id": "recent-news-1",
-        "title": "US Supreme Court Weighs in on AI Copyright Case",
-        "content": "In a recent ruling, the US Supreme Court has decided not to review the case of AI-generated copyright, leaving it to lower courts to decide on the protection of these works. This has sparked intense debate in the music industry, with companies like Spotify and Apple Music seeking clarity on how to handle licenses for AI-generated music."
+        "title": "US Supreme Court Rules on AI Copyright Case",
+        "content": "In a recent ruling, the US Supreme Court has decided that works created by artificial intelligence cannot be registered for copyright, sparking debate between intellectual property advocates and AI technology developers. This decision is seen as a step towards clarifying copyright laws in the digital age."
       },
       {
         "id": "recent-news-2",
-        "title": "EU Approves New Regulations for Digital Copyright Protection",
-        "content": "The European Union has approved a set of regulations aimed at updating copyright laws in the digital age, including provisions specifically for the protection of AI-generated works. This could have a significant impact on the music industry, as producers and composers seek to ensure their works are effectively protected in the digital market."
+        "title": "Spotify and AI Music Company Amper Music Sign Licensing Deal",
+        "content": "Spotify has announced a licensing deal with Amper Music, a company that uses AI to create personalized music. This deal will allow Spotify to offer AI-generated music content to its users, generating excitement in the music industry about the future of AI-assisted content creation."
       },
       {
         "id": "practical-guide",
-        "title": "Today's Guide: Registering Your AI-Generated Works",
-        "content": "To protect your AI-generated works, it's essential to register them with the relevant copyright office. Make sure to provide all necessary information, including a description of the work, the author's name, and the date of creation. It's also recommended to consult with a copyright law specialist to ensure you're meeting all legal requirements."
+        "title": "Today's Guide: Registration Process for AI-Assisted Works",
+        "content": "Although the US Supreme Court has ruled that AI-created works cannot be registered for copyright, content creators can still protect their works by registering the human elements that contribute to the creation of the work, such as parameter selection or editing of AI-generated content. It's essential to consult with a copyright expert to determine the best protection strategy for each specific case."
       }
     ]
   }
