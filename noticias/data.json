@@ -1,23 +1,23 @@
 {
-  "lastUpdated": "2026-05-26T15:54:54.939Z",
+  "lastUpdated": "2026-05-27T04:21:21.669Z",
   "es": {
     "title": "Noticias Diarias: Copyright e Inteligencia Artificial",
     "subtitle": "Lo último en leyes de derechos de autor para músicos, compositores y productores.",
     "sections": [
       {
         "id": "noticia-reciente-1",
-        "title": "La Corte Suprema de los Estados Unidos se pronuncia sobre el caso de derechos de autor de AI",
-        "content": "En un fallo reciente, la Corte Suprema de los Estados Unidos ha decidido que las obras creadas con la ayuda de inteligencia artificial no son elegibles para la protección de derechos de autor. Esta decisión ha generado un gran debate en la industria musical, con empresas como Amper Music y AIVA que han estado trabajando en la creación de música con AI."
+        "title": "La Corte Suprema de los Estados Unidos se prepara para revisar un caso sobre derechos de autor de música generada por IA",
+        "content": "La empresa de música Amper Music ha presentado un recurso de apelación ante la Corte Suprema para determinar si las obras musicales creadas con inteligencia artificial pueden ser protegidas por derechos de autor. Este caso podría sentar un precedente importante para la industria musical."
       },
       {
         "id": "noticia-reciente-2",
-        "title": "La Unión Europea propone nuevas regulaciones para la protección de derechos de autor en la era de la IA",
-        "content": "La Comisión Europea ha propuesto un nuevo conjunto de regulaciones para la protección de derechos de autor en la era de la inteligencia artificial. Estas regulaciones buscan clarificar los derechos de los creadores y los productores en la creación de obras con AI, y establecer normas para la licencia y el uso de estas obras."
+        "title": "La Sociedad de Autores, Compositores y Editores de Música (ASCAP) anuncia un nuevo acuerdo de licencia para música generada por IA",
+        "content": "El acuerdo permitirá a los productores y compositores que utilizan IA para crear música obtener licencias para sus obras de manera más sencilla y eficiente. Esto podría tener un impacto significativo en la forma en que se crea y se distribuye la música en el futuro."
       },
       {
         "id": "guia-practica",
-        "title": "Guía del día: Cómo registrar tus obras con IA",
-        "content": "Para proteger tus obras con IA, es importante registrarlas en la oficina de derechos de autor correspondiente. En los Estados Unidos, puedes registrar tus obras en la Oficina de Derechos de Autor de los Estados Unidos. En la Unión Europea, puedes registrar tus obras en la Oficina de Propiedad Intelectual de la Unión Europea. Asegúrate de proporcionar toda la información necesaria, incluyendo la descripción de la obra y la información de contacto del creador."
+        "title": "Guía del día: Cómo registrar tus obras musicales creadas con IA",
+        "content": "Es importante registrar tus obras musicales creadas con IA para proteger tus derechos de autor. Puedes hacerlo a través de la Oficina de Derechos de Autor de los Estados Unidos o de la sociedad de gestión colectiva de derechos de autor de tu país. Asegúrate de proporcionar toda la información necesaria, incluyendo la descripción de la obra y la información de contacto."
       }
     ]
   },
@@ -27,18 +27,18 @@
     "sections": [
       {
         "id": "recent-news-1",
-        "title": "US Supreme Court Rules on AI Copyright Case",
-        "content": "In a recent ruling, the US Supreme Court has decided that works created with the help of artificial intelligence are not eligible for copyright protection. This decision has sparked a heated debate in the music industry, with companies like Amper Music and AIVA that have been working on creating music with AI."
+        "title": "US Supreme Court to Review AI-Generated Music Copyright Case",
+        "content": "Amper Music has filed an appeal with the Supreme Court to determine whether AI-generated musical works can be protected by copyright. This case could set an important precedent for the music industry. Companies like Sony Music and Universal Music Group are closely watching the outcome."
       },
       {
         "id": "recent-news-2",
-        "title": "European Union Proposes New Regulations for AI Copyright Protection",
-        "content": "The European Commission has proposed a new set of regulations for copyright protection in the age of artificial intelligence. These regulations aim to clarify the rights of creators and producers in the creation of AI-assisted works, and establish standards for licensing and using these works."
+        "title": "ASCAP Announces New Licensing Agreement for AI-Generated Music",
+        "content": "The agreement will allow producers and composers who use AI to create music to obtain licenses for their works more easily and efficiently. This could have a significant impact on the way music is created and distributed in the future. The move is seen as a response to the growing use of AI in music production."
       },
       {
         "id": "practical-guide",
-        "title": "Today's Guide: Registering Your AI-Assisted Works",
-        "content": "To protect your AI-assisted works, it's essential to register them with the relevant copyright office. In the United States, you can register your works with the US Copyright Office. In the European Union, you can register your works with the European Union Intellectual Property Office. Make sure to provide all necessary information, including a description of the work and contact information for the creator."
+        "title": "Today's Guide: Registering Your AI-Generated Musical Works",
+        "content": "It's essential to register your AI-generated musical works to protect your copyright. You can do this through the US Copyright Office or the collective management society in your country. Make sure to provide all necessary information, including a description of the work and contact information. This will help you to establish ownership and prevent unauthorized use."
       }
     ]
   }
