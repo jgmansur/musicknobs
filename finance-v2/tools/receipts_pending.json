@@ -1,0 +1,49 @@
+{
+  "generated_at": "2026-06-03T00:00:00Z",
+  "source": "gmail",
+  "period": "2026-05-28 → 2026-06-01",
+  "receipts": [
+    {
+      "fecha": "2026-06-01",
+      "hora": "112922",
+      "monto": 225.00,
+      "moneda": "MXN",
+      "concepto": "MERCADOPAGO *BARBACOA",
+      "lugar": "MERCADOPAGO *BARBACOA",
+      "forma_pago": "Santander",
+      "tipo": "Gasto",
+      "fuente": "gmail/santander",
+      "gmail_thread_id": "19e843bc23f95a1c"
+    },
+    {
+      "fecha": "2026-05-29",
+      "hora": "122811",
+      "monto": 300.00,
+      "moneda": "MXN",
+      "concepto": "CLIP MX*MED SERVICIOS",
+      "lugar": "CLIP MX*MED SERVICIOS",
+      "forma_pago": "Santander",
+      "tipo": "Gasto",
+      "fuente": "gmail/santander",
+      "gmail_thread_id": "19e7500cda4df586"
+    },
+    {
+      "fecha": "2026-05-28",
+      "hora": "105239",
+      "monto": 209.00,
+      "moneda": "MXN",
+      "concepto": "YouTube Red (mensual) — renovación",
+      "lugar": "Apple",
+      "forma_pago": "",
+      "tipo": "Gasto",
+      "fuente": "gmail/apple",
+      "gmail_thread_id": "19e707d056d478f5",
+      "nota": "Visa •••• 1884 — confirmar forma_pago"
+    }
+  ],
+  "commands": [
+    "python3 finance_write.py --sheet gastos --data '{\"fecha\":\"2026-06-01\",\"monto\":225.0,\"moneda\":\"MXN\",\"concepto\":\"MERCADOPAGO *BARBACOA\",\"lugar\":\"MERCADOPAGO *BARBACOA\",\"forma_pago\":\"Santander\",\"tipo\":\"Gasto\"}'",
+    "python3 finance_write.py --sheet gastos --data '{\"fecha\":\"2026-05-29\",\"monto\":300.0,\"moneda\":\"MXN\",\"concepto\":\"CLIP MX*MED SERVICIOS\",\"lugar\":\"CLIP MX*MED SERVICIOS\",\"forma_pago\":\"Santander\",\"tipo\":\"Gasto\"}'",
+    "python3 finance_write.py --sheet gastos --data '{\"fecha\":\"2026-05-28\",\"monto\":209.0,\"moneda\":\"MXN\",\"concepto\":\"YouTube Red (mensual) — renovación\",\"lugar\":\"Apple\",\"forma_pago\":\"\",\"tipo\":\"Gasto\"}'"
+  ]
+}
