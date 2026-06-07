@@ -1375,15 +1375,7 @@ function renderCatalog() {
         .join('')
     : `<li>${catalogFilterView === 'playlists' ? 'Sin canciones en esta playlist.' : 'Sin canciones en este género.'}</li>`;
 
-  const loadMoreBtn = document.getElementById('catalog-load-more');
-  if (loadMoreBtn) {
-    const hasMore = visibleSongs.length > catalogVisibleCount;
-    loadMoreBtn.style.display = hasMore ? '' : 'none';
-    loadMoreBtn.onclick = () => {
-      catalogVisibleCount += CATALOG_PAGE_STEP;
-      renderCatalog();
-    };
-  }
+  // Carga infinita: ver setupCatalogInfiniteScroll (sin botón, el player ya no lo tapa)
 
   const genreSelect = document.getElementById('catalog-genre-select');
   if (genreSelect) {
@@ -1677,6 +1669,25 @@ function toggleCatalogPlayback() {
   } else {
     requestCatalogPlay();
   }
+}
+
+// Carga infinita del catálogo: al acercarse al fondo, muestra más canciones
+// automáticamente (reemplaza el botón "Cargar más" que el mini-player tapaba).
+function setupCatalogInfiniteScroll() {
+  const container = document.querySelector('main.container');
+  if (!container) return;
+  let loading = false;
+  container.addEventListener('scroll', () => {
+    if (loading) return;
+    if (getActiveTabName() !== 'catalog') return;
+    if (catalogQueue.length <= catalogVisibleCount) return;
+    const nearBottom = container.scrollTop + container.clientHeight >= container.scrollHeight - 700;
+    if (!nearBottom) return;
+    loading = true;
+    catalogVisibleCount += CATALOG_PAGE_STEP;
+    renderCatalog();
+    requestAnimationFrame(() => { loading = false; });
+  }, { passive: true });
 }
 
 function setupCatalogPlayerControls() {
@@ -3784,6 +3795,7 @@ function init() {
   setTaskFormVisibility(false);
   setupTabs();
   setupCatalogPlayerControls();
+  setupCatalogInfiniteScroll();
   setupActions();
   syncPlaylistCreateControlsVisibility();
   if (shouldBypassAuthForLocalDev()) {

@@ -175,7 +175,11 @@ h1 .title-version { color: var(--primary); }
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior-y: contain;
+  scrollbar-width: none;       /* Firefox */
+  -ms-overflow-style: none;    /* IE/Edge viejo */
 }
+/* Scrollbar invisible en web (en móvil ya se auto-oculta) */
+.container::-webkit-scrollbar { width: 0; height: 0; display: none; }
 
 .card {
   background: var(--glass-bg);
