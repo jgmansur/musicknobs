@@ -1675,6 +1675,18 @@ function toggleCatalogPlayback() {
   }
 }
 
+// Solo un menú <details> abierto a la vez: al abrir uno, cierra los demás.
+function setupMenuAutoClose() {
+  document.addEventListener('toggle', (e) => {
+    const d = e.target;
+    if (!d || d.tagName !== 'DETAILS' || !d.open) return;
+    if (!d.classList.contains('task-actions-menu')) return;
+    document.querySelectorAll('details.task-actions-menu[open]').forEach((other) => {
+      if (other !== d) other.open = false;
+    });
+  }, true); // capture: el evento toggle no burbujea
+}
+
 // Carga infinita del catálogo: al acercarse al fondo, muestra más canciones
 // automáticamente (reemplaza el botón "Cargar más" que el mini-player tapaba).
 function setupCatalogInfiniteScroll() {
@@ -3819,6 +3831,7 @@ function init() {
   setupTabs();
   setupCatalogPlayerControls();
   setupCatalogInfiniteScroll();
+  setupMenuAutoClose();
   setupActions();
   syncPlaylistCreateControlsVisibility();
   if (shouldBypassAuthForLocalDev()) {
