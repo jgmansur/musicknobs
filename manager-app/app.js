@@ -1675,7 +1675,25 @@ function toggleCatalogPlayback() {
   }
 }
 
-// Solo un menú <details> abierto a la vez: al abrir uno, cierra los demás.
+// Carga infinita de contactos al scrollear (reemplaza el botón "Cargar más").
+function setupContactsInfiniteScroll() {
+  const container = document.querySelector('main.container');
+  if (!container) return;
+  let loading = false;
+  container.addEventListener('scroll', () => {
+    if (loading) return;
+    if (getActiveTabName() !== 'contacts') return;
+    const filtered = applyContactsFilter(contactsCache);
+    if (filtered.length <= contactsVisibleCount) return;
+    if (container.scrollTop + container.clientHeight < container.scrollHeight - 600) return;
+    loading = true;
+    contactsVisibleCount += CONTACTS_PAGE_STEP;
+    setContacts(contactsCache);
+    requestAnimationFrame(() => { loading = false; });
+  }, { passive: true });
+}
+
+// Solo un menú <details> abierto a la vez + cerrar al hacer click fuera.
 function setupMenuAutoClose() {
   document.addEventListener('toggle', (e) => {
     const d = e.target;
@@ -1685,6 +1703,13 @@ function setupMenuAutoClose() {
       if (other !== d) other.open = false;
     });
   }, true); // capture: el evento toggle no burbujea
+
+  // Click fuera de un menú abierto lo cierra
+  document.addEventListener('click', (e) => {
+    document.querySelectorAll('details.task-actions-menu[open]').forEach((d) => {
+      if (!d.contains(e.target)) d.open = false;
+    });
+  });
 }
 
 // Carga infinita del catálogo: al acercarse al fondo, muestra más canciones
@@ -2659,8 +2684,9 @@ function setContacts(rows = contactsSample) {
 
   if (loadMoreBtn) {
     const canLoadMore = filtered.length > visible.length;
+    loadMoreBtn.style.display = canLoadMore ? '' : 'none';
     loadMoreBtn.disabled = !canLoadMore;
-    loadMoreBtn.textContent = canLoadMore ? 'Cargar más' : 'Sin más';
+    loadMoreBtn.textContent = 'Cargar más';
   }
 
   list.querySelectorAll('[data-contact-edit]').forEach((btn) => {
@@ -3831,6 +3857,7 @@ function init() {
   setupTabs();
   setupCatalogPlayerControls();
   setupCatalogInfiniteScroll();
+  setupContactsInfiniteScroll();
   setupMenuAutoClose();
   setupActions();
   syncPlaylistCreateControlsVisibility();
