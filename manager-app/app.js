@@ -174,6 +174,7 @@ function activateTab(tabName) {
     p.classList.toggle('active', p.id === `tab-${target}`);
   });
   document.body.classList.toggle('focus-active', target === 'focus');
+  document.body.classList.toggle('catalog-active', target === 'catalog');
 }
 
 function isMobileTabBarViewport() {
@@ -1266,6 +1267,10 @@ function renderCatalog() {
 
   filterTabGenres.classList.toggle('active', catalogFilterView === 'genres');
   filterTabPlaylists.classList.toggle('active', catalogFilterView === 'playlists');
+  // Vista géneros: selector en el mismo renglón que los tabs (compacto)
+  if (genresEl.parentElement) {
+    genresEl.parentElement.classList.toggle('is-genres-view', catalogFilterView === 'genres');
+  }
 
   if (catalogFilterView === 'genres') {
     genresEl.innerHTML = `
@@ -1280,8 +1285,7 @@ function renderCatalog() {
     `;
   } else {
     genresEl.innerHTML = `
-      <li>
-        <label class="catalog-genre-label" for="catalog-playlist-select-pane">Playlist</label>
+      <li class="catalog-playlist-selector">
         <select id="catalog-playlist-select-pane" class="catalog-genre-select">
           <option value="">Selecciona playlist</option>
           ${playlistsCache
@@ -1289,16 +1293,16 @@ function renderCatalog() {
             .join('')}
         </select>
         ${isAuthenticated
-          ? `<div class="catalog-playlist-pane-actions" style="margin-top: 0.5rem; display: flex; flex-direction: column; gap: 0.5rem;">
-              <button class="mini-btn" id="playlist-create-pane-toggle" type="button" style="width: 100%;">Crear nueva playlist</button>
-              <div id="playlist-create-pane-form" class="hidden" style="display: flex; flex-direction: column; gap: 0.25rem;">
-                <input id="playlist-name-pane" class="catalog-genre-select" type="text" placeholder="Nombre..." />
-                <button class="mini-btn" id="playlist-create-pane-submit" type="button" style="background: var(--brand); color: white;">Crear</button>
-              </div>
-              <button class="mini-btn" id="playlist-delete-pane" type="button" style="width: 100%;">Borrar seleccionada</button>
-            </div>`
+          ? `<button class="catalog-icon-btn" id="playlist-create-pane-toggle" type="button" aria-label="Crear nueva playlist" title="Crear nueva playlist">＋</button>
+             <button class="catalog-icon-btn" id="playlist-delete-pane" type="button" aria-label="Borrar playlist seleccionada" title="Borrar playlist seleccionada">🗑</button>`
           : ''}
       </li>
+      ${isAuthenticated
+        ? `<li id="playlist-create-pane-form" class="hidden catalog-playlist-create-form">
+            <input id="playlist-name-pane" class="catalog-genre-select" type="text" placeholder="Nombre de la nueva playlist..." />
+            <button class="mini-btn" id="playlist-create-pane-submit" type="button">Crear</button>
+          </li>`
+        : ''}
     `;
   }
 

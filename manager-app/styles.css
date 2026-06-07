@@ -1226,11 +1226,31 @@ a { color: #93c5fd; }
 }
 #tab-catalog .task-filters { margin-left: 0; margin-right: 0; }
 /* Fuerza el input de búsqueda a llenar todo el ancho (Safari no estira type=search en flex) */
+#tab-catalog .task-filters { position: relative; margin-top: .3rem; }
 #tab-catalog .task-filters .field-input {
   flex: 1 1 auto;
   min-width: 0;
   width: 100%;
+  padding-right: 2.6rem;   /* espacio para el icono de refrescar */
 }
+/* Botón refrescar integrado dentro de la caja de búsqueda (sutil) */
+.catalog-refresh-btn {
+  position: absolute;
+  right: .55rem;
+  top: 50%;
+  transform: translateY(-50%);
+  border: 0;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 1.2rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: .25rem;
+  border-radius: 50%;
+  transition: color .15s ease, transform .3s ease;
+}
+.catalog-refresh-btn:hover { color: var(--primary); }
+.catalog-refresh-btn:active { transform: translateY(-50%) rotate(180deg); }
 #tab-catalog .catalog-song-row.is-active {
   background: rgba(255, 16, 151, .10);
   outline-color: rgba(255, 16, 151, .35);
@@ -1280,6 +1300,49 @@ a { color: #93c5fd; }
 .catalog-filter-tabs .mini-btn {
   padding: .24rem .5rem;
 }
+
+/* Vista géneros: tabs (Géneros/Playlists) + selector en un solo renglón.
+   flex-wrap hace que en columnas angostas (desktop 180px) el selector baje solo. */
+.catalog-pane.is-genres-view {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .5rem;
+}
+.catalog-pane.is-genres-view .catalog-filter-tabs { margin-bottom: 0; }
+.catalog-pane.is-genres-view #catalog-genres { flex: 1 1 140px; min-width: 0; }
+.catalog-pane.is-genres-view .catalog-genre-label { display: none; }
+
+/* Vista playlists: selector + iconos crear/borrar en una fila */
+.catalog-playlist-selector {
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+}
+.catalog-playlist-selector .catalog-genre-select { flex: 1 1 auto; min-width: 0; }
+.catalog-icon-btn {
+  flex: 0 0 auto;
+  width: 2.3rem;
+  height: 2.3rem;
+  border: 1px solid var(--glass-border);
+  background: rgba(255,255,255,.04);
+  color: var(--text-soft);
+  border-radius: .55rem;
+  font-size: 1.1rem;
+  line-height: 1;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  transition: color .15s ease, border-color .15s ease;
+}
+.catalog-icon-btn:hover { color: var(--primary); border-color: var(--primary); }
+.catalog-playlist-create-form {
+  display: flex;
+  gap: .4rem;
+  margin-top: .4rem;
+}
+.catalog-playlist-create-form .catalog-genre-select { flex: 1 1 auto; min-width: 0; }
+.catalog-playlist-create-form .mini-btn { flex: 0 0 auto; }
 
 .catalog-playlist-pane-actions {
   display: grid;
@@ -1881,8 +1944,16 @@ th {
   }
 
   /* ── CATÁLOGO MÓVIL: buscador + géneros/playlists FIJOS, solo la lista scrollea ── */
+  /* La página NO scrollea en catálogo: el container se vuelve flex sin overflow,
+     y el catálogo lo llena con flex:1 (sin números mágicos de altura). */
+  body.catalog-active .container {
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    padding-bottom: 0;
+  }
   #tab-catalog.panel-fullscreen {
-    height: calc(100dvh - 92px);   /* viewport menos header + status (tuneable) */
+    flex: 1;
     min-height: 0;
     display: flex;
     flex-direction: column;
