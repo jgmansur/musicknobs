@@ -6,8 +6,8 @@
     <title>Manager App · Jay Mansur</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="./styles.css?v=1.1.35" />
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="./styles.css?v=1.1.36" />
     <link rel="manifest" href="./manifest.json" />
     <link rel="icon" type="image/png" href="./icon-32.png" />
     <link rel="apple-touch-icon" href="./icon-180.png" />
@@ -276,40 +276,50 @@
             </section>
           </div>
 
-          <button id="catalog-playing-now" class="catalog-playing-now hidden" type="button">
-            <strong>Playing now:</strong>
-            <span id="catalog-playing-now-title">—</span>
-          </button>
-
-          <div id="catalog-now-card" class="catalog-now-card hidden"></div>
-
           <section id="catalog-player" class="catalog-player" aria-label="Reproductor de catálogo">
-            <div class="catalog-player-head">
-              <div class="catalog-player-cover-wrap">
-                <img id="catalog-player-cover" class="catalog-player-cover" src="" alt="Cover de la pista" />
-                <div id="catalog-player-cover-placeholder" class="catalog-player-cover-placeholder">♪</div>
+            <!-- Mini-bar: siempre visible cuando hay una pista cargada -->
+            <div class="player-mini" id="player-mini">
+              <div class="player-mini-progress"><span id="player-mini-fill"></span></div>
+              <button class="player-mini-info" id="player-expand-btn" type="button" aria-label="Abrir reproductor">
+                <span class="catalog-player-cover-wrap">
+                  <img id="catalog-player-cover" class="catalog-player-cover" src="" alt="" />
+                  <span id="catalog-player-cover-placeholder" class="catalog-player-cover-placeholder">♪</span>
+                </span>
+                <span class="player-mini-meta">
+                  <strong id="catalog-player-track-title">Selecciona una canción</strong>
+                  <span id="catalog-player-track-artist" class="catalog-authors"><span class="catalog-authors-text">—</span></span>
+                </span>
+              </button>
+              <button id="catalog-play-toggle" class="player-mini-play" type="button" aria-label="Play o pause">▶</button>
+            </div>
+
+            <!-- Vista expandida: controles completos -->
+            <div class="player-expanded" id="player-expanded" aria-hidden="true">
+              <button class="player-collapse" id="player-collapse-btn" type="button" aria-label="Cerrar reproductor">
+                <span class="player-grabber"></span>
+              </button>
+              <div class="player-exp-cover-wrap">
+                <img id="player-exp-cover" class="player-exp-cover" src="" alt="" />
+                <div id="player-exp-cover-placeholder" class="player-exp-cover-placeholder">♪</div>
               </div>
-              <div class="catalog-player-meta">
-                <strong id="catalog-player-track-title">Selecciona una canción</strong>
-                <span id="catalog-player-track-artist">—</span>
+              <div class="player-exp-meta">
+                <strong id="player-exp-title">Selecciona una canción</strong>
+                <span id="player-exp-artist">—</span>
                 <span id="catalog-player-status" class="hint">Listo para reproducir</span>
               </div>
+              <div class="player-exp-progress">
+                <span id="catalog-player-current">0:00</span>
+                <input id="catalog-player-progress" type="range" min="0" max="100" value="0" aria-label="Progreso de reproducción" />
+                <span id="catalog-player-duration">0:00</span>
+              </div>
+              <div class="player-exp-controls">
+                <button id="catalog-random" class="player-icon" type="button" aria-label="Reproducción aleatoria">🔀</button>
+                <button id="catalog-prev" class="player-icon" type="button" aria-label="Pista anterior">⏮</button>
+                <button id="player-exp-toggle" class="player-icon player-icon-main" type="button" aria-label="Play o pause">▶</button>
+                <button id="catalog-next" class="player-icon" type="button" aria-label="Siguiente pista">⏭</button>
+                <button id="catalog-share-playlist" class="player-icon" type="button" aria-label="Compartir playlist">🔗</button>
+              </div>
             </div>
-
-            <div class="catalog-player-controls">
-              <button id="catalog-prev" class="mini-btn" type="button" aria-label="Pista anterior">⏮</button>
-              <button id="catalog-play-toggle" class="mini-btn" type="button" aria-label="Play o pause">▶️ Play</button>
-              <button id="catalog-next" class="mini-btn" type="button" aria-label="Siguiente pista">⏭</button>
-              <button id="catalog-random" class="mini-btn" type="button" aria-label="Reproducción aleatoria">🔀</button>
-              <button id="catalog-share-playlist" class="mini-btn" type="button" aria-label="Compartir playlist">🔗 Playlist</button>
-            </div>
-
-            <div class="catalog-player-progress-wrap">
-              <span id="catalog-player-current">0:00</span>
-              <input id="catalog-player-progress" type="range" min="0" max="100" value="0" aria-label="Progreso de reproducción" />
-              <span id="catalog-player-duration">0:00</span>
-            </div>
-
           </section>
         </div>
       </section>
@@ -412,6 +422,6 @@
     <script src="./config.js"></script>
     <script src="./vendor/howler.min.js"></script>
     <script src="./tracks.js?v=salesfix404v1"></script>
-    <script src="./app.js?v=1.1.35"></script>
+    <script src="./app.js?v=1.1.36"></script>
   </body>
   </html>

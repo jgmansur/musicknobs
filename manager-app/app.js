@@ -113,7 +113,8 @@ let focusOverdueIndex = 0;
 let catalogCache = [];
 let catalogGenreFilter = 'Todas';
 let catalogNowPlayingId = '';
-let catalogNowCardOpen = false;
+let catalogPlayerExpanded = false;
+let catalogQueue = [];
 let playlistsCache = [];
 let selectedPlaylistId = '';
 let contactsVisibleCount = 12;
@@ -173,7 +174,6 @@ function activateTab(tabName) {
     p.classList.toggle('active', p.id === `tab-${target}`);
   });
   document.body.classList.toggle('focus-active', target === 'focus');
-  updateTabBarVisibilityForCatalogBottom();
 }
 
 function isMobileTabBarViewport() {
@@ -184,49 +184,6 @@ function isMobileTabBarViewport() {
   }
 }
 
-function setTabBarHidden(hidden) {
-  const tabBar = document.querySelector('.tab-bar');
-  if (!tabBar) return;
-  tabBar.classList.toggle('is-hidden', Boolean(hidden));
-  document.body.classList.toggle('tabbar-hidden', Boolean(hidden));
-}
-
-function updateTabBarVisibilityForCatalogBottom() {
-  const activeTab = getActiveTabName();
-  if (!isMobileTabBarViewport() || activeTab !== 'catalog') {
-    setTabBarHidden(false);
-    return;
-  }
-
-  const songsEl = document.getElementById('catalog-songs');
-  const containerEl = document.querySelector('main.container');
-  const threshold = 12;
-
-  let atBottom = false;
-
-  if (songsEl && songsEl.scrollHeight > songsEl.clientHeight + threshold) {
-    atBottom = songsEl.scrollTop + songsEl.clientHeight >= songsEl.scrollHeight - threshold;
-  } else if (containerEl) {
-    atBottom = containerEl.scrollTop + containerEl.clientHeight >= containerEl.scrollHeight - threshold;
-  }
-
-  setTabBarHidden(atBottom);
-}
-
-function setupCatalogTabBarAutoHide() {
-  const containerEl = document.querySelector('main.container');
-  const songsEl = document.getElementById('catalog-songs');
-
-  if (containerEl) {
-    containerEl.addEventListener('scroll', updateTabBarVisibilityForCatalogBottom, { passive: true });
-  }
-  if (songsEl) {
-    songsEl.addEventListener('scroll', updateTabBarVisibilityForCatalogBottom, { passive: true });
-  }
-
-  window.addEventListener('resize', updateTabBarVisibilityForCatalogBottom, { passive: true });
-  updateTabBarVisibilityForCatalogBottom();
-}
 
 function updateAuthGateForCurrentTab() {
   const locked = !isAuthenticated && !isPublicTab(getActiveTabName());
@@ -852,6 +809,8 @@ function refreshCatalogProgressUi() {
   if (!catalogPlayer.isSeeking) {
     progress.value = `${percent}`;
   }
+  const fill = document.getElementById('player-mini-fill');
+  if (fill) fill.style.width = `${percent}%`;
   current.textContent = formatTime(seek);
   duration.textContent = formatTime(total);
 }
@@ -937,53 +896,75 @@ function isAutoplayInteractionBlock(idOrCode, maybeCode) {
   );
 }
 
+function setPlayButtonState(btn) {
+  if (!btn) return;
+  btn.classList.toggle('is-loading', catalogPlayer.isLoading);
+  btn.disabled = catalogPlayer.isLoading ? true : !getCatalogPlayerTrackByIndex();
+  btn.textContent = catalogPlayer.isPlaying ? '⏸' : '▶';
+}
+
+function setCoverEl(coverId, placeholderId, track) {
+  const cover = document.getElementById(coverId);
+  const placeholder = document.getElementById(placeholderId);
+  if (!cover || !placeholder) return;
+  if (track?.cover) {
+    cover.src = track.cover;
+    cover.classList.add('visible');
+    placeholder.classList.add('hidden');
+  } else {
+    cover.removeAttribute('src');
+    cover.classList.remove('visible');
+    placeholder.classList.remove('hidden');
+  }
+}
+
 function updateCatalogPlayerUi() {
   const track = getCatalogPlayerTrackByIndex();
-  const title = document.getElementById('catalog-player-track-title');
-  const artist = document.getElementById('catalog-player-track-artist');
-  const playBtn = document.getElementById('catalog-play-toggle');
+  const player = document.getElementById('catalog-player');
+  if (player) player.classList.toggle('has-track', Boolean(track));
+
+  // Mini-bar
+  const miniTitle = document.getElementById('catalog-player-track-title');
+  const miniArtist = document.querySelector('#catalog-player-track-artist .catalog-authors-text')
+    || document.getElementById('catalog-player-track-artist');
+  if (miniTitle) miniTitle.textContent = track?.obra || 'Selecciona una canción';
+  if (miniArtist) miniArtist.textContent = track?.autores || '—';
+  setCoverEl('catalog-player-cover', 'catalog-player-cover-placeholder', track);
+  setPlayButtonState(document.getElementById('catalog-play-toggle'));
+
+  // Vista expandida
+  const expTitle = document.getElementById('player-exp-title');
+  const expArtist = document.getElementById('player-exp-artist');
+  if (expTitle) expTitle.textContent = track?.obra || 'Selecciona una canción';
+  if (expArtist) expArtist.textContent = track?.autores || '—';
+  setCoverEl('player-exp-cover', 'player-exp-cover-placeholder', track);
+  setPlayButtonState(document.getElementById('player-exp-toggle'));
+
   const randomBtn = document.getElementById('catalog-random');
-  const cover = document.getElementById('catalog-player-cover');
-  const coverPlaceholder = document.getElementById('catalog-player-cover-placeholder');
-  const progress = document.getElementById('catalog-player-progress');
-
-  if (title) title.textContent = track?.obra || 'Selecciona una canción';
-  if (artist) artist.textContent = track?.autores || '—';
-  if (playBtn) {
-    if (catalogPlayer.isLoading) {
-      playBtn.textContent = 'Cargando...';
-      playBtn.disabled = true;
-    } else {
-      playBtn.disabled = !track;
-      playBtn.textContent = catalogPlayer.isPlaying ? '⏸ Pause' : '▶️ Play';
-    }
-  }
-
   if (randomBtn) {
     randomBtn.classList.toggle('active', catalogRandomMode);
     randomBtn.setAttribute('aria-pressed', catalogRandomMode ? 'true' : 'false');
-    randomBtn.textContent = catalogRandomMode ? '🔀 ON' : '🔀';
   }
 
-  if (cover && coverPlaceholder) {
-    if (track?.cover) {
-      cover.src = track.cover;
-      cover.classList.add('visible');
-      coverPlaceholder.classList.add('hidden');
-    } else {
-      cover.removeAttribute('src');
-      cover.classList.remove('visible');
-      coverPlaceholder.classList.remove('hidden');
-    }
-  }
-
-  if (!track && progress) {
-    progress.value = '0';
+  if (!track) {
+    const progress = document.getElementById('catalog-player-progress');
+    if (progress) progress.value = '0';
+    const fill = document.getElementById('player-mini-fill');
+    if (fill) fill.style.width = '0%';
     const current = document.getElementById('catalog-player-current');
     const duration = document.getElementById('catalog-player-duration');
     if (current) current.textContent = '0:00';
     if (duration) duration.textContent = '0:00';
+    setCatalogPlayerExpanded(false);
   }
+}
+
+function setCatalogPlayerExpanded(expanded) {
+  catalogPlayerExpanded = Boolean(expanded);
+  const player = document.getElementById('catalog-player');
+  const exp = document.getElementById('player-expanded');
+  if (player) player.classList.toggle('is-expanded', catalogPlayerExpanded);
+  if (exp) exp.setAttribute('aria-hidden', catalogPlayerExpanded ? 'false' : 'true');
 }
 
 function buildSecureAudioUrl(track) {
@@ -993,30 +974,36 @@ function buildSecureAudioUrl(track) {
   return `${API_BASE}/api/audio/${encodeURIComponent(track.fileId)}`;
 }
 
+// Cola contextual: navega sobre lo que se está viendo (género/playlist/búsqueda),
+// no sobre el catálogo global. Fallback al catálogo completo si no hay vista.
+function getCatalogQueue() {
+  return catalogQueue.length ? catalogQueue : catalogCache.map((s) => s.id);
+}
+
 function playNextCatalogTrack(step = 1) {
-  if (!catalogCache.length) return;
+  const queue = getCatalogQueue();
+  if (!queue.length) return;
   if (catalogRandomMode && step > 0) {
     playRandomCatalogTrack();
     return;
   }
-  const current = catalogPlayer.currentTrackIndex >= 0 ? catalogPlayer.currentTrackIndex : 0;
-  const next = (current + step + catalogCache.length) % catalogCache.length;
-  void loadCatalogTrack(next, { autoplay: true });
+  let pos = queue.indexOf(catalogNowPlayingId);
+  pos = pos < 0 ? 0 : (pos + step + queue.length) % queue.length;
+  playCatalogSong(queue[pos]);
 }
 
 function playRandomCatalogTrack() {
-  if (!catalogCache.length) return;
-  if (catalogCache.length === 1) {
-    void loadCatalogTrack(0, { autoplay: true });
+  const queue = getCatalogQueue();
+  if (!queue.length) return;
+  if (queue.length === 1) {
+    playCatalogSong(queue[0]);
     return;
   }
-
-  const current = catalogPlayer.currentTrackIndex;
-  let next = current;
-  while (next === current) {
-    next = Math.floor(Math.random() * catalogCache.length);
+  let nextId = catalogNowPlayingId;
+  while (nextId === catalogNowPlayingId) {
+    nextId = queue[Math.floor(Math.random() * queue.length)];
   }
-  void loadCatalogTrack(next, { autoplay: true });
+  playCatalogSong(nextId);
 }
 
 function toggleCatalogRandomMode() {
@@ -1060,11 +1047,10 @@ async function loadCatalogTrack(index, { autoplay = false } = {}) {
   clearCatalogHowl();
   catalogPlayer.currentTrackIndex = index;
   catalogNowPlayingId = track.id;
-  catalogNowCardOpen = false;
   catalogPlayer.isLoading = true;
   setCatalogPlayerStatus('Validando permisos y preparando stream...');
   updateCatalogPlayerUi();
-  renderCatalog();
+  updateActiveSongRow();
 
   const howl = new window.Howl({
     src: [secureUrl],
@@ -1094,7 +1080,7 @@ async function loadCatalogTrack(index, { autoplay = false } = {}) {
     setStatus('catalog-status', `Reproduciendo: ${track.obra || 'canción'}.`);
     updateCatalogPlayerUi();
     startCatalogProgressTimer();
-    renderCatalog();
+    updateActiveSongRow();
   });
 
   howl.on('pause', () => {
@@ -1155,27 +1141,15 @@ async function loadCatalogTrack(index, { autoplay = false } = {}) {
   }
 }
 
-function setCatalogNowCard(song) {
-  const card = document.getElementById('catalog-now-card');
-  if (!card) return;
-  if (!song || !catalogNowCardOpen) {
-    card.classList.add('hidden');
-    card.innerHTML = '';
-    return;
-  }
-
-  const share = song.drive ? `<a href="${escapeHtml(song.drive)}" target="_blank" rel="noopener">Abrir enlace original</a>` : 'Sin enlace';
-  const secure = song.fileId ? 'Audio privado servido por /api/audio/:fileId' : 'Sin fileId configurado';
-  card.innerHTML = `
-    <div class="catalog-now-card-inner">
-      <h4>${escapeHtml(song.obra || 'Sin título')}</h4>
-      <p><strong>Compositores:</strong> ${escapeHtml(song.autores || '—')}</p>
-      <p><strong>Géneros:</strong> ${escapeHtml(song.generos || '—')}</p>
-      <p><strong>Stream:</strong> ${escapeHtml(secure)}</p>
-      <p><strong>Enlace:</strong> ${share}</p>
-    </div>
-  `;
-  card.classList.remove('hidden');
+// Update quirúrgico: solo mueve el highlight de la fila activa, sin re-render completo.
+function updateActiveSongRow() {
+  const songsEl = document.getElementById('catalog-songs');
+  if (!songsEl) return;
+  songsEl.querySelectorAll('.catalog-song-row').forEach((row) => {
+    const btn = row.querySelector('[data-catalog-play]');
+    const id = btn ? btn.getAttribute('data-catalog-play') : '';
+    row.classList.toggle('is-active', Boolean(id) && id === catalogNowPlayingId);
+  });
 }
 
 function getCurrentCatalogSong() {
@@ -1278,11 +1252,9 @@ function renderCatalog() {
   const genresEl = document.getElementById('catalog-genres');
   const songsEl = document.getElementById('catalog-songs');
   const selectedGenreEl = document.getElementById('catalog-selected-genre');
-  const playingNowBtn = document.getElementById('catalog-playing-now');
-  const playingNowTitle = document.getElementById('catalog-playing-now-title');
   const filterTabGenres = document.getElementById('catalog-filter-tab-genres');
   const filterTabPlaylists = document.getElementById('catalog-filter-tab-playlists');
-  if (!genresEl || !songsEl || !selectedGenreEl || !playingNowBtn || !playingNowTitle || !filterTabGenres || !filterTabPlaylists) return;
+  if (!genresEl || !songsEl || !selectedGenreEl || !filterTabGenres || !filterTabPlaylists) return;
 
   const genres = Array.from(new Set(catalogCache.flatMap((row) => parseCatalogGenres(row.generos))));
   const allGenres = ['Todas', ...genres.sort((a, b) => a.localeCompare(b, 'es'))];
@@ -1349,6 +1321,8 @@ function renderCatalog() {
   const visibleSongs = catalogFilterView === 'playlists'
     ? bySearch.filter((row) => selectedPlaylistTrackIds.has(String(row.id || '')))
     : bySearch;
+  // La cola de reproducción sigue la vista actual (no el catálogo global)
+  catalogQueue = visibleSongs.map((row) => row.id);
   const pagedSongs = visibleSongs.slice(0, catalogVisibleCount);
 
   selectedGenreEl.textContent = catalogFilterView === 'playlists'
@@ -1507,23 +1481,7 @@ function renderCatalog() {
     btn.addEventListener('click', () => removeSongFromPlaylist(btn.dataset.catalogRemovePlaylist || ''));
   });
 
-  const currentSong = getCurrentCatalogSong();
-  if (!currentSong) {
-    playingNowBtn.classList.add('hidden');
-    playingNowTitle.textContent = '—';
-    setCatalogNowCard(null);
-  } else {
-    playingNowBtn.classList.remove('hidden');
-    playingNowTitle.textContent = currentSong.obra || 'Sin título';
-    setCatalogNowCard(currentSong);
-  }
-
-  playingNowBtn.onclick = () => {
-    catalogNowCardOpen = !catalogNowCardOpen;
-    setCatalogNowCard(getCurrentCatalogSong());
-  };
-
-  updateTabBarVisibilityForCatalogBottom();
+  updateActiveSongRow();
 }
 
 function setCatalog(rows = catalogSample) {
@@ -1565,7 +1523,7 @@ function setCatalog(rows = catalogSample) {
   catalogCache = Array.from(byKey.values());
   if (catalogNowPlayingId && !catalogCache.some((row) => row.id === catalogNowPlayingId)) {
     catalogNowPlayingId = '';
-    catalogNowCardOpen = false;
+    setCatalogPlayerExpanded(false);
     clearCatalogHowl();
     catalogPlayer.currentTrackIndex = -1;
     setCatalogPlayerStatus('Selecciona una canción para iniciar.');
@@ -1702,34 +1660,46 @@ function playCatalogSong(songId) {
   void loadCatalogTrack(index, { autoplay: true });
 }
 
+function toggleCatalogPlayback() {
+  const track = getCatalogPlayerTrackByIndex();
+  if (!track) {
+    const queue = getCatalogQueue();
+    if (queue.length) playCatalogSong(queue[0]);
+    return;
+  }
+  if (!catalogPlayer.howl) {
+    void loadCatalogTrack(catalogPlayer.currentTrackIndex, { autoplay: true });
+    return;
+  }
+  const activeId = catalogPlayer.activeSoundId;
+  if (activeId && catalogPlayer.howl.playing(activeId)) {
+    catalogPlayer.howl.pause(activeId);
+  } else {
+    requestCatalogPlay();
+  }
+}
+
 function setupCatalogPlayerControls() {
   const playToggle = document.getElementById('catalog-play-toggle');
+  const expToggle = document.getElementById('player-exp-toggle');
+  const expandBtn = document.getElementById('player-expand-btn');
+  const collapseBtn = document.getElementById('player-collapse-btn');
   const prevBtn = document.getElementById('catalog-prev');
   const nextBtn = document.getElementById('catalog-next');
   const randomBtn = document.getElementById('catalog-random');
   const sharePlaylistBtn = document.getElementById('catalog-share-playlist');
   const progress = document.getElementById('catalog-player-progress');
 
-  if (playToggle) {
-    playToggle.addEventListener('click', () => {
-      const track = getCatalogPlayerTrackByIndex();
-      if (!track) {
-        if (catalogCache.length) {
-          void loadCatalogTrack(0, { autoplay: true });
-        }
-        return;
-      }
-      if (!catalogPlayer.howl) {
-        void loadCatalogTrack(catalogPlayer.currentTrackIndex, { autoplay: true });
-        return;
-      }
-      const activeId = catalogPlayer.activeSoundId;
-      if (activeId && catalogPlayer.howl.playing(activeId)) {
-        catalogPlayer.howl.pause(activeId);
-      } else {
-        requestCatalogPlay();
-      }
+  if (playToggle) playToggle.addEventListener('click', toggleCatalogPlayback);
+  if (expToggle) expToggle.addEventListener('click', toggleCatalogPlayback);
+
+  if (expandBtn) {
+    expandBtn.addEventListener('click', () => {
+      if (getCatalogPlayerTrackByIndex()) setCatalogPlayerExpanded(true);
     });
+  }
+  if (collapseBtn) {
+    collapseBtn.addEventListener('click', () => setCatalogPlayerExpanded(false));
   }
 
   if (prevBtn) {
@@ -1771,6 +1741,32 @@ function setupCatalogPlayerControls() {
       refreshCatalogProgressUi();
     });
   }
+
+  // Cerrar el Now Playing con swipe-down (gesto Apple Music)
+  const expanded = document.getElementById('player-expanded');
+  if (expanded) {
+    let startY = null;
+    let deltaY = 0;
+    expanded.addEventListener('touchstart', (e) => {
+      const t = e.target;
+      if (t && t.closest && t.closest('input, button')) { startY = null; return; }
+      startY = e.touches[0].clientY;
+      deltaY = 0;
+    }, { passive: true });
+    expanded.addEventListener('touchmove', (e) => {
+      if (startY === null) return;
+      deltaY = e.touches[0].clientY - startY;
+    }, { passive: true });
+    expanded.addEventListener('touchend', () => {
+      if (startY !== null && deltaY > 80) setCatalogPlayerExpanded(false);
+      startY = null;
+    });
+  }
+
+  // Escape cierra el Now Playing (desktop)
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && catalogPlayerExpanded) setCatalogPlayerExpanded(false);
+  });
 
   setCatalogPlayerStatus('Selecciona una canción para iniciar.');
   updateCatalogPlayerUi();
@@ -3613,7 +3609,7 @@ function startGoogleLogin({ auto = false } = {}) {
 function autoLoginOnLoad() {
   if (restoreStoredAuthSession()) return;
   if (googleAccessToken || googleProfile || isAuthenticated) return;
-  setOauthStatus('Catálogo y Links públicos activos. Inicia sesión para usar tabs privadas.');
+  setOauthStatus('');
 }
 
 function signOutGoogle() {
@@ -3789,7 +3785,6 @@ function init() {
   setupTabs();
   setupCatalogPlayerControls();
   setupActions();
-  setupCatalogTabBarAutoHide();
   syncPlaylistCreateControlsVisibility();
   if (shouldBypassAuthForLocalDev()) {
     enableLocalDevBypassMode();
