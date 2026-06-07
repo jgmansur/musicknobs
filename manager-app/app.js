@@ -1929,7 +1929,7 @@ function setMessages(rows = []) {
         .map((m) => `
           <li>
             <strong>${escapeHtml(m.author || 'Anónimo')}</strong> ·
-            <span>${escapeHtml(m.text || 'Sin mensaje')}</span>
+            <span class="featured-text">${escapeHtml(m.text || 'Sin mensaje')}</span>
           </li>
         `)
         .join('')
