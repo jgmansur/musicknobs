@@ -1674,20 +1674,24 @@ function toggleCatalogPlayback() {
 // Carga infinita del catálogo: al acercarse al fondo, muestra más canciones
 // automáticamente (reemplaza el botón "Cargar más" que el mini-player tapaba).
 function setupCatalogInfiniteScroll() {
-  const container = document.querySelector('main.container');
-  if (!container) return;
   let loading = false;
-  container.addEventListener('scroll', () => {
+  // Escucha el scroll del elemento que realmente scrollea: el .container (desktop)
+  // o la lista #catalog-songs (móvil, donde los filtros quedan fijos).
+  const handler = (e) => {
     if (loading) return;
     if (getActiveTabName() !== 'catalog') return;
     if (catalogQueue.length <= catalogVisibleCount) return;
-    const nearBottom = container.scrollTop + container.clientHeight >= container.scrollHeight - 700;
-    if (!nearBottom) return;
+    const el = e.currentTarget;
+    if (el.scrollTop + el.clientHeight < el.scrollHeight - 700) return;
     loading = true;
     catalogVisibleCount += CATALOG_PAGE_STEP;
     renderCatalog();
     requestAnimationFrame(() => { loading = false; });
-  }, { passive: true });
+  };
+  const container = document.querySelector('main.container');
+  const songs = document.getElementById('catalog-songs');
+  if (container) container.addEventListener('scroll', handler, { passive: true });
+  if (songs) songs.addEventListener('scroll', handler, { passive: true });
 }
 
 function setupCatalogPlayerControls() {

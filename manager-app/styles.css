@@ -1862,6 +1862,10 @@ th {
 
   .catalog-grid {
     grid-template-columns: 1fr;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
   }
 
   .sale-grid {
@@ -1876,27 +1880,55 @@ th {
     grid-template-columns: 1fr;
   }
 
+  /* ── CATÁLOGO MÓVIL: buscador + géneros/playlists FIJOS, solo la lista scrollea ── */
+  #tab-catalog.panel-fullscreen {
+    height: calc(100dvh - 92px);   /* viewport menos header + status (tuneable) */
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    padding-bottom: 0;
+  }
+  #tab-catalog .panel-actions-inline,
+  #tab-catalog .task-filters,
+  #tab-catalog #catalog-status {
+    flex: 0 0 auto;
+  }
+
   .catalog-shell {
+    flex: 1;
+    min-height: 0;
     max-height: none;
-    overflow: visible;
+    overflow: hidden;
     background: transparent;
     border: 0;
-    padding-bottom: calc(var(--tab-height) + env(safe-area-inset-bottom) + 1.25rem);
+    padding-bottom: 0;
+    display: flex;
   }
 
-  #tab-catalog.panel-fullscreen {
-    min-height: calc(100dvh - 190px);
-    /* Espacio para que la lista no quede tapada por el mini-bar fijo + tab bar */
-    padding-bottom: calc(var(--tab-height) + env(safe-area-inset-bottom) + 5.6rem);
+  .catalog-pane:first-child {        /* géneros / playlists — fijo */
+    flex: 0 0 auto;
+    border-top: 0;
   }
 
-  /* Mini-bar y expandido ya se manejan con reglas globales (web = móvil) */
-
-  .catalog-pane {
+  .catalog-pane:last-child {         /* canciones — área scrolleable */
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
     border-top: 1px solid rgba(255,255,255,.06);
   }
 
-  .catalog-pane:first-child {
-    border-top: 0;
+  .catalog-songs-head { flex: 0 0 auto; }
+
+  #catalog-songs {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    /* La última canción libra el mini-player + tab bar */
+    padding-bottom: calc(var(--tab-height) + env(safe-area-inset-bottom) + 5rem);
+    scrollbar-width: none;
   }
+  #catalog-songs::-webkit-scrollbar { width: 0; height: 0; display: none; }
 }
