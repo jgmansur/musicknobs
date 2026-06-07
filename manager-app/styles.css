@@ -315,8 +315,8 @@ h1 .title-version { color: var(--primary); }
 
 #tab-overview input[type="checkbox"] { accent-color: var(--primary); width: 1rem; height: 1rem; }
 
-/* Anuncios: el texto del mensaje en magenta para que resalte */
-#tab-overview #messages-featured .featured-text { color: var(--primary); }
+/* Anuncios: el texto del mensaje en magenta y bold para que resalte */
+#tab-overview #messages-featured .featured-text { color: var(--primary); font-weight: 700; }
 
 /* Selects con look bayeight (sin flechas nativas feas) */
 select.field-input {
