@@ -263,6 +263,11 @@ h1 .title-version { color: var(--primary); }
 }
 .ov-load-more:disabled { display: none; }
 
+/* Contactos: título en un solo renglón, acciones a la derecha */
+#tab-contacts .panel-head { gap: .6rem; flex-wrap: nowrap; align-items: center; }
+#tab-contacts .panel-head .ov-section-title { white-space: nowrap; }
+#tab-contacts .panel-head .actions { flex: 0 0 auto; gap: .5rem; align-items: center; }
+
 /* Listas sin bullets ni sangría rara */
 #tab-overview .list { padding-left: 0; list-style: none; }
 #tab-overview .compact-list > li { list-style: none; border-bottom: 0; }
@@ -332,7 +337,7 @@ select.field-input {
   border: none;
   border-radius: 1rem;
   overflow: hidden;
-  background: #0b141a;
+  background: transparent;
   height: 100%;
   display: flex;
   flex-direction: column;
@@ -343,7 +348,7 @@ select.field-input {
   justify-content: space-between;
   align-items: center;
   padding: 10px 16px;
-  background: #202c33;
+  background: #1b1b1f;
   border-bottom: 1px solid rgba(255,255,255,0.05);
 }
 
@@ -410,17 +415,15 @@ select.field-input {
 .messages-chat-list {
   flex: 1;
   margin: 0;
-  padding: 1.5rem 6%;
+  padding: 1rem .25rem;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  background-color: #0b141a;
-  background-image: 
-    linear-gradient(28deg, rgba(239, 234, 226, 0.02) 20%, transparent 20%),
-    linear-gradient(-28deg, rgba(239, 234, 226, 0.02) 20%, transparent 20%);
-  background-size: 40px 40px;
+  gap: 8px;
+  background: transparent;
+  scrollbar-width: none;
 }
+.messages-chat-list::-webkit-scrollbar { width: 0; height: 0; display: none; }
 
 .messages-chat-list > li {
   list-style: none;
@@ -439,48 +442,26 @@ select.field-input {
 }
 
 .chat-bubble {
-  max-width: 85%;
-  border-radius: 7.5px;
-  padding: 6px 7px 8px 9px;
-  background: #202c33;
-  color: #e9edef;
-  font-size: 14.2px;
-  line-height: 19px;
-  box-shadow: 0 1px 0.5px rgba(11,20,26,.13);
+  max-width: 80%;
+  border-radius: 16px;
+  padding: .55rem .85rem;
+  background: #1b1b1f;
+  color: var(--text-main);
+  font-size: .9rem;
+  line-height: 1.38;
   position: relative;
-  border: none;
+  border: 1px solid var(--glass-border);
 }
 
 .chat-bubble.mine {
-  background: #005c4b;
+  background: var(--primary);
+  color: #fff;
+  border-color: transparent;
 }
 
-/* Colitas de mensaje tipo WhatsApp */
-.messages-chat-list > li.mine .chat-bubble {
-  border-top-right-radius: 0;
-}
-
-.messages-chat-list > li.mine .chat-bubble::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  right: -8px;
-  border-top: 10px solid #005c4b;
-  border-right: 10px solid transparent;
-}
-
-.messages-chat-list > li.other .chat-bubble {
-  border-top-left-radius: 0;
-}
-
-.messages-chat-list > li.other .chat-bubble::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -8px;
-  border-top: 10px solid #202c33;
-  border-left: 10px solid transparent;
-}
+/* Esquina inferior menos redondeada (estilo iMessage, sin colitas) */
+.messages-chat-list > li.mine .chat-bubble { border-bottom-right-radius: 5px; }
+.messages-chat-list > li.other .chat-bubble { border-bottom-left-radius: 5px; }
 
 .chat-header {
   display: flex;
@@ -520,28 +501,32 @@ select.field-input {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 10px 16px;
-  background: #202c33;
+  padding: .6rem .35rem calc(.6rem + env(safe-area-inset-bottom));
+  background: transparent;
+  border-top: 1px solid var(--glass-border);
+  flex: 0 0 auto;
 }
 
 .wa-input {
   flex: 1;
-  background: #2a3942;
-  border: none;
-  border-radius: 8px;
-  padding: 9px 12px;
-  color: #e9edef;
+  background: rgba(255,255,255,.05);
+  border: 1px solid var(--glass-border);
+  border-radius: 14px;
+  padding: .6rem .85rem;
+  color: var(--text-main);
   font-size: 15px;
   resize: none;
   font-family: inherit;
 }
+
+.wa-input:focus { border-color: var(--primary); }
 
 .wa-input:focus {
   outline: none;
 }
 
 .wa-send-btn {
-  background: #00a884;
+  background: #ff1097;
   color: #fff;
   width: 40px;
   height: 40px;
@@ -580,7 +565,7 @@ select.field-input {
 .message-action-btn:hover { opacity: 1; background: rgba(255,255,255,0.08); }
 
 .wa-send-btn:hover {
-  background: #02c49a;
+  background: #ff3dab;
 }
 
 .tab-bar {
@@ -1960,7 +1945,7 @@ th {
   height: calc(100dvh - var(--tab-height) - env(safe-area-inset-bottom) - 130px);
   padding: 0 !important;
   overflow: hidden;
-  background: #0b141a;
+  background: transparent;
   border-radius: 0;
   border: none;
   box-shadow: none;

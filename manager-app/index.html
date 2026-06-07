@@ -7,7 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="./styles.css?v=1.1.45" />
+    <link rel="stylesheet" href="./styles.css?v=1.1.46" />
     <link rel="manifest" href="./manifest.json" />
     <link rel="icon" type="image/png" href="./icon-32.png" />
     <link rel="apple-touch-icon" href="./icon-180.png" />
@@ -329,13 +329,12 @@
 
       <section id="tab-contacts" class="panel card">
         <div class="panel-head">
-          <h3>Contactos Manager</h3>
+          <h3 class="ov-section-title">Contactos Manager</h3>
           <div class="actions">
-            <button id="refresh-contacts" class="btn ghost">Refrescar</button>
-            <button id="contact-form-toggle" class="btn">Nuevo contacto</button>
+            <button id="refresh-contacts" class="ov-icon-btn" type="button" aria-label="Refrescar" title="Refrescar">⟳</button>
+            <button id="contact-form-toggle" class="btn ov-new-btn" type="button">＋ Nuevo</button>
           </div>
         </div>
-        <p class="hint">Fuente prevista: Notion DB para gestión de contactos y seguimiento.</p>
 
         <div class="task-filters">
           <input id="contacts-search" class="field-input" type="search" placeholder="Buscar por nombre, rol, correo, teléfono, Instagram, TikTok..." />
@@ -424,6 +423,6 @@
     <script src="./config.js"></script>
     <script src="./vendor/howler.min.js"></script>
     <script src="./tracks.js?v=salesfix404v1"></script>
-    <script src="./app.js?v=1.1.45"></script>
+    <script src="./app.js?v=1.1.46"></script>
   </body>
   </html>
