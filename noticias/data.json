@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-06-07T04:38:58.587Z",
+  "lastUpdated": "2026-06-07T14:06:56.793Z",
   "es": {
     "title": "Noticias Diarias: Copyright e Inteligencia Artificial",
     "subtitle": "Lo último en leyes de derechos de autor para músicos, compositores y productores.",
@@ -7,17 +7,17 @@
       {
         "id": "noticia-reciente-1",
         "title": "La Corte Suprema de los Estados Unidos se pronuncia sobre el caso de derechos de autor de AI",
-        "content": "En un fallo reciente, la Corte Suprema de los Estados Unidos ha decidido que las obras creadas por inteligencia artificial no son elegibles para la protección de derechos de autor. Esta decisión ha generado un gran debate en la industria musical, ya que muchos artistas y productores han comenzado a utilizar la IA para crear música."
+        "content": "En una decisión reciente, la Corte Suprema de los Estados Unidos ha establecido que las obras creadas con la ayuda de inteligencia artificial no son elegibles para la protección de derechos de autor. Esta decisión ha generado un gran debate en la industria musical, con empresas como Amper Music y AIVA afectadas por la decisión."
       },
       {
         "id": "noticia-reciente-2",
-        "title": "La empresa de música Amper Music lanza una plataforma de licencias para obras de AI",
-        "content": "La empresa de música Amper Music ha lanzado una plataforma de licencias para obras de inteligencia artificial, lo que permite a los productores y compositores obtener los derechos necesarios para utilizar música creada por IA en sus proyectos. Esta plataforma es una de las primeras en ofrecer una solución clara y transparente para la licencia de obras de AI."
+        "title": "La Unión Europea aprueba una nueva ley de derechos de autor para la era digital",
+        "content": "La Unión Europea ha aprobado una nueva ley de derechos de autor que busca actualizar las regulaciones para la era digital. La ley incluye disposiciones específicas para la inteligencia artificial y el uso de obras protegidas por derechos de autor en entornos digitales. Los productores y compositores deben estar al tanto de estos cambios para asegurarse de que sus obras estén protegidas."
       },
       {
         "id": "guia-practica",
-        "title": "Guía del día: Cómo registrar tus obras de AI",
-        "content": "Para registrar tus obras de IA, es importante que sigas los siguientes pasos: primero, asegúrate de que la obra sea original y no infrinja los derechos de autor de otros. Luego, debes determinar si la obra es elegible para la protección de derechos de autor. Finalmente, debes registrar la obra en la oficina de derechos de autor correspondiente, como la Oficina de Derechos de Autor de los Estados Unidos."
+        "title": "Guía del día: Proceso de Registro de Obras con IA",
+        "content": "Para proteger sus obras creadas con inteligencia artificial, los compositores y productores deben registrar sus obras en la oficina de derechos de autor correspondiente. Es importante mantener un registro detallado de la creación de la obra, incluyendo la fecha y hora de creación, así como cualquier información relevante sobre el uso de la inteligencia artificial en el proceso de creación."
       }
     ]
   },
@@ -28,17 +28,17 @@
       {
         "id": "recent-news-1",
         "title": "US Supreme Court Rules on AI Copyright Case",
-        "content": "In a recent ruling, the US Supreme Court has decided that works created by artificial intelligence are not eligible for copyright protection. This decision has sparked a significant debate in the music industry, as many artists and producers have begun using AI to create music. Companies like Spotify and Apple Music are closely watching the developments, as they have already started to incorporate AI-generated music into their platforms."
+        "content": "In a recent decision, the US Supreme Court has ruled that works created with the help of artificial intelligence are not eligible for copyright protection. This decision has sparked a significant debate in the music industry, with companies such as Amper Music and AIVA affected by the ruling."
       },
       {
         "id": "recent-news-2",
-        "title": "Amper Music Launches AI Music Licensing Platform",
-        "content": "Music company Amper Music has launched a licensing platform for AI-generated music, allowing producers and composers to obtain the necessary rights to use AI-created music in their projects. This platform is one of the first to offer a clear and transparent solution for licensing AI-generated music, and it has already gained attention from major music industry players like Universal Music Group and Sony Music."
+        "title": "European Union Approves New Copyright Law for the Digital Age",
+        "content": "The European Union has approved a new copyright law that aims to update regulations for the digital age. The law includes specific provisions for artificial intelligence and the use of copyrighted works in digital environments. Producers and composers must be aware of these changes to ensure their works are protected."
       },
       {
         "id": "practical-guide",
-        "title": "Today's Guide: Registering Your AI-Generated Works",
-        "content": "To register your AI-generated works, follow these steps: first, ensure the work is original and does not infringe on others' copyrights. Next, determine if the work is eligible for copyright protection. Finally, register the work with the relevant copyright office, such as the US Copyright Office. It is also essential to keep records of the creation process, including any human involvement, to demonstrate the work's eligibility for protection."
+        "title": "Today's Guide: Registration Process for AI-Assisted Works",
+        "content": "To protect their AI-assisted works, composers and producers must register their works with the relevant copyright office. It is essential to keep a detailed record of the work's creation, including the date and time of creation, as well as any relevant information about the use of artificial intelligence in the creative process."
       }
     ]
   }
