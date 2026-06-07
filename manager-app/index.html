@@ -7,7 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="./styles.css?v=1.1.39" />
+    <link rel="stylesheet" href="./styles.css?v=1.1.40" />
     <link rel="manifest" href="./manifest.json" />
     <link rel="icon" type="image/png" href="./icon-32.png" />
     <link rel="apple-touch-icon" href="./icon-180.png" />
@@ -169,46 +169,52 @@
 
     <main class="container">
       <section id="tab-overview" class="panel card panel-fullscreen active">
-        <div class="featured-box">
-          <div class="actions panel-actions-inline">
-            <button id="refresh-messages-overview" class="btn ghost">Refrescar anuncios</button>
+        <!-- Anuncios -->
+        <div class="ov-section">
+          <div class="ov-section-head">
+            <h3 class="ov-section-title">Anuncios</h3>
+            <button id="refresh-messages-overview" class="ov-icon-btn" type="button" aria-label="Refrescar anuncios" title="Refrescar anuncios">⟳</button>
           </div>
           <ul id="messages-featured" class="list compact-list"></ul>
         </div>
 
-        <hr class="soft-sep" />
-
-        <div class="actions panel-actions-inline">
-          <button id="refresh-tasks" class="btn ghost">Refrescar tasks</button>
-          <button id="task-form-toggle" class="btn">Nueva task</button>
-        </div>
-
-        <div class="task-filters">
-          <select id="tasks-scope" class="field-input compact-control">
-            <option value="all">Ver: todas</option>
-            <option value="mine">Ver: asignadas a mí</option>
-          </select>
-          <button id="tasks-load-more" class="btn ghost" disabled>Cargar más</button>
-        </div>
-
-        <div id="task-form-card" class="task-form-card hidden">
-          <div class="task-form-grid">
-            <input id="task-title" class="field-input" type="text" placeholder="Nueva tarea..." />
-            <select id="task-assignee" class="field-input">
-              <option value="">Asignar a...</option>
-            </select>
-            <input id="task-due" class="field-input" type="date" />
-            <textarea id="task-subtasks" class="field-input" rows="3" placeholder="Subtasks (una por línea)"></textarea>
-            <div class="actions">
-              <button id="task-create" class="btn">Agregar task</button>
-              <button id="task-cancel-edit" class="btn ghost hidden" type="button">Cancelar edición</button>
+        <!-- Tareas -->
+        <div class="ov-section">
+          <div class="ov-section-head">
+            <h3 class="ov-section-title">Tareas</h3>
+            <div class="ov-section-actions">
+              <button id="refresh-tasks" class="ov-icon-btn" type="button" aria-label="Refrescar tasks" title="Refrescar tasks">⟳</button>
+              <button id="task-form-toggle" class="btn ov-new-btn" type="button">＋ Nueva</button>
             </div>
-            <input id="task-edit-id" type="hidden" />
           </div>
-        </div>
 
-        <p id="tasks-status" class="hint status" aria-live="polite">Sin tareas cargadas.</p>
-        <ul id="tasks-list" class="list compact-list"></ul>
+          <div class="ov-filter-row">
+            <select id="tasks-scope" class="field-input compact-control">
+              <option value="all">Todas</option>
+              <option value="mine">Asignadas a mí</option>
+            </select>
+          </div>
+
+          <div id="task-form-card" class="task-form-card hidden">
+            <div class="task-form-grid">
+              <input id="task-title" class="field-input" type="text" placeholder="Nueva tarea..." />
+              <select id="task-assignee" class="field-input">
+                <option value="">Asignar a...</option>
+              </select>
+              <input id="task-due" class="field-input" type="date" />
+              <textarea id="task-subtasks" class="field-input" rows="3" placeholder="Subtasks (una por línea)"></textarea>
+              <div class="actions">
+                <button id="task-create" class="btn">Agregar task</button>
+                <button id="task-cancel-edit" class="btn ghost hidden" type="button">Cancelar edición</button>
+              </div>
+              <input id="task-edit-id" type="hidden" />
+            </div>
+          </div>
+
+          <p id="tasks-status" class="hint status" aria-live="polite">Sin tareas cargadas.</p>
+          <ul id="tasks-list" class="list compact-list"></ul>
+          <button id="tasks-load-more" class="btn ghost ov-load-more" disabled>Cargar más</button>
+        </div>
       </section>
 
       <section id="tab-focus" class="panel panel-fullscreen focus-panel">
@@ -419,6 +425,6 @@
     <script src="./config.js"></script>
     <script src="./vendor/howler.min.js"></script>
     <script src="./tracks.js?v=salesfix404v1"></script>
-    <script src="./app.js?v=1.1.39"></script>
+    <script src="./app.js?v=1.1.40"></script>
   </body>
   </html>

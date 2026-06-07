@@ -207,6 +207,86 @@ h1 .title-version { color: var(--primary); }
   font-size: .86rem;
 }
 
+/* ===================== Overview — rediseño elegante ===================== */
+.ov-section { margin-bottom: 1.4rem; }
+.ov-section:last-child { margin-bottom: 0; }
+
+.ov-section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .6rem;
+  margin-bottom: .7rem;
+}
+.ov-section-title {
+  margin: 0;
+  font-family: "Bebas Neue", "Inter", sans-serif;
+  font-size: 1.45rem;
+  letter-spacing: .03em;
+  color: var(--text-main);
+  line-height: 1;
+}
+.ov-section-actions { display: flex; align-items: center; gap: .5rem; }
+
+.ov-icon-btn {
+  flex: 0 0 auto;
+  width: 2.2rem;
+  height: 2.2rem;
+  border: 1px solid var(--glass-border);
+  background: rgba(255,255,255,.04);
+  color: var(--text-soft);
+  border-radius: .55rem;
+  font-size: 1.15rem;
+  line-height: 1;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  transition: color .15s ease, border-color .15s ease, transform .3s ease;
+}
+.ov-icon-btn:hover { color: var(--primary); border-color: var(--primary); }
+.ov-icon-btn:active { transform: rotate(180deg); }
+.ov-new-btn { padding: .45rem .85rem; font-size: .8rem; }
+
+.ov-filter-row { margin-bottom: .8rem; }
+.ov-filter-row .compact-control { max-width: 220px; }
+
+.ov-load-more {
+  width: 100%;
+  margin-top: .7rem;
+}
+.ov-load-more:disabled { display: none; }
+
+/* Listas sin bullets ni sangría rara */
+#tab-overview .list { padding-left: 0; list-style: none; }
+#tab-overview .compact-list > li { list-style: none; border-bottom: 0; }
+
+/* Anuncios y tareas como tarjetas limpias */
+#tab-overview #messages-featured { display: grid; gap: .55rem; }
+#tab-overview #tasks-list { display: grid; gap: .55rem; }
+#tab-overview #messages-featured > li,
+#tab-overview #tasks-list > li {
+  border: 1px solid var(--glass-border);
+  background: rgba(255,255,255,.025);
+  border-radius: .8rem;
+  padding: .75rem .85rem;
+}
+
+/* Subtasks limpios, sin viñetas disc */
+#tab-overview .subtasks-list { padding-left: .1rem; margin-top: .5rem; }
+#tab-overview .subtasks-list li { list-style: none; }
+#tab-overview #tasks-list > li strong { font-size: .92rem; color: var(--text-main); }
+#tab-overview input[type="checkbox"] { accent-color: var(--primary); width: 1rem; height: 1rem; }
+
+/* Selects con look bayeight (sin flechas nativas feas) */
+select.field-input {
+  -webkit-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238a8a8a' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right .75rem center;
+  padding-right: 2.1rem;
+}
+
 .message-row {
   display: flex;
   justify-content: space-between;
@@ -1529,6 +1609,9 @@ a { color: #93c5fd; }
 
 /* Oculto el reproductor completo hasta que haya una pista cargada */
 .catalog-player:not(.has-track) { display: none; }
+/* El player SOLO se ve en la pestaña Catálogo (la música sigue sonando vía Howler,
+   pero el mini-bar no debe aparecer en otras pestañas). */
+body:not(.catalog-active) .catalog-player { display: none !important; }
 
 /* Mini-bar fijo abajo en TODOS los tamaños (web = móvil), anclado arriba del tab bar */
 .catalog-player.has-track {
@@ -1952,7 +2035,7 @@ th {
     flex-direction: column;
     padding-bottom: 0;
   }
-  #tab-catalog.panel-fullscreen {
+  #tab-catalog.panel-fullscreen.active {
     flex: 1;
     min-height: 0;
     display: flex;
