@@ -607,7 +607,7 @@ body.tabbar-hidden .container {
 }
 
 .tab {
-  flex: 0 0 clamp(4.1rem, 20vw, 5.1rem);
+  flex: 0 0 4.6rem;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1996,24 +1996,25 @@ body.messages-active .container {
 
 @media (max-width: 720px) {
   .tab-bar {
-    justify-content: space-between;
-    overflow-x: hidden;
+    justify-content: flex-start;
+    overflow-x: auto;
   }
 
+  /* Ancho fijo: los iconos no se encogen al agregar pestañas; el resto se desliza */
   .tab {
-    flex: 1 1 0;
+    flex: 0 0 4.6rem;
     min-width: 0;
     padding: .55rem 0;
-    gap: .22rem;
+    gap: .25rem;
   }
 
   .tab-icon {
-    width: 1.2rem;
-    height: 1.2rem;
+    width: 1.4rem;
+    height: 1.4rem;
   }
 
   .tab-label {
-    font-size: .6rem;
+    font-size: .64rem;
   }
 
   .topbar {
