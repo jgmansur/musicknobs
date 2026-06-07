@@ -1927,12 +1927,18 @@ function setMessages(rows = []) {
 
   featuredList.innerHTML = featured.length
     ? featured
-        .map((m) => `
+        .map((m) => {
+          const fecha = m.createdAt
+            ? new Date(m.createdAt).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' })
+            : '';
+          return `
           <li>
             <strong>${escapeHtml(m.author || 'Anónimo')}</strong> ·
             <span class="featured-text">${escapeHtml(m.text || 'Sin mensaje')}</span>
+            ${fecha ? `<div class="featured-date">${escapeHtml(fecha)}</div>` : ''}
           </li>
-        `)
+        `;
+        })
         .join('')
     : '<li>Sin mensajes destacados.</li>';
 

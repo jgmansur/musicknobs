@@ -317,6 +317,11 @@ h1 .title-version { color: var(--primary); }
 
 /* Anuncios: el texto del mensaje en magenta y bold para que resalte */
 #tab-overview #messages-featured .featured-text { color: var(--primary); font-weight: 700; }
+#tab-overview #messages-featured .featured-date {
+  color: var(--text-muted);
+  font-size: .72rem;
+  margin-top: .3rem;
+}
 
 /* Selects con look bayeight (sin flechas nativas feas) */
 select.field-input {
