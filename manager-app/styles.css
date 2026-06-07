@@ -890,9 +890,27 @@ body.tabbar-hidden .container {
   background: rgba(16, 16, 18, .96);
 }
 
+/* Libro: la página no scrollea, solo el contenido del iframe (patrón flex) */
+body.book-active .container {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 0;
+}
+#tab-book.panel-fullscreen.active {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 0 0 calc(var(--tab-height) + env(safe-area-inset-bottom)) 0;
+}
+
 .book-iframe {
   width: 100%;
-  height: calc(100dvh - 220px);
+  flex: 1;
+  min-height: 0;
+  height: auto;
   border: none;
   display: block;
   background: transparent;
@@ -2067,9 +2085,6 @@ body.messages-active .container {
     padding-bottom: calc(var(--tab-height) + env(safe-area-inset-bottom) + 1.8rem);
   }
 
-  .book-iframe {
-    height: calc(100dvh - 170px);
-  }
 
   .catalog-grid {
     grid-template-columns: 1fr;

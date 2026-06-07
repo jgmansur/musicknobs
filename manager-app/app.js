@@ -176,6 +176,7 @@ function activateTab(tabName) {
   document.body.classList.toggle('focus-active', target === 'focus');
   document.body.classList.toggle('catalog-active', target === 'catalog');
   document.body.classList.toggle('messages-active', target === 'messages');
+  document.body.classList.toggle('book-active', target === 'book');
 }
 
 function isMobileTabBarViewport() {
