@@ -454,10 +454,12 @@ select.field-input {
 }
 
 .chat-bubble.mine {
-  background: var(--primary);
+  background: #8a1e54;
   color: #fff;
   border-color: transparent;
 }
+.chat-bubble.mine .wa-meta { color: rgba(255,255,255,.8); }
+.chat-bubble.mine .message-text { color: #fff; }
 
 /* Esquina inferior menos redondeada (estilo iMessage, sin colitas) */
 .messages-chat-list > li.mine .chat-bubble { border-bottom-right-radius: 5px; }
@@ -478,8 +480,8 @@ select.field-input {
 }
 
 .wa-meta {
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.45);
+  font-size: 11.5px;
+  color: rgba(255, 255, 255, 0.6);
   display: inline-flex;
   align-items: center;
   float: right;
@@ -501,7 +503,7 @@ select.field-input {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: .6rem .35rem calc(.6rem + env(safe-area-inset-bottom));
+  padding: .6rem .35rem;
   background: transparent;
   border-top: 1px solid var(--glass-border);
   flex: 0 0 auto;
@@ -1938,12 +1940,23 @@ th {
   font-size: .68rem;
 }
 
-/* ── Messages tab fullscreen — sin header, sin contenedor card ── */
+/* ── Messages tab — sin contenedor, solo los mensajes scrollean ── */
+/* La página no scrollea en Mensajes: el container se vuelve flex sin overflow
+   y el tab lo llena con flex:1 (sin números mágicos de altura). */
+body.messages-active .container {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 0;
+}
 #tab-messages.active {
   display: flex !important;
   flex-direction: column;
-  height: calc(100dvh - var(--tab-height) - env(safe-area-inset-bottom) - 130px);
-  padding: 0 !important;
+  flex: 1;
+  min-height: 0;
+  height: auto;
+  /* Deja libre la barra de tabs para que el composer no quede tapado */
+  padding: 0 0 calc(var(--tab-height) + env(safe-area-inset-bottom)) 0;
   overflow: hidden;
   background: transparent;
   border-radius: 0;
@@ -2031,10 +2044,6 @@ th {
   }
 
   .oauth-header-status { margin-top: .5rem; }
-
-  #tab-messages.active {
-    height: calc(100dvh - var(--tab-height) - env(safe-area-inset-bottom) - 90px);
-  }
 
   /* Evita auto-zoom en iOS al enfocar campos de texto */
   .field-input,
