@@ -583,11 +583,18 @@ async function listCatalogSongs(env) {
   }
 
   try {
-    const payload = await notionQueryAdvanced(dbId, notionToken, notionVersion, {
-      pageSize: 200,
-    });
+    const allResults = [];
+    let cursor = undefined;
+    do {
+      const payload = await notionQueryAdvanced(dbId, notionToken, notionVersion, {
+        pageSize: 100,
+        ...(cursor ? { startCursor: cursor } : {}),
+      });
+      allResults.push(...(payload.results || []));
+      cursor = payload.has_more ? payload.next_cursor : undefined;
+    } while (cursor);
 
-    const data = (await Promise.all((payload.results || [])
+    const data = (await Promise.all(allResults
       .map(async (page) => {
         const props = page.properties || {};
         const obra = readNotionTitle(props);
@@ -2296,6 +2303,170 @@ async function deleteManagerTask(env, taskId) {
   return { ok: true };
 }
 
+// ─── IPV (Ideas Para Videos) ─────────────────────────────────────────────────
+
+const IPV_DEFAULT_DB_ID = "2a462e89-4bdf-4bce-bf56-189f8e97e7f3";
+const IPV_DEFAULT_DATA_SOURCE_ID = "b140b455-cce2-4e8c-9702-3d8d7317e2bb";
+const IPV_CANALES = ["Music Knobs", "Mansur Tech", "Roby & Hans Place"];
+const IPV_AVATARES = ["Productor", "Cantante", "Compositor", "Músico de sesión", "Artista autogestionado", "Industria", "General"];
+const IPV_ESTATUS = ["Idea", "En guion", "Grabado", "Publicado", "Descartado"];
+const IPV_PRIORIDAD = ["Alta", "Media", "Baja"];
+
+function ipvParsePage(page) {
+  const props = page?.properties || {};
+  const sel = (p) => p?.select?.name || "";
+  const filesProp = props["Adjuntos"]?.files || [];
+  return {
+    id: page.id,
+    idea: richTextToString(props["Idea"]?.title || []),
+    canal: sel(props["Canal"]),
+    avatar: sel(props["Avatar"]),
+    estatus: sel(props["Estatus"]),
+    prioridad: sel(props["Prioridad"]),
+    notas: richTextToString(props["Notas"]?.rich_text || []),
+    adjuntos: filesProp.map((f) => ({
+      name: f?.name || "",
+      url: f?.external?.url || f?.file?.url || "",
+    })),
+    creado: props["Creado"]?.created_time || page.created_time || "",
+    actualizado: props["Actualizado"]?.last_edited_time || page.last_edited_time || "",
+    url: page.url || "",
+  };
+}
+
+function ipvBuildProperties(input) {
+  const props = {};
+  if (input.idea !== undefined) {
+    props["Idea"] = { title: [{ text: { content: String(input.idea) } }] };
+  }
+  if (input.canal !== undefined) {
+    props["Canal"] = input.canal ? { select: { name: input.canal } } : { select: null };
+  }
+  if (input.avatar !== undefined) {
+    props["Avatar"] = input.avatar ? { select: { name: input.avatar } } : { select: null };
+  }
+  if (input.estatus !== undefined) {
+    props["Estatus"] = input.estatus ? { select: { name: input.estatus } } : { select: null };
+  }
+  if (input.prioridad !== undefined) {
+    props["Prioridad"] = input.prioridad ? { select: { name: input.prioridad } } : { select: null };
+  }
+  if (input.notas !== undefined) {
+    props["Notas"] = { rich_text: input.notas ? [{ text: { content: String(input.notas) } }] : [] };
+  }
+  return props;
+}
+
+async function ipvList(env) {
+  const notionToken = env.NOTION_TOKEN || "";
+  const notionVersion = env.NOTION_VERSION || "2022-06-28";
+  const dsId = env.IPV_DATA_SOURCE_ID || IPV_DEFAULT_DATA_SOURCE_ID;
+  const dbId = env.IPV_DB_ID || IPV_DEFAULT_DB_ID;
+  if (!notionToken) return { error: "NOTION_TOKEN not configured", data: [] };
+
+  const endpoints = [
+    `https://api.notion.com/v1/data_sources/${dsId}/query`,
+    `https://api.notion.com/v1/databases/${dbId}/query`,
+  ];
+  let lastError = "";
+  for (const url of endpoints) {
+    const resp = await fetch(url, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${notionToken}`,
+        "Notion-Version": notionVersion,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ page_size: 100 }),
+    });
+    if (resp.ok) {
+      const payload = await resp.json();
+      return { data: (payload.results || []).map(ipvParsePage) };
+    }
+    lastError = await resp.text();
+  }
+  return { error: "Notion query failed", details: lastError, data: [] };
+}
+
+async function ipvCreate(env, body) {
+  const notionToken = env.NOTION_TOKEN || "";
+  const notionVersion = env.NOTION_VERSION || "2022-06-28";
+  const dbId = env.IPV_DB_ID || IPV_DEFAULT_DB_ID;
+  if (!notionToken) return { error: "NOTION_TOKEN not configured" };
+
+  if (!body?.idea || !String(body.idea).trim()) return { error: "idea required" };
+  if (!IPV_CANALES.includes(body.canal)) return { error: "canal inválido" };
+  if (body.avatar && !IPV_AVATARES.includes(body.avatar)) return { error: "avatar inválido" };
+  if (body.estatus && !IPV_ESTATUS.includes(body.estatus)) return { error: "estatus inválido" };
+  if (body.prioridad && !IPV_PRIORIDAD.includes(body.prioridad)) return { error: "prioridad inválida" };
+
+  const props = ipvBuildProperties({
+    idea: String(body.idea).trim(),
+    canal: body.canal,
+    avatar: body.avatar || null,
+    estatus: body.estatus || "Idea",
+    prioridad: body.prioridad || "Media",
+    notas: body.notas || "",
+  });
+
+  const resp = await fetch("https://api.notion.com/v1/pages", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${notionToken}`,
+      "Notion-Version": notionVersion,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ parent: { database_id: dbId }, properties: props }),
+  });
+  if (!resp.ok) return { error: "Notion create failed", details: await resp.text() };
+  return { ok: true, data: ipvParsePage(await resp.json()) };
+}
+
+async function ipvUpdate(env, id, body) {
+  const notionToken = env.NOTION_TOKEN || "";
+  const notionVersion = env.NOTION_VERSION || "2022-06-28";
+  if (!notionToken) return { error: "NOTION_TOKEN not configured" };
+  if (!id) return { error: "id required" };
+
+  if (body.canal !== undefined && body.canal !== null && !IPV_CANALES.includes(body.canal)) return { error: "canal inválido" };
+  if (body.avatar && !IPV_AVATARES.includes(body.avatar)) return { error: "avatar inválido" };
+  if (body.estatus && !IPV_ESTATUS.includes(body.estatus)) return { error: "estatus inválido" };
+  if (body.prioridad && !IPV_PRIORIDAD.includes(body.prioridad)) return { error: "prioridad inválida" };
+
+  const props = ipvBuildProperties(body);
+
+  const resp = await fetch(`https://api.notion.com/v1/pages/${id}`, {
+    method: "PATCH",
+    headers: {
+      Authorization: `Bearer ${notionToken}`,
+      "Notion-Version": notionVersion,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ properties: props }),
+  });
+  if (!resp.ok) return { error: "Notion update failed", details: await resp.text() };
+  return { ok: true, data: ipvParsePage(await resp.json()) };
+}
+
+async function ipvDelete(env, id) {
+  const notionToken = env.NOTION_TOKEN || "";
+  const notionVersion = env.NOTION_VERSION || "2022-06-28";
+  if (!notionToken) return { error: "NOTION_TOKEN not configured" };
+  if (!id) return { error: "id required" };
+
+  const resp = await fetch(`https://api.notion.com/v1/pages/${id}`, {
+    method: "PATCH",
+    headers: {
+      Authorization: `Bearer ${notionToken}`,
+      "Notion-Version": notionVersion,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ archived: true }),
+  });
+  if (!resp.ok) return { error: "Notion delete failed", details: await resp.text() };
+  return { ok: true };
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -2530,6 +2701,31 @@ export default {
       const playlistId = url.pathname.replace("/api/manager/playlists/", "").trim();
       if (!playlistId) return json({ error: "playlistId required" }, 400);
       const result = await deleteManagerPlaylist(env, playlistId);
+      return json(result, result.error ? 400 : 200);
+    }
+
+    // ─── IPV (Ideas Para Videos) ─────────────────────────────────────────
+    if (request.method === "GET" && url.pathname === "/api/ipv/list") {
+      const result = await ipvList(env);
+      return json(result, result.error ? 500 : 200);
+    }
+
+    if (request.method === "POST" && url.pathname === "/api/ipv/create") {
+      const body = await request.json().catch(() => ({}));
+      const result = await ipvCreate(env, body);
+      return json(result, result.error ? 400 : 201);
+    }
+
+    if (request.method === "PATCH" && url.pathname.startsWith("/api/ipv/update/")) {
+      const id = url.pathname.replace("/api/ipv/update/", "").trim();
+      const body = await request.json().catch(() => ({}));
+      const result = await ipvUpdate(env, id, body);
+      return json(result, result.error ? 400 : 200);
+    }
+
+    if (request.method === "DELETE" && url.pathname.startsWith("/api/ipv/delete/")) {
+      const id = url.pathname.replace("/api/ipv/delete/", "").trim();
+      const result = await ipvDelete(env, id);
       return json(result, result.error ? 400 : 200);
     }
 

@@ -1401,6 +1401,16 @@ function renderCatalog() {
         .join('')
     : `<li>${catalogFilterView === 'playlists' ? 'Sin canciones en esta playlist.' : 'Sin canciones en este género.'}</li>`;
 
+  const loadMoreBtn = document.getElementById('catalog-load-more');
+  if (loadMoreBtn) {
+    const hasMore = visibleSongs.length > catalogVisibleCount;
+    loadMoreBtn.style.display = hasMore ? '' : 'none';
+    loadMoreBtn.onclick = () => {
+      catalogVisibleCount += CATALOG_PAGE_STEP;
+      renderCatalog();
+    };
+  }
+
   const genreSelect = document.getElementById('catalog-genre-select');
   if (genreSelect) {
     genreSelect.addEventListener('change', () => {
