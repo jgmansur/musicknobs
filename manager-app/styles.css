@@ -278,10 +278,36 @@ h1 .title-version { color: var(--primary); }
   padding: .75rem .85rem;
 }
 
-/* Subtasks limpios, sin viñetas disc */
-#tab-overview .subtasks-list { padding-left: .1rem; margin-top: .5rem; }
-#tab-overview .subtasks-list li { list-style: none; }
-#tab-overview #tasks-list > li strong { font-size: .92rem; color: var(--text-main); }
+/* Subtasks: casilla y texto separados (la casilla marca, el texto es libre/clickeable) */
+#tab-overview .subtasks-list { padding-left: .1rem; margin-top: .55rem; display: grid; gap: .35rem; }
+#tab-overview .subtask-item {
+  display: flex;
+  align-items: flex-start;
+  gap: .55rem;
+  list-style: none;
+}
+#tab-overview .subtask-check {
+  flex: 0 0 auto;
+  margin-top: .15rem;
+  cursor: pointer;
+}
+#tab-overview .subtask-text {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.subtask-link { color: var(--primary); text-decoration: underline; }
+
+/* Título de la task como enlace a su nota de Notion */
+.task-main { min-width: 0; }
+#tab-overview .task-title-link {
+  font-weight: 700;
+  font-size: .92rem;
+  color: var(--text-main);
+  text-decoration: none;
+}
+#tab-overview .task-title-link:hover { color: var(--primary); text-decoration: underline; }
+
 #tab-overview input[type="checkbox"] { accent-color: var(--primary); width: 1rem; height: 1rem; }
 
 /* Selects con look bayeight (sin flechas nativas feas) */

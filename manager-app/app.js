@@ -1791,6 +1791,16 @@ function setupCatalogPlayerControls() {
   updateCatalogPlayerUi();
 }
 
+function linkifyText(text) {
+  const escaped = escapeHtml(String(text || ''));
+  return escaped.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" rel="noopener" class="subtask-link">$1</a>');
+}
+
+function notionPageUrl(id) {
+  const clean = String(id || '').replace(/-/g, '');
+  return clean ? `https://www.notion.so/${clean}` : '';
+}
+
 function setTasks(rows = []) {
   tasksCache = rows;
   const list = document.getElementById('tasks-list');
@@ -1805,15 +1815,20 @@ function setTasks(rows = []) {
       const subtasks = Array.isArray(t.subtasks) ? t.subtasks : [];
       const subtasksHtml = subtasks.length
         ? `<ul class="subtasks-list">${subtasks
-            .map((st, i) => `<li><label><input type="checkbox" data-task-subtoggle="${t.id}" data-subindex="${i}" ${st.done ? 'checked' : ''} /> ${escapeHtml(st.title)}</label></li>`)
+            .map((st, i) => `<li class="subtask-item"><input type="checkbox" class="subtask-check" data-task-subtoggle="${t.id}" data-subindex="${i}" ${st.done ? 'checked' : ''} aria-label="Completar subtask" /><span class="subtask-text">${linkifyText(st.title)}</span></li>`)
             .join('')}</ul>`
         : '';
+
+      const notionUrl = notionPageUrl(t.id);
+      const titleHtml = notionUrl
+        ? `<a class="task-title-link" href="${notionUrl}" target="_blank" rel="noopener" title="Abrir en Notion">${escapeHtml(t.title || 'Sin título')}</a>`
+        : `<strong>${escapeHtml(t.title || 'Sin título')}</strong>`;
 
       return `
         <li>
           <div class="task-row">
-            <div>
-              <strong>${escapeHtml(t.title || 'Sin título')}</strong>
+            <div class="task-main">
+              ${titleHtml}
               <div class="task-meta">${escapeHtml(assignee)}${escapeHtml(due)} · Estatus: ${escapeHtml(status)}</div>
             </div>
             <details class="task-actions-menu">
