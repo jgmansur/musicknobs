@@ -147,11 +147,18 @@ h1 .title-version { color: var(--primary); }
 
 /* Header compacto: acciones principales más pequeñas para ganar espacio vertical */
 #google-auth-toggle,
-#print-btn {
+#print-btn,
+#share-app-btn {
   padding: .46rem .72rem;
   font-size: .72rem;
   border-radius: .68rem;
   line-height: 1.1;
+}
+/* Botón compartir: misma altura que CV, icono centrado */
+#share-app-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .oauth-header-status {
@@ -1294,6 +1301,17 @@ a { color: #93c5fd; }
   padding-right: .25rem;
 }
 #tab-catalog .catalog-shell { background: transparent; }
+
+/* Overview y Contactos: también sin tarjeta de fondo (contenido directo sobre negro) */
+#tab-overview,
+#tab-contacts {
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  border-radius: 0;
+  padding-left: .25rem;
+  padding-right: .25rem;
+}
 #tab-catalog #catalog-status { text-align: right; }
 
 /* Alineación pro: buscador, botón refrescar, status y lista — mismo ancho exacto */
@@ -1957,7 +1975,8 @@ th {
 
   #notify-enable-btn,
   #google-auth-toggle,
-  #print-btn {
+  #print-btn,
+  #share-app-btn {
     padding: .3rem .5rem;
     font-size: .64rem;
     border-radius: .6rem;
