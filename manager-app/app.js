@@ -993,8 +993,15 @@ function flashLyricsHint() {
   const track = getCatalogPlayerTrackByIndex();
   const hasLyrics = Boolean(track && String(track.lyricsText || '').trim());
   if (!pill || !catalogPlayerExpanded || catalogLyricsOn || !hasLyrics) return;
+  // Genera cada letra en su span con delay escalonado (typewriter + bounce desde arriba)
+  const text = '... ver letra';
+  pill.innerHTML = text.split('').map((ch, i) =>
+    `<span class="hint-char" style="animation-delay:${(i * 0.045).toFixed(3)}s">${ch === ' ' ? '&nbsp;' : escapeHtml(ch)}</span>`
+  ).join('');
+  pill.classList.remove('show');
+  void pill.offsetWidth; // fuerza reflow para reiniciar la animación cada vez
   pill.classList.add('show');
-  setTimeout(() => pill.classList.remove('show'), 3500);
+  setTimeout(() => pill.classList.remove('show'), 4000);
 }
 
 function startLyricsHintCycle() {
@@ -1091,7 +1098,11 @@ function highlightActiveLyric() {
   const focusIdx = activeIdx >= 0 ? activeIdx : 0;
   if (focusIdx !== catalogLyricLastIdx && lines[focusIdx]) {
     catalogLyricLastIdx = focusIdx;
-    lines[focusIdx].scrollIntoView({ block: 'center', behavior: 'smooth' });
+    // Scroll SOLO vertical (evita el bamboleo horizontal del scrollIntoView)
+    const pr = panel.getBoundingClientRect();
+    const lr = lines[focusIdx].getBoundingClientRect();
+    const delta = (lr.top + lr.height / 2) - (pr.top + pr.height / 2);
+    panel.scrollTo({ top: panel.scrollTop + delta, behavior: 'smooth' });
   }
 }
 

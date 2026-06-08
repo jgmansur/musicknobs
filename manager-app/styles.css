@@ -1969,6 +1969,7 @@ body:not(.catalog-active) .catalog-player { display: none !important; }
   min-height: 0;
   width: 100%;
   overflow-y: auto;
+  overflow-x: hidden;
   /* Padding vertical grande: deja que la PRIMERA línea arranque en el centro
      y que la última también pueda centrarse al final. */
   padding: 40vh .2rem;
@@ -2005,37 +2006,47 @@ body:not(.catalog-active) .catalog-player { display: none !important; }
 .player-lyrics-edit { right: 4.1rem; font-size: 1.1rem; }
 .player-lyrics-edit.active { background: var(--bay-accent); border-color: transparent; }
 
-/* Leyenda "Ver letra" — aparece de vez en cuando, animada */
+/* Leyenda "... ver letra" — texto magenta con glow, animación typewriter + bounce */
 .lyrics-hint-pill {
   position: absolute;
-  top: calc(env(safe-area-inset-top) + 1.3rem);
+  top: calc(env(safe-area-inset-top) + 1.4rem);
   right: 4rem;
   border: 0;
-  background: linear-gradient(135deg, #ff1097, #ff5bc0);
-  color: #fff;
-  font-size: .72rem;
-  font-weight: 700;
-  letter-spacing: .01em;
-  padding: .42rem .8rem;
-  border-radius: 999px;
+  background: none;
+  color: var(--bay-accent);
+  font-family: "Bebas Neue", "Inter", sans-serif;
+  font-size: 1rem;
+  letter-spacing: .04em;
+  padding: .15rem .1rem;
   white-space: nowrap;
   cursor: pointer;
   opacity: 0;
-  transform: translateX(12px) scale(.85);
   pointer-events: none;
-  box-shadow: 0 6px 22px rgba(255,16,151,.5);
-  transition: opacity .45s cubic-bezier(.2,1,.22,1), transform .45s cubic-bezier(.2,1,.22,1);
+  transition: opacity .25s ease;
   z-index: 1001;
 }
-.lyrics-hint-pill.show {
-  opacity: 1;
-  transform: translateX(0) scale(1);
-  pointer-events: auto;
-  animation: lyrics-hint-breathe 1.8s ease-in-out .45s infinite;
+.lyrics-hint-pill.show { opacity: 1; pointer-events: auto; }
+
+.lyrics-hint-pill .hint-char {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(-.75em);
+  text-shadow: 0 0 9px rgba(255, 16, 151, .6);
 }
-@keyframes lyrics-hint-breathe {
-  0%, 100% { box-shadow: 0 6px 22px rgba(255,16,151,.5); }
-  50% { box-shadow: 0 6px 30px rgba(255,16,151,.85); }
+/* Cada letra cae desde arriba con un pequeño bounce (efecto Canva), escalonada (typewriter) */
+.lyrics-hint-pill.show .hint-char {
+  animation:
+    hint-char-in .45s cubic-bezier(.34, 1.56, .64, 1) both,
+    hint-char-glow 1.9s ease-in-out infinite;
+}
+@keyframes hint-char-in {
+  0% { opacity: 0; transform: translateY(-.75em); }
+  65% { opacity: 1; transform: translateY(.1em); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+@keyframes hint-char-glow {
+  0%, 100% { text-shadow: 0 0 8px rgba(255, 16, 151, .55); }
+  50% { text-shadow: 0 0 16px rgba(255, 16, 151, 1); }
 }
 
 /* Modo edición: filas editables + barra */
