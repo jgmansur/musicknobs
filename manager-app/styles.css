@@ -1819,8 +1819,9 @@ body:not(.catalog-active) .catalog-player { display: none !important; }
   inset: 0;
   z-index: 1000;
   margin: 0;
-  /* Ambient premium: degradado del acento al negro (luce aunque no haya cover) */
-  background: linear-gradient(180deg, rgba(255, 16, 151, .28) 0%, #120009 38%, #000 100%);
+  /* Fondo SÓLIDO (sin transparencia) con tinte magenta oscuro → negro.
+     Opaco al 100% para que la letra se lea clarísima. */
+  background: linear-gradient(180deg, #2a0a1a 0%, #14060e 42%, #000 100%);
 }
 .catalog-player.is-expanded .player-mini { display: none; }
 .catalog-player.is-expanded .player-expanded {
@@ -1941,6 +1942,113 @@ body:not(.catalog-active) .catalog-player { display: none !important; }
 
 .player-mini-play.is-loading,
 .player-icon-main.is-loading { opacity: .55; pointer-events: none; }
+
+/* ── Letra / karaoke en el Now Playing ── */
+.player-lyrics-btn {
+  position: absolute;
+  top: calc(env(safe-area-inset-top) + 1.1rem);
+  right: 1.2rem;
+  border: 1px solid var(--bay-border);
+  background: rgba(255,255,255,.06);
+  color: var(--bay-text);
+  border-radius: 10px;
+  width: 2.4rem;
+  height: 2.4rem;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: background .15s ease, color .15s ease;
+}
+.player-lyrics-btn.active { background: var(--bay-accent); border-color: transparent; color: #fff; }
+
+.player-lyrics { display: none; }
+.catalog-player.is-expanded.lyrics-on .player-exp-cover-wrap { display: none; }
+.catalog-player.is-expanded.lyrics-on .player-lyrics {
+  display: block;
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  overflow-y: auto;
+  /* Padding vertical grande: deja que la PRIMERA línea arranque en el centro
+     y que la última también pueda centrarse al final. */
+  padding: 40vh .2rem;
+  text-align: center;
+  scrollbar-width: none;
+  -webkit-mask-image: linear-gradient(180deg, transparent, #000 22%, #000 78%, transparent);
+          mask-image: linear-gradient(180deg, transparent, #000 22%, #000 78%, transparent);
+}
+.player-lyrics::-webkit-scrollbar { display: none; }
+.lyric-line {
+  font-family: "Bebas Neue", "Inter", sans-serif;
+  font-size: 1.7rem;
+  line-height: 1.15;
+  letter-spacing: .02em;
+  color: rgba(255,255,255,.3);
+  margin: 0 0 1.05rem;
+  padding: 0 .5rem;
+  transition: color .25s ease, transform .25s ease;
+  cursor: pointer;
+}
+.lyric-line.is-active { color: var(--bay-accent); transform: scale(1.04); }
+.lyric-line.is-past { color: rgba(255,255,255,.2); }
+/* Letra sin timing (plana): tamaño normal, alineada izquierda */
+.player-lyrics.plain { text-align: left; }
+.player-lyrics.plain .lyric-line {
+  font-family: "Inter", sans-serif;
+  font-size: .95rem;
+  color: var(--bay-text);
+  cursor: default;
+  margin-bottom: .55rem;
+}
+
+/* Botón editar letra (junto al de letra) */
+.player-lyrics-edit { right: 4.1rem; font-size: 1.1rem; }
+.player-lyrics-edit.active { background: var(--bay-accent); border-color: transparent; }
+
+/* Modo edición: filas editables + barra */
+.lyrics-edit-bar { display: none; }
+.catalog-player.is-expanded.lyrics-editing .lyrics-edit-bar {
+  display: flex;
+  flex-direction: column;
+  gap: .5rem;
+  padding: .6rem .2rem;
+  border-top: 1px solid var(--glass-border);
+  flex: 0 0 auto;
+}
+.lyrics-edit-hint { font-size: .68rem; color: var(--bay-muted); text-align: center; }
+.lyrics-edit-actions { display: flex; gap: .6rem; justify-content: center; }
+
+.catalog-player.is-expanded.lyrics-editing .player-lyrics {
+  text-align: left;
+  padding: 1rem .2rem;
+  -webkit-mask-image: none;
+          mask-image: none;
+}
+.lyric-edit-row { display: flex; align-items: center; gap: .5rem; margin-bottom: .45rem; }
+.lyric-set-time {
+  flex: 0 0 auto;
+  min-width: 4.2rem;
+  border: 1px solid var(--bay-border);
+  background: rgba(255,255,255,.06);
+  color: var(--bay-accent);
+  border-radius: 8px;
+  padding: .4rem .35rem;
+  font-size: .72rem;
+  cursor: pointer;
+  font-variant-numeric: tabular-nums;
+}
+.lyric-set-time:active { background: var(--bay-accent); color: #fff; }
+.lyric-edit-text {
+  flex: 1 1 auto;
+  min-width: 0;
+  background: rgba(255,255,255,.04);
+  border: 1px solid var(--bay-border);
+  border-radius: 8px;
+  padding: .4rem .5rem;
+  color: var(--bay-text);
+  font-size: .9rem;
+}
+.lyric-edit-text:focus { outline: none; border-color: var(--bay-accent); }
 
 table {
   width: 100%;

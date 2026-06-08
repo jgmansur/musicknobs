@@ -1348,6 +1348,46 @@ async function replaceSubtasks(pageId, notionToken, notionVersion, subtasks = []
   if (!resp.ok) throw new Error(await resp.text());
 }
 
+// Reescribe la letra (LRC) de una nota: borra los párrafos actuales y agrega
+// uno nuevo por línea. pageId = id de la nota de letra en Notion.
+async function replaceLyricBlocks(pageId, notionToken, notionVersion, lrcText) {
+  const children = await notionGetPageChildren(pageId, notionToken, notionVersion);
+  const existing = children.filter((b) => b?.type === "paragraph");
+  for (const block of existing) {
+    const resp = await fetch(`https://api.notion.com/v1/blocks/${block.id}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${notionToken}`, "Notion-Version": notionVersion },
+    });
+    if (!resp.ok) throw new Error(await resp.text());
+  }
+
+  const lines = String(lrcText || "").split("\n").map((l) => l.trim()).filter(Boolean);
+  // Notion permite máximo 100 hijos por request
+  for (let i = 0; i < lines.length; i += 100) {
+    const chunk = lines.slice(i, i + 100).map((line) => ({
+      object: "block",
+      type: "paragraph",
+      paragraph: { rich_text: [{ type: "text", text: { content: line.slice(0, 2000) } }] },
+    }));
+    const resp = await fetch(`https://api.notion.com/v1/blocks/${pageId}/children`, {
+      method: "PATCH",
+      headers: {
+        Authorization: `Bearer ${notionToken}`,
+        "Notion-Version": notionVersion,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ children: chunk }),
+    });
+    if (!resp.ok) throw new Error(await resp.text());
+  }
+}
+
+function extractNotionPageId(value) {
+  const s = String(value || "");
+  const m = s.match(/([0-9a-fA-F]{32})/) || s.match(/([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})/);
+  return m ? m[1].replace(/-/g, "") : "";
+}
+
 function parseSubtasksFromBlocks(blocks = []) {
   return normalizeSubtasks(blocks
     .filter((b) => b?.type === "to_do")
@@ -2642,6 +2682,22 @@ export default {
       const body = await request.json().catch(() => ({}));
       const result = await clearManagerMessages(env, body);
       return json(result, result.error ? 400 : 200);
+    }
+
+    if (request.method === "POST" && url.pathname === "/api/manager/lyrics") {
+      const body = await request.json().catch(() => ({}));
+      const notionToken = env.NOTION_TOKEN || "";
+      const notionVersion = env.NOTION_VERSION || "2022-06-28";
+      const pageId = extractNotionPageId(body.lyricUrl || body.pageId || "");
+      if (!notionToken) return json({ error: "NOTION_TOKEN no configurado" }, 500);
+      if (!pageId) return json({ error: "Falta lyricUrl/pageId válido" }, 400);
+      if (typeof body.lrc !== "string") return json({ error: "Falta lrc (texto)" }, 400);
+      try {
+        await replaceLyricBlocks(pageId, notionToken, notionVersion, body.lrc);
+        return json({ ok: true, pageId });
+      } catch (e) {
+        return json({ error: "No se pudo guardar la letra", details: String(e?.message || e) }, 500);
+      }
     }
 
     if (request.method === "PATCH" && url.pathname.startsWith("/api/manager/tasks/")) {
