@@ -2005,6 +2005,39 @@ body:not(.catalog-active) .catalog-player { display: none !important; }
 .player-lyrics-edit { right: 4.1rem; font-size: 1.1rem; }
 .player-lyrics-edit.active { background: var(--bay-accent); border-color: transparent; }
 
+/* Leyenda "Ver letra" — aparece de vez en cuando, animada */
+.lyrics-hint-pill {
+  position: absolute;
+  top: calc(env(safe-area-inset-top) + 1.3rem);
+  right: 4rem;
+  border: 0;
+  background: linear-gradient(135deg, #ff1097, #ff5bc0);
+  color: #fff;
+  font-size: .72rem;
+  font-weight: 700;
+  letter-spacing: .01em;
+  padding: .42rem .8rem;
+  border-radius: 999px;
+  white-space: nowrap;
+  cursor: pointer;
+  opacity: 0;
+  transform: translateX(12px) scale(.85);
+  pointer-events: none;
+  box-shadow: 0 6px 22px rgba(255,16,151,.5);
+  transition: opacity .45s cubic-bezier(.2,1,.22,1), transform .45s cubic-bezier(.2,1,.22,1);
+  z-index: 1001;
+}
+.lyrics-hint-pill.show {
+  opacity: 1;
+  transform: translateX(0) scale(1);
+  pointer-events: auto;
+  animation: lyrics-hint-breathe 1.8s ease-in-out .45s infinite;
+}
+@keyframes lyrics-hint-breathe {
+  0%, 100% { box-shadow: 0 6px 22px rgba(255,16,151,.5); }
+  50% { box-shadow: 0 6px 30px rgba(255,16,151,.85); }
+}
+
 /* Modo edición: filas editables + barra */
 .lyrics-edit-bar { display: none; }
 .catalog-player.is-expanded.lyrics-editing .lyrics-edit-bar {

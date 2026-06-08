@@ -118,6 +118,7 @@ let catalogLyricsOn = false;
 let catalogLyricsEditing = false;
 let catalogLyricsTimer = null;
 let catalogLyricLastIdx = -1;
+let lyricsHintTimer = null;
 let catalogQueue = [];
 let playlistsCache = [];
 let selectedPlaylistId = '';
@@ -981,6 +982,34 @@ function setCatalogPlayerExpanded(expanded) {
   } else {
     stopLyricsKaraoke();
   }
+  // Leyenda "Ver letra": ciclo solo mientras el Now Playing está expandido
+  if (catalogPlayerExpanded) startLyricsHintCycle();
+  else stopLyricsHintCycle();
+}
+
+// Leyenda "Ver letra" que aparece de vez en cuando (solo en vista portada, con letra)
+function flashLyricsHint() {
+  const pill = document.getElementById('player-lyrics-hint');
+  const track = getCatalogPlayerTrackByIndex();
+  const hasLyrics = Boolean(track && String(track.lyricsText || '').trim());
+  if (!pill || !catalogPlayerExpanded || catalogLyricsOn || !hasLyrics) return;
+  pill.classList.add('show');
+  setTimeout(() => pill.classList.remove('show'), 3500);
+}
+
+function startLyricsHintCycle() {
+  stopLyricsHintCycle();
+  lyricsHintTimer = setTimeout(function loop() {
+    flashLyricsHint();
+    lyricsHintTimer = setTimeout(loop, 22000);
+  }, 5000);
+}
+
+function stopLyricsHintCycle() {
+  if (lyricsHintTimer) clearTimeout(lyricsHintTimer);
+  lyricsHintTimer = null;
+  const pill = document.getElementById('player-lyrics-hint');
+  if (pill) pill.classList.remove('show');
 }
 
 // ── Letra / karaoke ──
@@ -1084,6 +1113,8 @@ function setLyricsVisible(on) {
   if (player) player.classList.toggle('lyrics-on', catalogLyricsOn);
   if (btn) btn.classList.toggle('active', catalogLyricsOn);
   if (catalogLyricsOn) {
+    const pill = document.getElementById('player-lyrics-hint');
+    if (pill) pill.classList.remove('show');
     renderLyricsPanel();
     startLyricsKaraoke();
   } else {
@@ -1979,6 +2010,10 @@ function setupCatalogPlayerControls() {
   if (lyricsEditBtn) {
     lyricsEditBtn.addEventListener('click', () => setLyricsEditing(!catalogLyricsEditing));
   }
+  const lyricsHintPill = document.getElementById('player-lyrics-hint');
+  if (lyricsHintPill) {
+    lyricsHintPill.addEventListener('click', () => setLyricsVisible(true));
+  }
   const lyricsSaveBtn = document.getElementById('lyrics-save');
   if (lyricsSaveBtn) lyricsSaveBtn.addEventListener('click', () => saveLyrics());
   const lyricsCancelBtn = document.getElementById('lyrics-cancel');
@@ -2031,6 +2066,15 @@ function setupCatalogPlayerControls() {
     let deltaY = 0;
     expanded.addEventListener('touchstart', (e) => {
       const t = e.target;
+      // Desde la barra (grabber): siempre permite deslizar para cerrar
+      if (t && t.closest && t.closest('.player-collapse')) {
+        startY = e.touches[0].clientY;
+        deltaY = 0;
+        return;
+      }
+      // Con la letra abierta: el gesto sobre la letra la scrollea, NO cierra
+      if (catalogLyricsOn) { startY = null; return; }
+      // En vista portada: no cerrar si el gesto empieza en un control
       if (t && t.closest && t.closest('input, button')) { startY = null; return; }
       startY = e.touches[0].clientY;
       deltaY = 0;
