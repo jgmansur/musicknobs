@@ -119,6 +119,7 @@ let catalogLyricsEditing = false;
 let catalogLyricsTimer = null;
 let catalogLyricLastIdx = -1;
 let lyricsHintTimer = null;
+let lyricsHintAnimTimers = [];
 let catalogQueue = [];
 let playlistsCache = [];
 let selectedPlaylistId = '';
@@ -993,15 +994,24 @@ function flashLyricsHint() {
   const track = getCatalogPlayerTrackByIndex();
   const hasLyrics = Boolean(track && String(track.lyricsText || '').trim());
   if (!pill || !catalogPlayerExpanded || catalogLyricsOn || !hasLyrics) return;
-  // Genera cada letra en su span con delay escalonado (typewriter + bounce desde arriba)
+  lyricsHintAnimTimers.forEach(clearTimeout);
+  lyricsHintAnimTimers = [];
+
   const text = '... ver letra';
-  pill.innerHTML = text.split('').map((ch, i) =>
-    `<span class="hint-char" style="animation-delay:${(i * 0.045).toFixed(3)}s">${ch === ' ' ? '&nbsp;' : escapeHtml(ch)}</span>`
-  ).join('');
-  pill.classList.remove('show');
-  void pill.offsetWidth; // fuerza reflow para reiniciar la animación cada vez
-  pill.classList.add('show');
-  setTimeout(() => pill.classList.remove('show'), 4000);
+  const writeOnce = () => {
+    // Cada letra cae desde arriba con bounce, escalonada (typewriter)
+    pill.innerHTML = text.split('').map((ch, i) =>
+      `<span class="hint-char" style="animation-delay:${(i * 0.045).toFixed(3)}s">${ch === ' ' ? '&nbsp;' : escapeHtml(ch)}</span>`
+    ).join('');
+    pill.classList.remove('show');
+    void pill.offsetWidth; // reflow para reiniciar la animación
+    pill.classList.add('show');
+  };
+
+  const ANIM = 1100; // dura aprox la escritura completa
+  writeOnce();                                                   // 1ª escritura
+  lyricsHintAnimTimers.push(setTimeout(writeOnce, ANIM + 2000)); // espera 2s, repite
+  lyricsHintAnimTimers.push(setTimeout(() => pill.classList.remove('show'), ANIM + 2000 + ANIM + 2000)); // 2s y desaparece
 }
 
 function startLyricsHintCycle() {
@@ -1015,6 +1025,8 @@ function startLyricsHintCycle() {
 function stopLyricsHintCycle() {
   if (lyricsHintTimer) clearTimeout(lyricsHintTimer);
   lyricsHintTimer = null;
+  lyricsHintAnimTimers.forEach(clearTimeout);
+  lyricsHintAnimTimers = [];
   const pill = document.getElementById('player-lyrics-hint');
   if (pill) pill.classList.remove('show');
 }
@@ -1930,6 +1942,22 @@ function toggleCatalogPlayback() {
   }
 }
 
+function catalogSeekTo(pos) {
+  const howl = catalogPlayer.howl;
+  if (!howl || !howl.state || howl.state() !== 'loaded') return;
+  const dur = Number(howl.duration() || 0);
+  const clamped = Math.max(0, Math.min(dur || pos, pos));
+  howl.seek(clamped, catalogPlayer.activeSoundId || undefined);
+  refreshCatalogProgressUi();
+}
+
+function catalogSeekRelative(delta) {
+  const howl = catalogPlayer.howl;
+  if (!howl || !howl.state || howl.state() !== 'loaded') return;
+  const cur = Number(howl.seek(undefined, catalogPlayer.activeSoundId || undefined) || 0);
+  catalogSeekTo(cur + delta);
+}
+
 // Carga infinita de contactos al scrollear (reemplaza el botón "Cargar más").
 function setupContactsInfiniteScroll() {
   const container = document.querySelector('main.container');
@@ -2025,6 +2053,12 @@ function setupCatalogPlayerControls() {
   if (lyricsHintPill) {
     lyricsHintPill.addEventListener('click', () => setLyricsVisible(true));
   }
+  const miniRestart = document.getElementById('mini-restart');
+  if (miniRestart) miniRestart.addEventListener('click', () => catalogSeekTo(0));
+  const miniBack15 = document.getElementById('mini-back15');
+  if (miniBack15) miniBack15.addEventListener('click', () => catalogSeekRelative(-15));
+  const miniFwd15 = document.getElementById('mini-fwd15');
+  if (miniFwd15) miniFwd15.addEventListener('click', () => catalogSeekRelative(15));
   const lyricsSaveBtn = document.getElementById('lyrics-save');
   if (lyricsSaveBtn) lyricsSaveBtn.addEventListener('click', () => saveLyrics());
   const lyricsCancelBtn = document.getElementById('lyrics-cancel');
