@@ -2148,9 +2148,15 @@ body:not(.catalog-active) .catalog-player { display: none !important; }
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: .25rem;
+  gap: .3rem;
   flex: 0 0 auto;
-  padding: .35rem 0 .15rem;
+  padding: .7rem 0 .4rem;
+  touch-action: none;
+  cursor: grab;
+}
+/* En modo letra, el bloque del título también es zona de gesto (más fácil de
+   agarrar). El slider de tiempo queda libre para hacer seek. */
+.catalog-player.is-expanded.lyrics-on:not(.lyrics-editing) .player-exp-meta {
   touch-action: none;
   cursor: grab;
 }

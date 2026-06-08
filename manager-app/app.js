@@ -2183,25 +2183,41 @@ function setupCatalogPlayerControls() {
   //   swipe-down      → esconde los botones
   //   swipe-up largo  → regresa a la portada
   //   tap/click       → alterna los botones
+  // Zonas para iniciar el gesto: la franja del grabber Y el bloque del título
+  // (para que sea fácil de agarrar con el dedo). El slider de tiempo queda libre.
   const lyricsGestureBar = document.getElementById('lyrics-gesture-bar');
-  if (lyricsGestureBar) {
+  const lyricsMetaZone = document.querySelector('#player-expanded .player-exp-meta');
+  const lyricsGestureZones = [lyricsGestureBar, lyricsMetaZone].filter(Boolean);
+  if (lyricsGestureZones.length) {
     let gStartY = null;
     let gDelta = 0;
     let gMoved = false;
+    const usePointer = 'PointerEvent' in window;
     const isPeek = () => document.getElementById('catalog-player')?.classList.contains('lyrics-peek');
+    const yOf = (e) => (e.clientY != null)
+      ? e.clientY
+      : (e.touches && e.touches[0]) ? e.touches[0].clientY
+      : (e.changedTouches && e.changedTouches[0]) ? e.changedTouches[0].clientY
+      : null;
 
-    lyricsGestureBar.addEventListener('pointerdown', (e) => {
-      gStartY = e.clientY;
-      gDelta = 0;
-      gMoved = false;
-      try { lyricsGestureBar.setPointerCapture(e.pointerId); } catch (_) {}
-    });
-    lyricsGestureBar.addEventListener('pointermove', (e) => {
+    // El rastreo del movimiento vive en window: aunque el dedo/cursor salga de la
+    // franja delgada, los eventos siguen llegando y el delta se calcula bien.
+    const onMove = (e) => {
       if (gStartY === null) return;
-      gDelta = e.clientY - gStartY;
+      const y = yOf(e);
+      if (y === null) return;
+      gDelta = y - gStartY;
       if (Math.abs(gDelta) > 4) gMoved = true;
-    });
-    const finishGesture = () => {
+      if (e.cancelable) e.preventDefault(); // evita que la página haga scroll mientras deslizas
+    };
+    const onUp = () => {
+      if (usePointer) {
+        window.removeEventListener('pointermove', onMove);
+        window.removeEventListener('pointerup', onUp);
+      } else {
+        window.removeEventListener('touchmove', onMove);
+        window.removeEventListener('touchend', onUp);
+      }
       if (gStartY === null) return;
       const d = gDelta;
       gStartY = null;
@@ -2213,11 +2229,29 @@ function setupCatalogPlayerControls() {
       } else if (d > 18) {
         setLyricsPeek(false);      // swipe-down → esconde los botones
       } else if (!gMoved) {
-        setLyricsPeek(!isPeek());  // tap/click → alterna los botones
+        setLyricsPeek(!isPeek());  // tap → alterna los botones
       }
     };
-    lyricsGestureBar.addEventListener('pointerup', finishGesture);
-    lyricsGestureBar.addEventListener('pointercancel', () => { gStartY = null; gDelta = 0; });
+    const onDown = (e) => {
+      if (!catalogLyricsOn) return;
+      const y = yOf(e);
+      if (y === null) return;
+      gStartY = y;
+      gDelta = 0;
+      gMoved = false;
+      if (usePointer) {
+        window.addEventListener('pointermove', onMove, { passive: false });
+        window.addEventListener('pointerup', onUp);
+      } else {
+        window.addEventListener('touchmove', onMove, { passive: false });
+        window.addEventListener('touchend', onUp);
+      }
+    };
+
+    lyricsGestureZones.forEach((el) => {
+      if (usePointer) el.addEventListener('pointerdown', onDown);
+      else el.addEventListener('touchstart', onDown, { passive: true });
+    });
   }
 
   // Escape cierra el Now Playing (desktop)
