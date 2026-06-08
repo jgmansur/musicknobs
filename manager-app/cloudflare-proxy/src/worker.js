@@ -442,6 +442,19 @@ function readNotionSongLetraUrl(props) {
   return "";
 }
 
+function readNotionSongInstrumentalUrl(props) {
+  for (const [name, prop] of Object.entries(props)) {
+    const key = name.toLowerCase();
+    if (!["instrumental", "karaoke", "pista"].some((k) => key.includes(k))) continue;
+    if (prop?.type === "url" && prop.url) return prop.url;
+    if (prop?.type === "rich_text") {
+      const text = richTextToString(prop.rich_text);
+      if (text) return text;
+    }
+  }
+  return "";
+}
+
 function parseNotionPageIdFromUrl(input) {
   const value = String(input || "").trim();
   if (!value) return "";
@@ -602,6 +615,8 @@ async function listCatalogSongs(env) {
         const generos = readNotionSongGenres(props);
         const drive = readNotionSongUrl(props);
         const fileId = extractDriveFileId(drive);
+        const instrumental = readNotionSongInstrumentalUrl(props);
+        const fileIdInstrumental = extractDriveFileId(instrumental);
         const cover = readNotionSongCover(props);
         const letra = readNotionSongLetraUrl(props);
         const lyricsText = letra
@@ -620,6 +635,8 @@ async function listCatalogSongs(env) {
           generos: generos || "—",
           drive: drive || "",
           fileId: fileId || "",
+          instrumental: instrumental || "",
+          fileIdInstrumental: fileIdInstrumental || "",
           cover: cover || "",
           letra: letra || "",
           lyricsText: lyricsText || "",

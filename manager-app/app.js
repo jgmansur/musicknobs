@@ -155,6 +155,7 @@ const catalogPlayer = {
   isSeeking: false,
   activeSoundId: null,
   pendingPlay: false,
+  karaokeMode: false,
 };
 
 function isLocalDevHost() {
@@ -956,6 +957,7 @@ function updateCatalogPlayerUi() {
   }
 
   updateLyricsButtonVisibility();
+  updateKaraokeButtonUi();
 
   if (!track) {
     const progress = document.getElementById('catalog-player-progress');
@@ -1247,8 +1249,11 @@ async function saveLyrics() {
 function buildSecureAudioUrl(track) {
   if (!track) return '';
   if (!API_BASE) return '';
-  if (!track.fileId) return '';
-  return `${API_BASE}/api/audio/${encodeURIComponent(track.fileId)}`;
+  // En modo karaoke (🎤) usa la pista instrumental si existe; si no, cae al original.
+  const useKaraoke = catalogPlayer.karaokeMode && track.fileIdInstrumental;
+  const fid = useKaraoke ? track.fileIdInstrumental : track.fileId;
+  if (!fid) return '';
+  return `${API_BASE}/api/audio/${encodeURIComponent(fid)}`;
 }
 
 // Cola contextual: navega sobre lo que se está viendo (género/playlist/búsqueda),
@@ -1324,10 +1329,25 @@ async function loadCatalogTrack(index, { autoplay = false } = {}) {
   clearCatalogHowl();
   catalogPlayer.currentTrackIndex = index;
   catalogNowPlayingId = track.id;
+  // Cada canción nueva arranca con la voz (no karaoke). El swap es por-canción.
+  catalogPlayer.karaokeMode = false;
   catalogPlayer.isLoading = true;
   setCatalogPlayerStatus('Validando permisos y preparando stream...');
   updateCatalogPlayerUi();
   updateActiveSongRow();
+  updateKaraokeButtonUi();
+
+  mountCatalogHowl(track, { autoplay });
+}
+
+// Monta (o re-monta) el Howl de la pista actual respetando catalogPlayer.karaokeMode.
+// startAt: segundo donde arrancar (para conservar posición al hacer swap 🎤).
+function mountCatalogHowl(track, { startAt = 0, autoplay = false } = {}) {
+  const secureUrl = buildSecureAudioUrl(track);
+  if (!secureUrl) {
+    setCatalogPlayerStatus('No se pudo resolver el audio', true);
+    return;
+  }
 
   const howl = new window.Howl({
     src: [secureUrl],
@@ -1342,6 +1362,9 @@ async function loadCatalogTrack(index, { autoplay = false } = {}) {
   howl.on('load', () => {
     if (catalogPlayer.howl !== howl) return;
     catalogPlayer.isLoading = false;
+    if (startAt > 0) {
+      try { howl.seek(startAt); } catch {}
+    }
     setCatalogPlayerStatus('Pista lista');
     updateCatalogPlayerUi();
     refreshCatalogProgressUi();
@@ -1416,6 +1439,39 @@ async function loadCatalogTrack(index, { autoplay = false } = {}) {
   if (autoplay) {
     requestCatalogPlay();
   }
+}
+
+// 🎤 Swap voz ↔ instrumental para la canción actual, conservando posición y
+// estado de reproducción. Solo aplica si la pista tiene fileIdInstrumental.
+function toggleKaraoke() {
+  const track = getCurrentCatalogSong();
+  if (!track || !track.fileIdInstrumental) return;
+
+  const howl = catalogPlayer.howl;
+  const wasPlaying = catalogPlayer.isPlaying || catalogPlayer.pendingPlay;
+  const at = (howl && howl.state && howl.state() === 'loaded')
+    ? Number(howl.seek(undefined, catalogPlayer.activeSoundId || undefined) || 0)
+    : 0;
+
+  catalogPlayer.karaokeMode = !catalogPlayer.karaokeMode;
+  clearCatalogHowl();
+  catalogPlayer.isLoading = true;
+  setCatalogPlayerStatus(catalogPlayer.karaokeMode ? 'Cargando instrumental…' : 'Cargando voz…');
+  updateCatalogPlayerUi();
+  updateKaraokeButtonUi();
+  mountCatalogHowl(track, { startAt: at, autoplay: wasPlaying });
+}
+
+function updateKaraokeButtonUi() {
+  const btn = document.getElementById('player-karaoke');
+  if (!btn) return;
+  const track = getCurrentCatalogSong();
+  const has = Boolean(track && track.fileIdInstrumental);
+  btn.classList.toggle('hidden', !has);
+  const on = has && catalogPlayer.karaokeMode;
+  btn.classList.toggle('active', on);
+  btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+  btn.title = on ? 'Volver a la voz' : 'Quitar voz líder (karaoke)';
 }
 
 // Update quirúrgico: solo mueve el highlight de la fila activa, sin re-render completo.
@@ -1783,6 +1839,7 @@ function setCatalog(rows = catalogSample) {
       generos: String(row.generos || '').trim(),
       drive: String(row.drive || '').trim(),
       fileId: String(row.fileId || extractDriveFileId(row.drive || '')).trim(),
+      fileIdInstrumental: String(row.fileIdInstrumental || extractDriveFileId(row.instrumental || '')).trim(),
       cover: String(row.cover || '').trim(),
       letra: String(row.letra || '').trim(),
       lyricsText: String(row.lyricsText || '').trim(),
@@ -2091,6 +2148,10 @@ function setupCatalogPlayerControls() {
   const lyricsHintPill = document.getElementById('player-lyrics-hint');
   if (lyricsHintPill) {
     lyricsHintPill.addEventListener('click', () => setLyricsVisible(true));
+  }
+  const karaokeBtn = document.getElementById('player-karaoke');
+  if (karaokeBtn) {
+    karaokeBtn.addEventListener('click', toggleKaraoke);
   }
   const miniRestart = document.getElementById('mini-restart');
   if (miniRestart) miniRestart.addEventListener('click', () => catalogSeekTo(0));
@@ -3796,6 +3857,7 @@ async function loadCatalogFromApi() {
       generos: item.generos || '—',
       drive: item.drive || '',
       fileId: item.fileId || extractDriveFileId(item.drive || ''),
+      fileIdInstrumental: item.fileIdInstrumental || extractDriveFileId(item.instrumental || ''),
       cover: item.cover || '',
       letra: item.letra || '',
       lyricsText: item.lyricsText || '',
