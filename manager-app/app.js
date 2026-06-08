@@ -1143,8 +1143,25 @@ function setLyricsVisible(on) {
   } else {
     if (catalogLyricsEditing) setLyricsEditing(false);
     stopLyricsKaraoke();
+    setLyricsPeek(false); // al salir de la letra, resetea el estado de controles
   }
   updateLyricsButtonVisibility();
+}
+
+// Estado "peek": asoma los controles (meta/progreso/botones) en la vista de letra
+// inmersiva por unos segundos y luego se vuelve a esconder solo.
+let lyricsPeekTimer = null;
+function setLyricsPeek(on) {
+  const player = document.getElementById('catalog-player');
+  if (lyricsPeekTimer) { clearTimeout(lyricsPeekTimer); lyricsPeekTimer = null; }
+  if (player) player.classList.toggle('lyrics-peek', Boolean(on));
+  if (on) {
+    lyricsPeekTimer = setTimeout(() => {
+      const p = document.getElementById('catalog-player');
+      if (p) p.classList.remove('lyrics-peek');
+      lyricsPeekTimer = null;
+    }, 4200);
+  }
 }
 
 // ── Editor de letra (solo logueado) ──
@@ -1510,10 +1527,16 @@ function applyCatalogDeepLinkIfNeeded() {
 
   activateTab('catalog');
   updateAuthGateForCurrentTab();
-  
+
   renderCatalog(); // Asegura de pintar la UI en el modo correcto
 
-  void loadCatalogTrack(index, { autoplay: catalogDeepLinkAutoplay });
+  // Link de canción compartida → abrir directo en la vista de portada (Now Playing
+  // expandido), no solo el mini-player. Así el que recibe el link cae en la portada.
+  const openInCover = catalogDeepLinkAutoplay && !!catalogDeepLinkSongId;
+
+  void loadCatalogTrack(index, { autoplay: catalogDeepLinkAutoplay }).then(() => {
+    if (openInCover && catalogNowPlayingId === String(track.id)) setCatalogPlayerExpanded(true);
+  });
 }
 
 function renderCatalog() {
@@ -1559,6 +1582,11 @@ function renderCatalog() {
             .map((pl) => `<option value="${escapeHtml(pl.id)}" ${selectedPlaylistId === pl.id ? 'selected' : ''}>${escapeHtml(pl.name)} (${Number(pl.trackCount || 0)})</option>`)
             .join('')}
         </select>
+        ${selectedPlaylistId
+          ? `<button class="catalog-icon-btn" id="playlist-share-pane" type="button" aria-label="Compartir playlist" title="Compartir playlist">
+               <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.6" y1="10.5" x2="15.4" y2="6.5"></line><line x1="8.6" y1="13.5" x2="15.4" y2="17.5"></line></svg>
+             </button>`
+          : ''}
         ${isAuthenticated
           ? `<button class="catalog-icon-btn" id="playlist-create-pane-toggle" type="button" aria-label="Crear nueva playlist" title="Crear nueva playlist">＋</button>
              <button class="catalog-icon-btn" id="playlist-delete-pane" type="button" aria-label="Borrar playlist seleccionada" title="Borrar playlist seleccionada">🗑</button>`
@@ -1618,11 +1646,11 @@ function renderCatalog() {
                           <span class="task-actions-toggle" role="button" aria-label="Añadir a playlist" style="padding: 0 6px;">+</span>
                         </summary>
                         <div class="task-actions-dropdown">
-                          <button class="mini-btn" data-catalog-create-playlist-for="${escapeHtml(row.id)}">Crear nueva playlist...</button>
+                          <button class="mini-btn catalog-add-row" data-catalog-create-playlist-for="${escapeHtml(row.id)}"><span class="catalog-add-plus">+</span> Nueva playlist</button>
                           ${playlistsCache.length ? '<hr class="soft-sep" style="margin: 0.25rem 0;" />' : ''}
                           ${playlistsCache.map(pl => `
-                            <button class="mini-btn" data-catalog-add-to-specific="${escapeHtml(pl.id)}" data-song-id="${escapeHtml(row.id)}">
-                              Añadir a: ${escapeHtml(pl.name)}
+                            <button class="mini-btn catalog-add-row" data-catalog-add-to-specific="${escapeHtml(pl.id)}" data-song-id="${escapeHtml(row.id)}">
+                              <span class="catalog-add-plus">+</span> ${escapeHtml(pl.name)}
                             </button>
                           `).join('')}
                         </div>
@@ -1692,6 +1720,13 @@ function renderCatalog() {
   if (playlistDeletePaneBtn) {
     playlistDeletePaneBtn.addEventListener('click', () => {
       deletePlaylist();
+    });
+  }
+
+  const playlistSharePaneBtn = document.getElementById('playlist-share-pane');
+  if (playlistSharePaneBtn) {
+    playlistSharePaneBtn.addEventListener('click', () => {
+      shareSelectedPlaylistForListen();
     });
   }
 
@@ -1783,7 +1818,8 @@ function setCatalog(rows = catalogSample) {
     if (!byKey.has(key)) byKey.set(key, row);
   }
 
-  catalogCache = Array.from(byKey.values());
+  catalogCache = Array.from(byKey.values())
+    .sort((a, b) => String(a.obra || '').localeCompare(String(b.obra || ''), 'es', { sensitivity: 'base' }));
   if (catalogNowPlayingId && !catalogCache.some((row) => row.id === catalogNowPlayingId)) {
     catalogNowPlayingId = '';
     setCatalogPlayerExpanded(false);
@@ -1985,6 +2021,17 @@ function setupMenuAutoClose() {
     document.querySelectorAll('details.task-actions-menu[open]').forEach((other) => {
       if (other !== d) other.open = false;
     });
+    // Decide si el menú debe abrir hacia arriba: si el botón está en la mitad
+    // inferior de la pantalla (o no cabe abajo), invertimos la dirección.
+    const summary = d.querySelector('summary');
+    const dropdown = d.querySelector('.task-actions-dropdown');
+    if (summary) {
+      const rect = summary.getBoundingClientRect();
+      const vh = window.innerHeight || document.documentElement.clientHeight;
+      const needed = (dropdown ? dropdown.scrollHeight : 220) + 24;
+      const spaceBelow = vh - rect.bottom;
+      d.classList.toggle('drop-up', spaceBelow < needed && rect.top > vh * 0.45);
+    }
   }, true); // capture: el evento toggle no burbujea
 
   // Click fuera de un menú abierto lo cierra
@@ -2026,7 +2073,7 @@ function setupCatalogPlayerControls() {
   const prevBtn = document.getElementById('catalog-prev');
   const nextBtn = document.getElementById('catalog-next');
   const randomBtn = document.getElementById('catalog-random');
-  const sharePlaylistBtn = document.getElementById('catalog-share-playlist');
+  const shareSongBtn = document.getElementById('catalog-share-song');
   const progress = document.getElementById('catalog-player-progress');
 
   if (playToggle) playToggle.addEventListener('click', toggleCatalogPlayback);
@@ -2082,9 +2129,13 @@ function setupCatalogPlayerControls() {
     });
   }
 
-  if (sharePlaylistBtn) {
-    sharePlaylistBtn.addEventListener('click', () => {
-      shareSelectedPlaylistForListen();
+  if (shareSongBtn) {
+    shareSongBtn.addEventListener('click', () => {
+      if (!catalogNowPlayingId) {
+        setStatus('catalog-status', 'Pon una canción para compartirla.', true);
+        return;
+      }
+      shareCatalogSongForListen(catalogNowPlayingId);
     });
   }
 
@@ -2131,6 +2182,37 @@ function setupCatalogPlayerControls() {
     expanded.addEventListener('touchend', () => {
       if (startY !== null && deltaY > 80) setCatalogPlayerExpanded(false);
       startY = null;
+    });
+  }
+
+  // Gesto en la vista de letra: swipe-up corto asoma los controles (peek),
+  // swipe-up largo regresa a la portada (apaga la letra).
+  const lyricsGestureBar = document.getElementById('lyrics-gesture-bar');
+  if (lyricsGestureBar) {
+    let gStartY = null;
+    let gDelta = 0;
+    lyricsGestureBar.addEventListener('touchstart', (e) => {
+      gStartY = e.touches[0].clientY;
+      gDelta = 0;
+    }, { passive: true });
+    lyricsGestureBar.addEventListener('touchmove', (e) => {
+      if (gStartY === null) return;
+      gDelta = e.touches[0].clientY - gStartY;
+    }, { passive: true });
+    lyricsGestureBar.addEventListener('touchend', () => {
+      if (gStartY === null) return;
+      const d = gDelta;
+      gStartY = null;
+      gDelta = 0;
+      if (d < -120) {
+        setLyricsVisible(false);   // swipe largo → portada
+      } else {
+        setLyricsPeek(true);       // swipe corto / tap → asoma controles
+      }
+    });
+    // Desktop / accesibilidad: click también asoma los controles
+    lyricsGestureBar.addEventListener('click', () => {
+      if (catalogLyricsOn) setLyricsPeek(true);
     });
   }
 

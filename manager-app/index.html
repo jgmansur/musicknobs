@@ -3,11 +3,13 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="robots" content="noindex, nofollow, noarchive, nosnippet" />
+    <meta name="googlebot" content="noindex, nofollow" />
     <title>Manager App · Jay Mansur</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="./styles.css?v=2.0.6" />
+    <link rel="stylesheet" href="./styles.css?v=2.0.7" />
     <link rel="manifest" href="./manifest.json" />
     <link rel="icon" type="image/png" href="./icon-32.png" />
     <link rel="apple-touch-icon" href="./icon-180.png" />
@@ -316,6 +318,10 @@
                 <div id="player-exp-cover-placeholder" class="player-exp-cover-placeholder">♪</div>
               </div>
               <div id="player-lyrics" class="player-lyrics" aria-hidden="true"></div>
+              <div id="lyrics-gesture-bar" class="lyrics-gesture-bar" aria-hidden="true">
+                <span class="lyrics-gesture-chevron">︿</span>
+                <span class="lyrics-gesture-grabber"></span>
+              </div>
               <div id="lyrics-edit-bar" class="lyrics-edit-bar hidden">
                 <span class="lyrics-edit-hint">Dale play y toca ⌖ en cada línea cuando entre · edita el texto directo</span>
                 <div class="lyrics-edit-actions">
@@ -338,7 +344,9 @@
                 <button id="catalog-prev" class="player-icon" type="button" aria-label="Pista anterior">⏮</button>
                 <button id="player-exp-toggle" class="player-icon player-icon-main" type="button" aria-label="Play o pause">▶</button>
                 <button id="catalog-next" class="player-icon" type="button" aria-label="Siguiente pista">⏭</button>
-                <button id="catalog-share-playlist" class="player-icon" type="button" aria-label="Compartir playlist">🔗</button>
+                <button id="catalog-share-song" class="player-icon" type="button" aria-label="Compartir canción">
+                  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.6" y1="10.5" x2="15.4" y2="6.5"></line><line x1="8.6" y1="13.5" x2="15.4" y2="17.5"></line></svg>
+                </button>
               </div>
             </div>
           </section>
@@ -441,6 +449,6 @@
     <script src="./config.js"></script>
     <script src="./vendor/howler.min.js"></script>
     <script src="./tracks.js?v=salesfix404v1"></script>
-    <script src="./app.js?v=2.0.6"></script>
+    <script src="./app.js?v=2.0.7"></script>
   </body>
   </html>

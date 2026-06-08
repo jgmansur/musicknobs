@@ -1350,16 +1350,46 @@ async function replaceSubtasks(pageId, notionToken, notionVersion, subtasks = []
 
 // Reescribe la letra (LRC) de una nota: borra los párrafos actuales y agrega
 // uno nuevo por línea. pageId = id de la nota de letra en Notion.
+// fetch con reintentos ante 429 (rate limit de Notion) o 5xx transitorio.
+async function notionFetchRetry(url, options, tries = 4) {
+  for (let attempt = 0; attempt < tries; attempt++) {
+    const resp = await fetch(url, options);
+    if (resp.ok) return resp;
+    if (resp.status === 429 || resp.status >= 500) {
+      const ra = Number(resp.headers.get("Retry-After")) || 0;
+      const wait = ra > 0 ? ra * 1000 : 350 * (attempt + 1);
+      await new Promise((r) => setTimeout(r, wait));
+      continue;
+    }
+    return resp; // 4xx no recuperable: que lo maneje el caller
+  }
+  return fetch(url, options); // último intento
+}
+
+// Ejecuta tareas async con concurrencia acotada (evita reventar el rate limit).
+async function runWithConcurrency(items, limit, worker) {
+  const queue = items.slice();
+  const runners = Array.from({ length: Math.min(limit, queue.length) }, async () => {
+    while (queue.length) {
+      const item = queue.shift();
+      await worker(item);
+    }
+  });
+  await Promise.all(runners);
+}
+
 async function replaceLyricBlocks(pageId, notionToken, notionVersion, lrcText) {
   const children = await notionGetPageChildren(pageId, notionToken, notionVersion);
   const existing = children.filter((b) => b?.type === "paragraph");
-  for (const block of existing) {
-    const resp = await fetch(`https://api.notion.com/v1/blocks/${block.id}`, {
+  // Borrado en paralelo con concurrencia 6: pasa de ~50 DELETE en serie (10-20s)
+  // a lotes paralelos (1-3s), sin disparar el rate limit de Notion.
+  await runWithConcurrency(existing, 6, async (block) => {
+    const resp = await notionFetchRetry(`https://api.notion.com/v1/blocks/${block.id}`, {
       method: "DELETE",
       headers: { Authorization: `Bearer ${notionToken}`, "Notion-Version": notionVersion },
     });
     if (!resp.ok) throw new Error(await resp.text());
-  }
+  });
 
   const lines = String(lrcText || "").split("\n").map((l) => l.trim()).filter(Boolean);
   // Notion permite máximo 100 hijos por request
@@ -1369,7 +1399,7 @@ async function replaceLyricBlocks(pageId, notionToken, notionVersion, lrcText) {
       type: "paragraph",
       paragraph: { rich_text: [{ type: "text", text: { content: line.slice(0, 2000) } }] },
     }));
-    const resp = await fetch(`https://api.notion.com/v1/blocks/${pageId}/children`, {
+    const resp = await notionFetchRetry(`https://api.notion.com/v1/blocks/${pageId}/children`, {
       method: "PATCH",
       headers: {
         Authorization: `Bearer ${notionToken}`,
