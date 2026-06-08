@@ -2071,8 +2071,12 @@ body:not(.catalog-active) .catalog-player { display: none !important; }
   100% { opacity: 1; transform: translateY(0); }
 }
 @keyframes hint-char-glow {
-  0%, 100% { text-shadow: 0 0 12px rgba(255, 16, 151, .75); }
-  50% { text-shadow: 0 0 22px rgba(255, 16, 151, 1), 0 0 40px rgba(255, 16, 151, .65); }
+  0%, 100% {
+    text-shadow: 0 0 16px rgba(255, 16, 151, 1), 0 0 32px rgba(255, 16, 151, .7), 0 0 50px rgba(255, 16, 151, .4);
+  }
+  50% {
+    text-shadow: 0 0 26px #ff1097, 0 0 55px rgba(255, 16, 151, 1), 0 0 90px rgba(255, 16, 151, .8), 0 0 130px rgba(255, 16, 151, .5);
+  }
 }
 
 /* Modo edición: filas editables + barra */

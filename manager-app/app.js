@@ -1019,7 +1019,7 @@ function startLyricsHintCycle() {
   lyricsHintTimer = setTimeout(function loop() {
     flashLyricsHint();
     lyricsHintTimer = setTimeout(loop, 22000);
-  }, 5000);
+  }, 3000);
 }
 
 function stopLyricsHintCycle() {
