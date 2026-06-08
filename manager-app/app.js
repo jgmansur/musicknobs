@@ -1148,20 +1148,12 @@ function setLyricsVisible(on) {
   updateLyricsButtonVisibility();
 }
 
-// Estado "peek": asoma los controles (meta/progreso/botones) en la vista de letra
-// inmersiva por unos segundos y luego se vuelve a esconder solo.
-let lyricsPeekTimer = null;
+// Estado "peek": en la vista de letra, asoma la fila de controles (prev/play/
+// next/share). El título + compositores + barra de tiempo siempre están visibles.
+// Se queda hasta que el usuario lo esconda (swipe-down) o salga de la letra.
 function setLyricsPeek(on) {
   const player = document.getElementById('catalog-player');
-  if (lyricsPeekTimer) { clearTimeout(lyricsPeekTimer); lyricsPeekTimer = null; }
   if (player) player.classList.toggle('lyrics-peek', Boolean(on));
-  if (on) {
-    lyricsPeekTimer = setTimeout(() => {
-      const p = document.getElementById('catalog-player');
-      if (p) p.classList.remove('lyrics-peek');
-      lyricsPeekTimer = null;
-    }, 4200);
-  }
 }
 
 // ── Editor de letra (solo logueado) ──
@@ -2185,35 +2177,47 @@ function setupCatalogPlayerControls() {
     });
   }
 
-  // Gesto en la vista de letra: swipe-up corto asoma los controles (peek),
-  // swipe-up largo regresa a la portada (apaga la letra).
+  // Gesto en la vista de letra (Pointer Events = mouse + touch + pen en una sola
+  // API, así funciona igual en web y en el teléfono):
+  //   swipe-up corto  → asoma los botones (peek)
+  //   swipe-down      → esconde los botones
+  //   swipe-up largo  → regresa a la portada
+  //   tap/click       → alterna los botones
   const lyricsGestureBar = document.getElementById('lyrics-gesture-bar');
   if (lyricsGestureBar) {
     let gStartY = null;
     let gDelta = 0;
-    lyricsGestureBar.addEventListener('touchstart', (e) => {
-      gStartY = e.touches[0].clientY;
+    let gMoved = false;
+    const isPeek = () => document.getElementById('catalog-player')?.classList.contains('lyrics-peek');
+
+    lyricsGestureBar.addEventListener('pointerdown', (e) => {
+      gStartY = e.clientY;
       gDelta = 0;
-    }, { passive: true });
-    lyricsGestureBar.addEventListener('touchmove', (e) => {
+      gMoved = false;
+      try { lyricsGestureBar.setPointerCapture(e.pointerId); } catch (_) {}
+    });
+    lyricsGestureBar.addEventListener('pointermove', (e) => {
       if (gStartY === null) return;
-      gDelta = e.touches[0].clientY - gStartY;
-    }, { passive: true });
-    lyricsGestureBar.addEventListener('touchend', () => {
+      gDelta = e.clientY - gStartY;
+      if (Math.abs(gDelta) > 4) gMoved = true;
+    });
+    const finishGesture = () => {
       if (gStartY === null) return;
       const d = gDelta;
       gStartY = null;
       gDelta = 0;
       if (d < -120) {
-        setLyricsVisible(false);   // swipe largo → portada
-      } else {
-        setLyricsPeek(true);       // swipe corto / tap → asoma controles
+        setLyricsVisible(false);   // swipe-up largo → portada
+      } else if (d < -18) {
+        setLyricsPeek(true);       // swipe-up corto → asoma los botones
+      } else if (d > 18) {
+        setLyricsPeek(false);      // swipe-down → esconde los botones
+      } else if (!gMoved) {
+        setLyricsPeek(!isPeek());  // tap/click → alterna los botones
       }
-    });
-    // Desktop / accesibilidad: click también asoma los controles
-    lyricsGestureBar.addEventListener('click', () => {
-      if (catalogLyricsOn) setLyricsPeek(true);
-    });
+    };
+    lyricsGestureBar.addEventListener('pointerup', finishGesture);
+    lyricsGestureBar.addEventListener('pointercancel', () => { gStartY = null; gDelta = 0; });
   }
 
   // Escape cierra el Now Playing (desktop)
