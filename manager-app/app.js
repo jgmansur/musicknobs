@@ -156,6 +156,7 @@ const catalogPlayer = {
   activeSoundId: null,
   pendingPlay: false,
   karaokeMode: false,
+  karaokeSwapping: false,
 };
 
 function isLocalDevHost() {
@@ -1246,14 +1247,87 @@ async function saveLyrics() {
   }
 }
 
-function buildSecureAudioUrl(track) {
+// fileId activo según el modo (original vs instrumental karaoke).
+function activeFileId(track) {
   if (!track) return '';
-  if (!API_BASE) return '';
-  // En modo karaoke (🎤) usa la pista instrumental si existe; si no, cae al original.
   const useKaraoke = catalogPlayer.karaokeMode && track.fileIdInstrumental;
-  const fid = useKaraoke ? track.fileIdInstrumental : track.fileId;
-  if (!fid) return '';
+  return useKaraoke ? track.fileIdInstrumental : track.fileId;
+}
+
+function streamUrlForFileId(fid) {
+  if (!API_BASE || !fid) return '';
   return `${API_BASE}/api/audio/${encodeURIComponent(fid)}`;
+}
+
+function buildSecureAudioUrl(track) {
+  return streamUrlForFileId(activeFileId(track));
+}
+
+// ── Descarga COMPLETA a Blob (fix CarPlay wireless) ──────────────────────────
+// Reproducir desde un Blob en memoria (no streaming progresivo) evita los
+// micro-cortes en CarPlay wireless: una vez en memoria, la reproducción no
+// depende de la red aunque el WiFi esté saturado por el enlace al coche.
+// Se cachea por fileId y se prefetchea la canción siguiente.
+const audioBlobCache = new Map();      // fileId -> { url, ts }
+const audioBlobInflight = new Map();   // fileId -> Promise<string|null>
+const AUDIO_BLOB_CACHE_MAX = 4;
+
+function evictAudioBlobs() {
+  // Nunca revocar el blob que se está reproduciendo ahora.
+  const protectedFid = activeFileId(getCurrentCatalogSong());
+  for (const key of [...audioBlobCache.keys()]) {
+    if (audioBlobCache.size <= AUDIO_BLOB_CACHE_MAX) break;
+    if (key === protectedFid) continue;
+    const entry = audioBlobCache.get(key);
+    audioBlobCache.delete(key);
+    if (entry && entry.url) {
+      try { URL.revokeObjectURL(entry.url); } catch {}
+    }
+  }
+}
+
+// Devuelve un object URL del archivo COMPLETO ya descargado, o null si falla.
+function fetchAudioBlobUrl(fid) {
+  if (!fid || !API_BASE) return Promise.resolve(null);
+  const cached = audioBlobCache.get(fid);
+  if (cached) {
+    // refrescar orden de recencia
+    audioBlobCache.delete(fid);
+    audioBlobCache.set(fid, cached);
+    return Promise.resolve(cached.url);
+  }
+  if (audioBlobInflight.has(fid)) return audioBlobInflight.get(fid);
+
+  const p = fetch(streamUrlForFileId(fid))
+    .then((r) => (r.ok ? r.blob() : Promise.reject(new Error(`HTTP ${r.status}`))))
+    .then((blob) => {
+      const url = URL.createObjectURL(blob);
+      audioBlobCache.set(fid, { url, ts: Date.now() });
+      evictAudioBlobs();
+      return url;
+    })
+    .catch((e) => {
+      console.warn('[audio-blob] fallo descarga completa, fallback a streaming:', fid, e?.message || e);
+      return null;
+    })
+    .finally(() => audioBlobInflight.delete(fid));
+
+  audioBlobInflight.set(fid, p);
+  return p;
+}
+
+// Prefetch (fire-and-forget) del original de la canción siguiente en la cola.
+function prefetchNextAudioBlob() {
+  try {
+    const queue = getCatalogQueue();
+    if (!queue.length) return;
+    let pos = queue.indexOf(catalogNowPlayingId);
+    if (pos < 0) pos = 0;
+    const nextId = queue[(pos + 1) % queue.length];
+    if (!nextId || nextId === catalogNowPlayingId) return;
+    const nextTrack = catalogCache.find((s) => s.id === nextId);
+    if (nextTrack && nextTrack.fileId) void fetchAudioBlobUrl(nextTrack.fileId);
+  } catch {}
 }
 
 // Cola contextual: navega sobre lo que se está viendo (género/playlist/búsqueda),
@@ -1342,15 +1416,30 @@ async function loadCatalogTrack(index, { autoplay = false } = {}) {
 
 // Monta (o re-monta) el Howl de la pista actual respetando catalogPlayer.karaokeMode.
 // startAt: segundo donde arrancar (para conservar posición al hacer swap 🎤).
+// Descarga el archivo COMPLETO a Blob primero (fix CarPlay wireless) y reproduce
+// desde memoria; si la descarga falla, cae a streaming progresivo.
 function mountCatalogHowl(track, { startAt = 0, autoplay = false } = {}) {
-  const secureUrl = buildSecureAudioUrl(track);
-  if (!secureUrl) {
+  const fid = activeFileId(track);
+  const streamUrl = streamUrlForFileId(fid);
+  if (!streamUrl) {
     setCatalogPlayerStatus('No se pudo resolver el audio', true);
     return;
   }
+  const loadId = track.id;             // token para detectar cambio de pista
+  const mode = catalogPlayer.karaokeMode;
+  setCatalogPlayerStatus('Descargando pista…');
 
+  fetchAudioBlobUrl(fid).then((blobUrl) => {
+    // Si cambió la canción o el modo karaoke mientras descargaba, abortar.
+    if (catalogNowPlayingId !== loadId || catalogPlayer.karaokeMode !== mode) return;
+    createCatalogHowl(track, blobUrl || streamUrl, { startAt, autoplay });
+  });
+}
+
+function createCatalogHowl(track, src, { startAt = 0, autoplay = false } = {}) {
   const howl = new window.Howl({
-    src: [secureUrl],
+    src: [src],
+    format: ['mp3'],          // los blob: URLs no tienen extensión; forzar formato
     html5: true,
     volume: catalogPlayer.volume,
     preload: true,
@@ -1380,6 +1469,7 @@ function mountCatalogHowl(track, { startAt = 0, autoplay = false } = {}) {
     setStatus('catalog-status', `Reproduciendo: ${track.obra || 'canción'}.`);
     updateCatalogPlayerUi();
     startCatalogProgressTimer();
+    prefetchNextAudioBlob();   // pre-descarga la siguiente para arranque instantáneo y sin cortes
     updateActiveSongRow();
   });
 
@@ -1443,23 +1533,47 @@ function mountCatalogHowl(track, { startAt = 0, autoplay = false } = {}) {
 
 // 🎤 Swap voz ↔ instrumental para la canción actual, conservando posición y
 // estado de reproducción. Solo aplica si la pista tiene fileIdInstrumental.
+// La pista de karaoke se descarga COMPLETA (no se prefetchea): mientras baja,
+// la canción actual SIGUE SONANDO y se avisa "Descargando instrumental…"; el
+// swap ocurre recién cuando el archivo está en memoria (mismo punto, sin cortes).
+let karaokeSwapToken = 0;
 function toggleKaraoke() {
   const track = getCurrentCatalogSong();
   if (!track || !track.fileIdInstrumental) return;
 
-  const howl = catalogPlayer.howl;
-  const wasPlaying = catalogPlayer.isPlaying || catalogPlayer.pendingPlay;
-  const at = (howl && howl.state && howl.state() === 'loaded')
-    ? Number(howl.seek(undefined, catalogPlayer.activeSoundId || undefined) || 0)
-    : 0;
+  const newMode = !catalogPlayer.karaokeMode;
+  const fid = newMode ? track.fileIdInstrumental : track.fileId;
+  const token = ++karaokeSwapToken;
 
-  catalogPlayer.karaokeMode = !catalogPlayer.karaokeMode;
-  clearCatalogHowl();
-  catalogPlayer.isLoading = true;
-  setCatalogPlayerStatus(catalogPlayer.karaokeMode ? 'Cargando instrumental…' : 'Cargando voz…');
-  updateCatalogPlayerUi();
+  // Aviso claro de descarga + botón en estado de carga. NO cortamos el audio aún.
+  catalogPlayer.karaokeSwapping = true;
+  setCatalogPlayerStatus(newMode ? 'Descargando instrumental…' : 'Descargando voz…');
+  setStatus('catalog-status', newMode ? 'Descargando pista instrumental (karaoke)…' : 'Descargando voz…');
   updateKaraokeButtonUi();
-  mountCatalogHowl(track, { startAt: at, autoplay: wasPlaying });
+
+  fetchAudioBlobUrl(fid).then((blobUrl) => {
+    // Abortar si el usuario volvió a tocar el botón o cambió de canción mientras bajaba.
+    if (token !== karaokeSwapToken) return;
+    if ((getCurrentCatalogSong() || {}).id !== track.id) {
+      catalogPlayer.karaokeSwapping = false;
+      updateKaraokeButtonUi();
+      return;
+    }
+    // Capturar posición/estado JUSTO antes del swap (la canción siguió avanzando).
+    const howl = catalogPlayer.howl;
+    const wasPlaying = catalogPlayer.isPlaying || catalogPlayer.pendingPlay;
+    const at = (howl && howl.state && howl.state() === 'loaded')
+      ? Number(howl.seek(undefined, catalogPlayer.activeSoundId || undefined) || 0)
+      : 0;
+
+    catalogPlayer.karaokeMode = newMode;
+    catalogPlayer.karaokeSwapping = false;
+    clearCatalogHowl();
+    catalogPlayer.isLoading = true;
+    updateCatalogPlayerUi();
+    updateKaraokeButtonUi();
+    createCatalogHowl(track, blobUrl || streamUrlForFileId(fid), { startAt: at, autoplay: wasPlaying });
+  });
 }
 
 function updateKaraokeButtonUi() {
@@ -1469,9 +1583,12 @@ function updateKaraokeButtonUi() {
   const has = Boolean(track && track.fileIdInstrumental);
   btn.classList.toggle('hidden', !has);
   const on = has && catalogPlayer.karaokeMode;
+  const loading = Boolean(catalogPlayer.karaokeSwapping);
   btn.classList.toggle('active', on);
+  btn.classList.toggle('loading', loading);
   btn.setAttribute('aria-pressed', on ? 'true' : 'false');
-  btn.title = on ? 'Volver a la voz' : 'Quitar voz líder (karaoke)';
+  btn.setAttribute('aria-busy', loading ? 'true' : 'false');
+  btn.title = loading ? 'Descargando instrumental…' : (on ? 'Volver a la voz' : 'Quitar voz líder (karaoke)');
 }
 
 // Update quirúrgico: solo mueve el highlight de la fila activa, sin re-render completo.

@@ -2080,6 +2080,18 @@ body:not(.catalog-active) .catalog-player { display: none !important; }
   box-shadow: 0 0 0 4px color-mix(in srgb, var(--bay-accent) 25%, transparent);
 }
 .player-karaoke.hidden { display: none; }
+/* Estado de carga: mientras se descarga la pista instrumental, el botón pulsa
+   con el color accent para avisar al usuario que algo está pasando. */
+.player-karaoke.loading {
+  animation: karaoke-loading 1s ease-in-out infinite;
+  color: var(--bay-accent);
+  border-color: color-mix(in srgb, var(--bay-accent) 60%, transparent);
+  cursor: progress;
+}
+@keyframes karaoke-loading {
+  0%, 100% { opacity: .5; box-shadow: 0 0 0 0 color-mix(in srgb, var(--bay-accent) 40%, transparent); }
+  50% { opacity: 1; box-shadow: 0 0 0 6px color-mix(in srgb, var(--bay-accent) 0%, transparent); }
+}
 .catalog-player.is-expanded.lyrics-on .player-karaoke {
   top: auto;
   bottom: calc(env(safe-area-inset-bottom) + 5.2rem);
