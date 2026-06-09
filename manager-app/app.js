@@ -2757,7 +2757,7 @@ function handleGoogleTokenSuccess(resp) {
 function syncTabVisibility() {
   document.querySelectorAll('.tab').forEach((t) => {
     const tabName = t.dataset.tab;
-    if (tabName === 'focus') {
+    if (tabName === 'focus' || tabName === 'quotes') {
       t.style.display = isAuthenticated ? '' : 'none';
       return;
     }
@@ -2802,6 +2802,7 @@ function setAuthenticated(value) {
     loadFocusTasks({ keepMode: false });
     loadLinksFromApi();
     loadSalesKitFromApi();
+    loadQuotesFromApi();
     updateAuthGateForCurrentTab();
     return;
   }
@@ -3780,6 +3781,7 @@ function init() {
   setupCatalogPlayerControls();
   setupActions();
   setupCatalogTabBarAutoHide();
+  setupQuotesTab();
   syncPlaylistCreateControlsVisibility();
   if (shouldBypassAuthForLocalDev()) {
     enableLocalDevBypassMode();
@@ -3831,5 +3833,365 @@ function checkNotificationStatus() {
     };
   }
 }
+
+// ─── QUOTES / SEGUIMIENTO ────────────────────────────────────────────────────
+
+let quotesCache = [];
+let quotesSearchDebounceTimer = null;
+let quotesCurrentPageId = null;
+
+const QUOTE_ESTATUS_BLOCKED = new Set(['Contrato enviado', 'Firmado', 'En producción', 'Entregado']);
+
+async function loadQuotesFromApi(search = '', status = '') {
+  const statusEl = document.getElementById('quotes-status');
+  if (statusEl) statusEl.textContent = 'Cargando cotizaciones...';
+
+  try {
+    if (!API_BASE) throw new Error('apiBaseUrl no configurado');
+    const params = new URLSearchParams();
+    if (search) params.set('q', search);
+    if (status) params.set('status', status);
+    const qs = params.toString();
+    const res = await fetchJson(`${API_BASE}/api/manager/quotes${qs ? `?${qs}` : ''}`);
+    const data = res?.data || [];
+    quotesCache = data;
+    renderQuotesList(data);
+    if (statusEl) statusEl.textContent = data.length === 0 ? 'Sin cotizaciones para mostrar.' : '';
+  } catch (e) {
+    if (statusEl) statusEl.textContent = `Error: ${e.message}`;
+  }
+}
+
+function renderQuotesList(quotes) {
+  const container = document.getElementById('quotes-list');
+  if (!container) return;
+
+  if (!quotes || quotes.length === 0) {
+    container.innerHTML = '<p class="hint" style="text-align:center; padding:2rem 0;">Sin cotizaciones para mostrar.</p>';
+    return;
+  }
+
+  container.innerHTML = quotes.map((q) => {
+    const estatus = escapeHtml(q.estatus || '');
+    const quoteNumber = escapeHtml(q.quoteNumber || '—');
+    const name = escapeHtml(q.name || '—');
+    const date = escapeHtml(q.date || '');
+    const total = q.total ? escapeHtml(String(q.total)) : '—';
+    return `
+      <div class="quote-card" data-id="${escapeHtml(q.id)}" role="button" tabindex="0" aria-label="Ver cotización ${quoteNumber}">
+        <div class="quote-card-main">
+          <div class="quote-card-top">
+            <span class="quote-number-badge">${quoteNumber}</span>
+            <span class="quote-client-name">${name}</span>
+          </div>
+          <div class="quote-card-meta">
+            ${date ? `<span>${date}</span>` : ''}
+            ${total !== '—' ? `<span>Total: ${total}</span>` : ''}
+          </div>
+        </div>
+        <span class="quote-status-pill" data-status="${estatus}">${estatus || 'Sin estado'}</span>
+      </div>
+    `;
+  }).join('');
+
+  container.querySelectorAll('.quote-card').forEach((card) => {
+    card.addEventListener('click', () => {
+      const pageId = card.dataset.id;
+      if (pageId) loadQuoteDetail(pageId);
+    });
+    card.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        const pageId = card.dataset.id;
+        if (pageId) loadQuoteDetail(pageId);
+      }
+    });
+  });
+}
+
+async function loadQuoteDetail(pageId) {
+  quotesCurrentPageId = pageId;
+  showQuoteDetail(true);
+
+  const feedbackEl = document.getElementById('quote-save-feedback');
+  if (feedbackEl) feedbackEl.textContent = 'Cargando...';
+
+  try {
+    if (!API_BASE) throw new Error('apiBaseUrl no configurado');
+    const res = await fetchJson(`${API_BASE}/api/manager/quotes/${pageId}`);
+    const q = res?.data;
+    if (!q) throw new Error('Sin datos de cotización');
+    renderQuoteDetail(q);
+    if (feedbackEl) feedbackEl.textContent = '';
+  } catch (e) {
+    if (feedbackEl) feedbackEl.textContent = `Error al cargar: ${e.message}`;
+  }
+}
+
+function renderQuoteDetail(q) {
+  // Header
+  const numberEl = document.getElementById('quote-detail-number');
+  if (numberEl) {
+    numberEl.textContent = q.quoteNumber || '—';
+  }
+
+  const estatusBadge = document.getElementById('quote-detail-estatus');
+  if (estatusBadge) {
+    estatusBadge.textContent = q.status || q.estatus || '';
+    estatusBadge.dataset.status = q.status || q.estatus || '';
+    estatusBadge.className = 'quote-status-pill';
+  }
+
+  // Left: client info
+  const setSpan = (id, val) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = val || '—';
+  };
+  setSpan('qd-client-name', q.clientName);
+  setSpan('qd-client-email', q.email);
+  setSpan('qd-client-phone', q.phone);
+  setSpan('qd-date', q.date);
+  setSpan('qd-total', q.total || '—');
+
+  // Services list
+  const servicesEl = document.getElementById('qd-services-list');
+  if (servicesEl) {
+    const services = q.services || [];
+    if (services.length === 0) {
+      servicesEl.innerHTML = '<p class="hint">Sin servicios registrados.</p>';
+    } else {
+      servicesEl.innerHTML = `
+        <table class="qd-services-table">
+          <thead><tr><th>Servicio</th><th>Qty</th><th>Precio</th></tr></thead>
+          <tbody>
+            ${services.map((s) => `
+              <tr>
+                <td>${escapeHtml(s.name || '')}</td>
+                <td>${escapeHtml(s.qty || '')}</td>
+                <td>${escapeHtml(s.price || '')}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      `;
+    }
+  }
+
+  // Right: seguimiento form
+  const seg = q.seguimiento || {};
+  const setField = (id, val) => {
+    const el = document.getElementById(id);
+    if (el) el.value = val || '';
+  };
+
+  // Set estatus selector to current value
+  const estatusSelect = document.getElementById('seg-estatus');
+  if (estatusSelect) estatusSelect.value = q.status || q.estatus || '';
+
+  setField('seg-musicians', seg.musicians);
+  setField('seg-studio', seg.studio);
+  setField('seg-vocals', seg.vocals);
+  setField('seg-external-engineers', seg.externalEngineers);
+  setField('seg-revisions', seg.revisions);
+  setField('seg-royalties', seg.royalties);
+  setField('seg-deposit', seg.deposit);
+  setField('seg-final-price', seg.finalPrice);
+  setField('seg-delivery-date', seg.deliveryDate);
+  setField('seg-call-notes', seg.callNotes);
+
+  // Store page id
+  const pageIdEl = document.getElementById('qd-page-id');
+  if (pageIdEl) pageIdEl.value = q.pageId || '';
+
+  // Contract button state — enable for all quotes
+  const contractBtn = document.getElementById('quote-contract-btn');
+  if (contractBtn) {
+    contractBtn.disabled = false;
+    contractBtn.textContent = 'Generar contrato';
+  }
+}
+
+function showQuoteDetail(show) {
+  const listPanel = document.getElementById('quotes-list-panel');
+  const detailPanel = document.getElementById('quote-detail');
+  if (listPanel) listPanel.classList.toggle('hidden', show);
+  if (detailPanel) detailPanel.classList.toggle('hidden', !show);
+}
+
+async function saveQuoteFollowUp() {
+  const pageId = document.getElementById('qd-page-id')?.value;
+  if (!pageId) return;
+
+  const feedbackEl = document.getElementById('quote-save-feedback');
+  if (feedbackEl) feedbackEl.textContent = 'Guardando...';
+
+  const saveBtn = document.getElementById('quote-save-btn');
+  if (saveBtn) saveBtn.disabled = true;
+
+  const estatus = document.getElementById('seg-estatus')?.value || '';
+
+  const seguimiento = {
+    musicians: document.getElementById('seg-musicians')?.value || '',
+    studio: document.getElementById('seg-studio')?.value || '',
+    vocals: document.getElementById('seg-vocals')?.value || '',
+    externalEngineers: document.getElementById('seg-external-engineers')?.value || '',
+    revisions: document.getElementById('seg-revisions')?.value || '',
+    royalties: document.getElementById('seg-royalties')?.value || '',
+    deposit: document.getElementById('seg-deposit')?.value || '',
+    finalPrice: document.getElementById('seg-final-price')?.value || '',
+    deliveryDate: document.getElementById('seg-delivery-date')?.value || '',
+    callNotes: document.getElementById('seg-call-notes')?.value || '',
+  };
+
+  // Remove empty fields
+  for (const k of Object.keys(seguimiento)) {
+    if (!seguimiento[k]) delete seguimiento[k];
+  }
+
+  const body = { seguimiento };
+  if (estatus) body.estatus = estatus;
+
+  try {
+    if (!API_BASE) throw new Error('apiBaseUrl no configurado');
+    const res = await fetch(`${API_BASE}/api/manager/quotes/${pageId}`, {
+      method: 'PATCH',
+      headers: apiHeaders(),
+      body: JSON.stringify(body),
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || `HTTP ${res.status}`);
+    }
+
+    if (feedbackEl) feedbackEl.textContent = 'Guardado correctamente.';
+    setTimeout(() => { if (feedbackEl) feedbackEl.textContent = ''; }, 3000);
+
+    // Update status pill in the list for the current card
+    if (estatus) {
+      const listCard = document.querySelector(`.quote-card[data-id="${CSS.escape(pageId)}"]`);
+      if (listCard) {
+        const pill = listCard.querySelector('.quote-status-pill');
+        if (pill) {
+          pill.textContent = estatus;
+          pill.dataset.status = estatus;
+        }
+      }
+      // Update header badge
+      const estatusBadge = document.getElementById('quote-detail-estatus');
+      if (estatusBadge) {
+        estatusBadge.textContent = estatus;
+        estatusBadge.dataset.status = estatus;
+      }
+    }
+  } catch (e) {
+    if (feedbackEl) feedbackEl.textContent = `Error: ${e.message}`;
+  } finally {
+    if (saveBtn) saveBtn.disabled = false;
+  }
+}
+
+async function generateQuoteContract() {
+  const pageId = document.getElementById('qd-page-id')?.value;
+  if (!pageId) return;
+
+  const contractBtn = document.getElementById('quote-contract-btn');
+  const feedbackEl = document.getElementById('quote-save-feedback');
+
+  if (contractBtn) { contractBtn.disabled = true; contractBtn.textContent = 'Generando...'; }
+  if (feedbackEl) feedbackEl.textContent = '';
+
+  try {
+    const r = await fetch(`${API_BASE}/api/manager/quotes/${pageId}/contract`, { method: 'POST', headers: apiHeaders() });
+    const res = await r.json();
+    if (!res.ok) throw new Error(res.error || 'Error al generar contrato');
+
+    if (feedbackEl) feedbackEl.textContent = '✓ Contrato generado';
+    window.open(res.url, '_blank');
+
+    // Update status pill in the UI
+    const statusEl = document.getElementById('qd-estatus-display');
+    if (statusEl) { statusEl.textContent = 'Contrato enviado'; statusEl.dataset.status = 'Contrato enviado'; }
+
+    // Refresh list in background
+    const search = document.getElementById('quotes-search')?.value.trim() || '';
+    const status = document.getElementById('quotes-status-filter')?.value || '';
+    loadQuotesFromApi(search, status);
+  } catch (err) {
+    if (feedbackEl) feedbackEl.textContent = `Error: ${err.message}`;
+  } finally {
+    if (contractBtn) { contractBtn.disabled = false; contractBtn.textContent = 'Generar contrato'; }
+  }
+}
+
+function setupQuotesTab() {
+  // Search debounce
+  const searchInput = document.getElementById('quotes-search');
+  if (searchInput) {
+    searchInput.addEventListener('input', () => {
+      clearTimeout(quotesSearchDebounceTimer);
+      quotesSearchDebounceTimer = setTimeout(() => {
+        const status = document.getElementById('quotes-status-filter')?.value || '';
+        loadQuotesFromApi(searchInput.value.trim(), status);
+      }, 300);
+    });
+  }
+
+  // Status filter
+  const statusFilter = document.getElementById('quotes-status-filter');
+  if (statusFilter) {
+    statusFilter.addEventListener('change', () => {
+      const search = document.getElementById('quotes-search')?.value.trim() || '';
+      loadQuotesFromApi(search, statusFilter.value);
+    });
+  }
+
+  // Back button
+  const backBtn = document.getElementById('quote-detail-back');
+  if (backBtn) {
+    backBtn.addEventListener('click', () => {
+      quotesCurrentPageId = null;
+      showQuoteDetail(false);
+      // Re-render cached list (no refetch)
+      renderQuotesList(quotesCache);
+      const statusEl = document.getElementById('quotes-status');
+      if (statusEl) statusEl.textContent = quotesCache.length === 0 ? 'Sin cotizaciones para mostrar.' : '';
+    });
+  }
+
+  // Refresh button
+  const refreshBtn = document.getElementById('refresh-quotes');
+  if (refreshBtn) {
+    refreshBtn.addEventListener('click', () => {
+      const search = document.getElementById('quotes-search')?.value.trim() || '';
+      const status = document.getElementById('quotes-status-filter')?.value || '';
+      loadQuotesFromApi(search, status);
+    });
+  }
+
+  // Save button
+  const saveBtn = document.getElementById('quote-save-btn');
+  if (saveBtn) {
+    saveBtn.addEventListener('click', saveQuoteFollowUp);
+  }
+
+  // Contract button
+  const contractBtn = document.getElementById('quote-contract-btn');
+  if (contractBtn) {
+    contractBtn.addEventListener('click', generateQuoteContract);
+  }
+
+  // Tab activation — load quotes when tab is clicked
+  const tabBtn = document.getElementById('tab-btn-quotes');
+  if (tabBtn) {
+    tabBtn.addEventListener('click', () => {
+      // Only load if list is empty (avoid refetch on every click)
+      if (quotesCache.length === 0 && !quotesCurrentPageId) {
+        loadQuotesFromApi();
+      }
+    });
+  }
+}
+// ─────────────────────────────────────────────────────────────────────────────
 
 init();

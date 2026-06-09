@@ -372,6 +372,115 @@
         <iframe src="../elartedelaproduccionmusical/index.html" class="book-iframe" title="El Arte de la Producción Musical"></iframe>
       </section>
 
+      <section id="tab-quotes" class="panel card panel-fullscreen">
+        <!-- List panel -->
+        <div id="quotes-list-panel">
+          <div class="panel-head">
+            <h3>Seguimiento de Cotizaciones</h3>
+            <button id="refresh-quotes" class="btn ghost">Refrescar</button>
+          </div>
+          <div class="task-filters">
+            <input id="quotes-search" class="field-input" type="search" placeholder="Buscar por número, nombre o email..." />
+            <select id="quotes-status-filter" class="field-input compact-control">
+              <option value="">Todos los estados</option>
+              <option value="Pendiente">Pendiente</option>
+              <option value="En seguimiento">En seguimiento</option>
+              <option value="Contrato enviado">Contrato enviado</option>
+              <option value="Firmado">Firmado</option>
+              <option value="En producción">En producción</option>
+              <option value="Entregado">Entregado</option>
+            </select>
+          </div>
+          <p id="quotes-status" class="hint status" aria-live="polite">Cargando cotizaciones...</p>
+          <div id="quotes-list" class="quotes-list"></div>
+        </div>
+
+        <!-- Detail panel -->
+        <div id="quote-detail" class="quote-detail hidden">
+          <div class="quote-detail-header">
+            <button id="quote-detail-back" class="btn ghost">← Volver</button>
+            <span id="quote-detail-number" class="quote-number-badge"></span>
+            <span id="quote-detail-estatus" class="quote-status-pill"></span>
+          </div>
+
+          <div class="quote-detail-body">
+            <!-- Left: read-only client info + services -->
+            <div class="quote-detail-left">
+              <div class="quote-detail-section">
+                <h4>Datos del cliente</h4>
+                <p><strong>Nombre:</strong> <span id="qd-client-name">—</span></p>
+                <p><strong>Email:</strong> <span id="qd-client-email">—</span></p>
+                <p><strong>Teléfono:</strong> <span id="qd-client-phone">—</span></p>
+                <p><strong>Fecha:</strong> <span id="qd-date">—</span></p>
+              </div>
+              <div class="quote-detail-section">
+                <h4>Servicios solicitados</h4>
+                <div id="qd-services-list"></div>
+                <p class="quote-total-row"><strong>Total estimado:</strong> <span id="qd-total">—</span></p>
+              </div>
+            </div>
+
+            <!-- Right: editable seguimiento form -->
+            <div class="quote-detail-right">
+              <div class="quote-detail-section">
+                <h4>Seguimiento</h4>
+                <input type="hidden" id="qd-page-id" />
+
+                <div class="seguimiento-form-grid">
+                  <label class="seguimiento-label">Estatus</label>
+                  <select id="seg-estatus" class="field-input">
+                    <option value="">— Sin cambiar —</option>
+                    <option value="Pendiente">Pendiente</option>
+                    <option value="En seguimiento">En seguimiento</option>
+                    <option value="Contrato enviado">Contrato enviado</option>
+                    <option value="Firmado">Firmado</option>
+                    <option value="En producción">En producción</option>
+                    <option value="Entregado">Entregado</option>
+                  </select>
+
+                  <label class="seguimiento-label">Músicos</label>
+                  <input type="text" id="seg-musicians" class="field-input" placeholder="Ej: 2 guitarras, batería..." />
+
+                  <label class="seguimiento-label">Estudio</label>
+                  <input type="text" id="seg-studio" class="field-input" placeholder="Nombre del estudio..." />
+
+                  <label class="seguimiento-label">Voces</label>
+                  <input type="text" id="seg-vocals" class="field-input" placeholder="Ej: 1 lead + 2 harmonías..." />
+
+                  <label class="seguimiento-label">Ingenieros externos</label>
+                  <input type="text" id="seg-external-engineers" class="field-input" placeholder="0" />
+
+                  <label class="seguimiento-label">Revisiones</label>
+                  <input type="text" id="seg-revisions" class="field-input" placeholder="Ej: 3" />
+
+                  <label class="seguimiento-label">Regalías (%)</label>
+                  <input type="text" id="seg-royalties" class="field-input" placeholder="Ej: 10" />
+
+                  <label class="seguimiento-label">Depósito (%)</label>
+                  <input type="text" id="seg-deposit" class="field-input" placeholder="Ej: 50" />
+
+                  <label class="seguimiento-label">Precio final (USD)</label>
+                  <input type="text" id="seg-final-price" class="field-input" placeholder="Ej: 4500" />
+
+                  <label class="seguimiento-label">Fecha de entrega</label>
+                  <input type="date" id="seg-delivery-date" class="field-input" />
+
+                  <label class="seguimiento-label">Notas de llamada</label>
+                  <textarea id="seg-call-notes" class="field-input" rows="3" placeholder="Resumen de la llamada o negociación..."></textarea>
+                </div>
+
+                <p id="quote-save-feedback" class="hint status" aria-live="polite"></p>
+
+                <div class="quote-detail-actions">
+                  <button id="quote-save-btn" class="btn">Guardar</button>
+                  <button id="quote-contract-btn" class="btn ghost">Generar contrato</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <nav class="tab-bar" aria-label="Secciones">
         <button class="tab active" id="tab-btn-overview" data-tab="overview">
           <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
@@ -404,6 +513,10 @@
         <button class="tab" id="tab-btn-sale" data-tab="sale">
           <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 7h18"/><path d="M6 7V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v2"/><path d="M5 7h14l-1 13H6z"/><path d="M9 12h6"/></svg>
           <span class="tab-label">Venta</span>
+        </button>
+        <button class="tab" id="tab-btn-quotes" data-tab="quotes" style="display:none;">
+          <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 12h6M9 16h4"/></svg>
+          <span class="tab-label">Cotizaciones</span>
         </button>
       </nav>
     </main>

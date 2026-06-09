@@ -2296,6 +2296,465 @@ async function deleteManagerTask(env, taskId) {
   return { ok: true };
 }
 
+// ─── QUOTES: ARCHIVO_DB ──────────────────────────────────────────────────────
+const ARCHIVO_DB_ID = "129c1932-ede8-8003-b423-deca245759ec";
+const QUOTE_NUMBER_RE = /MK[L]?-\d{4}-\w+/;
+const QUOTE_TITLE_RE = /Cotización\s+(\S+)/;
+const QUOTE_ESTATUS_ENUM = ["Pendiente", "En seguimiento", "Contrato enviado", "Firmado", "En producción", "Entregado"];
+
+/**
+ * Parse a Notion page's children blocks into a structured quote object.
+ * Reads:
+ *   - heading_3 "Datos del cliente" → next paragraph → key:value lines
+ *   - heading_3 "Servicios solicitados" → next table → items[] + total
+ *   - heading_2 "Seguimiento" → next paragraph → key:value seguimiento
+ */
+function parseQuoteBlocks(blocks, pageTitle = "") {
+  const title = String(pageTitle || "");
+  const quoteNumberMatch = title.match(QUOTE_NUMBER_RE);
+  const quoteNumber = quoteNumberMatch ? quoteNumberMatch[0] : "";
+  // clientName: after "— " separator
+  const separatorIdx = title.indexOf("— ");
+  const clientName = separatorIdx >= 0 ? title.slice(separatorIdx + 2).trim() : "";
+
+  let email = "";
+  let phone = "";
+  let date = "";
+  const items = [];
+  let total = null;
+  let seguimiento = {};
+
+  let lastHeading3 = "";
+  let lastHeading2 = "";
+
+  for (let i = 0; i < blocks.length; i++) {
+    const block = blocks[i];
+    const type = block?.type;
+
+    if (type === "heading_3") {
+      lastHeading3 = richTextToString(block?.heading_3?.rich_text || []).trim();
+      lastHeading2 = "";
+      continue;
+    }
+
+    if (type === "heading_2") {
+      lastHeading2 = richTextToString(block?.heading_2?.rich_text || []).trim();
+      lastHeading3 = "";
+      continue;
+    }
+
+    if (type === "paragraph") {
+      const text = richTextToString(block?.paragraph?.rich_text || []);
+
+      if (lastHeading3 === "Datos del cliente") {
+        // Parse key: value lines
+        const lines = text.split(/\n/);
+        for (const line of lines) {
+          const colonIdx = line.indexOf(":");
+          if (colonIdx < 0) continue;
+          const key = line.slice(0, colonIdx).trim().toLowerCase();
+          const val = line.slice(colonIdx + 1).trim();
+          if (key === "email" || key === "correo") email = val;
+          else if (key === "whatsapp" || key === "teléfono" || key === "telefono" || key === "phone") phone = val;
+          else if (key === "fecha" || key === "date") date = val;
+        }
+        lastHeading3 = ""; // consumed
+        continue;
+      }
+
+      if (lastHeading2 === "Seguimiento") {
+        const lines = text.split(/\n/);
+        const seg = {};
+        for (const line of lines) {
+          const colonIdx = line.indexOf(":");
+          if (colonIdx < 0) continue;
+          const key = line.slice(0, colonIdx).trim();
+          const val = line.slice(colonIdx + 1).trim();
+          if (key) seg[key] = val;
+        }
+        seguimiento = seg;
+        lastHeading2 = ""; // consumed
+        continue;
+      }
+
+      continue;
+    }
+
+    if (type === "table" && lastHeading3 === "Servicios solicitados") {
+      // Fetch children of the table block (rows)
+      // Table rows are nested children — but in the flat blocks list from getPageChildren,
+      // table_row blocks follow the table block immediately as separate blocks if has_children=false.
+      // We read them from subsequent blocks in the array.
+      const rows = [];
+      let j = i + 1;
+      while (j < blocks.length && blocks[j]?.type === "table_row") {
+        rows.push(blocks[j]);
+        j++;
+      }
+
+      // row 0 = header, last row = total, middle rows = items
+      if (rows.length >= 2) {
+        const middleRows = rows.slice(1, rows.length - 1);
+        for (const row of middleRows) {
+          const cells = row?.table_row?.cells || [];
+          const name = richTextToString(cells[0] || []);
+          const qty = richTextToString(cells[1] || []);
+          const price = richTextToString(cells[2] || []);
+          if (name) items.push({ name, qty, price });
+        }
+        // Last row = total
+        const lastRow = rows[rows.length - 1];
+        const lastCells = lastRow?.table_row?.cells || [];
+        const totalCell = richTextToString(lastCells[lastCells.length - 1] || []);
+        total = totalCell || null;
+      }
+      lastHeading3 = ""; // consumed
+      continue;
+    }
+  }
+
+  return { quoteNumber, clientName, email, phone, date, items, total, seguimiento };
+}
+
+/**
+ * Upsert the "Seguimiento" section in a Notion quote page.
+ * Finds heading_2 "Seguimiento" + its following paragraph, deletes them, appends fresh ones.
+ */
+async function replaceSeguimientoSection(pageId, seguimientoData, notionToken, notionVersion) {
+  const children = await notionGetPageChildren(pageId, notionToken, notionVersion);
+
+  // Find heading_2 "Seguimiento" block index
+  let headingIdx = -1;
+  for (let i = 0; i < children.length; i++) {
+    if (children[i]?.type === "heading_2") {
+      const text = richTextToString(children[i]?.heading_2?.rich_text || []).trim();
+      if (text === "Seguimiento") {
+        headingIdx = i;
+        break;
+      }
+    }
+  }
+
+  // Delete heading + following paragraph if found
+  if (headingIdx >= 0) {
+    const toDelete = [children[headingIdx]];
+    if (headingIdx + 1 < children.length && children[headingIdx + 1]?.type === "paragraph") {
+      toDelete.push(children[headingIdx + 1]);
+    }
+    for (const block of toDelete) {
+      const resp = await fetch(`https://api.notion.com/v1/blocks/${block.id}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${notionToken}`,
+          "Notion-Version": notionVersion,
+        },
+      });
+      if (!resp.ok) throw new Error(await resp.text());
+    }
+  }
+
+  // Serialize seguimiento fields to key: value lines
+  const fields = [
+    "musicians", "studio", "vocals", "externalEngineers", "revisions",
+    "royalties", "deposit", "finalPrice", "deliveryDate", "estatus", "callNotes",
+  ];
+  const lines = fields
+    .filter((k) => seguimientoData[k] !== undefined && seguimientoData[k] !== null && seguimientoData[k] !== "")
+    .map((k) => `${k}: ${seguimientoData[k]}`);
+  const content = lines.join("\n");
+
+  // Append fresh heading_2 + paragraph
+  const newBlocks = [
+    {
+      object: "block",
+      type: "heading_2",
+      heading_2: {
+        rich_text: [{ type: "text", text: { content: "Seguimiento" } }],
+        is_toggleable: false,
+      },
+    },
+    {
+      object: "block",
+      type: "paragraph",
+      paragraph: {
+        rich_text: [{ type: "text", text: { content } }],
+      },
+    },
+  ];
+
+  const resp = await fetch(`https://api.notion.com/v1/blocks/${pageId}/children`, {
+    method: "PATCH",
+    headers: {
+      Authorization: `Bearer ${notionToken}`,
+      "Notion-Version": notionVersion,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ children: newBlocks }),
+  });
+
+  if (!resp.ok) throw new Error(await resp.text());
+}
+
+/**
+ * List Music Knobs quotes from ARCHIVO_DB.
+ * Supports ?q (search) and ?status filters.
+ */
+async function listManagerQuotes(env, searchParams) {
+  const notionToken = env.NOTION_TOKEN || "";
+  const notionVersion = env.NOTION_VERSION || "2022-06-28";
+
+  if (!notionToken) return { ok: false, error: "NOTION_TOKEN not configured" };
+
+  const search = String(searchParams.get("q") || searchParams.get("search") || "").trim().toLowerCase();
+  const statusFilter = String(searchParams.get("status") || "").trim();
+
+  try {
+    const filter = {
+      and: [
+        { property: "Name", title: { contains: "Cotización" } },
+        { property: "Tipo", select: { equals: "Music Knobs" } },
+      ],
+    };
+
+    if (statusFilter) {
+      filter.and.push({ property: "Estatus", select: { equals: statusFilter } });
+    }
+
+    const sorts = [{ property: "Date (ToDo)", direction: "descending" }];
+
+    const payload = await notionQueryAdvanced(ARCHIVO_DB_ID, notionToken, notionVersion, {
+      filter,
+      sorts,
+      pageSize: 100,
+    });
+
+    const pages = payload?.results || [];
+
+    const data = await Promise.all(pages.map(async (page) => {
+      const props = page.properties || {};
+      const title = readNotionTitle(props);
+      const estatus = props?.Estatus?.select?.name || "";
+      const dateProp = props?.["Date (ToDo)"]?.date?.start || "";
+
+      let blocks = [];
+      try {
+        blocks = await notionGetPageChildren(page.id, notionToken, notionVersion);
+      } catch {
+        // non-blocking: if blocks fail, return partial data
+      }
+
+      const parsed = parseQuoteBlocks(blocks, title);
+
+      return {
+        id: page.id,
+        quoteNumber: parsed.quoteNumber,
+        name: parsed.clientName,
+        email: parsed.email,
+        phone: parsed.phone,
+        date: dateProp,
+        items: parsed.items,
+        total: parsed.total,
+        seguimiento: parsed.seguimiento,
+        estatus,
+      };
+    }));
+
+    // Post-filter by search
+    const filtered = search
+      ? data.filter((q) =>
+          (q.quoteNumber || "").toLowerCase().includes(search) ||
+          (q.name || "").toLowerCase().includes(search) ||
+          (q.email || "").toLowerCase().includes(search)
+        )
+      : data;
+
+    return { ok: true, data: filtered };
+  } catch (e) {
+    return { ok: false, error: String(e?.message || e) };
+  }
+}
+
+/**
+ * Get full detail for a single quote page.
+ */
+async function getManagerQuoteDetail(env, pageId) {
+  const notionToken = env.NOTION_TOKEN || "";
+  const notionVersion = env.NOTION_VERSION || "2022-06-28";
+
+  if (!notionToken) return { ok: false, error: "NOTION_TOKEN not configured" };
+
+  try {
+    const resp = await fetch(`https://api.notion.com/v1/pages/${pageId}`, {
+      headers: {
+        Authorization: `Bearer ${notionToken}`,
+        "Notion-Version": notionVersion,
+      },
+    });
+
+    if (!resp.ok) {
+      const status = resp.status;
+      if (status === 404) return { ok: false, notFound: true };
+      return { ok: false, error: await resp.text() };
+    }
+
+    const page = await resp.json();
+    const props = page.properties || {};
+    const title = readNotionTitle(props);
+    const estatus = props?.Estatus?.select?.name || "";
+    const dateProp = props?.["Date (ToDo)"]?.date?.start || "";
+    const tipo = props?.Tipo?.select?.name || "";
+
+    // Verify this is a Music Knobs quote
+    if (!title.includes("Cotización") || tipo !== "Music Knobs") {
+      return { ok: false, notFound: true };
+    }
+
+    const blocks = await notionGetPageChildren(pageId, notionToken, notionVersion);
+    const parsed = parseQuoteBlocks(blocks, title);
+
+    return {
+      ok: true,
+      data: {
+        pageId,
+        quoteNumber: parsed.quoteNumber,
+        clientName: parsed.clientName,
+        email: parsed.email,
+        phone: parsed.phone,
+        status: estatus,
+        date: dateProp,
+        total: parsed.total,
+        services: parsed.items,
+        seguimiento: parsed.seguimiento,
+      },
+    };
+  } catch (e) {
+    return { ok: false, error: String(e?.message || e) };
+  }
+}
+
+/**
+ * Save / update seguimiento for a quote page.
+ */
+async function saveQuoteSeguimiento(env, pageId, body) {
+  const notionToken = env.NOTION_TOKEN || "";
+  const notionVersion = env.NOTION_VERSION || "2022-06-28";
+
+  if (!notionToken) return { ok: false, error: "NOTION_TOKEN not configured" };
+
+  const estatus = body?.estatus;
+  const seguimiento = body?.seguimiento || {};
+
+  if (estatus !== undefined && estatus !== null && estatus !== "") {
+    if (!QUOTE_ESTATUS_ENUM.includes(estatus)) {
+      return { ok: false, validationError: true, error: `Invalid estatus "${estatus}". Valid values: ${QUOTE_ESTATUS_ENUM.join(", ")}` };
+    }
+  }
+
+  try {
+    // Update Estatus property if provided
+    if (estatus) {
+      const resp = await fetch(`https://api.notion.com/v1/pages/${pageId}`, {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${notionToken}`,
+          "Notion-Version": notionVersion,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          properties: {
+            Estatus: { select: { name: estatus } },
+          },
+        }),
+      });
+      if (!resp.ok) return { ok: false, error: await resp.text() };
+    }
+
+    // Merge estatus into seguimiento data so it's stored in the block too
+    const seguimientoWithEstatus = estatus
+      ? { ...seguimiento, estatus }
+      : seguimiento;
+
+    await replaceSeguimientoSection(pageId, seguimientoWithEstatus, notionToken, notionVersion);
+
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: String(e?.message || e) };
+  }
+}
+/**
+ * Generate contract PDF via musicknobs-web, upload to Google Drive,
+ * attach the link to the Notion page, and set Estatus = "Contrato enviado".
+ */
+async function createContractForQuote(env, pageId) {
+  const notionToken = env.NOTION_TOKEN || "";
+  const notionVersion = env.NOTION_VERSION || "2022-06-28";
+  const contratolSecret = env.CONTRATO_SECRET || "";
+  const musicKnobsUrl = env.MUSICKNOBS_API_URL || "https://www.musicknobs.com";
+
+  if (!notionToken) return { ok: false, error: "NOTION_TOKEN not configured" };
+  if (!contratolSecret) return { ok: false, error: "CONTRATO_SECRET not configured" };
+
+  // Fetch quote detail from Notion
+  const detail = await getManagerQuoteDetail(env, pageId);
+  if (!detail.ok) return detail;
+
+  const { quoteNumber, clientName, email, phone, total, services, seguimiento } = detail.data;
+
+  // Call musicknobs-web to generate PDF and upload to Drive
+  const contrataResp = await fetch(`${musicKnobsUrl}/api/contrato`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-contrato-secret": contratolSecret,
+    },
+    body: JSON.stringify({
+      quoteNumber,
+      name: clientName,
+      email,
+      phone,
+      items: services,
+      total,
+      seguimiento,
+    }),
+  });
+
+  if (!contrataResp.ok) {
+    const err = await contrataResp.text();
+    return { ok: false, error: `Contract PDF generation failed: ${err}` };
+  }
+
+  const { url } = await contrataResp.json();
+  if (!url) return { ok: false, error: "No URL returned from contract endpoint" };
+
+  // Append a link block to the Notion page
+  await fetch(`https://api.notion.com/v1/blocks/${pageId}/children`, {
+    method: "PATCH",
+    headers: {
+      Authorization: `Bearer ${notionToken}`,
+      "Notion-Version": notionVersion,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      children: [
+        {
+          object: "block",
+          type: "bookmark",
+          bookmark: { url, caption: [{ text: { content: `📄 Contrato ${quoteNumber}` } }] },
+        },
+      ],
+    }),
+  });
+
+  // Update Estatus to "Contrato enviado"
+  await saveQuoteSeguimiento(env, pageId, {
+    estatus: "Contrato enviado",
+    seguimiento: { ...seguimiento },
+  });
+
+  return { ok: true, url };
+}
+// ─────────────────────────────────────────────────────────────────────────────
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -2532,6 +2991,36 @@ export default {
       const result = await deleteManagerPlaylist(env, playlistId);
       return json(result, result.error ? 400 : 200);
     }
+
+    // ─── QUOTES ROUTES ───────────────────────────────────────────────────────
+    if (request.method === "GET" && url.pathname === "/api/manager/quotes") {
+      const result = await listManagerQuotes(env, url.searchParams);
+      return json(result, result.ok === false ? 502 : 200);
+    }
+
+    if (request.method === "GET" && url.pathname.startsWith("/api/manager/quotes/")) {
+      const quoteId = url.pathname.replace("/api/manager/quotes/", "").trim();
+      if (!quoteId) return json({ error: "quoteId required" }, 400);
+      const result = await getManagerQuoteDetail(env, quoteId);
+      if (result.notFound) return json({ error: "Not found" }, 404);
+      return json(result, result.ok === false ? 502 : 200);
+    }
+
+    if (request.method === "PATCH" && url.pathname.startsWith("/api/manager/quotes/") && !url.pathname.endsWith("/contract")) {
+      const quoteId = url.pathname.replace("/api/manager/quotes/", "").trim();
+      if (!quoteId) return json({ error: "quoteId required" }, 400);
+      const body = await request.json().catch(() => ({}));
+      const result = await saveQuoteSeguimiento(env, quoteId, body);
+      if (result.validationError) return json({ error: result.error }, 422);
+      return json(result, result.ok === false ? 502 : 200);
+    }
+    if (request.method === "POST" && url.pathname.startsWith("/api/manager/quotes/") && url.pathname.endsWith("/contract")) {
+      const quoteId = url.pathname.replace("/api/manager/quotes/", "").replace("/contract", "").trim();
+      if (!quoteId) return json({ error: "quoteId required" }, 400);
+      const result = await createContractForQuote(env, quoteId);
+      return json(result, result.ok === false ? 502 : 200);
+    }
+    // ─────────────────────────────────────────────────────────────────────────
 
     if (!["GET", "POST", "PATCH", "DELETE"].includes(request.method)) {
       return json({ error: "Method not allowed" }, 405);
