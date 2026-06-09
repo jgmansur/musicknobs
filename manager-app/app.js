@@ -573,7 +573,33 @@ function renderPlaylistsView() {
   if (selectedPlaylistId) {
     const pl = playlistsCache.find((p) => p.id === selectedPlaylistId);
     if (!pl) { selectedPlaylistId = ''; renderCatalog(); return; }
-    const count = Number(pl.trackCount || (pl.tracks || []).length || 0);
+    const editing = playlistEditMode;
+    // Canciones en ORDEN de la playlist (solo las que existen en el catálogo)
+    const orderedIds = (pl.tracks || []).map((t) => String(t.id || '')).filter((id) => catalogCache.some((s) => String(s.id) === id));
+    const songs = orderedIds.map((id) => catalogCache.find((s) => String(s.id) === id));
+    const count = songs.length;
+    const nSel = playlistSelection.size;
+
+    const songRows = songs.map((s) => {
+      const sel = playlistSelection.has(s.id);
+      const cover = s.cover
+        ? `<span class="pl-song-cover" style="background-image:url('${escapeHtml(s.cover)}')"></span>`
+        : `<span class="pl-song-cover pl-song-cover-empty">♪</span>`;
+      const meta = `<span class="pl-song-meta"><strong>${escapeHtml(s.obra || 'Sin título')}</strong><span class="pl-song-artist">${escapeHtml(s.autores || '—')}</span></span>`;
+      if (editing) {
+        return `<li class="pl-song-li" data-song-id="${escapeHtml(s.id)}">
+          <div class="pl-song-row pl-song-row-edit ${sel ? 'is-selected' : ''}" data-song-toggle="${escapeHtml(s.id)}">
+            <span class="pl-check ${sel ? 'on' : ''}">${sel ? '✓' : ''}</span>
+            ${cover}${meta}
+            <span class="pl-drag-handle" data-drag="${escapeHtml(s.id)}" aria-label="Reordenar" title="Arrastrá para reordenar" style="touch-action:none;">≡</span>
+          </div>
+        </li>`;
+      }
+      return `<li class="pl-song-li">
+        <button class="pl-song-row ${catalogNowPlayingId === s.id ? 'is-active' : ''}" data-song-play="${escapeHtml(s.id)}" type="button">${cover}${meta}</button>
+      </li>`;
+    }).join('');
+
     el.innerHTML = `
       <div class="pl-detail-head">
         <button class="pl-back" id="pl-detail-back" type="button" aria-label="Volver a playlists">‹ Playlists</button>
@@ -585,13 +611,20 @@ function renderPlaylistsView() {
             <button class="pl-pill" id="pl-detail-shuffle" type="button"><span class="pl-pill-ico">🔀</span> Aleatorio</button>
           </div>
           <div class="pl-detail-icons">
+            ${(isAuthenticated && count) ? `<button class="pl-text-btn" id="pl-detail-edit" type="button">${editing ? 'Listo' : 'Editar'}</button>` : ''}
             <button class="pl-icon-btn" id="pl-detail-share" type="button" aria-label="Compartir playlist" title="Compartir playlist">
               <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.6" y1="10.5" x2="15.4" y2="6.5"></line><line x1="8.6" y1="13.5" x2="15.4" y2="17.5"></line></svg>
             </button>
             ${isAuthenticated ? `<button class="pl-icon-btn pl-danger" id="pl-detail-delete" type="button" aria-label="Borrar playlist" title="Borrar playlist">🗑</button>` : ''}
           </div>
         </div>
-      </div>`;
+        ${editing ? `<div class="pl-edit-bar">
+          <span class="pl-edit-count">${nSel} seleccionada${nSel === 1 ? '' : 's'} · arrastrá ≡ para reordenar</span>
+          <button class="pl-danger-btn" id="pl-detail-remove-selected" type="button" ${nSel ? '' : 'disabled'}>🗑 Quitar</button>
+        </div>` : ''}
+      </div>
+      <ul class="list pl-song-list" id="pl-song-list">${songRows || '<li class="pl-empty">Esta playlist no tiene canciones todavía.</li>'}</ul>`;
+
     document.getElementById('pl-detail-back')?.addEventListener('click', () => {
       selectedPlaylistId = '';
       catalogVisibleCount = CATALOG_PAGE_STEP;
@@ -600,15 +633,29 @@ function renderPlaylistsView() {
       renderPlaylists();
       renderCatalog();
     });
-    document.getElementById('pl-detail-play')?.addEventListener('click', () => {
-      if (catalogQueue.length) playCatalogSong(catalogQueue[0]);
-    });
+    document.getElementById('pl-detail-play')?.addEventListener('click', () => { if (catalogQueue.length) playCatalogSong(catalogQueue[0]); });
     document.getElementById('pl-detail-shuffle')?.addEventListener('click', () => {
       if (!catalogQueue.length) return;
       if (!catalogRandomMode) toggleCatalogRandomMode(); else playRandomCatalogTrack();
     });
     document.getElementById('pl-detail-share')?.addEventListener('click', () => shareSelectedPlaylistForListen());
     document.getElementById('pl-detail-delete')?.addEventListener('click', () => deletePlaylist(selectedPlaylistId));
+    document.getElementById('pl-detail-edit')?.addEventListener('click', () => {
+      playlistEditMode = !playlistEditMode;
+      playlistSelection.clear();
+      renderPlaylistsView();
+    });
+    document.getElementById('pl-detail-remove-selected')?.addEventListener('click', () => removeSelectedSongsFromPlaylist(pl));
+
+    el.querySelectorAll('[data-song-play]').forEach((b) => b.addEventListener('click', () => playCatalogSong(b.getAttribute('data-song-play'))));
+    // En edición: tap en la fila (no en el agarradero) selecciona/deselecciona.
+    el.querySelectorAll('[data-song-toggle]').forEach((row) => row.addEventListener('click', (e) => {
+      if (e.target.closest('[data-drag]')) return;
+      const id = row.getAttribute('data-song-toggle');
+      if (playlistSelection.has(id)) playlistSelection.delete(id); else playlistSelection.add(id);
+      renderPlaylistsView();
+    }));
+    if (editing) setupPlaylistDragReorder(pl);
     return;
   }
 
@@ -706,6 +753,90 @@ async function deleteSelectedPlaylists() {
   setStatus('catalog-status', `Playlists borradas: ${ok}${fail ? ` · fallaron ${fail}` : ''}.`, fail > 0);
   await loadPlaylistsFromApi();
   renderCatalog();
+}
+
+// Persiste el orden/contenido de tracks de una playlist (reorder + borrado múltiple).
+async function setManagerPlaylistTracks(playlistId, orderedIds, { silent = false } = {}) {
+  try {
+    const r = await fetch(`${API_BASE}/api/manager/playlists/${playlistId}`, {
+      method: 'PATCH',
+      headers: apiHeaders(),
+      body: JSON.stringify({ action: 'set_tracks', trackIds: orderedIds }),
+    });
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    if (!silent) setStatus('catalog-status', 'Playlist actualizada.');
+    await loadPlaylistsFromApi();
+    renderCatalog();
+  } catch (e) {
+    setStatus('catalog-status', `No se pudo actualizar la playlist: ${e instanceof Error ? e.message : e}`, true);
+    await loadPlaylistsFromApi();
+    renderCatalog();
+  }
+}
+
+// Quita las canciones seleccionadas SOLO de la playlist (no del catálogo).
+async function removeSelectedSongsFromPlaylist(pl) {
+  if (!isAuthenticated || !playlistSelection.size) return;
+  const remaining = (pl.tracks || []).map((t) => String(t.id || '')).filter((id) => id && !playlistSelection.has(id));
+  const n = playlistSelection.size;
+  playlistSelection.clear();
+  setStatus('catalog-status', `Quitando ${n} canción${n === 1 ? '' : 'es'} de la playlist...`);
+  await setManagerPlaylistTracks(pl.id, remaining, { silent: true });
+}
+
+// ── Drag para reordenar canciones dentro de la playlist (agarradero ≡) ──
+let plDrag = null;
+function setupPlaylistDragReorder(pl) {
+  const list = document.getElementById('pl-song-list');
+  if (!list) return;
+  list.querySelectorAll('.pl-drag-handle').forEach((handle) => {
+    handle.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      const li = handle.closest('.pl-song-li');
+      if (!li) return;
+      try { handle.setPointerCapture(e.pointerId); } catch {}
+      li.classList.add('pl-dragging');
+      plDrag = { li, list, pl };
+      const move = (ev) => onPlDragMove(ev);
+      const end = (ev) => {
+        handle.removeEventListener('pointermove', move);
+        handle.removeEventListener('pointerup', end);
+        handle.removeEventListener('pointercancel', end);
+        onPlDragEnd();
+      };
+      handle.addEventListener('pointermove', move);
+      handle.addEventListener('pointerup', end);
+      handle.addEventListener('pointercancel', end);
+    });
+  });
+}
+
+function onPlDragMove(ev) {
+  if (!plDrag) return;
+  const { li, list } = plDrag;
+  const y = ev.clientY;
+  const others = [...list.querySelectorAll('.pl-song-li:not(.pl-dragging)')];
+  let inserted = false;
+  for (const sib of others) {
+    const rect = sib.getBoundingClientRect();
+    if (y < rect.top + rect.height / 2) {
+      list.insertBefore(li, sib);
+      inserted = true;
+      break;
+    }
+  }
+  if (!inserted) list.appendChild(li);
+}
+
+function onPlDragEnd() {
+  if (!plDrag) return;
+  const { li, list, pl } = plDrag;
+  li.classList.remove('pl-dragging');
+  plDrag = null;
+  const newOrder = [...list.querySelectorAll('.pl-song-li')]
+    .map((el) => el.getAttribute('data-song-id'))
+    .filter(Boolean);
+  void setManagerPlaylistTracks(pl.id, newOrder, { silent: true });
 }
 
 async function loadPlaylistsFromApi() {
@@ -1903,7 +2034,9 @@ function renderCatalog() {
   const playlistDetailOpen = playlistsMode && !!selectedPlaylistId;
   const playlistsViewEl = document.getElementById('catalog-playlists-view');
   const songsHeadEl = document.querySelector('#tab-catalog .catalog-songs-head');
-  const showSongs = !playlistsMode || playlistDetailOpen;
+  // En modo playlists la lista de canciones la renderiza renderPlaylistsView
+  // (en orden de la playlist), así que ocultamos #catalog-songs siempre.
+  const showSongs = !playlistsMode;
   if (songsEl) songsEl.style.display = showSongs ? '' : 'none';
   if (songsHeadEl) songsHeadEl.style.display = playlistsMode ? 'none' : '';
   if (playlistsViewEl) {
@@ -1949,6 +2082,13 @@ function renderCatalog() {
     : bySearch;
   // La cola de reproducción sigue la vista actual (no el catálogo global)
   catalogQueue = visibleSongs.map((row) => row.id);
+  // En el detalle de una playlist, la cola sigue el ORDEN de la playlist.
+  if (playlistDetailOpen) {
+    const pl = playlistsCache.find((p) => p.id === selectedPlaylistId);
+    catalogQueue = (pl?.tracks || [])
+      .map((t) => String(t.id || ''))
+      .filter((id) => catalogCache.some((s) => String(s.id) === id));
+  }
   const pagedSongs = visibleSongs.slice(0, catalogVisibleCount);
 
   selectedGenreEl.textContent = catalogFilterView === 'playlists'

@@ -2170,6 +2170,36 @@ body:not(.catalog-active) .catalog-player { display: none !important; }
 }
 .pl-check.on { background: var(--bay-accent); border-color: var(--bay-accent); }
 
+/* Lista de canciones dentro del detalle (orden de la playlist) */
+.pl-song-list { display: flex; flex-direction: column; gap: 0; }
+.pl-song-li { list-style: none; }
+.pl-song-row {
+  width: 100%; display: flex; align-items: center; gap: 12px;
+  background: transparent; border: none; border-bottom: 1px solid var(--bay-border);
+  padding: 8px 5px; text-align: left; color: var(--bay-text); cursor: pointer;
+}
+.pl-song-row.is-active strong { color: var(--bay-accent); }
+.pl-song-cover {
+  flex: 0 0 auto; width: 42px; height: 42px; border-radius: 6px; background-size: cover; background-position: center;
+  background-color: var(--bay-surface); border: 1px solid var(--bay-border);
+}
+.pl-song-cover-empty { display: grid; place-items: center; color: var(--bay-muted); font-size: .8rem; }
+.pl-song-meta { display: flex; flex-direction: column; gap: 1px; flex: 1; min-width: 0; }
+.pl-song-meta strong { font-size: .95rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pl-song-artist { font-size: .78rem; color: var(--bay-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* Fila en modo edición */
+.pl-song-row-edit.is-selected { background: rgba(255,16,151,.08); }
+.pl-drag-handle {
+  flex: 0 0 auto; color: var(--bay-muted); font-size: 1.4rem; line-height: 1; padding: 0 5px;
+  cursor: grab; user-select: none; touch-action: none;
+}
+.pl-drag-handle:active { cursor: grabbing; }
+.pl-song-li.pl-dragging { opacity: .85; }
+.pl-song-li.pl-dragging .pl-song-row-edit {
+  background: var(--bay-surface); border-radius: 8px;
+  box-shadow: 0 8px 20px rgba(0,0,0,.4);
+}
+
 /* Leyenda "... ver letra" — texto magenta con glow, animación typewriter + bounce */
 .lyrics-hint-pill {
   position: absolute;
