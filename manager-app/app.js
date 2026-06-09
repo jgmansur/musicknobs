@@ -604,10 +604,14 @@ function renderPlaylistsView() {
       </li>`;
     }).join('');
 
+    const titleHtml = editing
+      ? `<input id="pl-rename-input" class="pl-rename-input" type="text" value="${escapeHtml(pl.name)}" aria-label="Nombre de la playlist" placeholder="Nombre de la playlist" />`
+      : `<h2 class="pl-detail-title">${escapeHtml(pl.name)}</h2>`;
+
     el.innerHTML = `
       <div class="pl-detail-head">
         <button class="pl-back" id="pl-detail-back" type="button" aria-label="Volver a playlists">‹ Playlists</button>
-        <h2 class="pl-detail-title">${escapeHtml(pl.name)}</h2>
+        ${titleHtml}
         <span class="pl-detail-count">${count} ${count === 1 ? 'canción' : 'canciones'}</span>
         <div class="pl-detail-actions">
           <div class="pl-detail-pills">
@@ -658,6 +662,15 @@ function renderPlaylistsView() {
       renderPlaylistsView();
     });
     document.getElementById('pl-detail-remove-selected')?.addEventListener('click', () => removeSelectedSongsFromPlaylist(pl));
+    const renameInput = document.getElementById('pl-rename-input');
+    if (renameInput) {
+      const commit = () => {
+        const newName = String(renameInput.value || '').trim();
+        if (newName && newName !== pl.name) renamePlaylist(pl, newName);
+      };
+      renameInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); renameInput.blur(); } });
+      renameInput.addEventListener('blur', commit);
+    }
 
     el.querySelectorAll('[data-song-play]').forEach((b) => b.addEventListener('click', () => playCatalogSong(b.getAttribute('data-song-play'))));
     // En edición: tap en la fila (no en el agarradero) selecciona/deselecciona.
@@ -673,7 +686,12 @@ function renderPlaylistsView() {
 
   // ── LISTA ── (con modo edición: seleccionar varias y borrarlas juntas)
   const editing = playlistEditMode;
-  const rows = playlistsCache.map((pl) => {
+  // En la vista lista, el buscador principal filtra PLAYLISTS por nombre.
+  const plQuery = catalogSearchQuery.trim().toLowerCase();
+  const listablePlaylists = plQuery
+    ? playlistsCache.filter((pl) => String(pl.name || '').toLowerCase().includes(plQuery))
+    : playlistsCache;
+  const rows = listablePlaylists.map((pl) => {
     const count = Number(pl.trackCount || (pl.tracks || []).length || 0);
     const sel = playlistSelection.has(pl.id);
     const inner = `
@@ -706,7 +724,7 @@ function renderPlaylistsView() {
       <input id="pl-list-create-input" class="catalog-genre-select" type="text" placeholder="Nombre de la nueva playlist..." />
       <button class="mini-btn" id="pl-list-create-submit" type="button">Crear</button>
     </div>` : ''}
-    <ul class="list pl-list">${rows || '<li class="pl-empty">No hay playlists todavía. Creá una con ＋.</li>'}</ul>`;
+    <ul class="list pl-list">${rows || `<li class="pl-empty">${plQuery ? 'No hay playlists que coincidan con la búsqueda.' : 'No hay playlists todavía. Creá una con ＋.'}</li>`}</ul>`;
 
   el.querySelectorAll('[data-pl-open]').forEach((btn) => {
     btn.addEventListener('click', () => {
@@ -786,11 +804,33 @@ async function setManagerPlaylistTracks(playlistId, orderedIds, { silent = false
   }
 }
 
+// Renombra la playlist (actualiza la propiedad título en Notion vía worker).
+async function renamePlaylist(pl, newName) {
+  if (!isAuthenticated || !newName || newName === pl.name) return;
+  setStatus('catalog-status', `Renombrando a "${newName}"...`);
+  try {
+    const r = await fetch(`${API_BASE}/api/manager/playlists/${pl.id}`, {
+      method: 'PATCH',
+      headers: apiHeaders(),
+      body: JSON.stringify({ action: 'rename', name: newName }),
+    });
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    setStatus('catalog-status', `Playlist renombrada a "${newName}".`);
+    await loadPlaylistsFromApi();
+    renderCatalog();
+  } catch (e) {
+    setStatus('catalog-status', `No se pudo renombrar: ${e instanceof Error ? e.message : e}`, true);
+    await loadPlaylistsFromApi();
+    renderCatalog();
+  }
+}
+
 // Quita las canciones seleccionadas SOLO de la playlist (no del catálogo).
 async function removeSelectedSongsFromPlaylist(pl) {
   if (!isAuthenticated || !playlistSelection.size) return;
-  const remaining = (pl.tracks || []).map((t) => String(t.id || '')).filter((id) => id && !playlistSelection.has(id));
   const n = playlistSelection.size;
+  if (!window.confirm(`¿Quitar ${n} canción${n === 1 ? '' : 'es'} de "${pl.name}"?\nNo se borra del catálogo, solo de esta playlist.`)) return;
+  const remaining = (pl.tracks || []).map((t) => String(t.id || '')).filter((id) => id && !playlistSelection.has(id));
   playlistSelection.clear();
   setStatus('catalog-status', `Quitando ${n} canción${n === 1 ? '' : 'es'} de la playlist...`);
   await setManagerPlaylistTracks(pl.id, remaining, { silent: true });
@@ -2173,6 +2213,14 @@ function renderCatalog() {
   if (playlistsViewEl) {
     playlistsViewEl.classList.toggle('hidden', !playlistsMode);
     if (playlistsMode) renderPlaylistsView();
+  }
+  // El buscador principal cambia de objetivo: en la vista LISTA de playlists
+  // busca playlists por nombre; en cualquier otra vista, canciones.
+  const catalogSearchEl = document.getElementById('catalog-search');
+  if (catalogSearchEl) {
+    catalogSearchEl.placeholder = (playlistsMode && !selectedPlaylistId)
+      ? 'Buscar playlists...'
+      : 'Buscar canciones (nombre, compositor, género, link...)';
   }
 
   if (catalogFilterView === 'genres') {

@@ -1667,6 +1667,26 @@ async function updateManagerPlaylist(env, playlistId, body) {
   const action = String(body?.action || "add_track").trim();
   const trackId = String(body?.trackId || "").trim();
   const trackTitle = String(body?.trackTitle || "").trim();
+
+  // Renombrar: actualiza la propiedad título (Name) con el prefijo de playlist.
+  if (action === "rename") {
+    const newName = String(body?.name || "").trim();
+    if (!newName) return { error: "name is required for rename" };
+    const resp = await fetch(`https://api.notion.com/v1/pages/${playlistId}`, {
+      method: "PATCH",
+      headers: {
+        Authorization: `Bearer ${notionToken}`,
+        "Notion-Version": notionVersion,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        properties: { Name: { title: [{ text: { content: `${PLAYLIST_PREFIX}${newName}` } }] } },
+      }),
+    });
+    if (!resp.ok) return { error: "Playlist rename failed", details: await resp.text() };
+    return { ok: true, name: newName };
+  }
+
   if (["add_track", "remove_track"].includes(action) && !trackId) {
     return { error: "trackId is required" };
   }
@@ -1681,6 +1701,13 @@ async function updateManagerPlaylist(env, playlistId, body) {
     }
   } else if (action === "remove_track") {
     next = current.filter((t) => t.id !== trackId);
+  } else if (action === "set_tracks") {
+    // Reordenar y/o quitar varias de una: body.trackIds = orden final deseado.
+    // Conserva los títulos actuales; ignora ids que ya no estén en la playlist.
+    const ids = Array.isArray(body?.trackIds) ? body.trackIds.map((x) => String(x || "").trim()).filter(Boolean) : null;
+    if (!ids) return { error: "trackIds (array) is required for set_tracks" };
+    const byId = new Map(current.map((t) => [t.id, t]));
+    next = ids.filter((id) => byId.has(id)).map((id) => byId.get(id));
   } else {
     return { error: "Unsupported action" };
   }

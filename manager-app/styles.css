@@ -2135,6 +2135,13 @@ body:not(.catalog-active) .catalog-player { display: none !important; }
 .pl-detail-head { display: flex; flex-direction: column; gap: 5px; padding: 5px 0 15px; border-bottom: 1px solid var(--bay-border); margin-bottom: 10px; }
 .pl-back { align-self: flex-start; background: none; border: none; color: var(--bay-accent); font-size: .95rem; cursor: pointer; padding: 5px 0; font-weight: 600; }
 .pl-detail-title { font-family: "Bebas Neue", "Inter", sans-serif; font-size: 2rem; letter-spacing: .02em; margin: 5px 0 0; color: var(--bay-text); line-height: 1.1; }
+.pl-rename-input {
+  font-family: "Bebas Neue", "Inter", sans-serif; font-size: 2rem; letter-spacing: .02em;
+  margin: 5px 0 0; color: var(--bay-text); line-height: 1.1; width: 100%;
+  background: var(--bay-surface); border: 1px solid var(--bay-border); border-radius: 8px;
+  padding: 2px 8px; outline: none; transition: border-color .2s ease;
+}
+.pl-rename-input:focus { border-color: var(--bay-accent); }
 .pl-detail-count { font-size: .85rem; color: var(--bay-muted); }
 .pl-detail-actions { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
 .pl-detail-pills { display: flex; gap: 10px; }
@@ -2589,4 +2596,17 @@ body.messages-active .container {
     scrollbar-width: none;
   }
   #catalog-songs::-webkit-scrollbar { width: 0; height: 0; display: none; }
+
+  /* La vista de playlists (lista, detalle y panel de agregar) reemplaza a
+     #catalog-songs cuando está activa, así que necesita ser su propio
+     contenedor scrolleable — sin esto el contenido se recortaba sin scroll. */
+  #catalog-playlists-view:not(.hidden) {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: calc(var(--tab-height) + env(safe-area-inset-bottom) + 5rem);
+    scrollbar-width: none;
+  }
+  #catalog-playlists-view::-webkit-scrollbar { width: 0; height: 0; display: none; }
 }
