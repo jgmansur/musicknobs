@@ -3836,6 +3836,156 @@ function checkNotificationStatus() {
 
 // ─── QUOTES / SEGUIMIENTO ────────────────────────────────────────────────────
 
+const MK_QUOTE_CATALOG = [
+  { id: 'produccion', title: 'Producción Musical', services: [
+    { id: 'produccion-mezcla-master', name: 'Producción + Mezcla + Master', description: 'El paquete completo. Desde la idea hasta el archivo listo para distribuir.', priceLabel: '$3,920 USD / canción', hasQty: true, qtyLabel: 'canciones', basePrice: 3920, calcPrice: (q) => q * 3920, currency: 'USD' },
+    { id: 'produccion-mezcla', name: 'Producción + Mezcla', description: 'Arreglos, músicos de sesión, grabación y mezcla profesional.', priceLabel: '$3,800 USD / canción', hasQty: true, qtyLabel: 'canciones', basePrice: 3800, calcPrice: (q) => q * 3800, currency: 'USD' },
+    { id: 'produccion', name: 'Producción Completa', description: 'Arreglos, músicos y grabación. Mezcla por separado.', priceLabel: '$3,500 USD / canción', hasQty: true, qtyLabel: 'canciones', basePrice: 3500, calcPrice: (q) => q * 3500, currency: 'USD' },
+  ]},
+  { id: 'postproduccion', title: 'Post-producción', services: [
+    { id: 'mezcla', name: 'Mezcla Profesional', description: 'Hasta 40 tracks. 2 rondas de revisión incluidas.', priceLabel: '$300 USD / track', hasQty: true, qtyLabel: 'tracks', basePrice: 300, calcPrice: (q) => q * 300, currency: 'USD' },
+    { id: 'mastering', name: 'Mastering', description: 'LUFS optimizado para Spotify, Apple Music y más.', priceLabel: 'Desde $120 USD / track', hasQty: true, qtyLabel: 'tracks', basePrice: 120, calcPrice: (q) => q * 120, currency: 'USD' },
+    { id: 'afinacion', name: 'Afinación (Melodyne)', description: 'Corrección natural de afinación de voces o instrumentos.', priceLabel: '$30 primer track · $20 desde el 2do', hasQty: true, qtyLabel: 'tracks', basePrice: 30, calcPrice: (q) => q === 1 ? 30 : 30 + (q - 1) * 20, currency: 'USD' },
+    { id: 'edicion', name: 'Edición y reparación de audio', description: 'Limpieza de ruidos, edición de takes, corrección de timing.', priceLabel: '$100 hasta 5 tracks · +$20 por track extra', hasQty: true, qtyLabel: 'tracks', basePrice: 100, calcPrice: (q) => q <= 5 ? 100 : 100 + (q - 5) * 20, currency: 'USD' },
+  ]},
+  { id: 'consultoria', title: 'Consultoría', services: [
+    { id: 'consultoria-hora', name: 'Sesión de Consultoría', description: 'Orientación de carrera, estrategia de lanzamiento, revisión de material.', priceLabel: '$150 USD / hora', hasQty: true, qtyLabel: 'horas', basePrice: 150, calcPrice: (q) => q * 150, currency: 'USD' },
+    { id: 'consultoria-paquete', name: 'Paquete Consultoría (8 horas)', description: '8 horas para trabajar en profundidad tu proyecto y carrera.', priceLabel: '$1,200 USD', hasQty: false, basePrice: 1200, currency: 'USD' },
+  ]},
+  { id: 'jingle', title: 'Jingle y Corporativo', services: [
+    { id: 'jingle', name: 'Jingle / Música Corporativa', description: 'Composición original para marcas, campañas y audiovisual. Sin inteligencia artificial.', priceLabel: '$3,000 USD / pieza', hasQty: true, qtyLabel: 'piezas', basePrice: 3000, calcPrice: (q) => q * 3000, currency: 'USD' },
+  ]},
+  { id: 'distribucion', title: 'Distribución y Promoción', services: [
+    { id: 'distribucion-label', name: 'Lanzamiento bajo Music Knobs Label', description: 'Distribución completa en todas las plataformas.', priceLabel: '$100 USD primer año · $50 USD / año renovación', hasQty: false, basePrice: 100, currency: 'USD' },
+    { id: 'asesoria-distribucion', name: 'Asesoría para publicación propia', description: 'Elección de plataforma, metadata, ISRC y derechos.', priceLabel: '$300 USD', hasQty: false, basePrice: 300, currency: 'USD' },
+    { id: 'spotify-positioning', name: 'Posicionamiento en Spotify', description: '~60,000 plays auténticos en playlists orgánicas.', priceLabel: '$300 USD / track', hasQty: true, qtyLabel: 'tracks', basePrice: 300, calcPrice: (q) => q * 300, currency: 'USD' },
+  ]},
+  { id: 'arte', title: 'Arte y Diseño', services: [
+    { id: 'diseño-portada', name: 'Diseño de Portada Profesional', description: 'Portada diseñada por un artista humano. 2 revisiones incluidas.', priceLabel: '$4,000 MXN / diseño', hasQty: true, qtyLabel: 'diseños', basePrice: 4000, calcPrice: (q) => q * 4000, currency: 'MXN' },
+    { id: 'fotografia-profesional', name: 'Fotografía Profesional', description: 'Sesión con fotógrafo profesional y cámaras de gama alta.', priceLabel: 'A cotizar', hasQty: false, basePrice: 0, currency: 'quote' },
+    { id: 'pintura-oleo', name: 'Pintura al Óleo', description: 'Tu imagen o la portada de tu disco convertida en pintura al óleo.', priceLabel: 'Desde $12,000 MXN', hasQty: true, qtyLabel: 'obras', basePrice: 12000, calcPrice: (q) => q * 12000, currency: 'MXN' },
+  ]},
+];
+
+let quoteDetailSelection = {};
+
+function mkAllServices() {
+  return MK_QUOTE_CATALOG.flatMap((c) => c.services);
+}
+
+function mkFindByName(name) {
+  return mkAllServices().find((s) => s.name === name) || null;
+}
+
+function mkItemPrice(svc, qty) {
+  if (svc.currency === 'quote') return 0;
+  if (svc.calcPrice) return svc.calcPrice(qty);
+  return svc.basePrice * (svc.hasQty ? qty : 1);
+}
+
+function mkBuildSummaryHtml() {
+  const ids = Object.keys(quoteDetailSelection).filter((id) => quoteDetailSelection[id] > 0);
+  if (ids.length === 0) return '<p class="hint" style="text-align:center;padding:.75rem 0;">Sin servicios seleccionados.</p>';
+  let usd = 0, mxn = 0;
+  const rows = ids.map((id) => {
+    const svc = mkAllServices().find((s) => s.id === id);
+    if (!svc) return '';
+    const qty = quoteDetailSelection[id];
+    const price = mkItemPrice(svc, qty);
+    if (svc.currency === 'MXN') mxn += price;
+    else if (svc.currency !== 'quote') usd += price;
+    const priceStr = svc.currency === 'quote' ? 'A cotizar' : svc.currency === 'MXN' ? `$${price.toLocaleString('en-US')} MXN` : `$${price.toLocaleString('en-US')}`;
+    return `<div class="mk-sum-item"><span>${escapeHtml(svc.name)}${svc.hasQty ? ` ×${qty}` : ''}</span><span>${priceStr}</span></div>`;
+  }).join('');
+  const totals = (usd > 0 && mxn > 0)
+    ? `<div class="mk-sum-total"><span>Total USD</span><span>$${usd.toLocaleString('en-US')}</span></div><div class="mk-sum-total"><span>Total MXN</span><span>$${mxn.toLocaleString('en-US')} MXN</span></div>`
+    : mxn > 0
+      ? `<div class="mk-sum-total"><span>Total</span><span>$${mxn.toLocaleString('en-US')} MXN</span></div>`
+      : `<div class="mk-sum-total"><span>Total</span><span>$${usd.toLocaleString('en-US')} USD</span></div>`;
+  return `<div class="mk-sum-title">Resumen</div><div class="mk-sum-items">${rows}</div>${totals}`;
+}
+
+function mkBuildCatalogHtml(unmatchedItems) {
+  const sel = quoteDetailSelection;
+  const cats = MK_QUOTE_CATALOG.map((cat) => {
+    const cards = cat.services.map((svc) => {
+      const on = Boolean(sel[svc.id]);
+      const qty = sel[svc.id] || 1;
+      const qtyRow = (on && svc.hasQty) ? `<div class="mk-qty-row"><button class="mk-qty-btn" data-svc="${escapeHtml(svc.id)}" data-op="dec">−</button><span class="mk-qty-num" data-svc-qty="${escapeHtml(svc.id)}">${qty}</span><button class="mk-qty-btn" data-svc="${escapeHtml(svc.id)}" data-op="inc">+</button><span class="mk-qty-unit">${escapeHtml(svc.qtyLabel || '')}</span></div>` : '';
+      return `<div class="mk-svc-card${on ? ' mk-svc-on' : ''}" data-svc-card="${escapeHtml(svc.id)}"><label class="mk-svc-label"><input type="checkbox" class="mk-svc-chk" data-svc="${escapeHtml(svc.id)}"${on ? ' checked' : ''}><div class="mk-svc-info"><span class="mk-svc-name">${escapeHtml(svc.name)}</span><span class="mk-svc-price">${escapeHtml(svc.priceLabel)}</span></div></label><p class="mk-svc-desc">${escapeHtml(svc.description)}</p>${qtyRow}</div>`;
+    }).join('');
+    return `<div class="mk-cat-block"><div class="mk-cat-label">${escapeHtml(cat.title)}</div><div class="mk-cat-cards">${cards}</div></div>`;
+  }).join('');
+
+  const extra = unmatchedItems.length > 0
+    ? `<div class="mk-cat-block"><div class="mk-cat-label">Servicios adicionales</div><div class="mk-cat-cards">${unmatchedItems.map((item) => {
+        const pr = item.currency === 'quote' ? 'A cotizar' : item.currency === 'MXN' ? `$${(item.price||0).toLocaleString('en-US')} MXN` : `$${(item.price||0).toLocaleString('en-US')} USD`;
+        return `<div class="mk-svc-card mk-svc-on"><label class="mk-svc-label"><input type="checkbox" checked disabled><div class="mk-svc-info"><span class="mk-svc-name">${escapeHtml(item.name)}</span><span class="mk-svc-price">${pr}</span></div></label>${item.hasQty ? `<p class="mk-svc-desc">Qty: ${item.qty}</p>` : ''}</div>`;
+      }).join('')}</div></div>`
+    : '';
+
+  return `<div class="mk-cotizador-clone"><div class="mk-clone-catalog">${cats}${extra}</div><div class="mk-clone-summary" id="mk-clone-summary">${mkBuildSummaryHtml()}</div></div>`;
+}
+
+function mkInitCotizadorClone(services) {
+  quoteDetailSelection = {};
+  const unmatched = [];
+  for (const item of (services || [])) {
+    const svc = mkFindByName(item.name);
+    if (svc) quoteDetailSelection[svc.id] = item.qty || 1;
+    else unmatched.push(item);
+  }
+  return mkBuildCatalogHtml(unmatched);
+}
+
+function mkBindCloneEvents(container) {
+  container.querySelectorAll('.mk-svc-chk').forEach((chk) => {
+    chk.addEventListener('change', (e) => {
+      const id = e.target.dataset.svc;
+      if (!id) return;
+      if (e.target.checked) {
+        quoteDetailSelection[id] = quoteDetailSelection[id] || 1;
+      } else {
+        delete quoteDetailSelection[id];
+      }
+      const card = container.querySelector(`[data-svc-card="${CSS.escape(id)}"]`);
+      if (card) {
+        card.classList.toggle('mk-svc-on', e.target.checked);
+        const svc = mkAllServices().find((s) => s.id === id);
+        if (svc?.hasQty) {
+          let row = card.querySelector('.mk-qty-row');
+          if (e.target.checked && !row) {
+            const qty = quoteDetailSelection[id];
+            row = document.createElement('div');
+            row.className = 'mk-qty-row';
+            row.innerHTML = `<button class="mk-qty-btn" data-svc="${escapeHtml(id)}" data-op="dec">−</button><span class="mk-qty-num" data-svc-qty="${escapeHtml(id)}">${qty}</span><button class="mk-qty-btn" data-svc="${escapeHtml(id)}" data-op="inc">+</button><span class="mk-qty-unit">${escapeHtml(svc.qtyLabel||'')}</span>`;
+            card.appendChild(row);
+            row.querySelectorAll('.mk-qty-btn').forEach((b) => b.addEventListener('click', mkHandleQty));
+          } else if (!e.target.checked && row) {
+            row.remove();
+          }
+        }
+      }
+      const sumEl = container.querySelector('#mk-clone-summary');
+      if (sumEl) sumEl.innerHTML = mkBuildSummaryHtml();
+    });
+  });
+  container.querySelectorAll('.mk-qty-btn').forEach((b) => b.addEventListener('click', mkHandleQty));
+}
+
+function mkHandleQty(e) {
+  const id = e.currentTarget.dataset.svc;
+  const op = e.currentTarget.dataset.op;
+  if (!id || !quoteDetailSelection[id]) return;
+  quoteDetailSelection[id] = op === 'inc' ? quoteDetailSelection[id] + 1 : Math.max(1, quoteDetailSelection[id] - 1);
+  const container = e.currentTarget.closest('.mk-cotizador-clone');
+  if (!container) return;
+  const numEl = container.querySelector(`[data-svc-qty="${CSS.escape(id)}"]`);
+  if (numEl) numEl.textContent = quoteDetailSelection[id];
+  const sumEl = container.querySelector('#mk-clone-summary');
+  if (sumEl) sumEl.innerHTML = mkBuildSummaryHtml();
+}
+
 let quotesCache = [];
 let quotesSearchDebounceTimer = null;
 let quotesCurrentPageId = null;
@@ -3953,27 +4103,21 @@ function renderQuoteDetail(q) {
   setSpan('qd-date', q.date);
   setSpan('qd-total', q.total || '—');
 
-  // Services list
+  // Services → cotizador clone
   const servicesEl = document.getElementById('qd-services-list');
   if (servicesEl) {
-    const services = q.services || [];
-    if (services.length === 0) {
-      servicesEl.innerHTML = '<p class="hint">Sin servicios registrados.</p>';
-    } else {
-      servicesEl.innerHTML = `
-        <table class="qd-services-table">
-          <thead><tr><th>Servicio</th><th>Qty</th><th>Precio</th></tr></thead>
-          <tbody>
-            ${services.map((s) => `
-              <tr>
-                <td>${escapeHtml(s.name || '')}</td>
-                <td>${escapeHtml(s.qty || '')}</td>
-                <td>${escapeHtml(s.price || '')}</td>
-              </tr>
-            `).join('')}
-          </tbody>
-        </table>
-      `;
+    servicesEl.innerHTML = mkInitCotizadorClone(q.services || []);
+    const clone = servicesEl.querySelector('.mk-cotizador-clone');
+    if (clone) mkBindCloneEvents(clone);
+
+    // Update section heading with badge
+    const section = servicesEl.closest('.quote-detail-section');
+    if (section) {
+      const h4 = section.querySelector('h4');
+      if (h4) h4.innerHTML = 'Cotización del cliente <span class="mk-seg-badge">Versión de seguimiento</span>';
+      const totalRow = section.querySelector('.quote-total-row');
+      if (totalRow) totalRow.style.display = 'none';
+      section.classList.add('mk-catalog-section');
     }
   }
 
