@@ -2529,6 +2529,9 @@ body.messages-active .container {
     min-height: 0;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
+    /* Empacar las filas arriba: si hay pocas (búsqueda / playlist corta) el grid
+       no debe estirarlas para llenar el alto (evita gaps gigantes). */
+    align-content: start;
     /* La última canción libra el mini-player + tab bar */
     padding-bottom: calc(var(--tab-height) + env(safe-area-inset-bottom) + 5rem);
     scrollbar-width: none;
