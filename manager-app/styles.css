@@ -2188,7 +2188,11 @@ body:not(.catalog-active) .catalog-player { display: none !important; }
 .pl-song-meta { display: flex; flex-direction: column; gap: 1px; flex: 1; min-width: 0; }
 .pl-song-meta strong { font-size: .95rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .pl-song-artist { font-size: .78rem; color: var(--bay-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-/* Fila en modo edición */
+/* Fila en modo edición: sin selección de texto (molesta al arrastrar/long-press
+   y además el callout de iOS cortaba el drag con pointercancel). */
+.pl-song-row-edit, .pl-row-edit, .pl-drag-handle, .pl-check {
+  -webkit-user-select: none; user-select: none; -webkit-touch-callout: none;
+}
 .pl-song-row-edit.is-selected { background: rgba(255,16,151,.08); }
 .pl-drag-handle {
   flex: 0 0 auto; color: var(--bay-muted); font-size: 1.4rem; line-height: 1; padding: 0 5px;

@@ -125,6 +125,9 @@ let playlistsCache = [];
 let selectedPlaylistId = '';
 let playlistEditMode = false;            // modo edición (lista o detalle)
 let playlistSelection = new Set();       // ids seleccionados (playlists o canciones)
+let playlistAddMode = false;             // panel "+" para agregar canciones a la playlist
+let playlistAddSelection = new Set();    // canciones elegidas para agregar
+let playlistAddQuery = '';               // búsqueda dentro del panel de agregar
 let contactsVisibleCount = 12;
 let messagesVisibleCount = 20;
 let catalogVisibleCount = 20;
@@ -573,6 +576,7 @@ function renderPlaylistsView() {
   if (selectedPlaylistId) {
     const pl = playlistsCache.find((p) => p.id === selectedPlaylistId);
     if (!pl) { selectedPlaylistId = ''; renderCatalog(); return; }
+    if (playlistAddMode) { renderPlaylistAddPanel(el, pl); return; }
     const editing = playlistEditMode;
     // Canciones en ORDEN de la playlist (solo las que existen en el catálogo)
     const orderedIds = (pl.tracks || []).map((t) => String(t.id || '')).filter((id) => catalogCache.some((s) => String(s.id) === id));
@@ -612,6 +616,7 @@ function renderPlaylistsView() {
           </div>
           <div class="pl-detail-icons">
             ${(isAuthenticated && count) ? `<button class="pl-text-btn" id="pl-detail-edit" type="button">${editing ? 'Listo' : 'Editar'}</button>` : ''}
+            ${isAuthenticated ? `<button class="pl-icon-btn" id="pl-detail-add" type="button" aria-label="Agregar canciones" title="Agregar canciones">＋</button>` : ''}
             <button class="pl-icon-btn" id="pl-detail-share" type="button" aria-label="Compartir playlist" title="Compartir playlist">
               <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.6" y1="10.5" x2="15.4" y2="6.5"></line><line x1="8.6" y1="13.5" x2="15.4" y2="17.5"></line></svg>
             </button>
@@ -643,6 +648,13 @@ function renderPlaylistsView() {
     document.getElementById('pl-detail-edit')?.addEventListener('click', () => {
       playlistEditMode = !playlistEditMode;
       playlistSelection.clear();
+      renderPlaylistsView();
+    });
+    document.getElementById('pl-detail-add')?.addEventListener('click', () => {
+      playlistAddMode = true;
+      playlistEditMode = false;
+      playlistAddSelection.clear();
+      playlistAddQuery = '';
       renderPlaylistsView();
     });
     document.getElementById('pl-detail-remove-selected')?.addEventListener('click', () => removeSelectedSongsFromPlaylist(pl));
@@ -784,6 +796,82 @@ async function removeSelectedSongsFromPlaylist(pl) {
   await setManagerPlaylistTracks(pl.id, remaining, { silent: true });
 }
 
+// ── Panel "+" para agregar canciones a la playlist actual ──
+function renderPlaylistAddPanel(el, pl) {
+  const inPlaylist = new Set((pl.tracks || []).map((t) => String(t.id || '')));
+  const buildRows = () => {
+    const q = playlistAddQuery.trim().toLowerCase();
+    const candidates = catalogCache.filter((s) => !inPlaylist.has(String(s.id)) && (!q || buildCatalogSearchBlob(s).includes(q)));
+    return candidates.map((s) => {
+      const sel = playlistAddSelection.has(s.id);
+      const cover = s.cover
+        ? `<span class="pl-song-cover" style="background-image:url('${escapeHtml(s.cover)}')"></span>`
+        : `<span class="pl-song-cover pl-song-cover-empty">♪</span>`;
+      return `<li class="pl-song-li"><div class="pl-song-row pl-song-row-edit ${sel ? 'is-selected' : ''}" data-add-toggle="${escapeHtml(s.id)}">
+        <span class="pl-check ${sel ? 'on' : ''}">${sel ? '✓' : ''}</span>${cover}
+        <span class="pl-song-meta"><strong>${escapeHtml(s.obra || 'Sin título')}</strong><span class="pl-song-artist">${escapeHtml(s.autores || '—')}</span></span>
+      </div></li>`;
+    }).join('') || '<li class="pl-empty">No hay más canciones para agregar.</li>';
+  };
+  const nSel = playlistAddSelection.size;
+  el.innerHTML = `
+    <div class="pl-detail-head">
+      <button class="pl-back" id="pl-add-back" type="button">‹ ${escapeHtml(pl.name)}</button>
+      <h2 class="pl-detail-title">Agregar canciones</h2>
+      <input id="pl-add-search" class="catalog-genre-select" type="search" placeholder="Buscar canción, compositor, género..." value="${escapeHtml(playlistAddQuery)}" />
+      <div class="pl-edit-bar">
+        <span class="pl-edit-count" id="pl-add-count">${nSel} seleccionada${nSel === 1 ? '' : 's'}</span>
+        <button class="pl-danger-btn" id="pl-add-confirm" type="button" ${nSel ? '' : 'disabled'}>＋ Agregar</button>
+      </div>
+    </div>
+    <ul class="list pl-song-list" id="pl-add-list">${buildRows()}</ul>`;
+
+  const exit = () => { playlistAddMode = false; playlistAddSelection.clear(); playlistAddQuery = ''; renderPlaylistsView(); };
+  document.getElementById('pl-add-back')?.addEventListener('click', exit);
+  document.getElementById('pl-add-confirm')?.addEventListener('click', () => addSelectedSongsToPlaylist(pl));
+  const search = document.getElementById('pl-add-search');
+  if (search) search.addEventListener('input', () => {
+    playlistAddQuery = String(search.value || '');
+    const list = document.getElementById('pl-add-list');
+    if (list) list.innerHTML = buildRows();
+  });
+  document.getElementById('pl-add-list')?.addEventListener('click', (e) => {
+    const row = e.target.closest('[data-add-toggle]');
+    if (!row) return;
+    const id = row.getAttribute('data-add-toggle');
+    if (playlistAddSelection.has(id)) playlistAddSelection.delete(id); else playlistAddSelection.add(id);
+    row.classList.toggle('is-selected');
+    const chk = row.querySelector('.pl-check');
+    if (chk) { const on = playlistAddSelection.has(id); chk.classList.toggle('on', on); chk.textContent = on ? '✓' : ''; }
+    const n = playlistAddSelection.size;
+    const cnt = document.getElementById('pl-add-count'); if (cnt) cnt.textContent = `${n} seleccionada${n === 1 ? '' : 's'}`;
+    const btn = document.getElementById('pl-add-confirm'); if (btn) btn.disabled = !n;
+  });
+}
+
+async function addSelectedSongsToPlaylist(pl) {
+  const ids = [...playlistAddSelection];
+  if (!ids.length) return;
+  playlistAddMode = false;
+  playlistAddSelection.clear();
+  playlistAddQuery = '';
+  setStatus('catalog-status', `Agregando ${ids.length} canción${ids.length === 1 ? '' : 'es'}...`);
+  let ok = 0;
+  for (const id of ids) {
+    const song = catalogCache.find((s) => String(s.id) === String(id));
+    try {
+      const r = await fetch(`${API_BASE}/api/manager/playlists/${pl.id}`, {
+        method: 'PATCH', headers: apiHeaders(),
+        body: JSON.stringify({ action: 'add_track', trackId: id, trackTitle: song?.obra || id }),
+      });
+      if (r.ok) ok += 1;
+    } catch {}
+  }
+  setStatus('catalog-status', `${ok} agregada${ok === 1 ? '' : 's'} a "${pl.name}".`);
+  await loadPlaylistsFromApi();
+  renderCatalog();
+}
+
 // ── Drag iOS-style para reordenar canciones (agarradero ≡) ──
 // El ítem arrastrado sigue al dedo (translateY 1:1) y los demás se deslizan
 // suavemente para abrir el hueco donde va a caer. Al soltar persiste el orden.
@@ -860,7 +948,26 @@ function onPlDragEnd() {
     .map((el) => el.getAttribute('data-song-id'))
     .filter(Boolean);
   plDrag = null;
-  void setManagerPlaylistTracks(pl.id, newOrder, { silent: true });
+  if (to === from) return;
+  // OPTIMISTA: el DOM ya muestra el nuevo orden; actualizamos la cache local y
+  // persistimos en background (sin recargar/re-render → instantáneo).
+  const byId = new Map((pl.tracks || []).map((t) => [String(t.id), t]));
+  pl.tracks = newOrder.map((id) => byId.get(id)).filter(Boolean);
+  pl.trackCount = pl.tracks.length;
+  void persistPlaylistOrder(pl.id, newOrder);
+}
+
+async function persistPlaylistOrder(playlistId, orderedIds) {
+  try {
+    const r = await fetch(`${API_BASE}/api/manager/playlists/${playlistId}`, {
+      method: 'PATCH', headers: apiHeaders(),
+      body: JSON.stringify({ action: 'set_tracks', trackIds: orderedIds }),
+    });
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    setStatus('catalog-status', 'Orden guardado.');
+  } catch (e) {
+    setStatus('catalog-status', `No se pudo guardar el orden: ${e instanceof Error ? e.message : e}`, true);
+  }
 }
 
 async function loadPlaylistsFromApi() {
@@ -2233,6 +2340,8 @@ function renderCatalog() {
     catalogSearchQuery = '';
     playlistEditMode = false;
     playlistSelection.clear();
+    playlistAddMode = false;
+    playlistAddSelection.clear();
     renderCatalog();
   };
 
