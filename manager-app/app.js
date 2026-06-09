@@ -2092,7 +2092,20 @@ function updateActiveSongRow() {
   songsEl.querySelectorAll('.catalog-song-row').forEach((row) => {
     const btn = row.querySelector('[data-catalog-play]');
     const id = btn ? btn.getAttribute('data-catalog-play') : '';
-    row.classList.toggle('is-active', Boolean(id) && id === catalogNowPlayingId);
+    const active = Boolean(id) && id === catalogNowPlayingId;
+    row.classList.toggle('is-active', active);
+    // El título solo hace marquee si NO cabe. Medimos el ancho natural (sin la
+    // clase de scroll, que mete padding y falsearía la medición).
+    const titleline = row.querySelector('.catalog-song-titleline');
+    if (titleline) {
+      titleline.classList.remove('is-overflowing');
+      if (active) {
+        const inner = titleline.querySelector('.catalog-song-titleline-inner');
+        if (inner && inner.scrollWidth > titleline.clientWidth + 1) {
+          titleline.classList.add('is-overflowing');
+        }
+      }
+    }
   });
 }
 

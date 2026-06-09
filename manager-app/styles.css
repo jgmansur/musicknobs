@@ -1722,7 +1722,9 @@ a { color: #93c5fd; }
   font-weight: 400;
 }
 .catalog-stat { white-space: nowrap; }
-.catalog-song-row.is-active .catalog-song-titleline-inner {
+/* El título solo escrolea (marquee) cuando NO cabe: la clase .is-overflowing
+   la pone el JS tras medir el ancho real. Si cabe, queda estático. */
+.catalog-song-row.is-active .catalog-song-titleline.is-overflowing .catalog-song-titleline-inner {
   padding-inline-start: 100%;
   animation: catalog-authors-marquee 10s linear infinite;
 }
