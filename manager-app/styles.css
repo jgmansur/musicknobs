@@ -1262,6 +1262,41 @@ body.book-active .container {
   text-align: center;
 }
 
+/* ── Rating (admin) + Like (visitante) en filas de catálogo ─────────────────── */
+.catalog-stars {
+  display: inline-flex;
+  align-items: center;
+  gap: 1px;
+  flex: 0 0 auto;
+}
+.catalog-star {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0 1px;
+  font-size: .8rem;
+  line-height: 1;
+  color: #555;
+  transition: color .15s ease, transform .1s ease;
+}
+.catalog-star.on { color: #f5c518; }
+.catalog-star:hover { transform: scale(1.2); }
+
+.catalog-like {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  color: var(--text-soft);
+  display: inline-grid;
+  place-items: center;
+  transition: color .15s ease, transform .1s ease;
+}
+.catalog-like.liked { color: var(--primary); }
+.catalog-like.liked svg { fill: currentColor; }
+.catalog-like:active { transform: scale(.88); }
+.catalog-like.hidden { display: none; }
+
 .task-actions-dropdown .mini-btn {
   width: 100%;
   text-align: left;

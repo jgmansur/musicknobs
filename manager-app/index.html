@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="./styles.css?v=2.0.19" />
+    <link rel="stylesheet" href="./styles.css?v=2.0.20" />
     <link rel="manifest" href="./manifest.json" />
     <link rel="icon" type="image/png" href="./icon-32.png" />
     <link rel="apple-touch-icon" href="./icon-180.png" />
@@ -298,6 +298,7 @@
                 </span>
               </button>
               <div class="player-mini-controls">
+                <button id="mini-like" class="player-mini-ctrl catalog-like hidden" type="button" aria-label="Me gusta" title="Me gusta"></button>
                 <button id="mini-restart" class="player-mini-ctrl" type="button" aria-label="Desde el principio" title="Desde el principio">⏮</button>
                 <button id="mini-back15" class="player-mini-ctrl" type="button" aria-label="Retroceder 15 segundos" title="−15s">−15</button>
                 <button id="catalog-play-toggle" class="player-mini-play" type="button" aria-label="Play o pause">▶</button>
@@ -348,6 +349,7 @@
                 <button id="catalog-prev" class="player-icon" type="button" aria-label="Pista anterior">⏮</button>
                 <button id="player-exp-toggle" class="player-icon player-icon-main" type="button" aria-label="Play o pause">▶</button>
                 <button id="catalog-next" class="player-icon" type="button" aria-label="Siguiente pista">⏭</button>
+                <button id="player-like" class="player-icon catalog-like hidden" type="button" aria-label="Me gusta" title="Me gusta"></button>
                 <button id="catalog-share-song" class="player-icon" type="button" aria-label="Compartir canción">
                   <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.6" y1="10.5" x2="15.4" y2="6.5"></line><line x1="8.6" y1="13.5" x2="15.4" y2="17.5"></line></svg>
                 </button>
@@ -453,6 +455,6 @@
     <script src="./config.js"></script>
     <script src="./vendor/howler.min.js"></script>
     <script src="./tracks.js?v=salesfix404v1"></script>
-    <script src="./app.js?v=2.0.19"></script>
+    <script src="./app.js?v=2.0.20"></script>
   </body>
   </html>

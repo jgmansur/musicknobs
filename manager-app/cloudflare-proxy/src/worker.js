@@ -555,6 +555,16 @@ function readNotionSongFilesCount(props, hints = []) {
   return 0;
 }
 
+// Lee una propiedad Number del catálogo (Rating / Likes / Plays).
+function readNotionSongNumber(props, hints = []) {
+  for (const [name, prop] of Object.entries(props)) {
+    const key = name.toLowerCase();
+    if (!hints.some((h) => key === h || key.includes(h))) continue;
+    if (prop?.type === "number") return Number(prop.number) || 0;
+  }
+  return 0;
+}
+
 function richTextFromAnyProp(prop) {
   if (!prop) return "";
   if (prop.type === "title") return richTextToString(prop.title);
@@ -627,6 +637,9 @@ async function listCatalogSongs(env) {
         const certificadaIndautorCount = readNotionSongFilesCount(props, ["certificado de indautor", "certificado", "indautor"]);
         const registradaSacm = readNotionSongBool(props, ["registrada en sacm", "sacm"]);
         const registradaBmi = readNotionSongBool(props, ["registrada en bmi", "bmi"]);
+        const rating = readNotionSongNumber(props, ["rating"]);
+        const likes = readNotionSongNumber(props, ["likes"]);
+        const plays = readNotionSongNumber(props, ["plays"]);
         const searchText = buildCatalogSearchText(props);
         return {
           id: page.id,
@@ -646,6 +659,9 @@ async function listCatalogSongs(env) {
           certificadaIndautorCount,
           registradaSacm,
           registradaBmi,
+          rating,
+          likes,
+          plays,
           searchText,
         };
       })))
@@ -1739,6 +1755,56 @@ async function deleteManagerPlaylist(env, playlistId) {
   return { ok: true };
 }
 
+// Rating (admin), likes y plays (visitante) de una canción del catálogo.
+// set_rating: fija Rating 0-3. increment_like / increment_play: +1 atómico
+// (read-modify-write; race posible pero bajo impacto en una galería chica).
+async function updateCatalogSong(env, songId, body) {
+  const notionVersion = env.NOTION_VERSION || "2022-06-28";
+  const notionToken = env.NOTION_TOKEN || "";
+  if (!notionToken) return { error: "NOTION_TOKEN missing" };
+
+  const action = String(body?.action || "").trim();
+  if (!action) return { error: "action is required" };
+
+  const patchPage = (properties) => fetch(`https://api.notion.com/v1/pages/${songId}`, {
+    method: "PATCH",
+    headers: {
+      Authorization: `Bearer ${notionToken}`,
+      "Notion-Version": notionVersion,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ properties }),
+  });
+
+  if (action === "set_rating") {
+    let value = Number(body?.value);
+    if (!Number.isFinite(value)) return { error: "value (number) is required for set_rating" };
+    value = Math.max(0, Math.min(3, Math.round(value)));
+    const resp = await patchPage({ Rating: { number: value } });
+    if (!resp.ok) return { error: "set_rating failed", details: await resp.text() };
+    return { ok: true, rating: value };
+  }
+
+  if (action === "increment_like" || action === "increment_play") {
+    const hint = action === "increment_like" ? "likes" : "plays";
+    const pageResp = await fetch(`https://api.notion.com/v1/pages/${songId}`, {
+      headers: { Authorization: `Bearer ${notionToken}`, "Notion-Version": notionVersion },
+    });
+    if (!pageResp.ok) return { error: "read page failed", details: await pageResp.text() };
+    const page = await pageResp.json();
+    const props = page.properties || {};
+    const realName = Object.keys(props).find((n) => n.toLowerCase() === hint && props[n]?.type === "number")
+      || (hint === "likes" ? "Likes" : "Plays");
+    const current = Number(props[realName]?.number) || 0;
+    const next = current + 1;
+    const resp = await patchPage({ [realName]: { number: next } });
+    if (!resp.ok) return { error: `${action} failed`, details: await resp.text() };
+    return { ok: true, [hint]: next };
+  }
+
+  return { error: "Unsupported action" };
+}
+
 async function listManagerTasks(env, options = {}) {
   const notionVersion = env.NOTION_VERSION || "2022-06-28";
   const notionToken = env.NOTION_TOKEN || "";
@@ -2657,6 +2723,14 @@ export default {
       }
       const result = await listCatalogSongs(env);
       return json(result, result.error ? 502 : 200);
+    }
+
+    if (request.method === "PATCH" && url.pathname.startsWith("/api/manager/catalog/")) {
+      const songId = url.pathname.replace("/api/manager/catalog/", "").trim();
+      if (!songId) return json({ error: "songId required" }, 400);
+      const body = await request.json().catch(() => ({}));
+      const result = await updateCatalogSong(env, songId, body);
+      return json(result, result.error ? 400 : 200);
     }
 
     if (request.method === "POST" && url.pathname === "/api/manager/catalog/sync") {

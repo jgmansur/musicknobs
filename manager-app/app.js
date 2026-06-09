@@ -113,6 +113,10 @@ let focusOverdueIndex = 0;
 let catalogCache = [];
 let catalogGenreFilter = 'Todas';
 let catalogNowPlayingId = '';
+// Like de visitante: en memoria, se resetea en cada apertura de la app (1 like/sesión/canción).
+const catalogLikedSongs = new Set();
+// Play contado por canción en esta reproducción (evita doble conteo del mismo track).
+let catalogPlayCountedId = '';
 let catalogPlayerExpanded = false;
 let catalogLyricsOn = false;
 let catalogLyricsEditing = false;
@@ -1294,6 +1298,13 @@ function refreshCatalogProgressUi() {
   if (fill) fill.style.width = `${percent}%`;
   current.textContent = formatTime(seek);
   duration.textContent = formatTime(total);
+
+  // Cuenta un play cuando se escuchó ≥10s o ≥25% (una sola vez por reproducción).
+  if (catalogNowPlayingId && catalogPlayCountedId !== catalogNowPlayingId
+      && (seek >= 10 || (total > 0 && seek / total >= 0.25))) {
+    catalogPlayCountedId = catalogNowPlayingId;
+    countCatalogPlay(catalogNowPlayingId);
+  }
 }
 
 function startCatalogProgressTimer() {
@@ -1429,6 +1440,7 @@ function updateCatalogPlayerUi() {
 
   updateLyricsButtonVisibility();
   updateKaraokeButtonUi();
+  updatePlayerLikeButton();
 
   if (!track) {
     const progress = document.getElementById('catalog-player-progress');
@@ -2284,6 +2296,7 @@ function renderCatalog() {
                 <span class="catalog-authors"><span class="catalog-authors-text">${escapeHtml(row.autores || '—')}</span></span>
               </button>
               <div class="actions">
+                ${isAuthenticated ? buildCatalogStars(row) : ''}
                 ${!isAuthenticated ? '' : (
                   (catalogFilterView === 'playlists' && selectedPlaylistId && selectedPlaylistTrackIds.has(String(row.id || '')))
                     ? `<button class="mini-btn" data-catalog-remove-playlist="${escapeHtml(row.id)}">−</button>`
@@ -2302,6 +2315,7 @@ function renderCatalog() {
                         </div>
                       </details>`
                 )}
+                ${!isAuthenticated ? buildCatalogLikeBtn(row) : ''}
                 ${isAuthenticated
                   ? `<details class="task-actions-menu catalog-share-menu">
                       <summary>
@@ -2431,7 +2445,114 @@ function renderCatalog() {
     btn.addEventListener('click', () => removeSongFromPlaylist(btn.dataset.catalogRemovePlaylist || ''));
   });
 
+  songsEl.querySelectorAll('[data-catalog-rate]').forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setCatalogRating(btn.dataset.catalogRate || '', Number(btn.dataset.star || 0));
+    });
+  });
+
+  songsEl.querySelectorAll('[data-catalog-like]').forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      likeCatalogSong(btn.dataset.catalogLike || '');
+    });
+  });
+
   updateActiveSongRow();
+}
+
+// ── Rating (admin) + Likes (visitante) + Plays: helpers ──────────────────────
+const THUMB_SVG = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 10v11"/><path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a2.5 2.5 0 0 1 2.5 2.5z"/></svg>';
+
+function catalogIsLiked(songId) { return catalogLikedSongs.has(String(songId)); }
+
+// Estrellitas de rating (solo admin). Tap en una estrella ya fijada como rating
+// exacto la limpia a 0; si no, fija ese valor.
+function buildCatalogStars(row) {
+  const r = Number(row.rating || 0);
+  return `<span class="catalog-stars" role="group" aria-label="Calificación">${[1, 2, 3]
+    .map((n) => `<button type="button" class="catalog-star ${r >= n ? 'on' : ''}" data-catalog-rate="${escapeHtml(row.id)}" data-star="${n}" aria-label="${n} estrella${n > 1 ? 's' : ''}">★</button>`)
+    .join('')}</span>`;
+}
+
+// Botón de like (solo visitante).
+function buildCatalogLikeBtn(row) {
+  return `<button type="button" class="catalog-like ${catalogIsLiked(row.id) ? 'liked' : ''}" data-catalog-like="${escapeHtml(row.id)}" aria-label="Me gusta" title="Me gusta">${THUMB_SVG}</button>`;
+}
+
+// Reordena el cache: rating desc → likes desc → abecedario.
+function resortCatalog() {
+  catalogCache.sort((a, b) =>
+    (Number(b.rating || 0) - Number(a.rating || 0))
+    || (Number(b.likes || 0) - Number(a.likes || 0))
+    || String(a.obra || '').localeCompare(String(b.obra || ''), 'es', { sensitivity: 'base' }));
+}
+
+// Admin fija el rating de una canción (0-3). Optimista + reordena.
+async function setCatalogRating(songId, star) {
+  if (!isAuthenticated) return;
+  const song = catalogCache.find((s) => String(s.id) === String(songId));
+  if (!song) return;
+  const current = Number(song.rating || 0);
+  const next = (current === star) ? 0 : star;
+  song.rating = next;
+  resortCatalog();
+  renderCatalog();
+  try {
+    const r = await fetch(`${API_BASE}/api/manager/catalog/${songId}`, {
+      method: 'PATCH', headers: apiHeaders(),
+      body: JSON.stringify({ action: 'set_rating', value: next }),
+    });
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+  } catch (e) {
+    setStatus('catalog-status', `No se pudo guardar el rating: ${e instanceof Error ? e.message : e}`, true);
+  }
+}
+
+// Visitante da like (1 por sesión por canción). No reordena de golpe para no
+// hacer saltar la fila; el orden por likes se aplica en la próxima carga.
+async function likeCatalogSong(songId) {
+  if (!songId || catalogIsLiked(songId)) return;
+  const song = catalogCache.find((s) => String(s.id) === String(songId));
+  catalogLikedSongs.add(String(songId));
+  if (song) song.likes = Number(song.likes || 0) + 1;
+  document.querySelectorAll('[data-catalog-like]').forEach((b) => {
+    if (b.getAttribute('data-catalog-like') === String(songId)) b.classList.add('liked');
+  });
+  updatePlayerLikeButton();
+  try {
+    await fetch(`${API_BASE}/api/manager/catalog/${songId}`, {
+      method: 'PATCH', headers: apiHeaders(),
+      body: JSON.stringify({ action: 'increment_like' }),
+    });
+  } catch { /* best-effort: no molestar al visitante */ }
+}
+
+// Refleja el estado de like en los botones del reproductor (portada + mini).
+// Solo visibles para visitantes.
+function updatePlayerLikeButton() {
+  const liked = catalogIsLiked(catalogNowPlayingId);
+  ['player-like', 'mini-like'].forEach((id) => {
+    const b = document.getElementById(id);
+    if (!b) return;
+    b.classList.toggle('liked', liked);
+    b.classList.toggle('hidden', isAuthenticated || !catalogNowPlayingId);
+  });
+}
+
+// Cuenta un play (best-effort) cuando la canción se escuchó lo suficiente.
+async function countCatalogPlay(songId) {
+  const song = catalogCache.find((s) => String(s.id) === String(songId));
+  if (song) song.plays = Number(song.plays || 0) + 1;
+  try {
+    await fetch(`${API_BASE}/api/manager/catalog/${songId}`, {
+      method: 'PATCH', headers: apiHeaders(),
+      body: JSON.stringify({ action: 'increment_play' }),
+    });
+  } catch { /* best-effort */ }
 }
 
 function setCatalog(rows = catalogSample) {
@@ -2453,6 +2574,9 @@ function setCatalog(rows = catalogSample) {
       certificadaIndautorCount: Number(row.certificadaIndautorCount || 0),
       registradaSacm: Boolean(row.registradaSacm),
       registradaBmi: Boolean(row.registradaBmi),
+      rating: Math.max(0, Math.min(3, Math.round(Number(row.rating || 0)))),
+      likes: Math.max(0, Number(row.likes || 0)),
+      plays: Math.max(0, Number(row.plays || 0)),
       searchText: String(row.searchText || '').trim(),
     }))
     .filter((row) => Boolean(row.obra || row.drive || row.fileId));
@@ -2471,8 +2595,13 @@ function setCatalog(rows = catalogSample) {
     if (!byKey.has(key)) byKey.set(key, row);
   }
 
+  // Orden: primero rating (admin) desc, luego likes desc, luego abecedario.
+  // Visitantes y admin ven el MISMO orden; solo cambia qué widgets se renderizan.
   catalogCache = Array.from(byKey.values())
-    .sort((a, b) => String(a.obra || '').localeCompare(String(b.obra || ''), 'es', { sensitivity: 'base' }));
+    .sort((a, b) =>
+      (Number(b.rating || 0) - Number(a.rating || 0))
+      || (Number(b.likes || 0) - Number(a.likes || 0))
+      || String(a.obra || '').localeCompare(String(b.obra || ''), 'es', { sensitivity: 'base' }));
   if (catalogNowPlayingId && !catalogCache.some((row) => row.id === catalogNowPlayingId)) {
     catalogNowPlayingId = '';
     setCatalogPlayerExpanded(false);
@@ -2731,6 +2860,18 @@ function setupCatalogPlayerControls() {
 
   if (playToggle) playToggle.addEventListener('click', toggleCatalogPlayback);
   if (expToggle) expToggle.addEventListener('click', toggleCatalogPlayback);
+
+  // Botones de like del reproductor (portada + mini), solo para visitantes.
+  ['player-like', 'mini-like'].forEach((id) => {
+    const b = document.getElementById(id);
+    if (!b) return;
+    b.innerHTML = THUMB_SVG;
+    b.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      likeCatalogSong(catalogNowPlayingId);
+    });
+  });
 
   if (expandBtn) {
     expandBtn.addEventListener('click', () => {
