@@ -2172,7 +2172,8 @@ body:not(.catalog-active) .catalog-player { display: none !important; }
 
 /* Lista de canciones dentro del detalle (orden de la playlist) */
 .pl-song-list { display: flex; flex-direction: column; gap: 0; }
-.pl-song-li { list-style: none; }
+/* Transición para el deslizamiento suave al reordenar (drag). */
+.pl-song-li { list-style: none; transition: transform .18s cubic-bezier(.2,1,.22,1); }
 .pl-song-row {
   width: 100%; display: flex; align-items: center; gap: 12px;
   background: transparent; border: none; border-bottom: 1px solid var(--bay-border);
@@ -2194,10 +2195,11 @@ body:not(.catalog-active) .catalog-player { display: none !important; }
   cursor: grab; user-select: none; touch-action: none;
 }
 .pl-drag-handle:active { cursor: grabbing; }
-.pl-song-li.pl-dragging { opacity: .85; }
+/* El ítem arrastrado sigue al dedo 1:1 (sin transición) y queda elevado. */
+.pl-song-li.pl-dragging { transition: none; position: relative; z-index: 5; }
 .pl-song-li.pl-dragging .pl-song-row-edit {
   background: var(--bay-surface); border-radius: 8px;
-  box-shadow: 0 8px 20px rgba(0,0,0,.4);
+  box-shadow: 0 8px 20px rgba(0,0,0,.45);
 }
 
 /* Leyenda "... ver letra" — texto magenta con glow, animación typewriter + bounce */

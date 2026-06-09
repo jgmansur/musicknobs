@@ -784,58 +784,82 @@ async function removeSelectedSongsFromPlaylist(pl) {
   await setManagerPlaylistTracks(pl.id, remaining, { silent: true });
 }
 
-// ── Drag para reordenar canciones dentro de la playlist (agarradero ≡) ──
+// ── Drag iOS-style para reordenar canciones (agarradero ≡) ──
+// El ítem arrastrado sigue al dedo (translateY 1:1) y los demás se deslizan
+// suavemente para abrir el hueco donde va a caer. Al soltar persiste el orden.
 let plDrag = null;
 function setupPlaylistDragReorder(pl) {
   const list = document.getElementById('pl-song-list');
   if (!list) return;
   list.querySelectorAll('.pl-drag-handle').forEach((handle) => {
-    handle.addEventListener('pointerdown', (e) => {
-      e.preventDefault();
-      const li = handle.closest('.pl-song-li');
-      if (!li) return;
-      try { handle.setPointerCapture(e.pointerId); } catch {}
-      li.classList.add('pl-dragging');
-      plDrag = { li, list, pl };
-      const move = (ev) => onPlDragMove(ev);
-      const end = (ev) => {
-        handle.removeEventListener('pointermove', move);
-        handle.removeEventListener('pointerup', end);
-        handle.removeEventListener('pointercancel', end);
-        onPlDragEnd();
-      };
-      handle.addEventListener('pointermove', move);
-      handle.addEventListener('pointerup', end);
-      handle.addEventListener('pointercancel', end);
-    });
+    handle.addEventListener('pointerdown', (e) => beginPlDrag(e, handle, list, pl));
   });
+}
+
+function beginPlDrag(e, handle, list, pl) {
+  e.preventDefault();
+  const li = handle.closest('.pl-song-li');
+  if (!li) return;
+  const items = [...list.querySelectorAll('.pl-song-li')];
+  const from = items.indexOf(li);
+  if (from < 0) return;
+  // Posiciones originales (para calcular destino y desplazamientos).
+  const metrics = items.map((el) => {
+    const r = el.getBoundingClientRect();
+    return { el, mid: r.top + r.height / 2 };
+  });
+  const draggedH = li.getBoundingClientRect().height;
+  try { handle.setPointerCapture(e.pointerId); } catch {}
+  li.classList.add('pl-dragging');
+  plDrag = { li, list, pl, items, metrics, from, to: from, startY: e.clientY, draggedH };
+
+  const move = (ev) => onPlDragMove(ev);
+  const end = () => {
+    handle.removeEventListener('pointermove', move);
+    handle.removeEventListener('pointerup', end);
+    handle.removeEventListener('pointercancel', end);
+    onPlDragEnd();
+  };
+  handle.addEventListener('pointermove', move);
+  handle.addEventListener('pointerup', end);
+  handle.addEventListener('pointercancel', end);
 }
 
 function onPlDragMove(ev) {
   if (!plDrag) return;
-  const { li, list } = plDrag;
-  const y = ev.clientY;
-  const others = [...list.querySelectorAll('.pl-song-li:not(.pl-dragging)')];
-  let inserted = false;
-  for (const sib of others) {
-    const rect = sib.getBoundingClientRect();
-    if (y < rect.top + rect.height / 2) {
-      list.insertBefore(li, sib);
-      inserted = true;
-      break;
-    }
+  const { li, metrics, from, draggedH } = plDrag;
+  const dy = ev.clientY - plDrag.startY;
+  li.style.transform = `translateY(${dy}px)`;                 // el ítem sigue al dedo
+  const center = metrics[from].mid + dy;
+  // Índice destino: cuántos OTROS ítems tienen su centro por encima del dedo.
+  let to = 0;
+  for (let i = 0; i < metrics.length; i++) {
+    if (i === from) continue;
+    if (center > metrics[i].mid) to += 1;
   }
-  if (!inserted) list.appendChild(li);
+  plDrag.to = to;
+  // Abrir el hueco: los ítems entre origen y destino se deslizan.
+  for (let i = 0; i < metrics.length; i++) {
+    if (i === from) continue;
+    let shift = 0;
+    if (to > from && i > from && i <= to) shift = -draggedH;
+    else if (to < from && i >= to && i < from) shift = draggedH;
+    metrics[i].el.style.transform = shift ? `translateY(${shift}px)` : '';
+  }
 }
 
 function onPlDragEnd() {
   if (!plDrag) return;
-  const { li, list, pl } = plDrag;
+  const { li, list, pl, items, from, to } = plDrag;
+  items.forEach((el) => { el.style.transform = ''; });        // limpiar transforms
   li.classList.remove('pl-dragging');
-  plDrag = null;
+  if (to !== from && items[to]) {                              // reordenar DOM
+    if (to > from) items[to].after(li); else items[to].before(li);
+  }
   const newOrder = [...list.querySelectorAll('.pl-song-li')]
     .map((el) => el.getAttribute('data-song-id'))
     .filter(Boolean);
+  plDrag = null;
   void setManagerPlaylistTracks(pl.id, newOrder, { silent: true });
 }
 
