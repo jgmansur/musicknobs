@@ -2499,7 +2499,8 @@ async function setCatalogRating(songId, star) {
   const current = Number(song.rating || 0);
   const next = (current === star) ? 0 : star;
   song.rating = next;
-  resortCatalog();
+  // No reordenar al instante (evita que la fila salte mientras calificás).
+  // El orden por rating se aplica en el próximo refresh (setCatalog → resortCatalog).
   renderCatalog();
   try {
     const r = await fetch(`${API_BASE}/api/manager/catalog/${songId}`, {
