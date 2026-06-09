@@ -123,6 +123,8 @@ let lyricsHintAnimTimers = [];
 let catalogQueue = [];
 let playlistsCache = [];
 let selectedPlaylistId = '';
+let playlistEditMode = false;            // modo edición (lista o detalle)
+let playlistSelection = new Set();       // ids seleccionados (playlists o canciones)
 let contactsVisibleCount = 12;
 let messagesVisibleCount = 20;
 let catalogVisibleCount = 20;
@@ -593,6 +595,8 @@ function renderPlaylistsView() {
     document.getElementById('pl-detail-back')?.addEventListener('click', () => {
       selectedPlaylistId = '';
       catalogVisibleCount = CATALOG_PAGE_STEP;
+      playlistEditMode = false;
+      playlistSelection.clear();
       renderPlaylists();
       renderCatalog();
     });
@@ -608,28 +612,38 @@ function renderPlaylistsView() {
     return;
   }
 
-  // ── LISTA ──
+  // ── LISTA ── (con modo edición: seleccionar varias y borrarlas juntas)
+  const editing = playlistEditMode;
   const rows = playlistsCache.map((pl) => {
     const count = Number(pl.trackCount || (pl.tracks || []).length || 0);
-    return `
-      <li>
-        <button class="pl-row" data-pl-open="${escapeHtml(pl.id)}" type="button">
-          ${buildPlaylistMosaic(pl)}
-          <span class="pl-row-meta">
-            <strong>${escapeHtml(pl.name)}</strong>
-            <span class="pl-row-count">${count} ${count === 1 ? 'canción' : 'canciones'}</span>
-          </span>
-          <span class="pl-row-chevron">›</span>
-        </button>
-      </li>`;
+    const sel = playlistSelection.has(pl.id);
+    const inner = `
+      ${editing ? `<span class="pl-check ${sel ? 'on' : ''}">${sel ? '✓' : ''}</span>` : ''}
+      ${buildPlaylistMosaic(pl)}
+      <span class="pl-row-meta">
+        <strong>${escapeHtml(pl.name)}</strong>
+        <span class="pl-row-count">${count} ${count === 1 ? 'canción' : 'canciones'}</span>
+      </span>
+      ${editing ? '' : '<span class="pl-row-chevron">›</span>'}`;
+    return editing
+      ? `<li><div class="pl-row pl-row-edit ${sel ? 'is-selected' : ''}" data-pl-select="${escapeHtml(pl.id)}">${inner}</div></li>`
+      : `<li><button class="pl-row" data-pl-open="${escapeHtml(pl.id)}" type="button">${inner}</button></li>`;
   }).join('');
 
+  const nSel = playlistSelection.size;
   el.innerHTML = `
     <div class="pl-list-head">
       <h4>Playlists</h4>
-      ${isAuthenticated ? `<button class="catalog-icon-btn" id="pl-list-create" type="button" aria-label="Crear nueva playlist" title="Nueva playlist">＋</button>` : ''}
+      <div class="pl-list-head-actions">
+        ${(playlistsCache.length && isAuthenticated) ? `<button class="pl-text-btn" id="pl-list-edit" type="button">${editing ? 'Listo' : 'Editar'}</button>` : ''}
+        ${(!editing && isAuthenticated) ? `<button class="catalog-icon-btn" id="pl-list-create" type="button" aria-label="Crear nueva playlist" title="Nueva playlist">＋</button>` : ''}
+      </div>
     </div>
-    ${isAuthenticated ? `<div id="pl-list-create-form" class="hidden catalog-playlist-create-form">
+    ${editing ? `<div class="pl-edit-bar">
+      <span class="pl-edit-count">${nSel} seleccionada${nSel === 1 ? '' : 's'}</span>
+      <button class="pl-danger-btn" id="pl-list-delete-selected" type="button" ${nSel ? '' : 'disabled'}>🗑 Borrar</button>
+    </div>` : ''}
+    ${(!editing && isAuthenticated) ? `<div id="pl-list-create-form" class="hidden catalog-playlist-create-form">
       <input id="pl-list-create-input" class="catalog-genre-select" type="text" placeholder="Nombre de la nueva playlist..." />
       <button class="mini-btn" id="pl-list-create-submit" type="button">Crear</button>
     </div>` : ''}
@@ -644,6 +658,19 @@ function renderPlaylistsView() {
       renderCatalog();
     });
   });
+  el.querySelectorAll('[data-pl-select]').forEach((row) => {
+    row.addEventListener('click', () => {
+      const id = String(row.getAttribute('data-pl-select') || '');
+      if (playlistSelection.has(id)) playlistSelection.delete(id); else playlistSelection.add(id);
+      renderPlaylistsView();
+    });
+  });
+  document.getElementById('pl-list-edit')?.addEventListener('click', () => {
+    playlistEditMode = !playlistEditMode;
+    playlistSelection.clear();
+    renderPlaylistsView();
+  });
+  document.getElementById('pl-list-delete-selected')?.addEventListener('click', () => deleteSelectedPlaylists());
   const createBtn = document.getElementById('pl-list-create');
   const createForm = document.getElementById('pl-list-create-form');
   if (createBtn && createForm) {
@@ -657,6 +684,28 @@ function renderPlaylistsView() {
     const name = String(input?.value || '').trim();
     if (name) createPlaylist(name);
   });
+}
+
+// Borra varias playlists seleccionadas en una acción (una sola confirmación).
+async function deleteSelectedPlaylists() {
+  if (!isAuthenticated) return;
+  const ids = [...playlistSelection];
+  if (!ids.length) return;
+  const names = ids.map((id) => playlistsCache.find((p) => p.id === id)?.name || 'playlist');
+  if (!window.confirm(`¿Borrar ${ids.length} playlist${ids.length === 1 ? '' : 's'}?\n${names.join(', ')}\nEsta acción no se puede deshacer.`)) return;
+  setStatus('catalog-status', `Borrando ${ids.length} playlists...`);
+  let ok = 0, fail = 0;
+  for (const id of ids) {
+    try {
+      const r = await fetch(`${API_BASE}/api/manager/playlists/${id}`, { method: 'DELETE', headers: apiHeaders() });
+      if (r.ok) ok += 1; else fail += 1;
+    } catch { fail += 1; }
+  }
+  playlistSelection.clear();
+  playlistEditMode = false;
+  setStatus('catalog-status', `Playlists borradas: ${ok}${fail ? ` · fallaron ${fail}` : ''}.`, fail > 0);
+  await loadPlaylistsFromApi();
+  renderCatalog();
 }
 
 async function loadPlaylistsFromApi() {
@@ -2018,6 +2067,8 @@ function renderCatalog() {
     catalogGenreFilter = 'Todas';
     selectedPlaylistId = '';   // siempre arrancar en la lista de playlists
     catalogSearchQuery = '';
+    playlistEditMode = false;
+    playlistSelection.clear();
     renderCatalog();
   };
 

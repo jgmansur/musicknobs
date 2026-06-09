@@ -2154,6 +2154,22 @@ body:not(.catalog-active) .catalog-player { display: none !important; }
 }
 .pl-icon-btn:hover { border-color: var(--bay-accent); color: var(--bay-accent); }
 
+/* Modo edición de la lista de playlists (multi-select) */
+.pl-list-head-actions { display: flex; align-items: center; gap: 10px; }
+.pl-text-btn { background: none; border: none; color: var(--bay-accent); font-weight: 600; font-size: .9rem; cursor: pointer; padding: 5px; }
+.pl-edit-bar { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 5px 0 10px; }
+.pl-edit-count { color: var(--bay-muted); font-size: .85rem; }
+.pl-danger-btn { background: var(--bay-surface); border: 1px solid var(--bay-border); color: var(--bay-accent); border-radius: 10px; padding: 8px 15px; font-weight: 600; cursor: pointer; }
+.pl-danger-btn:disabled { color: var(--bay-muted); cursor: default; opacity: 1; }
+.pl-row-edit { /* hereda .pl-row; sin chevron, con checkbox */ }
+.pl-row.is-selected { background: rgba(255,16,151,.08); }
+.pl-check {
+  flex: 0 0 auto; width: 22px; height: 22px; border-radius: 50%;
+  border: 2px solid var(--bay-border); display: grid; place-items: center;
+  color: #fff; font-size: .8rem; font-weight: 700;
+}
+.pl-check.on { background: var(--bay-accent); border-color: var(--bay-accent); }
+
 /* Leyenda "... ver letra" — texto magenta con glow, animación typewriter + bounce */
 .lyrics-hint-pill {
   position: absolute;
