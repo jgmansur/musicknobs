@@ -1,15 +1,16 @@
 :root {
-  --bg-color: #0b1120;
-  --glass-bg: rgba(20, 30, 55, 0.75);
-  --glass-border: rgba(255, 255, 255, 0.08);
-  --glass-border-hover: rgba(251, 191, 36, 0.35);
-  --primary: #fbbf24;
-  --primary-hover: #f59e0b;
-  --text-main: #f1f5f9;
-  --text-muted: #64748b;
-  --text-soft: #94a3b8;
+  /* Look & feel bayeight — global */
+  --bg-color: #000000;
+  --glass-bg: rgba(22, 22, 24, 0.82);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-border-hover: rgba(255, 16, 151, 0.45);
+  --primary: #ff1097;
+  --primary-hover: #ff3dab;
+  --text-main: #f5f5f5;
+  --text-muted: #8a8a8a;
+  --text-soft: #b5b5b5;
   --radius-xl: 1.25rem;
-  --shadow-glass: 0 8px 32px rgba(0, 0, 0, 0.45);
+  --shadow-glass: 0 8px 32px rgba(0, 0, 0, 0.55);
   --tab-height: 4.5rem;
 }
 
@@ -83,8 +84,8 @@ body {
   display: flex;
   flex-direction: column;
   background-image:
-    radial-gradient(ellipse at 10% 0%, rgba(251, 191, 36, .08) 0, transparent 55%),
-    radial-gradient(ellipse at 90% 100%, rgba(59, 130, 246, .07) 0, transparent 55%);
+    radial-gradient(ellipse at 10% 0%, rgba(255, 16, 151, .08) 0, transparent 55%),
+    radial-gradient(ellipse at 90% 100%, rgba(255, 16, 151, .05) 0, transparent 55%);
   padding-left: env(safe-area-inset-left);
   padding-right: env(safe-area-inset-right);
 }
@@ -96,30 +97,31 @@ body.focus-active .topbar {
 .topbar {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   gap: .75rem;
-  margin: .6rem auto .4rem;
+  margin: .4rem auto .4rem;
   max-width: 980px;
   width: calc(100% - 2rem);
   flex-shrink: 0;
-  padding: .65rem 1rem;
-  border-radius: 1.25rem;
-  background: rgba(11, 17, 32, .88);
+  padding: .5rem 1.1rem;
+  border-radius: 15px;
+  background: #0d0d0f;
   border: 1px solid var(--glass-border);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
 }
 
 h1 {
   margin: 0;
-  font-size: 1.05rem;
-  font-weight: 800;
-  letter-spacing: -.02em;
+  font-family: "Bebas Neue", "Inter", sans-serif;
+  font-size: 1.7rem;
+  font-weight: 400;
+  letter-spacing: .03em;
   display: flex;
   align-items: baseline;
-  gap: .45rem;
+  gap: .5rem;
   flex-wrap: wrap;
+  color: var(--text-main);
 }
+h1 .title-version { color: var(--primary); }
 
 .title-version {
   font-size: .74rem;
@@ -145,11 +147,18 @@ h1 {
 
 /* Header compacto: acciones principales más pequeñas para ganar espacio vertical */
 #google-auth-toggle,
-#print-btn {
+#print-btn,
+#share-app-btn {
   padding: .46rem .72rem;
   font-size: .72rem;
   border-radius: .68rem;
   line-height: 1.1;
+}
+/* Botón compartir: misma altura que CV, icono centrado */
+#share-app-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .oauth-header-status {
@@ -173,7 +182,11 @@ h1 {
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior-y: contain;
+  scrollbar-width: none;       /* Firefox */
+  -ms-overflow-style: none;    /* IE/Edge viejo */
 }
+/* Scrollbar invisible en web (en móvil ya se auto-oculta) */
+.container::-webkit-scrollbar { width: 0; height: 0; display: none; }
 
 .card {
   background: var(--glass-bg);
@@ -190,8 +203,8 @@ h1 {
 .hero p { margin: 0; color: var(--text-soft); }
 
 .featured-box {
-  border: 1px solid rgba(251, 191, 36, .22);
-  background: rgba(251, 191, 36, .08);
+  border: 1px solid rgba(255, 16, 151, .22);
+  background: rgba(255, 16, 151, .08);
   border-radius: 1rem;
   padding: .75rem;
 }
@@ -199,6 +212,125 @@ h1 {
 .featured-box h3 {
   margin: 0 0 .45rem;
   font-size: .86rem;
+}
+
+/* ===================== Overview — rediseño elegante ===================== */
+.ov-section { margin-bottom: 1.4rem; }
+.ov-section:last-child { margin-bottom: 0; }
+
+.ov-section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .6rem;
+  margin-bottom: .7rem;
+}
+.ov-section-title {
+  margin: 0;
+  font-family: "Bebas Neue", "Inter", sans-serif;
+  font-size: 1.45rem;
+  letter-spacing: .03em;
+  color: var(--text-main);
+  line-height: 1;
+}
+.ov-section-actions { display: flex; align-items: center; gap: .5rem; }
+
+.ov-icon-btn {
+  flex: 0 0 auto;
+  width: 2.2rem;
+  height: 2.2rem;
+  border: 1px solid var(--glass-border);
+  background: rgba(255,255,255,.04);
+  color: var(--text-soft);
+  border-radius: .55rem;
+  font-size: 1.15rem;
+  line-height: 1;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  transition: color .15s ease, border-color .15s ease, transform .3s ease;
+}
+.ov-icon-btn:hover { color: var(--primary); border-color: var(--primary); }
+.ov-icon-btn:active { transform: rotate(180deg); }
+.ov-new-btn { padding: .45rem .85rem; font-size: .8rem; }
+
+.ov-filter-row { margin-bottom: .8rem; }
+.ov-filter-row .compact-control { max-width: 220px; }
+
+.ov-load-more {
+  width: 100%;
+  margin-top: .7rem;
+}
+.ov-load-more:disabled { display: none; }
+
+/* Contactos: título en un solo renglón, acciones a la derecha */
+#tab-contacts .panel-head { gap: .6rem; flex-wrap: nowrap; align-items: center; }
+#tab-contacts .panel-head .ov-section-title { white-space: nowrap; }
+#tab-contacts .panel-head .actions { flex: 0 0 auto; gap: .5rem; align-items: center; }
+
+/* Listas sin bullets ni sangría rara */
+#tab-overview .list { padding-left: 0; list-style: none; }
+#tab-overview .compact-list > li { list-style: none; border-bottom: 0; }
+
+/* Anuncios y tareas como tarjetas limpias */
+#tab-overview #messages-featured { display: grid; gap: .55rem; }
+#tab-overview #tasks-list { display: grid; gap: .55rem; }
+#tab-overview #messages-featured > li,
+#tab-overview #tasks-list > li {
+  border: 1px solid var(--glass-border);
+  background: rgba(255,255,255,.025);
+  border-radius: .8rem;
+  padding: .75rem .85rem;
+}
+
+/* Subtasks: casilla y texto separados (la casilla marca, el texto es libre/clickeable) */
+#tab-overview .subtasks-list { padding-left: .1rem; margin-top: .55rem; display: grid; gap: .35rem; }
+#tab-overview .subtask-item {
+  display: flex;
+  align-items: flex-start;
+  gap: .55rem;
+  list-style: none;
+}
+#tab-overview .subtask-check {
+  flex: 0 0 auto;
+  margin-top: .15rem;
+  cursor: pointer;
+}
+#tab-overview .subtask-text {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.subtask-link { color: var(--primary); text-decoration: underline; }
+
+/* Título de la task como enlace a su nota de Notion */
+.task-main { min-width: 0; }
+#tab-overview .task-title-link {
+  font-weight: 700;
+  font-size: .92rem;
+  color: var(--text-main);
+  text-decoration: none;
+}
+#tab-overview .task-title-link:hover { color: var(--primary); text-decoration: underline; }
+
+#tab-overview input[type="checkbox"] { accent-color: var(--primary); width: 1rem; height: 1rem; }
+
+/* Anuncios: el texto del mensaje en magenta y bold para que resalte */
+#tab-overview #messages-featured .featured-text { color: var(--primary); font-weight: 700; }
+#tab-overview #messages-featured .featured-date {
+  color: var(--text-muted);
+  font-size: .72rem;
+  margin-top: .3rem;
+}
+
+/* Selects con look bayeight (sin flechas nativas feas) */
+select.field-input {
+  -webkit-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238a8a8a' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right .75rem center;
+  padding-right: 2.1rem;
 }
 
 .message-row {
@@ -213,7 +345,7 @@ h1 {
   border: none;
   border-radius: 1rem;
   overflow: hidden;
-  background: #0b141a;
+  background: transparent;
   height: 100%;
   display: flex;
   flex-direction: column;
@@ -224,7 +356,7 @@ h1 {
   justify-content: space-between;
   align-items: center;
   padding: 10px 16px;
-  background: #202c33;
+  background: #1b1b1f;
   border-bottom: 1px solid rgba(255,255,255,0.05);
 }
 
@@ -291,17 +423,15 @@ h1 {
 .messages-chat-list {
   flex: 1;
   margin: 0;
-  padding: 1.5rem 6%;
+  padding: 1rem .25rem;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  background-color: #0b141a;
-  background-image: 
-    linear-gradient(28deg, rgba(239, 234, 226, 0.02) 20%, transparent 20%),
-    linear-gradient(-28deg, rgba(239, 234, 226, 0.02) 20%, transparent 20%);
-  background-size: 40px 40px;
+  gap: 8px;
+  background: transparent;
+  scrollbar-width: none;
 }
+.messages-chat-list::-webkit-scrollbar { width: 0; height: 0; display: none; }
 
 .messages-chat-list > li {
   list-style: none;
@@ -320,48 +450,28 @@ h1 {
 }
 
 .chat-bubble {
-  max-width: 85%;
-  border-radius: 7.5px;
-  padding: 6px 7px 8px 9px;
-  background: #202c33;
-  color: #e9edef;
-  font-size: 14.2px;
-  line-height: 19px;
-  box-shadow: 0 1px 0.5px rgba(11,20,26,.13);
+  max-width: 80%;
+  border-radius: 16px;
+  padding: .55rem .85rem;
+  background: #1b1b1f;
+  color: var(--text-main);
+  font-size: .9rem;
+  line-height: 1.38;
   position: relative;
-  border: none;
+  border: 1px solid var(--glass-border);
 }
 
 .chat-bubble.mine {
-  background: #005c4b;
+  background: #8a1e54;
+  color: #fff;
+  border-color: transparent;
 }
+.chat-bubble.mine .wa-meta { color: rgba(255,255,255,.8); }
+.chat-bubble.mine .message-text { color: #fff; }
 
-/* Colitas de mensaje tipo WhatsApp */
-.messages-chat-list > li.mine .chat-bubble {
-  border-top-right-radius: 0;
-}
-
-.messages-chat-list > li.mine .chat-bubble::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  right: -8px;
-  border-top: 10px solid #005c4b;
-  border-right: 10px solid transparent;
-}
-
-.messages-chat-list > li.other .chat-bubble {
-  border-top-left-radius: 0;
-}
-
-.messages-chat-list > li.other .chat-bubble::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -8px;
-  border-top: 10px solid #202c33;
-  border-left: 10px solid transparent;
-}
+/* Esquina inferior menos redondeada (estilo iMessage, sin colitas) */
+.messages-chat-list > li.mine .chat-bubble { border-bottom-right-radius: 5px; }
+.messages-chat-list > li.other .chat-bubble { border-bottom-left-radius: 5px; }
 
 .chat-header {
   display: flex;
@@ -378,13 +488,11 @@ h1 {
 }
 
 .wa-meta {
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.45);
+  font-size: 11.5px;
+  color: rgba(255, 255, 255, 0.6);
   display: inline-flex;
   align-items: center;
-  float: right;
-  margin-left: 10px;
-  margin-top: 5px;
+  margin: 0 0 .15rem;
 }
 
 .message-feature-btn {
@@ -401,28 +509,32 @@ h1 {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 10px 16px;
-  background: #202c33;
+  padding: .6rem .35rem;
+  background: transparent;
+  border-top: 1px solid var(--glass-border);
+  flex: 0 0 auto;
 }
 
 .wa-input {
   flex: 1;
-  background: #2a3942;
-  border: none;
-  border-radius: 8px;
-  padding: 9px 12px;
-  color: #e9edef;
+  background: rgba(255,255,255,.05);
+  border: 1px solid var(--glass-border);
+  border-radius: 14px;
+  padding: .6rem .85rem;
+  color: var(--text-main);
   font-size: 15px;
   resize: none;
   font-family: inherit;
 }
+
+.wa-input:focus { border-color: var(--primary); }
 
 .wa-input:focus {
   outline: none;
 }
 
 .wa-send-btn {
-  background: #00a884;
+  background: #ff1097;
   color: #fff;
   width: 40px;
   height: 40px;
@@ -461,7 +573,7 @@ h1 {
 .message-action-btn:hover { opacity: 1; background: rgba(255,255,255,0.08); }
 
 .wa-send-btn:hover {
-  background: #02c49a;
+  background: #ff3dab;
 }
 
 .tab-bar {
@@ -471,7 +583,7 @@ h1 {
   right: 0;
   height: calc(var(--tab-height) + env(safe-area-inset-bottom));
   padding-bottom: env(safe-area-inset-bottom);
-  background: rgba(10, 15, 30, 0.92);
+  background: rgba(10, 10, 12, 0.94);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
   border-top: 1px solid rgba(255,255,255,.07);
@@ -499,12 +611,8 @@ body.tabbar-hidden .container {
   padding-bottom: calc(1.1rem + env(safe-area-inset-bottom));
 }
 
-body.tabbar-hidden .catalog-player {
-  bottom: calc(env(safe-area-inset-bottom) + .6rem);
-}
-
 .tab {
-  flex: 0 0 clamp(4.1rem, 20vw, 5.1rem);
+  flex: 0 0 4.6rem;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -784,12 +892,30 @@ body.tabbar-hidden .catalog-player {
   padding: 0;
   overflow: hidden;
   border-radius: 1.75rem;
-  background: rgba(11, 17, 32, .96);
+  background: rgba(16, 16, 18, .96);
+}
+
+/* Libro: la página no scrollea, solo el contenido del iframe (patrón flex) */
+body.book-active .container {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 0;
+}
+#tab-book.panel-fullscreen.active {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 0 0 calc(var(--tab-height) + env(safe-area-inset-bottom)) 0;
 }
 
 .book-iframe {
   width: 100%;
-  height: calc(100dvh - 220px);
+  flex: 1;
+  min-height: 0;
+  height: auto;
   border: none;
   display: block;
   background: transparent;
@@ -816,8 +942,8 @@ body.tabbar-hidden .catalog-player {
 }
 
 .sale-hero {
-  border: 1px solid rgba(251, 191, 36, .24);
-  background: rgba(251, 191, 36, .08);
+  border: 1px solid rgba(255, 16, 151, .24);
+  background: rgba(255, 16, 151, .08);
   border-radius: 1rem;
   padding: .8rem;
 }
@@ -1066,43 +1192,124 @@ body.tabbar-hidden .catalog-player {
 }
 
 .task-actions-toggle {
-  width: 1.55rem;
-  height: 1.55rem;
+  width: 1.9rem;
+  height: 1.9rem;
   border: 1px solid var(--glass-border);
-  border-radius: .48rem;
+  border-radius: .6rem;
   background: rgba(255,255,255,.06);
   color: var(--text-soft);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  font-size: .72rem;
+  font-size: .85rem;
   line-height: 1;
   user-select: none;
+  transition: background .15s ease, color .15s ease;
 }
+.task-actions-toggle:hover { color: var(--text-main); }
 
 .task-actions-menu[open] .task-actions-toggle {
   background: rgba(255,255,255,.12);
+  color: var(--text-main);
 }
 
+/* Menú contextual con efecto "Liquid Glass" (emulado en CSS) */
 .task-actions-dropdown {
   position: absolute;
   right: 0;
-  top: calc(100% + .35rem);
+  top: calc(100% + .4rem);
   display: grid;
-  gap: .25rem;
-  min-width: 6.7rem;
-  padding: .3rem;
-  border-radius: .6rem;
-  border: 1px solid var(--glass-border);
-  background: rgba(9, 14, 24, .96);
-  box-shadow: 0 10px 24px rgba(0,0,0,.35);
-  z-index: 20;
+  gap: .1rem;
+  min-width: 9.5rem;
+  padding: .4rem;
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,.16);
+  background: rgba(38, 38, 44, .96);
+  -webkit-backdrop-filter: blur(22px) saturate(180%);
+  backdrop-filter: blur(22px) saturate(180%);
+  box-shadow:
+    0 16px 44px rgba(0,0,0,.55),
+    inset 0 1px 0 rgba(255,255,255,.12);
+  z-index: 30;
+  transform-origin: top right;
+  animation: liquid-glass-pop .18s cubic-bezier(.2, 1, .22, 1);
 }
+
+@keyframes liquid-glass-pop {
+  from { opacity: 0; transform: scale(.9) translateY(-6px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* Menú que abre hacia arriba cuando está muy abajo en pantalla */
+.task-actions-menu.drop-up .task-actions-dropdown {
+  top: auto;
+  bottom: calc(100% + .4rem);
+  transform-origin: bottom right;
+  animation: liquid-glass-pop-up .18s cubic-bezier(.2, 1, .22, 1);
+}
+@keyframes liquid-glass-pop-up {
+  from { opacity: 0; transform: scale(.9) translateY(6px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.catalog-add-plus {
+  display: inline-block;
+  color: var(--primary);
+  font-weight: 700;
+  font-size: 1.05em;
+  width: 1em;
+  text-align: center;
+}
+
+/* ── Rating (admin) + Like (visitante) en filas de catálogo ─────────────────── */
+.catalog-stars {
+  display: inline-flex;
+  align-items: center;
+  gap: 1px;
+  flex: 0 0 auto;
+}
+.catalog-star {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0 1px;
+  font-size: .8rem;
+  line-height: 1;
+  color: #555;
+  transition: color .15s ease, transform .1s ease;
+}
+.catalog-star.on { color: #f5c518; }
+.catalog-star:hover { transform: scale(1.2); }
+
+.catalog-like {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  color: var(--text-soft);
+  display: inline-grid;
+  place-items: center;
+  transition: color .15s ease, transform .1s ease;
+}
+.catalog-like.liked { color: var(--primary); }
+.catalog-like.liked svg { fill: currentColor; }
+.catalog-like:active { transform: scale(.88); }
+.catalog-like.hidden { display: none; }
 
 .task-actions-dropdown .mini-btn {
   width: 100%;
   text-align: left;
+  border: 0;
+  background: transparent;
+  color: var(--text-main);
+  padding: .55rem .7rem;
+  border-radius: 10px;
+  font-size: .82rem;
+  transition: background .12s ease;
+}
+.task-actions-dropdown .mini-btn:hover {
+  background: rgba(255,255,255,.14);
 }
 
 .task-meta {
@@ -1170,8 +1377,8 @@ body.tabbar-hidden .catalog-player {
 }
 
 .mini-btn.active {
-  border-color: rgba(251, 191, 36, .45);
-  background: rgba(251, 191, 36, .14);
+  border-color: rgba(255, 16, 151, .45);
+  background: rgba(255, 16, 151, .14);
 }
 
 .list {
@@ -1189,16 +1396,92 @@ a { color: #93c5fd; }
   border-radius: .95rem;
 }
 
+/* Re-skin bayeight scopeado SOLO a la pestaña catálogo.
+   Re-mapea las variables de tema que ya usan los elementos del catálogo,
+   sin tocar el resto de la app (cascada de CSS custom properties). */
+#tab-catalog {
+  --primary: #ff1097;
+  --primary-hover: #ff3dab;
+  --glass-border: #2a2a2a;
+  --glass-border-hover: rgba(255, 16, 151, .45);
+  /* Sin blur: coherente con bayeight Y evita que el blur cree un containing
+     block que atrape el position:fixed del reproductor (bug del player que
+     se iba con el scroll). */
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  /* Aplanado: sin tarjeta de fondo (adiós card-dentro-de-card). El buscador y
+     la lista viven sobre una sola superficie negra, mismo ancho — estilo Spotify. */
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  border-radius: 0;
+  padding-left: .25rem;
+  padding-right: .25rem;
+}
+#tab-catalog .catalog-shell { background: transparent; }
+
+/* Overview y Contactos: también sin tarjeta de fondo (contenido directo sobre negro) */
+#tab-overview,
+#tab-contacts {
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  border-radius: 0;
+  padding-left: .25rem;
+  padding-right: .25rem;
+}
+#tab-catalog #catalog-status { text-align: right; }
+
+/* Alineación pro: buscador, botón refrescar, status y lista — mismo ancho exacto */
+#tab-catalog .panel-actions-inline,
+#tab-catalog .panel-status-inline {
+  padding-left: 0;
+  padding-right: 0;
+  margin-left: 0;
+  margin-right: 0;
+}
+#tab-catalog .task-filters { margin-left: 0; margin-right: 0; }
+/* Fuerza el input de búsqueda a llenar todo el ancho (Safari no estira type=search en flex) */
+#tab-catalog .task-filters { position: relative; margin-top: .3rem; }
+#tab-catalog .task-filters .field-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  width: 100%;
+  padding-right: 2.6rem;   /* espacio para el icono de refrescar */
+}
+/* Botón refrescar integrado dentro de la caja de búsqueda (sutil) */
+.catalog-refresh-btn {
+  position: absolute;
+  right: .55rem;
+  top: 50%;
+  transform: translateY(-50%);
+  border: 0;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 1.2rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: .25rem;
+  border-radius: 50%;
+  transition: color .15s ease, transform .3s ease;
+}
+.catalog-refresh-btn:hover { color: var(--primary); }
+.catalog-refresh-btn:active { transform: translateY(-50%) rotate(180deg); }
+#tab-catalog .catalog-song-row.is-active {
+  background: rgba(255, 16, 151, .10);
+  outline-color: rgba(255, 16, 151, .35);
+}
+
 .catalog-shell {
   margin-top: .45rem;
-  border: 1px solid var(--glass-border);
-  border-radius: .85rem;
-  overflow: hidden;
-  background: rgba(10, 18, 30, .72);
+  border: 0;
+  border-radius: 0;
+  overflow: visible;
+  background: transparent;
   height: auto;
-  max-height: min(68vh, 620px);
+  max-height: none;
   display: grid;
-  grid-template-rows: 1fr auto auto;
+  grid-template-rows: 1fr auto;
 }
 
 #tab-catalog.panel-fullscreen {
@@ -1234,6 +1517,49 @@ a { color: #93c5fd; }
   padding: .24rem .5rem;
 }
 
+/* Vista géneros: tabs (Géneros/Playlists) + selector en un solo renglón.
+   flex-wrap hace que en columnas angostas (desktop 180px) el selector baje solo. */
+.catalog-pane.is-genres-view {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .5rem;
+}
+.catalog-pane.is-genres-view .catalog-filter-tabs { margin-bottom: 0; }
+.catalog-pane.is-genres-view #catalog-genres { flex: 1 1 140px; min-width: 0; }
+.catalog-pane.is-genres-view .catalog-genre-label { display: none; }
+
+/* Vista playlists: selector + iconos crear/borrar en una fila */
+.catalog-playlist-selector {
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+}
+.catalog-playlist-selector .catalog-genre-select { flex: 1 1 auto; min-width: 0; }
+.catalog-icon-btn {
+  flex: 0 0 auto;
+  width: 2.3rem;
+  height: 2.3rem;
+  border: 1px solid var(--glass-border);
+  background: rgba(255,255,255,.04);
+  color: var(--text-soft);
+  border-radius: .55rem;
+  font-size: 1.1rem;
+  line-height: 1;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  transition: color .15s ease, border-color .15s ease;
+}
+.catalog-icon-btn:hover { color: var(--primary); border-color: var(--primary); }
+.catalog-playlist-create-form {
+  display: flex;
+  gap: .4rem;
+  margin-top: .4rem;
+}
+.catalog-playlist-create-form .catalog-genre-select { flex: 1 1 auto; min-width: 0; }
+.catalog-playlist-create-form .mini-btn { flex: 0 0 auto; }
+
 .catalog-playlist-pane-actions {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -1257,7 +1583,7 @@ a { color: #93c5fd; }
   display: grid;
   grid-template-columns: 180px 1fr;
   min-height: 0;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .catalog-pane {
@@ -1277,8 +1603,8 @@ a { color: #93c5fd; }
 .catalog-songs-list {
   padding-left: 0;
   margin: 0;
-  max-height: 100%;
-  overflow: auto;
+  max-height: none;
+  overflow: visible;
 }
 
 .catalog-genres-list > li,
@@ -1336,8 +1662,8 @@ a { color: #93c5fd; }
 
 .catalog-song-row.is-active {
   border-radius: .55rem;
-  background: rgba(251, 191, 36, .08);
-  outline: 1px solid rgba(251, 191, 36, .25);
+  background: rgba(255, 16, 151, .08);
+  outline: 1px solid rgba(255, 16, 151, .25);
   padding: .18rem .22rem;
 }
 
@@ -1375,6 +1701,34 @@ a { color: #93c5fd; }
   white-space: nowrap;
 }
 
+/* Línea de título + stats (plays/likes) — clip normal, marquee al estar activa */
+.catalog-song-main .catalog-song-titleline {
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  min-width: 0;
+}
+.catalog-song-titleline-inner {
+  display: inline-flex;
+  align-items: baseline;
+  gap: .45rem;
+}
+.catalog-song-stats {
+  display: inline-flex;
+  gap: .4rem;
+  flex: 0 0 auto;
+  color: var(--text-soft);
+  font-size: .68rem;
+  font-weight: 400;
+}
+.catalog-stat { white-space: nowrap; }
+/* El título solo escrolea (marquee) cuando NO cabe: la clase .is-overflowing
+   la pone el JS tras medir el ancho real. Si cabe, queda estático. */
+.catalog-song-row.is-active .catalog-song-titleline.is-overflowing .catalog-song-titleline-inner {
+  padding-inline-start: 100%;
+  animation: catalog-authors-marquee 10s linear infinite;
+}
+
 /* En canción activa: autores hacen scroll horizontal automático */
 .catalog-song-row.is-active .catalog-song-main .catalog-authors {
   text-overflow: clip;
@@ -1403,128 +1757,675 @@ a { color: #93c5fd; }
   min-width: 9.5rem;
 }
 
-.catalog-playing-now {
-  width: 100%;
-  border: 0;
-  background: rgba(15, 118, 110, .3);
-  color: var(--text-main);
-  padding: .6rem .7rem;
-  text-align: left;
-  cursor: pointer;
-  border-top: 1px solid rgba(255,255,255,.08);
-}
-
-.catalog-now-card {
-  border-top: 1px solid rgba(255,255,255,.08);
-  background: rgba(17, 27, 33, .88);
-  padding: .7rem;
-}
-
-.catalog-now-card-inner h4 {
-  margin: 0 0 .4rem;
-}
-
-.catalog-now-card-inner p {
-  margin: .2rem 0;
-  color: var(--text-soft);
-  font-size: .78rem;
-}
-
+/* ========================================================================
+   Reproductor de catálogo — look & feel bayeight (scoped a la pestaña)
+   Mini-bar (colapsado) + vista expandida tipo Spotify.
+   ===================================================================== */
 .catalog-player {
-  border-top: 1px solid rgba(255,255,255,.08);
-  background: rgba(9, 14, 24, .92);
-  padding: .5rem .55rem calc(1.6rem + env(safe-area-inset-bottom));
-  display: grid;
-  gap: .42rem;
-}
-
-.catalog-player-head {
-  display: grid;
-  grid-template-columns: 44px 1fr;
-  gap: .45rem;
-  align-items: center;
-}
-
-.catalog-player-cover-wrap {
-  width: 44px;
-  height: 44px;
-  border-radius: .65rem;
-  overflow: hidden;
-  border: 1px solid var(--glass-border);
-  background: rgba(255,255,255,.04);
-  position: relative;
-}
-
-.catalog-player-cover {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: none;
-}
-
-.catalog-player-cover.visible {
+  --bay-bg: #000000;
+  --bay-surface: #141414;
+  --bay-accent: #ff1097;
+  --bay-border: #2a2a2a;
+  --bay-text: #ffffff;
+  --bay-muted: #8a8a8a;
   display: block;
 }
 
+/* Oculto el reproductor completo hasta que haya una pista cargada */
+.catalog-player:not(.has-track) { display: none; }
+/* El player SOLO se ve en la pestaña Catálogo (la música sigue sonando vía Howler,
+   pero el mini-bar no debe aparecer en otras pestañas). */
+body:not(.catalog-active) .catalog-player { display: none !important; }
+
+/* Mini-bar fijo abajo en TODOS los tamaños (web = móvil), anclado arriba del tab bar */
+.catalog-player.has-track {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: calc(var(--tab-height) + env(safe-area-inset-bottom));
+  z-index: 30;
+}
+
+/* ── Mini-bar ── */
+.player-mini {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: .7rem;
+  background: var(--bay-surface);
+  border: 1px solid var(--bay-border);
+  border-radius: 15px;
+  padding: .7rem .8rem;
+  margin: 0 auto .4rem;
+  max-width: 640px;
+}
+
+.player-mini-progress {
+  position: absolute;
+  top: 0;
+  left: 14px;
+  right: 14px;
+  height: 3px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.1);
+  overflow: hidden;
+}
+
+#player-mini-fill {
+  display: block;
+  height: 100%;
+  width: 0%;
+  background: var(--bay-accent);
+  border-radius: 999px;
+  transition: width .25s linear;
+}
+
+.player-mini-info {
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  color: var(--bay-text);
+  text-align: left;
+  cursor: pointer;
+  padding: 0;
+}
+
+.player-mini-meta {
+  display: grid;
+  gap: .1rem;
+  min-width: 0;
+}
+
+.player-mini-meta strong {
+  font-size: .9rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--bay-text);
+}
+.player-mini-meta .catalog-authors {
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--bay-muted);
+  font-size: .74rem;
+}
+
+.player-mini-play {
+  flex: 0 0 auto;
+  width: 2.6rem;
+  height: 2.6rem;
+  border-radius: 50%;
+  border: 0;
+  background: var(--bay-accent);
+  color: #fff;
+  font-size: 1rem;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  transition: transform .15s ease, opacity .15s ease;
+}
+.player-mini-play:hover { transform: scale(1.06); }
+.player-mini-play:active { transform: scale(.96); }
+
+/* Controles rápidos del mini-bar: inicio, −15s, +15s */
+.player-mini-controls {
+  display: flex;
+  align-items: center;
+  gap: .25rem;
+  flex: 0 0 auto;
+}
+.player-mini-ctrl {
+  flex: 0 0 auto;
+  border: 0;
+  background: transparent;
+  color: var(--bay-text);
+  font-size: .72rem;
+  font-weight: 700;
+  min-width: 1.9rem;
+  height: 1.9rem;
+  border-radius: 8px;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  font-variant-numeric: tabular-nums;
+  transition: color .15s ease, background .15s ease;
+}
+.player-mini-ctrl:hover { color: var(--bay-accent); }
+.player-mini-ctrl:active { background: rgba(255,255,255,.12); }
+
+/* Cover compartido (mini) */
+.catalog-player-cover-wrap {
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid var(--bay-border);
+  background: rgba(255,255,255,.04);
+  position: relative;
+  flex: 0 0 auto;
+}
+.catalog-player-cover { width: 100%; height: 100%; object-fit: cover; display: none; }
+.catalog-player-cover.visible { display: block; }
 .catalog-player-cover-placeholder {
   position: absolute;
   inset: 0;
   display: grid;
   place-items: center;
-  font-size: 1.25rem;
-  color: var(--text-soft);
+  font-size: 1.1rem;
+  color: var(--bay-muted);
 }
 
-.catalog-player-meta {
-  display: grid;
-  gap: .15rem;
-  min-width: 0;
-}
+/* ── Vista expandida (overlay) ── */
+.player-expanded { display: none; }
 
-.catalog-player-meta strong,
-.catalog-player-meta span {
-  overflow-wrap: anywhere;
+.catalog-player.is-expanded {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  margin: 0;
+  /* Fondo SÓLIDO (sin transparencia) con tinte magenta oscuro → negro.
+     Opaco al 100% para que la letra se lea clarísima. */
+  background: linear-gradient(180deg, #2a0a1a 0%, #14060e 42%, #000 100%);
 }
-
-.catalog-player-meta span {
-  color: var(--text-soft);
-  font-size: .74rem;
-}
-
-.catalog-player-controls {
+.catalog-player.is-expanded .player-mini { display: none; }
+.catalog-player.is-expanded .player-expanded {
   display: flex;
-  gap: .35rem;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  max-width: 480px;
+  margin: 0 auto;
+  padding: calc(env(safe-area-inset-top) + 1.1rem) 1.6rem calc(env(safe-area-inset-bottom) + 2.2rem);
+  box-sizing: border-box;
 }
 
-.catalog-player-controls .mini-btn {
-  flex: 1;
-  padding: .28rem .4rem;
-  font-size: .69rem;
+.player-collapse {
+  align-self: center;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  padding: 1rem 3rem;
+  margin: -.6rem 0 .2rem;
+  display: grid;
+  place-items: center;
+}
+.player-grabber {
+  display: block;
+  width: 44px;
+  height: 5px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.45);
+}
+.player-collapse:active .player-grabber { background: var(--bay-accent); }
+
+/* Cover grande centrado en el espacio libre (lo empuja al medio) */
+.player-exp-cover-wrap {
+  width: min(80vw, 360px);
+  aspect-ratio: 1;
+  margin: auto;
+  border-radius: 20px;
+  overflow: hidden;
+  border: 1px solid var(--bay-border);
+  background: rgba(255,255,255,.05);
+  box-shadow: 0 24px 60px rgba(0,0,0,.55);
+  position: relative;
+}
+.player-exp-cover { width: 100%; height: 100%; object-fit: cover; display: none; }
+.player-exp-cover.visible { display: block; }
+.player-exp-cover-placeholder {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-size: 5rem;
+  color: var(--bay-accent);
+  background: radial-gradient(circle at 50% 40%, rgba(255,16,151,.18), transparent 70%);
 }
 
-.catalog-player-progress-wrap {
+.player-exp-meta {
+  text-align: left;
+  display: grid;
+  gap: .2rem;
+  max-width: 100%;
+  margin-bottom: 1.4rem;
+}
+.player-exp-meta strong {
+  font-family: "Bebas Neue", "Inter", sans-serif;
+  font-size: 2.4rem;
+  letter-spacing: .02em;
+  color: var(--bay-text);
+  line-height: 1.02;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.player-exp-meta span { color: var(--bay-muted); font-size: .95rem; }
+
+.player-exp-progress {
+  width: 100%;
   display: grid;
   grid-template-columns: auto 1fr auto;
   align-items: center;
-  gap: .35rem;
-  font-size: .68rem;
-  color: var(--text-soft);
+  gap: .55rem;
+  font-size: .72rem;
+  color: var(--bay-muted);
+  margin-bottom: 1.6rem;
 }
+.player-exp-progress input[type="range"] { width: 100%; accent-color: var(--bay-accent); height: 4px; }
 
-.catalog-player-progress-wrap input[type="range"],
-.catalog-player-volume-wrap input[type="range"] {
-  width: 100%;
-  accent-color: var(--primary);
-}
-
-.catalog-player-volume-wrap {
-  display: grid;
-  grid-template-columns: auto 1fr;
+.player-exp-controls {
+  display: flex;
   align-items: center;
-  gap: .4rem;
-  font-size: .68rem;
-  color: var(--text-soft);
+  justify-content: space-between;
+  gap: .8rem;
+  padding: 0 .3rem;
 }
+.player-icon {
+  border: 0;
+  background: transparent;
+  color: var(--bay-text);
+  font-size: 1.7rem;
+  cursor: pointer;
+  padding: .3rem;
+  display: grid;
+  place-items: center;
+  transition: transform .15s ease, color .15s ease;
+}
+.player-icon:hover { transform: scale(1.12); }
+.player-icon.active { color: var(--bay-accent); }
+.player-icon-main {
+  width: 4.4rem;
+  height: 4.4rem;
+  border-radius: 50%;
+  background: var(--bay-accent);
+  color: #fff;
+  font-size: 1.8rem;
+  box-shadow: 0 8px 24px rgba(255,16,151,.4);
+}
+.player-icon-main:hover { transform: scale(1.06); }
+
+.player-mini-play.is-loading,
+.player-icon-main.is-loading { opacity: .55; pointer-events: none; }
+
+/* ── Letra / karaoke en el Now Playing ── */
+.player-lyrics-btn {
+  position: absolute;
+  top: calc(env(safe-area-inset-top) + 1.1rem);
+  right: 1.2rem;
+  border: 1px solid var(--bay-border);
+  background: rgba(255,255,255,.06);
+  color: var(--bay-text);
+  border-radius: 10px;
+  width: 2.4rem;
+  height: 2.4rem;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: background .15s ease, color .15s ease;
+}
+.player-lyrics-btn.active { background: var(--bay-accent); border-color: transparent; color: #fff; }
+
+.player-lyrics { display: none; }
+.catalog-player.is-expanded.lyrics-on .player-exp-cover-wrap { display: none; }
+.catalog-player.is-expanded.lyrics-on .player-lyrics {
+  display: block;
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  /* Padding vertical grande: deja que la PRIMERA línea arranque en el centro
+     y que la última también pueda centrarse al final. */
+  padding: 40vh .2rem;
+  text-align: center;
+  scrollbar-width: none;
+  -webkit-mask-image: linear-gradient(180deg, transparent, #000 22%, #000 78%, transparent);
+          mask-image: linear-gradient(180deg, transparent, #000 22%, #000 78%, transparent);
+}
+.player-lyrics::-webkit-scrollbar { display: none; }
+.lyric-line {
+  font-family: "Bebas Neue", "Inter", sans-serif;
+  font-size: 1.7rem;
+  line-height: 1.15;
+  letter-spacing: .02em;
+  color: rgba(255,255,255,.3);
+  margin: 0 0 1.05rem;
+  padding: 0 .5rem;
+  transition: color .25s ease, transform .25s ease;
+  cursor: pointer;
+}
+.lyric-line.is-active { color: var(--bay-accent); transform: scale(1.04); }
+.lyric-line.is-past { color: rgba(255,255,255,.2); }
+/* Letra sin timing (plana): tamaño normal, alineada izquierda */
+.player-lyrics.plain { text-align: left; }
+.player-lyrics.plain .lyric-line {
+  font-family: "Inter", sans-serif;
+  font-size: .95rem;
+  color: var(--bay-text);
+  cursor: default;
+  margin-bottom: .55rem;
+}
+
+/* Botón editar letra (junto al de letra) */
+.player-lyrics-edit { right: 4.1rem; font-size: 1.1rem; }
+.player-lyrics-edit.active { background: var(--bay-accent); border-color: transparent; }
+
+/* 🎤 Botón karaoke (quitar voz líder). En vista PORTADA va arriba-derecha,
+   justo debajo del botón de letra. En vista LETRA baja a la esquina inferior
+   derecha, junto al bloque del título. */
+.player-karaoke {
+  position: absolute;
+  top: calc(env(safe-area-inset-top) + 1.1rem + 2.4rem + .55rem);
+  right: 1.2rem;
+  width: 2.4rem;
+  height: 2.4rem;
+  border: 1px solid var(--bay-border);
+  background: rgba(255,255,255,.06);
+  color: var(--bay-text);
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  z-index: 6;
+  transition: background .15s ease, color .15s ease, border-color .15s ease,
+              top .28s cubic-bezier(.2,1,.22,1), bottom .28s cubic-bezier(.2,1,.22,1);
+}
+.player-karaoke.active {
+  background: var(--bay-accent);
+  border-color: transparent;
+  color: #fff;
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--bay-accent) 25%, transparent);
+}
+.player-karaoke.hidden { display: none; }
+/* Estado de carga: mientras se descarga la pista instrumental, el botón pulsa
+   con el color accent para avisar al usuario que algo está pasando. */
+.player-karaoke.loading {
+  animation: karaoke-loading 1s ease-in-out infinite;
+  color: var(--bay-accent);
+  border-color: color-mix(in srgb, var(--bay-accent) 60%, transparent);
+  cursor: progress;
+}
+@keyframes karaoke-loading {
+  0%, 100% { opacity: .5; box-shadow: 0 0 0 0 color-mix(in srgb, var(--bay-accent) 40%, transparent); }
+  50% { opacity: 1; box-shadow: 0 0 0 6px color-mix(in srgb, var(--bay-accent) 0%, transparent); }
+}
+.catalog-player.is-expanded.lyrics-on .player-karaoke {
+  top: auto;
+  bottom: calc(env(safe-area-inset-bottom) + 5.2rem);
+  right: 1.2rem;
+}
+
+/* ── Vista Playlists estilo Apple Music (tokens bayeight --bay-*) ───────────── */
+.catalog-playlists-view.hidden { display: none; }
+/* En detalle, el grid muestra solo la columna de canciones (oculta el aside). */
+.catalog-grid.songs-only { grid-template-columns: 1fr; }
+.catalog-grid.songs-only > .catalog-pane:first-child { display: none; }
+.catalog-grid.songs-only .catalog-songs-head { display: none; }
+
+/* Lista de playlists */
+.pl-list-head { display: flex; align-items: center; justify-content: space-between; margin: 5px 0 10px; }
+.pl-list-head h4 { font-family: "Bebas Neue", "Inter", sans-serif; font-size: 1.55rem; letter-spacing: .03em; margin: 0; color: var(--bay-text); }
+.pl-list { display: flex; flex-direction: column; gap: 0; }
+.pl-row {
+  width: 100%; display: flex; align-items: center; gap: 15px;
+  background: transparent; border: none; border-bottom: 1px solid var(--bay-border);
+  padding: 10px 5px; cursor: pointer; text-align: left; color: var(--bay-text);
+  transition: background .2s ease;
+}
+.pl-row:hover { background: rgba(255,255,255,.04); }
+.pl-row-meta { display: flex; flex-direction: column; gap: 2.5px; flex: 1; min-width: 0; }
+.pl-row-meta strong { font-size: 1rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pl-row-count { font-size: .8rem; color: var(--bay-muted); }
+.pl-row-chevron { color: var(--bay-muted); font-size: 1.5rem; flex: 0 0 auto; line-height: 1; }
+.pl-empty { color: var(--bay-muted); padding: 20px 5px; list-style: none; }
+
+/* Mosaico 2×2 de portadas */
+.pl-mosaic {
+  flex: 0 0 auto; width: 55px; height: 55px; border-radius: 8px; overflow: hidden;
+  display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr;
+  background: var(--bay-surface); border: 1px solid var(--bay-border);
+}
+.pl-mosaic-cell { background-size: cover; background-position: center; min-width: 0; min-height: 0; }
+.pl-mosaic-empty { display: grid; place-items: center; color: var(--bay-muted); font-size: .7rem; background: var(--bay-surface); }
+
+/* Detalle de playlist */
+.pl-detail-head { display: flex; flex-direction: column; gap: 5px; padding: 5px 0 15px; border-bottom: 1px solid var(--bay-border); margin-bottom: 10px; }
+.pl-back { align-self: flex-start; background: none; border: none; color: var(--bay-accent); font-size: .95rem; cursor: pointer; padding: 5px 0; font-weight: 600; }
+.pl-detail-title { font-family: "Bebas Neue", "Inter", sans-serif; font-size: 2rem; letter-spacing: .02em; margin: 5px 0 0; color: var(--bay-text); line-height: 1.1; }
+.pl-rename-input {
+  font-family: "Bebas Neue", "Inter", sans-serif; font-size: 2rem; letter-spacing: .02em;
+  margin: 5px 0 0; color: var(--bay-text); line-height: 1.1; width: 100%;
+  background: var(--bay-surface); border: 1px solid var(--bay-border); border-radius: 8px;
+  padding: 2px 8px; outline: none; transition: border-color .2s ease;
+}
+.pl-rename-input:focus { border-color: var(--bay-accent); }
+.pl-detail-count { font-size: .85rem; color: var(--bay-muted); }
+.pl-detail-actions { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
+.pl-detail-pills { display: flex; gap: 10px; }
+.pl-pill {
+  flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  background: var(--bay-surface); color: var(--bay-accent); border: 1px solid var(--bay-border);
+  border-radius: 15px; padding: 12px 15px; font-weight: 700; font-size: 1rem; cursor: pointer;
+  transition: background .2s ease, border-color .2s ease;
+}
+.pl-pill:hover { border-color: var(--bay-accent); }
+.pl-pill-ico { font-size: .9rem; }
+.pl-detail-icons { display: flex; gap: 10px; justify-content: flex-end; }
+.pl-icon-btn {
+  background: var(--bay-surface); border: 1px solid var(--bay-border); color: var(--bay-text);
+  width: 40px; height: 40px; border-radius: 10px; display: grid; place-items: center; cursor: pointer;
+  transition: border-color .2s ease, color .2s ease;
+}
+.pl-icon-btn:hover { border-color: var(--bay-accent); color: var(--bay-accent); }
+
+/* Modo edición de la lista de playlists (multi-select) */
+.pl-list-head-actions { display: flex; align-items: center; gap: 10px; }
+.pl-text-btn { background: none; border: none; color: var(--bay-accent); font-weight: 600; font-size: .9rem; cursor: pointer; padding: 5px; }
+.pl-edit-bar { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 5px 0 10px; }
+.pl-edit-count { color: var(--bay-muted); font-size: .85rem; }
+.pl-danger-btn { background: var(--bay-surface); border: 1px solid var(--bay-border); color: var(--bay-accent); border-radius: 10px; padding: 8px 15px; font-weight: 600; cursor: pointer; }
+.pl-danger-btn:disabled { color: var(--bay-muted); cursor: default; opacity: 1; }
+.pl-row-edit { /* hereda .pl-row; sin chevron, con checkbox */ }
+.pl-row.is-selected { background: rgba(255,16,151,.08); }
+.pl-check {
+  flex: 0 0 auto; width: 22px; height: 22px; border-radius: 50%;
+  border: 2px solid var(--bay-border); display: grid; place-items: center;
+  color: #fff; font-size: .8rem; font-weight: 700;
+}
+.pl-check.on { background: var(--bay-accent); border-color: var(--bay-accent); }
+
+/* Lista de canciones dentro del detalle (orden de la playlist) */
+.pl-song-list { display: flex; flex-direction: column; gap: 0; }
+/* Transición para el deslizamiento suave al reordenar (drag). */
+.pl-song-li { list-style: none; transition: transform .18s cubic-bezier(.2,1,.22,1); }
+.pl-song-row {
+  width: 100%; display: flex; align-items: center; gap: 12px;
+  background: transparent; border: none; border-bottom: 1px solid var(--bay-border);
+  padding: 8px 5px; text-align: left; color: var(--bay-text); cursor: pointer;
+}
+.pl-song-row.is-active strong { color: var(--bay-accent); }
+.pl-song-cover {
+  flex: 0 0 auto; width: 42px; height: 42px; border-radius: 6px; background-size: cover; background-position: center;
+  background-color: var(--bay-surface); border: 1px solid var(--bay-border);
+}
+.pl-song-cover-empty { display: grid; place-items: center; color: var(--bay-muted); font-size: .8rem; }
+.pl-song-meta { display: flex; flex-direction: column; gap: 1px; flex: 1; min-width: 0; }
+.pl-song-meta strong { font-size: .95rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pl-song-artist { font-size: .78rem; color: var(--bay-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* Fila en modo edición: sin selección de texto (molesta al arrastrar/long-press
+   y además el callout de iOS cortaba el drag con pointercancel). */
+.pl-song-row-edit, .pl-row-edit, .pl-drag-handle, .pl-check {
+  -webkit-user-select: none; user-select: none; -webkit-touch-callout: none;
+}
+.pl-song-row-edit.is-selected { background: rgba(255,16,151,.08); }
+.pl-drag-handle {
+  flex: 0 0 auto; color: var(--bay-muted); font-size: 1.4rem; line-height: 1; padding: 0 5px;
+  cursor: grab; user-select: none; touch-action: none;
+}
+.pl-drag-handle:active { cursor: grabbing; }
+/* El ítem arrastrado sigue al dedo 1:1 (sin transición) y queda elevado. */
+.pl-song-li.pl-dragging { transition: none; position: relative; z-index: 5; }
+.pl-song-li.pl-dragging .pl-song-row-edit {
+  background: var(--bay-surface); border-radius: 8px;
+  box-shadow: 0 8px 20px rgba(0,0,0,.45);
+}
+
+/* Leyenda "... ver letra" — texto magenta con glow, animación typewriter + bounce */
+.lyrics-hint-pill {
+  position: absolute;
+  top: calc(env(safe-area-inset-top) + 1.4rem);
+  right: 4rem;
+  border: 0;
+  background: none;
+  color: var(--bay-accent);
+  font-family: "Bebas Neue", "Inter", sans-serif;
+  font-size: 1rem;
+  letter-spacing: .04em;
+  padding: .15rem .1rem;
+  white-space: nowrap;
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .25s ease;
+  z-index: 1001;
+}
+.lyrics-hint-pill.show { opacity: 1; pointer-events: auto; }
+
+.lyrics-hint-pill .hint-char {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(-.75em);
+  text-shadow: 0 0 9px rgba(255, 16, 151, .6);
+}
+/* Cada letra cae desde arriba con un pequeño bounce (efecto Canva), escalonada (typewriter) */
+.lyrics-hint-pill.show .hint-char {
+  animation:
+    hint-char-in .45s cubic-bezier(.34, 1.56, .64, 1) both,
+    hint-char-glow 1.9s ease-in-out infinite;
+}
+@keyframes hint-char-in {
+  0% { opacity: 0; transform: translateY(-.75em); }
+  65% { opacity: 1; transform: translateY(.1em); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+@keyframes hint-char-glow {
+  0%, 100% {
+    text-shadow: 0 0 16px rgba(255, 16, 151, 1), 0 0 32px rgba(255, 16, 151, .7), 0 0 50px rgba(255, 16, 151, .4);
+  }
+  50% {
+    text-shadow: 0 0 26px #ff1097, 0 0 55px rgba(255, 16, 151, 1), 0 0 90px rgba(255, 16, 151, .8), 0 0 130px rgba(255, 16, 151, .5);
+  }
+}
+
+/* Modo edición: filas editables + barra */
+.lyrics-edit-bar { display: none; }
+.catalog-player.is-expanded.lyrics-editing .lyrics-edit-bar {
+  display: flex;
+  flex-direction: column;
+  gap: .5rem;
+  padding: .6rem .2rem;
+  border-top: 1px solid var(--glass-border);
+  flex: 0 0 auto;
+}
+.lyrics-edit-hint { font-size: .68rem; color: var(--bay-muted); text-align: center; }
+.lyrics-edit-actions { display: flex; gap: .6rem; justify-content: center; }
+
+.catalog-player.is-expanded.lyrics-editing .player-lyrics {
+  text-align: left;
+  padding: 1rem .2rem;
+  -webkit-mask-image: none;
+          mask-image: none;
+}
+
+/* ── Vista de letra: base = título + compositores + línea de tiempo visibles ──
+   Solo se ocultan los BOTONES de control (prev/play/next/share). El swipe-up
+   corto los revela; el swipe-up largo regresa a la portada. */
+.catalog-player.is-expanded.lyrics-on:not(.lyrics-editing) .player-exp-controls {
+  transition: transform .28s cubic-bezier(.2,1,.22,1), opacity .22s ease, max-height .28s ease, margin .28s ease;
+  transform: translateY(40%);
+  opacity: 0;
+  pointer-events: none;
+  max-height: 0;
+  margin: 0;
+  overflow: hidden;
+}
+/* Estado "peek": el swipe-up corto desliza la fila de botones a la vista. */
+.catalog-player.is-expanded.lyrics-on.lyrics-peek:not(.lyrics-editing) .player-exp-controls {
+  transform: translateY(0);
+  opacity: 1;
+  pointer-events: auto;
+  max-height: 6rem;
+}
+
+/* Barra de gesto: franja delgada ENTRE la letra y el bloque título/tiempo.
+   Deja libre el slider de progreso (interactivo) y los controles. */
+.lyrics-gesture-bar { display: none; }
+.catalog-player.is-expanded.lyrics-on:not(.lyrics-editing) .lyrics-gesture-bar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: .3rem;
+  flex: 0 0 auto;
+  padding: .7rem 0 .4rem;
+  touch-action: none;
+  cursor: grab;
+}
+/* En modo letra, el bloque del título también es zona de gesto (más fácil de
+   agarrar). El slider de tiempo queda libre para hacer seek. */
+.catalog-player.is-expanded.lyrics-on:not(.lyrics-editing) .player-exp-meta {
+  touch-action: none;
+  cursor: grab;
+}
+.lyrics-gesture-chevron {
+  color: var(--bay-muted);
+  font-size: 1rem;
+  line-height: 1;
+  animation: lyrics-gesture-bob 1.8s ease-in-out infinite;
+}
+/* Cuando los controles ya están a la vista (peek), el chevron apunta abajo. */
+.catalog-player.lyrics-peek .lyrics-gesture-chevron { transform: scaleY(-1); animation: none; opacity: .5; }
+.lyrics-gesture-grabber {
+  width: 40px;
+  height: 4px;
+  border-radius: 99px;
+  background: rgba(255,255,255,.28);
+}
+@keyframes lyrics-gesture-bob {
+  0%, 100% { transform: translateY(2px); opacity: .5; }
+  50% { transform: translateY(-2px); opacity: .9; }
+}
+.lyric-edit-row { display: flex; align-items: center; gap: .5rem; margin-bottom: .45rem; }
+.lyric-set-time {
+  flex: 0 0 auto;
+  min-width: 4.2rem;
+  border: 1px solid var(--bay-border);
+  background: rgba(255,255,255,.06);
+  color: var(--bay-accent);
+  border-radius: 8px;
+  padding: .4rem .35rem;
+  font-size: .72rem;
+  cursor: pointer;
+  font-variant-numeric: tabular-nums;
+}
+.lyric-set-time:active { background: var(--bay-accent); color: #fff; }
+.lyric-edit-text {
+  flex: 1 1 auto;
+  min-width: 0;
+  background: rgba(255,255,255,.04);
+  border: 1px solid var(--bay-border);
+  border-radius: 8px;
+  padding: .4rem .5rem;
+  color: var(--bay-text);
+  font-size: .9rem;
+}
+.lyric-edit-text:focus { outline: none; border-color: var(--bay-accent); }
 
 table {
   width: 100%;
@@ -1548,14 +2449,25 @@ th {
   font-size: .68rem;
 }
 
-/* ── Messages tab fullscreen — sin header, sin contenedor card ── */
+/* ── Messages tab — sin contenedor, solo los mensajes scrollean ── */
+/* La página no scrollea en Mensajes: el container se vuelve flex sin overflow
+   y el tab lo llena con flex:1 (sin números mágicos de altura). */
+body.messages-active .container {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 0;
+}
 #tab-messages.active {
   display: flex !important;
   flex-direction: column;
-  height: calc(100dvh - var(--tab-height) - env(safe-area-inset-bottom) - 130px);
-  padding: 0 !important;
+  flex: 1;
+  min-height: 0;
+  height: auto;
+  /* Deja libre la barra de tabs para que el composer no quede tapado */
+  padding: 0 0 calc(var(--tab-height) + env(safe-area-inset-bottom)) 0;
   overflow: hidden;
-  background: #0b141a;
+  background: transparent;
   border-radius: 0;
   border: none;
   box-shadow: none;
@@ -1574,53 +2486,56 @@ th {
 
 @media (max-width: 720px) {
   .tab-bar {
-    justify-content: space-between;
-    overflow-x: hidden;
+    justify-content: flex-start;
+    overflow-x: auto;
   }
 
+  /* Ancho fijo: los iconos no se encogen al agregar pestañas; el resto se desliza */
   .tab {
-    flex: 1 1 0;
+    flex: 0 0 4.6rem;
     min-width: 0;
     padding: .55rem 0;
-    gap: .22rem;
+    gap: .25rem;
   }
 
   .tab-icon {
-    width: 1.2rem;
-    height: 1.2rem;
+    width: 1.4rem;
+    height: 1.4rem;
   }
 
   .tab-label {
-    font-size: .6rem;
+    font-size: .64rem;
   }
 
   .topbar {
     flex-direction: row;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     align-items: flex-start;
     border-radius: 0;
     margin: 0;
     border-left: 0;
     border-right: 0;
     padding: .4rem .55rem;
-    gap: .35rem;
+    gap: .5rem;
   }
 
   .topbar > div:first-child {
-    order: 2;
-    width: 100%;
+    order: 0;
+    flex: 1 1 auto;
+    min-width: 0;
   }
 
   .topbar-actions {
-    order: 1;
+    order: 0;
+    flex-shrink: 0;
     justify-content: flex-end;
-    margin-left: auto;
     gap: .28rem;
   }
 
   #notify-enable-btn,
   #google-auth-toggle,
-  #print-btn {
+  #print-btn,
+  #share-app-btn {
     padding: .3rem .5rem;
     font-size: .64rem;
     border-radius: .6rem;
@@ -1639,10 +2554,6 @@ th {
   }
 
   .oauth-header-status { margin-top: .5rem; }
-
-  #tab-messages.active {
-    height: calc(100dvh - var(--tab-height) - env(safe-area-inset-bottom) - 90px);
-  }
 
   /* Evita auto-zoom en iOS al enfocar campos de texto */
   .field-input,
@@ -1665,12 +2576,13 @@ th {
     padding-bottom: calc(var(--tab-height) + env(safe-area-inset-bottom) + 1.8rem);
   }
 
-  .book-iframe {
-    height: calc(100dvh - 170px);
-  }
 
   .catalog-grid {
     grid-template-columns: 1fr;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
   }
 
   .sale-grid {
@@ -1685,33 +2597,81 @@ th {
     grid-template-columns: 1fr;
   }
 
+  /* ── CATÁLOGO MÓVIL: buscador + géneros/playlists FIJOS, solo la lista scrollea ── */
+  /* La página NO scrollea en catálogo: el container se vuelve flex sin overflow,
+     y el catálogo lo llena con flex:1 (sin números mágicos de altura). */
+  body.catalog-active .container {
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    padding-bottom: 0;
+  }
+  #tab-catalog.panel-fullscreen.active {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    padding-bottom: 0;
+  }
+  #tab-catalog .panel-actions-inline,
+  #tab-catalog .task-filters,
+  #tab-catalog #catalog-status {
+    flex: 0 0 auto;
+  }
+
   .catalog-shell {
+    flex: 1;
+    min-height: 0;
     max-height: none;
-    overflow: visible;
-    padding-bottom: calc(var(--tab-height) + env(safe-area-inset-bottom) + 1.25rem);
+    overflow: hidden;
+    background: transparent;
+    border: 0;
+    padding-bottom: 0;
+    display: flex;
   }
 
-  #tab-catalog.panel-fullscreen {
-    min-height: calc(100dvh - 190px);
-    padding-bottom: calc(var(--tab-height) + env(safe-area-inset-bottom) + 4.8rem);
+  .catalog-pane:first-child {        /* géneros / playlists — fijo */
+    flex: 0 0 auto;
+    border-top: 0;
   }
 
-  .catalog-player {
-    position: sticky;
-    bottom: calc(env(safe-area-inset-bottom) + 2.2rem);
-    z-index: 920;
-    margin: 0 .45rem .35rem;
-    border: 1px solid var(--glass-border);
-    border-radius: .85rem;
-  }
-
-  .catalog-pane {
+  .catalog-pane:last-child {         /* canciones — área scrolleable */
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
     border-top: 1px solid rgba(255,255,255,.06);
   }
 
-  .catalog-pane:first-child {
-    border-top: 0;
+  .catalog-songs-head { flex: 0 0 auto; }
+
+  #catalog-songs {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    /* Empacar las filas arriba: si hay pocas (búsqueda / playlist corta) el grid
+       no debe estirarlas para llenar el alto (evita gaps gigantes). */
+    align-content: start;
+    /* La última canción libra el mini-player + tab bar */
+    padding-bottom: calc(var(--tab-height) + env(safe-area-inset-bottom) + 5rem);
+    scrollbar-width: none;
   }
+  #catalog-songs::-webkit-scrollbar { width: 0; height: 0; display: none; }
+
+  /* La vista de playlists (lista, detalle y panel de agregar) reemplaza a
+     #catalog-songs cuando está activa, así que necesita ser su propio
+     contenedor scrolleable — sin esto el contenido se recortaba sin scroll. */
+  #catalog-playlists-view:not(.hidden) {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: calc(var(--tab-height) + env(safe-area-inset-bottom) + 5rem);
+    scrollbar-width: none;
+  }
+  #catalog-playlists-view::-webkit-scrollbar { width: 0; height: 0; display: none; }
 }
 
 /* ─── QUOTES / SEGUIMIENTO ──────────────────────────────────────────────────── */

@@ -3,11 +3,13 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="robots" content="noindex, nofollow, noarchive, nosnippet" />
+    <meta name="googlebot" content="noindex, nofollow" />
     <title>Manager App · Jay Mansur</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="./styles.css?v=1.1.34" />
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="./styles.css?v=2.0.23" />
     <link rel="manifest" href="./manifest.json" />
     <link rel="icon" type="image/png" href="./icon-32.png" />
     <link rel="apple-touch-icon" href="./icon-180.png" />
@@ -158,8 +160,8 @@
       </div>
       <div class="topbar-actions">
         <button id="notify-enable-btn" class="btn ghost hidden" aria-label="Activar notificaciones" title="Activar notificaciones">🔔</button>
-        <button id="share-app-btn" class="btn ghost" aria-label="Compartir" title="Compartir App" style="padding: 0 10px; display: flex; align-items: center; justify-content: center;">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width: 18px; height: 18px;"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8M16 6l-4-4-4 4M12 2v13"/></svg>
+        <button id="share-app-btn" class="btn ghost" aria-label="Compartir" title="Compartir App">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="15" height="15"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
         </button>
         <a id="print-btn" class="btn ghost" href="https://jgmansur.github.io/musicknobs/curriculumjay/" target="_blank" rel="noopener">CV</a>
         <button id="google-auth-toggle" class="btn">Login Google</button>
@@ -169,46 +171,52 @@
 
     <main class="container">
       <section id="tab-overview" class="panel card panel-fullscreen active">
-        <div class="featured-box">
-          <div class="actions panel-actions-inline">
-            <button id="refresh-messages-overview" class="btn ghost">Refrescar anuncios</button>
+        <!-- Anuncios -->
+        <div class="ov-section">
+          <div class="ov-section-head">
+            <h3 class="ov-section-title">Anuncios</h3>
+            <button id="refresh-messages-overview" class="ov-icon-btn" type="button" aria-label="Refrescar anuncios" title="Refrescar anuncios">⟳</button>
           </div>
           <ul id="messages-featured" class="list compact-list"></ul>
         </div>
 
-        <hr class="soft-sep" />
-
-        <div class="actions panel-actions-inline">
-          <button id="refresh-tasks" class="btn ghost">Refrescar tasks</button>
-          <button id="task-form-toggle" class="btn">Nueva task</button>
-        </div>
-
-        <div class="task-filters">
-          <select id="tasks-scope" class="field-input compact-control">
-            <option value="all">Ver: todas</option>
-            <option value="mine">Ver: asignadas a mí</option>
-          </select>
-          <button id="tasks-load-more" class="btn ghost" disabled>Cargar más</button>
-        </div>
-
-        <div id="task-form-card" class="task-form-card hidden">
-          <div class="task-form-grid">
-            <input id="task-title" class="field-input" type="text" placeholder="Nueva tarea..." />
-            <select id="task-assignee" class="field-input">
-              <option value="">Asignar a...</option>
-            </select>
-            <input id="task-due" class="field-input" type="date" />
-            <textarea id="task-subtasks" class="field-input" rows="3" placeholder="Subtasks (una por línea)"></textarea>
-            <div class="actions">
-              <button id="task-create" class="btn">Agregar task</button>
-              <button id="task-cancel-edit" class="btn ghost hidden" type="button">Cancelar edición</button>
+        <!-- Tareas -->
+        <div class="ov-section">
+          <div class="ov-section-head">
+            <h3 class="ov-section-title">Tareas</h3>
+            <div class="ov-section-actions">
+              <button id="refresh-tasks" class="ov-icon-btn" type="button" aria-label="Refrescar tasks" title="Refrescar tasks">⟳</button>
+              <button id="task-form-toggle" class="btn ov-new-btn" type="button">＋ Nueva</button>
             </div>
-            <input id="task-edit-id" type="hidden" />
           </div>
-        </div>
 
-        <p id="tasks-status" class="hint status" aria-live="polite">Sin tareas cargadas.</p>
-        <ul id="tasks-list" class="list compact-list"></ul>
+          <div class="ov-filter-row">
+            <select id="tasks-scope" class="field-input compact-control">
+              <option value="all">Todas</option>
+              <option value="mine">Asignadas a mí</option>
+            </select>
+          </div>
+
+          <div id="task-form-card" class="task-form-card hidden">
+            <div class="task-form-grid">
+              <input id="task-title" class="field-input" type="text" placeholder="Nueva tarea..." />
+              <select id="task-assignee" class="field-input">
+                <option value="">Asignar a...</option>
+              </select>
+              <input id="task-due" class="field-input" type="date" />
+              <textarea id="task-subtasks" class="field-input" rows="3" placeholder="Subtasks (una por línea)"></textarea>
+              <div class="actions">
+                <button id="task-create" class="btn">Agregar task</button>
+                <button id="task-cancel-edit" class="btn ghost hidden" type="button">Cancelar edición</button>
+              </div>
+              <input id="task-edit-id" type="hidden" />
+            </div>
+          </div>
+
+          <p id="tasks-status" class="hint status" aria-live="polite">Sin tareas cargadas.</p>
+          <ul id="tasks-list" class="list compact-list"></ul>
+          <button id="tasks-load-more" class="btn ghost ov-load-more" disabled>Cargar más</button>
+        </div>
       </section>
 
       <section id="tab-focus" class="panel panel-fullscreen focus-panel">
@@ -250,11 +258,9 @@
       </section>
 
       <section id="tab-catalog" class="panel card panel-fullscreen">
-        <div class="actions panel-actions-inline">
-          <button id="refresh-catalog" class="btn ghost">Refrescar</button>
-        </div>
         <div class="task-filters">
           <input id="catalog-search" class="field-input" type="search" placeholder="Buscar canciones (nombre, compositor, género, link...)" />
+          <button id="refresh-catalog" class="catalog-refresh-btn" type="button" aria-label="Refrescar catálogo" title="Refrescar">⟳</button>
         </div>
         <p id="catalog-status" class="hint status panel-status-inline" aria-live="polite">Usando muestra local (MVP).</p>
 
@@ -271,58 +277,96 @@
               <div class="catalog-songs-head">
                 <h4 id="catalog-selected-genre">Todas</h4>
               </div>
+              <!-- Vista Playlists estilo Apple Music (lista ↔ detalle) en el panel derecho -->
+              <div id="catalog-playlists-view" class="catalog-playlists-view hidden"></div>
               <ul id="catalog-songs" class="list compact-list catalog-songs-list"></ul>
             </section>
           </div>
 
-          <button id="catalog-playing-now" class="catalog-playing-now hidden" type="button">
-            <strong>Playing now:</strong>
-            <span id="catalog-playing-now-title">—</span>
-          </button>
-
-          <div id="catalog-now-card" class="catalog-now-card hidden"></div>
-
           <section id="catalog-player" class="catalog-player" aria-label="Reproductor de catálogo">
-            <div class="catalog-player-head">
-              <div class="catalog-player-cover-wrap">
-                <img id="catalog-player-cover" class="catalog-player-cover" src="" alt="Cover de la pista" />
-                <div id="catalog-player-cover-placeholder" class="catalog-player-cover-placeholder">♪</div>
+            <!-- Mini-bar: siempre visible cuando hay una pista cargada -->
+            <div class="player-mini" id="player-mini">
+              <div class="player-mini-progress"><span id="player-mini-fill"></span></div>
+              <button class="player-mini-info" id="player-expand-btn" type="button" aria-label="Abrir reproductor">
+                <span class="catalog-player-cover-wrap">
+                  <img id="catalog-player-cover" class="catalog-player-cover" src="" alt="" />
+                  <span id="catalog-player-cover-placeholder" class="catalog-player-cover-placeholder">♪</span>
+                </span>
+                <span class="player-mini-meta">
+                  <strong id="catalog-player-track-title">Selecciona una canción</strong>
+                  <span id="catalog-player-track-artist" class="catalog-authors"><span class="catalog-authors-text">—</span></span>
+                </span>
+              </button>
+              <div class="player-mini-controls">
+                <button id="mini-like" class="player-mini-ctrl catalog-like hidden" type="button" aria-label="Me gusta" title="Me gusta"></button>
+                <button id="mini-restart" class="player-mini-ctrl" type="button" aria-label="Desde el principio" title="Desde el principio">⏮</button>
+                <button id="mini-back15" class="player-mini-ctrl" type="button" aria-label="Retroceder 15 segundos" title="−15s">−15</button>
+                <button id="catalog-play-toggle" class="player-mini-play" type="button" aria-label="Play o pause">▶</button>
+                <button id="mini-fwd15" class="player-mini-ctrl" type="button" aria-label="Adelantar 15 segundos" title="+15s">+15</button>
               </div>
-              <div class="catalog-player-meta">
-                <strong id="catalog-player-track-title">Selecciona una canción</strong>
-                <span id="catalog-player-track-artist">—</span>
+            </div>
+
+            <!-- Vista expandida: controles completos -->
+            <div class="player-expanded" id="player-expanded" aria-hidden="true">
+              <button class="player-collapse" id="player-collapse-btn" type="button" aria-label="Cerrar reproductor">
+                <span class="player-grabber"></span>
+              </button>
+              <button id="player-lyrics-toggle" class="player-lyrics-btn hidden" type="button" aria-label="Mostrar letra" title="Letra">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><path d="M4 7h12M4 12h8M4 17h10"/><circle cx="19" cy="16.5" r="2"/><path d="M21 16.5V9l-2 .7"/></svg>
+              </button>
+              <button id="player-lyrics-edit" class="player-lyrics-btn player-lyrics-edit hidden" type="button" aria-label="Editar letra" title="Editar letra">✏️</button>
+              <button id="player-karaoke" class="player-karaoke hidden" type="button" aria-label="Quitar voz líder (karaoke)" aria-pressed="false" title="Quitar voz líder (karaoke)">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+              </button>
+              <div class="player-exp-cover-wrap">
+                <img id="player-exp-cover" class="player-exp-cover" src="" alt="" />
+                <div id="player-exp-cover-placeholder" class="player-exp-cover-placeholder">♪</div>
+              </div>
+              <div id="player-lyrics" class="player-lyrics" aria-hidden="true"></div>
+              <div id="lyrics-gesture-bar" class="lyrics-gesture-bar" aria-hidden="true">
+                <span class="lyrics-gesture-chevron">︿</span>
+                <span class="lyrics-gesture-grabber"></span>
+              </div>
+              <div id="lyrics-edit-bar" class="lyrics-edit-bar hidden">
+                <span class="lyrics-edit-hint">Dale play y toca ⌖ en cada línea cuando entre · edita el texto directo</span>
+                <div class="lyrics-edit-actions">
+                  <button id="lyrics-cancel" class="mini-btn" type="button">Cancelar</button>
+                  <button id="lyrics-save" class="btn" type="button">Guardar</button>
+                </div>
+              </div>
+              <div class="player-exp-meta">
+                <strong id="player-exp-title">Selecciona una canción</strong>
+                <span id="player-exp-artist">—</span>
                 <span id="catalog-player-status" class="hint">Listo para reproducir</span>
               </div>
+              <div class="player-exp-progress">
+                <span id="catalog-player-current">0:00</span>
+                <input id="catalog-player-progress" type="range" min="0" max="100" value="0" aria-label="Progreso de reproducción" />
+                <span id="catalog-player-duration">0:00</span>
+              </div>
+              <div class="player-exp-controls">
+                <button id="catalog-random" class="player-icon" type="button" aria-label="Reproducción aleatoria">🔀</button>
+                <button id="catalog-prev" class="player-icon" type="button" aria-label="Pista anterior">⏮</button>
+                <button id="player-exp-toggle" class="player-icon player-icon-main" type="button" aria-label="Play o pause">▶</button>
+                <button id="catalog-next" class="player-icon" type="button" aria-label="Siguiente pista">⏭</button>
+                <button id="player-like" class="player-icon catalog-like hidden" type="button" aria-label="Me gusta" title="Me gusta"></button>
+                <button id="catalog-share-song" class="player-icon" type="button" aria-label="Compartir canción">
+                  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.6" y1="10.5" x2="15.4" y2="6.5"></line><line x1="8.6" y1="13.5" x2="15.4" y2="17.5"></line></svg>
+                </button>
+              </div>
             </div>
-
-            <div class="catalog-player-controls">
-              <button id="catalog-prev" class="mini-btn" type="button" aria-label="Pista anterior">⏮</button>
-              <button id="catalog-play-toggle" class="mini-btn" type="button" aria-label="Play o pause">▶️ Play</button>
-              <button id="catalog-next" class="mini-btn" type="button" aria-label="Siguiente pista">⏭</button>
-              <button id="catalog-random" class="mini-btn" type="button" aria-label="Reproducción aleatoria">🔀</button>
-              <button id="catalog-share-playlist" class="mini-btn" type="button" aria-label="Compartir playlist">🔗 Playlist</button>
-            </div>
-
-            <div class="catalog-player-progress-wrap">
-              <span id="catalog-player-current">0:00</span>
-              <input id="catalog-player-progress" type="range" min="0" max="100" value="0" aria-label="Progreso de reproducción" />
-              <span id="catalog-player-duration">0:00</span>
-            </div>
-
           </section>
         </div>
       </section>
 
       <section id="tab-contacts" class="panel card">
         <div class="panel-head">
-          <h3>Contactos Manager (Notion)</h3>
+          <h3 class="ov-section-title">Contactos Manager</h3>
           <div class="actions">
-            <button id="refresh-contacts" class="btn ghost">Refrescar</button>
-            <button id="contacts-load-more" class="btn ghost">Cargar más</button>
-            <button id="contact-form-toggle" class="btn">Nuevo contacto</button>
+            <button id="refresh-contacts" class="ov-icon-btn" type="button" aria-label="Refrescar" title="Refrescar">⟳</button>
+            <button id="contact-form-toggle" class="btn ov-new-btn" type="button">＋ Nuevo</button>
           </div>
         </div>
-        <p class="hint">Fuente prevista: Notion DB para gestión de contactos y seguimiento.</p>
 
         <div class="task-filters">
           <input id="contacts-search" class="field-input" type="search" placeholder="Buscar por nombre, rol, correo, teléfono, Instagram, TikTok..." />
@@ -369,7 +413,7 @@
       </section>
 
       <section id="tab-book" class="panel card panel-fullscreen book-panel">
-        <iframe src="../elartedelaproduccionmusical/index.html" class="book-iframe" title="El Arte de la Producción Musical"></iframe>
+        <iframe src="https://www.musicknobs.com/libro" class="book-iframe" title="El Arte de la Producción Musical"></iframe>
       </section>
 
       <section id="tab-quotes" class="panel card panel-fullscreen">
@@ -524,6 +568,6 @@
     <script src="./config.js"></script>
     <script src="./vendor/howler.min.js"></script>
     <script src="./tracks.js?v=salesfix404v1"></script>
-    <script src="./app.js?v=1.1.34"></script>
+    <script src="./app.js?v=2.0.23"></script>
   </body>
   </html>
