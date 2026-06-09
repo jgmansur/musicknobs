@@ -3121,11 +3121,13 @@ export default {
     if (request.method === "GET" && url.pathname === "/api/debug/notion-archivo") {
       const notionToken = env.NOTION_TOKEN || "";
       const notionVersion = env.NOTION_VERSION || "2022-06-28";
-      const r = await fetch(`https://api.notion.com/v1/databases/${ARCHIVO_DB_ID}`, {
-        headers: { Authorization: `Bearer ${notionToken}`, "Notion-Version": notionVersion },
+      const r = await fetch(`https://api.notion.com/v1/databases/${ARCHIVO_DB_ID}/query`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${notionToken}`, "Notion-Version": notionVersion, "Content-Type": "application/json" },
+        body: JSON.stringify({ filter: { property: "Tipo", select: { equals: "Music Knobs" } }, page_size: 3 }),
       });
       const body = await r.json();
-      return json({ status: r.status, ok: r.ok, tokenPrefix: notionToken.slice(0, 12), body });
+      return json({ status: r.status, ok: r.ok, body });
     }
 
     if (request.method === "GET" && url.pathname === "/api/manager/quotes") {
