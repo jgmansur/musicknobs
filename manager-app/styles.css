@@ -1701,6 +1701,32 @@ a { color: #93c5fd; }
   white-space: nowrap;
 }
 
+/* Línea de título + stats (plays/likes) — clip normal, marquee al estar activa */
+.catalog-song-main .catalog-song-titleline {
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  min-width: 0;
+}
+.catalog-song-titleline-inner {
+  display: inline-flex;
+  align-items: baseline;
+  gap: .45rem;
+}
+.catalog-song-stats {
+  display: inline-flex;
+  gap: .4rem;
+  flex: 0 0 auto;
+  color: var(--text-soft);
+  font-size: .68rem;
+  font-weight: 400;
+}
+.catalog-stat { white-space: nowrap; }
+.catalog-song-row.is-active .catalog-song-titleline-inner {
+  padding-inline-start: 100%;
+  animation: catalog-authors-marquee 10s linear infinite;
+}
+
 /* En canción activa: autores hacen scroll horizontal automático */
 .catalog-song-row.is-active .catalog-song-main .catalog-authors {
   text-overflow: clip;

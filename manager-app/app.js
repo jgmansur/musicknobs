@@ -865,7 +865,7 @@ function renderPlaylistAddPanel(el, pl) {
       <input id="pl-add-search" class="catalog-genre-select" type="search" placeholder="Buscar canción, compositor, género..." value="${escapeHtml(playlistAddQuery)}" />
       <div class="pl-edit-bar">
         <span class="pl-edit-count" id="pl-add-count">${nSel} seleccionada${nSel === 1 ? '' : 's'}</span>
-        <button class="pl-danger-btn" id="pl-add-confirm" type="button" ${nSel ? '' : 'disabled'}>＋ Agregar</button>
+        <button class="pl-danger-btn" id="pl-add-confirm" type="button">＋ Agregar</button>
       </div>
     </div>
     <ul class="list pl-song-list" id="pl-add-list">${buildRows()}</ul>`;
@@ -889,7 +889,6 @@ function renderPlaylistAddPanel(el, pl) {
     if (chk) { const on = playlistAddSelection.has(id); chk.classList.toggle('on', on); chk.textContent = on ? '✓' : ''; }
     const n = playlistAddSelection.size;
     const cnt = document.getElementById('pl-add-count'); if (cnt) cnt.textContent = `${n} seleccionada${n === 1 ? '' : 's'}`;
-    const btn = document.getElementById('pl-add-confirm'); if (btn) btn.disabled = !n;
   });
 }
 
@@ -899,19 +898,32 @@ async function addSelectedSongsToPlaylist(pl) {
   playlistAddMode = false;
   playlistAddSelection.clear();
   playlistAddQuery = '';
-  setStatus('catalog-status', `Agregando ${ids.length} canción${ids.length === 1 ? '' : 'es'}...`);
-  let ok = 0;
+
+  // Optimista: agregamos a la playlist en memoria y renderizamos YA, sin esperar
+  // a la red. Las peticiones van en paralelo en segundo plano y al terminar
+  // reconciliamos silenciosamente con el server.
+  const target = playlistsCache.find((p) => p.id === pl.id) || pl;
+  const existing = new Set((target.tracks || []).map((t) => String(t.id || '')));
+  const added = [];
   for (const id of ids) {
+    if (existing.has(String(id))) continue;
     const song = catalogCache.find((s) => String(s.id) === String(id));
-    try {
-      const r = await fetch(`${API_BASE}/api/manager/playlists/${pl.id}`, {
-        method: 'PATCH', headers: apiHeaders(),
-        body: JSON.stringify({ action: 'add_track', trackId: id, trackTitle: song?.obra || id }),
-      });
-      if (r.ok) ok += 1;
-    } catch {}
+    const track = { id: String(id), title: song?.obra || String(id) };
+    target.tracks = [...(target.tracks || []), track];
+    added.push(track);
   }
-  setStatus('catalog-status', `${ok} agregada${ok === 1 ? '' : 's'} a "${pl.name}".`);
+  target.trackCount = (target.tracks || []).length;
+  setStatus('catalog-status', `${added.length} agregada${added.length === 1 ? '' : 's'} a "${target.name}".`);
+  renderPlaylists();
+  renderCatalog();
+
+  // Persistir en paralelo (no bloquea la UI) y reconciliar al final.
+  await Promise.all(added.map((t) =>
+    fetch(`${API_BASE}/api/manager/playlists/${pl.id}`, {
+      method: 'PATCH', headers: apiHeaders(),
+      body: JSON.stringify({ action: 'add_track', trackId: t.id, trackTitle: t.title }),
+    }).catch(() => null)
+  ));
   await loadPlaylistsFromApi();
   renderCatalog();
 }
@@ -2292,7 +2304,7 @@ function renderCatalog() {
           <li>
             <div class="catalog-song-row ${catalogNowPlayingId === row.id ? 'is-active' : ''}">
               <button class="catalog-song-main" data-catalog-play="${escapeHtml(row.id)}">
-                <strong>${escapeHtml(row.obra || 'Sin título')}</strong>
+                <span class="catalog-song-titleline"><span class="catalog-song-titleline-inner"><strong>${escapeHtml(row.obra || 'Sin título')}</strong>${buildCatalogStats(row)}</span></span>
                 <span class="catalog-authors"><span class="catalog-authors-text">${escapeHtml(row.autores || '—')}</span></span>
               </button>
               <div class="actions">
@@ -2481,6 +2493,24 @@ function buildCatalogStars(row) {
 // Botón de like (solo visitante).
 function buildCatalogLikeBtn(row) {
   return `<button type="button" class="catalog-like ${catalogIsLiked(row.id) ? 'liked' : ''}" data-catalog-like="${escapeHtml(row.id)}" aria-label="Me gusta" title="Me gusta">${THUMB_SVG}</button>`;
+}
+
+// Formato compacto estilo YouTube: 999 / 1.2K / 3.4M.
+function formatCount(n) {
+  n = Math.max(0, Math.round(Number(n || 0)));
+  if (n < 1000) return String(n);
+  if (n < 1e6) return `${(n / 1000).toFixed(n % 1000 >= 100 ? 1 : 0)}K`.replace('.0K', 'K');
+  return `${(n / 1e6).toFixed(1)}M`.replace('.0M', 'M');
+}
+
+// Stats al lado del nombre (plays ▶ + likes ♥), chico, sin bold, estilo YouTube.
+function buildCatalogStats(row) {
+  const plays = Number(row.plays || 0);
+  const likes = Number(row.likes || 0);
+  return `<span class="catalog-song-stats">`
+    + `<span class="catalog-stat" title="Reproducciones">▶ ${formatCount(plays)}</span>`
+    + `<span class="catalog-stat" title="Me gusta">♥ ${formatCount(likes)}</span>`
+    + `</span>`;
 }
 
 // Reordena el cache: rating desc → likes desc → abecedario.
