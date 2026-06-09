@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="./styles.css?v=2.0.11" />
+    <link rel="stylesheet" href="./styles.css?v=2.0.12" />
     <link rel="manifest" href="./manifest.json" />
     <link rel="icon" type="image/png" href="./icon-32.png" />
     <link rel="apple-touch-icon" href="./icon-180.png" />
@@ -265,12 +265,12 @@
         <p id="catalog-status" class="hint status panel-status-inline" aria-live="polite">Usando muestra local (MVP).</p>
 
         <div class="catalog-shell">
+          <div class="catalog-filter-tabs" role="tablist" aria-label="Filtros de catálogo">
+            <button id="catalog-filter-tab-genres" class="mini-btn active" type="button">Géneros</button>
+            <button id="catalog-filter-tab-playlists" class="mini-btn" type="button">Playlists</button>
+          </div>
           <div class="catalog-grid">
             <aside class="catalog-pane">
-              <div class="catalog-filter-tabs" role="tablist" aria-label="Filtros de catálogo">
-                <button id="catalog-filter-tab-genres" class="mini-btn active" type="button">Géneros</button>
-                <button id="catalog-filter-tab-playlists" class="mini-btn" type="button">Playlists</button>
-              </div>
               <ul id="catalog-genres" class="list compact-list catalog-genres-list"></ul>
             </aside>
             <section class="catalog-pane">
@@ -280,6 +280,9 @@
               <ul id="catalog-songs" class="list compact-list catalog-songs-list"></ul>
             </section>
           </div>
+
+          <!-- Vista Playlists estilo Apple Music: lista de playlists ↔ detalle -->
+          <div id="catalog-playlists-view" class="catalog-playlists-view hidden"></div>
 
           <section id="catalog-player" class="catalog-player" aria-label="Reproductor de catálogo">
             <!-- Mini-bar: siempre visible cuando hay una pista cargada -->
@@ -451,6 +454,6 @@
     <script src="./config.js"></script>
     <script src="./vendor/howler.min.js"></script>
     <script src="./tracks.js?v=salesfix404v1"></script>
-    <script src="./app.js?v=2.0.11"></script>
+    <script src="./app.js?v=2.0.12"></script>
   </body>
   </html>

@@ -2098,6 +2098,62 @@ body:not(.catalog-active) .catalog-player { display: none !important; }
   right: 1.2rem;
 }
 
+/* ── Vista Playlists estilo Apple Music (tokens bayeight --bay-*) ───────────── */
+.catalog-playlists-view.hidden { display: none; }
+/* En detalle, el grid muestra solo la columna de canciones (oculta el aside). */
+.catalog-grid.songs-only { grid-template-columns: 1fr; }
+.catalog-grid.songs-only > .catalog-pane:first-child { display: none; }
+.catalog-grid.songs-only .catalog-songs-head { display: none; }
+
+/* Lista de playlists */
+.pl-list-head { display: flex; align-items: center; justify-content: space-between; margin: 5px 0 10px; }
+.pl-list-head h4 { font-family: "Bebas Neue", "Inter", sans-serif; font-size: 1.55rem; letter-spacing: .03em; margin: 0; color: var(--bay-text); }
+.pl-list { display: flex; flex-direction: column; gap: 0; }
+.pl-row {
+  width: 100%; display: flex; align-items: center; gap: 15px;
+  background: transparent; border: none; border-bottom: 1px solid var(--bay-border);
+  padding: 10px 5px; cursor: pointer; text-align: left; color: var(--bay-text);
+  transition: background .2s ease;
+}
+.pl-row:hover { background: rgba(255,255,255,.04); }
+.pl-row-meta { display: flex; flex-direction: column; gap: 2.5px; flex: 1; min-width: 0; }
+.pl-row-meta strong { font-size: 1rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pl-row-count { font-size: .8rem; color: var(--bay-muted); }
+.pl-row-chevron { color: var(--bay-muted); font-size: 1.5rem; flex: 0 0 auto; line-height: 1; }
+.pl-empty { color: var(--bay-muted); padding: 20px 5px; list-style: none; }
+
+/* Mosaico 2×2 de portadas */
+.pl-mosaic {
+  flex: 0 0 auto; width: 55px; height: 55px; border-radius: 8px; overflow: hidden;
+  display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr;
+  background: var(--bay-surface); border: 1px solid var(--bay-border);
+}
+.pl-mosaic-cell { background-size: cover; background-position: center; min-width: 0; min-height: 0; }
+.pl-mosaic-empty { display: grid; place-items: center; color: var(--bay-muted); font-size: .7rem; background: var(--bay-surface); }
+
+/* Detalle de playlist */
+.pl-detail-head { display: flex; flex-direction: column; gap: 5px; padding: 5px 0 15px; border-bottom: 1px solid var(--bay-border); margin-bottom: 10px; }
+.pl-back { align-self: flex-start; background: none; border: none; color: var(--bay-accent); font-size: .95rem; cursor: pointer; padding: 5px 0; font-weight: 600; }
+.pl-detail-title { font-family: "Bebas Neue", "Inter", sans-serif; font-size: 2rem; letter-spacing: .02em; margin: 5px 0 0; color: var(--bay-text); line-height: 1.1; }
+.pl-detail-count { font-size: .85rem; color: var(--bay-muted); }
+.pl-detail-actions { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
+.pl-detail-pills { display: flex; gap: 10px; }
+.pl-pill {
+  flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  background: var(--bay-surface); color: var(--bay-accent); border: 1px solid var(--bay-border);
+  border-radius: 15px; padding: 12px 15px; font-weight: 700; font-size: 1rem; cursor: pointer;
+  transition: background .2s ease, border-color .2s ease;
+}
+.pl-pill:hover { border-color: var(--bay-accent); }
+.pl-pill-ico { font-size: .9rem; }
+.pl-detail-icons { display: flex; gap: 10px; justify-content: flex-end; }
+.pl-icon-btn {
+  background: var(--bay-surface); border: 1px solid var(--bay-border); color: var(--bay-text);
+  width: 40px; height: 40px; border-radius: 10px; display: grid; place-items: center; cursor: pointer;
+  transition: border-color .2s ease, color .2s ease;
+}
+.pl-icon-btn:hover { border-color: var(--bay-accent); color: var(--bay-accent); }
+
 /* Leyenda "... ver letra" — texto magenta con glow, animación typewriter + bounce */
 .lyrics-hint-pill {
   position: absolute;

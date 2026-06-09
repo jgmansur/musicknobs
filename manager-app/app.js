@@ -540,6 +540,125 @@ function syncPlaylistCreateControlsVisibility() {
   // Controles de playlists viven dentro de la pestaña lateral en renderCatalog.
 }
 
+// ── Vista Playlists estilo Apple Music ───────────────────────────────────────
+// Lista de playlists (mosaico 2×2 + nombre + N canciones) → tap → detalle con
+// Reproducir/Aleatorio + compartir + borrar. El detalle reusa #catalog-songs
+// (mismas filas del catálogo) y solo inyecta un header arriba.
+
+// Mosaico 2×2 con las primeras 4 portadas de la playlist (rellena con placeholder).
+function buildPlaylistMosaic(playlist) {
+  const ids = (Array.isArray(playlist?.tracks) ? playlist.tracks : []).map((t) => String(t.id || ''));
+  const covers = [];
+  for (const id of ids) {
+    const song = catalogCache.find((s) => String(s.id) === id);
+    if (song && song.cover) covers.push(song.cover);
+    if (covers.length >= 4) break;
+  }
+  const cells = [];
+  for (let i = 0; i < 4; i++) {
+    cells.push(covers[i]
+      ? `<span class="pl-mosaic-cell" style="background-image:url('${escapeHtml(covers[i])}')"></span>`
+      : `<span class="pl-mosaic-cell pl-mosaic-empty">♪</span>`);
+  }
+  return `<span class="pl-mosaic">${cells.join('')}</span>`;
+}
+
+function renderPlaylistsView() {
+  const el = document.getElementById('catalog-playlists-view');
+  if (!el) return;
+
+  // ── DETALLE ──
+  if (selectedPlaylistId) {
+    const pl = playlistsCache.find((p) => p.id === selectedPlaylistId);
+    if (!pl) { selectedPlaylistId = ''; renderCatalog(); return; }
+    const count = Number(pl.trackCount || (pl.tracks || []).length || 0);
+    el.innerHTML = `
+      <div class="pl-detail-head">
+        <button class="pl-back" id="pl-detail-back" type="button" aria-label="Volver a playlists">‹ Playlists</button>
+        <h2 class="pl-detail-title">${escapeHtml(pl.name)}</h2>
+        <span class="pl-detail-count">${count} ${count === 1 ? 'canción' : 'canciones'}</span>
+        <div class="pl-detail-actions">
+          <div class="pl-detail-pills">
+            <button class="pl-pill" id="pl-detail-play" type="button"><span class="pl-pill-ico">▶</span> Reproducir</button>
+            <button class="pl-pill" id="pl-detail-shuffle" type="button"><span class="pl-pill-ico">🔀</span> Aleatorio</button>
+          </div>
+          <div class="pl-detail-icons">
+            <button class="pl-icon-btn" id="pl-detail-share" type="button" aria-label="Compartir playlist" title="Compartir playlist">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.6" y1="10.5" x2="15.4" y2="6.5"></line><line x1="8.6" y1="13.5" x2="15.4" y2="17.5"></line></svg>
+            </button>
+            ${isAuthenticated ? `<button class="pl-icon-btn pl-danger" id="pl-detail-delete" type="button" aria-label="Borrar playlist" title="Borrar playlist">🗑</button>` : ''}
+          </div>
+        </div>
+      </div>`;
+    document.getElementById('pl-detail-back')?.addEventListener('click', () => {
+      selectedPlaylistId = '';
+      catalogVisibleCount = CATALOG_PAGE_STEP;
+      renderPlaylists();
+      renderCatalog();
+    });
+    document.getElementById('pl-detail-play')?.addEventListener('click', () => {
+      if (catalogQueue.length) playCatalogSong(catalogQueue[0]);
+    });
+    document.getElementById('pl-detail-shuffle')?.addEventListener('click', () => {
+      if (!catalogQueue.length) return;
+      if (!catalogRandomMode) toggleCatalogRandomMode(); else playRandomCatalogTrack();
+    });
+    document.getElementById('pl-detail-share')?.addEventListener('click', () => shareSelectedPlaylistForListen());
+    document.getElementById('pl-detail-delete')?.addEventListener('click', () => deletePlaylist(selectedPlaylistId));
+    return;
+  }
+
+  // ── LISTA ──
+  const rows = playlistsCache.map((pl) => {
+    const count = Number(pl.trackCount || (pl.tracks || []).length || 0);
+    return `
+      <li>
+        <button class="pl-row" data-pl-open="${escapeHtml(pl.id)}" type="button">
+          ${buildPlaylistMosaic(pl)}
+          <span class="pl-row-meta">
+            <strong>${escapeHtml(pl.name)}</strong>
+            <span class="pl-row-count">${count} ${count === 1 ? 'canción' : 'canciones'}</span>
+          </span>
+          <span class="pl-row-chevron">›</span>
+        </button>
+      </li>`;
+  }).join('');
+
+  el.innerHTML = `
+    <div class="pl-list-head">
+      <h4>Playlists</h4>
+      ${isAuthenticated ? `<button class="catalog-icon-btn" id="pl-list-create" type="button" aria-label="Crear nueva playlist" title="Nueva playlist">＋</button>` : ''}
+    </div>
+    ${isAuthenticated ? `<div id="pl-list-create-form" class="hidden catalog-playlist-create-form">
+      <input id="pl-list-create-input" class="catalog-genre-select" type="text" placeholder="Nombre de la nueva playlist..." />
+      <button class="mini-btn" id="pl-list-create-submit" type="button">Crear</button>
+    </div>` : ''}
+    <ul class="list pl-list">${rows || '<li class="pl-empty">No hay playlists todavía. Creá una con ＋.</li>'}</ul>`;
+
+  el.querySelectorAll('[data-pl-open]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      selectedPlaylistId = String(btn.getAttribute('data-pl-open') || '');
+      catalogVisibleCount = CATALOG_PAGE_STEP;
+      catalogSearchQuery = '';
+      renderPlaylists();
+      renderCatalog();
+    });
+  });
+  const createBtn = document.getElementById('pl-list-create');
+  const createForm = document.getElementById('pl-list-create-form');
+  if (createBtn && createForm) {
+    createBtn.addEventListener('click', () => {
+      createForm.classList.toggle('hidden');
+      if (!createForm.classList.contains('hidden')) document.getElementById('pl-list-create-input')?.focus();
+    });
+  }
+  document.getElementById('pl-list-create-submit')?.addEventListener('click', () => {
+    const input = document.getElementById('pl-list-create-input');
+    const name = String(input?.value || '').trim();
+    if (name) createPlaylist(name);
+  });
+}
+
 async function loadPlaylistsFromApi() {
   try {
     if (!API_BASE) throw new Error('apiBaseUrl no configurado');
@@ -1727,6 +1846,22 @@ function renderCatalog() {
     genresEl.parentElement.classList.toggle('is-genres-view', catalogFilterView === 'genres');
   }
 
+  // Vista Playlists estilo Apple Music: lista de playlists ↔ detalle.
+  // - lista (sin playlist abierta): se oculta el grid de dos paneles, full-width.
+  // - detalle (playlist abierta): grid visible pero solo la columna de canciones.
+  const playlistsMode = catalogFilterView === 'playlists';
+  const playlistDetailOpen = playlistsMode && !!selectedPlaylistId;
+  const catalogGridEl = document.querySelector('#tab-catalog .catalog-grid');
+  const playlistsViewEl = document.getElementById('catalog-playlists-view');
+  if (catalogGridEl) {
+    catalogGridEl.classList.toggle('hidden', playlistsMode && !playlistDetailOpen);
+    catalogGridEl.classList.toggle('songs-only', playlistDetailOpen);
+  }
+  if (playlistsViewEl) {
+    playlistsViewEl.classList.toggle('hidden', !playlistsMode);
+    if (playlistsMode) renderPlaylistsView();
+  }
+
   if (catalogFilterView === 'genres') {
     genresEl.innerHTML = `
       <li>
@@ -1903,6 +2038,8 @@ function renderCatalog() {
   filterTabPlaylists.onclick = () => {
     catalogFilterView = 'playlists';
     catalogGenreFilter = 'Todas';
+    selectedPlaylistId = '';   // siempre arrancar en la lista de playlists
+    catalogSearchQuery = '';
     renderCatalog();
   };
 
