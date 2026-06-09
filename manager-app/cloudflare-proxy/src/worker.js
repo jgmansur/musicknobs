@@ -2649,6 +2649,7 @@ async function ipvDelete(env, id) {
 
 // ─── QUOTES: ARCHIVO_DB ──────────────────────────────────────────────────────
 const ARCHIVO_DB_ID = "129c1932-ede8-8003-b423-deca245759ec";
+const ARCHIVO_DS_ID = "6405719e-5f90-4fc0-8eab-d9352387dd07";
 const QUOTE_NUMBER_RE = /MK[L]?-\d{4}-\w+/;
 const QUOTE_ESTATUS_ENUM = ["Pendiente", "En seguimiento", "Contrato enviado", "Firmado", "En producción", "Entregado"];
 
@@ -2748,7 +2749,7 @@ async function listManagerQuotes(env, searchParams) {
   try {
     const filter = { and: [{ property: "Name", title: { contains: "Cotización" } }, { property: "Tipo", select: { equals: "Music Knobs" } }] };
     if (statusFilter) filter.and.push({ property: "Estatus", select: { equals: statusFilter } });
-    const dbResp = await fetch(`https://api.notion.com/v1/databases/${ARCHIVO_DB_ID}/query`, {
+    const dbResp = await fetch(`https://api.notion.com/v1/data_sources/${ARCHIVO_DS_ID}/query`, {
       method: "POST",
       headers: { Authorization: `Bearer ${notionToken}`, "Notion-Version": notionVersion, "Content-Type": "application/json" },
       body: JSON.stringify({ filter, sorts: [{ property: "Date (ToDo)", direction: "descending" }], page_size: 100 }),
@@ -3121,7 +3122,7 @@ export default {
     if (request.method === "GET" && url.pathname === "/api/debug/notion-archivo") {
       const notionToken = env.NOTION_TOKEN || "";
       const notionVersion = env.NOTION_VERSION || "2022-06-28";
-      const r = await fetch(`https://api.notion.com/v1/databases/${ARCHIVO_DB_ID}/query`, {
+      const r = await fetch(`https://api.notion.com/v1/data_sources/${ARCHIVO_DS_ID}/query`, {
         method: "POST",
         headers: { Authorization: `Bearer ${notionToken}`, "Notion-Version": notionVersion, "Content-Type": "application/json" },
         body: JSON.stringify({ filter: { property: "Tipo", select: { equals: "Music Knobs" } }, page_size: 3 }),
