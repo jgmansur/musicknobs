@@ -4126,7 +4126,7 @@ function handleGoogleTokenSuccess(resp) {
 function syncTabVisibility() {
   document.querySelectorAll('.tab').forEach((t) => {
     const tabName = t.dataset.tab;
-    if (tabName === 'focus') {
+    if (tabName === 'focus' || tabName === 'quotes') {
       t.style.display = isAuthenticated ? '' : 'none';
       return;
     }
