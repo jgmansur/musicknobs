@@ -1846,17 +1846,17 @@ function renderCatalog() {
     genresEl.parentElement.classList.toggle('is-genres-view', catalogFilterView === 'genres');
   }
 
-  // Vista Playlists estilo Apple Music: lista de playlists ↔ detalle.
-  // - lista (sin playlist abierta): se oculta el grid de dos paneles, full-width.
-  // - detalle (playlist abierta): grid visible pero solo la columna de canciones.
+  // Vista Playlists estilo Apple Music (se renderiza en el panel derecho, donde
+  // van las canciones; el aside conserva sus tabs intactos como antes):
+  // - LISTA (sin playlist abierta): se ocultan canciones + encabezado, se muestra la lista.
+  // - DETALLE (playlist abierta): se muestra el header de la playlist + sus canciones.
   const playlistsMode = catalogFilterView === 'playlists';
   const playlistDetailOpen = playlistsMode && !!selectedPlaylistId;
-  const catalogGridEl = document.querySelector('#tab-catalog .catalog-grid');
   const playlistsViewEl = document.getElementById('catalog-playlists-view');
-  if (catalogGridEl) {
-    catalogGridEl.classList.toggle('hidden', playlistsMode && !playlistDetailOpen);
-    catalogGridEl.classList.toggle('songs-only', playlistDetailOpen);
-  }
+  const songsHeadEl = document.querySelector('#tab-catalog .catalog-songs-head');
+  const showSongs = !playlistsMode || playlistDetailOpen;
+  if (songsEl) songsEl.style.display = showSongs ? '' : 'none';
+  if (songsHeadEl) songsHeadEl.style.display = playlistsMode ? 'none' : '';
   if (playlistsViewEl) {
     playlistsViewEl.classList.toggle('hidden', !playlistsMode);
     if (playlistsMode) renderPlaylistsView();
@@ -1874,31 +1874,9 @@ function renderCatalog() {
       </li>
     `;
   } else {
-    genresEl.innerHTML = `
-      <li class="catalog-playlist-selector">
-        <select id="catalog-playlist-select-pane" class="catalog-genre-select">
-          <option value="">Selecciona playlist</option>
-          ${playlistsCache
-            .map((pl) => `<option value="${escapeHtml(pl.id)}" ${selectedPlaylistId === pl.id ? 'selected' : ''}>${escapeHtml(pl.name)} (${Number(pl.trackCount || 0)})</option>`)
-            .join('')}
-        </select>
-        ${selectedPlaylistId
-          ? `<button class="catalog-icon-btn" id="playlist-share-pane" type="button" aria-label="Compartir playlist" title="Compartir playlist">
-               <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.6" y1="10.5" x2="15.4" y2="6.5"></line><line x1="8.6" y1="13.5" x2="15.4" y2="17.5"></line></svg>
-             </button>`
-          : ''}
-        ${isAuthenticated
-          ? `<button class="catalog-icon-btn" id="playlist-create-pane-toggle" type="button" aria-label="Crear nueva playlist" title="Crear nueva playlist">＋</button>
-             <button class="catalog-icon-btn" id="playlist-delete-pane" type="button" aria-label="Borrar playlist seleccionada" title="Borrar playlist seleccionada">🗑</button>`
-          : ''}
-      </li>
-      ${isAuthenticated
-        ? `<li id="playlist-create-pane-form" class="hidden catalog-playlist-create-form">
-            <input id="playlist-name-pane" class="catalog-genre-select" type="text" placeholder="Nombre de la nueva playlist..." />
-            <button class="mini-btn" id="playlist-create-pane-submit" type="button">Crear</button>
-          </li>`
-        : ''}
-    `;
+    // Modo Playlists: el aside solo muestra los tabs (la lista/detalle de
+    // playlists vive full en el panel derecho, estilo Apple Music).
+    genresEl.innerHTML = '';
   }
 
   const byGenre = catalogGenreFilter === 'Todas'
