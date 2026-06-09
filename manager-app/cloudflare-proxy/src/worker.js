@@ -2748,7 +2748,13 @@ async function listManagerQuotes(env, searchParams) {
   try {
     const filter = { and: [{ property: "Name", title: { contains: "Cotización" } }, { property: "Tipo", select: { equals: "Music Knobs" } }] };
     if (statusFilter) filter.and.push({ property: "Estatus", select: { equals: statusFilter } });
-    const payload = await notionQueryAdvanced(ARCHIVO_DB_ID, notionToken, notionVersion, { filter, sorts: [{ property: "Date (ToDo)", direction: "descending" }], pageSize: 100 });
+    const dbResp = await fetch(`https://api.notion.com/v1/databases/${ARCHIVO_DB_ID}/query`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${notionToken}`, "Notion-Version": notionVersion, "Content-Type": "application/json" },
+      body: JSON.stringify({ filter, sorts: [{ property: "Date (ToDo)", direction: "descending" }], page_size: 100 }),
+    });
+    if (!dbResp.ok) throw new Error(await dbResp.text());
+    const payload = await dbResp.json();
     const data = await Promise.all((payload?.results || []).map(async (page) => {
       const props = page.properties || {};
       const title = readNotionTitle(props);
