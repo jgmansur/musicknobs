@@ -113,9 +113,25 @@ let focusOverdueIndex = 0;
 let catalogCache = [];
 let catalogGenreFilter = 'Todas';
 let catalogNowPlayingId = '';
-let catalogNowCardOpen = false;
+// Like de visitante: en memoria, se resetea en cada apertura de la app (1 like/sesión/canción).
+const catalogLikedSongs = new Set();
+// Play contado por canción en esta reproducción (evita doble conteo del mismo track).
+let catalogPlayCountedId = '';
+let catalogPlayerExpanded = false;
+let catalogLyricsOn = false;
+let catalogLyricsEditing = false;
+let catalogLyricsTimer = null;
+let catalogLyricLastIdx = -1;
+let lyricsHintTimer = null;
+let lyricsHintAnimTimers = [];
+let catalogQueue = [];
 let playlistsCache = [];
 let selectedPlaylistId = '';
+let playlistEditMode = false;            // modo edición (lista o detalle)
+let playlistSelection = new Set();       // ids seleccionados (playlists o canciones)
+let playlistAddMode = false;             // panel "+" para agregar canciones a la playlist
+let playlistAddSelection = new Set();    // canciones elegidas para agregar
+let playlistAddQuery = '';               // búsqueda dentro del panel de agregar
 let contactsVisibleCount = 12;
 let messagesVisibleCount = 20;
 let catalogVisibleCount = 20;
@@ -148,6 +164,8 @@ const catalogPlayer = {
   isSeeking: false,
   activeSoundId: null,
   pendingPlay: false,
+  karaokeMode: false,
+  karaokeSwapping: false,
 };
 
 function isLocalDevHost() {
@@ -173,7 +191,9 @@ function activateTab(tabName) {
     p.classList.toggle('active', p.id === `tab-${target}`);
   });
   document.body.classList.toggle('focus-active', target === 'focus');
-  updateTabBarVisibilityForCatalogBottom();
+  document.body.classList.toggle('catalog-active', target === 'catalog');
+  document.body.classList.toggle('messages-active', target === 'messages');
+  document.body.classList.toggle('book-active', target === 'book');
 }
 
 function isMobileTabBarViewport() {
@@ -184,49 +204,6 @@ function isMobileTabBarViewport() {
   }
 }
 
-function setTabBarHidden(hidden) {
-  const tabBar = document.querySelector('.tab-bar');
-  if (!tabBar) return;
-  tabBar.classList.toggle('is-hidden', Boolean(hidden));
-  document.body.classList.toggle('tabbar-hidden', Boolean(hidden));
-}
-
-function updateTabBarVisibilityForCatalogBottom() {
-  const activeTab = getActiveTabName();
-  if (!isMobileTabBarViewport() || activeTab !== 'catalog') {
-    setTabBarHidden(false);
-    return;
-  }
-
-  const songsEl = document.getElementById('catalog-songs');
-  const containerEl = document.querySelector('main.container');
-  const threshold = 12;
-
-  let atBottom = false;
-
-  if (songsEl && songsEl.scrollHeight > songsEl.clientHeight + threshold) {
-    atBottom = songsEl.scrollTop + songsEl.clientHeight >= songsEl.scrollHeight - threshold;
-  } else if (containerEl) {
-    atBottom = containerEl.scrollTop + containerEl.clientHeight >= containerEl.scrollHeight - threshold;
-  }
-
-  setTabBarHidden(atBottom);
-}
-
-function setupCatalogTabBarAutoHide() {
-  const containerEl = document.querySelector('main.container');
-  const songsEl = document.getElementById('catalog-songs');
-
-  if (containerEl) {
-    containerEl.addEventListener('scroll', updateTabBarVisibilityForCatalogBottom, { passive: true });
-  }
-  if (songsEl) {
-    songsEl.addEventListener('scroll', updateTabBarVisibilityForCatalogBottom, { passive: true });
-  }
-
-  window.addEventListener('resize', updateTabBarVisibilityForCatalogBottom, { passive: true });
-  updateTabBarVisibilityForCatalogBottom();
-}
 
 function updateAuthGateForCurrentTab() {
   const locked = !isAuthenticated && !isPublicTab(getActiveTabName());
@@ -572,6 +549,483 @@ function syncPlaylistCreateControlsVisibility() {
   // Controles de playlists viven dentro de la pestaña lateral en renderCatalog.
 }
 
+// ── Vista Playlists estilo Apple Music ───────────────────────────────────────
+// Lista de playlists (mosaico 2×2 + nombre + N canciones) → tap → detalle con
+// Reproducir/Aleatorio + compartir + borrar. El detalle reusa #catalog-songs
+// (mismas filas del catálogo) y solo inyecta un header arriba.
+
+// Mosaico 2×2 con las primeras 4 portadas de la playlist (rellena con placeholder).
+function buildPlaylistMosaic(playlist) {
+  const ids = (Array.isArray(playlist?.tracks) ? playlist.tracks : []).map((t) => String(t.id || ''));
+  const covers = [];
+  for (const id of ids) {
+    const song = catalogCache.find((s) => String(s.id) === id);
+    if (song && song.cover) covers.push(song.cover);
+    if (covers.length >= 4) break;
+  }
+  const cells = [];
+  for (let i = 0; i < 4; i++) {
+    cells.push(covers[i]
+      ? `<span class="pl-mosaic-cell" style="background-image:url('${escapeHtml(covers[i])}')"></span>`
+      : `<span class="pl-mosaic-cell pl-mosaic-empty">♪</span>`);
+  }
+  return `<span class="pl-mosaic">${cells.join('')}</span>`;
+}
+
+function renderPlaylistsView() {
+  const el = document.getElementById('catalog-playlists-view');
+  if (!el) return;
+
+  // ── DETALLE ──
+  if (selectedPlaylistId) {
+    const pl = playlistsCache.find((p) => p.id === selectedPlaylistId);
+    if (!pl) { selectedPlaylistId = ''; renderCatalog(); return; }
+    if (playlistAddMode) { renderPlaylistAddPanel(el, pl); return; }
+    const editing = playlistEditMode;
+    // Canciones en ORDEN de la playlist (solo las que existen en el catálogo)
+    const orderedIds = (pl.tracks || []).map((t) => String(t.id || '')).filter((id) => catalogCache.some((s) => String(s.id) === id));
+    const songs = orderedIds.map((id) => catalogCache.find((s) => String(s.id) === id));
+    const count = songs.length;
+    const nSel = playlistSelection.size;
+
+    const songRows = songs.map((s) => {
+      const sel = playlistSelection.has(s.id);
+      const cover = s.cover
+        ? `<span class="pl-song-cover" style="background-image:url('${escapeHtml(s.cover)}')"></span>`
+        : `<span class="pl-song-cover pl-song-cover-empty">♪</span>`;
+      const meta = `<span class="pl-song-meta"><strong>${escapeHtml(s.obra || 'Sin título')}</strong><span class="pl-song-artist">${escapeHtml(s.autores || '—')}</span></span>`;
+      if (editing) {
+        return `<li class="pl-song-li" data-song-id="${escapeHtml(s.id)}">
+          <div class="pl-song-row pl-song-row-edit ${sel ? 'is-selected' : ''}" data-song-toggle="${escapeHtml(s.id)}">
+            <span class="pl-check ${sel ? 'on' : ''}">${sel ? '✓' : ''}</span>
+            ${cover}${meta}
+            <span class="pl-drag-handle" data-drag="${escapeHtml(s.id)}" aria-label="Reordenar" title="Arrastrá para reordenar" style="touch-action:none;">≡</span>
+          </div>
+        </li>`;
+      }
+      return `<li class="pl-song-li">
+        <button class="pl-song-row ${catalogNowPlayingId === s.id ? 'is-active' : ''}" data-song-play="${escapeHtml(s.id)}" type="button">${cover}${meta}</button>
+      </li>`;
+    }).join('');
+
+    const titleHtml = editing
+      ? `<input id="pl-rename-input" class="pl-rename-input" type="text" value="${escapeHtml(pl.name)}" aria-label="Nombre de la playlist" placeholder="Nombre de la playlist" />`
+      : `<h2 class="pl-detail-title">${escapeHtml(pl.name)}</h2>`;
+
+    el.innerHTML = `
+      <div class="pl-detail-head">
+        <button class="pl-back" id="pl-detail-back" type="button" aria-label="Volver a playlists">‹ Playlists</button>
+        ${titleHtml}
+        <span class="pl-detail-count">${count} ${count === 1 ? 'canción' : 'canciones'}</span>
+        <div class="pl-detail-actions">
+          <div class="pl-detail-pills">
+            <button class="pl-pill" id="pl-detail-play" type="button"><span class="pl-pill-ico">▶</span> Reproducir</button>
+            <button class="pl-pill" id="pl-detail-shuffle" type="button"><span class="pl-pill-ico">🔀</span> Aleatorio</button>
+          </div>
+          <div class="pl-detail-icons">
+            ${(isAuthenticated && count) ? `<button class="pl-text-btn" id="pl-detail-edit" type="button">${editing ? 'Listo' : 'Editar'}</button>` : ''}
+            ${isAuthenticated ? `<button class="pl-icon-btn" id="pl-detail-add" type="button" aria-label="Agregar canciones" title="Agregar canciones">＋</button>` : ''}
+            <button class="pl-icon-btn" id="pl-detail-share" type="button" aria-label="Compartir playlist" title="Compartir playlist">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.6" y1="10.5" x2="15.4" y2="6.5"></line><line x1="8.6" y1="13.5" x2="15.4" y2="17.5"></line></svg>
+            </button>
+            ${isAuthenticated ? `<button class="pl-icon-btn pl-danger" id="pl-detail-delete" type="button" aria-label="Borrar playlist" title="Borrar playlist">🗑</button>` : ''}
+          </div>
+        </div>
+        ${editing ? `<div class="pl-edit-bar">
+          <span class="pl-edit-count">${nSel} seleccionada${nSel === 1 ? '' : 's'} · arrastrá ≡ para reordenar</span>
+          <button class="pl-danger-btn" id="pl-detail-remove-selected" type="button" ${nSel ? '' : 'disabled'}>🗑 Quitar</button>
+        </div>` : ''}
+      </div>
+      <ul class="list pl-song-list" id="pl-song-list">${songRows || '<li class="pl-empty">Esta playlist no tiene canciones todavía.</li>'}</ul>`;
+
+    document.getElementById('pl-detail-back')?.addEventListener('click', () => {
+      selectedPlaylistId = '';
+      catalogVisibleCount = CATALOG_PAGE_STEP;
+      playlistEditMode = false;
+      playlistSelection.clear();
+      renderPlaylists();
+      renderCatalog();
+    });
+    document.getElementById('pl-detail-play')?.addEventListener('click', () => { if (catalogQueue.length) playCatalogSong(catalogQueue[0]); });
+    document.getElementById('pl-detail-shuffle')?.addEventListener('click', () => {
+      if (!catalogQueue.length) return;
+      if (!catalogRandomMode) toggleCatalogRandomMode(); else playRandomCatalogTrack();
+    });
+    document.getElementById('pl-detail-share')?.addEventListener('click', () => shareSelectedPlaylistForListen());
+    document.getElementById('pl-detail-delete')?.addEventListener('click', () => deletePlaylist(selectedPlaylistId));
+    document.getElementById('pl-detail-edit')?.addEventListener('click', () => {
+      playlistEditMode = !playlistEditMode;
+      playlistSelection.clear();
+      renderPlaylistsView();
+    });
+    document.getElementById('pl-detail-add')?.addEventListener('click', () => {
+      playlistAddMode = true;
+      playlistEditMode = false;
+      playlistAddSelection.clear();
+      playlistAddQuery = '';
+      renderPlaylistsView();
+    });
+    document.getElementById('pl-detail-remove-selected')?.addEventListener('click', () => removeSelectedSongsFromPlaylist(pl));
+    const renameInput = document.getElementById('pl-rename-input');
+    if (renameInput) {
+      const commit = () => {
+        const newName = String(renameInput.value || '').trim();
+        if (newName && newName !== pl.name) renamePlaylist(pl, newName);
+      };
+      renameInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); renameInput.blur(); } });
+      renameInput.addEventListener('blur', commit);
+    }
+
+    el.querySelectorAll('[data-song-play]').forEach((b) => b.addEventListener('click', () => playCatalogSong(b.getAttribute('data-song-play'))));
+    // En edición: tap en la fila (no en el agarradero) selecciona/deselecciona.
+    el.querySelectorAll('[data-song-toggle]').forEach((row) => row.addEventListener('click', (e) => {
+      if (e.target.closest('[data-drag]')) return;
+      const id = row.getAttribute('data-song-toggle');
+      if (playlistSelection.has(id)) playlistSelection.delete(id); else playlistSelection.add(id);
+      renderPlaylistsView();
+    }));
+    if (editing) setupPlaylistDragReorder(pl);
+    return;
+  }
+
+  // ── LISTA ── (con modo edición: seleccionar varias y borrarlas juntas)
+  const editing = playlistEditMode;
+  // En la vista lista, el buscador principal filtra PLAYLISTS por nombre.
+  const plQuery = catalogSearchQuery.trim().toLowerCase();
+  const listablePlaylists = plQuery
+    ? playlistsCache.filter((pl) => String(pl.name || '').toLowerCase().includes(plQuery))
+    : playlistsCache;
+  const rows = listablePlaylists.map((pl) => {
+    const count = Number(pl.trackCount || (pl.tracks || []).length || 0);
+    const sel = playlistSelection.has(pl.id);
+    const inner = `
+      ${editing ? `<span class="pl-check ${sel ? 'on' : ''}">${sel ? '✓' : ''}</span>` : ''}
+      ${buildPlaylistMosaic(pl)}
+      <span class="pl-row-meta">
+        <strong>${escapeHtml(pl.name)}</strong>
+        <span class="pl-row-count">${count} ${count === 1 ? 'canción' : 'canciones'}</span>
+      </span>
+      ${editing ? '' : '<span class="pl-row-chevron">›</span>'}`;
+    return editing
+      ? `<li><div class="pl-row pl-row-edit ${sel ? 'is-selected' : ''}" data-pl-select="${escapeHtml(pl.id)}">${inner}</div></li>`
+      : `<li><button class="pl-row" data-pl-open="${escapeHtml(pl.id)}" type="button">${inner}</button></li>`;
+  }).join('');
+
+  const nSel = playlistSelection.size;
+  el.innerHTML = `
+    <div class="pl-list-head">
+      <h4>Playlists</h4>
+      <div class="pl-list-head-actions">
+        ${(playlistsCache.length && isAuthenticated) ? `<button class="pl-text-btn" id="pl-list-edit" type="button">${editing ? 'Listo' : 'Editar'}</button>` : ''}
+        ${(!editing && isAuthenticated) ? `<button class="catalog-icon-btn" id="pl-list-create" type="button" aria-label="Crear nueva playlist" title="Nueva playlist">＋</button>` : ''}
+      </div>
+    </div>
+    ${editing ? `<div class="pl-edit-bar">
+      <span class="pl-edit-count">${nSel} seleccionada${nSel === 1 ? '' : 's'}</span>
+      <button class="pl-danger-btn" id="pl-list-delete-selected" type="button" ${nSel ? '' : 'disabled'}>🗑 Borrar</button>
+    </div>` : ''}
+    ${(!editing && isAuthenticated) ? `<div id="pl-list-create-form" class="hidden catalog-playlist-create-form">
+      <input id="pl-list-create-input" class="catalog-genre-select" type="text" placeholder="Nombre de la nueva playlist..." />
+      <button class="mini-btn" id="pl-list-create-submit" type="button">Crear</button>
+    </div>` : ''}
+    <ul class="list pl-list">${rows || `<li class="pl-empty">${plQuery ? 'No hay playlists que coincidan con la búsqueda.' : 'No hay playlists todavía. Creá una con ＋.'}</li>`}</ul>`;
+
+  el.querySelectorAll('[data-pl-open]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      selectedPlaylistId = String(btn.getAttribute('data-pl-open') || '');
+      catalogVisibleCount = CATALOG_PAGE_STEP;
+      catalogSearchQuery = '';
+      renderPlaylists();
+      renderCatalog();
+    });
+  });
+  el.querySelectorAll('[data-pl-select]').forEach((row) => {
+    row.addEventListener('click', () => {
+      const id = String(row.getAttribute('data-pl-select') || '');
+      if (playlistSelection.has(id)) playlistSelection.delete(id); else playlistSelection.add(id);
+      renderPlaylistsView();
+    });
+  });
+  document.getElementById('pl-list-edit')?.addEventListener('click', () => {
+    playlistEditMode = !playlistEditMode;
+    playlistSelection.clear();
+    renderPlaylistsView();
+  });
+  document.getElementById('pl-list-delete-selected')?.addEventListener('click', () => deleteSelectedPlaylists());
+  const createBtn = document.getElementById('pl-list-create');
+  const createForm = document.getElementById('pl-list-create-form');
+  if (createBtn && createForm) {
+    createBtn.addEventListener('click', () => {
+      createForm.classList.toggle('hidden');
+      if (!createForm.classList.contains('hidden')) document.getElementById('pl-list-create-input')?.focus();
+    });
+  }
+  document.getElementById('pl-list-create-submit')?.addEventListener('click', () => {
+    const input = document.getElementById('pl-list-create-input');
+    const name = String(input?.value || '').trim();
+    if (name) createPlaylist(name);
+  });
+}
+
+// Borra varias playlists seleccionadas en una acción (una sola confirmación).
+async function deleteSelectedPlaylists() {
+  if (!isAuthenticated) return;
+  const ids = [...playlistSelection];
+  if (!ids.length) return;
+  const names = ids.map((id) => playlistsCache.find((p) => p.id === id)?.name || 'playlist');
+  if (!window.confirm(`¿Borrar ${ids.length} playlist${ids.length === 1 ? '' : 's'}?\n${names.join(', ')}\nEsta acción no se puede deshacer.`)) return;
+  setStatus('catalog-status', `Borrando ${ids.length} playlists...`);
+  let ok = 0, fail = 0;
+  for (const id of ids) {
+    try {
+      const r = await fetch(`${API_BASE}/api/manager/playlists/${id}`, { method: 'DELETE', headers: apiHeaders() });
+      if (r.ok) ok += 1; else fail += 1;
+    } catch { fail += 1; }
+  }
+  playlistSelection.clear();
+  playlistEditMode = false;
+  setStatus('catalog-status', `Playlists borradas: ${ok}${fail ? ` · fallaron ${fail}` : ''}.`, fail > 0);
+  await loadPlaylistsFromApi();
+  renderCatalog();
+}
+
+// Persiste el orden/contenido de tracks de una playlist (reorder + borrado múltiple).
+async function setManagerPlaylistTracks(playlistId, orderedIds, { silent = false } = {}) {
+  try {
+    const r = await fetch(`${API_BASE}/api/manager/playlists/${playlistId}`, {
+      method: 'PATCH',
+      headers: apiHeaders(),
+      body: JSON.stringify({ action: 'set_tracks', trackIds: orderedIds }),
+    });
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    if (!silent) setStatus('catalog-status', 'Playlist actualizada.');
+    await loadPlaylistsFromApi();
+    renderCatalog();
+  } catch (e) {
+    setStatus('catalog-status', `No se pudo actualizar la playlist: ${e instanceof Error ? e.message : e}`, true);
+    await loadPlaylistsFromApi();
+    renderCatalog();
+  }
+}
+
+// Renombra la playlist (actualiza la propiedad título en Notion vía worker).
+async function renamePlaylist(pl, newName) {
+  if (!isAuthenticated || !newName || newName === pl.name) return;
+  setStatus('catalog-status', `Renombrando a "${newName}"...`);
+  try {
+    const r = await fetch(`${API_BASE}/api/manager/playlists/${pl.id}`, {
+      method: 'PATCH',
+      headers: apiHeaders(),
+      body: JSON.stringify({ action: 'rename', name: newName }),
+    });
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    setStatus('catalog-status', `Playlist renombrada a "${newName}".`);
+    await loadPlaylistsFromApi();
+    renderCatalog();
+  } catch (e) {
+    setStatus('catalog-status', `No se pudo renombrar: ${e instanceof Error ? e.message : e}`, true);
+    await loadPlaylistsFromApi();
+    renderCatalog();
+  }
+}
+
+// Quita las canciones seleccionadas SOLO de la playlist (no del catálogo).
+async function removeSelectedSongsFromPlaylist(pl) {
+  if (!isAuthenticated || !playlistSelection.size) return;
+  const n = playlistSelection.size;
+  if (!window.confirm(`¿Quitar ${n} canción${n === 1 ? '' : 'es'} de "${pl.name}"?\nNo se borra del catálogo, solo de esta playlist.`)) return;
+  const remaining = (pl.tracks || []).map((t) => String(t.id || '')).filter((id) => id && !playlistSelection.has(id));
+  playlistSelection.clear();
+  setStatus('catalog-status', `Quitando ${n} canción${n === 1 ? '' : 'es'} de la playlist...`);
+  await setManagerPlaylistTracks(pl.id, remaining, { silent: true });
+}
+
+// ── Panel "+" para agregar canciones a la playlist actual ──
+function renderPlaylistAddPanel(el, pl) {
+  const inPlaylist = new Set((pl.tracks || []).map((t) => String(t.id || '')));
+  const buildRows = () => {
+    const q = playlistAddQuery.trim().toLowerCase();
+    const candidates = catalogCache.filter((s) => !inPlaylist.has(String(s.id)) && (!q || buildCatalogSearchBlob(s).includes(q)));
+    return candidates.map((s) => {
+      const sel = playlistAddSelection.has(s.id);
+      const cover = s.cover
+        ? `<span class="pl-song-cover" style="background-image:url('${escapeHtml(s.cover)}')"></span>`
+        : `<span class="pl-song-cover pl-song-cover-empty">♪</span>`;
+      return `<li class="pl-song-li"><div class="pl-song-row pl-song-row-edit ${sel ? 'is-selected' : ''}" data-add-toggle="${escapeHtml(s.id)}">
+        <span class="pl-check ${sel ? 'on' : ''}">${sel ? '✓' : ''}</span>${cover}
+        <span class="pl-song-meta"><strong>${escapeHtml(s.obra || 'Sin título')}</strong><span class="pl-song-artist">${escapeHtml(s.autores || '—')}</span></span>
+      </div></li>`;
+    }).join('') || '<li class="pl-empty">No hay más canciones para agregar.</li>';
+  };
+  const nSel = playlistAddSelection.size;
+  el.innerHTML = `
+    <div class="pl-detail-head">
+      <button class="pl-back" id="pl-add-back" type="button">‹ ${escapeHtml(pl.name)}</button>
+      <h2 class="pl-detail-title">Agregar canciones</h2>
+      <input id="pl-add-search" class="catalog-genre-select" type="search" placeholder="Buscar canción, compositor, género..." value="${escapeHtml(playlistAddQuery)}" />
+      <div class="pl-edit-bar">
+        <span class="pl-edit-count" id="pl-add-count">${nSel} seleccionada${nSel === 1 ? '' : 's'}</span>
+        <button class="pl-danger-btn" id="pl-add-confirm" type="button">＋ Agregar</button>
+      </div>
+    </div>
+    <ul class="list pl-song-list" id="pl-add-list">${buildRows()}</ul>`;
+
+  const exit = () => { playlistAddMode = false; playlistAddSelection.clear(); playlistAddQuery = ''; renderPlaylistsView(); };
+  document.getElementById('pl-add-back')?.addEventListener('click', exit);
+  document.getElementById('pl-add-confirm')?.addEventListener('click', () => addSelectedSongsToPlaylist(pl));
+  const search = document.getElementById('pl-add-search');
+  if (search) search.addEventListener('input', () => {
+    playlistAddQuery = String(search.value || '');
+    const list = document.getElementById('pl-add-list');
+    if (list) list.innerHTML = buildRows();
+  });
+  document.getElementById('pl-add-list')?.addEventListener('click', (e) => {
+    const row = e.target.closest('[data-add-toggle]');
+    if (!row) return;
+    const id = row.getAttribute('data-add-toggle');
+    if (playlistAddSelection.has(id)) playlistAddSelection.delete(id); else playlistAddSelection.add(id);
+    row.classList.toggle('is-selected');
+    const chk = row.querySelector('.pl-check');
+    if (chk) { const on = playlistAddSelection.has(id); chk.classList.toggle('on', on); chk.textContent = on ? '✓' : ''; }
+    const n = playlistAddSelection.size;
+    const cnt = document.getElementById('pl-add-count'); if (cnt) cnt.textContent = `${n} seleccionada${n === 1 ? '' : 's'}`;
+  });
+}
+
+async function addSelectedSongsToPlaylist(pl) {
+  const ids = [...playlistAddSelection];
+  if (!ids.length) return;
+  playlistAddMode = false;
+  playlistAddSelection.clear();
+  playlistAddQuery = '';
+
+  // Optimista: agregamos a la playlist en memoria y renderizamos YA, sin esperar
+  // a la red. Las peticiones van en paralelo en segundo plano y al terminar
+  // reconciliamos silenciosamente con el server.
+  const target = playlistsCache.find((p) => p.id === pl.id) || pl;
+  const existing = new Set((target.tracks || []).map((t) => String(t.id || '')));
+  const added = [];
+  for (const id of ids) {
+    if (existing.has(String(id))) continue;
+    const song = catalogCache.find((s) => String(s.id) === String(id));
+    const track = { id: String(id), title: song?.obra || String(id) };
+    target.tracks = [...(target.tracks || []), track];
+    added.push(track);
+  }
+  target.trackCount = (target.tracks || []).length;
+  setStatus('catalog-status', `${added.length} agregada${added.length === 1 ? '' : 's'} a "${target.name}".`);
+  renderPlaylists();
+  renderCatalog();
+
+  // Persistir en paralelo (no bloquea la UI) y reconciliar al final.
+  await Promise.all(added.map((t) =>
+    fetch(`${API_BASE}/api/manager/playlists/${pl.id}`, {
+      method: 'PATCH', headers: apiHeaders(),
+      body: JSON.stringify({ action: 'add_track', trackId: t.id, trackTitle: t.title }),
+    }).catch(() => null)
+  ));
+  await loadPlaylistsFromApi();
+  renderCatalog();
+}
+
+// ── Drag iOS-style para reordenar canciones (agarradero ≡) ──
+// El ítem arrastrado sigue al dedo (translateY 1:1) y los demás se deslizan
+// suavemente para abrir el hueco donde va a caer. Al soltar persiste el orden.
+let plDrag = null;
+function setupPlaylistDragReorder(pl) {
+  const list = document.getElementById('pl-song-list');
+  if (!list) return;
+  list.querySelectorAll('.pl-drag-handle').forEach((handle) => {
+    handle.addEventListener('pointerdown', (e) => beginPlDrag(e, handle, list, pl));
+  });
+}
+
+function beginPlDrag(e, handle, list, pl) {
+  e.preventDefault();
+  const li = handle.closest('.pl-song-li');
+  if (!li) return;
+  const items = [...list.querySelectorAll('.pl-song-li')];
+  const from = items.indexOf(li);
+  if (from < 0) return;
+  // Posiciones originales (para calcular destino y desplazamientos).
+  const metrics = items.map((el) => {
+    const r = el.getBoundingClientRect();
+    return { el, mid: r.top + r.height / 2 };
+  });
+  const draggedH = li.getBoundingClientRect().height;
+  try { handle.setPointerCapture(e.pointerId); } catch {}
+  li.classList.add('pl-dragging');
+  plDrag = { li, list, pl, items, metrics, from, to: from, startY: e.clientY, draggedH };
+
+  const move = (ev) => onPlDragMove(ev);
+  const end = () => {
+    handle.removeEventListener('pointermove', move);
+    handle.removeEventListener('pointerup', end);
+    handle.removeEventListener('pointercancel', end);
+    onPlDragEnd();
+  };
+  handle.addEventListener('pointermove', move);
+  handle.addEventListener('pointerup', end);
+  handle.addEventListener('pointercancel', end);
+}
+
+function onPlDragMove(ev) {
+  if (!plDrag) return;
+  const { li, metrics, from, draggedH } = plDrag;
+  const dy = ev.clientY - plDrag.startY;
+  li.style.transform = `translateY(${dy}px)`;                 // el ítem sigue al dedo
+  const center = metrics[from].mid + dy;
+  // Índice destino: cuántos OTROS ítems tienen su centro por encima del dedo.
+  let to = 0;
+  for (let i = 0; i < metrics.length; i++) {
+    if (i === from) continue;
+    if (center > metrics[i].mid) to += 1;
+  }
+  plDrag.to = to;
+  // Abrir el hueco: los ítems entre origen y destino se deslizan.
+  for (let i = 0; i < metrics.length; i++) {
+    if (i === from) continue;
+    let shift = 0;
+    if (to > from && i > from && i <= to) shift = -draggedH;
+    else if (to < from && i >= to && i < from) shift = draggedH;
+    metrics[i].el.style.transform = shift ? `translateY(${shift}px)` : '';
+  }
+}
+
+function onPlDragEnd() {
+  if (!plDrag) return;
+  const { li, list, pl, items, from, to } = plDrag;
+  items.forEach((el) => { el.style.transform = ''; });        // limpiar transforms
+  li.classList.remove('pl-dragging');
+  if (to !== from && items[to]) {                              // reordenar DOM
+    if (to > from) items[to].after(li); else items[to].before(li);
+  }
+  const newOrder = [...list.querySelectorAll('.pl-song-li')]
+    .map((el) => el.getAttribute('data-song-id'))
+    .filter(Boolean);
+  plDrag = null;
+  if (to === from) return;
+  // OPTIMISTA: el DOM ya muestra el nuevo orden; actualizamos la cache local y
+  // persistimos en background (sin recargar/re-render → instantáneo).
+  const byId = new Map((pl.tracks || []).map((t) => [String(t.id), t]));
+  pl.tracks = newOrder.map((id) => byId.get(id)).filter(Boolean);
+  pl.trackCount = pl.tracks.length;
+  void persistPlaylistOrder(pl.id, newOrder);
+}
+
+async function persistPlaylistOrder(playlistId, orderedIds) {
+  try {
+    const r = await fetch(`${API_BASE}/api/manager/playlists/${playlistId}`, {
+      method: 'PATCH', headers: apiHeaders(),
+      body: JSON.stringify({ action: 'set_tracks', trackIds: orderedIds }),
+    });
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    setStatus('catalog-status', 'Orden guardado.');
+  } catch (e) {
+    setStatus('catalog-status', `No se pudo guardar el orden: ${e instanceof Error ? e.message : e}`, true);
+  }
+}
+
 async function loadPlaylistsFromApi() {
   try {
     if (!API_BASE) throw new Error('apiBaseUrl no configurado');
@@ -852,8 +1306,17 @@ function refreshCatalogProgressUi() {
   if (!catalogPlayer.isSeeking) {
     progress.value = `${percent}`;
   }
+  const fill = document.getElementById('player-mini-fill');
+  if (fill) fill.style.width = `${percent}%`;
   current.textContent = formatTime(seek);
   duration.textContent = formatTime(total);
+
+  // Cuenta un play cuando se escuchó ≥10s o ≥25% (una sola vez por reproducción).
+  if (catalogNowPlayingId && catalogPlayCountedId !== catalogNowPlayingId
+      && (seek >= 10 || (total > 0 && seek / total >= 0.25))) {
+    catalogPlayCountedId = catalogNowPlayingId;
+    countCatalogPlay(catalogNowPlayingId);
+  }
 }
 
 function startCatalogProgressTimer() {
@@ -937,86 +1400,460 @@ function isAutoplayInteractionBlock(idOrCode, maybeCode) {
   );
 }
 
+function setPlayButtonState(btn) {
+  if (!btn) return;
+  btn.classList.toggle('is-loading', catalogPlayer.isLoading);
+  btn.disabled = catalogPlayer.isLoading ? true : !getCatalogPlayerTrackByIndex();
+  btn.textContent = catalogPlayer.isPlaying ? '⏸' : '▶';
+}
+
+function setCoverEl(coverId, placeholderId, track) {
+  const cover = document.getElementById(coverId);
+  const placeholder = document.getElementById(placeholderId);
+  if (!cover || !placeholder) return;
+  if (track?.cover) {
+    cover.src = track.cover;
+    cover.classList.add('visible');
+    placeholder.classList.add('hidden');
+  } else {
+    cover.removeAttribute('src');
+    cover.classList.remove('visible');
+    placeholder.classList.remove('hidden');
+  }
+}
+
 function updateCatalogPlayerUi() {
   const track = getCatalogPlayerTrackByIndex();
-  const title = document.getElementById('catalog-player-track-title');
-  const artist = document.getElementById('catalog-player-track-artist');
-  const playBtn = document.getElementById('catalog-play-toggle');
+  const player = document.getElementById('catalog-player');
+  if (player) player.classList.toggle('has-track', Boolean(track));
+
+  // Mini-bar
+  const miniTitle = document.getElementById('catalog-player-track-title');
+  const miniArtist = document.querySelector('#catalog-player-track-artist .catalog-authors-text')
+    || document.getElementById('catalog-player-track-artist');
+  if (miniTitle) miniTitle.textContent = track?.obra || 'Selecciona una canción';
+  if (miniArtist) miniArtist.textContent = track?.autores || '—';
+  setCoverEl('catalog-player-cover', 'catalog-player-cover-placeholder', track);
+  setPlayButtonState(document.getElementById('catalog-play-toggle'));
+
+  // Vista expandida
+  const expTitle = document.getElementById('player-exp-title');
+  const expArtist = document.getElementById('player-exp-artist');
+  if (expTitle) expTitle.textContent = track?.obra || 'Selecciona una canción';
+  if (expArtist) expArtist.textContent = track?.autores || '—';
+  setCoverEl('player-exp-cover', 'player-exp-cover-placeholder', track);
+  setPlayButtonState(document.getElementById('player-exp-toggle'));
+
   const randomBtn = document.getElementById('catalog-random');
-  const cover = document.getElementById('catalog-player-cover');
-  const coverPlaceholder = document.getElementById('catalog-player-cover-placeholder');
-  const progress = document.getElementById('catalog-player-progress');
-
-  if (title) title.textContent = track?.obra || 'Selecciona una canción';
-  if (artist) artist.textContent = track?.autores || '—';
-  if (playBtn) {
-    if (catalogPlayer.isLoading) {
-      playBtn.textContent = 'Cargando...';
-      playBtn.disabled = true;
-    } else {
-      playBtn.disabled = !track;
-      playBtn.textContent = catalogPlayer.isPlaying ? '⏸ Pause' : '▶️ Play';
-    }
-  }
-
   if (randomBtn) {
     randomBtn.classList.toggle('active', catalogRandomMode);
     randomBtn.setAttribute('aria-pressed', catalogRandomMode ? 'true' : 'false');
-    randomBtn.textContent = catalogRandomMode ? '🔀 ON' : '🔀';
   }
 
-  if (cover && coverPlaceholder) {
-    if (track?.cover) {
-      cover.src = track.cover;
-      cover.classList.add('visible');
-      coverPlaceholder.classList.add('hidden');
-    } else {
-      cover.removeAttribute('src');
-      cover.classList.remove('visible');
-      coverPlaceholder.classList.remove('hidden');
-    }
-  }
+  updateLyricsButtonVisibility();
+  updateKaraokeButtonUi();
+  updatePlayerLikeButton();
 
-  if (!track && progress) {
-    progress.value = '0';
+  if (!track) {
+    const progress = document.getElementById('catalog-player-progress');
+    if (progress) progress.value = '0';
+    const fill = document.getElementById('player-mini-fill');
+    if (fill) fill.style.width = '0%';
     const current = document.getElementById('catalog-player-current');
     const duration = document.getElementById('catalog-player-duration');
     if (current) current.textContent = '0:00';
     if (duration) duration.textContent = '0:00';
+    setCatalogPlayerExpanded(false);
   }
 }
 
-function buildSecureAudioUrl(track) {
+function setCatalogPlayerExpanded(expanded) {
+  catalogPlayerExpanded = Boolean(expanded);
+  const player = document.getElementById('catalog-player');
+  const exp = document.getElementById('player-expanded');
+  if (player) player.classList.toggle('is-expanded', catalogPlayerExpanded);
+  if (exp) exp.setAttribute('aria-hidden', catalogPlayerExpanded ? 'false' : 'true');
+  // El karaoke solo corre mientras el Now Playing está expandido y la letra visible
+  if (catalogPlayerExpanded && catalogLyricsOn) {
+    renderLyricsPanel();
+    startLyricsKaraoke();
+  } else {
+    stopLyricsKaraoke();
+  }
+  // Leyenda "Ver letra": ciclo solo mientras el Now Playing está expandido
+  if (catalogPlayerExpanded) startLyricsHintCycle();
+  else stopLyricsHintCycle();
+}
+
+// Leyenda "Ver letra" que aparece de vez en cuando (solo en vista portada, con letra)
+function flashLyricsHint() {
+  const pill = document.getElementById('player-lyrics-hint');
+  const track = getCatalogPlayerTrackByIndex();
+  const hasLyrics = Boolean(track && String(track.lyricsText || '').trim());
+  if (!pill || !catalogPlayerExpanded || catalogLyricsOn || !hasLyrics) return;
+  lyricsHintAnimTimers.forEach(clearTimeout);
+  lyricsHintAnimTimers = [];
+
+  const text = '... ver letra';
+  const writeOnce = () => {
+    // Cada letra cae desde arriba con bounce, escalonada (typewriter)
+    pill.innerHTML = text.split('').map((ch, i) =>
+      `<span class="hint-char" style="animation-delay:${(i * 0.045).toFixed(3)}s">${ch === ' ' ? '&nbsp;' : escapeHtml(ch)}</span>`
+    ).join('');
+    pill.classList.remove('show');
+    void pill.offsetWidth; // reflow para reiniciar la animación
+    pill.classList.add('show');
+  };
+
+  const ANIM = 1100; // dura aprox la escritura completa
+  writeOnce();                                                   // 1ª escritura
+  lyricsHintAnimTimers.push(setTimeout(writeOnce, ANIM + 2000)); // espera 2s, repite
+  lyricsHintAnimTimers.push(setTimeout(() => pill.classList.remove('show'), ANIM + 2000 + ANIM + 2000)); // 2s y desaparece
+}
+
+function startLyricsHintCycle() {
+  stopLyricsHintCycle();
+  lyricsHintTimer = setTimeout(function loop() {
+    flashLyricsHint();
+    lyricsHintTimer = setTimeout(loop, 22000);
+  }, 3000);
+}
+
+function stopLyricsHintCycle() {
+  if (lyricsHintTimer) clearTimeout(lyricsHintTimer);
+  lyricsHintTimer = null;
+  lyricsHintAnimTimers.forEach(clearTimeout);
+  lyricsHintAnimTimers = [];
+  const pill = document.getElementById('player-lyrics-hint');
+  if (pill) pill.classList.remove('show');
+}
+
+// ── Letra / karaoke ──
+function parseLyrics(text) {
+  const raw = String(text || '').split('\n').map((l) => l.trim()).filter(Boolean);
+  const lines = [];
+  let synced = false;
+  for (const line of raw) {
+    const m = line.match(/^\[(\d{1,2}):(\d{1,2}(?:\.\d+)?)\]\s*(.*)$/);
+    if (m) {
+      synced = true;
+      lines.push({ t: parseInt(m[1], 10) * 60 + parseFloat(m[2]), text: m[3] });
+    } else {
+      lines.push({ t: null, text: line });
+    }
+  }
+  return { synced, lines };
+}
+
+function updateLyricsButtonVisibility() {
+  const btn = document.getElementById('player-lyrics-toggle');
+  const editBtn = document.getElementById('player-lyrics-edit');
+  const track = getCatalogPlayerTrackByIndex();
+  const hasLyrics = Boolean(track && String(track.lyricsText || '').trim());
+  if (btn) btn.classList.toggle('hidden', !hasLyrics);
+  if (editBtn) editBtn.classList.toggle('hidden', !(hasLyrics && catalogLyricsOn && isAuthenticated));
+  if (!hasLyrics && catalogLyricsOn) setLyricsVisible(false);
+  else if (hasLyrics && catalogLyricsOn && !catalogLyricsEditing) renderLyricsPanel();
+}
+
+function renderLyricsPanel() {
+  const panel = document.getElementById('player-lyrics');
+  if (!panel) return;
+  const track = getCatalogPlayerTrackByIndex();
+  const parsed = parseLyrics(track?.lyricsText || '');
+  panel.classList.toggle('plain', !parsed.synced);
+  catalogLyricLastIdx = -1;
+
+  if (!parsed.lines.length) {
+    panel.innerHTML = '<p class="lyric-line" style="cursor:default">Sin letra disponible.</p>';
+    return;
+  }
+
+  panel.innerHTML = parsed.lines
+    .map((l, i) => `<p class="lyric-line" data-i="${i}"${l.t !== null ? ` data-t="${l.t}"` : ''}>${escapeHtml(l.text)}</p>`)
+    .join('');
+
+  // Tocar una línea con tiempo salta a ese punto de la canción
+  panel.querySelectorAll('.lyric-line[data-t]').forEach((el) => {
+    el.addEventListener('click', () => {
+      const t = Number(el.getAttribute('data-t'));
+      const howl = catalogPlayer.howl;
+      if (howl && howl.state && howl.state() === 'loaded') {
+        howl.seek(t, catalogPlayer.activeSoundId || undefined);
+        refreshCatalogProgressUi();
+      }
+    });
+  });
+}
+
+function highlightActiveLyric() {
+  const panel = document.getElementById('player-lyrics');
+  if (!panel || panel.classList.contains('plain')) return;
+  const howl = catalogPlayer.howl;
+  const cur = (howl && howl.state && howl.state() === 'loaded')
+    ? Number(howl.seek(undefined, catalogPlayer.activeSoundId || undefined) || 0)
+    : 0;
+  const lines = panel.querySelectorAll('.lyric-line[data-t]');
+  if (!lines.length) return;
+  let activeIdx = -1;
+  lines.forEach((el, i) => {
+    if (Number(el.getAttribute('data-t')) <= cur) activeIdx = i;
+  });
+  lines.forEach((el, i) => {
+    el.classList.toggle('is-active', i === activeIdx);
+    el.classList.toggle('is-past', i < activeIdx);
+  });
+  // Antes de que entre la primera línea, centra la línea 0 (arranca en el centro).
+  const focusIdx = activeIdx >= 0 ? activeIdx : 0;
+  if (focusIdx !== catalogLyricLastIdx && lines[focusIdx]) {
+    catalogLyricLastIdx = focusIdx;
+    // Scroll SOLO vertical (evita el bamboleo horizontal del scrollIntoView)
+    const pr = panel.getBoundingClientRect();
+    const lr = lines[focusIdx].getBoundingClientRect();
+    const delta = (lr.top + lr.height / 2) - (pr.top + pr.height / 2);
+    panel.scrollTo({ top: panel.scrollTop + delta, behavior: 'smooth' });
+  }
+}
+
+function startLyricsKaraoke() {
+  stopLyricsKaraoke();
+  highlightActiveLyric();
+  catalogLyricsTimer = setInterval(highlightActiveLyric, 120);
+}
+
+function stopLyricsKaraoke() {
+  if (catalogLyricsTimer) clearInterval(catalogLyricsTimer);
+  catalogLyricsTimer = null;
+}
+
+function setLyricsVisible(on) {
+  catalogLyricsOn = Boolean(on);
+  const player = document.getElementById('catalog-player');
+  const btn = document.getElementById('player-lyrics-toggle');
+  if (player) player.classList.toggle('lyrics-on', catalogLyricsOn);
+  if (btn) btn.classList.toggle('active', catalogLyricsOn);
+  if (catalogLyricsOn) {
+    const pill = document.getElementById('player-lyrics-hint');
+    if (pill) pill.classList.remove('show');
+    renderLyricsPanel();
+    startLyricsKaraoke();
+  } else {
+    if (catalogLyricsEditing) setLyricsEditing(false);
+    stopLyricsKaraoke();
+    setLyricsPeek(false); // al salir de la letra, resetea el estado de controles
+  }
+  updateLyricsButtonVisibility();
+}
+
+// Estado "peek": en la vista de letra, asoma la fila de controles (prev/play/
+// next/share). El título + compositores + barra de tiempo siempre están visibles.
+// Se queda hasta que el usuario lo esconda (swipe-down) o salga de la letra.
+function setLyricsPeek(on) {
+  const player = document.getElementById('catalog-player');
+  if (player) player.classList.toggle('lyrics-peek', Boolean(on));
+}
+
+// ── Editor de letra (solo logueado) ──
+function setLyricsEditing(on) {
+  catalogLyricsEditing = Boolean(on);
+  const player = document.getElementById('catalog-player');
+  const editBtn = document.getElementById('player-lyrics-edit');
+  const bar = document.getElementById('lyrics-edit-bar');
+  if (player) player.classList.toggle('lyrics-editing', catalogLyricsEditing);
+  if (editBtn) editBtn.classList.toggle('active', catalogLyricsEditing);
+  if (bar) bar.classList.toggle('hidden', !catalogLyricsEditing);
+  if (catalogLyricsEditing) {
+    stopLyricsKaraoke();
+    renderLyricEditor();
+  } else {
+    renderLyricsPanel();
+    startLyricsKaraoke();
+  }
+}
+
+function renderLyricEditor() {
+  const panel = document.getElementById('player-lyrics');
+  if (!panel) return;
+  const track = getCatalogPlayerTrackByIndex();
+  const parsed = parseLyrics(track?.lyricsText || '');
+  panel.classList.remove('plain');
+  panel.innerHTML = parsed.lines.map((l, i) => {
+    const tlabel = l.t !== null ? formatTime(l.t) : '–:––';
+    return `<div class="lyric-edit-row">
+      <button class="lyric-set-time" data-i="${i}" data-t="${l.t !== null ? l.t : ''}" title="Marcar el tiempo actual">${tlabel} ⌖</button>
+      <input class="lyric-edit-text" data-i="${i}" value="${escapeHtml(l.text)}" />
+    </div>`;
+  }).join('') || '<p class="lyric-line" style="cursor:default">Sin letra para editar.</p>';
+
+  panel.querySelectorAll('.lyric-set-time').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const howl = catalogPlayer.howl;
+      const cur = (howl && howl.state && howl.state() === 'loaded')
+        ? Number(howl.seek(undefined, catalogPlayer.activeSoundId || undefined) || 0) : 0;
+      btn.setAttribute('data-t', cur.toFixed(2));
+      btn.textContent = `${formatTime(cur)} ⌖`;
+    });
+  });
+}
+
+function buildLrcFromEditor() {
+  const panel = document.getElementById('player-lyrics');
+  const lines = [];
+  panel.querySelectorAll('.lyric-edit-row').forEach((row) => {
+    const btn = row.querySelector('.lyric-set-time');
+    const input = row.querySelector('.lyric-edit-text');
+    const text = (input.value || '').trim();
+    if (!text) return;
+    const t = btn.getAttribute('data-t');
+    if (t !== '' && t !== null && !isNaN(Number(t))) {
+      const sec = Number(t);
+      const mm = Math.floor(sec / 60);
+      const ss = sec - mm * 60;
+      lines.push(`[${String(mm).padStart(2, '0')}:${ss.toFixed(2).padStart(5, '0')}]${text}`);
+    } else {
+      lines.push(text);
+    }
+  });
+  return lines.join('\n');
+}
+
+async function saveLyrics() {
+  const track = getCatalogPlayerTrackByIndex();
+  if (!track) return;
+  const lrc = buildLrcFromEditor();
+  const saveBtn = document.getElementById('lyrics-save');
+  if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = 'Guardando...'; }
+  try {
+    const r = await fetch(`${API_BASE}/api/manager/lyrics`, {
+      method: 'POST',
+      headers: apiHeaders(),
+      body: JSON.stringify({ lyricUrl: track.letra || '', lrc }),
+    });
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    track.lyricsText = lrc; // refresca cache local
+    setCatalogPlayerStatus('Letra guardada ✓');
+    setLyricsEditing(false);
+  } catch (e) {
+    setCatalogPlayerStatus('Error al guardar la letra', true);
+    alert('No se pudo guardar la letra: ' + (e instanceof Error ? e.message : e));
+  } finally {
+    if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = 'Guardar'; }
+  }
+}
+
+// fileId activo según el modo (original vs instrumental karaoke).
+function activeFileId(track) {
   if (!track) return '';
-  if (!API_BASE) return '';
-  if (!track.fileId) return '';
-  return `${API_BASE}/api/audio/${encodeURIComponent(track.fileId)}`;
+  const useKaraoke = catalogPlayer.karaokeMode && track.fileIdInstrumental;
+  return useKaraoke ? track.fileIdInstrumental : track.fileId;
+}
+
+function streamUrlForFileId(fid) {
+  if (!API_BASE || !fid) return '';
+  return `${API_BASE}/api/audio/${encodeURIComponent(fid)}`;
+}
+
+function buildSecureAudioUrl(track) {
+  return streamUrlForFileId(activeFileId(track));
+}
+
+// ── Descarga COMPLETA a Blob (fix CarPlay wireless) ──────────────────────────
+// Reproducir desde un Blob en memoria (no streaming progresivo) evita los
+// micro-cortes en CarPlay wireless: una vez en memoria, la reproducción no
+// depende de la red aunque el WiFi esté saturado por el enlace al coche.
+// Se cachea por fileId y se prefetchea la canción siguiente.
+const audioBlobCache = new Map();      // fileId -> { url, ts }
+const audioBlobInflight = new Map();   // fileId -> Promise<string|null>
+const AUDIO_BLOB_CACHE_MAX = 4;
+
+function evictAudioBlobs() {
+  // Nunca revocar el blob que se está reproduciendo ahora.
+  const protectedFid = activeFileId(getCurrentCatalogSong());
+  for (const key of [...audioBlobCache.keys()]) {
+    if (audioBlobCache.size <= AUDIO_BLOB_CACHE_MAX) break;
+    if (key === protectedFid) continue;
+    const entry = audioBlobCache.get(key);
+    audioBlobCache.delete(key);
+    if (entry && entry.url) {
+      try { URL.revokeObjectURL(entry.url); } catch {}
+    }
+  }
+}
+
+// Devuelve un object URL del archivo COMPLETO ya descargado, o null si falla.
+function fetchAudioBlobUrl(fid) {
+  if (!fid || !API_BASE) return Promise.resolve(null);
+  const cached = audioBlobCache.get(fid);
+  if (cached) {
+    // refrescar orden de recencia
+    audioBlobCache.delete(fid);
+    audioBlobCache.set(fid, cached);
+    return Promise.resolve(cached.url);
+  }
+  if (audioBlobInflight.has(fid)) return audioBlobInflight.get(fid);
+
+  const p = fetch(streamUrlForFileId(fid))
+    .then((r) => (r.ok ? r.blob() : Promise.reject(new Error(`HTTP ${r.status}`))))
+    .then((blob) => {
+      const url = URL.createObjectURL(blob);
+      audioBlobCache.set(fid, { url, ts: Date.now() });
+      evictAudioBlobs();
+      return url;
+    })
+    .catch((e) => {
+      console.warn('[audio-blob] fallo descarga completa, fallback a streaming:', fid, e?.message || e);
+      return null;
+    })
+    .finally(() => audioBlobInflight.delete(fid));
+
+  audioBlobInflight.set(fid, p);
+  return p;
+}
+
+// Prefetch (fire-and-forget) del original de la canción siguiente en la cola.
+function prefetchNextAudioBlob() {
+  try {
+    const queue = getCatalogQueue();
+    if (!queue.length) return;
+    let pos = queue.indexOf(catalogNowPlayingId);
+    if (pos < 0) pos = 0;
+    const nextId = queue[(pos + 1) % queue.length];
+    if (!nextId || nextId === catalogNowPlayingId) return;
+    const nextTrack = catalogCache.find((s) => s.id === nextId);
+    if (nextTrack && nextTrack.fileId) void fetchAudioBlobUrl(nextTrack.fileId);
+  } catch {}
+}
+
+// Cola contextual: navega sobre lo que se está viendo (género/playlist/búsqueda),
+// no sobre el catálogo global. Fallback al catálogo completo si no hay vista.
+function getCatalogQueue() {
+  return catalogQueue.length ? catalogQueue : catalogCache.map((s) => s.id);
 }
 
 function playNextCatalogTrack(step = 1) {
-  if (!catalogCache.length) return;
+  const queue = getCatalogQueue();
+  if (!queue.length) return;
   if (catalogRandomMode && step > 0) {
     playRandomCatalogTrack();
     return;
   }
-  const current = catalogPlayer.currentTrackIndex >= 0 ? catalogPlayer.currentTrackIndex : 0;
-  const next = (current + step + catalogCache.length) % catalogCache.length;
-  void loadCatalogTrack(next, { autoplay: true });
+  let pos = queue.indexOf(catalogNowPlayingId);
+  pos = pos < 0 ? 0 : (pos + step + queue.length) % queue.length;
+  playCatalogSong(queue[pos]);
 }
 
 function playRandomCatalogTrack() {
-  if (!catalogCache.length) return;
-  if (catalogCache.length === 1) {
-    void loadCatalogTrack(0, { autoplay: true });
+  const queue = getCatalogQueue();
+  if (!queue.length) return;
+  if (queue.length === 1) {
+    playCatalogSong(queue[0]);
     return;
   }
-
-  const current = catalogPlayer.currentTrackIndex;
-  let next = current;
-  while (next === current) {
-    next = Math.floor(Math.random() * catalogCache.length);
+  let nextId = catalogNowPlayingId;
+  while (nextId === catalogNowPlayingId) {
+    nextId = queue[Math.floor(Math.random() * queue.length)];
   }
-  void loadCatalogTrack(next, { autoplay: true });
+  playCatalogSong(nextId);
 }
 
 function toggleCatalogRandomMode() {
@@ -1060,14 +1897,43 @@ async function loadCatalogTrack(index, { autoplay = false } = {}) {
   clearCatalogHowl();
   catalogPlayer.currentTrackIndex = index;
   catalogNowPlayingId = track.id;
-  catalogNowCardOpen = false;
+  // Cada canción nueva arranca con la voz (no karaoke). El swap es por-canción.
+  catalogPlayer.karaokeMode = false;
   catalogPlayer.isLoading = true;
   setCatalogPlayerStatus('Validando permisos y preparando stream...');
   updateCatalogPlayerUi();
-  renderCatalog();
+  updateActiveSongRow();
+  updateKaraokeButtonUi();
 
+  mountCatalogHowl(track, { autoplay });
+}
+
+// Monta (o re-monta) el Howl de la pista actual respetando catalogPlayer.karaokeMode.
+// startAt: segundo donde arrancar (para conservar posición al hacer swap 🎤).
+// Descarga el archivo COMPLETO a Blob primero (fix CarPlay wireless) y reproduce
+// desde memoria; si la descarga falla, cae a streaming progresivo.
+function mountCatalogHowl(track, { startAt = 0, autoplay = false } = {}) {
+  const fid = activeFileId(track);
+  const streamUrl = streamUrlForFileId(fid);
+  if (!streamUrl) {
+    setCatalogPlayerStatus('No se pudo resolver el audio', true);
+    return;
+  }
+  const loadId = track.id;             // token para detectar cambio de pista
+  const mode = catalogPlayer.karaokeMode;
+  setCatalogPlayerStatus('Descargando pista…');
+
+  fetchAudioBlobUrl(fid).then((blobUrl) => {
+    // Si cambió la canción o el modo karaoke mientras descargaba, abortar.
+    if (catalogNowPlayingId !== loadId || catalogPlayer.karaokeMode !== mode) return;
+    createCatalogHowl(track, blobUrl || streamUrl, { startAt, autoplay });
+  });
+}
+
+function createCatalogHowl(track, src, { startAt = 0, autoplay = false } = {}) {
   const howl = new window.Howl({
-    src: [secureUrl],
+    src: [src],
+    format: ['mp3'],          // los blob: URLs no tienen extensión; forzar formato
     html5: true,
     volume: catalogPlayer.volume,
     preload: true,
@@ -1079,6 +1945,9 @@ async function loadCatalogTrack(index, { autoplay = false } = {}) {
   howl.on('load', () => {
     if (catalogPlayer.howl !== howl) return;
     catalogPlayer.isLoading = false;
+    if (startAt > 0) {
+      try { howl.seek(startAt); } catch {}
+    }
     setCatalogPlayerStatus('Pista lista');
     updateCatalogPlayerUi();
     refreshCatalogProgressUi();
@@ -1094,7 +1963,8 @@ async function loadCatalogTrack(index, { autoplay = false } = {}) {
     setStatus('catalog-status', `Reproduciendo: ${track.obra || 'canción'}.`);
     updateCatalogPlayerUi();
     startCatalogProgressTimer();
-    renderCatalog();
+    prefetchNextAudioBlob();   // pre-descarga la siguiente para arranque instantáneo y sin cortes
+    updateActiveSongRow();
   });
 
   howl.on('pause', () => {
@@ -1155,27 +2025,88 @@ async function loadCatalogTrack(index, { autoplay = false } = {}) {
   }
 }
 
-function setCatalogNowCard(song) {
-  const card = document.getElementById('catalog-now-card');
-  if (!card) return;
-  if (!song || !catalogNowCardOpen) {
-    card.classList.add('hidden');
-    card.innerHTML = '';
-    return;
-  }
+// 🎤 Swap voz ↔ instrumental para la canción actual, conservando posición y
+// estado de reproducción. Solo aplica si la pista tiene fileIdInstrumental.
+// La pista de karaoke se descarga COMPLETA (no se prefetchea): mientras baja,
+// la canción actual SIGUE SONANDO y se avisa "Descargando instrumental…"; el
+// swap ocurre recién cuando el archivo está en memoria (mismo punto, sin cortes).
+let karaokeSwapToken = 0;
+function toggleKaraoke() {
+  const track = getCurrentCatalogSong();
+  if (!track || !track.fileIdInstrumental) return;
 
-  const share = song.drive ? `<a href="${escapeHtml(song.drive)}" target="_blank" rel="noopener">Abrir enlace original</a>` : 'Sin enlace';
-  const secure = song.fileId ? 'Audio privado servido por /api/audio/:fileId' : 'Sin fileId configurado';
-  card.innerHTML = `
-    <div class="catalog-now-card-inner">
-      <h4>${escapeHtml(song.obra || 'Sin título')}</h4>
-      <p><strong>Compositores:</strong> ${escapeHtml(song.autores || '—')}</p>
-      <p><strong>Géneros:</strong> ${escapeHtml(song.generos || '—')}</p>
-      <p><strong>Stream:</strong> ${escapeHtml(secure)}</p>
-      <p><strong>Enlace:</strong> ${share}</p>
-    </div>
-  `;
-  card.classList.remove('hidden');
+  const newMode = !catalogPlayer.karaokeMode;
+  const fid = newMode ? track.fileIdInstrumental : track.fileId;
+  const token = ++karaokeSwapToken;
+
+  // Aviso claro de descarga + botón en estado de carga. NO cortamos el audio aún.
+  catalogPlayer.karaokeSwapping = true;
+  setCatalogPlayerStatus(newMode ? 'Descargando instrumental…' : 'Descargando voz…');
+  setStatus('catalog-status', newMode ? 'Descargando pista instrumental (karaoke)…' : 'Descargando voz…');
+  updateKaraokeButtonUi();
+
+  fetchAudioBlobUrl(fid).then((blobUrl) => {
+    // Abortar si el usuario volvió a tocar el botón o cambió de canción mientras bajaba.
+    if (token !== karaokeSwapToken) return;
+    if ((getCurrentCatalogSong() || {}).id !== track.id) {
+      catalogPlayer.karaokeSwapping = false;
+      updateKaraokeButtonUi();
+      return;
+    }
+    // Capturar posición/estado JUSTO antes del swap (la canción siguió avanzando).
+    const howl = catalogPlayer.howl;
+    const wasPlaying = catalogPlayer.isPlaying || catalogPlayer.pendingPlay;
+    const at = (howl && howl.state && howl.state() === 'loaded')
+      ? Number(howl.seek(undefined, catalogPlayer.activeSoundId || undefined) || 0)
+      : 0;
+
+    catalogPlayer.karaokeMode = newMode;
+    catalogPlayer.karaokeSwapping = false;
+    clearCatalogHowl();
+    catalogPlayer.isLoading = true;
+    updateCatalogPlayerUi();
+    updateKaraokeButtonUi();
+    createCatalogHowl(track, blobUrl || streamUrlForFileId(fid), { startAt: at, autoplay: wasPlaying });
+  });
+}
+
+function updateKaraokeButtonUi() {
+  const btn = document.getElementById('player-karaoke');
+  if (!btn) return;
+  const track = getCurrentCatalogSong();
+  const has = Boolean(track && track.fileIdInstrumental);
+  btn.classList.toggle('hidden', !has);
+  const on = has && catalogPlayer.karaokeMode;
+  const loading = Boolean(catalogPlayer.karaokeSwapping);
+  btn.classList.toggle('active', on);
+  btn.classList.toggle('loading', loading);
+  btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+  btn.setAttribute('aria-busy', loading ? 'true' : 'false');
+  btn.title = loading ? 'Descargando instrumental…' : (on ? 'Volver a la voz' : 'Quitar voz líder (karaoke)');
+}
+
+// Update quirúrgico: solo mueve el highlight de la fila activa, sin re-render completo.
+function updateActiveSongRow() {
+  const songsEl = document.getElementById('catalog-songs');
+  if (!songsEl) return;
+  songsEl.querySelectorAll('.catalog-song-row').forEach((row) => {
+    const btn = row.querySelector('[data-catalog-play]');
+    const id = btn ? btn.getAttribute('data-catalog-play') : '';
+    const active = Boolean(id) && id === catalogNowPlayingId;
+    row.classList.toggle('is-active', active);
+    // El título solo hace marquee si NO cabe. Medimos el ancho natural (sin la
+    // clase de scroll, que mete padding y falsearía la medición).
+    const titleline = row.querySelector('.catalog-song-titleline');
+    if (titleline) {
+      titleline.classList.remove('is-overflowing');
+      if (active) {
+        const inner = titleline.querySelector('.catalog-song-titleline-inner');
+        if (inner && inner.scrollWidth > titleline.clientWidth + 1) {
+          titleline.classList.add('is-overflowing');
+        }
+      }
+    }
+  });
 }
 
 function getCurrentCatalogSong() {
@@ -1268,21 +2199,25 @@ function applyCatalogDeepLinkIfNeeded() {
 
   activateTab('catalog');
   updateAuthGateForCurrentTab();
-  
+
   renderCatalog(); // Asegura de pintar la UI en el modo correcto
 
-  void loadCatalogTrack(index, { autoplay: catalogDeepLinkAutoplay });
+  // Link de canción compartida → abrir directo en la vista de portada (Now Playing
+  // expandido), no solo el mini-player. Así el que recibe el link cae en la portada.
+  const openInCover = catalogDeepLinkAutoplay && !!catalogDeepLinkSongId;
+
+  void loadCatalogTrack(index, { autoplay: catalogDeepLinkAutoplay }).then(() => {
+    if (openInCover && catalogNowPlayingId === String(track.id)) setCatalogPlayerExpanded(true);
+  });
 }
 
 function renderCatalog() {
   const genresEl = document.getElementById('catalog-genres');
   const songsEl = document.getElementById('catalog-songs');
   const selectedGenreEl = document.getElementById('catalog-selected-genre');
-  const playingNowBtn = document.getElementById('catalog-playing-now');
-  const playingNowTitle = document.getElementById('catalog-playing-now-title');
   const filterTabGenres = document.getElementById('catalog-filter-tab-genres');
   const filterTabPlaylists = document.getElementById('catalog-filter-tab-playlists');
-  if (!genresEl || !songsEl || !selectedGenreEl || !playingNowBtn || !playingNowTitle || !filterTabGenres || !filterTabPlaylists) return;
+  if (!genresEl || !songsEl || !selectedGenreEl || !filterTabGenres || !filterTabPlaylists) return;
 
   const genres = Array.from(new Set(catalogCache.flatMap((row) => parseCatalogGenres(row.generos))));
   const allGenres = ['Todas', ...genres.sort((a, b) => a.localeCompare(b, 'es'))];
@@ -1294,6 +2229,36 @@ function renderCatalog() {
 
   filterTabGenres.classList.toggle('active', catalogFilterView === 'genres');
   filterTabPlaylists.classList.toggle('active', catalogFilterView === 'playlists');
+  // Vista géneros: selector en el mismo renglón que los tabs (compacto)
+  if (genresEl.parentElement) {
+    genresEl.parentElement.classList.toggle('is-genres-view', catalogFilterView === 'genres');
+  }
+
+  // Vista Playlists estilo Apple Music (se renderiza en el panel derecho, donde
+  // van las canciones; el aside conserva sus tabs intactos como antes):
+  // - LISTA (sin playlist abierta): se ocultan canciones + encabezado, se muestra la lista.
+  // - DETALLE (playlist abierta): se muestra el header de la playlist + sus canciones.
+  const playlistsMode = catalogFilterView === 'playlists';
+  const playlistDetailOpen = playlistsMode && !!selectedPlaylistId;
+  const playlistsViewEl = document.getElementById('catalog-playlists-view');
+  const songsHeadEl = document.querySelector('#tab-catalog .catalog-songs-head');
+  // En modo playlists la lista de canciones la renderiza renderPlaylistsView
+  // (en orden de la playlist), así que ocultamos #catalog-songs siempre.
+  const showSongs = !playlistsMode;
+  if (songsEl) songsEl.style.display = showSongs ? '' : 'none';
+  if (songsHeadEl) songsHeadEl.style.display = playlistsMode ? 'none' : '';
+  if (playlistsViewEl) {
+    playlistsViewEl.classList.toggle('hidden', !playlistsMode);
+    if (playlistsMode) renderPlaylistsView();
+  }
+  // El buscador principal cambia de objetivo: en la vista LISTA de playlists
+  // busca playlists por nombre; en cualquier otra vista, canciones.
+  const catalogSearchEl = document.getElementById('catalog-search');
+  if (catalogSearchEl) {
+    catalogSearchEl.placeholder = (playlistsMode && !selectedPlaylistId)
+      ? 'Buscar playlists...'
+      : 'Buscar canciones (nombre, compositor, género, link...)';
+  }
 
   if (catalogFilterView === 'genres') {
     genresEl.innerHTML = `
@@ -1307,27 +2272,9 @@ function renderCatalog() {
       </li>
     `;
   } else {
-    genresEl.innerHTML = `
-      <li>
-        <label class="catalog-genre-label" for="catalog-playlist-select-pane">Playlist</label>
-        <select id="catalog-playlist-select-pane" class="catalog-genre-select">
-          <option value="">Selecciona playlist</option>
-          ${playlistsCache
-            .map((pl) => `<option value="${escapeHtml(pl.id)}" ${selectedPlaylistId === pl.id ? 'selected' : ''}>${escapeHtml(pl.name)} (${Number(pl.trackCount || 0)})</option>`)
-            .join('')}
-        </select>
-        ${isAuthenticated
-          ? `<div class="catalog-playlist-pane-actions" style="margin-top: 0.5rem; display: flex; flex-direction: column; gap: 0.5rem;">
-              <button class="mini-btn" id="playlist-create-pane-toggle" type="button" style="width: 100%;">Crear nueva playlist</button>
-              <div id="playlist-create-pane-form" class="hidden" style="display: flex; flex-direction: column; gap: 0.25rem;">
-                <input id="playlist-name-pane" class="catalog-genre-select" type="text" placeholder="Nombre..." />
-                <button class="mini-btn" id="playlist-create-pane-submit" type="button" style="background: var(--brand); color: white;">Crear</button>
-              </div>
-              <button class="mini-btn" id="playlist-delete-pane" type="button" style="width: 100%;">Borrar seleccionada</button>
-            </div>`
-          : ''}
-      </li>
-    `;
+    // Modo Playlists: el aside solo muestra los tabs (la lista/detalle de
+    // playlists vive full en el panel derecho, estilo Apple Music).
+    genresEl.innerHTML = '';
   }
 
   const byGenre = catalogGenreFilter === 'Todas'
@@ -1349,6 +2296,15 @@ function renderCatalog() {
   const visibleSongs = catalogFilterView === 'playlists'
     ? bySearch.filter((row) => selectedPlaylistTrackIds.has(String(row.id || '')))
     : bySearch;
+  // La cola de reproducción sigue la vista actual (no el catálogo global)
+  catalogQueue = visibleSongs.map((row) => row.id);
+  // En el detalle de una playlist, la cola sigue el ORDEN de la playlist.
+  if (playlistDetailOpen) {
+    const pl = playlistsCache.find((p) => p.id === selectedPlaylistId);
+    catalogQueue = (pl?.tracks || [])
+      .map((t) => String(t.id || ''))
+      .filter((id) => catalogCache.some((s) => String(s.id) === id));
+  }
   const pagedSongs = visibleSongs.slice(0, catalogVisibleCount);
 
   selectedGenreEl.textContent = catalogFilterView === 'playlists'
@@ -1361,10 +2317,11 @@ function renderCatalog() {
           <li>
             <div class="catalog-song-row ${catalogNowPlayingId === row.id ? 'is-active' : ''}">
               <button class="catalog-song-main" data-catalog-play="${escapeHtml(row.id)}">
-                <strong>${escapeHtml(row.obra || 'Sin título')}</strong>
+                <span class="catalog-song-titleline"><span class="catalog-song-titleline-inner"><strong>${escapeHtml(row.obra || 'Sin título')}</strong>${buildCatalogStats(row)}</span></span>
                 <span class="catalog-authors"><span class="catalog-authors-text">${escapeHtml(row.autores || '—')}</span></span>
               </button>
               <div class="actions">
+                ${isAuthenticated ? buildCatalogStars(row) : ''}
                 ${!isAuthenticated ? '' : (
                   (catalogFilterView === 'playlists' && selectedPlaylistId && selectedPlaylistTrackIds.has(String(row.id || '')))
                     ? `<button class="mini-btn" data-catalog-remove-playlist="${escapeHtml(row.id)}">−</button>`
@@ -1373,16 +2330,17 @@ function renderCatalog() {
                           <span class="task-actions-toggle" role="button" aria-label="Añadir a playlist" style="padding: 0 6px;">+</span>
                         </summary>
                         <div class="task-actions-dropdown">
-                          <button class="mini-btn" data-catalog-create-playlist-for="${escapeHtml(row.id)}">Crear nueva playlist...</button>
+                          <button class="mini-btn catalog-add-row" data-catalog-create-playlist-for="${escapeHtml(row.id)}"><span class="catalog-add-plus">+</span> Nueva playlist</button>
                           ${playlistsCache.length ? '<hr class="soft-sep" style="margin: 0.25rem 0;" />' : ''}
                           ${playlistsCache.map(pl => `
-                            <button class="mini-btn" data-catalog-add-to-specific="${escapeHtml(pl.id)}" data-song-id="${escapeHtml(row.id)}">
-                              Añadir a: ${escapeHtml(pl.name)}
+                            <button class="mini-btn catalog-add-row" data-catalog-add-to-specific="${escapeHtml(pl.id)}" data-song-id="${escapeHtml(row.id)}">
+                              <span class="catalog-add-plus">+</span> ${escapeHtml(pl.name)}
                             </button>
                           `).join('')}
                         </div>
                       </details>`
                 )}
+                ${!isAuthenticated ? buildCatalogLikeBtn(row) : ''}
                 ${isAuthenticated
                   ? `<details class="task-actions-menu catalog-share-menu">
                       <summary>
@@ -1400,6 +2358,8 @@ function renderCatalog() {
         `)
         .join('')
     : `<li>${catalogFilterView === 'playlists' ? 'Sin canciones en esta playlist.' : 'Sin canciones en este género.'}</li>`;
+
+  // Carga infinita: ver setupCatalogInfiniteScroll (sin botón, el player ya no lo tapa)
 
   const genreSelect = document.getElementById('catalog-genre-select');
   if (genreSelect) {
@@ -1448,6 +2408,13 @@ function renderCatalog() {
     });
   }
 
+  const playlistSharePaneBtn = document.getElementById('playlist-share-pane');
+  if (playlistSharePaneBtn) {
+    playlistSharePaneBtn.addEventListener('click', () => {
+      shareSelectedPlaylistForListen();
+    });
+  }
+
   filterTabGenres.onclick = () => {
     catalogFilterView = 'genres';
     renderCatalog();
@@ -1456,6 +2423,12 @@ function renderCatalog() {
   filterTabPlaylists.onclick = () => {
     catalogFilterView = 'playlists';
     catalogGenreFilter = 'Todas';
+    selectedPlaylistId = '';   // siempre arrancar en la lista de playlists
+    catalogSearchQuery = '';
+    playlistEditMode = false;
+    playlistSelection.clear();
+    playlistAddMode = false;
+    playlistAddSelection.clear();
     renderCatalog();
   };
 
@@ -1497,23 +2470,133 @@ function renderCatalog() {
     btn.addEventListener('click', () => removeSongFromPlaylist(btn.dataset.catalogRemovePlaylist || ''));
   });
 
-  const currentSong = getCurrentCatalogSong();
-  if (!currentSong) {
-    playingNowBtn.classList.add('hidden');
-    playingNowTitle.textContent = '—';
-    setCatalogNowCard(null);
-  } else {
-    playingNowBtn.classList.remove('hidden');
-    playingNowTitle.textContent = currentSong.obra || 'Sin título';
-    setCatalogNowCard(currentSong);
+  songsEl.querySelectorAll('[data-catalog-rate]').forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setCatalogRating(btn.dataset.catalogRate || '', Number(btn.dataset.star || 0));
+    });
+  });
+
+  songsEl.querySelectorAll('[data-catalog-like]').forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      likeCatalogSong(btn.dataset.catalogLike || '');
+    });
+  });
+
+  updateActiveSongRow();
+}
+
+// ── Rating (admin) + Likes (visitante) + Plays: helpers ──────────────────────
+const THUMB_SVG = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 10v11"/><path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a2.5 2.5 0 0 1 2.5 2.5z"/></svg>';
+
+function catalogIsLiked(songId) { return catalogLikedSongs.has(String(songId)); }
+
+// Estrellitas de rating (solo admin). Tap en una estrella ya fijada como rating
+// exacto la limpia a 0; si no, fija ese valor.
+function buildCatalogStars(row) {
+  const r = Number(row.rating || 0);
+  return `<span class="catalog-stars" role="group" aria-label="Calificación">${[1, 2, 3]
+    .map((n) => `<button type="button" class="catalog-star ${r >= n ? 'on' : ''}" data-catalog-rate="${escapeHtml(row.id)}" data-star="${n}" aria-label="${n} estrella${n > 1 ? 's' : ''}">★</button>`)
+    .join('')}</span>`;
+}
+
+// Botón de like (solo visitante).
+function buildCatalogLikeBtn(row) {
+  return `<button type="button" class="catalog-like ${catalogIsLiked(row.id) ? 'liked' : ''}" data-catalog-like="${escapeHtml(row.id)}" aria-label="Me gusta" title="Me gusta">${THUMB_SVG}</button>`;
+}
+
+// Formato compacto estilo YouTube: 999 / 1.2K / 3.4M.
+function formatCount(n) {
+  n = Math.max(0, Math.round(Number(n || 0)));
+  if (n < 1000) return String(n);
+  if (n < 1e6) return `${(n / 1000).toFixed(n % 1000 >= 100 ? 1 : 0)}K`.replace('.0K', 'K');
+  return `${(n / 1e6).toFixed(1)}M`.replace('.0M', 'M');
+}
+
+// Stats al lado del nombre (plays ▶ + likes ♥), chico, sin bold, estilo YouTube.
+function buildCatalogStats(row) {
+  const plays = Number(row.plays || 0);
+  const likes = Number(row.likes || 0);
+  return `<span class="catalog-song-stats">`
+    + `<span class="catalog-stat" title="Reproducciones">▶ ${formatCount(plays)}</span>`
+    + `<span class="catalog-stat" title="Me gusta">♥ ${formatCount(likes)}</span>`
+    + `</span>`;
+}
+
+// Reordena el cache: rating desc → likes desc → abecedario.
+function resortCatalog() {
+  catalogCache.sort((a, b) =>
+    (Number(b.rating || 0) - Number(a.rating || 0))
+    || (Number(b.likes || 0) - Number(a.likes || 0))
+    || String(a.obra || '').localeCompare(String(b.obra || ''), 'es', { sensitivity: 'base' }));
+}
+
+// Admin fija el rating de una canción (0-3). Optimista + reordena.
+async function setCatalogRating(songId, star) {
+  if (!isAuthenticated) return;
+  const song = catalogCache.find((s) => String(s.id) === String(songId));
+  if (!song) return;
+  const current = Number(song.rating || 0);
+  const next = (current === star) ? 0 : star;
+  song.rating = next;
+  // No reordenar al instante (evita que la fila salte mientras calificás).
+  // El orden por rating se aplica en el próximo refresh (setCatalog → resortCatalog).
+  renderCatalog();
+  try {
+    const r = await fetch(`${API_BASE}/api/manager/catalog/${songId}`, {
+      method: 'PATCH', headers: apiHeaders(),
+      body: JSON.stringify({ action: 'set_rating', value: next }),
+    });
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+  } catch (e) {
+    setStatus('catalog-status', `No se pudo guardar el rating: ${e instanceof Error ? e.message : e}`, true);
   }
+}
 
-  playingNowBtn.onclick = () => {
-    catalogNowCardOpen = !catalogNowCardOpen;
-    setCatalogNowCard(getCurrentCatalogSong());
-  };
+// Visitante da like (1 por sesión por canción). No reordena de golpe para no
+// hacer saltar la fila; el orden por likes se aplica en la próxima carga.
+async function likeCatalogSong(songId) {
+  if (!songId || catalogIsLiked(songId)) return;
+  const song = catalogCache.find((s) => String(s.id) === String(songId));
+  catalogLikedSongs.add(String(songId));
+  if (song) song.likes = Number(song.likes || 0) + 1;
+  document.querySelectorAll('[data-catalog-like]').forEach((b) => {
+    if (b.getAttribute('data-catalog-like') === String(songId)) b.classList.add('liked');
+  });
+  updatePlayerLikeButton();
+  try {
+    await fetch(`${API_BASE}/api/manager/catalog/${songId}`, {
+      method: 'PATCH', headers: apiHeaders(),
+      body: JSON.stringify({ action: 'increment_like' }),
+    });
+  } catch { /* best-effort: no molestar al visitante */ }
+}
 
-  updateTabBarVisibilityForCatalogBottom();
+// Refleja el estado de like en los botones del reproductor (portada + mini).
+// Solo visibles para visitantes.
+function updatePlayerLikeButton() {
+  const liked = catalogIsLiked(catalogNowPlayingId);
+  ['player-like', 'mini-like'].forEach((id) => {
+    const b = document.getElementById(id);
+    if (!b) return;
+    b.classList.toggle('liked', liked);
+    b.classList.toggle('hidden', isAuthenticated || !catalogNowPlayingId);
+  });
+}
+
+// Cuenta un play (best-effort) cuando la canción se escuchó lo suficiente.
+async function countCatalogPlay(songId) {
+  const song = catalogCache.find((s) => String(s.id) === String(songId));
+  if (song) song.plays = Number(song.plays || 0) + 1;
+  try {
+    await fetch(`${API_BASE}/api/manager/catalog/${songId}`, {
+      method: 'PATCH', headers: apiHeaders(),
+      body: JSON.stringify({ action: 'increment_play' }),
+    });
+  } catch { /* best-effort */ }
 }
 
 function setCatalog(rows = catalogSample) {
@@ -1525,6 +2608,7 @@ function setCatalog(rows = catalogSample) {
       generos: String(row.generos || '').trim(),
       drive: String(row.drive || '').trim(),
       fileId: String(row.fileId || extractDriveFileId(row.drive || '')).trim(),
+      fileIdInstrumental: String(row.fileIdInstrumental || extractDriveFileId(row.instrumental || '')).trim(),
       cover: String(row.cover || '').trim(),
       letra: String(row.letra || '').trim(),
       lyricsText: String(row.lyricsText || '').trim(),
@@ -1534,6 +2618,9 @@ function setCatalog(rows = catalogSample) {
       certificadaIndautorCount: Number(row.certificadaIndautorCount || 0),
       registradaSacm: Boolean(row.registradaSacm),
       registradaBmi: Boolean(row.registradaBmi),
+      rating: Math.max(0, Math.min(3, Math.round(Number(row.rating || 0)))),
+      likes: Math.max(0, Number(row.likes || 0)),
+      plays: Math.max(0, Number(row.plays || 0)),
       searchText: String(row.searchText || '').trim(),
     }))
     .filter((row) => Boolean(row.obra || row.drive || row.fileId));
@@ -1552,10 +2639,16 @@ function setCatalog(rows = catalogSample) {
     if (!byKey.has(key)) byKey.set(key, row);
   }
 
-  catalogCache = Array.from(byKey.values());
+  // Orden: primero rating (admin) desc, luego likes desc, luego abecedario.
+  // Visitantes y admin ven el MISMO orden; solo cambia qué widgets se renderizan.
+  catalogCache = Array.from(byKey.values())
+    .sort((a, b) =>
+      (Number(b.rating || 0) - Number(a.rating || 0))
+      || (Number(b.likes || 0) - Number(a.likes || 0))
+      || String(a.obra || '').localeCompare(String(b.obra || ''), 'es', { sensitivity: 'base' }));
   if (catalogNowPlayingId && !catalogCache.some((row) => row.id === catalogNowPlayingId)) {
     catalogNowPlayingId = '';
-    catalogNowCardOpen = false;
+    setCatalogPlayerExpanded(false);
     clearCatalogHowl();
     catalogPlayer.currentTrackIndex = -1;
     setCatalogPlayerStatus('Selecciona una canción para iniciar.');
@@ -1692,35 +2785,173 @@ function playCatalogSong(songId) {
   void loadCatalogTrack(index, { autoplay: true });
 }
 
+function toggleCatalogPlayback() {
+  const track = getCatalogPlayerTrackByIndex();
+  if (!track) {
+    const queue = getCatalogQueue();
+    if (queue.length) playCatalogSong(queue[0]);
+    return;
+  }
+  if (!catalogPlayer.howl) {
+    void loadCatalogTrack(catalogPlayer.currentTrackIndex, { autoplay: true });
+    return;
+  }
+  const activeId = catalogPlayer.activeSoundId;
+  if (activeId && catalogPlayer.howl.playing(activeId)) {
+    catalogPlayer.howl.pause(activeId);
+  } else {
+    requestCatalogPlay();
+  }
+}
+
+function catalogSeekTo(pos) {
+  const howl = catalogPlayer.howl;
+  if (!howl || !howl.state || howl.state() !== 'loaded') return;
+  const dur = Number(howl.duration() || 0);
+  const clamped = Math.max(0, Math.min(dur || pos, pos));
+  howl.seek(clamped, catalogPlayer.activeSoundId || undefined);
+  refreshCatalogProgressUi();
+}
+
+function catalogSeekRelative(delta) {
+  const howl = catalogPlayer.howl;
+  if (!howl || !howl.state || howl.state() !== 'loaded') return;
+  const cur = Number(howl.seek(undefined, catalogPlayer.activeSoundId || undefined) || 0);
+  catalogSeekTo(cur + delta);
+}
+
+// Carga infinita de contactos al scrollear (reemplaza el botón "Cargar más").
+function setupContactsInfiniteScroll() {
+  const container = document.querySelector('main.container');
+  if (!container) return;
+  let loading = false;
+  container.addEventListener('scroll', () => {
+    if (loading) return;
+    if (getActiveTabName() !== 'contacts') return;
+    const filtered = applyContactsFilter(contactsCache);
+    if (filtered.length <= contactsVisibleCount) return;
+    if (container.scrollTop + container.clientHeight < container.scrollHeight - 600) return;
+    loading = true;
+    contactsVisibleCount += CONTACTS_PAGE_STEP;
+    setContacts(contactsCache);
+    requestAnimationFrame(() => { loading = false; });
+  }, { passive: true });
+}
+
+// Solo un menú <details> abierto a la vez + cerrar al hacer click fuera.
+function setupMenuAutoClose() {
+  document.addEventListener('toggle', (e) => {
+    const d = e.target;
+    if (!d || d.tagName !== 'DETAILS' || !d.open) return;
+    if (!d.classList.contains('task-actions-menu')) return;
+    document.querySelectorAll('details.task-actions-menu[open]').forEach((other) => {
+      if (other !== d) other.open = false;
+    });
+    // Decide si el menú debe abrir hacia arriba: si el botón está en la mitad
+    // inferior de la pantalla (o no cabe abajo), invertimos la dirección.
+    const summary = d.querySelector('summary');
+    const dropdown = d.querySelector('.task-actions-dropdown');
+    if (summary) {
+      const rect = summary.getBoundingClientRect();
+      const vh = window.innerHeight || document.documentElement.clientHeight;
+      const needed = (dropdown ? dropdown.scrollHeight : 220) + 24;
+      const spaceBelow = vh - rect.bottom;
+      d.classList.toggle('drop-up', spaceBelow < needed && rect.top > vh * 0.45);
+    }
+  }, true); // capture: el evento toggle no burbujea
+
+  // Click fuera de un menú abierto lo cierra
+  document.addEventListener('click', (e) => {
+    document.querySelectorAll('details.task-actions-menu[open]').forEach((d) => {
+      if (!d.contains(e.target)) d.open = false;
+    });
+  });
+}
+
+// Carga infinita del catálogo: al acercarse al fondo, muestra más canciones
+// automáticamente (reemplaza el botón "Cargar más" que el mini-player tapaba).
+function setupCatalogInfiniteScroll() {
+  let loading = false;
+  // Escucha el scroll del elemento que realmente scrollea: el .container (desktop)
+  // o la lista #catalog-songs (móvil, donde los filtros quedan fijos).
+  const handler = (e) => {
+    if (loading) return;
+    if (getActiveTabName() !== 'catalog') return;
+    if (catalogQueue.length <= catalogVisibleCount) return;
+    const el = e.currentTarget;
+    if (el.scrollTop + el.clientHeight < el.scrollHeight - 700) return;
+    loading = true;
+    catalogVisibleCount += CATALOG_PAGE_STEP;
+    renderCatalog();
+    requestAnimationFrame(() => { loading = false; });
+  };
+  const container = document.querySelector('main.container');
+  const songs = document.getElementById('catalog-songs');
+  if (container) container.addEventListener('scroll', handler, { passive: true });
+  if (songs) songs.addEventListener('scroll', handler, { passive: true });
+}
+
 function setupCatalogPlayerControls() {
   const playToggle = document.getElementById('catalog-play-toggle');
+  const expToggle = document.getElementById('player-exp-toggle');
+  const expandBtn = document.getElementById('player-expand-btn');
+  const collapseBtn = document.getElementById('player-collapse-btn');
   const prevBtn = document.getElementById('catalog-prev');
   const nextBtn = document.getElementById('catalog-next');
   const randomBtn = document.getElementById('catalog-random');
-  const sharePlaylistBtn = document.getElementById('catalog-share-playlist');
+  const shareSongBtn = document.getElementById('catalog-share-song');
   const progress = document.getElementById('catalog-player-progress');
 
-  if (playToggle) {
-    playToggle.addEventListener('click', () => {
-      const track = getCatalogPlayerTrackByIndex();
-      if (!track) {
-        if (catalogCache.length) {
-          void loadCatalogTrack(0, { autoplay: true });
-        }
-        return;
-      }
-      if (!catalogPlayer.howl) {
-        void loadCatalogTrack(catalogPlayer.currentTrackIndex, { autoplay: true });
-        return;
-      }
-      const activeId = catalogPlayer.activeSoundId;
-      if (activeId && catalogPlayer.howl.playing(activeId)) {
-        catalogPlayer.howl.pause(activeId);
-      } else {
-        requestCatalogPlay();
-      }
+  if (playToggle) playToggle.addEventListener('click', toggleCatalogPlayback);
+  if (expToggle) expToggle.addEventListener('click', toggleCatalogPlayback);
+
+  // Botones de like del reproductor (portada + mini), solo para visitantes.
+  ['player-like', 'mini-like'].forEach((id) => {
+    const b = document.getElementById(id);
+    if (!b) return;
+    b.innerHTML = THUMB_SVG;
+    b.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      likeCatalogSong(catalogNowPlayingId);
+    });
+  });
+
+  if (expandBtn) {
+    expandBtn.addEventListener('click', () => {
+      if (getCatalogPlayerTrackByIndex()) setCatalogPlayerExpanded(true);
     });
   }
+  if (collapseBtn) {
+    collapseBtn.addEventListener('click', () => setCatalogPlayerExpanded(false));
+  }
+
+  const lyricsToggleBtn = document.getElementById('player-lyrics-toggle');
+  if (lyricsToggleBtn) {
+    lyricsToggleBtn.addEventListener('click', () => setLyricsVisible(!catalogLyricsOn));
+  }
+  const lyricsEditBtn = document.getElementById('player-lyrics-edit');
+  if (lyricsEditBtn) {
+    lyricsEditBtn.addEventListener('click', () => setLyricsEditing(!catalogLyricsEditing));
+  }
+  const lyricsHintPill = document.getElementById('player-lyrics-hint');
+  if (lyricsHintPill) {
+    lyricsHintPill.addEventListener('click', () => setLyricsVisible(true));
+  }
+  const karaokeBtn = document.getElementById('player-karaoke');
+  if (karaokeBtn) {
+    karaokeBtn.addEventListener('click', toggleKaraoke);
+  }
+  const miniRestart = document.getElementById('mini-restart');
+  if (miniRestart) miniRestart.addEventListener('click', () => catalogSeekTo(0));
+  const miniBack15 = document.getElementById('mini-back15');
+  if (miniBack15) miniBack15.addEventListener('click', () => catalogSeekRelative(-15));
+  const miniFwd15 = document.getElementById('mini-fwd15');
+  if (miniFwd15) miniFwd15.addEventListener('click', () => catalogSeekRelative(15));
+  const lyricsSaveBtn = document.getElementById('lyrics-save');
+  if (lyricsSaveBtn) lyricsSaveBtn.addEventListener('click', () => saveLyrics());
+  const lyricsCancelBtn = document.getElementById('lyrics-cancel');
+  if (lyricsCancelBtn) lyricsCancelBtn.addEventListener('click', () => setLyricsEditing(false));
 
   if (prevBtn) {
     prevBtn.addEventListener('click', () => {
@@ -1740,9 +2971,13 @@ function setupCatalogPlayerControls() {
     });
   }
 
-  if (sharePlaylistBtn) {
-    sharePlaylistBtn.addEventListener('click', () => {
-      shareSelectedPlaylistForListen();
+  if (shareSongBtn) {
+    shareSongBtn.addEventListener('click', () => {
+      if (!catalogNowPlayingId) {
+        setStatus('catalog-status', 'Pon una canción para compartirla.', true);
+        return;
+      }
+      shareCatalogSongForListen(catalogNowPlayingId);
     });
   }
 
@@ -1762,8 +2997,130 @@ function setupCatalogPlayerControls() {
     });
   }
 
+  // Cerrar el Now Playing con swipe-down (gesto Apple Music)
+  const expanded = document.getElementById('player-expanded');
+  if (expanded) {
+    let startY = null;
+    let deltaY = 0;
+    expanded.addEventListener('touchstart', (e) => {
+      const t = e.target;
+      // Desde la barra (grabber): siempre permite deslizar para cerrar
+      if (t && t.closest && t.closest('.player-collapse')) {
+        startY = e.touches[0].clientY;
+        deltaY = 0;
+        return;
+      }
+      // Con la letra abierta: el gesto sobre la letra la scrollea, NO cierra
+      if (catalogLyricsOn) { startY = null; return; }
+      // En vista portada: no cerrar si el gesto empieza en un control
+      if (t && t.closest && t.closest('input, button')) { startY = null; return; }
+      startY = e.touches[0].clientY;
+      deltaY = 0;
+    }, { passive: true });
+    expanded.addEventListener('touchmove', (e) => {
+      if (startY === null) return;
+      deltaY = e.touches[0].clientY - startY;
+    }, { passive: true });
+    expanded.addEventListener('touchend', () => {
+      if (startY !== null && deltaY > 80) setCatalogPlayerExpanded(false);
+      startY = null;
+    });
+  }
+
+  // Gesto en la vista de letra (Pointer Events = mouse + touch + pen en una sola
+  // API, así funciona igual en web y en el teléfono):
+  //   swipe-up corto  → asoma los botones (peek)
+  //   swipe-down      → esconde los botones
+  //   swipe-up largo  → regresa a la portada
+  //   tap/click       → alterna los botones
+  // Zonas para iniciar el gesto: la franja del grabber Y el bloque del título
+  // (para que sea fácil de agarrar con el dedo). El slider de tiempo queda libre.
+  const lyricsGestureBar = document.getElementById('lyrics-gesture-bar');
+  const lyricsMetaZone = document.querySelector('#player-expanded .player-exp-meta');
+  const lyricsGestureZones = [lyricsGestureBar, lyricsMetaZone].filter(Boolean);
+  if (lyricsGestureZones.length) {
+    let gStartY = null;
+    let gDelta = 0;
+    let gMoved = false;
+    const usePointer = 'PointerEvent' in window;
+    const isPeek = () => document.getElementById('catalog-player')?.classList.contains('lyrics-peek');
+    const yOf = (e) => (e.clientY != null)
+      ? e.clientY
+      : (e.touches && e.touches[0]) ? e.touches[0].clientY
+      : (e.changedTouches && e.changedTouches[0]) ? e.changedTouches[0].clientY
+      : null;
+
+    // El rastreo del movimiento vive en window: aunque el dedo/cursor salga de la
+    // franja delgada, los eventos siguen llegando y el delta se calcula bien.
+    const onMove = (e) => {
+      if (gStartY === null) return;
+      const y = yOf(e);
+      if (y === null) return;
+      gDelta = y - gStartY;
+      if (Math.abs(gDelta) > 4) gMoved = true;
+      if (e.cancelable) e.preventDefault(); // evita que la página haga scroll mientras deslizas
+    };
+    const onUp = () => {
+      if (usePointer) {
+        window.removeEventListener('pointermove', onMove);
+        window.removeEventListener('pointerup', onUp);
+      } else {
+        window.removeEventListener('touchmove', onMove);
+        window.removeEventListener('touchend', onUp);
+      }
+      if (gStartY === null) return;
+      const d = gDelta;
+      gStartY = null;
+      gDelta = 0;
+      if (d < -120) {
+        setLyricsVisible(false);   // swipe-up largo → portada
+      } else if (d < -18) {
+        setLyricsPeek(true);       // swipe-up corto → asoma los botones
+      } else if (d > 18) {
+        setLyricsPeek(false);      // swipe-down → esconde los botones
+      } else if (!gMoved) {
+        setLyricsPeek(!isPeek());  // tap → alterna los botones
+      }
+    };
+    const onDown = (e) => {
+      if (!catalogLyricsOn) return;
+      const y = yOf(e);
+      if (y === null) return;
+      gStartY = y;
+      gDelta = 0;
+      gMoved = false;
+      if (usePointer) {
+        window.addEventListener('pointermove', onMove, { passive: false });
+        window.addEventListener('pointerup', onUp);
+      } else {
+        window.addEventListener('touchmove', onMove, { passive: false });
+        window.addEventListener('touchend', onUp);
+      }
+    };
+
+    lyricsGestureZones.forEach((el) => {
+      if (usePointer) el.addEventListener('pointerdown', onDown);
+      else el.addEventListener('touchstart', onDown, { passive: true });
+    });
+  }
+
+  // Escape cierra el Now Playing (desktop)
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && catalogPlayerExpanded) setCatalogPlayerExpanded(false);
+  });
+
   setCatalogPlayerStatus('Selecciona una canción para iniciar.');
   updateCatalogPlayerUi();
+}
+
+function linkifyText(text) {
+  const escaped = escapeHtml(String(text || ''));
+  return escaped.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" rel="noopener" class="subtask-link">$1</a>');
+}
+
+function notionPageUrl(id) {
+  const clean = String(id || '').replace(/-/g, '');
+  return clean ? `https://www.notion.so/${clean}` : '';
 }
 
 function setTasks(rows = []) {
@@ -1780,15 +3137,20 @@ function setTasks(rows = []) {
       const subtasks = Array.isArray(t.subtasks) ? t.subtasks : [];
       const subtasksHtml = subtasks.length
         ? `<ul class="subtasks-list">${subtasks
-            .map((st, i) => `<li><label><input type="checkbox" data-task-subtoggle="${t.id}" data-subindex="${i}" ${st.done ? 'checked' : ''} /> ${escapeHtml(st.title)}</label></li>`)
+            .map((st, i) => `<li class="subtask-item"><input type="checkbox" class="subtask-check" data-task-subtoggle="${t.id}" data-subindex="${i}" ${st.done ? 'checked' : ''} aria-label="Completar subtask" /><span class="subtask-text">${linkifyText(st.title)}</span></li>`)
             .join('')}</ul>`
         : '';
+
+      const notionUrl = notionPageUrl(t.id);
+      const titleHtml = notionUrl
+        ? `<a class="task-title-link" href="${notionUrl}" target="_blank" rel="noopener" title="Abrir en Notion">${escapeHtml(t.title || 'Sin título')}</a>`
+        : `<strong>${escapeHtml(t.title || 'Sin título')}</strong>`;
 
       return `
         <li>
           <div class="task-row">
-            <div>
-              <strong>${escapeHtml(t.title || 'Sin título')}</strong>
+            <div class="task-main">
+              ${titleHtml}
               <div class="task-meta">${escapeHtml(assignee)}${escapeHtml(due)} · Estatus: ${escapeHtml(status)}</div>
             </div>
             <details class="task-actions-menu">
@@ -1848,12 +3210,18 @@ function setMessages(rows = []) {
 
   featuredList.innerHTML = featured.length
     ? featured
-        .map((m) => `
+        .map((m) => {
+          const fecha = m.createdAt
+            ? new Date(m.createdAt).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' })
+            : '';
+          return `
           <li>
             <strong>${escapeHtml(m.author || 'Anónimo')}</strong> ·
-            <span>${escapeHtml(m.text || 'Sin mensaje')}</span>
+            <span class="featured-text">${escapeHtml(m.text || 'Sin mensaje')}</span>
+            ${fecha ? `<div class="featured-date">${escapeHtml(fecha)}</div>` : ''}
           </li>
-        `)
+        `;
+        })
         .join('')
     : '<li>Sin mensajes destacados.</li>';
 
@@ -2607,8 +3975,9 @@ function setContacts(rows = contactsSample) {
 
   if (loadMoreBtn) {
     const canLoadMore = filtered.length > visible.length;
+    loadMoreBtn.style.display = canLoadMore ? '' : 'none';
     loadMoreBtn.disabled = !canLoadMore;
-    loadMoreBtn.textContent = canLoadMore ? 'Cargar más' : 'Sin más';
+    loadMoreBtn.textContent = 'Cargar más';
   }
 
   list.querySelectorAll('[data-contact-edit]').forEach((btn) => {
@@ -2757,7 +4126,7 @@ function handleGoogleTokenSuccess(resp) {
 function syncTabVisibility() {
   document.querySelectorAll('.tab').forEach((t) => {
     const tabName = t.dataset.tab;
-    if (tabName === 'focus' || tabName === 'quotes') {
+    if (tabName === 'focus') {
       t.style.display = isAuthenticated ? '' : 'none';
       return;
     }
@@ -2802,7 +4171,6 @@ function setAuthenticated(value) {
     loadFocusTasks({ keepMode: false });
     loadLinksFromApi();
     loadSalesKitFromApi();
-    loadQuotesFromApi();
     updateAuthGateForCurrentTab();
     return;
   }
@@ -3278,6 +4646,7 @@ async function loadCatalogFromApi() {
       generos: item.generos || '—',
       drive: item.drive || '',
       fileId: item.fileId || extractDriveFileId(item.drive || ''),
+      fileIdInstrumental: item.fileIdInstrumental || extractDriveFileId(item.instrumental || ''),
       cover: item.cover || '',
       letra: item.letra || '',
       lyricsText: item.lyricsText || '',
@@ -3604,7 +4973,7 @@ function startGoogleLogin({ auto = false } = {}) {
 function autoLoginOnLoad() {
   if (restoreStoredAuthSession()) return;
   if (googleAccessToken || googleProfile || isAuthenticated) return;
-  setOauthStatus('Catálogo y Links públicos activos. Inicia sesión para usar tabs privadas.');
+  setOauthStatus('');
 }
 
 function signOutGoogle() {
@@ -3779,9 +5148,10 @@ function init() {
   setTaskFormVisibility(false);
   setupTabs();
   setupCatalogPlayerControls();
+  setupCatalogInfiniteScroll();
+  setupContactsInfiniteScroll();
+  setupMenuAutoClose();
   setupActions();
-  setupCatalogTabBarAutoHide();
-  setupQuotesTab();
   syncPlaylistCreateControlsVisibility();
   if (shouldBypassAuthForLocalDev()) {
     enableLocalDevBypassMode();
@@ -3833,509 +5203,5 @@ function checkNotificationStatus() {
     };
   }
 }
-
-// ─── QUOTES / SEGUIMIENTO ────────────────────────────────────────────────────
-
-const MK_QUOTE_CATALOG = [
-  { id: 'produccion', title: 'Producción Musical', services: [
-    { id: 'produccion-mezcla-master', name: 'Producción + Mezcla + Master', description: 'El paquete completo. Desde la idea hasta el archivo listo para distribuir.', priceLabel: '$3,920 USD / canción', hasQty: true, qtyLabel: 'canciones', basePrice: 3920, calcPrice: (q) => q * 3920, currency: 'USD' },
-    { id: 'produccion-mezcla', name: 'Producción + Mezcla', description: 'Arreglos, músicos de sesión, grabación y mezcla profesional.', priceLabel: '$3,800 USD / canción', hasQty: true, qtyLabel: 'canciones', basePrice: 3800, calcPrice: (q) => q * 3800, currency: 'USD' },
-    { id: 'produccion', name: 'Producción Completa', description: 'Arreglos, músicos y grabación. Mezcla por separado.', priceLabel: '$3,500 USD / canción', hasQty: true, qtyLabel: 'canciones', basePrice: 3500, calcPrice: (q) => q * 3500, currency: 'USD' },
-  ]},
-  { id: 'postproduccion', title: 'Post-producción', services: [
-    { id: 'mezcla', name: 'Mezcla Profesional', description: 'Hasta 40 tracks. 2 rondas de revisión incluidas.', priceLabel: '$300 USD / track', hasQty: true, qtyLabel: 'tracks', basePrice: 300, calcPrice: (q) => q * 300, currency: 'USD' },
-    { id: 'mastering', name: 'Mastering', description: 'LUFS optimizado para Spotify, Apple Music y más.', priceLabel: 'Desde $120 USD / track', hasQty: true, qtyLabel: 'tracks', basePrice: 120, calcPrice: (q) => q * 120, currency: 'USD' },
-    { id: 'afinacion', name: 'Afinación (Melodyne)', description: 'Corrección natural de afinación de voces o instrumentos.', priceLabel: '$30 primer track · $20 desde el 2do', hasQty: true, qtyLabel: 'tracks', basePrice: 30, calcPrice: (q) => q === 1 ? 30 : 30 + (q - 1) * 20, currency: 'USD' },
-    { id: 'edicion', name: 'Edición y reparación de audio', description: 'Limpieza de ruidos, edición de takes, corrección de timing.', priceLabel: '$100 hasta 5 tracks · +$20 por track extra', hasQty: true, qtyLabel: 'tracks', basePrice: 100, calcPrice: (q) => q <= 5 ? 100 : 100 + (q - 5) * 20, currency: 'USD' },
-  ]},
-  { id: 'consultoria', title: 'Consultoría', services: [
-    { id: 'consultoria-hora', name: 'Sesión de Consultoría', description: 'Orientación de carrera, estrategia de lanzamiento, revisión de material.', priceLabel: '$150 USD / hora', hasQty: true, qtyLabel: 'horas', basePrice: 150, calcPrice: (q) => q * 150, currency: 'USD' },
-    { id: 'consultoria-paquete', name: 'Paquete Consultoría (8 horas)', description: '8 horas para trabajar en profundidad tu proyecto y carrera.', priceLabel: '$1,200 USD', hasQty: false, basePrice: 1200, currency: 'USD' },
-  ]},
-  { id: 'jingle', title: 'Jingle y Corporativo', services: [
-    { id: 'jingle', name: 'Jingle / Música Corporativa', description: 'Composición original para marcas, campañas y audiovisual. Sin inteligencia artificial.', priceLabel: '$3,000 USD / pieza', hasQty: true, qtyLabel: 'piezas', basePrice: 3000, calcPrice: (q) => q * 3000, currency: 'USD' },
-  ]},
-  { id: 'distribucion', title: 'Distribución y Promoción', services: [
-    { id: 'distribucion-label', name: 'Lanzamiento bajo Music Knobs Label', description: 'Distribución completa en todas las plataformas.', priceLabel: '$100 USD primer año · $50 USD / año renovación', hasQty: false, basePrice: 100, currency: 'USD' },
-    { id: 'asesoria-distribucion', name: 'Asesoría para publicación propia', description: 'Elección de plataforma, metadata, ISRC y derechos.', priceLabel: '$300 USD', hasQty: false, basePrice: 300, currency: 'USD' },
-    { id: 'spotify-positioning', name: 'Posicionamiento en Spotify', description: '~60,000 plays auténticos en playlists orgánicas.', priceLabel: '$300 USD / track', hasQty: true, qtyLabel: 'tracks', basePrice: 300, calcPrice: (q) => q * 300, currency: 'USD' },
-  ]},
-  { id: 'arte', title: 'Arte y Diseño', services: [
-    { id: 'diseño-portada', name: 'Diseño de Portada Profesional', description: 'Portada diseñada por un artista humano. 2 revisiones incluidas.', priceLabel: '$4,000 MXN / diseño', hasQty: true, qtyLabel: 'diseños', basePrice: 4000, calcPrice: (q) => q * 4000, currency: 'MXN' },
-    { id: 'fotografia-profesional', name: 'Fotografía Profesional', description: 'Sesión con fotógrafo profesional y cámaras de gama alta.', priceLabel: 'A cotizar', hasQty: false, basePrice: 0, currency: 'quote' },
-    { id: 'pintura-oleo', name: 'Pintura al Óleo', description: 'Tu imagen o la portada de tu disco convertida en pintura al óleo.', priceLabel: 'Desde $12,000 MXN', hasQty: true, qtyLabel: 'obras', basePrice: 12000, calcPrice: (q) => q * 12000, currency: 'MXN' },
-  ]},
-];
-
-let quoteDetailSelection = {};
-
-function mkAllServices() {
-  return MK_QUOTE_CATALOG.flatMap((c) => c.services);
-}
-
-function mkFindByName(name) {
-  return mkAllServices().find((s) => s.name === name) || null;
-}
-
-function mkItemPrice(svc, qty) {
-  if (svc.currency === 'quote') return 0;
-  if (svc.calcPrice) return svc.calcPrice(qty);
-  return svc.basePrice * (svc.hasQty ? qty : 1);
-}
-
-function mkBuildSummaryHtml() {
-  const ids = Object.keys(quoteDetailSelection).filter((id) => quoteDetailSelection[id] > 0);
-  if (ids.length === 0) return '<p class="hint" style="text-align:center;padding:.75rem 0;">Sin servicios seleccionados.</p>';
-  let usd = 0, mxn = 0;
-  const rows = ids.map((id) => {
-    const svc = mkAllServices().find((s) => s.id === id);
-    if (!svc) return '';
-    const qty = quoteDetailSelection[id];
-    const price = mkItemPrice(svc, qty);
-    if (svc.currency === 'MXN') mxn += price;
-    else if (svc.currency !== 'quote') usd += price;
-    const priceStr = svc.currency === 'quote' ? 'A cotizar' : svc.currency === 'MXN' ? `$${price.toLocaleString('en-US')} MXN` : `$${price.toLocaleString('en-US')}`;
-    return `<div class="mk-sum-item"><span>${escapeHtml(svc.name)}${svc.hasQty ? ` ×${qty}` : ''}</span><span>${priceStr}</span></div>`;
-  }).join('');
-  const totals = (usd > 0 && mxn > 0)
-    ? `<div class="mk-sum-total"><span>Total USD</span><span>$${usd.toLocaleString('en-US')}</span></div><div class="mk-sum-total"><span>Total MXN</span><span>$${mxn.toLocaleString('en-US')} MXN</span></div>`
-    : mxn > 0
-      ? `<div class="mk-sum-total"><span>Total</span><span>$${mxn.toLocaleString('en-US')} MXN</span></div>`
-      : `<div class="mk-sum-total"><span>Total</span><span>$${usd.toLocaleString('en-US')} USD</span></div>`;
-  return `<div class="mk-sum-title">Resumen</div><div class="mk-sum-items">${rows}</div>${totals}`;
-}
-
-function mkBuildCatalogHtml(unmatchedItems) {
-  const sel = quoteDetailSelection;
-  const cats = MK_QUOTE_CATALOG.map((cat) => {
-    const cards = cat.services.map((svc) => {
-      const on = Boolean(sel[svc.id]);
-      const qty = sel[svc.id] || 1;
-      const qtyRow = (on && svc.hasQty) ? `<div class="mk-qty-row"><button class="mk-qty-btn" data-svc="${escapeHtml(svc.id)}" data-op="dec">−</button><span class="mk-qty-num" data-svc-qty="${escapeHtml(svc.id)}">${qty}</span><button class="mk-qty-btn" data-svc="${escapeHtml(svc.id)}" data-op="inc">+</button><span class="mk-qty-unit">${escapeHtml(svc.qtyLabel || '')}</span></div>` : '';
-      return `<div class="mk-svc-card${on ? ' mk-svc-on' : ''}" data-svc-card="${escapeHtml(svc.id)}"><label class="mk-svc-label"><input type="checkbox" class="mk-svc-chk" data-svc="${escapeHtml(svc.id)}"${on ? ' checked' : ''}><div class="mk-svc-info"><span class="mk-svc-name">${escapeHtml(svc.name)}</span><span class="mk-svc-price">${escapeHtml(svc.priceLabel)}</span></div></label><p class="mk-svc-desc">${escapeHtml(svc.description)}</p>${qtyRow}</div>`;
-    }).join('');
-    return `<div class="mk-cat-block"><div class="mk-cat-label">${escapeHtml(cat.title)}</div><div class="mk-cat-cards">${cards}</div></div>`;
-  }).join('');
-
-  const extra = unmatchedItems.length > 0
-    ? `<div class="mk-cat-block"><div class="mk-cat-label">Servicios adicionales</div><div class="mk-cat-cards">${unmatchedItems.map((item) => {
-        const pr = item.currency === 'quote' ? 'A cotizar' : item.currency === 'MXN' ? `$${(item.price||0).toLocaleString('en-US')} MXN` : `$${(item.price||0).toLocaleString('en-US')} USD`;
-        return `<div class="mk-svc-card mk-svc-on"><label class="mk-svc-label"><input type="checkbox" checked disabled><div class="mk-svc-info"><span class="mk-svc-name">${escapeHtml(item.name)}</span><span class="mk-svc-price">${pr}</span></div></label>${item.hasQty ? `<p class="mk-svc-desc">Qty: ${item.qty}</p>` : ''}</div>`;
-      }).join('')}</div></div>`
-    : '';
-
-  return `<div class="mk-cotizador-clone"><div class="mk-clone-catalog">${cats}${extra}</div><div class="mk-clone-summary" id="mk-clone-summary">${mkBuildSummaryHtml()}</div></div>`;
-}
-
-function mkInitCotizadorClone(services) {
-  quoteDetailSelection = {};
-  const unmatched = [];
-  for (const item of (services || [])) {
-    const svc = mkFindByName(item.name);
-    if (svc) quoteDetailSelection[svc.id] = item.qty || 1;
-    else unmatched.push(item);
-  }
-  return mkBuildCatalogHtml(unmatched);
-}
-
-function mkBindCloneEvents(container) {
-  container.querySelectorAll('.mk-svc-chk').forEach((chk) => {
-    chk.addEventListener('change', (e) => {
-      const id = e.target.dataset.svc;
-      if (!id) return;
-      if (e.target.checked) {
-        quoteDetailSelection[id] = quoteDetailSelection[id] || 1;
-      } else {
-        delete quoteDetailSelection[id];
-      }
-      const card = container.querySelector(`[data-svc-card="${CSS.escape(id)}"]`);
-      if (card) {
-        card.classList.toggle('mk-svc-on', e.target.checked);
-        const svc = mkAllServices().find((s) => s.id === id);
-        if (svc?.hasQty) {
-          let row = card.querySelector('.mk-qty-row');
-          if (e.target.checked && !row) {
-            const qty = quoteDetailSelection[id];
-            row = document.createElement('div');
-            row.className = 'mk-qty-row';
-            row.innerHTML = `<button class="mk-qty-btn" data-svc="${escapeHtml(id)}" data-op="dec">−</button><span class="mk-qty-num" data-svc-qty="${escapeHtml(id)}">${qty}</span><button class="mk-qty-btn" data-svc="${escapeHtml(id)}" data-op="inc">+</button><span class="mk-qty-unit">${escapeHtml(svc.qtyLabel||'')}</span>`;
-            card.appendChild(row);
-            row.querySelectorAll('.mk-qty-btn').forEach((b) => b.addEventListener('click', mkHandleQty));
-          } else if (!e.target.checked && row) {
-            row.remove();
-          }
-        }
-      }
-      const sumEl = container.querySelector('#mk-clone-summary');
-      if (sumEl) sumEl.innerHTML = mkBuildSummaryHtml();
-    });
-  });
-  container.querySelectorAll('.mk-qty-btn').forEach((b) => b.addEventListener('click', mkHandleQty));
-}
-
-function mkHandleQty(e) {
-  const id = e.currentTarget.dataset.svc;
-  const op = e.currentTarget.dataset.op;
-  if (!id || !quoteDetailSelection[id]) return;
-  quoteDetailSelection[id] = op === 'inc' ? quoteDetailSelection[id] + 1 : Math.max(1, quoteDetailSelection[id] - 1);
-  const container = e.currentTarget.closest('.mk-cotizador-clone');
-  if (!container) return;
-  const numEl = container.querySelector(`[data-svc-qty="${CSS.escape(id)}"]`);
-  if (numEl) numEl.textContent = quoteDetailSelection[id];
-  const sumEl = container.querySelector('#mk-clone-summary');
-  if (sumEl) sumEl.innerHTML = mkBuildSummaryHtml();
-}
-
-let quotesCache = [];
-let quotesSearchDebounceTimer = null;
-let quotesCurrentPageId = null;
-
-const QUOTE_ESTATUS_BLOCKED = new Set(['Contrato enviado', 'Firmado', 'En producción', 'Entregado']);
-
-async function loadQuotesFromApi(search = '', status = '') {
-  const statusEl = document.getElementById('quotes-status');
-  if (statusEl) statusEl.textContent = 'Cargando cotizaciones...';
-
-  try {
-    if (!API_BASE) throw new Error('apiBaseUrl no configurado');
-    const params = new URLSearchParams();
-    if (search) params.set('q', search);
-    if (status) params.set('status', status);
-    const qs = params.toString();
-    const res = await fetchJson(`${API_BASE}/api/manager/quotes${qs ? `?${qs}` : ''}`);
-    const data = res?.data || [];
-    quotesCache = data;
-    renderQuotesList(data);
-    if (statusEl) statusEl.textContent = data.length === 0 ? 'Sin cotizaciones para mostrar.' : '';
-  } catch (e) {
-    if (statusEl) statusEl.textContent = `Error: ${e.message}`;
-  }
-}
-
-function renderQuotesList(quotes) {
-  const container = document.getElementById('quotes-list');
-  if (!container) return;
-
-  if (!quotes || quotes.length === 0) {
-    container.innerHTML = '<p class="hint" style="text-align:center; padding:2rem 0;">Sin cotizaciones para mostrar.</p>';
-    return;
-  }
-
-  container.innerHTML = quotes.map((q) => {
-    const estatus = escapeHtml(q.estatus || '');
-    const quoteNumber = escapeHtml(q.quoteNumber || '—');
-    const name = escapeHtml(q.name || '—');
-    const date = escapeHtml(q.date || '');
-    const total = q.total ? escapeHtml(String(q.total)) : '—';
-    return `
-      <div class="quote-card" data-id="${escapeHtml(q.id)}" role="button" tabindex="0" aria-label="Ver cotización ${quoteNumber}">
-        <div class="quote-card-main">
-          <div class="quote-card-top">
-            <span class="quote-number-badge">${quoteNumber}</span>
-            <span class="quote-client-name">${name}</span>
-          </div>
-          <div class="quote-card-meta">
-            ${date ? `<span>${date}</span>` : ''}
-            ${total !== '—' ? `<span>Total: ${total}</span>` : ''}
-          </div>
-        </div>
-        <span class="quote-status-pill" data-status="${estatus}">${estatus || 'Sin estado'}</span>
-      </div>
-    `;
-  }).join('');
-
-  container.querySelectorAll('.quote-card').forEach((card) => {
-    card.addEventListener('click', () => {
-      const pageId = card.dataset.id;
-      if (pageId) loadQuoteDetail(pageId);
-    });
-    card.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        const pageId = card.dataset.id;
-        if (pageId) loadQuoteDetail(pageId);
-      }
-    });
-  });
-}
-
-async function loadQuoteDetail(pageId) {
-  quotesCurrentPageId = pageId;
-  showQuoteDetail(true);
-
-  const feedbackEl = document.getElementById('quote-save-feedback');
-  if (feedbackEl) feedbackEl.textContent = 'Cargando...';
-
-  try {
-    if (!API_BASE) throw new Error('apiBaseUrl no configurado');
-    const res = await fetchJson(`${API_BASE}/api/manager/quotes/${pageId}`);
-    const q = res?.data;
-    if (!q) throw new Error('Sin datos de cotización');
-    renderQuoteDetail(q);
-    if (feedbackEl) feedbackEl.textContent = '';
-  } catch (e) {
-    if (feedbackEl) feedbackEl.textContent = `Error al cargar: ${e.message}`;
-  }
-}
-
-function renderQuoteDetail(q) {
-  // Header
-  const numberEl = document.getElementById('quote-detail-number');
-  if (numberEl) {
-    numberEl.textContent = q.quoteNumber || '—';
-  }
-
-  const estatusBadge = document.getElementById('quote-detail-estatus');
-  if (estatusBadge) {
-    estatusBadge.textContent = q.status || q.estatus || '';
-    estatusBadge.dataset.status = q.status || q.estatus || '';
-    estatusBadge.className = 'quote-status-pill';
-  }
-
-  // Left: client info
-  const setSpan = (id, val) => {
-    const el = document.getElementById(id);
-    if (el) el.textContent = val || '—';
-  };
-  setSpan('qd-client-name', q.clientName);
-  setSpan('qd-client-email', q.email);
-  setSpan('qd-client-phone', q.phone);
-  setSpan('qd-date', q.date);
-  setSpan('qd-total', q.total || '—');
-
-  // Services → cotizador clone
-  const servicesEl = document.getElementById('qd-services-list');
-  if (servicesEl) {
-    servicesEl.innerHTML = mkInitCotizadorClone(q.services || []);
-    const clone = servicesEl.querySelector('.mk-cotizador-clone');
-    if (clone) mkBindCloneEvents(clone);
-
-    // Update section heading with badge
-    const section = servicesEl.closest('.quote-detail-section');
-    if (section) {
-      const h4 = section.querySelector('h4');
-      if (h4) h4.innerHTML = 'Cotización del cliente <span class="mk-seg-badge">Versión de seguimiento</span>';
-      const totalRow = section.querySelector('.quote-total-row');
-      if (totalRow) totalRow.style.display = 'none';
-      section.classList.add('mk-catalog-section');
-    }
-  }
-
-  // Right: seguimiento form
-  const seg = q.seguimiento || {};
-  const setField = (id, val) => {
-    const el = document.getElementById(id);
-    if (el) el.value = val || '';
-  };
-
-  // Set estatus selector to current value
-  const estatusSelect = document.getElementById('seg-estatus');
-  if (estatusSelect) estatusSelect.value = q.status || q.estatus || '';
-
-  setField('seg-musicians', seg.musicians);
-  setField('seg-studio', seg.studio);
-  setField('seg-vocals', seg.vocals);
-  setField('seg-external-engineers', seg.externalEngineers);
-  setField('seg-revisions', seg.revisions);
-  setField('seg-royalties', seg.royalties);
-  setField('seg-deposit', seg.deposit);
-  setField('seg-final-price', seg.finalPrice);
-  setField('seg-delivery-date', seg.deliveryDate);
-  setField('seg-call-notes', seg.callNotes);
-
-  // Store page id
-  const pageIdEl = document.getElementById('qd-page-id');
-  if (pageIdEl) pageIdEl.value = q.pageId || '';
-
-  // Contract button state — enable for all quotes
-  const contractBtn = document.getElementById('quote-contract-btn');
-  if (contractBtn) {
-    contractBtn.disabled = false;
-    contractBtn.textContent = 'Generar contrato';
-  }
-}
-
-function showQuoteDetail(show) {
-  const listPanel = document.getElementById('quotes-list-panel');
-  const detailPanel = document.getElementById('quote-detail');
-  if (listPanel) listPanel.classList.toggle('hidden', show);
-  if (detailPanel) detailPanel.classList.toggle('hidden', !show);
-}
-
-async function saveQuoteFollowUp() {
-  const pageId = document.getElementById('qd-page-id')?.value;
-  if (!pageId) return;
-
-  const feedbackEl = document.getElementById('quote-save-feedback');
-  if (feedbackEl) feedbackEl.textContent = 'Guardando...';
-
-  const saveBtn = document.getElementById('quote-save-btn');
-  if (saveBtn) saveBtn.disabled = true;
-
-  const estatus = document.getElementById('seg-estatus')?.value || '';
-
-  const seguimiento = {
-    musicians: document.getElementById('seg-musicians')?.value || '',
-    studio: document.getElementById('seg-studio')?.value || '',
-    vocals: document.getElementById('seg-vocals')?.value || '',
-    externalEngineers: document.getElementById('seg-external-engineers')?.value || '',
-    revisions: document.getElementById('seg-revisions')?.value || '',
-    royalties: document.getElementById('seg-royalties')?.value || '',
-    deposit: document.getElementById('seg-deposit')?.value || '',
-    finalPrice: document.getElementById('seg-final-price')?.value || '',
-    deliveryDate: document.getElementById('seg-delivery-date')?.value || '',
-    callNotes: document.getElementById('seg-call-notes')?.value || '',
-  };
-
-  // Remove empty fields
-  for (const k of Object.keys(seguimiento)) {
-    if (!seguimiento[k]) delete seguimiento[k];
-  }
-
-  const body = { seguimiento };
-  if (estatus) body.estatus = estatus;
-
-  try {
-    if (!API_BASE) throw new Error('apiBaseUrl no configurado');
-    const res = await fetch(`${API_BASE}/api/manager/quotes/${pageId}`, {
-      method: 'PATCH',
-      headers: apiHeaders(),
-      body: JSON.stringify(body),
-    });
-
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err.error || `HTTP ${res.status}`);
-    }
-
-    if (feedbackEl) feedbackEl.textContent = 'Guardado correctamente.';
-    setTimeout(() => { if (feedbackEl) feedbackEl.textContent = ''; }, 3000);
-
-    // Update status pill in the list for the current card
-    if (estatus) {
-      const listCard = document.querySelector(`.quote-card[data-id="${CSS.escape(pageId)}"]`);
-      if (listCard) {
-        const pill = listCard.querySelector('.quote-status-pill');
-        if (pill) {
-          pill.textContent = estatus;
-          pill.dataset.status = estatus;
-        }
-      }
-      // Update header badge
-      const estatusBadge = document.getElementById('quote-detail-estatus');
-      if (estatusBadge) {
-        estatusBadge.textContent = estatus;
-        estatusBadge.dataset.status = estatus;
-      }
-    }
-  } catch (e) {
-    if (feedbackEl) feedbackEl.textContent = `Error: ${e.message}`;
-  } finally {
-    if (saveBtn) saveBtn.disabled = false;
-  }
-}
-
-async function generateQuoteContract() {
-  const pageId = document.getElementById('qd-page-id')?.value;
-  if (!pageId) return;
-
-  const contractBtn = document.getElementById('quote-contract-btn');
-  const feedbackEl = document.getElementById('quote-save-feedback');
-
-  if (contractBtn) { contractBtn.disabled = true; contractBtn.textContent = 'Generando...'; }
-  if (feedbackEl) feedbackEl.textContent = '';
-
-  try {
-    const r = await fetch(`${API_BASE}/api/manager/quotes/${pageId}/contract`, { method: 'POST', headers: apiHeaders() });
-    const res = await r.json();
-    if (!res.ok) throw new Error(res.error || 'Error al generar contrato');
-
-    if (feedbackEl) feedbackEl.textContent = '✓ Contrato generado';
-    window.open(res.url, '_blank');
-
-    // Update status pill in the UI
-    const statusEl = document.getElementById('qd-estatus-display');
-    if (statusEl) { statusEl.textContent = 'Contrato enviado'; statusEl.dataset.status = 'Contrato enviado'; }
-
-    // Refresh list in background
-    const search = document.getElementById('quotes-search')?.value.trim() || '';
-    const status = document.getElementById('quotes-status-filter')?.value || '';
-    loadQuotesFromApi(search, status);
-  } catch (err) {
-    if (feedbackEl) feedbackEl.textContent = `Error: ${err.message}`;
-  } finally {
-    if (contractBtn) { contractBtn.disabled = false; contractBtn.textContent = 'Generar contrato'; }
-  }
-}
-
-function setupQuotesTab() {
-  // Search debounce
-  const searchInput = document.getElementById('quotes-search');
-  if (searchInput) {
-    searchInput.addEventListener('input', () => {
-      clearTimeout(quotesSearchDebounceTimer);
-      quotesSearchDebounceTimer = setTimeout(() => {
-        const status = document.getElementById('quotes-status-filter')?.value || '';
-        loadQuotesFromApi(searchInput.value.trim(), status);
-      }, 300);
-    });
-  }
-
-  // Status filter
-  const statusFilter = document.getElementById('quotes-status-filter');
-  if (statusFilter) {
-    statusFilter.addEventListener('change', () => {
-      const search = document.getElementById('quotes-search')?.value.trim() || '';
-      loadQuotesFromApi(search, statusFilter.value);
-    });
-  }
-
-  // Back button
-  const backBtn = document.getElementById('quote-detail-back');
-  if (backBtn) {
-    backBtn.addEventListener('click', () => {
-      quotesCurrentPageId = null;
-      showQuoteDetail(false);
-      // Re-render cached list (no refetch)
-      renderQuotesList(quotesCache);
-      const statusEl = document.getElementById('quotes-status');
-      if (statusEl) statusEl.textContent = quotesCache.length === 0 ? 'Sin cotizaciones para mostrar.' : '';
-    });
-  }
-
-  // Refresh button
-  const refreshBtn = document.getElementById('refresh-quotes');
-  if (refreshBtn) {
-    refreshBtn.addEventListener('click', () => {
-      const search = document.getElementById('quotes-search')?.value.trim() || '';
-      const status = document.getElementById('quotes-status-filter')?.value || '';
-      loadQuotesFromApi(search, status);
-    });
-  }
-
-  // Save button
-  const saveBtn = document.getElementById('quote-save-btn');
-  if (saveBtn) {
-    saveBtn.addEventListener('click', saveQuoteFollowUp);
-  }
-
-  // Contract button
-  const contractBtn = document.getElementById('quote-contract-btn');
-  if (contractBtn) {
-    contractBtn.addEventListener('click', generateQuoteContract);
-  }
-
-  // Tab activation — load quotes when tab is clicked
-  const tabBtn = document.getElementById('tab-btn-quotes');
-  if (tabBtn) {
-    tabBtn.addEventListener('click', () => {
-      // Only load if list is empty (avoid refetch on every click)
-      if (quotesCache.length === 0 && !quotesCurrentPageId) {
-        loadQuotesFromApi();
-      }
-    });
-  }
-}
-// ─────────────────────────────────────────────────────────────────────────────
 
 init();
