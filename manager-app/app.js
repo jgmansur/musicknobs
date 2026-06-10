@@ -5213,6 +5213,33 @@ function checkNotificationStatus() {
 let quotesCache = [];
 let quotesCurrentPageId = null;
 
+const QUOTE_DATE_DAYS = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+const QUOTE_DATE_MONTHS = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+
+function formatQuoteDate(raw) {
+  if (!raw) return '';
+  const s = String(raw).trim();
+  // "YYYY-MM-DD" (date only) → parse as LOCAL to avoid UTC day-shift
+  const dateOnly = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s);
+  let d, hasTime;
+  if (dateOnly) {
+    d = new Date(Number(dateOnly[1]), Number(dateOnly[2]) - 1, Number(dateOnly[3]));
+    hasTime = false;
+  } else {
+    d = new Date(s);
+    hasTime = true;
+  }
+  if (isNaN(d.getTime())) return s; // fallback: original text
+  let out = `${QUOTE_DATE_DAYS[d.getDay()]} ${d.getDate()} de ${QUOTE_DATE_MONTHS[d.getMonth()]} del ${d.getFullYear()}`;
+  if (hasTime) {
+    let h = d.getHours();
+    const ampm = h >= 12 ? 'pm' : 'am';
+    h = h % 12 || 12;
+    out += ` a las ${h}:${String(d.getMinutes()).padStart(2, '0')}${ampm}`;
+  }
+  return out;
+}
+
 async function loadQuotesFromApi(search = '', status = '') {
   if (!isAuthenticated) return;
   const statusEl = document.getElementById('quotes-status');
@@ -5248,7 +5275,7 @@ function renderQuotesList(quotes) {
     const estatus = escapeHtml(q.estatus || '');
     const quoteNumber = escapeHtml(q.quoteNumber || '—');
     const name = escapeHtml(q.name || '—');
-    const date = escapeHtml(q.date || '');
+    const date = escapeHtml(formatQuoteDate(q.date));
     const total = q.total ? escapeHtml(String(q.total)) : '';
     return `
       <div class="quote-card" data-id="${escapeHtml(q.id)}">
@@ -5318,7 +5345,7 @@ function renderQuoteDetail(q) {
   setSpan('qd-client-name', q.clientName);
   setSpan('qd-client-email', q.email);
   setSpan('qd-client-phone', q.phone);
-  setSpan('qd-date', q.date);
+  setSpan('qd-date', formatQuoteDate(q.date));
   setSpan('qd-total', q.total);
 
   const servicesEl = document.getElementById('qd-services-list');
