@@ -2955,11 +2955,13 @@ async function createContractForQuote(env, pageId) {
   if (!contratolSecret) return { ok: false, error: "CONTRATO_SECRET not configured" };
   const detail = await getManagerQuoteDetail(env, pageId);
   if (!detail.ok) return detail;
-  const { quoteNumber, clientName, email, phone, total, services, seguimiento } = detail.data;
+  const { quoteNumber, clientName, email, phone, total, totalMXN, totalUSD, services, seguimiento, negotiated, origen } = detail.data;
+  // Use the negotiated version when present (same {name,qty,price} shape).
+  const contractItems = (negotiated && negotiated.length) ? negotiated : services;
   const contrataResp = await fetch(`${musicKnobsUrl}/api/contrato`, {
     method: "POST",
     headers: { "Content-Type": "application/json", "x-contrato-secret": contratolSecret },
-    body: JSON.stringify({ quoteNumber, name: clientName, email, phone, items: services, total, seguimiento }),
+    body: JSON.stringify({ quoteNumber, name: clientName, email, phone, items: contractItems, total, totalMXN, totalUSD, origen, seguimiento }),
   });
   if (!contrataResp.ok) return { ok: false, error: `Contract PDF generation failed: ${await contrataResp.text()}` };
   const { url } = await contrataResp.json();

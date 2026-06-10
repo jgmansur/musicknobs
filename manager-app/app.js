@@ -5035,6 +5035,7 @@ function setupActions() {
   bindClick('auth-gate-login', startGoogleLogin);
   bindClick('quote-detail-back', () => { quotesCurrentPageId = null; showQuoteDetail(false); });
   bindClick('quotes-delete-btn', mkDeleteSelectedQuotes);
+  bindClick('quote-contract-btn', mkGenerateContract);
   bindClick('refresh-messages', () => loadMessagesFromApi());
   bindClick('refresh-messages-overview', () => loadMessagesFromApi());
   // messages-load-more removed from UI — load-more handled via scroll
@@ -5647,6 +5648,34 @@ function mkUpdateDeleteBar() {
   if (countEl) countEl.textContent = String(quotesSelectedIds.size);
 }
 
+async function mkGenerateContract() {
+  if (!quotesCurrentPageId || !API_BASE) return;
+  const statusEl = document.getElementById('quote-contract-status');
+  const btn = document.getElementById('quote-contract-btn');
+  if (btn) btn.disabled = true;
+  if (statusEl) statusEl.textContent = 'Generando contrato… (puede tardar unos segundos)';
+  try {
+    const r = await fetch(`${API_BASE}/api/manager/quotes/${quotesCurrentPageId}/contract`, {
+      method: 'POST', headers: apiHeaders(),
+    });
+    const body = await r.json().catch(() => ({}));
+    if (!r.ok || body.ok === false) throw new Error(body.error || `HTTP ${r.status}`);
+    if (statusEl) {
+      statusEl.innerHTML = body.url
+        ? `Contrato generado ✓ — <a class="qd-link" href="${escapeHtml(body.url)}" target="_blank" rel="noopener">Ver PDF</a>`
+        : 'Contrato generado ✓';
+    }
+    const sel = document.getElementById('quote-detail-estatus-select');
+    if (sel) sel.value = 'Contrato enviado';
+    const q = quotesCache.find((x) => x.id === quotesCurrentPageId);
+    if (q) q.estatus = 'Contrato enviado';
+  } catch (e) {
+    if (statusEl) statusEl.textContent = `Error: ${e.message}`;
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+
 async function mkDeleteSelectedQuotes() {
   const ids = Array.from(quotesSelectedIds);
   if (ids.length === 0 || !API_BASE) return;
@@ -5778,6 +5807,8 @@ function renderQuoteDetail(q) {
   setSpan('qd-total', formatQuoteTotal(q, quotesFxRate) || '—');
 
   mkSetSaveStatus('', '');
+  const contractStatusEl = document.getElementById('quote-contract-status');
+  if (contractStatusEl) contractStatusEl.textContent = '';
   const servicesEl = document.getElementById('qd-services-list');
   if (servicesEl) {
     servicesEl.innerHTML = mkInitCotizadorClone(q.services || [], q.origen, q.negotiated);
