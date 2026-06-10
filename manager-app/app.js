@@ -5033,8 +5033,15 @@ function setupActions() {
   bindClick('google-auth-toggle', handleAuthToggle);
   bindClick('share-app-btn', shareAppProfile);
   bindClick('auth-gate-login', startGoogleLogin);
-  bindClick('quote-detail-back', () => { quotesCurrentPageId = null; showQuoteDetail(false); });
+  bindClick('quote-detail-back', async () => {
+    await mkFlushNegotiationSave(); // persist any pending negotiation before leaving
+    quotesCurrentPageId = null;
+    showQuoteDetail(false);
+    loadQuotesFromApi(); // refresh the list so totals reflect the latest negotiation
+  });
   bindClick('quotes-delete-btn', mkDeleteSelectedQuotes);
+  bindClick('quotes-archive-btn', mkArchiveSelectedQuotes);
+  bindClick('quotes-select-toggle', mkToggleSelectMode);
   bindClick('quote-contract-btn', mkGenerateContract);
   bindClick('refresh-messages', () => loadMessagesFromApi());
   bindClick('refresh-messages-overview', () => loadMessagesFromApi());
@@ -5563,6 +5570,15 @@ function mkScheduleNegotiationSave() {
   negotiationSaveTimer = setTimeout(mkSaveNegotiation, 1000);
 }
 
+// Flush a pending (debounced) negotiation save immediately. Used when leaving
+// the detail so the list reload reflects the latest prices.
+async function mkFlushNegotiationSave() {
+  if (!negotiationSaveTimer) return;
+  clearTimeout(negotiationSaveTimer);
+  negotiationSaveTimer = null;
+  await mkSaveNegotiation();
+}
+
 function mkBindCloneEvents(container) {
   container.querySelectorAll('.mk-svc-chk').forEach((chk) => {
     chk.addEventListener('change', (e) => {
@@ -5594,9 +5610,12 @@ async function loadQuotesFromApi(search = '', status = '') {
     quotesCache = data;
     renderQuotesList(data);
     if (statusEl) {
-      statusEl.textContent = data.length === 0
+      const shown = mkVisibleQuotes(data).length;
+      const archived = data.length - shown;
+      const archivedNote = (!quotesShowArchived && archived > 0) ? ` (${archived} archivada${archived === 1 ? '' : 's'})` : '';
+      statusEl.textContent = shown === 0
         ? 'Sin cotizaciones para mostrar.'
-        : `${data.length} cotización${data.length === 1 ? '' : 'es'}.`;
+        : `${shown} cotización${shown === 1 ? '' : 'es'}${archivedNote}.`;
     }
   } catch (e) {
     if (statusEl) statusEl.textContent = `Error: ${e.message}`;
@@ -5621,6 +5640,15 @@ function formatQuoteTotal(q, fxRate) {
 
 const QUOTE_ESTADOS = ['Idea Por Checar', 'Pendiente', 'Empezó', 'Terminado', 'Rechazado'];
 let quotesSelectedIds = new Set();
+let quotesSelectMode = false; // checkboxes hidden until the user taps "Seleccionar"
+let quotesShowArchived = false; // archived = status "Terminado"; hidden from the default list
+
+// "Terminado" quotes count as archived: hidden unless the user opts to show them.
+const QUOTE_ARCHIVED_STATUS = 'Terminado';
+function mkVisibleQuotes(quotes) {
+  if (quotesShowArchived) return quotes;
+  return (quotes || []).filter((q) => (q.estatus || '') !== QUOTE_ARCHIVED_STATUS);
+}
 
 function mkEstatusOptionsHtml(current) {
   const inList = QUOTE_ESTADOS.includes(current);
@@ -5642,11 +5670,29 @@ async function mkChangeEstatus(pageId, nuevo) {
   } catch (e) { return false; }
 }
 
-function mkUpdateDeleteBar() {
-  const bar = document.getElementById('quotes-delete-bar');
-  if (bar) bar.classList.toggle('hidden', quotesSelectedIds.size === 0);
-  const countEl = document.getElementById('quotes-delete-count');
-  if (countEl) countEl.textContent = String(quotesSelectedIds.size);
+function mkUpdateSelectionUI() {
+  const n = quotesSelectedIds.size;
+  const list = document.getElementById('quotes-list');
+  if (list) list.classList.toggle('selecting', quotesSelectMode);
+  const bar = document.getElementById('quotes-action-bar');
+  if (bar) bar.classList.toggle('hidden', !quotesSelectMode);
+  const toggle = document.getElementById('quotes-select-toggle');
+  if (toggle) toggle.textContent = quotesSelectMode ? 'Cancelar' : 'Seleccionar';
+  const countEl = document.getElementById('quotes-select-count');
+  if (countEl) countEl.textContent = String(n);
+  const delBtn = document.getElementById('quotes-delete-btn');
+  if (delBtn) delBtn.disabled = n === 0;
+  const arcBtn = document.getElementById('quotes-archive-btn');
+  if (arcBtn) arcBtn.disabled = n === 0;
+}
+
+function mkToggleSelectMode() {
+  quotesSelectMode = !quotesSelectMode;
+  if (!quotesSelectMode) {
+    quotesSelectedIds = new Set();
+    document.querySelectorAll('.quote-select').forEach((c) => { c.checked = false; });
+  }
+  mkUpdateSelectionUI();
 }
 
 // New flow: the button no longer generates the PDF itself. It builds a
@@ -5752,13 +5798,30 @@ function mkShowContractPromptCard(promptText) {
 async function mkDeleteSelectedQuotes() {
   const ids = Array.from(quotesSelectedIds);
   if (ids.length === 0 || !API_BASE) return;
-  if (!confirm(`¿Borrar ${ids.length} cotización${ids.length === 1 ? '' : 'es'}? Se archivan en Notion.`)) return;
+  if (!confirm(`¿Borrar ${ids.length} cotización${ids.length === 1 ? '' : 'es'}? Van a la papelera de Notion (recuperables 30 días).`)) return;
   const statusEl = document.getElementById('quotes-status');
   if (statusEl) statusEl.textContent = 'Borrando…';
   for (const id of ids) {
     try { await fetch(`${API_BASE}/api/manager/quotes/${id}`, { method: 'DELETE', headers: apiHeaders() }); } catch {}
   }
   quotesSelectedIds = new Set();
+  quotesSelectMode = false;
+  loadQuotesFromApi();
+}
+
+// Archive = mark as "Terminado". Archived quotes are simply the finished ones;
+// they drop out of the default list but stay in Notion (no real archiving),
+// reversible by changing the status back. Findable by a future search/toggle.
+async function mkArchiveSelectedQuotes() {
+  const ids = Array.from(quotesSelectedIds);
+  if (ids.length === 0 || !API_BASE) return;
+  const statusEl = document.getElementById('quotes-status');
+  if (statusEl) statusEl.textContent = 'Archivando…';
+  for (const id of ids) {
+    await mkChangeEstatus(id, 'Terminado');
+  }
+  quotesSelectedIds = new Set();
+  quotesSelectMode = false;
   loadQuotesFromApi();
 }
 
@@ -5766,12 +5829,14 @@ function renderQuotesList(quotes) {
   const container = document.getElementById('quotes-list');
   if (!container) return;
   quotesSelectedIds = new Set();
-  mkUpdateDeleteBar();
-  if (!quotes || quotes.length === 0) {
+  quotesSelectMode = false;
+  mkUpdateSelectionUI();
+  const visible = mkVisibleQuotes(quotes);
+  if (visible.length === 0) {
     container.innerHTML = '';
     return;
   }
-  container.innerHTML = quotes.map((q) => {
+  container.innerHTML = visible.map((q) => {
     const id = escapeHtml(q.id);
     const estatus = q.estatus || '';
     const quoteNumber = escapeHtml(q.quoteNumber || '—');
@@ -5797,9 +5862,18 @@ function renderQuotesList(quotes) {
 
   container.querySelectorAll('.quote-card').forEach((card) => {
     card.addEventListener('click', (e) => {
-      if (e.target.closest('.quote-select') || e.target.closest('.quote-estatus-select')) return;
+      if (e.target.closest('.quote-estatus-select')) return;
       const pageId = card.dataset.id;
-      if (pageId) loadQuoteDetail(pageId);
+      if (!pageId) return;
+      // In selection mode a tap toggles the checkbox; otherwise it opens detail.
+      if (quotesSelectMode) {
+        if (e.target.closest('.quote-select')) return; // checkbox handles itself
+        const chk = card.querySelector('.quote-select');
+        if (chk) { chk.checked = !chk.checked; chk.dispatchEvent(new Event('change', { bubbles: true })); }
+        return;
+      }
+      if (e.target.closest('.quote-select')) return;
+      loadQuoteDetail(pageId);
     });
   });
   container.querySelectorAll('.quote-select').forEach((chk) => {
@@ -5807,7 +5881,7 @@ function renderQuotesList(quotes) {
       const id = e.target.dataset.id;
       if (e.target.checked) quotesSelectedIds.add(id);
       else quotesSelectedIds.delete(id);
-      mkUpdateDeleteBar();
+      mkUpdateSelectionUI();
     });
   });
   container.querySelectorAll('.quote-estatus-select').forEach((sel) => {

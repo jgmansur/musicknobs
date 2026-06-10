@@ -2698,6 +2698,8 @@ body.messages-active .container {
   flex-direction: column;
   gap: .35rem;
   min-width: 0;
+  flex: 1; /* hug the left; without this, space-between centers the block */
+  text-align: left;
 }
 
 .quote-card-top {
@@ -3093,23 +3095,66 @@ body.messages-active .container {
   flex-shrink: 0;
   accent-color: var(--primary);
   cursor: pointer;
+  display: none; /* hidden until the list enters selection mode */
 }
-.quotes-delete-bar {
+#quotes-list.selecting .quote-select { display: block; }
+#quotes-list.selecting .quote-card { cursor: pointer; }
+
+/* Toolbar: status text + "Seleccionar" toggle */
+.quotes-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem;
+  flex-wrap: wrap;
+}
+.quotes-toolbar .status { margin: 0; }
+
+.btn-ghost {
+  background: transparent;
+  border: 1px solid var(--glass-border);
+  color: var(--text-muted);
+  font-weight: 600;
+  font-size: .78rem;
+  padding: .45rem .9rem;
+}
+.btn-ghost:hover { border-color: var(--glass-border-hover); color: var(--text-main); }
+
+.btn-danger {
+  background: #f87171;
+  color: #fff;
+}
+
+/* Action bar shown in selection mode */
+.quotes-action-bar {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
   padding: .6rem .85rem;
-  margin-bottom: .6rem;
-  border: 1px solid rgba(248, 113, 113, 0.4);
-  border-radius: .5rem;
-  background: rgba(248, 113, 113, 0.08);
+  margin: .6rem 0;
+  border: 1px solid var(--glass-border);
+  border-radius: .6rem;
+  background: var(--glass-bg);
   font-size: .85rem;
 }
-.quotes-delete-bar .btn {
-  background: #f87171;
-  border-color: #f87171;
-  color: #fff;
+.quotes-action-count { color: var(--text-muted); white-space: nowrap; }
+.quotes-action-buttons { display: flex; gap: .5rem; }
+.quotes-action-bar .btn { padding: .5rem .9rem; font-size: .8rem; }
+.quotes-action-bar .btn:disabled { opacity: .45; cursor: not-allowed; }
+
+/* Card meta: middot separators, comfortable spacing on mobile */
+.quote-card-meta { gap: 0; }
+.quote-card-meta span + span::before {
+  content: "·";
+  margin: 0 .5rem;
+  color: var(--text-muted);
+}
+
+@media (max-width: 760px) {
+  .quote-card { gap: .6rem; padding: .8rem .85rem; }
+  .quote-client-name { font-size: .9rem; }
+  .quote-estatus-select { max-width: 7.5rem; }
 }
 
 /* ── MK contract prompt — editable bottom sheet ── */

@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="./styles.css?v=2.0.42" />
+    <link rel="stylesheet" href="./styles.css?v=2.0.43" />
     <link rel="manifest" href="./manifest.json" />
     <link rel="icon" type="image/png" href="./icon-32.png" />
     <link rel="apple-touch-icon" href="./icon-180.png" />
@@ -421,10 +421,16 @@
           <div class="panel-head">
             <h3 class="ov-section-title">Cotizaciones</h3>
           </div>
-          <p id="quotes-status" class="hint status" aria-live="polite">Seguimiento de cotizaciones.</p>
-          <div id="quotes-delete-bar" class="quotes-delete-bar hidden">
-            <span><span id="quotes-delete-count">0</span> seleccionada(s)</span>
-            <button id="quotes-delete-btn" class="btn" type="button">🗑 Borrar seleccionadas</button>
+          <div class="quotes-toolbar">
+            <p id="quotes-status" class="hint status" aria-live="polite">Seguimiento de cotizaciones.</p>
+            <button id="quotes-select-toggle" class="btn btn-ghost" type="button">Seleccionar</button>
+          </div>
+          <div id="quotes-action-bar" class="quotes-action-bar hidden">
+            <span class="quotes-action-count"><span id="quotes-select-count">0</span> seleccionada(s)</span>
+            <div class="quotes-action-buttons">
+              <button id="quotes-archive-btn" class="btn" type="button">📥 Archivar</button>
+              <button id="quotes-delete-btn" class="btn btn-danger" type="button">🗑 Borrar</button>
+            </div>
           </div>
           <div id="quotes-list"></div>
         </div>
@@ -501,6 +507,6 @@
     <script src="./config.js"></script>
     <script src="./vendor/howler.min.js"></script>
     <script src="./tracks.js?v=salesfix404v1"></script>
-    <script src="./app.js?v=2.0.42"></script>
+    <script src="./app.js?v=2.0.43"></script>
   </body>
   </html>
