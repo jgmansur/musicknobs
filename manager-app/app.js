@@ -5015,6 +5015,9 @@ function setupTabs() {
         return;
       }
       activateTab(targetTab);
+      if (targetTab === 'quotes' && isAuthenticated && quotesCache.length === 0) {
+        loadQuotesFromApi();
+      }
       updateAuthGateForCurrentTab();
     });
   });
@@ -5202,6 +5205,64 @@ function checkNotificationStatus() {
       }
     };
   }
+}
+
+// ─── QUOTES / SEGUIMIENTO ────────────────────────────────────────────────────
+
+let quotesCache = [];
+
+async function loadQuotesFromApi(search = '', status = '') {
+  if (!isAuthenticated) return;
+  const statusEl = document.getElementById('quotes-status');
+  if (statusEl) statusEl.textContent = 'Cargando cotizaciones...';
+  try {
+    if (!API_BASE) throw new Error('apiBaseUrl no configurado');
+    const params = new URLSearchParams();
+    if (search) params.set('q', search);
+    if (status) params.set('status', status);
+    const qs = params.toString();
+    const res = await fetchJson(`${API_BASE}/api/manager/quotes${qs ? `?${qs}` : ''}`);
+    const data = res?.data || [];
+    quotesCache = data;
+    renderQuotesList(data);
+    if (statusEl) {
+      statusEl.textContent = data.length === 0
+        ? 'Sin cotizaciones para mostrar.'
+        : `${data.length} cotización${data.length === 1 ? '' : 'es'}.`;
+    }
+  } catch (e) {
+    if (statusEl) statusEl.textContent = `Error: ${e.message}`;
+  }
+}
+
+function renderQuotesList(quotes) {
+  const container = document.getElementById('quotes-list');
+  if (!container) return;
+  if (!quotes || quotes.length === 0) {
+    container.innerHTML = '';
+    return;
+  }
+  container.innerHTML = quotes.map((q) => {
+    const estatus = escapeHtml(q.estatus || '');
+    const quoteNumber = escapeHtml(q.quoteNumber || '—');
+    const name = escapeHtml(q.name || '—');
+    const date = escapeHtml(q.date || '');
+    const total = q.total ? escapeHtml(String(q.total)) : '';
+    return `
+      <div class="quote-card" data-id="${escapeHtml(q.id)}">
+        <div class="quote-card-main">
+          <div class="quote-card-top">
+            <span class="quote-number-badge">${quoteNumber}</span>
+            <span class="quote-client-name">${name}</span>
+          </div>
+          <div class="quote-card-meta">
+            ${date ? `<span>${date}</span>` : ''}
+            ${total ? `<span>${total}</span>` : ''}
+          </div>
+        </div>
+        <span class="quote-status-pill" data-status="${estatus}">${estatus || 'Sin estado'}</span>
+      </div>`;
+  }).join('');
 }
 
 init();

@@ -2673,3 +2673,70 @@ body.messages-active .container {
   }
   #catalog-playlists-view::-webkit-scrollbar { width: 0; height: 0; display: none; }
 }
+
+/* ─── Quotes / Cotizaciones ───────────────────────────────────────────────── */
+#tab-quotes #quotes-list {
+  display: flex;
+  flex-direction: column;
+  gap: .6rem;
+  margin-top: .5rem;
+}
+
+.quote-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem;
+  padding: .85rem 1rem;
+  border: 1px solid var(--glass-border);
+  border-radius: .6rem;
+  background: var(--glass-bg);
+}
+
+.quote-card-main {
+  display: flex;
+  flex-direction: column;
+  gap: .35rem;
+  min-width: 0;
+}
+
+.quote-card-top {
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  flex-wrap: wrap;
+}
+
+.quote-number-badge {
+  font-size: .68rem;
+  font-weight: 700;
+  letter-spacing: .04em;
+  color: var(--primary);
+  border: 1px solid var(--glass-border);
+  border-radius: 4px;
+  padding: .12rem .4rem;
+  white-space: nowrap;
+}
+
+.quote-client-name {
+  font-weight: 600;
+  font-size: .95rem;
+}
+
+.quote-card-meta {
+  display: flex;
+  gap: .9rem;
+  font-size: .78rem;
+  color: var(--text-muted);
+}
+
+.quote-status-pill {
+  font-size: .7rem;
+  font-weight: 600;
+  padding: .25rem .6rem;
+  border-radius: 999px;
+  border: 1px solid var(--glass-border);
+  color: var(--text-muted);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
