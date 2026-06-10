@@ -6,7 +6,7 @@ const SAMPLE_CATALOG = [
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET,POST,PATCH,DELETE,OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type,Authorization",
+  "Access-Control-Allow-Headers": "Content-Type,Authorization,X-Portal-Code",
 };
 
 const DEFAULT_MANAGER_TASKS_DB_ID = "6405719e-5f90-4fc0-8eab-d9352387dd07";
@@ -2952,6 +2952,157 @@ async function deleteManagerQuote(env, pageId) {
 }
 // ─────────────────────────────────────────────────────────────────────────────
 
+// ─── PORTAL DE CLIENTES ───────────────────────────────────────────────────────
+// Data sources of the "Portal Clientes" note inside ARCHIVO. See engram portal-clientes/notion-ids.
+const PORTAL_TRACKS_DS_ID = "7a33d528-2b51-48f9-b8c2-8eb2bc430e22";
+const PORTAL_VERSIONS_DS_ID = "ba3318ed-f64a-4c42-a953-20e1f6da9670";
+const PORTAL_PAYMENTS_DS_ID = "a6c520a9-efa0-47ee-9c77-0185d9263a73";
+const PORTAL_COMMENTS_DS_ID = "9b517273-7404-4e19-a40d-c92b7016b0f5";
+
+// Access code = client name lowercased without spaces/punctuation + last 3 digits of a quote number.
+// e.g. "Boris Pérez" + quote MK-2025-452 → "borisperez452".
+function portalSlug(name) {
+  return String(name || "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .replace(/[^a-z0-9]/g, "");
+}
+
+function quoteLast3(quoteNumber) {
+  return String(quoteNumber || "").replace(/\D/g, "").slice(-3);
+}
+
+function parsePortalCode(code) {
+  const raw = String(code || "").trim().toLowerCase();
+  const m = raw.match(/^(.*?)(\d{3})$/);
+  if (!m) return { slug: "", suffix: "" };
+  return { slug: m[1].replace(/[^a-z0-9]/g, ""), suffix: m[2] };
+}
+
+async function queryPortalDb(env, dsId, filter, sorts) {
+  const notionToken = env.NOTION_TOKEN || "", notionVersion = env.NOTION_VERSION || "2022-06-28";
+  const body = { page_size: 100 };
+  if (filter) body.filter = filter;
+  if (sorts) body.sorts = sorts;
+  const resp = await fetch(`https://api.notion.com/v1/data_sources/${dsId}/query`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${notionToken}`, "Notion-Version": notionVersion, "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  if (!resp.ok) throw new Error(await resp.text());
+  const payload = await resp.json();
+  return payload?.results || [];
+}
+
+// Resolve a portal access code → the client and ALL their quotes.
+// Valid only if the name slug matches a client AND at least one of that client's
+// quote numbers ends in the 3-digit suffix. Returns ok:false generically otherwise
+// (do not reveal which part failed — avoids enumerating clients).
+async function resolvePortalCode(env, code) {
+  const { slug, suffix } = parsePortalCode(code);
+  if (!slug || !suffix) return { ok: false };
+  const quotesResult = await listManagerQuotes(env, new URLSearchParams());
+  if (!quotesResult.ok) return { ok: false, error: quotesResult.error };
+  const clientQuotes = (quotesResult.data || []).filter((q) => portalSlug(q.name) === slug);
+  if (!clientQuotes.length) return { ok: false };
+  if (!clientQuotes.some((q) => quoteLast3(q.quoteNumber) === suffix)) return { ok: false };
+  return { ok: true, clientName: clientQuotes[0].name, slug, quotes: clientQuotes };
+}
+
+async function portalAuth(env, code) {
+  const resolved = await resolvePortalCode(env, code);
+  if (!resolved.ok) return { ok: false };
+  return {
+    ok: true,
+    client: { name: resolved.clientName },
+    quotes: resolved.quotes.map((q) => ({
+      id: q.id,
+      quoteNumber: q.quoteNumber,
+      estatus: q.estatus,
+      total: q.total,
+      totalMXN: q.totalMXN,
+      totalUSD: q.totalUSD,
+    })),
+  };
+}
+
+// Read one quote's portal content: quote detail + tracks (with visible versions) + statement of account.
+// Validates that the portal code owns this quote. Drive File IDs / peaks are NOT exposed here —
+// streaming (PR2) resolves the file server-side from the version id.
+async function portalCotizacion(env, pageId, code) {
+  const resolved = await resolvePortalCode(env, code);
+  if (!resolved.ok) return { ok: false, unauthorized: true };
+  if (!resolved.quotes.some((q) => q.id === pageId)) return { ok: false, unauthorized: true };
+
+  const detail = await getManagerQuoteDetail(env, pageId);
+  if (!detail.ok) return detail;
+
+  const trackPages = await queryPortalDb(env, PORTAL_TRACKS_DS_ID, {
+    property: "Cotización", relation: { contains: pageId },
+  });
+  const tracks = [];
+  for (const tp of trackPages) {
+    const tprops = tp.properties || {};
+    const versionPages = await queryPortalDb(env, PORTAL_VERSIONS_DS_ID, {
+      and: [
+        { property: "Track", relation: { contains: tp.id } },
+        { property: "Visible", checkbox: { equals: true } },
+      ],
+    });
+    const versions = versionPages.map((vp) => {
+      const vprops = vp.properties || {};
+      return {
+        id: vp.id,
+        name: readNotionTitle(vprops),
+        favorita: Boolean(vprops?.Favorita?.checkbox),
+        duracion: vprops?.["Duración (seg)"]?.number || 0,
+        fecha: vprops?.Fecha?.date?.start || "",
+        hasPeaks: Boolean(richTextToString(vprops?.Peaks?.rich_text)),
+      };
+    });
+    tracks.push({
+      id: tp.id,
+      name: readNotionTitle(tprops),
+      estado: tprops?.Estado?.select?.name || "",
+      descargaHabilitada: Boolean(tprops?.["Descarga habilitada"]?.checkbox),
+      moneda: tprops?.Moneda?.select?.name || "",
+      versions,
+    });
+  }
+
+  const paymentPages = await queryPortalDb(env, PORTAL_PAYMENTS_DS_ID, {
+    property: "Cotización", relation: { contains: pageId },
+  });
+  const abonos = paymentPages.map((pp) => {
+    const pprops = pp.properties || {};
+    return {
+      monto: pprops?.Monto?.number || 0,
+      moneda: pprops?.Moneda?.select?.name || "",
+      fecha: pprops?.Fecha?.date?.start || "",
+    };
+  });
+  const totalAbonosMXN = abonos.filter((a) => a.moneda === "MXN").reduce((s, a) => s + a.monto, 0);
+  const totalAbonosUSD = abonos.filter((a) => a.moneda === "USD").reduce((s, a) => s + a.monto, 0);
+
+  return {
+    ok: true,
+    quote: detail.data,
+    fxRate: detail.fxRate,
+    tracks,
+    estadoCuenta: {
+      totalMXN: detail.data.totalMXN,
+      totalUSD: detail.data.totalUSD,
+      abonos,
+      totalAbonosMXN,
+      totalAbonosUSD,
+      saldoMXN: (detail.data.totalMXN || 0) - totalAbonosMXN,
+      saldoUSD: (detail.data.totalUSD || 0) - totalAbonosUSD,
+    },
+  };
+}
+// ─────────────────────────────────────────────────────────────────────────────
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -3266,6 +3417,24 @@ export default {
       return json(result, result.ok === false ? 502 : 200);
     }
     // ─────────────────────────────────────────────────────────────────────────
+
+    // ─── PORTAL DE CLIENTES ROUTES ─────────────────────────────────────────────
+    if (request.method === "POST" && url.pathname === "/portal/auth") {
+      const body = await request.json().catch(() => ({}));
+      const result = await portalAuth(env, body?.code);
+      if (!result.ok) return json({ error: "Código inválido" }, 401);
+      return json(result, 200);
+    }
+    if (request.method === "GET" && url.pathname.startsWith("/portal/cotizacion/")) {
+      const quoteId = url.pathname.replace("/portal/cotizacion/", "").trim();
+      if (!quoteId) return json({ error: "quoteId required" }, 400);
+      const code = request.headers.get("X-Portal-Code") || url.searchParams.get("code") || "";
+      const result = await portalCotizacion(env, quoteId, code);
+      if (result?.unauthorized) return json({ error: "No autorizado" }, 403);
+      if (result?.notFound) return json({ error: "Not found" }, 404);
+      return json(result, result.ok === false ? 502 : 200);
+    }
+    // ───────────────────────────────────────────────────────────────────────────
 
     if (!["GET", "POST", "PATCH", "DELETE"].includes(request.method)) {
       return json({ error: "Method not allowed" }, 405);
