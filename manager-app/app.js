@@ -5018,6 +5018,9 @@ function setupTabs() {
       if (targetTab === 'quotes' && isAuthenticated && quotesCache.length === 0) {
         loadQuotesFromApi();
       }
+      if (targetTab === 'portal' && isAuthenticated) {
+        loadPortalCotizaciones();
+      }
       updateAuthGateForCurrentTab();
     });
   });
@@ -5048,6 +5051,10 @@ function setupActions() {
     mkRefreshQuotesView();
   });
   bindClick('quote-contract-btn', mkGenerateContract);
+  bindClick('portal-refresh', () => loadPortalCotizaciones());
+  bindClick('portal-back', () => showPortalDetail(false));
+  bindClick('portal-upload-btn', uploadPortalVersion);
+  setupPortalPlayer();
   bindClick('refresh-messages', () => loadMessagesFromApi());
   bindClick('refresh-messages-overview', () => loadMessagesFromApi());
   // messages-load-more removed from UI — load-more handled via scroll
@@ -6014,5 +6021,390 @@ function renderQuoteDetail(q) {
     mkUpdateQdTotal(); // keep the top total in sync with the clone from the start
   }
 }
+
+// ─── PORTAL DE CLIENTES (admin) ───────────────────────────────────────────────
+let portalCotizacionesCache = [];
+let portalActiveQuote = null; // { id, quoteNumber, clientName, tracks }
+
+function portalSetStatus(msg) {
+  const el = document.getElementById('portal-status');
+  if (el) el.textContent = msg || '';
+}
+
+function portalUploadStatus(msg) {
+  const el = document.getElementById('portal-upload-status');
+  if (el) el.textContent = msg || '';
+}
+
+function showPortalDetail(show) {
+  const list = document.getElementById('portal-list-view');
+  const detail = document.getElementById('portal-detail-view');
+  if (list) list.classList.toggle('hidden', show);
+  if (detail) detail.classList.toggle('hidden', !show);
+}
+
+async function loadPortalCotizaciones() {
+  showPortalDetail(false);
+  portalSetStatus('Cargando cotizaciones…');
+  try {
+    const data = await fetchJson(`${API_BASE}/portal/admin/cotizaciones`);
+    portalCotizacionesCache = data?.quotes || [];
+    renderPortalCotizaciones(portalCotizacionesCache);
+    portalSetStatus(portalCotizacionesCache.length ? '' : 'No hay cotizaciones todavía.');
+  } catch (e) {
+    portalSetStatus('Error al cargar: ' + (e?.message || e));
+  }
+}
+
+function renderPortalCotizaciones(quotes) {
+  const root = document.getElementById('portal-cotizaciones');
+  if (!root) return;
+  root.innerHTML = '';
+  quotes.forEach((q) => {
+    const card = document.createElement('button');
+    card.type = 'button';
+    card.className = 'portal-card';
+    card.innerHTML = `<span class="portal-card-name">${escapeHtmlSafe(q.name || '—')}</span>` +
+      `<span class="portal-card-meta">${escapeHtmlSafe(q.quoteNumber || q.id.slice(0, 6))}${q.estatus ? ' · ' + escapeHtmlSafe(q.estatus) : ''}</span>`;
+    card.addEventListener('click', () => openPortalCotizacion(q.id, q.name, q.quoteNumber));
+    root.appendChild(card);
+  });
+}
+
+function escapeHtmlSafe(str) {
+  return String(str || '').replace(/[&<>"']/g, (c) => (
+    { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+  ));
+}
+
+async function openPortalCotizacion(quoteId, clientName, quoteNumber) {
+  portalUploadStatus('');
+  showPortalDetail(true);
+  const numEl = document.getElementById('portal-detail-number');
+  const cliEl = document.getElementById('portal-detail-client');
+  if (numEl) numEl.textContent = quoteNumber || quoteId.slice(0, 8);
+  if (cliEl) cliEl.textContent = clientName || '';
+  const tracksRoot = document.getElementById('portal-tracks');
+  if (tracksRoot) tracksRoot.innerHTML = '<p class="hint">Cargando…</p>';
+  try {
+    const data = await fetchJson(`${API_BASE}/portal/admin/cotizacion/${quoteId}`);
+    portalActiveQuote = { id: quoteId, quoteNumber, clientName, tracks: data?.tracks || [] };
+    renderPortalTracks(portalActiveQuote.tracks);
+  } catch (e) {
+    if (tracksRoot) tracksRoot.innerHTML = `<p class="hint">Error: ${escapeHtmlSafe(e?.message || String(e))}</p>`;
+  }
+}
+
+function renderPortalTracks(tracks) {
+  const root = document.getElementById('portal-tracks');
+  if (!root) return;
+  root.innerHTML = '';
+  // Track-name suggestions for the upload form
+  const datalist = document.getElementById('portal-track-list');
+  if (datalist) datalist.innerHTML = tracks.map((t) => `<option value="${escapeHtmlSafe(t.name)}">`).join('');
+
+  if (!tracks.length) {
+    root.innerHTML = '<p class="hint">Todavía no hay canciones. Subí la primera versión abajo.</p>';
+    return;
+  }
+
+  tracks.forEach((t) => {
+    const el = document.createElement('div');
+    el.className = 'portal-track';
+
+    const head = document.createElement('div');
+    head.className = 'portal-track-head';
+    const title = document.createElement('strong');
+    title.textContent = t.name;
+    head.appendChild(title);
+
+    // Descarga habilitada toggle (track level)
+    const dl = document.createElement('label');
+    dl.className = 'portal-toggle';
+    const dlInput = document.createElement('input');
+    dlInput.type = 'checkbox';
+    dlInput.checked = Boolean(t.descargaHabilitada);
+    dlInput.addEventListener('change', async () => {
+      dlInput.disabled = true;
+      try {
+        await portalPatchTrack(t.id, { descargaHabilitada: dlInput.checked });
+        t.descargaHabilitada = dlInput.checked;
+      } catch (e) {
+        dlInput.checked = !dlInput.checked;
+        portalUploadStatus('Error: ' + (e?.message || e));
+      } finally {
+        dlInput.disabled = false;
+      }
+    });
+    dl.appendChild(dlInput);
+    dl.appendChild(Object.assign(document.createElement('span'), { textContent: 'Descarga' }));
+    head.appendChild(dl);
+    el.appendChild(head);
+
+    const list = document.createElement('ul');
+    list.className = 'portal-version-list';
+    (t.versions || []).forEach((v) => {
+      const li = document.createElement('li');
+      li.className = 'portal-version';
+
+      const play = document.createElement('button');
+      play.type = 'button';
+      play.className = 'portal-row-play';
+      play.textContent = '▶';
+      play.title = 'Reproducir';
+      play.disabled = !v.driveFileId;
+      play.addEventListener('click', () => portalPlayVersion(v, t.name));
+
+      const name = document.createElement('span');
+      name.className = 'portal-version-name';
+      name.textContent = v.name + (v.duracion ? ` · ${Math.round(v.duracion)}s` : '');
+
+      const controls = document.createElement('span');
+      controls.className = 'portal-version-controls';
+
+      // Favorita (exclusive per track)
+      const fav = document.createElement('button');
+      fav.type = 'button';
+      fav.className = 'portal-fav' + (v.favorita ? ' is-fav' : '');
+      fav.textContent = '★';
+      fav.title = 'Versión principal';
+      fav.addEventListener('click', async () => {
+        const next = !v.favorita;
+        fav.disabled = true;
+        try {
+          await portalPatchVersion(v.id, { favorita: next });
+          await openPortalCotizacion(portalActiveQuote.id, portalActiveQuote.clientName, portalActiveQuote.quoteNumber);
+        } catch (e) {
+          portalUploadStatus('Error: ' + (e?.message || e));
+          fav.disabled = false;
+        }
+      });
+
+      // Visible toggle
+      const vis = document.createElement('label');
+      vis.className = 'portal-toggle';
+      const visInput = document.createElement('input');
+      visInput.type = 'checkbox';
+      visInput.checked = Boolean(v.visible);
+      visInput.addEventListener('change', async () => {
+        visInput.disabled = true;
+        try {
+          await portalPatchVersion(v.id, { visible: visInput.checked });
+          v.visible = visInput.checked;
+        } catch (e) {
+          visInput.checked = !visInput.checked;
+          portalUploadStatus('Error: ' + (e?.message || e));
+        } finally {
+          visInput.disabled = false;
+        }
+      });
+      vis.appendChild(visInput);
+      vis.appendChild(Object.assign(document.createElement('span'), { textContent: 'Visible' }));
+
+      controls.appendChild(fav);
+      controls.appendChild(vis);
+
+      li.appendChild(play);
+      li.appendChild(name);
+      li.appendChild(controls);
+      list.appendChild(li);
+    });
+    el.appendChild(list);
+    root.appendChild(el);
+  });
+}
+
+async function portalPatchVersion(versionId, body) {
+  const res = await fetch(`${API_BASE}/portal/admin/version/${versionId}`, {
+    method: 'PATCH', headers: apiHeaders(), body: JSON.stringify(body),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok || !data.ok) throw new Error(data.error || `HTTP ${res.status}`);
+  return data;
+}
+
+async function portalPatchTrack(trackId, body) {
+  const res = await fetch(`${API_BASE}/portal/admin/track/${trackId}`, {
+    method: 'PATCH', headers: apiHeaders(), body: JSON.stringify(body),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok || !data.ok) throw new Error(data.error || `HTTP ${res.status}`);
+  return data;
+}
+
+// ── Admin waveform player (vanilla, reuses Drive stream + stored peaks) ──────
+let portalPlayerState = { peaks: [], duration: 0 };
+
+function portalDrawWaveform() {
+  const canvas = document.getElementById('portal-player-canvas');
+  const audio = document.getElementById('portal-player-audio');
+  if (!canvas || !audio) return;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return;
+  const dpr = window.devicePixelRatio || 1;
+  const w = canvas.clientWidth, h = canvas.clientHeight;
+  if (canvas.width !== w * dpr || canvas.height !== h * dpr) { canvas.width = w * dpr; canvas.height = h * dpr; }
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, w, h);
+  const data = portalPlayerState.peaks.length ? portalPlayerState.peaks : new Array(120).fill(0.04);
+  const max = Math.max(...data, 0.0001);
+  const mid = h / 2;
+  const barW = w / data.length;
+  const dur = portalPlayerState.duration || audio.duration || 0;
+  const progress = dur > 0 ? audio.currentTime / dur : 0;
+  const playedX = progress * w;
+  for (let i = 0; i < data.length; i++) {
+    const x = i * barW;
+    const amp = (data[i] / max) * (mid - 1);
+    const barH = Math.max(amp, 1);
+    ctx.fillStyle = x < playedX ? '#ff1097' : '#424242';
+    ctx.fillRect(x, mid - barH, Math.max(barW - (barW > 2 ? 1 : 0), 1), barH * 2);
+  }
+  if (progress > 0) { ctx.fillStyle = '#ff1097'; ctx.fillRect(playedX - 1, 0, 2, h); }
+}
+
+function portalFmtTime(s) {
+  if (!Number.isFinite(s) || s < 0) return '0:00';
+  return `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
+}
+
+function portalPlayVersion(version, trackName) {
+  const wrap = document.getElementById('portal-player');
+  const audio = document.getElementById('portal-player-audio');
+  const titleEl = document.getElementById('portal-player-title');
+  if (!wrap || !audio) return;
+  if (!version.driveFileId) { portalUploadStatus('Esta versión no tiene archivo.'); return; }
+
+  portalPlayerState = { peaks: version.peaks || [], duration: version.duracion || 0 };
+  wrap.classList.remove('hidden');
+  if (titleEl) titleEl.textContent = `${trackName} — ${version.name}`;
+  audio.src = `${API_BASE}/api/audio/${version.driveFileId}`;
+  const durEl = document.getElementById('portal-player-dur');
+  if (durEl) durEl.textContent = portalFmtTime(version.duracion || 0);
+  audio.play().catch(() => {});
+  portalDrawWaveform();
+}
+
+function setupPortalPlayer() {
+  const audio = document.getElementById('portal-player-audio');
+  const canvas = document.getElementById('portal-player-canvas');
+  const toggle = document.getElementById('portal-player-toggle');
+  const closeBtn = document.getElementById('portal-player-close');
+  const curEl = document.getElementById('portal-player-cur');
+  const durEl = document.getElementById('portal-player-dur');
+  if (!audio) return;
+
+  if (toggle) toggle.addEventListener('click', () => { if (audio.paused) audio.play().catch(() => {}); else audio.pause(); });
+  if (audio) {
+    audio.addEventListener('play', () => { if (toggle) toggle.textContent = '⏸'; });
+    audio.addEventListener('pause', () => { if (toggle) toggle.textContent = '▶'; });
+    audio.addEventListener('timeupdate', () => { if (curEl) curEl.textContent = portalFmtTime(audio.currentTime); portalDrawWaveform(); });
+    audio.addEventListener('loadedmetadata', () => {
+      if (Number.isFinite(audio.duration)) { portalPlayerState.duration = portalPlayerState.duration || audio.duration; if (durEl) durEl.textContent = portalFmtTime(portalPlayerState.duration); }
+    });
+    audio.addEventListener('ended', () => { if (toggle) toggle.textContent = '▶'; portalDrawWaveform(); });
+  }
+  if (canvas) canvas.addEventListener('click', (e) => {
+    const dur = portalPlayerState.duration || audio.duration || 0;
+    if (!dur) return;
+    const rect = canvas.getBoundingClientRect();
+    audio.currentTime = Math.min(Math.max((e.clientX - rect.left) / rect.width, 0), 1) * dur;
+    portalDrawWaveform();
+  });
+  if (closeBtn) closeBtn.addEventListener('click', () => {
+    audio.pause();
+    document.getElementById('portal-player')?.classList.add('hidden');
+  });
+}
+
+// Decode an audio file → { peaks: number[] (0..1), duration: seconds }.
+async function generatePeaks(file, buckets = 400) {
+  try {
+    const arrayBuffer = await file.arrayBuffer();
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    const ctx = new AudioCtx();
+    const audioBuffer = await ctx.decodeAudioData(arrayBuffer);
+    const channel = audioBuffer.getChannelData(0);
+    const blockSize = Math.floor(channel.length / buckets) || 1;
+    const peaks = [];
+    for (let i = 0; i < buckets; i++) {
+      let max = 0;
+      const start = i * blockSize;
+      for (let j = 0; j < blockSize; j++) {
+        const v = Math.abs(channel[start + j] || 0);
+        if (v > max) max = v;
+      }
+      peaks.push(Math.round(max * 1000) / 1000);
+    }
+    const duration = audioBuffer.duration;
+    ctx.close();
+    return { peaks, duration };
+  } catch {
+    return { peaks: [], duration: 0 }; // fallback: empty peaks
+  }
+}
+
+async function portalEnsureTrack(name) {
+  const existing = (portalActiveQuote?.tracks || []).find(
+    (t) => String(t.name).trim().toLowerCase() === name.trim().toLowerCase(),
+  );
+  if (existing) return existing.id;
+  const res = await fetch(`${API_BASE}/portal/admin/track`, {
+    method: 'POST',
+    headers: apiHeaders(),
+    body: JSON.stringify({ cotizacionId: portalActiveQuote.id, name }),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok || !data.id) throw new Error(data.error || 'No se pudo crear la canción');
+  return data.id;
+}
+
+async function uploadPortalVersion() {
+  if (!portalActiveQuote) return;
+  const trackName = (document.getElementById('portal-track-name')?.value || '').trim();
+  const label = (document.getElementById('portal-version-label')?.value || '').trim();
+  const favorita = Boolean(document.getElementById('portal-version-favorita')?.checked);
+  const fileInput = document.getElementById('portal-version-file');
+  const file = fileInput?.files?.[0];
+
+  if (!trackName) return portalUploadStatus('Poné el nombre de la canción.');
+  if (!file) return portalUploadStatus('Elegí un archivo de audio.');
+
+  const btn = document.getElementById('portal-upload-btn');
+  if (btn) btn.disabled = true;
+  try {
+    portalUploadStatus('Analizando audio…');
+    const { peaks, duration } = await generatePeaks(file);
+
+    portalUploadStatus('Creando canción…');
+    const trackId = await portalEnsureTrack(trackName);
+
+    portalUploadStatus('Subiendo archivo…');
+    const form = new FormData();
+    form.append('trackId', trackId);
+    form.append('label', label || 'Versión');
+    form.append('favorita', favorita ? 'true' : 'false');
+    form.append('duracion', String(duration || 0));
+    form.append('peaks', JSON.stringify(peaks));
+    form.append('file', file, file.name);
+
+    const headers = {};
+    if (API_TOKEN) headers.Authorization = `Bearer ${API_TOKEN}`;
+    const res = await fetch(`${API_BASE}/portal/admin/version`, { method: 'POST', headers, body: form });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || !data.ok) throw new Error(data.error || `HTTP ${res.status}`);
+
+    portalUploadStatus('✓ Versión subida.');
+    if (fileInput) fileInput.value = '';
+    document.getElementById('portal-version-label').value = '';
+    document.getElementById('portal-version-favorita').checked = false;
+    await openPortalCotizacion(portalActiveQuote.id, portalActiveQuote.clientName, portalActiveQuote.quoteNumber);
+  } catch (e) {
+    portalUploadStatus('Error: ' + (e?.message || e));
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+// ──────────────────────────────────────────────────────────────────────────────
 
 init();
