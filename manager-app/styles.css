@@ -3006,3 +3006,46 @@ body.messages-active .container {
   border-color: rgba(74, 222, 128, 0.45);
   background: rgba(74, 222, 128, 0.1);
 }
+
+/* ─── Negotiated price row (on-the-fly editing) ───────────────────────────── */
+.mk-price-row {
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+  margin-top: .5rem;
+  font-size: .8rem;
+}
+.mk-price-label {
+  color: var(--text-muted);
+  margin-right: auto;
+}
+.mk-price-cur {
+  color: var(--text-muted);
+  font-size: .78rem;
+}
+.mk-price-input {
+  width: 6.5rem;
+  padding: .3rem .45rem;
+  border: 1px solid var(--glass-border);
+  border-radius: .35rem;
+  background: rgba(0, 0, 0, 0.25);
+  color: inherit;
+  font-size: .85rem;
+  font-weight: 600;
+  text-align: right;
+  -moz-appearance: textfield;
+}
+.mk-price-input:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+.mk-price-row.mk-price-edited .mk-price-input {
+  border-color: #4ade80;
+  color: #4ade80;
+}
+.mk-sum-edited {
+  font-size: .62rem;
+  color: #4ade80;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}

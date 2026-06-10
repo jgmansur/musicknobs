@@ -5310,6 +5310,8 @@ const MK_QUOTE_CATALOG_LOCAL = [
 ];
 
 let quoteDetailSelection = {};
+let quoteDetailPriceOverrides = {}; // per-service negotiated price (by service id), this quote only
+let quoteDetailUnmatched = []; // client services not found in the active catalog
 let mkActiveCatalog = MK_QUOTE_CATALOG; // switched per quote origin in mkInitCotizadorClone
 
 function mkAllServices() {
@@ -5328,10 +5330,21 @@ function mkFindByName(name) {
   return mkAllServices().find((s) => mkNormalizeName(s.name) === target) || null;
 }
 
+function mkHasOverride(id) {
+  return Object.prototype.hasOwnProperty.call(quoteDetailPriceOverrides, id);
+}
+
 function mkItemPrice(svc, qty) {
+  if (mkHasOverride(svc.id)) return Math.max(0, Number(quoteDetailPriceOverrides[svc.id]) || 0);
   if (svc.currency === 'quote') return 0;
   if (svc.calcPrice) return svc.calcPrice(qty);
   return svc.basePrice * (svc.hasQty ? qty : 1);
+}
+
+// A "quote" service counts as USD once it has a negotiated price.
+function mkEffectiveCurrency(svc) {
+  if (svc.currency === 'quote') return mkHasOverride(svc.id) ? 'USD' : 'quote';
+  return svc.currency;
 }
 
 function mkBuildSummaryHtml() {
@@ -5343,14 +5356,16 @@ function mkBuildSummaryHtml() {
     if (!svc) return '';
     const qty = quoteDetailSelection[id];
     const price = mkItemPrice(svc, qty);
-    if (svc.currency === 'MXN') mxn += price;
-    else if (svc.currency !== 'quote') usd += price;
-    const priceStr = svc.currency === 'quote'
+    const cur = mkEffectiveCurrency(svc);
+    if (cur === 'MXN') mxn += price;
+    else if (cur !== 'quote') usd += price;
+    const priceStr = cur === 'quote'
       ? 'A cotizar'
-      : svc.currency === 'MXN'
+      : cur === 'MXN'
         ? `$${price.toLocaleString('en-US')} MXN`
         : `$${price.toLocaleString('en-US')}`;
-    return `<div class="mk-sum-item"><span>${escapeHtml(svc.name)}${svc.hasQty ? ` ×${qty}` : ''}</span><span>${priceStr}</span></div>`;
+    const edited = mkHasOverride(id) ? ' <span class="mk-sum-edited">editado</span>' : '';
+    return `<div class="mk-sum-item"><span>${escapeHtml(svc.name)}${svc.hasQty ? ` ×${qty}` : ''}${edited}</span><span>${priceStr}</span></div>`;
   }).join('');
   const totals = (usd > 0 && mxn > 0)
     ? `<div class="mk-sum-total"><span>Total USD</span><span>$${usd.toLocaleString('en-US')}</span></div><div class="mk-sum-total"><span>Total MXN</span><span>$${mxn.toLocaleString('en-US')} MXN</span></div>`
@@ -5358,6 +5373,14 @@ function mkBuildSummaryHtml() {
       ? `<div class="mk-sum-total"><span>Total</span><span>$${mxn.toLocaleString('en-US')} MXN</span></div>`
       : `<div class="mk-sum-total"><span>Total</span><span>$${usd.toLocaleString('en-US')} USD</span></div>`;
   return `<div class="mk-sum-title">Resumen</div><div class="mk-sum-items">${rows}</div>${totals}`;
+}
+
+function mkPriceRowHtml(svc) {
+  const qty = quoteDetailSelection[svc.id] || 1;
+  const price = mkItemPrice(svc, qty);
+  const curLabel = mkEffectiveCurrency(svc) === 'MXN' ? 'MXN' : 'USD';
+  const edited = mkHasOverride(svc.id);
+  return `<div class="mk-price-row${edited ? ' mk-price-edited' : ''}"><span class="mk-price-label">Precio negociado</span><span class="mk-price-cur">$</span><input type="number" class="mk-price-input" data-svc-price="${escapeHtml(svc.id)}" value="${price}" min="0" step="1" inputmode="decimal"><span class="mk-price-cur">${escapeHtml(curLabel)}</span></div>`;
 }
 
 function mkBuildCatalogHtml(unmatchedItems) {
@@ -5372,7 +5395,8 @@ function mkBuildCatalogHtml(unmatchedItems) {
       const qtyRow = (on && svc.hasQty)
         ? `<div class="mk-qty-row"><button class="mk-qty-btn" data-svc="${escapeHtml(svc.id)}" data-op="dec" type="button">−</button><span class="mk-qty-num" data-svc-qty="${escapeHtml(svc.id)}">${qty}</span><button class="mk-qty-btn" data-svc="${escapeHtml(svc.id)}" data-op="inc" type="button">+</button><span class="mk-qty-unit">${escapeHtml(svc.qtyLabel || '')}</span></div>`
         : '';
-      return `<div class="mk-svc-card${on ? ' mk-svc-on' : ''}" data-svc-card="${escapeHtml(svc.id)}"><label class="mk-svc-label"><input type="checkbox" class="mk-svc-chk" data-svc="${escapeHtml(svc.id)}"${on ? ' checked' : ''}><div class="mk-svc-info"><span class="mk-svc-name">${escapeHtml(svc.name)}</span><span class="mk-svc-price">${escapeHtml(svc.priceLabel)}</span></div></label><p class="mk-svc-desc">${escapeHtml(svc.description)}</p>${qtyRow}</div>`;
+      const priceRow = on ? mkPriceRowHtml(svc) : '';
+      return `<div class="mk-svc-card${on ? ' mk-svc-on' : ''}" data-svc-card="${escapeHtml(svc.id)}"><label class="mk-svc-label"><input type="checkbox" class="mk-svc-chk" data-svc="${escapeHtml(svc.id)}"${on ? ' checked' : ''}><div class="mk-svc-info"><span class="mk-svc-name">${escapeHtml(svc.name)}</span><span class="mk-svc-price">${escapeHtml(svc.priceLabel)}</span></div></label><p class="mk-svc-desc">${escapeHtml(svc.description)}</p>${qtyRow}${priceRow}</div>`;
     }).join('');
     return `<div class="mk-cat-block"><div class="mk-cat-label">${escapeHtml(cat.title)}</div><div class="mk-cat-cards">${cards}</div></div>`;
   }).join('');
@@ -5390,13 +5414,25 @@ function mkBuildCatalogHtml(unmatchedItems) {
 function mkInitCotizadorClone(services, origen) {
   mkActiveCatalog = origen === 'local' ? MK_QUOTE_CATALOG_LOCAL : MK_QUOTE_CATALOG;
   quoteDetailSelection = {};
+  quoteDetailPriceOverrides = {};
   const unmatched = [];
   for (const item of (services || [])) {
     const svc = mkFindByName(item.name);
     if (svc) quoteDetailSelection[svc.id] = parseInt(item.qty, 10) || 1;
     else unmatched.push(item);
   }
+  quoteDetailUnmatched = unmatched;
   return mkBuildCatalogHtml(unmatched);
+}
+
+// Full re-render of the clone. Safe for checkbox/qty changes (no focused text
+// input). NOT called from the price input handler, to preserve typing focus.
+function mkRefreshClone() {
+  const servicesEl = document.getElementById('qd-services-list');
+  if (!servicesEl) return;
+  servicesEl.innerHTML = mkBuildCatalogHtml(quoteDetailUnmatched);
+  const clone = servicesEl.querySelector('.mk-cotizador-clone');
+  if (clone) mkBindCloneEvents(clone);
 }
 
 function mkHandleQty(e) {
@@ -5404,10 +5440,18 @@ function mkHandleQty(e) {
   const op = e.currentTarget.dataset.op;
   if (!id || !quoteDetailSelection[id]) return;
   quoteDetailSelection[id] = op === 'inc' ? quoteDetailSelection[id] + 1 : Math.max(1, quoteDetailSelection[id] - 1);
+  delete quoteDetailPriceOverrides[id]; // qty change recalculates the price from the catalog
+  mkRefreshClone();
+}
+
+function mkHandlePriceInput(e) {
+  const id = e.currentTarget.dataset.svcPrice;
+  if (!id) return;
+  const val = e.currentTarget.value;
+  if (val === '') delete quoteDetailPriceOverrides[id];
+  else quoteDetailPriceOverrides[id] = Math.max(0, Number(val) || 0);
   const container = e.currentTarget.closest('.mk-cotizador-clone');
   if (!container) return;
-  const numEl = container.querySelector(`[data-svc-qty="${id}"]`);
-  if (numEl) numEl.textContent = quoteDetailSelection[id];
   const sumEl = container.querySelector('#mk-clone-summary');
   if (sumEl) sumEl.innerHTML = mkBuildSummaryHtml();
 }
@@ -5418,30 +5462,12 @@ function mkBindCloneEvents(container) {
       const id = e.target.dataset.svc;
       if (!id) return;
       if (e.target.checked) quoteDetailSelection[id] = quoteDetailSelection[id] || 1;
-      else delete quoteDetailSelection[id];
-      const card = container.querySelector(`[data-svc-card="${id}"]`);
-      if (card) {
-        card.classList.toggle('mk-svc-on', e.target.checked);
-        const svc = mkAllServices().find((s) => s.id === id);
-        if (svc && svc.hasQty) {
-          let row = card.querySelector('.mk-qty-row');
-          if (e.target.checked && !row) {
-            const qty = quoteDetailSelection[id];
-            row = document.createElement('div');
-            row.className = 'mk-qty-row';
-            row.innerHTML = `<button class="mk-qty-btn" data-svc="${escapeHtml(id)}" data-op="dec" type="button">−</button><span class="mk-qty-num" data-svc-qty="${escapeHtml(id)}">${qty}</span><button class="mk-qty-btn" data-svc="${escapeHtml(id)}" data-op="inc" type="button">+</button><span class="mk-qty-unit">${escapeHtml(svc.qtyLabel || '')}</span>`;
-            card.appendChild(row);
-            row.querySelectorAll('.mk-qty-btn').forEach((b) => b.addEventListener('click', mkHandleQty));
-          } else if (!e.target.checked && row) {
-            row.remove();
-          }
-        }
-      }
-      const sumEl = container.querySelector('#mk-clone-summary');
-      if (sumEl) sumEl.innerHTML = mkBuildSummaryHtml();
+      else { delete quoteDetailSelection[id]; delete quoteDetailPriceOverrides[id]; }
+      mkRefreshClone();
     });
   });
   container.querySelectorAll('.mk-qty-btn').forEach((b) => b.addEventListener('click', mkHandleQty));
+  container.querySelectorAll('.mk-price-input').forEach((inp) => inp.addEventListener('input', mkHandlePriceInput));
 }
 
 async function loadQuotesFromApi(search = '', status = '') {
