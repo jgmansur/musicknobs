@@ -1312,6 +1312,23 @@ function normalizeSubtasks(input = []) {
   return Array.from(byKey.values()).slice(0, 30);
 }
 
+// Notion returns table_row blocks as CHILDREN of the table block, not as
+// siblings in the page's child list. parseQuoteBlocks expects them inline
+// (right after the table), so we fetch each table's rows and splice them in.
+async function expandTableRows(blocks, notionToken, notionVersion) {
+  const expanded = [];
+  for (const block of blocks) {
+    expanded.push(block);
+    if (block && block.type === "table" && block.has_children) {
+      try {
+        const rows = await notionGetPageChildren(block.id, notionToken, notionVersion);
+        expanded.push(...rows);
+      } catch { /* leave table without rows; parser degrades gracefully */ }
+    }
+  }
+  return expanded;
+}
+
 async function notionGetPageChildren(pageId, notionToken, notionVersion) {
   let cursor = null;
   const out = [];
@@ -2762,7 +2779,10 @@ async function listManagerQuotes(env, searchParams) {
       const estatus = props?.Estatus?.select?.name || "";
       const dateProp = props?.["Date (ToDo)"]?.date?.start || "";
       let blocks = [];
-      try { blocks = await notionGetPageChildren(page.id, notionToken, notionVersion); } catch {}
+      try {
+        blocks = await notionGetPageChildren(page.id, notionToken, notionVersion);
+        blocks = await expandTableRows(blocks, notionToken, notionVersion);
+      } catch {}
       const parsed = parseQuoteBlocks(blocks, title);
       return { id: page.id, quoteNumber: parsed.quoteNumber, name: parsed.clientName, email: parsed.email, phone: parsed.phone, date: dateProp, items: parsed.items, total: parsed.total, seguimiento: parsed.seguimiento, estatus };
     }));
@@ -2783,7 +2803,8 @@ async function getManagerQuoteDetail(env, pageId) {
     const estatus = props?.Estatus?.select?.name || "";
     const dateProp = props?.["Date (ToDo)"]?.date?.start || "";
     if (!title.includes("Cotización") || (props?.Tipo?.select?.name || "") !== "Music Knobs") return { ok: false, notFound: true };
-    const blocks = await notionGetPageChildren(pageId, notionToken, notionVersion);
+    let blocks = await notionGetPageChildren(pageId, notionToken, notionVersion);
+    blocks = await expandTableRows(blocks, notionToken, notionVersion);
     const parsed = parseQuoteBlocks(blocks, title);
     return { ok: true, data: { pageId, quoteNumber: parsed.quoteNumber, clientName: parsed.clientName, email: parsed.email, phone: parsed.phone, status: estatus, date: dateProp, total: parsed.total, services: parsed.items, seguimiento: parsed.seguimiento } };
   } catch (e) { return { ok: false, error: String(e?.message || e) }; }
