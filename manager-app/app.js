@@ -5618,7 +5618,7 @@ function formatQuoteTotal(q, fxRate) {
   return parts.join(' + ');
 }
 
-const QUOTE_ESTADOS = ['Empezó', 'Pendiente', 'En seguimiento', 'Contrato enviado', 'Firmado', 'En producción', 'Entregado'];
+const QUOTE_ESTADOS = ['Idea Por Checar', 'Pendiente', 'Empezó', 'Terminado', 'Rechazado'];
 let quotesSelectedIds = new Set();
 
 function mkEstatusOptionsHtml(current) {
@@ -5665,10 +5665,6 @@ async function mkGenerateContract() {
         ? `Contrato generado ✓ — <a class="qd-link" href="${escapeHtml(body.url)}" target="_blank" rel="noopener">Ver PDF</a>`
         : 'Contrato generado ✓';
     }
-    const sel = document.getElementById('quote-detail-estatus-select');
-    if (sel) sel.value = 'Contrato enviado';
-    const q = quotesCache.find((x) => x.id === quotesCurrentPageId);
-    if (q) q.estatus = 'Contrato enviado';
   } catch (e) {
     if (statusEl) statusEl.textContent = `Error: ${e.message}`;
   } finally {

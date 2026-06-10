@@ -2668,7 +2668,7 @@ async function ipvDelete(env, id) {
 const ARCHIVO_DB_ID = "129c1932-ede8-8003-b423-deca245759ec";
 const ARCHIVO_DS_ID = "6405719e-5f90-4fc0-8eab-d9352387dd07";
 const QUOTE_NUMBER_RE = /MK[L]?-\d{4}-\w+/;
-const QUOTE_ESTATUS_ENUM = ["Empezó", "Pendiente", "En seguimiento", "Contrato enviado", "Firmado", "En producción", "Entregado"];
+const QUOTE_ESTATUS_ENUM = ["Idea Por Checar", "Pendiente", "Empezó", "Terminado", "Rechazado"];
 
 // Parse a price cell string ("$13,500 MXN", "$300", "A cotizar") into { amount, currency }.
 function parseQuoteMoney(priceStr) {
@@ -2971,7 +2971,6 @@ async function createContractForQuote(env, pageId) {
     headers: { Authorization: `Bearer ${notionToken}`, "Notion-Version": notionVersion, "Content-Type": "application/json" },
     body: JSON.stringify({ children: [{ object: "block", type: "bookmark", bookmark: { url, caption: [{ text: { content: `📄 Contrato ${quoteNumber}` } }] } }] }),
   });
-  await saveQuoteSeguimiento(env, pageId, { estatus: "Contrato enviado", seguimiento: { ...seguimiento } });
   return { ok: true, url };
 }
 // ─────────────────────────────────────────────────────────────────────────────
