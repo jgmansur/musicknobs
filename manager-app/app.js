@@ -5034,6 +5034,7 @@ function setupActions() {
   bindClick('share-app-btn', shareAppProfile);
   bindClick('auth-gate-login', startGoogleLogin);
   bindClick('quote-detail-back', () => { quotesCurrentPageId = null; showQuoteDetail(false); });
+  bindClick('quotes-delete-btn', mkDeleteSelectedQuotes);
   bindClick('refresh-messages', () => loadMessagesFromApi());
   bindClick('refresh-messages-overview', () => loadMessagesFromApi());
   // messages-load-more removed from UI — load-more handled via scroll
@@ -5616,21 +5617,68 @@ function formatQuoteTotal(q, fxRate) {
   return parts.join(' + ');
 }
 
+const QUOTE_ESTADOS = ['Empezó', 'Pendiente', 'En seguimiento', 'Contrato enviado', 'Firmado', 'En producción', 'Entregado'];
+let quotesSelectedIds = new Set();
+
+function mkEstatusOptionsHtml(current) {
+  const inList = QUOTE_ESTADOS.includes(current);
+  const extra = (current && !inList) ? `<option value="${escapeHtml(current)}" selected>${escapeHtml(current)}</option>` : '';
+  const opts = QUOTE_ESTADOS.map((e) => `<option value="${escapeHtml(e)}"${e === current ? ' selected' : ''}>${escapeHtml(e)}</option>`).join('');
+  return extra + opts;
+}
+
+async function mkChangeEstatus(pageId, nuevo) {
+  if (!pageId || !API_BASE) return false;
+  try {
+    const r = await fetch(`${API_BASE}/api/manager/quotes/${pageId}`, {
+      method: 'PATCH', headers: apiHeaders(), body: JSON.stringify({ estatus: nuevo }),
+    });
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    const q = quotesCache.find((x) => x.id === pageId);
+    if (q) q.estatus = nuevo;
+    return true;
+  } catch (e) { return false; }
+}
+
+function mkUpdateDeleteBar() {
+  const bar = document.getElementById('quotes-delete-bar');
+  if (bar) bar.classList.toggle('hidden', quotesSelectedIds.size === 0);
+  const countEl = document.getElementById('quotes-delete-count');
+  if (countEl) countEl.textContent = String(quotesSelectedIds.size);
+}
+
+async function mkDeleteSelectedQuotes() {
+  const ids = Array.from(quotesSelectedIds);
+  if (ids.length === 0 || !API_BASE) return;
+  if (!confirm(`¿Borrar ${ids.length} cotización${ids.length === 1 ? '' : 'es'}? Se archivan en Notion.`)) return;
+  const statusEl = document.getElementById('quotes-status');
+  if (statusEl) statusEl.textContent = 'Borrando…';
+  for (const id of ids) {
+    try { await fetch(`${API_BASE}/api/manager/quotes/${id}`, { method: 'DELETE', headers: apiHeaders() }); } catch {}
+  }
+  quotesSelectedIds = new Set();
+  loadQuotesFromApi();
+}
+
 function renderQuotesList(quotes) {
   const container = document.getElementById('quotes-list');
   if (!container) return;
+  quotesSelectedIds = new Set();
+  mkUpdateDeleteBar();
   if (!quotes || quotes.length === 0) {
     container.innerHTML = '';
     return;
   }
   container.innerHTML = quotes.map((q) => {
-    const estatus = escapeHtml(q.estatus || '');
+    const id = escapeHtml(q.id);
+    const estatus = q.estatus || '';
     const quoteNumber = escapeHtml(q.quoteNumber || '—');
     const name = escapeHtml(q.name || '—');
     const date = escapeHtml(formatQuoteDate(q.date));
     const total = escapeHtml(formatQuoteTotal(q, quotesFxRate));
     return `
-      <div class="quote-card" data-id="${escapeHtml(q.id)}">
+      <div class="quote-card" data-id="${id}">
+        <input type="checkbox" class="quote-select" data-id="${id}" aria-label="Seleccionar cotización">
         <div class="quote-card-main">
           <div class="quote-card-top">
             <span class="quote-number-badge">${quoteNumber}</span>
@@ -5641,14 +5689,29 @@ function renderQuotesList(quotes) {
             ${total ? `<span>${total}</span>` : ''}
           </div>
         </div>
-        <span class="quote-status-pill" data-status="${estatus}">${estatus || 'Sin estado'}</span>
+        <select class="quote-estatus-select" data-quote-id="${id}">${mkEstatusOptionsHtml(estatus)}</select>
       </div>`;
   }).join('');
 
   container.querySelectorAll('.quote-card').forEach((card) => {
-    card.addEventListener('click', () => {
+    card.addEventListener('click', (e) => {
+      if (e.target.closest('.quote-select') || e.target.closest('.quote-estatus-select')) return;
       const pageId = card.dataset.id;
       if (pageId) loadQuoteDetail(pageId);
+    });
+  });
+  container.querySelectorAll('.quote-select').forEach((chk) => {
+    chk.addEventListener('change', (e) => {
+      const id = e.target.dataset.id;
+      if (e.target.checked) quotesSelectedIds.add(id);
+      else quotesSelectedIds.delete(id);
+      mkUpdateDeleteBar();
+    });
+  });
+  container.querySelectorAll('.quote-estatus-select').forEach((sel) => {
+    sel.addEventListener('change', async (e) => {
+      const ok = await mkChangeEstatus(e.target.dataset.quoteId, e.target.value);
+      if (!ok) alert('No se pudo cambiar el estado.');
     });
   });
 }
@@ -5684,11 +5747,15 @@ function renderQuoteDetail(q) {
   const numberEl = document.getElementById('quote-detail-number');
   if (numberEl) numberEl.textContent = q.quoteNumber || '—';
 
-  const estatusEl = document.getElementById('quote-detail-estatus');
-  if (estatusEl) {
+  const estatusSel = document.getElementById('quote-detail-estatus-select');
+  if (estatusSel) {
     const st = q.status || q.estatus || '';
-    estatusEl.textContent = st || 'Sin estado';
-    estatusEl.dataset.status = st;
+    estatusSel.innerHTML = mkEstatusOptionsHtml(st);
+    estatusSel.value = st;
+    estatusSel.onchange = async () => {
+      const ok = await mkChangeEstatus(quotesCurrentPageId, estatusSel.value);
+      if (!ok) alert('No se pudo cambiar el estado.');
+    };
   }
 
   const setSpan = (id, val) => {

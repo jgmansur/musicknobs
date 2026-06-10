@@ -2668,7 +2668,7 @@ async function ipvDelete(env, id) {
 const ARCHIVO_DB_ID = "129c1932-ede8-8003-b423-deca245759ec";
 const ARCHIVO_DS_ID = "6405719e-5f90-4fc0-8eab-d9352387dd07";
 const QUOTE_NUMBER_RE = /MK[L]?-\d{4}-\w+/;
-const QUOTE_ESTATUS_ENUM = ["Pendiente", "En seguimiento", "Contrato enviado", "Firmado", "En producción", "Entregado"];
+const QUOTE_ESTATUS_ENUM = ["Empezó", "Pendiente", "En seguimiento", "Contrato enviado", "Firmado", "En producción", "Entregado"];
 
 // Parse a price cell string ("$13,500 MXN", "$300", "A cotizar") into { amount, currency }.
 function parseQuoteMoney(priceStr) {
@@ -2929,6 +2929,20 @@ async function saveQuoteSeguimiento(env, pageId, body) {
     if (body?.negotiated !== undefined) {
       await replaceNegotiatedSection(pageId, body.negotiated, notionToken, notionVersion);
     }
+    return { ok: true };
+  } catch (e) { return { ok: false, error: String(e?.message || e) }; }
+}
+
+async function deleteManagerQuote(env, pageId) {
+  const notionToken = env.NOTION_TOKEN || "", notionVersion = env.NOTION_VERSION || "2022-06-28";
+  if (!notionToken) return { ok: false, error: "NOTION_TOKEN not configured" };
+  try {
+    const r = await fetch(`https://api.notion.com/v1/pages/${pageId}`, {
+      method: "PATCH",
+      headers: { Authorization: `Bearer ${notionToken}`, "Notion-Version": notionVersion, "Content-Type": "application/json" },
+      body: JSON.stringify({ archived: true }),
+    });
+    if (!r.ok) return { ok: false, error: await r.text() };
     return { ok: true };
   } catch (e) { return { ok: false, error: String(e?.message || e) }; }
 }
@@ -3265,6 +3279,12 @@ export default {
       const body = await request.json().catch(() => ({}));
       const result = await saveQuoteSeguimiento(env, quoteId, body);
       if (result.validationError) return json({ error: result.error }, 422);
+      return json(result, result.ok === false ? 502 : 200);
+    }
+    if (request.method === "DELETE" && url.pathname.startsWith("/api/manager/quotes/")) {
+      const quoteId = url.pathname.replace("/api/manager/quotes/", "").trim();
+      if (!quoteId) return json({ error: "quoteId required" }, 400);
+      const result = await deleteManagerQuote(env, quoteId);
       return json(result, result.ok === false ? 502 : 200);
     }
     if (request.method === "POST" && url.pathname.startsWith("/api/manager/quotes/") && url.pathname.endsWith("/contract")) {
