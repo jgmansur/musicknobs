@@ -4,6 +4,3 @@ compatibility_date = "2025-01-15"
 
 [observability]
 enabled = true
-
-[vars]
-MUSICKNOBS_API_URL = "https://www.musicknobs.com"

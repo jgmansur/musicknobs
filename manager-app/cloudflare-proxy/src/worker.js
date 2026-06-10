@@ -2946,33 +2946,6 @@ async function deleteManagerQuote(env, pageId) {
     return { ok: true };
   } catch (e) { return { ok: false, error: String(e?.message || e) }; }
 }
-
-async function createContractForQuote(env, pageId) {
-  const notionToken = env.NOTION_TOKEN || "", notionVersion = env.NOTION_VERSION || "2022-06-28";
-  const contratolSecret = env.CONTRATO_SECRET || "";
-  const musicKnobsUrl = env.MUSICKNOBS_API_URL || "https://www.musicknobs.com";
-  if (!notionToken) return { ok: false, error: "NOTION_TOKEN not configured" };
-  if (!contratolSecret) return { ok: false, error: "CONTRATO_SECRET not configured" };
-  const detail = await getManagerQuoteDetail(env, pageId);
-  if (!detail.ok) return detail;
-  const { quoteNumber, clientName, email, phone, total, totalMXN, totalUSD, services, seguimiento, negotiated, origen } = detail.data;
-  // Use the negotiated version when present (same {name,qty,price} shape).
-  const contractItems = (negotiated && negotiated.length) ? negotiated : services;
-  const contrataResp = await fetch(`${musicKnobsUrl}/api/contrato`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", "x-contrato-secret": contratolSecret },
-    body: JSON.stringify({ quoteNumber, name: clientName, email, phone, items: contractItems, total, totalMXN, totalUSD, origen, seguimiento }),
-  });
-  if (!contrataResp.ok) return { ok: false, error: `Contract PDF generation failed: ${await contrataResp.text()}` };
-  const { url } = await contrataResp.json();
-  if (!url) return { ok: false, error: "No URL returned from contract endpoint" };
-  await fetch(`https://api.notion.com/v1/blocks/${pageId}/children`, {
-    method: "PATCH",
-    headers: { Authorization: `Bearer ${notionToken}`, "Notion-Version": notionVersion, "Content-Type": "application/json" },
-    body: JSON.stringify({ children: [{ object: "block", type: "bookmark", bookmark: { url, caption: [{ text: { content: `📄 Contrato ${quoteNumber}` } }] } }] }),
-  });
-  return { ok: true, url };
-}
 // ─────────────────────────────────────────────────────────────────────────────
 
 export default {
@@ -3267,14 +3240,14 @@ export default {
       const result = await listManagerQuotes(env, url.searchParams);
       return json(result, result.ok === false ? 502 : 200);
     }
-    if (request.method === "GET" && url.pathname.startsWith("/api/manager/quotes/") && !url.pathname.endsWith("/contract")) {
+    if (request.method === "GET" && url.pathname.startsWith("/api/manager/quotes/")) {
       const quoteId = url.pathname.replace("/api/manager/quotes/", "").trim();
       if (!quoteId) return json({ error: "quoteId required" }, 400);
       const result = await getManagerQuoteDetail(env, quoteId);
       if (result.notFound) return json({ error: "Not found" }, 404);
       return json(result, result.ok === false ? 502 : 200);
     }
-    if (request.method === "PATCH" && url.pathname.startsWith("/api/manager/quotes/") && !url.pathname.endsWith("/contract")) {
+    if (request.method === "PATCH" && url.pathname.startsWith("/api/manager/quotes/")) {
       const quoteId = url.pathname.replace("/api/manager/quotes/", "").trim();
       if (!quoteId) return json({ error: "quoteId required" }, 400);
       const body = await request.json().catch(() => ({}));
@@ -3286,12 +3259,6 @@ export default {
       const quoteId = url.pathname.replace("/api/manager/quotes/", "").trim();
       if (!quoteId) return json({ error: "quoteId required" }, 400);
       const result = await deleteManagerQuote(env, quoteId);
-      return json(result, result.ok === false ? 502 : 200);
-    }
-    if (request.method === "POST" && url.pathname.startsWith("/api/manager/quotes/") && url.pathname.endsWith("/contract")) {
-      const quoteId = url.pathname.replace("/api/manager/quotes/", "").replace("/contract", "").trim();
-      if (!quoteId) return json({ error: "quoteId required" }, 400);
-      const result = await createContractForQuote(env, quoteId);
       return json(result, result.ok === false ? 502 : 200);
     }
     // ─────────────────────────────────────────────────────────────────────────
