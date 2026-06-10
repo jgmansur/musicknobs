@@ -5214,6 +5214,7 @@ function checkNotificationStatus() {
 
 let quotesCache = [];
 let quotesCurrentPageId = null;
+let quotesCurrentDetail = null; // last loaded quote detail object (for the contract prompt)
 let quotesFxRate = null; // USD→MXN FIX from Banxico, provided by the API
 
 const QUOTE_DATE_DAYS = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
@@ -5648,28 +5649,104 @@ function mkUpdateDeleteBar() {
   if (countEl) countEl.textContent = String(quotesSelectedIds.size);
 }
 
-async function mkGenerateContract() {
-  if (!quotesCurrentPageId || !API_BASE) return;
-  const statusEl = document.getElementById('quote-contract-status');
-  const btn = document.getElementById('quote-contract-btn');
-  if (btn) btn.disabled = true;
-  if (statusEl) statusEl.textContent = 'Generando contrato… (puede tardar unos segundos)';
+// New flow: the button no longer generates the PDF itself. It builds a
+// MK-CONTRATO prompt (with the LIVE negotiation as the price source of truth)
+// and shows it in an editable bottom-sheet, auto-copied to the clipboard, so
+// Jay reads/edits it and pastes it to Claude, which renders the contract PDF.
+function mkGenerateContract() {
+  if (!quotesCurrentPageId) return;
+  const q = quotesCurrentDetail || {};
+  const prompt = mkBuildContractPrompt(q, mkCollectNegotiated());
+  mkShowContractPromptCard(prompt);
+}
+
+function mkBuildContractPrompt(q, negotiated) {
+  const pageId = String(quotesCurrentPageId || '');
+  const notionUrl = pageId ? `https://www.notion.so/${pageId.replace(/-/g, '')}` : '(sin id de página)';
+  const origen = (q.origen && String(q.origen).trim()) || 'internacional';
+  const lines = (negotiated || []).map((it) => {
+    const qty = it.qty && it.qty !== '—' ? ` (x${it.qty})` : '';
+    return `- ${it.name}${qty}: ${it.price}`;
+  });
+  const totalEl = document.getElementById('qd-total');
+  const total = totalEl ? totalEl.textContent.trim() : '';
+  const outFolder = '/Users/jaymansur-m5/Library/CloudStorage/GoogleDrive-jgmansur2@gmail.com/My Drive/Manager App/Contratos/Contratos sin Firmar';
+  return [
+    'MK-CONTRATO',
+    '',
+    'Generá el contrato de Music Knobs con estos datos. Dispará el skill mk-contrato y seguí su procedimiento completo, incluida la FASE DE REVISIÓN obligatoria antes de entregar.',
+    '',
+    `• Tipo de cliente (origen): ${origen}`,
+    `• Cliente: ${q.clientName || '—'}`,
+    `• Email: ${q.email || '—'}`,
+    `• Teléfono: ${q.phone || '—'}`,
+    `• N.º de cotización: ${q.quoteNumber || '—'}`,
+    `• Fecha: ${formatQuoteDate(q.date) || '—'}`,
+    `• Nota de Notion (contexto y decisiones de la llamada): ${notionUrl}`,
+    `• Carpeta de salida (Drive local, ya montado): ${outFolder}`,
+    '',
+    'NEGOCIACIÓN VIVA — verdad absoluta de precios. Ignorá cualquier precio viejo de la cotización original:',
+    ...(lines.length ? lines : ['- (sin servicios seleccionados — revisá la negociación antes de generar)']),
+    '',
+    `Total acordado (referencia de la app): ${total || '—'}`,
+    '',
+    'Generá el PDF en la carpeta de salida con nombre Contrato-<n>-<Cliente>.pdf, revisalo con el checklist del skill, y reportame la ruta + un resumen de los términos clave.',
+  ].join('\n');
+}
+
+async function mkCopyText(text, statusEl) {
   try {
-    const r = await fetch(`${API_BASE}/api/manager/quotes/${quotesCurrentPageId}/contract`, {
-      method: 'POST', headers: apiHeaders(),
-    });
-    const body = await r.json().catch(() => ({}));
-    if (!r.ok || body.ok === false) throw new Error(body.error || `HTTP ${r.status}`);
-    if (statusEl) {
-      statusEl.innerHTML = body.url
-        ? `Contrato generado ✓ — <a class="qd-link" href="${escapeHtml(body.url)}" target="_blank" rel="noopener">Ver PDF</a>`
-        : 'Contrato generado ✓';
-    }
+    await navigator.clipboard.writeText(text);
+    if (statusEl) { statusEl.textContent = 'Copiado al portapapeles ✓'; statusEl.className = 'mk-prompt-status ok'; }
   } catch (e) {
-    if (statusEl) statusEl.textContent = `Error: ${e.message}`;
-  } finally {
-    if (btn) btn.disabled = false;
+    if (statusEl) { statusEl.textContent = 'No se pudo copiar automáticamente — copialo a mano.'; statusEl.className = 'mk-prompt-status err'; }
   }
+}
+
+function mkHideContractPromptCard() {
+  const overlay = document.getElementById('mk-contract-prompt-overlay');
+  if (overlay) overlay.classList.remove('open');
+}
+
+function mkShowContractPromptCard(promptText) {
+  let overlay = document.getElementById('mk-contract-prompt-overlay');
+  if (!overlay) {
+    overlay = document.createElement('div');
+    overlay.id = 'mk-contract-prompt-overlay';
+    overlay.className = 'mk-prompt-overlay';
+    overlay.innerHTML = `
+      <div class="mk-prompt-card" role="dialog" aria-modal="true" aria-label="Prompt del contrato">
+        <div class="mk-prompt-head">
+          <div>
+            <div class="mk-prompt-title">Prompt del contrato</div>
+            <div class="mk-prompt-sub">Ya se copió al portapapeles. Leelo, editalo si querés y pegáselo a Claude.</div>
+          </div>
+          <button type="button" class="mk-prompt-close" aria-label="Cerrar">✕</button>
+        </div>
+        <textarea class="mk-prompt-text" spellcheck="false"></textarea>
+        <div class="mk-prompt-actions">
+          <span class="mk-prompt-status"></span>
+          <button type="button" class="mk-prompt-copy btn">Copiar texto completo</button>
+        </div>
+      </div>`;
+    document.body.appendChild(overlay);
+    overlay.querySelector('.mk-prompt-close').addEventListener('click', mkHideContractPromptCard);
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) mkHideContractPromptCard(); });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && overlay.classList.contains('open')) mkHideContractPromptCard();
+    });
+    overlay.querySelector('.mk-prompt-copy').addEventListener('click', () => {
+      const ta = overlay.querySelector('.mk-prompt-text');
+      mkCopyText(ta.value, overlay.querySelector('.mk-prompt-status'));
+    });
+  }
+  const ta = overlay.querySelector('.mk-prompt-text');
+  ta.value = promptText;
+  const statusEl = overlay.querySelector('.mk-prompt-status');
+  statusEl.textContent = '';
+  statusEl.className = 'mk-prompt-status';
+  overlay.classList.add('open');
+  mkCopyText(promptText, statusEl); // auto-copy on open (click gesture is still active)
 }
 
 async function mkDeleteSelectedQuotes() {
@@ -5769,6 +5846,7 @@ async function loadQuoteDetail(pageId) {
 }
 
 function renderQuoteDetail(q) {
+  quotesCurrentDetail = q; // remember for the contract prompt
   const numberEl = document.getElementById('quote-detail-number');
   if (numberEl) numberEl.textContent = q.quoteNumber || '—';
 
