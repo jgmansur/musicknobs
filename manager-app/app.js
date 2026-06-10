@@ -5054,6 +5054,7 @@ function setupActions() {
   bindClick('portal-refresh', () => loadPortalCotizaciones());
   bindClick('portal-back', () => showPortalDetail(false));
   bindClick('portal-upload-btn', uploadPortalVersion);
+  setupPortalPlayer();
   bindClick('refresh-messages', () => loadMessagesFromApi());
   bindClick('refresh-messages-overview', () => loadMessagesFromApi());
   // messages-load-more removed from UI — load-more handled via scroll
@@ -6106,19 +6107,213 @@ function renderPortalTracks(tracks) {
     root.innerHTML = '<p class="hint">Todavía no hay canciones. Subí la primera versión abajo.</p>';
     return;
   }
+
   tracks.forEach((t) => {
     const el = document.createElement('div');
     el.className = 'portal-track';
-    const versions = (t.versions || []).map((v) => (
-      `<li class="portal-version">
-        <span>${escapeHtmlSafe(v.name)}${v.favorita ? ' <span class="portal-star">★</span>' : ''}</span>
-        <span class="portal-version-meta">${v.visible ? 'Visible' : 'Oculta'}${v.duracion ? ' · ' + Math.round(v.duracion) + 's' : ''}</span>
-      </li>`
-    )).join('');
-    el.innerHTML = `<div class="portal-track-head"><strong>${escapeHtmlSafe(t.name)}</strong>` +
-      `<span class="portal-version-meta">${(t.versions || []).length} versión(es)</span></div>` +
-      (versions ? `<ul class="portal-version-list">${versions}</ul>` : '');
+
+    const head = document.createElement('div');
+    head.className = 'portal-track-head';
+    const title = document.createElement('strong');
+    title.textContent = t.name;
+    head.appendChild(title);
+
+    // Descarga habilitada toggle (track level)
+    const dl = document.createElement('label');
+    dl.className = 'portal-toggle';
+    const dlInput = document.createElement('input');
+    dlInput.type = 'checkbox';
+    dlInput.checked = Boolean(t.descargaHabilitada);
+    dlInput.addEventListener('change', async () => {
+      dlInput.disabled = true;
+      try {
+        await portalPatchTrack(t.id, { descargaHabilitada: dlInput.checked });
+        t.descargaHabilitada = dlInput.checked;
+      } catch (e) {
+        dlInput.checked = !dlInput.checked;
+        portalUploadStatus('Error: ' + (e?.message || e));
+      } finally {
+        dlInput.disabled = false;
+      }
+    });
+    dl.appendChild(dlInput);
+    dl.appendChild(Object.assign(document.createElement('span'), { textContent: 'Descarga' }));
+    head.appendChild(dl);
+    el.appendChild(head);
+
+    const list = document.createElement('ul');
+    list.className = 'portal-version-list';
+    (t.versions || []).forEach((v) => {
+      const li = document.createElement('li');
+      li.className = 'portal-version';
+
+      const play = document.createElement('button');
+      play.type = 'button';
+      play.className = 'portal-row-play';
+      play.textContent = '▶';
+      play.title = 'Reproducir';
+      play.disabled = !v.driveFileId;
+      play.addEventListener('click', () => portalPlayVersion(v, t.name));
+
+      const name = document.createElement('span');
+      name.className = 'portal-version-name';
+      name.textContent = v.name + (v.duracion ? ` · ${Math.round(v.duracion)}s` : '');
+
+      const controls = document.createElement('span');
+      controls.className = 'portal-version-controls';
+
+      // Favorita (exclusive per track)
+      const fav = document.createElement('button');
+      fav.type = 'button';
+      fav.className = 'portal-fav' + (v.favorita ? ' is-fav' : '');
+      fav.textContent = '★';
+      fav.title = 'Versión principal';
+      fav.addEventListener('click', async () => {
+        const next = !v.favorita;
+        fav.disabled = true;
+        try {
+          await portalPatchVersion(v.id, { favorita: next });
+          await openPortalCotizacion(portalActiveQuote.id, portalActiveQuote.clientName, portalActiveQuote.quoteNumber);
+        } catch (e) {
+          portalUploadStatus('Error: ' + (e?.message || e));
+          fav.disabled = false;
+        }
+      });
+
+      // Visible toggle
+      const vis = document.createElement('label');
+      vis.className = 'portal-toggle';
+      const visInput = document.createElement('input');
+      visInput.type = 'checkbox';
+      visInput.checked = Boolean(v.visible);
+      visInput.addEventListener('change', async () => {
+        visInput.disabled = true;
+        try {
+          await portalPatchVersion(v.id, { visible: visInput.checked });
+          v.visible = visInput.checked;
+        } catch (e) {
+          visInput.checked = !visInput.checked;
+          portalUploadStatus('Error: ' + (e?.message || e));
+        } finally {
+          visInput.disabled = false;
+        }
+      });
+      vis.appendChild(visInput);
+      vis.appendChild(Object.assign(document.createElement('span'), { textContent: 'Visible' }));
+
+      controls.appendChild(fav);
+      controls.appendChild(vis);
+
+      li.appendChild(play);
+      li.appendChild(name);
+      li.appendChild(controls);
+      list.appendChild(li);
+    });
+    el.appendChild(list);
     root.appendChild(el);
+  });
+}
+
+async function portalPatchVersion(versionId, body) {
+  const res = await fetch(`${API_BASE}/portal/admin/version/${versionId}`, {
+    method: 'PATCH', headers: apiHeaders(), body: JSON.stringify(body),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok || !data.ok) throw new Error(data.error || `HTTP ${res.status}`);
+  return data;
+}
+
+async function portalPatchTrack(trackId, body) {
+  const res = await fetch(`${API_BASE}/portal/admin/track/${trackId}`, {
+    method: 'PATCH', headers: apiHeaders(), body: JSON.stringify(body),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok || !data.ok) throw new Error(data.error || `HTTP ${res.status}`);
+  return data;
+}
+
+// ── Admin waveform player (vanilla, reuses Drive stream + stored peaks) ──────
+let portalPlayerState = { peaks: [], duration: 0 };
+
+function portalDrawWaveform() {
+  const canvas = document.getElementById('portal-player-canvas');
+  const audio = document.getElementById('portal-player-audio');
+  if (!canvas || !audio) return;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return;
+  const dpr = window.devicePixelRatio || 1;
+  const w = canvas.clientWidth, h = canvas.clientHeight;
+  if (canvas.width !== w * dpr || canvas.height !== h * dpr) { canvas.width = w * dpr; canvas.height = h * dpr; }
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, w, h);
+  const data = portalPlayerState.peaks.length ? portalPlayerState.peaks : new Array(120).fill(0.04);
+  const max = Math.max(...data, 0.0001);
+  const mid = h / 2;
+  const barW = w / data.length;
+  const dur = portalPlayerState.duration || audio.duration || 0;
+  const progress = dur > 0 ? audio.currentTime / dur : 0;
+  const playedX = progress * w;
+  for (let i = 0; i < data.length; i++) {
+    const x = i * barW;
+    const amp = (data[i] / max) * (mid - 1);
+    const barH = Math.max(amp, 1);
+    ctx.fillStyle = x < playedX ? '#ff1097' : '#424242';
+    ctx.fillRect(x, mid - barH, Math.max(barW - (barW > 2 ? 1 : 0), 1), barH * 2);
+  }
+  if (progress > 0) { ctx.fillStyle = '#ff1097'; ctx.fillRect(playedX - 1, 0, 2, h); }
+}
+
+function portalFmtTime(s) {
+  if (!Number.isFinite(s) || s < 0) return '0:00';
+  return `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
+}
+
+function portalPlayVersion(version, trackName) {
+  const wrap = document.getElementById('portal-player');
+  const audio = document.getElementById('portal-player-audio');
+  const titleEl = document.getElementById('portal-player-title');
+  if (!wrap || !audio) return;
+  if (!version.driveFileId) { portalUploadStatus('Esta versión no tiene archivo.'); return; }
+
+  portalPlayerState = { peaks: version.peaks || [], duration: version.duracion || 0 };
+  wrap.classList.remove('hidden');
+  if (titleEl) titleEl.textContent = `${trackName} — ${version.name}`;
+  audio.src = `${API_BASE}/api/audio/${version.driveFileId}`;
+  const durEl = document.getElementById('portal-player-dur');
+  if (durEl) durEl.textContent = portalFmtTime(version.duracion || 0);
+  audio.play().catch(() => {});
+  portalDrawWaveform();
+}
+
+function setupPortalPlayer() {
+  const audio = document.getElementById('portal-player-audio');
+  const canvas = document.getElementById('portal-player-canvas');
+  const toggle = document.getElementById('portal-player-toggle');
+  const closeBtn = document.getElementById('portal-player-close');
+  const curEl = document.getElementById('portal-player-cur');
+  const durEl = document.getElementById('portal-player-dur');
+  if (!audio) return;
+
+  if (toggle) toggle.addEventListener('click', () => { if (audio.paused) audio.play().catch(() => {}); else audio.pause(); });
+  if (audio) {
+    audio.addEventListener('play', () => { if (toggle) toggle.textContent = '⏸'; });
+    audio.addEventListener('pause', () => { if (toggle) toggle.textContent = '▶'; });
+    audio.addEventListener('timeupdate', () => { if (curEl) curEl.textContent = portalFmtTime(audio.currentTime); portalDrawWaveform(); });
+    audio.addEventListener('loadedmetadata', () => {
+      if (Number.isFinite(audio.duration)) { portalPlayerState.duration = portalPlayerState.duration || audio.duration; if (durEl) durEl.textContent = portalFmtTime(portalPlayerState.duration); }
+    });
+    audio.addEventListener('ended', () => { if (toggle) toggle.textContent = '▶'; portalDrawWaveform(); });
+  }
+  if (canvas) canvas.addEventListener('click', (e) => {
+    const dur = portalPlayerState.duration || audio.duration || 0;
+    if (!dur) return;
+    const rect = canvas.getBoundingClientRect();
+    audio.currentTime = Math.min(Math.max((e.clientX - rect.left) / rect.width, 0), 1) * dur;
+    portalDrawWaveform();
+  });
+  if (closeBtn) closeBtn.addEventListener('click', () => {
+    audio.pause();
+    document.getElementById('portal-player')?.classList.add('hidden');
   });
 }
 

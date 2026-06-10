@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="./styles.css?v=2.0.46" />
+    <link rel="stylesheet" href="./styles.css?v=2.0.48" />
     <link rel="manifest" href="./manifest.json" />
     <link rel="icon" type="image/png" href="./icon-32.png" />
     <link rel="apple-touch-icon" href="./icon-180.png" />
@@ -482,6 +482,16 @@
             <div class="quote-detail-title"><span id="portal-detail-number">—</span></div>
           </div>
           <p id="portal-detail-client" class="hint"></p>
+          <div id="portal-player" class="portal-player hidden">
+            <div class="portal-player-head">
+              <button id="portal-player-toggle" class="portal-play-btn" type="button" aria-label="Play">▶</button>
+              <span id="portal-player-title" class="portal-player-title"></span>
+              <button id="portal-player-close" class="btn ghost portal-player-close" type="button">✕</button>
+            </div>
+            <canvas id="portal-player-canvas" class="portal-player-canvas"></canvas>
+            <div class="portal-player-times"><span id="portal-player-cur">0:00</span><span id="portal-player-dur">0:00</span></div>
+            <audio id="portal-player-audio" preload="metadata"></audio>
+          </div>
           <div id="portal-tracks"></div>
 
           <div class="portal-upload">
@@ -556,6 +566,6 @@
     <script src="./config.js"></script>
     <script src="./vendor/howler.min.js"></script>
     <script src="./tracks.js?v=salesfix404v1"></script>
-    <script src="./app.js?v=2.0.47"></script>
+    <script src="./app.js?v=2.0.48"></script>
   </body>
   </html>

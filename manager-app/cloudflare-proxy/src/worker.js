@@ -3232,6 +3232,9 @@ async function portalAdminCotizacion(env, pageId) {
     });
     const versions = versionPages.map((vp) => {
       const vprops = vp.properties || {};
+      let peaks = [];
+      const peaksRaw = richTextToString(vprops?.Peaks?.rich_text);
+      if (peaksRaw) { try { peaks = JSON.parse(peaksRaw); } catch { peaks = []; } }
       return {
         id: vp.id,
         name: readNotionTitle(vprops),
@@ -3239,6 +3242,8 @@ async function portalAdminCotizacion(env, pageId) {
         visible: Boolean(vprops?.Visible?.checkbox),
         duracion: vprops?.["Duración (seg)"]?.number || 0,
         fecha: vprops?.Fecha?.date?.start || "",
+        driveFileId: richTextToString(vprops?.["Drive File ID"]?.rich_text),
+        peaks: Array.isArray(peaks) ? peaks : [],
       };
     });
     tracks.push({
@@ -3300,6 +3305,45 @@ async function portalAdminCreateVersion(env, form) {
   const created = await createNotionPage(env, PORTAL_VERSIONS_DS_ID, properties);
   if (!created.ok) return created;
   return { ok: true, id: created.id, driveFileId: uploaded.id };
+}
+
+// Toggle a version's visible/favorita. Favorita is exclusive per track: setting one
+// true unsets the others.
+async function portalAdminPatchVersion(env, versionId, body) {
+  const props = {};
+  if (typeof body?.visible === "boolean") props.Visible = { checkbox: body.visible };
+  if (typeof body?.favorita === "boolean") {
+    props.Favorita = { checkbox: body.favorita };
+    if (body.favorita === true) {
+      const vprops = await getNotionPageProps(env, versionId);
+      const trackId = vprops?.Track?.relation?.[0]?.id;
+      if (trackId) {
+        const siblings = await queryPortalDb(env, PORTAL_VERSIONS_DS_ID, {
+          property: "Track", relation: { contains: trackId },
+        });
+        for (const s of siblings) {
+          if (normNotionId(s.id) !== normNotionId(versionId) && s.properties?.Favorita?.checkbox) {
+            await patchNotionPage(env, s.id, { Favorita: { checkbox: false } });
+          }
+        }
+      }
+    }
+  }
+  if (!Object.keys(props).length) return { ok: false, error: "nada para actualizar" };
+  return patchNotionPage(env, versionId, props);
+}
+
+// Toggle a track's "Descarga habilitada" (and optionally Estado).
+async function portalAdminPatchTrack(env, trackId, body) {
+  const props = {};
+  if (typeof body?.descargaHabilitada === "boolean") {
+    props["Descarga habilitada"] = { checkbox: body.descargaHabilitada };
+  }
+  if (typeof body?.estado === "string" && body.estado) {
+    props.Estado = { select: { name: body.estado } };
+  }
+  if (!Object.keys(props).length) return { ok: false, error: "nada para actualizar" };
+  return patchNotionPage(env, trackId, props);
 }
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -3665,6 +3709,20 @@ export default {
       if (!form) return json({ error: "multipart form required" }, 400);
       const result = await portalAdminCreateVersion(env, form);
       return json(result, result.ok === false ? 400 : 201);
+    }
+    if (request.method === "PATCH" && url.pathname.startsWith("/portal/admin/version/")) {
+      const versionId = url.pathname.replace("/portal/admin/version/", "").trim();
+      if (!versionId) return json({ error: "versionId required" }, 400);
+      const body = await request.json().catch(() => ({}));
+      const result = await portalAdminPatchVersion(env, versionId, body);
+      return json(result, result.ok === false ? 400 : 200);
+    }
+    if (request.method === "PATCH" && url.pathname.startsWith("/portal/admin/track/")) {
+      const trackId = url.pathname.replace("/portal/admin/track/", "").trim();
+      if (!trackId) return json({ error: "trackId required" }, 400);
+      const body = await request.json().catch(() => ({}));
+      const result = await portalAdminPatchTrack(env, trackId, body);
+      return json(result, result.ok === false ? 400 : 200);
     }
     // ───────────────────────────────────────────────────────────────────────────
 
