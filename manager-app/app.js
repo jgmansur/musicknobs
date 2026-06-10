@@ -5273,10 +5273,40 @@ const MK_QUOTE_CATALOG = [
   ]},
 ];
 
+// Local market catalog — mirror of musicknobs-web/app/locales/cotizar (catalogLocalES).
+// Separate from the international catalog: same `name` can carry a different price.
+const MK_QUOTE_CATALOG_LOCAL = [
+  { id: 'produccion', title: 'Producción Musical', services: [
+    { id: 'prod-musicos', name: 'Producción completa con músicos locales', description: 'Arreglos, músicos de sesión locales, grabación, mezcla y mastering.', priceLabel: '$13,500 MXN / canción', hasQty: true, qtyLabel: 'Canciones', basePrice: 13500, calcPrice: (q) => q * 13500, currency: 'MXN' },
+    { id: 'prod-programada', name: 'Producción completa con pista programada', description: 'Arreglos y programación completa. 1 día de grabación de voces o guitarras si aplica.', priceLabel: '$10,000 MXN / canción', hasQty: true, qtyLabel: 'Canciones', basePrice: 10000, calcPrice: (q) => q * 10000, currency: 'MXN' },
+  ]},
+  { id: 'grabacion', title: 'Grabación en Estudio', services: [
+    { id: 'grabacion-5hrs', name: 'Paquete 5 horas', description: '5 horas en el home studio de Jay. Ingeniería de grabación incluida.', priceLabel: '$3,500 MXN / paquete', hasQty: true, qtyLabel: 'Paquetes', basePrice: 3500, calcPrice: (q) => q * 3500, currency: 'MXN' },
+    { id: 'grabacion-hora-extra', name: 'Hora extra de grabación', description: 'Horas adicionales el mismo día, después del paquete de 5 horas.', priceLabel: '$700 MXN / hora', hasQty: true, qtyLabel: 'Horas', basePrice: 700, calcPrice: (q) => q * 700, currency: 'MXN' },
+  ]},
+  { id: 'postproduccion', title: 'Post-producción', services: [
+    { id: 'mezcla-local', name: 'Mezcla profesional', description: 'Hasta 40 tracks. 2 rondas de revisión incluidas.', priceLabel: '$2,000 MXN / canción', hasQty: true, qtyLabel: 'Canciones', basePrice: 2000, calcPrice: (q) => q * 2000, currency: 'MXN' },
+    { id: 'mastering-local', name: 'Mastering', description: 'LUFS optimizado para Spotify, Apple Music y más. 1 revisión incluida.', priceLabel: '$1,000 MXN / canción', hasQty: true, qtyLabel: 'Canciones', basePrice: 1000, calcPrice: (q) => q * 1000, currency: 'MXN' },
+    { id: 'afinacion-local', name: 'Afinación (Melodyne)', description: 'Corrección natural de afinación. 1er track $500 MXN, desde el 2do $200 MXN c/u.', priceLabel: '$500 MXN 1er track · $200 MXN desde el 2do', hasQty: true, qtyLabel: 'Tracks', basePrice: 500, calcPrice: (q) => (q === 1 ? 500 : 500 + (q - 1) * 200), currency: 'MXN' },
+    { id: 'edicion-local', name: 'Edición y reparación de audio', description: 'Limpieza de ruidos, edición de takes, corrección de timing.', priceLabel: '$1,000 MXN hasta 5 tracks · +$100 MXN por track extra', hasQty: true, qtyLabel: 'Tracks', basePrice: 1000, calcPrice: (q) => (q <= 5 ? 1000 : 1000 + (q - 5) * 100), currency: 'MXN' },
+  ]},
+  { id: 'distribucion', title: 'Distribución y Promoción', services: [
+    { id: 'spotify-local', name: 'Posicionamiento en Spotify', description: '~60,000 plays auténticos en playlists orgánicas. Resultados en 2-4 semanas.', priceLabel: '$300 USD / track', hasQty: true, qtyLabel: 'Tracks', basePrice: 300, calcPrice: (q) => q * 300, currency: 'USD' },
+    { id: 'label-local', name: 'Distribución bajo Music Knobs Label', description: 'Distribución completa en todas las plataformas. Conservás el 80% de regalías y todos los derechos.', priceLabel: '$100 USD primer año · $50 USD / año renovación', hasQty: false, basePrice: 100, currency: 'USD' },
+    { id: 'consultoria-local', name: 'Consultoría para artistas', description: 'Orientación de carrera, estrategia de lanzamiento, revisión de material.', priceLabel: '$150 USD / hora · $1,200 USD paquete 8 horas', hasQty: true, qtyLabel: 'Horas', basePrice: 150, calcPrice: (q) => (q >= 8 ? 1200 : q * 150), currency: 'USD' },
+  ]},
+  { id: 'arte', title: 'Arte y Diseño', services: [
+    { id: 'diseño-portada', name: 'Diseño de Portada Profesional', description: 'Portada diseñada por un artista humano. 2 revisiones incluidas. Revisión extra: $1,000 MXN.', priceLabel: '$4,000 MXN / diseño · Revisión extra $1,000 MXN', hasQty: true, qtyLabel: 'Diseños', basePrice: 4000, calcPrice: (q) => q * 4000, currency: 'MXN' },
+    { id: 'fotografia-profesional', name: 'Fotografía Profesional', description: 'Sesión con fotógrafo profesional y cámaras de gama alta.', priceLabel: 'A cotizar', hasQty: false, basePrice: 0, currency: 'quote' },
+    { id: 'pintura-oleo', name: 'Pintura al Óleo', description: 'Tu imagen o la portada de tu disco convertida en pintura al óleo. Disponible en 3 tamaños.', priceLabel: 'Desde $12,000 MXN · 3 tamaños disponibles', hasQty: true, qtyLabel: 'Obras', basePrice: 12000, calcPrice: (q) => q * 12000, currency: 'MXN' },
+  ]},
+];
+
 let quoteDetailSelection = {};
+let mkActiveCatalog = MK_QUOTE_CATALOG; // switched per quote origin in mkInitCotizadorClone
 
 function mkAllServices() {
-  return MK_QUOTE_CATALOG.flatMap((c) => c.services);
+  return mkActiveCatalog.flatMap((c) => c.services);
 }
 
 // Normalize for robust join: Unicode NFC (accents), trim, case-insensitive.
@@ -5325,7 +5355,10 @@ function mkBuildSummaryHtml() {
 
 function mkBuildCatalogHtml(unmatchedItems) {
   const sel = quoteDetailSelection;
-  const cats = MK_QUOTE_CATALOG.map((cat) => {
+  const market = mkActiveCatalog === MK_QUOTE_CATALOG_LOCAL
+    ? '<span class="mk-market-chip mk-market-local">Mercado local · precios MXN</span>'
+    : '<span class="mk-market-chip">Cotización internacional</span>';
+  const cats = mkActiveCatalog.map((cat) => {
     const cards = cat.services.map((svc) => {
       const on = Boolean(sel[svc.id]);
       const qty = sel[svc.id] || 1;
@@ -5344,10 +5377,11 @@ function mkBuildCatalogHtml(unmatchedItems) {
       }).join('')}</div></div>`
     : '';
 
-  return `<div class="mk-cotizador-clone"><div class="mk-clone-catalog">${cats}${extra}</div><div class="mk-clone-summary" id="mk-clone-summary">${mkBuildSummaryHtml()}</div></div>`;
+  return `<div class="mk-cotizador-clone"><div class="mk-clone-catalog">${market}${cats}${extra}</div><div class="mk-clone-summary" id="mk-clone-summary">${mkBuildSummaryHtml()}</div></div>`;
 }
 
-function mkInitCotizadorClone(services) {
+function mkInitCotizadorClone(services, origen) {
+  mkActiveCatalog = origen === 'local' ? MK_QUOTE_CATALOG_LOCAL : MK_QUOTE_CATALOG;
   quoteDetailSelection = {};
   const unmatched = [];
   for (const item of (services || [])) {
@@ -5513,7 +5547,7 @@ function renderQuoteDetail(q) {
 
   const servicesEl = document.getElementById('qd-services-list');
   if (servicesEl) {
-    servicesEl.innerHTML = mkInitCotizadorClone(q.services || []);
+    servicesEl.innerHTML = mkInitCotizadorClone(q.services || [], q.origen);
     const clone = servicesEl.querySelector('.mk-cotizador-clone');
     if (clone) mkBindCloneEvents(clone);
   }
