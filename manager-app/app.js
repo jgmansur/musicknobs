@@ -5212,6 +5212,7 @@ function checkNotificationStatus() {
 
 let quotesCache = [];
 let quotesCurrentPageId = null;
+let quotesFxRate = null; // USD→MXN FIX from Banxico, provided by the API
 
 const QUOTE_DATE_DAYS = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
 const QUOTE_DATE_MONTHS = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
@@ -5449,6 +5450,7 @@ async function loadQuotesFromApi(search = '', status = '') {
     const qs = params.toString();
     const res = await fetchJson(`${API_BASE}/api/manager/quotes${qs ? `?${qs}` : ''}`);
     const data = res?.data || [];
+    quotesFxRate = typeof res?.fxRate === 'number' && res.fxRate > 0 ? res.fxRate : null;
     quotesCache = data;
     renderQuotesList(data);
     if (statusEl) {
@@ -5459,6 +5461,22 @@ async function loadQuotesFromApi(search = '', status = '') {
   } catch (e) {
     if (statusEl) statusEl.textContent = `Error: ${e.message}`;
   }
+}
+
+function formatQuoteTotal(q, fxRate) {
+  const mxn = Number(q.totalMXN) || 0;
+  const usd = Number(q.totalUSD) || 0;
+  if (mxn === 0 && usd === 0) return '';
+  if (fxRate && fxRate > 0) {
+    const total = mxn + usd * fxRate;
+    const approx = usd > 0 ? '≈ ' : ''; // approximate only when USD was converted
+    return `${approx}$${Math.round(total).toLocaleString('en-US')} MXN`;
+  }
+  // No FX rate → show each currency separately, never a wrong combined total
+  const parts = [];
+  if (usd > 0) parts.push(`$${usd.toLocaleString('en-US')} USD`);
+  if (mxn > 0) parts.push(`$${mxn.toLocaleString('en-US')} MXN`);
+  return parts.join(' + ');
 }
 
 function renderQuotesList(quotes) {
@@ -5473,7 +5491,7 @@ function renderQuotesList(quotes) {
     const quoteNumber = escapeHtml(q.quoteNumber || '—');
     const name = escapeHtml(q.name || '—');
     const date = escapeHtml(formatQuoteDate(q.date));
-    const total = q.total ? escapeHtml(String(q.total)) : '';
+    const total = escapeHtml(formatQuoteTotal(q, quotesFxRate));
     return `
       <div class="quote-card" data-id="${escapeHtml(q.id)}">
         <div class="quote-card-main">
