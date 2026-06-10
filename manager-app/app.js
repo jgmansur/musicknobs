@@ -5272,6 +5272,9 @@ const MK_QUOTE_CATALOG = [
     { id: 'fotografia-profesional', name: 'Fotografía Profesional', description: 'Sesión con fotógrafo profesional y cámaras de gama alta.', priceLabel: 'A cotizar', hasQty: false, basePrice: 0, currency: 'quote' },
     { id: 'pintura-oleo', name: 'Pintura al Óleo', description: 'Tu imagen o la portada de tu disco convertida en pintura al óleo. Disponible en 3 tamaños.', priceLabel: 'Desde $12,000 MXN · 3 tamaños disponibles', hasQty: true, qtyLabel: 'Obras', basePrice: 12000, currency: 'MXN' },
   ]},
+  { id: 'estudio', title: 'Estudio Profesional · exclusivo seguimiento', services: [
+    { id: 'dia-estudio', name: 'Día de Estudio Profesional — Troubled Cleff Studios', description: 'Día completo de grabación en Troubled Cleff Studios, San Miguel de Allende.', priceLabel: '$2,000 USD / día', hasQty: true, qtyLabel: 'Días', basePrice: 2000, calcPrice: (q) => q * 2000, currency: 'USD', managerOnly: true },
+  ]},
 ];
 
 // Local market catalog — mirror of musicknobs-web/app/locales/cotizar (catalogLocalES).
@@ -5300,6 +5303,9 @@ const MK_QUOTE_CATALOG_LOCAL = [
     { id: 'diseño-portada', name: 'Diseño de Portada Profesional', description: 'Portada diseñada por un artista humano. 2 revisiones incluidas. Revisión extra: $1,000 MXN.', priceLabel: '$4,000 MXN / diseño · Revisión extra $1,000 MXN', hasQty: true, qtyLabel: 'Diseños', basePrice: 4000, calcPrice: (q) => q * 4000, currency: 'MXN' },
     { id: 'fotografia-profesional', name: 'Fotografía Profesional', description: 'Sesión con fotógrafo profesional y cámaras de gama alta.', priceLabel: 'A cotizar', hasQty: false, basePrice: 0, currency: 'quote' },
     { id: 'pintura-oleo', name: 'Pintura al Óleo', description: 'Tu imagen o la portada de tu disco convertida en pintura al óleo. Disponible en 3 tamaños.', priceLabel: 'Desde $12,000 MXN · 3 tamaños disponibles', hasQty: true, qtyLabel: 'Obras', basePrice: 12000, calcPrice: (q) => q * 12000, currency: 'MXN' },
+  ]},
+  { id: 'estudio', title: 'Estudio Profesional · exclusivo seguimiento', services: [
+    { id: 'dia-estudio', name: 'Día de Estudio Profesional — Troubled Cleff Studios', description: 'Día completo de grabación en Troubled Cleff Studios, San Miguel de Allende.', priceLabel: '$1,000 USD / día', hasQty: true, qtyLabel: 'Días', basePrice: 1000, calcPrice: (q) => q * 1000, currency: 'USD', managerOnly: true },
   ]},
 ];
 
