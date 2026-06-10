@@ -5427,12 +5427,35 @@ function mkInitCotizadorClone(services, origen) {
 
 // Full re-render of the clone. Safe for checkbox/qty changes (no focused text
 // input). NOT called from the price input handler, to preserve typing focus.
+// Negotiated subtotals from the current live selection + overrides.
+function mkNegotiatedSubtotals() {
+  let usd = 0, mxn = 0;
+  for (const id of Object.keys(quoteDetailSelection)) {
+    if (!(quoteDetailSelection[id] > 0)) continue;
+    const svc = mkAllServices().find((s) => s.id === id);
+    if (!svc) continue;
+    const price = mkItemPrice(svc, quoteDetailSelection[id]);
+    const cur = mkEffectiveCurrency(svc);
+    if (cur === 'MXN') mxn += price;
+    else if (cur !== 'quote') usd += price;
+  }
+  return { totalMXN: mxn, totalUSD: usd };
+}
+
+// Keep the top "Total cotizado" field in sync with live negotiation.
+function mkUpdateQdTotal() {
+  const el = document.getElementById('qd-total');
+  if (!el) return;
+  el.textContent = formatQuoteTotal(mkNegotiatedSubtotals(), quotesFxRate) || '—';
+}
+
 function mkRefreshClone() {
   const servicesEl = document.getElementById('qd-services-list');
   if (!servicesEl) return;
   servicesEl.innerHTML = mkBuildCatalogHtml(quoteDetailUnmatched);
   const clone = servicesEl.querySelector('.mk-cotizador-clone');
   if (clone) mkBindCloneEvents(clone);
+  mkUpdateQdTotal();
 }
 
 function mkHandleQty(e) {
@@ -5454,6 +5477,7 @@ function mkHandlePriceInput(e) {
   if (!container) return;
   const sumEl = container.querySelector('#mk-clone-summary');
   if (sumEl) sumEl.innerHTML = mkBuildSummaryHtml();
+  mkUpdateQdTotal();
 }
 
 function mkBindCloneEvents(container) {
@@ -5601,6 +5625,7 @@ function renderQuoteDetail(q) {
     servicesEl.innerHTML = mkInitCotizadorClone(q.services || [], q.origen);
     const clone = servicesEl.querySelector('.mk-cotizador-clone');
     if (clone) mkBindCloneEvents(clone);
+    mkUpdateQdTotal(); // keep the top total in sync with the clone from the start
   }
 }
 
