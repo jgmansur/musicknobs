@@ -3110,6 +3110,19 @@ body.messages-active .container {
 }
 .quotes-toolbar .status { margin: 0; }
 
+.quotes-search {
+  width: 100%;
+  margin: .5rem 0;
+  padding: .6rem .9rem;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: .6rem;
+  color: var(--text-main);
+  font-size: .85rem;
+}
+.quotes-search::placeholder { color: var(--text-muted); }
+.quotes-search:focus { outline: none; border-color: var(--glass-border-hover); }
+
 .btn-ghost {
   background: transparent;
   border: 1px solid var(--glass-border);

@@ -5042,6 +5042,11 @@ function setupActions() {
   bindClick('quotes-delete-btn', mkDeleteSelectedQuotes);
   bindClick('quotes-archive-btn', mkArchiveSelectedQuotes);
   bindClick('quotes-select-toggle', mkToggleSelectMode);
+  const quotesSearchEl = document.getElementById('quotes-search');
+  if (quotesSearchEl) quotesSearchEl.addEventListener('input', (e) => {
+    quotesSearchTerm = e.target.value || '';
+    mkRefreshQuotesView();
+  });
   bindClick('quote-contract-btn', mkGenerateContract);
   bindClick('refresh-messages', () => loadMessagesFromApi());
   bindClick('refresh-messages-overview', () => loadMessagesFromApi());
@@ -5621,14 +5626,7 @@ async function loadQuotesFromApi(search = '', status = '') {
     quotesFxRate = typeof res?.fxRate === 'number' && res.fxRate > 0 ? res.fxRate : null;
     quotesCache = data;
     renderQuotesList(data);
-    if (statusEl) {
-      const shown = mkVisibleQuotes(data).length;
-      const archived = data.length - shown;
-      const archivedNote = (!quotesShowArchived && archived > 0) ? ` (${archived} archivada${archived === 1 ? '' : 's'})` : '';
-      statusEl.textContent = shown === 0
-        ? 'Sin cotizaciones para mostrar.'
-        : `${shown} cotización${shown === 1 ? '' : 'es'}${archivedNote}.`;
-    }
+    mkUpdateQuotesStatusCount();
   } catch (e) {
     if (statusEl) statusEl.textContent = `Error: ${e.message}`;
   }
@@ -5654,12 +5652,46 @@ const QUOTE_ESTADOS = ['Idea Por Checar', 'Pendiente', 'Empezó', 'Terminado', '
 let quotesSelectedIds = new Set();
 let quotesSelectMode = false; // checkboxes hidden until the user taps "Seleccionar"
 let quotesShowArchived = false; // archived = status "Terminado"; hidden from the default list
+let quotesSearchTerm = ''; // free-text filter: number, name, email, phone, date
 
 // "Terminado" quotes count as archived: hidden unless the user opts to show them.
 const QUOTE_ARCHIVED_STATUS = 'Terminado';
+
+function mkQuoteMatchesSearch(q, term) {
+  const fields = [q.quoteNumber, q.name, q.email, q.phone, formatQuoteDate(q.date), q.date];
+  return fields.some((v) => String(v || '').toLowerCase().includes(term));
+}
+
 function mkVisibleQuotes(quotes) {
-  if (quotesShowArchived) return quotes;
-  return (quotes || []).filter((q) => (q.estatus || '') !== QUOTE_ARCHIVED_STATUS);
+  const list = quotes || [];
+  const term = quotesSearchTerm.trim().toLowerCase();
+  // A search spans EVERYTHING, including archived (Terminado) quotes.
+  if (term) return list.filter((q) => mkQuoteMatchesSearch(q, term));
+  if (quotesShowArchived) return list;
+  return list.filter((q) => (q.estatus || '') !== QUOTE_ARCHIVED_STATUS);
+}
+
+function mkUpdateQuotesStatusCount() {
+  const statusEl = document.getElementById('quotes-status');
+  if (!statusEl) return;
+  const data = quotesCache || [];
+  const shown = mkVisibleQuotes(data).length;
+  if (quotesSearchTerm.trim()) {
+    statusEl.textContent = shown === 0 ? 'Sin resultados.' : `${shown} resultado${shown === 1 ? '' : 's'}.`;
+    return;
+  }
+  if (data.length === 0) { statusEl.textContent = 'Sin cotizaciones para mostrar.'; return; }
+  const nonArchived = data.filter((q) => (q.estatus || '') !== QUOTE_ARCHIVED_STATUS).length;
+  const archived = data.length - nonArchived;
+  const archivedNote = (!quotesShowArchived && archived > 0) ? ` (${archived} archivada${archived === 1 ? '' : 's'})` : '';
+  const n = quotesShowArchived ? data.length : nonArchived;
+  statusEl.textContent = n === 0 ? 'Sin cotizaciones para mostrar.' : `${n} cotización${n === 1 ? '' : 'es'}${archivedNote}.`;
+}
+
+// Re-render from the in-memory cache (search/archived filters are applied in render).
+function mkRefreshQuotesView() {
+  renderQuotesList(quotesCache);
+  mkUpdateQuotesStatusCount();
 }
 
 function mkEstatusOptionsHtml(current) {
