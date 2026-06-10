@@ -3059,3 +3059,13 @@ body.messages-active .container {
 .qd-link:hover {
   border-bottom-color: var(--primary);
 }
+
+/* ─── Autosave status indicator ───────────────────────────────────────────── */
+.qd-save-status {
+  font-size: .66rem;
+  margin-left: .5rem;
+  vertical-align: middle;
+  color: var(--text-muted);
+}
+.qd-save-status.saved { color: #4ade80; }
+.qd-save-status.error { color: #f87171; }

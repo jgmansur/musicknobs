@@ -5313,6 +5313,7 @@ let quoteDetailSelection = {};
 let quoteDetailPriceOverrides = {}; // per-service negotiated price (by service id), this quote only
 let quoteDetailUnmatched = []; // client services not found in the active catalog
 let mkActiveCatalog = MK_QUOTE_CATALOG; // switched per quote origin in mkInitCotizadorClone
+let negotiationSaveTimer = null; // debounce for autosave
 
 function mkAllServices() {
   return mkActiveCatalog.flatMap((c) => c.services);
@@ -5411,15 +5412,38 @@ function mkBuildCatalogHtml(unmatchedItems) {
   return `<div class="mk-cotizador-clone"><div class="mk-clone-catalog">${market}${cats}${extra}</div><div class="mk-clone-summary" id="mk-clone-summary">${mkBuildSummaryHtml()}</div></div>`;
 }
 
-function mkInitCotizadorClone(services, origen) {
+function mkParseMoney(str) {
+  const s = String(str || '');
+  if (/cotizar/i.test(s)) return { amount: 0, currency: 'quote' };
+  const currency = /mxn/i.test(s) ? 'MXN' : 'USD';
+  const amount = Number(s.replace(/[^0-9.]/g, '')) || 0;
+  return { amount, currency };
+}
+
+// Initializes from the saved negotiated version if present, else from the
+// client's original services. Negotiated prices that differ from the catalog
+// become per-service overrides (so they show as "editado").
+function mkInitCotizadorClone(services, origen, negotiated) {
   mkActiveCatalog = origen === 'local' ? MK_QUOTE_CATALOG_LOCAL : MK_QUOTE_CATALOG;
   quoteDetailSelection = {};
   quoteDetailPriceOverrides = {};
+  const fromNeg = Array.isArray(negotiated) && negotiated.length > 0;
+  const source = fromNeg ? negotiated : (services || []);
   const unmatched = [];
-  for (const item of (services || [])) {
+  for (const item of source) {
     const svc = mkFindByName(item.name);
-    if (svc) quoteDetailSelection[svc.id] = parseInt(item.qty, 10) || 1;
-    else unmatched.push(item);
+    if (svc) {
+      const qty = parseInt(item.qty, 10) || 1;
+      quoteDetailSelection[svc.id] = qty;
+      if (fromNeg) {
+        const m = mkParseMoney(item.price);
+        if (m.currency !== 'quote' && m.amount !== mkItemPrice(svc, qty)) {
+          quoteDetailPriceOverrides[svc.id] = m.amount;
+        }
+      }
+    } else {
+      unmatched.push(item);
+    }
   }
   quoteDetailUnmatched = unmatched;
   return mkBuildCatalogHtml(unmatched);
@@ -5465,6 +5489,7 @@ function mkHandleQty(e) {
   quoteDetailSelection[id] = op === 'inc' ? quoteDetailSelection[id] + 1 : Math.max(1, quoteDetailSelection[id] - 1);
   delete quoteDetailPriceOverrides[id]; // qty change recalculates the price from the catalog
   mkRefreshClone();
+  mkScheduleNegotiationSave();
 }
 
 function mkHandlePriceInput(e) {
@@ -5478,6 +5503,61 @@ function mkHandlePriceInput(e) {
   const sumEl = container.querySelector('#mk-clone-summary');
   if (sumEl) sumEl.innerHTML = mkBuildSummaryHtml();
   mkUpdateQdTotal();
+  mkScheduleNegotiationSave();
+}
+
+// Snapshot of the current negotiation: selected services with final prices.
+function mkCollectNegotiated() {
+  const out = [];
+  for (const id of Object.keys(quoteDetailSelection)) {
+    if (!(quoteDetailSelection[id] > 0)) continue;
+    const svc = mkAllServices().find((s) => s.id === id);
+    if (!svc) continue;
+    const qty = quoteDetailSelection[id];
+    const price = mkItemPrice(svc, qty);
+    const cur = mkEffectiveCurrency(svc);
+    const priceStr = cur === 'quote'
+      ? 'A cotizar'
+      : cur === 'MXN'
+        ? `$${price.toLocaleString('en-US')} MXN`
+        : `$${price.toLocaleString('en-US')} USD`;
+    out.push({ name: svc.name, qty: svc.hasQty ? String(qty) : '—', price: priceStr });
+  }
+  for (const item of quoteDetailUnmatched) {
+    out.push({ name: item.name, qty: item.qty != null ? String(item.qty) : '—', price: String(item.price || '') });
+  }
+  return out;
+}
+
+function mkSetSaveStatus(text, cls) {
+  const el = document.getElementById('qd-save-status');
+  if (!el) return;
+  el.textContent = text;
+  el.className = 'qd-save-status' + (cls ? ' ' + cls : '');
+}
+
+async function mkSaveNegotiation() {
+  if (!quotesCurrentPageId || !API_BASE) return;
+  mkSetSaveStatus('Guardando…', 'saving');
+  try {
+    const r = await fetch(`${API_BASE}/api/manager/quotes/${quotesCurrentPageId}`, {
+      method: 'PATCH',
+      headers: apiHeaders(),
+      body: JSON.stringify({ negotiated: mkCollectNegotiated() }),
+    });
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    mkSetSaveStatus('Guardado ✓', 'saved');
+  } catch (e) {
+    mkSetSaveStatus('Error al guardar', 'error');
+  }
+}
+
+// Autosave: debounce so rapid edits collapse into one Notion write.
+function mkScheduleNegotiationSave() {
+  if (!quotesCurrentPageId) return;
+  mkSetSaveStatus('Editando…', 'editing');
+  clearTimeout(negotiationSaveTimer);
+  negotiationSaveTimer = setTimeout(mkSaveNegotiation, 1000);
 }
 
 function mkBindCloneEvents(container) {
@@ -5488,6 +5568,7 @@ function mkBindCloneEvents(container) {
       if (e.target.checked) quoteDetailSelection[id] = quoteDetailSelection[id] || 1;
       else { delete quoteDetailSelection[id]; delete quoteDetailPriceOverrides[id]; }
       mkRefreshClone();
+      mkScheduleNegotiationSave();
     });
   });
   container.querySelectorAll('.mk-qty-btn').forEach((b) => b.addEventListener('click', mkHandleQty));
@@ -5629,9 +5710,10 @@ function renderQuoteDetail(q) {
   setSpan('qd-date', formatQuoteDate(q.date));
   setSpan('qd-total', formatQuoteTotal(q, quotesFxRate) || '—');
 
+  mkSetSaveStatus('', '');
   const servicesEl = document.getElementById('qd-services-list');
   if (servicesEl) {
-    servicesEl.innerHTML = mkInitCotizadorClone(q.services || [], q.origen);
+    servicesEl.innerHTML = mkInitCotizadorClone(q.services || [], q.origen, q.negotiated);
     const clone = servicesEl.querySelector('.mk-cotizador-clone');
     if (clone) mkBindCloneEvents(clone);
     mkUpdateQdTotal(); // keep the top total in sync with the clone from the start
