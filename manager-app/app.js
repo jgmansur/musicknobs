@@ -5018,6 +5018,9 @@ function setupTabs() {
       if (targetTab === 'quotes' && isAuthenticated && quotesCache.length === 0) {
         loadQuotesFromApi();
       }
+      if (targetTab === 'portal' && isAuthenticated) {
+        loadPortalCotizaciones();
+      }
       updateAuthGateForCurrentTab();
     });
   });
@@ -5048,6 +5051,9 @@ function setupActions() {
     mkRefreshQuotesView();
   });
   bindClick('quote-contract-btn', mkGenerateContract);
+  bindClick('portal-refresh', () => loadPortalCotizaciones());
+  bindClick('portal-back', () => showPortalDetail(false));
+  bindClick('portal-upload-btn', uploadPortalVersion);
   bindClick('refresh-messages', () => loadMessagesFromApi());
   bindClick('refresh-messages-overview', () => loadMessagesFromApi());
   // messages-load-more removed from UI — load-more handled via scroll
@@ -6014,5 +6020,196 @@ function renderQuoteDetail(q) {
     mkUpdateQdTotal(); // keep the top total in sync with the clone from the start
   }
 }
+
+// ─── PORTAL DE CLIENTES (admin) ───────────────────────────────────────────────
+let portalCotizacionesCache = [];
+let portalActiveQuote = null; // { id, quoteNumber, clientName, tracks }
+
+function portalSetStatus(msg) {
+  const el = document.getElementById('portal-status');
+  if (el) el.textContent = msg || '';
+}
+
+function portalUploadStatus(msg) {
+  const el = document.getElementById('portal-upload-status');
+  if (el) el.textContent = msg || '';
+}
+
+function showPortalDetail(show) {
+  const list = document.getElementById('portal-list-view');
+  const detail = document.getElementById('portal-detail-view');
+  if (list) list.classList.toggle('hidden', show);
+  if (detail) detail.classList.toggle('hidden', !show);
+}
+
+async function loadPortalCotizaciones() {
+  showPortalDetail(false);
+  portalSetStatus('Cargando cotizaciones…');
+  try {
+    const data = await fetchJson(`${API_BASE}/portal/admin/cotizaciones`);
+    portalCotizacionesCache = data?.quotes || [];
+    renderPortalCotizaciones(portalCotizacionesCache);
+    portalSetStatus(portalCotizacionesCache.length ? '' : 'No hay cotizaciones todavía.');
+  } catch (e) {
+    portalSetStatus('Error al cargar: ' + (e?.message || e));
+  }
+}
+
+function renderPortalCotizaciones(quotes) {
+  const root = document.getElementById('portal-cotizaciones');
+  if (!root) return;
+  root.innerHTML = '';
+  quotes.forEach((q) => {
+    const card = document.createElement('button');
+    card.type = 'button';
+    card.className = 'portal-card';
+    card.innerHTML = `<span class="portal-card-name">${escapeHtmlSafe(q.name || '—')}</span>` +
+      `<span class="portal-card-meta">${escapeHtmlSafe(q.quoteNumber || q.id.slice(0, 6))}${q.estatus ? ' · ' + escapeHtmlSafe(q.estatus) : ''}</span>`;
+    card.addEventListener('click', () => openPortalCotizacion(q.id, q.name, q.quoteNumber));
+    root.appendChild(card);
+  });
+}
+
+function escapeHtmlSafe(str) {
+  return String(str || '').replace(/[&<>"']/g, (c) => (
+    { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+  ));
+}
+
+async function openPortalCotizacion(quoteId, clientName, quoteNumber) {
+  portalUploadStatus('');
+  showPortalDetail(true);
+  const numEl = document.getElementById('portal-detail-number');
+  const cliEl = document.getElementById('portal-detail-client');
+  if (numEl) numEl.textContent = quoteNumber || quoteId.slice(0, 8);
+  if (cliEl) cliEl.textContent = clientName || '';
+  const tracksRoot = document.getElementById('portal-tracks');
+  if (tracksRoot) tracksRoot.innerHTML = '<p class="hint">Cargando…</p>';
+  try {
+    const data = await fetchJson(`${API_BASE}/portal/admin/cotizacion/${quoteId}`);
+    portalActiveQuote = { id: quoteId, quoteNumber, clientName, tracks: data?.tracks || [] };
+    renderPortalTracks(portalActiveQuote.tracks);
+  } catch (e) {
+    if (tracksRoot) tracksRoot.innerHTML = `<p class="hint">Error: ${escapeHtmlSafe(e?.message || String(e))}</p>`;
+  }
+}
+
+function renderPortalTracks(tracks) {
+  const root = document.getElementById('portal-tracks');
+  if (!root) return;
+  root.innerHTML = '';
+  // Track-name suggestions for the upload form
+  const datalist = document.getElementById('portal-track-list');
+  if (datalist) datalist.innerHTML = tracks.map((t) => `<option value="${escapeHtmlSafe(t.name)}">`).join('');
+
+  if (!tracks.length) {
+    root.innerHTML = '<p class="hint">Todavía no hay canciones. Subí la primera versión abajo.</p>';
+    return;
+  }
+  tracks.forEach((t) => {
+    const el = document.createElement('div');
+    el.className = 'portal-track';
+    const versions = (t.versions || []).map((v) => (
+      `<li class="portal-version">
+        <span>${escapeHtmlSafe(v.name)}${v.favorita ? ' <span class="portal-star">★</span>' : ''}</span>
+        <span class="portal-version-meta">${v.visible ? 'Visible' : 'Oculta'}${v.duracion ? ' · ' + Math.round(v.duracion) + 's' : ''}</span>
+      </li>`
+    )).join('');
+    el.innerHTML = `<div class="portal-track-head"><strong>${escapeHtmlSafe(t.name)}</strong>` +
+      `<span class="portal-version-meta">${(t.versions || []).length} versión(es)</span></div>` +
+      (versions ? `<ul class="portal-version-list">${versions}</ul>` : '');
+    root.appendChild(el);
+  });
+}
+
+// Decode an audio file → { peaks: number[] (0..1), duration: seconds }.
+async function generatePeaks(file, buckets = 400) {
+  try {
+    const arrayBuffer = await file.arrayBuffer();
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    const ctx = new AudioCtx();
+    const audioBuffer = await ctx.decodeAudioData(arrayBuffer);
+    const channel = audioBuffer.getChannelData(0);
+    const blockSize = Math.floor(channel.length / buckets) || 1;
+    const peaks = [];
+    for (let i = 0; i < buckets; i++) {
+      let max = 0;
+      const start = i * blockSize;
+      for (let j = 0; j < blockSize; j++) {
+        const v = Math.abs(channel[start + j] || 0);
+        if (v > max) max = v;
+      }
+      peaks.push(Math.round(max * 1000) / 1000);
+    }
+    const duration = audioBuffer.duration;
+    ctx.close();
+    return { peaks, duration };
+  } catch {
+    return { peaks: [], duration: 0 }; // fallback: empty peaks
+  }
+}
+
+async function portalEnsureTrack(name) {
+  const existing = (portalActiveQuote?.tracks || []).find(
+    (t) => String(t.name).trim().toLowerCase() === name.trim().toLowerCase(),
+  );
+  if (existing) return existing.id;
+  const res = await fetch(`${API_BASE}/portal/admin/track`, {
+    method: 'POST',
+    headers: apiHeaders(),
+    body: JSON.stringify({ cotizacionId: portalActiveQuote.id, name }),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok || !data.id) throw new Error(data.error || 'No se pudo crear la canción');
+  return data.id;
+}
+
+async function uploadPortalVersion() {
+  if (!portalActiveQuote) return;
+  const trackName = (document.getElementById('portal-track-name')?.value || '').trim();
+  const label = (document.getElementById('portal-version-label')?.value || '').trim();
+  const favorita = Boolean(document.getElementById('portal-version-favorita')?.checked);
+  const fileInput = document.getElementById('portal-version-file');
+  const file = fileInput?.files?.[0];
+
+  if (!trackName) return portalUploadStatus('Poné el nombre de la canción.');
+  if (!file) return portalUploadStatus('Elegí un archivo de audio.');
+
+  const btn = document.getElementById('portal-upload-btn');
+  if (btn) btn.disabled = true;
+  try {
+    portalUploadStatus('Analizando audio…');
+    const { peaks, duration } = await generatePeaks(file);
+
+    portalUploadStatus('Creando canción…');
+    const trackId = await portalEnsureTrack(trackName);
+
+    portalUploadStatus('Subiendo archivo…');
+    const form = new FormData();
+    form.append('trackId', trackId);
+    form.append('label', label || 'Versión');
+    form.append('favorita', favorita ? 'true' : 'false');
+    form.append('duracion', String(duration || 0));
+    form.append('peaks', JSON.stringify(peaks));
+    form.append('file', file, file.name);
+
+    const headers = {};
+    if (API_TOKEN) headers.Authorization = `Bearer ${API_TOKEN}`;
+    const res = await fetch(`${API_BASE}/portal/admin/version`, { method: 'POST', headers, body: form });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || !data.ok) throw new Error(data.error || `HTTP ${res.status}`);
+
+    portalUploadStatus('✓ Versión subida.');
+    if (fileInput) fileInput.value = '';
+    document.getElementById('portal-version-label').value = '';
+    document.getElementById('portal-version-favorita').checked = false;
+    await openPortalCotizacion(portalActiveQuote.id, portalActiveQuote.clientName, portalActiveQuote.quoteNumber);
+  } catch (e) {
+    portalUploadStatus('Error: ' + (e?.message || e));
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+// ──────────────────────────────────────────────────────────────────────────────
 
 init();

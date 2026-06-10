@@ -145,7 +145,9 @@ async function getDriveAccessToken(env) {
   const header = { alg: "RS256", typ: "JWT" };
   const payload = {
     iss: serviceAccount.client_email,
-    scope: "https://www.googleapis.com/auth/drive.readonly",
+    // Full drive scope: needed to upload portal versions (PR4 admin). The service
+    // account can still only touch resources explicitly shared with it.
+    scope: "https://www.googleapis.com/auth/drive",
     aud: serviceAccount.token_uri || "https://oauth2.googleapis.com/token",
     iat: now,
     exp: now + 3600,
@@ -2958,6 +2960,8 @@ const PORTAL_TRACKS_DS_ID = "7a33d528-2b51-48f9-b8c2-8eb2bc430e22";
 const PORTAL_VERSIONS_DS_ID = "ba3318ed-f64a-4c42-a953-20e1f6da9670";
 const PORTAL_PAYMENTS_DS_ID = "a6c520a9-efa0-47ee-9c77-0185d9263a73";
 const PORTAL_COMMENTS_DS_ID = "9b517273-7404-4e19-a40d-c92b7016b0f5";
+// Drive folder where portal version files are uploaded (shared with the service account).
+const PORTAL_FILES_FOLDER_ID = "1sequwARPJQcoVs52TlCZ0MWcxYS_1nb5";
 
 // Access code = client name lowercased without spaces/punctuation + last 3 alphanumeric
 // characters of a quote number. e.g. "Jay Mansur" + quote MK-2026-L9MGU → "jaymansurmgu".
@@ -3144,6 +3148,158 @@ async function portalStream(versionId, request, env, code) {
   const fileId = richTextToString(vprops?.["Drive File ID"]?.rich_text);
   if (!fileId) return json({ error: "Sin archivo" }, 404);
   return streamDriveAudioFile(fileId, request, env);
+}
+
+// ─── PORTAL ADMIN (Manager App) ───────────────────────────────────────────────
+// Notion rich_text caps each text segment at 2000 chars; long JSON (peaks) must be
+// chunked so it round-trips through richTextToString (which rejoins segments).
+function chunkRichText(str) {
+  const s = String(str || "");
+  if (!s) return [];
+  const out = [];
+  for (let i = 0; i < s.length; i += 1900) {
+    out.push({ type: "text", text: { content: s.slice(i, i + 1900) } });
+  }
+  return out;
+}
+
+async function createNotionPage(env, dsId, properties) {
+  const notionToken = env.NOTION_TOKEN || "", notionVersion = env.NOTION_VERSION || "2022-06-28";
+  const parentShapes = [{ data_source_id: dsId }, { database_id: dsId }];
+  let lastError = "";
+  for (const parent of parentShapes) {
+    const resp = await fetch("https://api.notion.com/v1/pages", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${notionToken}`, "Notion-Version": notionVersion, "Content-Type": "application/json" },
+      body: JSON.stringify({ parent, properties }),
+    });
+    if (resp.ok) return { ok: true, id: (await resp.json()).id };
+    lastError = await resp.text();
+  }
+  return { ok: false, error: lastError };
+}
+
+async function patchNotionPage(env, pageId, properties) {
+  const notionToken = env.NOTION_TOKEN || "", notionVersion = env.NOTION_VERSION || "2022-06-28";
+  const resp = await fetch(`https://api.notion.com/v1/pages/${pageId}`, {
+    method: "PATCH",
+    headers: { Authorization: `Bearer ${notionToken}`, "Notion-Version": notionVersion, "Content-Type": "application/json" },
+    body: JSON.stringify({ properties }),
+  });
+  if (!resp.ok) return { ok: false, error: await resp.text() };
+  return { ok: true };
+}
+
+// Upload a file to the portal Drive folder via the service account (multipart).
+async function uploadDriveFile(env, { name, mimeType, bytes }) {
+  const token = await getDriveAccessToken(env);
+  const boundary = "mkportal" + Math.random().toString(36).slice(2);
+  const metadata = { name, parents: [PORTAL_FILES_FOLDER_ID], mimeType: mimeType || "application/octet-stream" };
+  const enc = new TextEncoder();
+  const pre = enc.encode(
+    `--${boundary}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${JSON.stringify(metadata)}\r\n` +
+    `--${boundary}\r\nContent-Type: ${metadata.mimeType}\r\n\r\n`,
+  );
+  const post = enc.encode(`\r\n--${boundary}--`);
+  const body = new Uint8Array(pre.length + bytes.length + post.length);
+  body.set(pre, 0);
+  body.set(bytes, pre.length);
+  body.set(post, pre.length + bytes.length);
+
+  const resp = await fetch(
+    "https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&supportsAllDrives=true&fields=id",
+    {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}`, "Content-Type": `multipart/related; boundary=${boundary}` },
+      body,
+    },
+  );
+  if (!resp.ok) return { ok: false, error: await resp.text() };
+  return { ok: true, id: (await resp.json()).id };
+}
+
+// Admin view of a quote: tracks + ALL versions (no Visible filter, no code gate).
+async function portalAdminCotizacion(env, pageId) {
+  const detail = await getManagerQuoteDetail(env, pageId).catch(() => null);
+  const trackPages = await queryPortalDb(env, PORTAL_TRACKS_DS_ID, {
+    property: "Cotización", relation: { contains: pageId },
+  });
+  const tracks = [];
+  for (const tp of trackPages) {
+    const tprops = tp.properties || {};
+    const versionPages = await queryPortalDb(env, PORTAL_VERSIONS_DS_ID, {
+      property: "Track", relation: { contains: tp.id },
+    });
+    const versions = versionPages.map((vp) => {
+      const vprops = vp.properties || {};
+      return {
+        id: vp.id,
+        name: readNotionTitle(vprops),
+        favorita: Boolean(vprops?.Favorita?.checkbox),
+        visible: Boolean(vprops?.Visible?.checkbox),
+        duracion: vprops?.["Duración (seg)"]?.number || 0,
+        fecha: vprops?.Fecha?.date?.start || "",
+      };
+    });
+    tracks.push({
+      id: tp.id,
+      name: readNotionTitle(tprops),
+      estado: tprops?.Estado?.select?.name || "",
+      descargaHabilitada: Boolean(tprops?.["Descarga habilitada"]?.checkbox),
+      moneda: tprops?.Moneda?.select?.name || "",
+      versions,
+    });
+  }
+  return { ok: true, quote: detail?.data || { quoteNumber: "", clientName: "" }, tracks };
+}
+
+async function portalAdminCreateTrack(env, body) {
+  const cotizacionId = String(body?.cotizacionId || "").trim();
+  const name = String(body?.name || "").trim();
+  if (!cotizacionId || !name) return { ok: false, error: "cotizacionId y name requeridos" };
+  const properties = {
+    Name: { title: [{ type: "text", text: { content: name } }] },
+    "Cotización": { relation: [{ id: cotizacionId }] },
+    Estado: { select: { name: "En progreso" } },
+  };
+  if (body?.moneda) properties.Moneda = { select: { name: String(body.moneda) } };
+  return createNotionPage(env, PORTAL_TRACKS_DS_ID, properties);
+}
+
+// Multipart: file + fields (trackId, label, peaks JSON, duracion, favorita).
+async function portalAdminCreateVersion(env, form) {
+  const file = form.get("file");
+  const trackId = String(form.get("trackId") || "").trim();
+  const label = String(form.get("label") || "").trim() || "Versión";
+  if (!file || typeof file === "string") return { ok: false, error: "file requerido" };
+  if (!trackId) return { ok: false, error: "trackId requerido" };
+
+  const bytes = new Uint8Array(await file.arrayBuffer());
+  const uploaded = await uploadDriveFile(env, {
+    name: `${label} - ${file.name || "audio"}`,
+    mimeType: file.type,
+    bytes,
+  });
+  if (!uploaded.ok) return { ok: false, error: "Drive upload failed: " + uploaded.error };
+
+  const duracion = Number(form.get("duracion") || 0) || 0;
+  const favorita = String(form.get("favorita") || "") === "true";
+  const peaksRaw = String(form.get("peaks") || "");
+
+  const properties = {
+    Name: { title: [{ type: "text", text: { content: label } }] },
+    Track: { relation: [{ id: trackId }] },
+    "Drive File ID": { rich_text: chunkRichText(uploaded.id) },
+    Visible: { checkbox: true },
+    Favorita: { checkbox: favorita },
+    "Duración (seg)": { number: Math.round(duracion) },
+    Fecha: { date: { start: new Date().toISOString().slice(0, 10) } },
+  };
+  if (peaksRaw) properties.Peaks = { rich_text: chunkRichText(peaksRaw) };
+
+  const created = await createNotionPage(env, PORTAL_VERSIONS_DS_ID, properties);
+  if (!created.ok) return created;
+  return { ok: true, id: created.id, driveFileId: uploaded.id };
 }
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -3483,6 +3639,32 @@ export default {
       if (!versionId) return json({ error: "versionId required" }, 400);
       const code = request.headers.get("X-Portal-Code") || url.searchParams.get("code") || "";
       return portalStream(versionId, request, env, code);
+    }
+    // ─── Portal admin (Manager App, behind the client-side Google gate) ─────────
+    if (request.method === "GET" && url.pathname === "/portal/admin/cotizaciones") {
+      const result = await listManagerQuotes(env, new URLSearchParams());
+      if (!result.ok) return json({ error: result.error }, 502);
+      const quotes = (result.data || []).map((q) => ({
+        id: q.id, name: q.name, quoteNumber: q.quoteNumber, estatus: q.estatus,
+      }));
+      return json({ ok: true, quotes }, 200);
+    }
+    if (request.method === "GET" && url.pathname.startsWith("/portal/admin/cotizacion/")) {
+      const quoteId = url.pathname.replace("/portal/admin/cotizacion/", "").trim();
+      if (!quoteId) return json({ error: "quoteId required" }, 400);
+      const result = await portalAdminCotizacion(env, quoteId);
+      return json(result, result.ok === false ? 502 : 200);
+    }
+    if (request.method === "POST" && url.pathname === "/portal/admin/track") {
+      const body = await request.json().catch(() => ({}));
+      const result = await portalAdminCreateTrack(env, body);
+      return json(result, result.ok === false ? 400 : 201);
+    }
+    if (request.method === "POST" && url.pathname === "/portal/admin/version") {
+      const form = await request.formData().catch(() => null);
+      if (!form) return json({ error: "multipart form required" }, 400);
+      const result = await portalAdminCreateVersion(env, form);
+      return json(result, result.ok === false ? 400 : 201);
     }
     // ───────────────────────────────────────────────────────────────────────────
 

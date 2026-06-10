@@ -466,6 +466,49 @@
         </div>
       </section>
 
+      <section id="tab-portal" class="panel card panel-fullscreen">
+        <div id="portal-list-view">
+          <div class="panel-head">
+            <h3 class="ov-section-title">Portal de Clientes</h3>
+            <button id="portal-refresh" class="btn btn-ghost" type="button">Actualizar</button>
+          </div>
+          <p id="portal-status" class="hint status" aria-live="polite">Entregas de archivos por cotización.</p>
+          <div id="portal-cotizaciones" class="portal-grid"></div>
+        </div>
+
+        <div id="portal-detail-view" class="hidden">
+          <div class="quote-detail-head">
+            <button id="portal-back" class="btn ghost" type="button">← Volver</button>
+            <div class="quote-detail-title"><span id="portal-detail-number">—</span></div>
+          </div>
+          <p id="portal-detail-client" class="hint"></p>
+          <div id="portal-tracks"></div>
+
+          <div class="portal-upload">
+            <h4>Subir versión</h4>
+            <label class="portal-field">
+              <span>Canción / Track</span>
+              <input id="portal-track-name" type="text" list="portal-track-list" placeholder="ej. Tema principal" autocomplete="off">
+              <datalist id="portal-track-list"></datalist>
+            </label>
+            <label class="portal-field">
+              <span>Etiqueta de la versión</span>
+              <input id="portal-version-label" type="text" placeholder="ej. Mezcla v2" autocomplete="off">
+            </label>
+            <label class="portal-field portal-checkbox">
+              <input id="portal-version-favorita" type="checkbox">
+              <span>Marcar como versión principal (favorita)</span>
+            </label>
+            <label class="portal-field">
+              <span>Archivo de audio</span>
+              <input id="portal-version-file" type="file" accept="audio/*">
+            </label>
+            <button id="portal-upload-btn" class="btn" type="button">Subir versión</button>
+            <p id="portal-upload-status" class="hint" aria-live="polite"></p>
+          </div>
+        </div>
+      </section>
+
       <nav class="tab-bar" aria-label="Secciones">
         <button class="tab active" id="tab-btn-overview" data-tab="overview">
           <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
@@ -503,12 +546,16 @@
           <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 7h18"/><path d="M6 7V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v2"/><path d="M5 7h14l-1 13H6z"/><path d="M9 12h6"/></svg>
           <span class="tab-label">Venta</span>
         </button>
+        <button class="tab" id="tab-btn-portal" data-tab="portal">
+          <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+          <span class="tab-label">Portal</span>
+        </button>
       </nav>
     </main>
 
     <script src="./config.js"></script>
     <script src="./vendor/howler.min.js"></script>
     <script src="./tracks.js?v=salesfix404v1"></script>
-    <script src="./app.js?v=2.0.46"></script>
+    <script src="./app.js?v=2.0.47"></script>
   </body>
   </html>
