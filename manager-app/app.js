@@ -5546,7 +5546,17 @@ function mkSetSaveStatus(text, cls) {
   el.className = 'qd-save-status' + (cls ? ' ' + cls : '');
 }
 
-async function mkSaveNegotiation() {
+let negotiationSaveChain = Promise.resolve();
+
+// Serialize saves: two overlapping negotiation writes make the worker's
+// read-modify-write of the "Versión negociada" section duplicate it. Chaining
+// guarantees each save reads the page only after the previous one finished.
+function mkSaveNegotiation() {
+  negotiationSaveChain = negotiationSaveChain.then(mkSaveNegotiationNow, mkSaveNegotiationNow);
+  return negotiationSaveChain;
+}
+
+async function mkSaveNegotiationNow() {
   if (!quotesCurrentPageId || !API_BASE) return;
   mkSetSaveStatus('Guardando…', 'saving');
   try {
@@ -5573,10 +5583,12 @@ function mkScheduleNegotiationSave() {
 // Flush a pending (debounced) negotiation save immediately. Used when leaving
 // the detail so the list reload reflects the latest prices.
 async function mkFlushNegotiationSave() {
-  if (!negotiationSaveTimer) return;
-  clearTimeout(negotiationSaveTimer);
-  negotiationSaveTimer = null;
-  await mkSaveNegotiation();
+  if (negotiationSaveTimer) {
+    clearTimeout(negotiationSaveTimer);
+    negotiationSaveTimer = null;
+    mkSaveNegotiation(); // enqueue a final save with the latest state
+  }
+  await negotiationSaveChain; // wait for all queued/in-flight saves to finish
 }
 
 function mkBindCloneEvents(container) {

@@ -2750,6 +2750,7 @@ function parseQuoteBlocks(blocks, pageTitle = "") {
       const rows = [];
       let j = i + 1;
       while (j < blocks.length && blocks[j]?.type === "table_row") { rows.push(blocks[j]); j++; }
+      negotiated.length = 0; // if duplicate sections exist, keep ONLY the last (most recent) one
       for (const row of rows.slice(1)) { // skip header row; this table has no TOTAL row
         const cells = row?.table_row?.cells || [];
         const name = richTextToString(cells[0] || []);
@@ -2802,17 +2803,19 @@ function cellRT(content) {
 async function replaceNegotiatedSection(pageId, negotiated, notionToken, notionVersion) {
   const HEADING = "Versión negociada (seguimiento)";
   const children = await notionGetPageChildren(pageId, notionToken, notionVersion);
+  // Remove EVERY existing negotiated section (heading + its table), not just the
+  // first — otherwise duplicates from concurrent writes never get cleaned up.
+  const toDelete = [];
   for (let i = 0; i < children.length; i++) {
     const b = children[i];
     if (b?.type === "heading_3" && richTextToString(b?.heading_3?.rich_text || []).trim() === HEADING) {
-      const toDelete = [b];
+      toDelete.push(b);
       if (i + 1 < children.length && children[i + 1]?.type === "table") toDelete.push(children[i + 1]);
-      for (const block of toDelete) {
-        const r = await fetch(`https://api.notion.com/v1/blocks/${block.id}`, { method: "DELETE", headers: { Authorization: `Bearer ${notionToken}`, "Notion-Version": notionVersion } });
-        if (!r.ok) throw new Error(await r.text());
-      }
-      break;
     }
+  }
+  for (const block of toDelete) {
+    const r = await fetch(`https://api.notion.com/v1/blocks/${block.id}`, { method: "DELETE", headers: { Authorization: `Bearer ${notionToken}`, "Notion-Version": notionVersion } });
+    if (!r.ok) throw new Error(await r.text());
   }
   if (!Array.isArray(negotiated) || negotiated.length === 0) return; // cleared negotiation
   const headerRow = { object: "block", type: "table_row", table_row: { cells: [cellRT("Servicio"), cellRT("Cantidad"), cellRT("Precio")] } };
