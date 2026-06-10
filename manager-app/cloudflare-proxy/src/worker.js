@@ -2678,6 +2678,7 @@ function parseQuoteBlocks(blocks, pageTitle = "") {
   const clientName = separatorIdx >= 0 ? title.slice(separatorIdx + 2).trim() : "";
 
   let email = "", phone = "", date = "";
+  let origen = "internacional"; // default for legacy quotes without the Origen line
   const items = [];
   let total = null;
   let seguimiento = {};
@@ -2699,6 +2700,7 @@ function parseQuoteBlocks(blocks, pageTitle = "") {
           if (k === "email" || k === "correo") email = v;
           else if (k === "whatsapp" || k === "teléfono" || k === "telefono" || k === "phone") phone = v;
           else if (k === "fecha" || k === "date") date = v;
+          else if (k === "origen") origen = v.trim().toLowerCase() === "local" ? "local" : "internacional";
         }
         lastHeading3 = ""; continue;
       }
@@ -2728,7 +2730,7 @@ function parseQuoteBlocks(blocks, pageTitle = "") {
       lastHeading3 = ""; continue;
     }
   }
-  return { quoteNumber, clientName, email, phone, date, items, total, seguimiento };
+  return { quoteNumber, clientName, email, phone, date, items, total, seguimiento, origen };
 }
 
 async function replaceSeguimientoSection(pageId, seguimientoData, notionToken, notionVersion) {
@@ -2784,7 +2786,7 @@ async function listManagerQuotes(env, searchParams) {
         blocks = await expandTableRows(blocks, notionToken, notionVersion);
       } catch {}
       const parsed = parseQuoteBlocks(blocks, title);
-      return { id: page.id, quoteNumber: parsed.quoteNumber, name: parsed.clientName, email: parsed.email, phone: parsed.phone, date: dateProp, items: parsed.items, total: parsed.total, seguimiento: parsed.seguimiento, estatus };
+      return { id: page.id, quoteNumber: parsed.quoteNumber, name: parsed.clientName, email: parsed.email, phone: parsed.phone, date: dateProp, items: parsed.items, total: parsed.total, seguimiento: parsed.seguimiento, estatus, origen: parsed.origen };
     }));
     const filtered = search ? data.filter((q) => (q.quoteNumber||"").toLowerCase().includes(search)||(q.name||"").toLowerCase().includes(search)||(q.email||"").toLowerCase().includes(search)) : data;
     return { ok: true, data: filtered };
@@ -2806,7 +2808,7 @@ async function getManagerQuoteDetail(env, pageId) {
     let blocks = await notionGetPageChildren(pageId, notionToken, notionVersion);
     blocks = await expandTableRows(blocks, notionToken, notionVersion);
     const parsed = parseQuoteBlocks(blocks, title);
-    return { ok: true, data: { pageId, quoteNumber: parsed.quoteNumber, clientName: parsed.clientName, email: parsed.email, phone: parsed.phone, status: estatus, date: dateProp, total: parsed.total, services: parsed.items, seguimiento: parsed.seguimiento } };
+    return { ok: true, data: { pageId, quoteNumber: parsed.quoteNumber, clientName: parsed.clientName, email: parsed.email, phone: parsed.phone, status: estatus, date: dateProp, total: parsed.total, services: parsed.items, seguimiento: parsed.seguimiento, origen: parsed.origen } };
   } catch (e) { return { ok: false, error: String(e?.message || e) }; }
 }
 
