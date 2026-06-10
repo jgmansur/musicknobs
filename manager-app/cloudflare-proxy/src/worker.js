@@ -2959,8 +2959,8 @@ const PORTAL_VERSIONS_DS_ID = "ba3318ed-f64a-4c42-a953-20e1f6da9670";
 const PORTAL_PAYMENTS_DS_ID = "a6c520a9-efa0-47ee-9c77-0185d9263a73";
 const PORTAL_COMMENTS_DS_ID = "9b517273-7404-4e19-a40d-c92b7016b0f5";
 
-// Access code = client name lowercased without spaces/punctuation + last 3 digits of a quote number.
-// e.g. "Boris Pérez" + quote MK-2025-452 → "borisperez452".
+// Access code = client name lowercased without spaces/punctuation + last 3 alphanumeric
+// characters of a quote number. e.g. "Jay Mansur" + quote MK-2026-L9MGU → "jaymansurmgu".
 function portalSlug(name) {
   return String(name || "")
     .toLowerCase()
@@ -2969,15 +2969,17 @@ function portalSlug(name) {
     .replace(/[^a-z0-9]/g, "");
 }
 
+// Last 3 alphanumeric characters of a quote number. Quote numbers are alphanumeric
+// (e.g. MK-2026-L9MGU), not plain digits, so we use the last 3 chars: MK-2026-L9MGU → "mgu".
 function quoteLast3(quoteNumber) {
-  return String(quoteNumber || "").replace(/\D/g, "").slice(-3);
+  return String(quoteNumber || "").toLowerCase().replace(/[^a-z0-9]/g, "").slice(-3);
 }
 
 function parsePortalCode(code) {
-  const raw = String(code || "").trim().toLowerCase();
-  const m = raw.match(/^(.*?)(\d{3})$/);
+  const raw = String(code || "").trim().toLowerCase().replace(/[^a-z0-9]/g, "");
+  const m = raw.match(/^(.*?)([a-z0-9]{3})$/);
   if (!m) return { slug: "", suffix: "" };
-  return { slug: m[1].replace(/[^a-z0-9]/g, ""), suffix: m[2] };
+  return { slug: m[1], suffix: m[2] };
 }
 
 async function queryPortalDb(env, dsId, filter, sorts) {
