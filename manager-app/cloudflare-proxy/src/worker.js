@@ -2780,8 +2780,10 @@ function parseQuoteBlocks(blocks, pageTitle = "") {
   }
   // Clean numeric subtotals per currency, parsed from the real item prices
   // (the table's TOTAL cell is unreliable for mixed-currency quotes).
+  // Reflect the negotiated version when present, else the client's original.
+  const totalSource = negotiated.length > 0 ? negotiated : items;
   let totalMXN = 0, totalUSD = 0;
-  for (const it of items) {
+  for (const it of totalSource) {
     const m = parseQuoteMoney(it.price);
     if (m.currency === "MXN") totalMXN += m.amount;
     else if (m.currency === "USD") totalUSD += m.amount;
