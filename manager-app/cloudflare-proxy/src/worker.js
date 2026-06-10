@@ -2670,6 +2670,40 @@ const ARCHIVO_DS_ID = "6405719e-5f90-4fc0-8eab-d9352387dd07";
 const QUOTE_NUMBER_RE = /MK[L]?-\d{4}-\w+/;
 const QUOTE_ESTATUS_ENUM = ["Pendiente", "En seguimiento", "Contrato enviado", "Firmado", "En producción", "Entregado"];
 
+// Parse a price cell string ("$13,500 MXN", "$300", "A cotizar") into { amount, currency }.
+function parseQuoteMoney(priceStr) {
+  const s = String(priceStr || "");
+  if (!s || /cotizar/i.test(s)) return { amount: 0, currency: "quote" };
+  const currency = /mxn/i.test(s) ? "MXN" : "USD";
+  const amount = Number(s.replace(/[^0-9.]/g, "")) || 0;
+  return { amount, currency };
+}
+
+// USD→MXN FIX rate from Banxico (series SF63528). Cached per isolate; the FIX
+// publishes once per business day. Returns null if unavailable (frontend then
+// falls back to showing MXN and USD separately — never a wrong total).
+let fxCache = { rate: null, ts: 0 };
+const FX_TTL_MS = 6 * 60 * 60 * 1000;
+
+async function getFxRate(env) {
+  const now = Date.now();
+  if (fxCache.rate && now - fxCache.ts < FX_TTL_MS) return fxCache.rate;
+  const token = env.BANXICO_TOKEN || "";
+  if (!token) return fxCache.rate || null;
+  try {
+    const r = await fetch("https://www.banxico.org.mx/SieAPIRest/service/v1/series/SF63528/datos/oportuno", {
+      headers: { "Bmx-Token": token, Accept: "application/json" },
+    });
+    if (!r.ok) return fxCache.rate || null;
+    const body = await r.json();
+    const rate = Number(body?.bmx?.series?.[0]?.datos?.[0]?.dato);
+    if (rate > 0) { fxCache = { rate, ts: now }; return rate; }
+    return fxCache.rate || null;
+  } catch {
+    return fxCache.rate || null;
+  }
+}
+
 function parseQuoteBlocks(blocks, pageTitle = "") {
   const title = String(pageTitle || "");
   const quoteNumberMatch = title.match(QUOTE_NUMBER_RE);
@@ -2730,7 +2764,16 @@ function parseQuoteBlocks(blocks, pageTitle = "") {
       lastHeading3 = ""; continue;
     }
   }
-  return { quoteNumber, clientName, email, phone, date, items, total, seguimiento, origen };
+  // Clean numeric subtotals per currency, parsed from the real item prices
+  // (the table's TOTAL cell is unreliable for mixed-currency quotes).
+  let totalMXN = 0, totalUSD = 0;
+  for (const it of items) {
+    const m = parseQuoteMoney(it.price);
+    if (m.currency === "MXN") totalMXN += m.amount;
+    else if (m.currency === "USD") totalUSD += m.amount;
+  }
+
+  return { quoteNumber, clientName, email, phone, date, items, total, totalMXN, totalUSD, seguimiento, origen };
 }
 
 async function replaceSeguimientoSection(pageId, seguimientoData, notionToken, notionVersion) {
@@ -2786,10 +2829,10 @@ async function listManagerQuotes(env, searchParams) {
         blocks = await expandTableRows(blocks, notionToken, notionVersion);
       } catch {}
       const parsed = parseQuoteBlocks(blocks, title);
-      return { id: page.id, quoteNumber: parsed.quoteNumber, name: parsed.clientName, email: parsed.email, phone: parsed.phone, date: dateProp, items: parsed.items, total: parsed.total, seguimiento: parsed.seguimiento, estatus, origen: parsed.origen };
+      return { id: page.id, quoteNumber: parsed.quoteNumber, name: parsed.clientName, email: parsed.email, phone: parsed.phone, date: dateProp, items: parsed.items, total: parsed.total, totalMXN: parsed.totalMXN, totalUSD: parsed.totalUSD, seguimiento: parsed.seguimiento, estatus, origen: parsed.origen };
     }));
     const filtered = search ? data.filter((q) => (q.quoteNumber||"").toLowerCase().includes(search)||(q.name||"").toLowerCase().includes(search)||(q.email||"").toLowerCase().includes(search)) : data;
-    return { ok: true, data: filtered };
+    return { ok: true, data: filtered, fxRate: await getFxRate(env) };
   } catch (e) { return { ok: false, error: String(e?.message || e) }; }
 }
 
@@ -2808,7 +2851,7 @@ async function getManagerQuoteDetail(env, pageId) {
     let blocks = await notionGetPageChildren(pageId, notionToken, notionVersion);
     blocks = await expandTableRows(blocks, notionToken, notionVersion);
     const parsed = parseQuoteBlocks(blocks, title);
-    return { ok: true, data: { pageId, quoteNumber: parsed.quoteNumber, clientName: parsed.clientName, email: parsed.email, phone: parsed.phone, status: estatus, date: dateProp, total: parsed.total, services: parsed.items, seguimiento: parsed.seguimiento, origen: parsed.origen } };
+    return { ok: true, data: { pageId, quoteNumber: parsed.quoteNumber, clientName: parsed.clientName, email: parsed.email, phone: parsed.phone, status: estatus, date: dateProp, total: parsed.total, totalMXN: parsed.totalMXN, totalUSD: parsed.totalUSD, services: parsed.items, seguimiento: parsed.seguimiento, origen: parsed.origen }, fxRate: await getFxRate(env) };
   } catch (e) { return { ok: false, error: String(e?.message || e) }; }
 }
 
