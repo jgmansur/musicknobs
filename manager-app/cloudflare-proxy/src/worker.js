@@ -3054,13 +3054,18 @@ async function portalCotizacion(env, pageId, code) {
     });
     const versions = versionPages.map((vp) => {
       const vprops = vp.properties || {};
+      // Peaks are a JSON array of normalized amplitudes stored as Notion rich_text
+      // (possibly split across segments — richTextToString rejoins them).
+      let peaks = [];
+      const peaksRaw = richTextToString(vprops?.Peaks?.rich_text);
+      if (peaksRaw) { try { peaks = JSON.parse(peaksRaw); } catch { peaks = []; } }
       return {
         id: vp.id,
         name: readNotionTitle(vprops),
         favorita: Boolean(vprops?.Favorita?.checkbox),
         duracion: vprops?.["Duración (seg)"]?.number || 0,
         fecha: vprops?.Fecha?.date?.start || "",
-        hasPeaks: Boolean(richTextToString(vprops?.Peaks?.rich_text)),
+        peaks: Array.isArray(peaks) ? peaks : [],
       };
     });
     tracks.push({
@@ -3102,6 +3107,43 @@ async function portalCotizacion(env, pageId, code) {
       saldoUSD: (detail.data.totalUSD || 0) - totalAbonosUSD,
     },
   };
+}
+
+// Notion page ids come back dashed; relation comparisons are safer dashless.
+const normNotionId = (id) => String(id || "").replace(/-/g, "");
+
+async function getNotionPageProps(env, pageId) {
+  const notionToken = env.NOTION_TOKEN || "", notionVersion = env.NOTION_VERSION || "2022-06-28";
+  const resp = await fetch(`https://api.notion.com/v1/pages/${pageId}`, {
+    headers: { Authorization: `Bearer ${notionToken}`, "Notion-Version": notionVersion },
+  });
+  if (!resp.ok) return null;
+  const page = await resp.json();
+  return page?.properties || null;
+}
+
+// Stream a version's audio, gated by ownership: code → client → quote → track → version.
+// The <audio> element can't set headers, so the code is accepted via ?code= too.
+async function portalStream(versionId, request, env, code) {
+  const resolved = await resolvePortalCode(env, code);
+  if (!resolved.ok) return json({ error: "No autorizado" }, 403);
+
+  const vprops = await getNotionPageProps(env, versionId);
+  if (!vprops) return json({ error: "Versión no encontrada" }, 404);
+  if (!vprops?.Visible?.checkbox) return json({ error: "No disponible" }, 403);
+
+  const trackId = vprops?.Track?.relation?.[0]?.id;
+  if (!trackId) return json({ error: "No autorizado" }, 403);
+  const tprops = await getNotionPageProps(env, trackId);
+  const cotizacionId = tprops?.["Cotización"]?.relation?.[0]?.id;
+  if (!cotizacionId) return json({ error: "No autorizado" }, 403);
+
+  const owned = resolved.quotes.some((q) => normNotionId(q.id) === normNotionId(cotizacionId));
+  if (!owned) return json({ error: "No autorizado" }, 403);
+
+  const fileId = richTextToString(vprops?.["Drive File ID"]?.rich_text);
+  if (!fileId) return json({ error: "Sin archivo" }, 404);
+  return streamDriveAudioFile(fileId, request, env);
 }
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -3435,6 +3477,12 @@ export default {
       if (result?.unauthorized) return json({ error: "No autorizado" }, 403);
       if (result?.notFound) return json({ error: "Not found" }, 404);
       return json(result, result.ok === false ? 502 : 200);
+    }
+    if (request.method === "GET" && url.pathname.startsWith("/portal/stream/")) {
+      const versionId = url.pathname.replace("/portal/stream/", "").trim();
+      if (!versionId) return json({ error: "versionId required" }, 400);
+      const code = request.headers.get("X-Portal-Code") || url.searchParams.get("code") || "";
+      return portalStream(versionId, request, env, code);
     }
     // ───────────────────────────────────────────────────────────────────────────
 
