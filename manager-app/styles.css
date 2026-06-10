@@ -3049,3 +3049,13 @@ body.messages-active .container {
   text-transform: uppercase;
   letter-spacing: .04em;
 }
+
+/* ─── Clickable client links (email / WhatsApp) ───────────────────────────── */
+.qd-link {
+  color: var(--primary);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+}
+.qd-link:hover {
+  border-bottom-color: var(--primary);
+}

@@ -5614,9 +5614,18 @@ function renderQuoteDetail(q) {
     const el = document.getElementById(id);
     if (el) el.textContent = val || '—';
   };
+  const setHtml = (id, html) => {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = html || '—';
+  };
   setSpan('qd-client-name', q.clientName);
-  setSpan('qd-client-email', q.email);
-  setSpan('qd-client-phone', q.phone);
+  const email = q.email || '';
+  setHtml('qd-client-email', email ? `<a class="qd-link" href="mailto:${escapeHtml(email)}">${escapeHtml(email)}</a>` : '—');
+  const phone = q.phone || '';
+  const waDigits = phone.replace(/\D/g, ''); // wa.me needs digits only, incl. country code
+  setHtml('qd-client-phone', phone
+    ? (waDigits ? `<a class="qd-link" href="https://wa.me/${waDigits}" target="_blank" rel="noopener">${escapeHtml(phone)}</a>` : escapeHtml(phone))
+    : '—');
   setSpan('qd-date', formatQuoteDate(q.date));
   setSpan('qd-total', formatQuoteTotal(q, quotesFxRate) || '—');
 
