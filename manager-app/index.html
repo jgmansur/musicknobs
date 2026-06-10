@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="./styles.css?v=2.0.26" />
+    <link rel="stylesheet" href="./styles.css?v=2.0.27" />
     <link rel="manifest" href="./manifest.json" />
     <link rel="icon" type="image/png" href="./icon-32.png" />
     <link rel="apple-touch-icon" href="./icon-180.png" />
@@ -417,11 +417,39 @@
       </section>
 
       <section id="tab-quotes" class="panel">
-        <div class="panel-head">
-          <h3 class="ov-section-title">Cotizaciones</h3>
+        <div id="quotes-list-view">
+          <div class="panel-head">
+            <h3 class="ov-section-title">Cotizaciones</h3>
+          </div>
+          <p id="quotes-status" class="hint status" aria-live="polite">Seguimiento de cotizaciones.</p>
+          <div id="quotes-list"></div>
         </div>
-        <p id="quotes-status" class="hint status" aria-live="polite">Seguimiento de cotizaciones (en construcción).</p>
-        <div id="quotes-list"></div>
+
+        <div id="quote-detail-view" class="hidden">
+          <div class="quote-detail-head">
+            <button id="quote-detail-back" class="btn ghost" type="button">← Volver</button>
+            <div class="quote-detail-title">
+              <span id="quote-detail-number">—</span>
+              <span id="quote-detail-estatus" class="quote-status-pill"></span>
+            </div>
+          </div>
+
+          <div class="quote-detail-body">
+            <div class="quote-detail-section">
+              <h4>Datos del cliente</h4>
+              <div class="qd-field"><span class="qd-label">Nombre</span><span id="qd-client-name">—</span></div>
+              <div class="qd-field"><span class="qd-label">Email</span><span id="qd-client-email">—</span></div>
+              <div class="qd-field"><span class="qd-label">Teléfono</span><span id="qd-client-phone">—</span></div>
+              <div class="qd-field"><span class="qd-label">Fecha</span><span id="qd-date">—</span></div>
+              <div class="qd-field"><span class="qd-label">Total cotizado</span><span id="qd-total">—</span></div>
+            </div>
+
+            <div class="quote-detail-section">
+              <h4>Servicios cotizados</h4>
+              <div id="qd-services-list"></div>
+            </div>
+          </div>
+        </div>
       </section>
 
       <nav class="tab-bar" aria-label="Secciones">
@@ -467,6 +495,6 @@
     <script src="./config.js"></script>
     <script src="./vendor/howler.min.js"></script>
     <script src="./tracks.js?v=salesfix404v1"></script>
-    <script src="./app.js?v=2.0.26"></script>
+    <script src="./app.js?v=2.0.27"></script>
   </body>
   </html>

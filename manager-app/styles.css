@@ -2740,3 +2740,63 @@ body.messages-active .container {
   white-space: nowrap;
   flex-shrink: 0;
 }
+
+/* ─── Quote detail (read-only) ────────────────────────────────────────────── */
+.quote-card { cursor: pointer; transition: border-color .15s; }
+.quote-card:hover { border-color: var(--glass-border-hover); }
+
+.quote-detail-head {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.quote-detail-title {
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+}
+
+#quote-detail-number {
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: .02em;
+}
+
+.quote-detail-body {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.quote-detail-section h4 {
+  margin: 0 0 .65rem;
+  font-size: .9rem;
+  font-weight: 700;
+}
+
+.qd-field {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: .45rem 0;
+  border-bottom: 1px solid var(--glass-border);
+  font-size: .9rem;
+}
+
+.qd-label { color: var(--text-muted); }
+
+.qd-service-row {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  padding: .55rem 0;
+  border-bottom: 1px solid var(--glass-border);
+  font-size: .9rem;
+}
+
+.qd-service-name { flex: 1; min-width: 0; }
+.qd-service-qty { color: var(--text-muted); white-space: nowrap; }
+.qd-service-price { font-weight: 600; white-space: nowrap; }

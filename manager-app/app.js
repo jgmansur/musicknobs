@@ -5033,6 +5033,7 @@ function setupActions() {
   bindClick('google-auth-toggle', handleAuthToggle);
   bindClick('share-app-btn', shareAppProfile);
   bindClick('auth-gate-login', startGoogleLogin);
+  bindClick('quote-detail-back', () => { quotesCurrentPageId = null; showQuoteDetail(false); });
   bindClick('refresh-messages', () => loadMessagesFromApi());
   bindClick('refresh-messages-overview', () => loadMessagesFromApi());
   // messages-load-more removed from UI — load-more handled via scroll
@@ -5210,6 +5211,7 @@ function checkNotificationStatus() {
 // ─── QUOTES / SEGUIMIENTO ────────────────────────────────────────────────────
 
 let quotesCache = [];
+let quotesCurrentPageId = null;
 
 async function loadQuotesFromApi(search = '', status = '') {
   if (!isAuthenticated) return;
@@ -5263,6 +5265,76 @@ function renderQuotesList(quotes) {
         <span class="quote-status-pill" data-status="${estatus}">${estatus || 'Sin estado'}</span>
       </div>`;
   }).join('');
+
+  container.querySelectorAll('.quote-card').forEach((card) => {
+    card.addEventListener('click', () => {
+      const pageId = card.dataset.id;
+      if (pageId) loadQuoteDetail(pageId);
+    });
+  });
+}
+
+function showQuoteDetail(show) {
+  const listView = document.getElementById('quotes-list-view');
+  const detailView = document.getElementById('quote-detail-view');
+  if (listView) listView.classList.toggle('hidden', show);
+  if (detailView) detailView.classList.toggle('hidden', !show);
+}
+
+async function loadQuoteDetail(pageId) {
+  quotesCurrentPageId = pageId;
+  showQuoteDetail(true);
+  const numberEl = document.getElementById('quote-detail-number');
+  if (numberEl) numberEl.textContent = 'Cargando...';
+  const servicesEl = document.getElementById('qd-services-list');
+  if (servicesEl) servicesEl.innerHTML = '';
+  try {
+    if (!API_BASE) throw new Error('apiBaseUrl no configurado');
+    const res = await fetchJson(`${API_BASE}/api/manager/quotes/${pageId}`);
+    const q = res?.data;
+    if (!q) throw new Error('Sin datos de cotización');
+    renderQuoteDetail(q);
+  } catch (e) {
+    if (numberEl) numberEl.textContent = 'Error';
+    if (servicesEl) servicesEl.innerHTML = `<p class="hint">Error al cargar: ${escapeHtml(e.message)}</p>`;
+  }
+}
+
+function renderQuoteDetail(q) {
+  const numberEl = document.getElementById('quote-detail-number');
+  if (numberEl) numberEl.textContent = q.quoteNumber || '—';
+
+  const estatusEl = document.getElementById('quote-detail-estatus');
+  if (estatusEl) {
+    const st = q.status || q.estatus || '';
+    estatusEl.textContent = st || 'Sin estado';
+    estatusEl.dataset.status = st;
+  }
+
+  const setSpan = (id, val) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = val || '—';
+  };
+  setSpan('qd-client-name', q.clientName);
+  setSpan('qd-client-email', q.email);
+  setSpan('qd-client-phone', q.phone);
+  setSpan('qd-date', q.date);
+  setSpan('qd-total', q.total);
+
+  const servicesEl = document.getElementById('qd-services-list');
+  if (servicesEl) {
+    const services = q.services || [];
+    if (services.length === 0) {
+      servicesEl.innerHTML = '<p class="hint">Sin servicios registrados.</p>';
+    } else {
+      servicesEl.innerHTML = services.map((s) => `
+        <div class="qd-service-row">
+          <span class="qd-service-name">${escapeHtml(s.name || '')}</span>
+          <span class="qd-service-qty">${s.qty ? escapeHtml('×' + s.qty) : ''}</span>
+          <span class="qd-service-price">${escapeHtml(String(s.price || ''))}</span>
+        </div>`).join('');
+    }
+  }
 }
 
 init();
