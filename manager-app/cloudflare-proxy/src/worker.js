@@ -2714,6 +2714,7 @@ function parseQuoteBlocks(blocks, pageTitle = "") {
   let email = "", phone = "", date = "";
   let origen = "internacional"; // default for legacy quotes without the Origen line
   const items = [];
+  const negotiated = []; // saved negotiation override, if any
   let total = null;
   let seguimiento = {};
   let lastHeading3 = "", lastHeading2 = "";
@@ -2745,6 +2746,19 @@ function parseQuoteBlocks(blocks, pageTitle = "") {
       }
       continue;
     }
+    if (type === "table" && lastHeading3 === "Versión negociada (seguimiento)") {
+      const rows = [];
+      let j = i + 1;
+      while (j < blocks.length && blocks[j]?.type === "table_row") { rows.push(blocks[j]); j++; }
+      for (const row of rows.slice(1)) { // skip header row; this table has no TOTAL row
+        const cells = row?.table_row?.cells || [];
+        const name = richTextToString(cells[0] || []);
+        const qty = richTextToString(cells[1] || []);
+        const price = richTextToString(cells[2] || []);
+        if (name) negotiated.push({ name, qty, price });
+      }
+      lastHeading3 = ""; continue;
+    }
     if (type === "table" && lastHeading3 === "Servicios solicitados") {
       const rows = [];
       let j = i + 1;
@@ -2773,7 +2787,47 @@ function parseQuoteBlocks(blocks, pageTitle = "") {
     else if (m.currency === "USD") totalUSD += m.amount;
   }
 
-  return { quoteNumber, clientName, email, phone, date, items, total, totalMXN, totalUSD, seguimiento, origen };
+  return { quoteNumber, clientName, email, phone, date, items, total, totalMXN, totalUSD, seguimiento, origen, negotiated };
+}
+
+function cellRT(content) {
+  return [{ type: "text", text: { content: String(content == null ? "" : content) } }];
+}
+
+// Writes/replaces the "Versión negociada (seguimiento)" section: a readable
+// table (Servicio · Cantidad · Precio). The client's original "Servicios
+// solicitados" table is left untouched.
+async function replaceNegotiatedSection(pageId, negotiated, notionToken, notionVersion) {
+  const HEADING = "Versión negociada (seguimiento)";
+  const children = await notionGetPageChildren(pageId, notionToken, notionVersion);
+  for (let i = 0; i < children.length; i++) {
+    const b = children[i];
+    if (b?.type === "heading_3" && richTextToString(b?.heading_3?.rich_text || []).trim() === HEADING) {
+      const toDelete = [b];
+      if (i + 1 < children.length && children[i + 1]?.type === "table") toDelete.push(children[i + 1]);
+      for (const block of toDelete) {
+        const r = await fetch(`https://api.notion.com/v1/blocks/${block.id}`, { method: "DELETE", headers: { Authorization: `Bearer ${notionToken}`, "Notion-Version": notionVersion } });
+        if (!r.ok) throw new Error(await r.text());
+      }
+      break;
+    }
+  }
+  if (!Array.isArray(negotiated) || negotiated.length === 0) return; // cleared negotiation
+  const headerRow = { object: "block", type: "table_row", table_row: { cells: [cellRT("Servicio"), cellRT("Cantidad"), cellRT("Precio")] } };
+  const rows = negotiated.map((it) => ({
+    object: "block",
+    type: "table_row",
+    table_row: { cells: [cellRT(it.name), cellRT(it.qty != null ? String(it.qty) : "—"), cellRT(it.price)] },
+  }));
+  const r = await fetch(`https://api.notion.com/v1/blocks/${pageId}/children`, {
+    method: "PATCH",
+    headers: { Authorization: `Bearer ${notionToken}`, "Notion-Version": notionVersion, "Content-Type": "application/json" },
+    body: JSON.stringify({ children: [
+      { object: "block", type: "heading_3", heading_3: { rich_text: [{ type: "text", text: { content: HEADING } }] } },
+      { object: "block", type: "table", table: { table_width: 3, has_column_header: true, has_row_header: false, children: [headerRow, ...rows] } },
+    ] }),
+  });
+  if (!r.ok) throw new Error(await r.text());
 }
 
 async function replaceSeguimientoSection(pageId, seguimientoData, notionToken, notionVersion) {
@@ -2851,7 +2905,7 @@ async function getManagerQuoteDetail(env, pageId) {
     let blocks = await notionGetPageChildren(pageId, notionToken, notionVersion);
     blocks = await expandTableRows(blocks, notionToken, notionVersion);
     const parsed = parseQuoteBlocks(blocks, title);
-    return { ok: true, data: { pageId, quoteNumber: parsed.quoteNumber, clientName: parsed.clientName, email: parsed.email, phone: parsed.phone, status: estatus, date: dateProp, total: parsed.total, totalMXN: parsed.totalMXN, totalUSD: parsed.totalUSD, services: parsed.items, seguimiento: parsed.seguimiento, origen: parsed.origen }, fxRate: await getFxRate(env) };
+    return { ok: true, data: { pageId, quoteNumber: parsed.quoteNumber, clientName: parsed.clientName, email: parsed.email, phone: parsed.phone, status: estatus, date: dateProp, total: parsed.total, totalMXN: parsed.totalMXN, totalUSD: parsed.totalUSD, services: parsed.items, seguimiento: parsed.seguimiento, origen: parsed.origen, negotiated: parsed.negotiated }, fxRate: await getFxRate(env) };
   } catch (e) { return { ok: false, error: String(e?.message || e) }; }
 }
 
@@ -2859,14 +2913,20 @@ async function saveQuoteSeguimiento(env, pageId, body) {
   const notionToken = env.NOTION_TOKEN || "", notionVersion = env.NOTION_VERSION || "2022-06-28";
   if (!notionToken) return { ok: false, error: "NOTION_TOKEN not configured" };
   const estatus = body?.estatus;
-  const seguimiento = body?.seguimiento || {};
   if (estatus !== undefined && estatus !== null && estatus !== "" && !QUOTE_ESTATUS_ENUM.includes(estatus)) return { ok: false, validationError: true, error: `Invalid estatus "${estatus}"` };
   try {
     if (estatus) {
       const r = await fetch(`https://api.notion.com/v1/pages/${pageId}`, { method: "PATCH", headers: { Authorization: `Bearer ${notionToken}`, "Notion-Version": notionVersion, "Content-Type": "application/json" }, body: JSON.stringify({ properties: { Estatus: { select: { name: estatus } } } }) });
       if (!r.ok) return { ok: false, error: await r.text() };
     }
-    await replaceSeguimientoSection(pageId, estatus ? { ...seguimiento, estatus } : seguimiento, notionToken, notionVersion);
+    // Only rewrite each section if its data was provided in this request.
+    if (body?.seguimiento !== undefined || estatus) {
+      const seguimiento = body?.seguimiento || {};
+      await replaceSeguimientoSection(pageId, estatus ? { ...seguimiento, estatus } : seguimiento, notionToken, notionVersion);
+    }
+    if (body?.negotiated !== undefined) {
+      await replaceNegotiatedSection(pageId, body.negotiated, notionToken, notionVersion);
+    }
     return { ok: true };
   } catch (e) { return { ok: false, error: String(e?.message || e) }; }
 }
