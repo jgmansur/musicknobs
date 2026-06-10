@@ -5279,8 +5279,16 @@ function mkAllServices() {
   return MK_QUOTE_CATALOG.flatMap((c) => c.services);
 }
 
+// Normalize for robust join: Unicode NFC (accents), trim, case-insensitive.
+// Notion may return accented chars in NFD form, which breaks naive === matching.
+function mkNormalizeName(s) {
+  return String(s == null ? '' : s).normalize('NFC').trim().toLowerCase();
+}
+
 function mkFindByName(name) {
-  return mkAllServices().find((s) => s.name === name) || null;
+  const target = mkNormalizeName(name);
+  if (!target) return null;
+  return mkAllServices().find((s) => mkNormalizeName(s.name) === target) || null;
 }
 
 function mkItemPrice(svc, qty) {
