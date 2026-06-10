@@ -5535,6 +5535,7 @@ async function loadQuoteDetail(pageId) {
     const res = await fetchJson(`${API_BASE}/api/manager/quotes/${pageId}`);
     const q = res?.data;
     if (!q) throw new Error('Sin datos de cotización');
+    if (typeof res?.fxRate === 'number' && res.fxRate > 0) quotesFxRate = res.fxRate;
     renderQuoteDetail(q);
   } catch (e) {
     if (numberEl) numberEl.textContent = 'Error';
@@ -5561,7 +5562,7 @@ function renderQuoteDetail(q) {
   setSpan('qd-client-email', q.email);
   setSpan('qd-client-phone', q.phone);
   setSpan('qd-date', formatQuoteDate(q.date));
-  setSpan('qd-total', q.total);
+  setSpan('qd-total', formatQuoteTotal(q, quotesFxRate) || '—');
 
   const servicesEl = document.getElementById('qd-services-list');
   if (servicesEl) {
