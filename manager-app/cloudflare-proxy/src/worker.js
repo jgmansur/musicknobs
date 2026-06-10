@@ -2910,7 +2910,8 @@ async function getManagerQuoteDetail(env, pageId) {
     let blocks = await notionGetPageChildren(pageId, notionToken, notionVersion);
     blocks = await expandTableRows(blocks, notionToken, notionVersion);
     const parsed = parseQuoteBlocks(blocks, title);
-    return { ok: true, data: { pageId, quoteNumber: parsed.quoteNumber, clientName: parsed.clientName, email: parsed.email, phone: parsed.phone, status: estatus, date: dateProp, total: parsed.total, totalMXN: parsed.totalMXN, totalUSD: parsed.totalUSD, services: parsed.items, seguimiento: parsed.seguimiento, origen: parsed.origen, negotiated: parsed.negotiated }, fxRate: await getFxRate(env) };
+    const idioma = props?.Idioma?.select?.name || ""; // "English" | "Español" | "" (cotizar route writes it)
+    return { ok: true, data: { pageId, quoteNumber: parsed.quoteNumber, clientName: parsed.clientName, email: parsed.email, phone: parsed.phone, status: estatus, date: dateProp, total: parsed.total, totalMXN: parsed.totalMXN, totalUSD: parsed.totalUSD, services: parsed.items, seguimiento: parsed.seguimiento, origen: parsed.origen, negotiated: parsed.negotiated, idioma }, fxRate: await getFxRate(env) };
   } catch (e) { return { ok: false, error: String(e?.message || e) }; }
 }
 

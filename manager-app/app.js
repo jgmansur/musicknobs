@@ -5728,12 +5728,17 @@ function mkBuildContractPrompt(q, negotiated) {
   });
   const totalEl = document.getElementById('qd-total');
   const total = totalEl ? totalEl.textContent.trim() : '';
+  const idiomaRaw = String(q.idioma || '').toLowerCase();
+  const idioma = (idiomaRaw.includes('english') || idiomaRaw === 'en')
+    ? 'English — REDACTÁ EL CONTRATO EN INGLÉS'
+    : 'Español — redactá el contrato en español';
   const outFolder = '/Users/jaymansur-m5/Library/CloudStorage/GoogleDrive-jgmansur2@gmail.com/My Drive/Manager App/Contratos/Contratos sin Firmar';
   return [
     'MK-CONTRATO',
     '',
     'Generá el contrato de Music Knobs con estos datos. Dispará el skill mk-contrato y seguí su procedimiento completo, incluida la FASE DE REVISIÓN obligatoria antes de entregar.',
     '',
+    `• Idioma del contrato: ${idioma}`,
     `• Tipo de cliente (origen): ${origen}`,
     `• Cliente: ${q.clientName || '—'}`,
     `• Email: ${q.email || '—'}`,
