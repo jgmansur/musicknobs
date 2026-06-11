@@ -6047,6 +6047,23 @@ function showPortalDetail(show) {
   if (detail) detail.classList.toggle('hidden', !show);
 }
 
+// Transient toast — used to confirm optimistic actions and surface failures.
+let portalToastTimer = null;
+function portalNotify(message, isError = false) {
+  let el = document.getElementById('portal-toast');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'portal-toast';
+    el.className = 'portal-toast';
+    document.body.appendChild(el);
+  }
+  el.textContent = message;
+  el.classList.toggle('is-error', Boolean(isError));
+  el.classList.add('show');
+  if (portalToastTimer) clearTimeout(portalToastTimer);
+  portalToastTimer = setTimeout(() => el.classList.remove('show'), isError ? 5000 : 2500);
+}
+
 async function loadPortalCotizaciones() {
   showPortalDetail(false);
   portalSetStatus('Cargando cotizaciones…');
@@ -6109,13 +6126,22 @@ function renderPortalAccount(ec) {
   if (!root) return;
   if (!ec) { root.innerHTML = '<p class="hint">Sin datos de cuenta.</p>'; return; }
   const rows = [];
-  if (ec.totalMXN || ec.totalAbonosMXN) {
-    rows.push(`<div><span>MXN</span><span>Total ${portalMoney(ec.totalMXN, 'MXN')} · Pagado ${portalMoney(ec.totalAbonosMXN, 'MXN')} · Saldo <strong>${portalMoney(ec.saldoMXN, 'MXN')}</strong></span></div>`);
-  }
-  if (ec.totalUSD || ec.totalAbonosUSD) {
-    rows.push(`<div><span>USD</span><span>Total ${portalMoney(ec.totalUSD, 'USD')} · Pagado ${portalMoney(ec.totalAbonosUSD, 'USD')} · Saldo <strong>${portalMoney(ec.saldoUSD, 'USD')}</strong></span></div>`);
-  }
-  root.innerHTML = rows.join('') || '<p class="hint">Cotización sin total.</p>';
+  const addRow = (cur, total, pagado, saldo) => {
+    const paid = saldo <= 0;
+    rows.push(`<tr>
+      <td class="pa-cur">${cur}</td>
+      <td class="pa-num">${portalMoney(total, cur)}</td>
+      <td class="pa-num">${portalMoney(pagado, cur)}</td>
+      <td class="pa-num pa-saldo ${paid ? 'is-paid' : 'is-due'}">${portalMoney(saldo, cur)}</td>
+    </tr>`);
+  };
+  if (ec.totalMXN || ec.totalAbonosMXN) addRow('MXN', ec.totalMXN, ec.totalAbonosMXN, ec.saldoMXN);
+  if (ec.totalUSD || ec.totalAbonosUSD) addRow('USD', ec.totalUSD, ec.totalAbonosUSD, ec.saldoUSD);
+  if (!rows.length) { root.innerHTML = '<p class="hint">Cotización sin total.</p>'; return; }
+  root.innerHTML = `<table class="pa-table">
+    <thead><tr><th>Moneda</th><th class="pa-num">Total</th><th class="pa-num">Pagado</th><th class="pa-num">Saldo</th></tr></thead>
+    <tbody>${rows.join('')}</tbody>
+  </table>`;
 }
 
 async function registerPortalAbono() {
@@ -6128,27 +6154,36 @@ async function registerPortalAbono() {
   const monto = Number(montoEl?.value || 0);
   if (!monto || monto <= 0) return setStatus('Poné un monto válido.');
 
+  const moneda = monedaEl?.value || 'MXN';
+  const fecha = fechaEl?.value || '';
+
+  // Optimistic: update the statement now, undo + notify if the server rejects it.
+  const ec = portalActiveQuote.estadoCuenta;
+  const snapshot = ec ? JSON.parse(JSON.stringify(ec)) : null;
+  if (ec) {
+    ec.abonos = ec.abonos || [];
+    ec.abonos.push({ monto, moneda, fecha });
+    if (moneda === 'USD') { ec.totalAbonosUSD += monto; ec.saldoUSD = ec.totalUSD - ec.totalAbonosUSD; }
+    else { ec.totalAbonosMXN += monto; ec.saldoMXN = ec.totalMXN - ec.totalAbonosMXN; }
+    renderPortalAccount(ec);
+  }
+  if (montoEl) montoEl.value = '';
+  setStatus('');
+
   const btn = document.getElementById('portal-abono-btn');
   if (btn) btn.disabled = true;
   try {
-    setStatus('Registrando…');
     const res = await fetch(`${API_BASE}/portal/admin/abono`, {
       method: 'POST',
       headers: apiHeaders(),
-      body: JSON.stringify({
-        cotizacionId: portalActiveQuote.id,
-        monto,
-        moneda: monedaEl?.value || 'MXN',
-        fecha: fechaEl?.value || '',
-      }),
+      body: JSON.stringify({ cotizacionId: portalActiveQuote.id, monto, moneda, fecha }),
     });
     const data = await res.json().catch(() => ({}));
     if (!res.ok || !data.ok) throw new Error(data.error || `HTTP ${res.status}`);
-    setStatus('✓ Abono registrado.');
-    if (montoEl) montoEl.value = '';
-    await openPortalCotizacion(portalActiveQuote.id, portalActiveQuote.clientName, portalActiveQuote.quoteNumber);
+    portalNotify('Abono registrado.');
   } catch (e) {
-    setStatus('Error: ' + (e?.message || e));
+    if (snapshot) { portalActiveQuote.estadoCuenta = snapshot; renderPortalAccount(snapshot); }
+    portalNotify('No se pudo registrar el abono: ' + (e?.message || e), true);
   } finally {
     if (btn) btn.disabled = false;
   }
@@ -6177,6 +6212,10 @@ function renderPortalTracks(tracks) {
     title.textContent = t.name;
     head.appendChild(title);
 
+    // All track actions grouped to the right (consistent with version rows).
+    const headActions = document.createElement('span');
+    headActions.className = 'portal-version-controls';
+
     // Descarga habilitada toggle (track level)
     const dl = document.createElement('label');
     dl.className = 'portal-toggle';
@@ -6190,14 +6229,14 @@ function renderPortalTracks(tracks) {
         t.descargaHabilitada = dlInput.checked;
       } catch (e) {
         dlInput.checked = !dlInput.checked;
-        portalUploadStatus('Error: ' + (e?.message || e));
+        portalNotify('No se pudo cambiar la descarga: ' + (e?.message || e), true);
       } finally {
         dlInput.disabled = false;
       }
     });
     dl.appendChild(dlInput);
     dl.appendChild(Object.assign(document.createElement('span'), { textContent: 'Descarga' }));
-    head.appendChild(dl);
+    headActions.appendChild(dl);
 
     const trackRename = document.createElement('button');
     trackRename.type = 'button';
@@ -6205,7 +6244,7 @@ function renderPortalTracks(tracks) {
     trackRename.textContent = '✎';
     trackRename.title = 'Renombrar canción';
     trackRename.addEventListener('click', () => renamePortalTrack(t));
-    head.appendChild(trackRename);
+    headActions.appendChild(trackRename);
 
     const trackDelete = document.createElement('button');
     trackDelete.type = 'button';
@@ -6213,8 +6252,9 @@ function renderPortalTracks(tracks) {
     trackDelete.textContent = '🗑';
     trackDelete.title = 'Borrar canción y todas sus versiones';
     trackDelete.addEventListener('click', () => deletePortalTrack(t));
-    head.appendChild(trackDelete);
+    headActions.appendChild(trackDelete);
 
+    head.appendChild(headActions);
     el.appendChild(head);
 
     const list = document.createElement('ul');
@@ -6246,13 +6286,16 @@ function renderPortalTracks(tracks) {
       fav.title = 'Versión principal';
       fav.addEventListener('click', async () => {
         const next = !v.favorita;
-        fav.disabled = true;
+        // Optimistic: favorita is exclusive per track — set this, clear siblings.
+        const prev = t.versions.map((x) => x.favorita);
+        t.versions.forEach((x) => { x.favorita = (x.id === v.id) ? next : false; });
+        renderPortalTracks(portalActiveQuote.tracks);
         try {
           await portalPatchVersion(v.id, { favorita: next });
-          await openPortalCotizacion(portalActiveQuote.id, portalActiveQuote.clientName, portalActiveQuote.quoteNumber);
         } catch (e) {
-          portalUploadStatus('Error: ' + (e?.message || e));
-          fav.disabled = false;
+          t.versions.forEach((x, i) => { x.favorita = prev[i]; });
+          renderPortalTracks(portalActiveQuote.tracks);
+          portalNotify('No se pudo cambiar la favorita: ' + (e?.message || e), true);
         }
       });
 
@@ -6269,7 +6312,7 @@ function renderPortalTracks(tracks) {
           v.visible = visInput.checked;
         } catch (e) {
           visInput.checked = !visInput.checked;
-          portalUploadStatus('Error: ' + (e?.message || e));
+          portalNotify('No se pudo cambiar la visibilidad: ' + (e?.message || e), true);
         } finally {
           visInput.disabled = false;
         }
@@ -6289,7 +6332,7 @@ function renderPortalTracks(tracks) {
       verDelete.className = 'portal-icon-btn portal-icon-danger';
       verDelete.textContent = '🗑';
       verDelete.title = 'Borrar versión';
-      verDelete.addEventListener('click', () => deletePortalVersion(v));
+      verDelete.addEventListener('click', () => deletePortalVersion(v, t));
 
       controls.appendChild(fav);
       controls.appendChild(vis);
@@ -6340,67 +6383,78 @@ async function portalDeleteFromDrive(fileId) {
   }
 }
 
-async function refreshPortalDetail() {
-  if (!portalActiveQuote) return;
-  await openPortalCotizacion(portalActiveQuote.id, portalActiveQuote.clientName, portalActiveQuote.quoteNumber);
-}
-
-async function deletePortalVersion(version) {
+// Delete a version optimistically: remove from the UI now, undo + notify if it fails.
+async function deletePortalVersion(version, track) {
   if (!confirm(`¿Borrar la versión "${version.name}"?\nSe elimina también el archivo de Drive. No se puede deshacer.`)) return;
+  const idx = track.versions.indexOf(version);
+  if (idx === -1) return;
+  track.versions.splice(idx, 1);
+  renderPortalTracks(portalActiveQuote.tracks);
   try {
-    portalUploadStatus('Borrando versión…');
     await portalDeleteFromDrive(version.driveFileId);
     const res = await fetch(`${API_BASE}/portal/admin/version/${version.id}`, { method: 'DELETE', headers: apiHeaders() });
     const data = await res.json().catch(() => ({}));
     if (!res.ok || !data.ok) throw new Error(data.error || `HTTP ${res.status}`);
-    portalUploadStatus('✓ Versión borrada.');
-    await refreshPortalDetail();
+    portalNotify('Versión borrada.');
   } catch (e) {
-    portalUploadStatus('Error: ' + (e?.message || e));
+    track.versions.splice(idx, 0, version); // undo
+    renderPortalTracks(portalActiveQuote.tracks);
+    portalNotify('No se pudo borrar la versión: ' + (e?.message || e), true);
   }
 }
 
+// Delete a track + all versions optimistically.
 async function deletePortalTrack(track) {
   const n = (track.versions || []).length;
   if (!confirm(`¿Borrar la canción "${track.name}" y sus ${n} versión(es)?\nSe eliminan también los archivos de Drive. No se puede deshacer.`)) return;
+  const idx = portalActiveQuote.tracks.indexOf(track);
+  if (idx === -1) return;
+  portalActiveQuote.tracks.splice(idx, 1);
+  renderPortalTracks(portalActiveQuote.tracks);
   try {
-    portalUploadStatus('Borrando canción…');
     for (const v of (track.versions || [])) {
       await portalDeleteFromDrive(v.driveFileId);
     }
     const res = await fetch(`${API_BASE}/portal/admin/track/${track.id}`, { method: 'DELETE', headers: apiHeaders() });
     const data = await res.json().catch(() => ({}));
     if (!res.ok || !data.ok) throw new Error(data.error || `HTTP ${res.status}`);
-    portalUploadStatus('✓ Canción borrada.');
-    await refreshPortalDetail();
+    portalNotify('Canción borrada.');
   } catch (e) {
-    portalUploadStatus('Error: ' + (e?.message || e));
+    portalActiveQuote.tracks.splice(idx, 0, track); // undo
+    renderPortalTracks(portalActiveQuote.tracks);
+    portalNotify('No se pudo borrar la canción: ' + (e?.message || e), true);
   }
 }
 
 async function renamePortalTrack(track) {
   const name = prompt('Nuevo nombre de la canción:', track.name);
   if (name === null || !name.trim() || name.trim() === track.name) return;
+  const prev = track.name;
+  track.name = name.trim();
+  renderPortalTracks(portalActiveQuote.tracks);
   try {
-    portalUploadStatus('Renombrando…');
     await portalPatchTrack(track.id, { name: name.trim() });
-    portalUploadStatus('✓ Renombrado.');
-    await refreshPortalDetail();
+    portalNotify('Renombrado.');
   } catch (e) {
-    portalUploadStatus('Error: ' + (e?.message || e));
+    track.name = prev;
+    renderPortalTracks(portalActiveQuote.tracks);
+    portalNotify('No se pudo renombrar: ' + (e?.message || e), true);
   }
 }
 
 async function renamePortalVersion(version) {
   const name = prompt('Nuevo nombre de la versión:', version.name);
   if (name === null || !name.trim() || name.trim() === version.name) return;
+  const prev = version.name;
+  version.name = name.trim();
+  renderPortalTracks(portalActiveQuote.tracks);
   try {
-    portalUploadStatus('Renombrando…');
     await portalPatchVersion(version.id, { name: name.trim() });
-    portalUploadStatus('✓ Renombrado.');
-    await refreshPortalDetail();
+    portalNotify('Renombrado.');
   } catch (e) {
-    portalUploadStatus('Error: ' + (e?.message || e));
+    version.name = prev;
+    renderPortalTracks(portalActiveQuote.tracks);
+    portalNotify('No se pudo renombrar: ' + (e?.message || e), true);
   }
 }
 
@@ -6516,11 +6570,12 @@ async function generatePeaks(file, buckets = 400) {
   }
 }
 
+// Returns the track object (existing or newly created + added to local state).
 async function portalEnsureTrack(name) {
   const existing = (portalActiveQuote?.tracks || []).find(
     (t) => String(t.name).trim().toLowerCase() === name.trim().toLowerCase(),
   );
-  if (existing) return existing.id;
+  if (existing) return existing;
   const res = await fetch(`${API_BASE}/portal/admin/track`, {
     method: 'POST',
     headers: apiHeaders(),
@@ -6528,7 +6583,9 @@ async function portalEnsureTrack(name) {
   });
   const data = await res.json().catch(() => ({}));
   if (!res.ok || !data.id) throw new Error(data.error || 'No se pudo crear la canción');
-  return data.id;
+  const track = { id: data.id, name: name.trim(), estado: 'En progreso', descargaHabilitada: false, moneda: '', versions: [] };
+  portalActiveQuote.tracks.push(track);
+  return track;
 }
 
 // Upload a file straight to Drive as the logged-in admin (we have an OAuth token
@@ -6580,22 +6637,29 @@ async function uploadPortalVersion() {
     const driveFileId = await portalUploadToDrive(file, `${label || 'Versión'} - ${file.name}`);
 
     portalUploadStatus('Creando canción…');
-    const trackId = await portalEnsureTrack(trackName);
+    const track = await portalEnsureTrack(trackName);
 
     portalUploadStatus('Guardando versión…');
     const res = await fetch(`${API_BASE}/portal/admin/version`, {
       method: 'POST',
       headers: apiHeaders(),
-      body: JSON.stringify({ trackId, label: label || 'Versión', favorita, duracion: duration, peaks, driveFileId }),
+      body: JSON.stringify({ trackId: track.id, label: label || 'Versión', favorita, duracion: duration, peaks, driveFileId }),
     });
     const data = await res.json().catch(() => ({}));
     if (!res.ok || !data.ok) throw new Error(data.error || `HTTP ${res.status}`);
 
-    portalUploadStatus('✓ Versión subida.');
+    // Append the new version locally (no full refetch).
+    if (favorita) track.versions.forEach((v) => { v.favorita = false; });
+    track.versions.push({
+      id: data.id, name: label || 'Versión', favorita, visible: true,
+      duracion: duration, fecha: '', driveFileId, peaks,
+    });
+    renderPortalTracks(portalActiveQuote.tracks);
+    portalUploadStatus('');
+    portalNotify('Versión subida.');
     if (fileInput) fileInput.value = '';
     document.getElementById('portal-version-label').value = '';
     document.getElementById('portal-version-favorita').checked = false;
-    await openPortalCotizacion(portalActiveQuote.id, portalActiveQuote.clientName, portalActiveQuote.quoteNumber);
   } catch (e) {
     portalUploadStatus('Error: ' + (e?.message || e));
   } finally {
