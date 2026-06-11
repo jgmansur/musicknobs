@@ -3897,6 +3897,12 @@ export default {
       });
       return json(result, result.ok === false ? 400 : 201);
     }
+    if (request.method === "DELETE" && url.pathname.startsWith("/portal/admin/comment/")) {
+      const commentId = url.pathname.replace("/portal/admin/comment/", "").trim();
+      if (!commentId) return json({ error: "commentId required" }, 400);
+      const result = await archiveNotionPage(env, commentId);
+      return json(result, result.ok === false ? 400 : 200);
+    }
     // ───────────────────────────────────────────────────────────────────────────
 
     if (!["GET", "POST", "PATCH", "DELETE"].includes(request.method)) {

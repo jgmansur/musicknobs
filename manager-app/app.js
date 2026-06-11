@@ -6554,10 +6554,35 @@ function renderAdminComments() {
     body.innerHTML = `<div class="portal-comment-text"></div><div class="portal-comment-meta"></div>`;
     body.querySelector('.portal-comment-text').textContent = cm.texto;
     body.querySelector('.portal-comment-meta').textContent = cm.esAdmin ? `${cm.autor} · admin` : cm.autor;
+    const del = document.createElement('button');
+    del.type = 'button';
+    del.className = 'portal-icon-btn portal-icon-danger portal-comment-del';
+    del.textContent = '🗑';
+    del.title = 'Borrar comentario';
+    del.addEventListener('click', () => deleteAdminComment(cm));
     li.appendChild(t);
     li.appendChild(body);
+    li.appendChild(del);
     root.appendChild(li);
   });
+}
+
+async function deleteAdminComment(cm) {
+  if (String(cm.id).startsWith('tmp')) return; // not persisted yet
+  if (!confirm(`¿Borrar este comentario?\n"${cm.texto}"`)) return;
+  const prev = portalPlayerState.comments || [];
+  portalPlayerState.comments = prev.filter((c) => c.id !== cm.id);
+  renderAdminComments(); portalDrawWaveform();
+  try {
+    const res = await fetch(`${API_BASE}/portal/admin/comment/${cm.id}`, { method: 'DELETE', headers: apiHeaders() });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || !data.ok) throw new Error(data.error || `HTTP ${res.status}`);
+    portalNotify('Comentario borrado.');
+  } catch (e) {
+    portalPlayerState.comments = prev;
+    renderAdminComments(); portalDrawWaveform();
+    portalNotify('No se pudo borrar el comentario: ' + (e?.message || e), true);
+  }
 }
 
 async function postAdminComment() {

@@ -3421,3 +3421,6 @@ body.messages-active .container {
 .portal-comment-text { font-size: 14px; color: var(--text-main); }
 .portal-comment-meta { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
 .portal-comment.is-admin .portal-comment-meta { color: var(--primary); }
+
+.portal-comment > div { flex: 1; min-width: 0; }
+.portal-comment-del { flex: 0 0 auto; margin-left: auto; align-self: flex-start; }
