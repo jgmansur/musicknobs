@@ -75,7 +75,10 @@ const cfg = window.MANAGER_APP_CONFIG || {};
 const API_BASE = (cfg.apiBaseUrl || '').replace(/\/$/, '');
 const API_TOKEN = cfg.apiToken || '';
 const GOOGLE_CLIENT_ID = cfg.googleClientId || '';
-const GOOGLE_SCOPES = 'openid email profile';
+const GOOGLE_SCOPES = 'openid email profile https://www.googleapis.com/auth/drive.file';
+// Portal: client files live here (My Drive/Manager App/Clientes/Archivos). The admin
+// uploads version files directly to Drive (the service account has no storage quota).
+const PORTAL_DRIVE_FOLDER = '1sequwARPJQcoVs52TlCZ0MWcxYS_1nb5';
 const AUTH_STORAGE_KEY = 'managerApp.googleAuth';
 const TOKEN_REFRESH_BUFFER_MS = 5 * 60 * 1000;
 const ADMIN_EMAILS = ['jgmansur2@gmail.com'];
@@ -6359,6 +6362,34 @@ async function portalEnsureTrack(name) {
   return data.id;
 }
 
+// Upload a file straight to Drive as the logged-in admin (we have an OAuth token
+// with drive.file scope). Service accounts can't own files in a personal My Drive,
+// so the upload must happen here, not in the worker. Returns the new file id.
+async function portalUploadToDrive(file, name) {
+  if (!googleAccessToken) throw new Error('Sesión de Google no disponible. Volvé a iniciar sesión.');
+  const boundary = '-mkportal' + Date.now();
+  const metadata = { name, parents: [PORTAL_DRIVE_FOLDER], mimeType: file.type || 'application/octet-stream' };
+  const body = new Blob([
+    `--${boundary}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n`,
+    JSON.stringify(metadata),
+    `\r\n--${boundary}\r\nContent-Type: ${metadata.mimeType}\r\n\r\n`,
+    file,
+    `\r\n--${boundary}--`,
+  ], { type: `multipart/related; boundary=${boundary}` });
+
+  const res = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${googleAccessToken}`, 'Content-Type': `multipart/related; boundary=${boundary}` },
+    body,
+  });
+  if (res.status === 401 || res.status === 403) {
+    throw new Error('Falta permiso de Drive. Cerrá sesión y volvé a entrar para autorizar la subida de archivos.');
+  }
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok || !data.id) throw new Error(data?.error?.message || `Drive HTTP ${res.status}`);
+  return data.id;
+}
+
 async function uploadPortalVersion() {
   if (!portalActiveQuote) return;
   const trackName = (document.getElementById('portal-track-name')?.value || '').trim();
@@ -6376,21 +6407,18 @@ async function uploadPortalVersion() {
     portalUploadStatus('Analizando audio…');
     const { peaks, duration } = await generatePeaks(file);
 
+    portalUploadStatus('Subiendo archivo a Drive…');
+    const driveFileId = await portalUploadToDrive(file, `${label || 'Versión'} - ${file.name}`);
+
     portalUploadStatus('Creando canción…');
     const trackId = await portalEnsureTrack(trackName);
 
-    portalUploadStatus('Subiendo archivo…');
-    const form = new FormData();
-    form.append('trackId', trackId);
-    form.append('label', label || 'Versión');
-    form.append('favorita', favorita ? 'true' : 'false');
-    form.append('duracion', String(duration || 0));
-    form.append('peaks', JSON.stringify(peaks));
-    form.append('file', file, file.name);
-
-    const headers = {};
-    if (API_TOKEN) headers.Authorization = `Bearer ${API_TOKEN}`;
-    const res = await fetch(`${API_BASE}/portal/admin/version`, { method: 'POST', headers, body: form });
+    portalUploadStatus('Guardando versión…');
+    const res = await fetch(`${API_BASE}/portal/admin/version`, {
+      method: 'POST',
+      headers: apiHeaders(),
+      body: JSON.stringify({ trackId, label: label || 'Versión', favorita, duracion: duration, peaks, driveFileId }),
+    });
     const data = await res.json().catch(() => ({}));
     if (!res.ok || !data.ok) throw new Error(data.error || `HTTP ${res.status}`);
 

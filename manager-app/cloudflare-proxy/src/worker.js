@@ -145,9 +145,10 @@ async function getDriveAccessToken(env) {
   const header = { alg: "RS256", typ: "JWT" };
   const payload = {
     iss: serviceAccount.client_email,
-    // Full drive scope: needed to upload portal versions (PR4 admin). The service
-    // account can still only touch resources explicitly shared with it.
-    scope: "https://www.googleapis.com/auth/drive",
+    // Read-only is enough: portal version files are uploaded client-side as the
+    // logged-in admin (service accounts have no My Drive storage quota). The worker
+    // only reads files for streaming.
+    scope: "https://www.googleapis.com/auth/drive.readonly",
     aud: serviceAccount.token_uri || "https://oauth2.googleapis.com/token",
     iat: now,
     exp: now + 3600,
@@ -3190,34 +3191,6 @@ async function patchNotionPage(env, pageId, properties) {
   return { ok: true };
 }
 
-// Upload a file to the portal Drive folder via the service account (multipart).
-async function uploadDriveFile(env, { name, mimeType, bytes }) {
-  const token = await getDriveAccessToken(env);
-  const boundary = "mkportal" + Math.random().toString(36).slice(2);
-  const metadata = { name, parents: [PORTAL_FILES_FOLDER_ID], mimeType: mimeType || "application/octet-stream" };
-  const enc = new TextEncoder();
-  const pre = enc.encode(
-    `--${boundary}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${JSON.stringify(metadata)}\r\n` +
-    `--${boundary}\r\nContent-Type: ${metadata.mimeType}\r\n\r\n`,
-  );
-  const post = enc.encode(`\r\n--${boundary}--`);
-  const body = new Uint8Array(pre.length + bytes.length + post.length);
-  body.set(pre, 0);
-  body.set(bytes, pre.length);
-  body.set(post, pre.length + bytes.length);
-
-  const resp = await fetch(
-    "https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&supportsAllDrives=true&fields=id",
-    {
-      method: "POST",
-      headers: { Authorization: `Bearer ${token}`, "Content-Type": `multipart/related; boundary=${boundary}` },
-      body,
-    },
-  );
-  if (!resp.ok) return { ok: false, error: await resp.text() };
-  return { ok: true, id: (await resp.json()).id };
-}
-
 // Admin view of a quote: tracks + ALL versions (no Visible filter, no code gate).
 async function portalAdminCotizacion(env, pageId) {
   const detail = await getManagerQuoteDetail(env, pageId).catch(() => null);
@@ -3271,40 +3244,34 @@ async function portalAdminCreateTrack(env, body) {
   return createNotionPage(env, PORTAL_TRACKS_DS_ID, properties);
 }
 
-// Multipart: file + fields (trackId, label, peaks JSON, duracion, favorita).
-async function portalAdminCreateVersion(env, form) {
-  const file = form.get("file");
-  const trackId = String(form.get("trackId") || "").trim();
-  const label = String(form.get("label") || "").trim() || "Versión";
-  if (!file || typeof file === "string") return { ok: false, error: "file requerido" };
+// JSON: { trackId, label, driveFileId, peaks (array|string), duracion, favorita }.
+// The file is uploaded to Drive client-side as the logged-in admin (service accounts
+// have no My Drive storage quota); the worker only records the Drive file id in Notion.
+async function portalAdminCreateVersion(env, body) {
+  const trackId = String(body?.trackId || "").trim();
+  const label = String(body?.label || "").trim() || "Versión";
+  const driveFileId = String(body?.driveFileId || "").trim();
   if (!trackId) return { ok: false, error: "trackId requerido" };
+  if (!driveFileId) return { ok: false, error: "driveFileId requerido" };
 
-  const bytes = new Uint8Array(await file.arrayBuffer());
-  const uploaded = await uploadDriveFile(env, {
-    name: `${label} - ${file.name || "audio"}`,
-    mimeType: file.type,
-    bytes,
-  });
-  if (!uploaded.ok) return { ok: false, error: "Drive upload failed: " + uploaded.error };
-
-  const duracion = Number(form.get("duracion") || 0) || 0;
-  const favorita = String(form.get("favorita") || "") === "true";
-  const peaksRaw = String(form.get("peaks") || "");
+  const duracion = Number(body?.duracion || 0) || 0;
+  const favorita = body?.favorita === true || String(body?.favorita) === "true";
+  const peaksRaw = typeof body?.peaks === "string" ? body.peaks : JSON.stringify(body?.peaks || []);
 
   const properties = {
     Name: { title: [{ type: "text", text: { content: label } }] },
     Track: { relation: [{ id: trackId }] },
-    "Drive File ID": { rich_text: chunkRichText(uploaded.id) },
+    "Drive File ID": { rich_text: chunkRichText(driveFileId) },
     Visible: { checkbox: true },
     Favorita: { checkbox: favorita },
     "Duración (seg)": { number: Math.round(duracion) },
     Fecha: { date: { start: new Date().toISOString().slice(0, 10) } },
   };
-  if (peaksRaw) properties.Peaks = { rich_text: chunkRichText(peaksRaw) };
+  if (peaksRaw && peaksRaw !== "[]") properties.Peaks = { rich_text: chunkRichText(peaksRaw) };
 
   const created = await createNotionPage(env, PORTAL_VERSIONS_DS_ID, properties);
   if (!created.ok) return created;
-  return { ok: true, id: created.id, driveFileId: uploaded.id };
+  return { ok: true, id: created.id, driveFileId };
 }
 
 // Toggle a version's visible/favorita. Favorita is exclusive per track: setting one
@@ -3705,9 +3672,8 @@ export default {
       return json(result, result.ok === false ? 400 : 201);
     }
     if (request.method === "POST" && url.pathname === "/portal/admin/version") {
-      const form = await request.formData().catch(() => null);
-      if (!form) return json({ error: "multipart form required" }, 400);
-      const result = await portalAdminCreateVersion(env, form);
+      const body = await request.json().catch(() => ({}));
+      const result = await portalAdminCreateVersion(env, body);
       return json(result, result.ok === false ? 400 : 201);
     }
     if (request.method === "PATCH" && url.pathname.startsWith("/portal/admin/version/")) {
