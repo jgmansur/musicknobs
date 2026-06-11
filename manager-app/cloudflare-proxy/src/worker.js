@@ -2871,11 +2871,25 @@ async function replaceSeguimientoSection(pageId, seguimientoData, notionToken, n
   if (!r.ok) throw new Error(await r.text());
 }
 
+let managerQuotesCache = { data: null, ts: 0 };
+const MANAGER_QUOTES_TTL = 60000; // 60s — speeds up portal auth→cotizacion + repeat logins
+
 async function listManagerQuotes(env, searchParams) {
   const notionToken = env.NOTION_TOKEN || "", notionVersion = env.NOTION_VERSION || "2022-06-28";
   if (!notionToken) return { ok: false, error: "NOTION_TOKEN not configured" };
   const search = String(searchParams.get("q") || "").trim().toLowerCase();
   const statusFilter = String(searchParams.get("status") || "").trim();
+
+  // Serve the (heavy) unfiltered list from a short cache. The portal hits this
+  // repeatedly within seconds (auth, then cotizacion) — without the cache each call
+  // re-parses every quote's page blocks from Notion.
+  if (!statusFilter && managerQuotesCache.data && Date.now() - managerQuotesCache.ts < MANAGER_QUOTES_TTL) {
+    const cached = managerQuotesCache.data;
+    const filtered = search
+      ? cached.filter((q) => (q.quoteNumber || "").toLowerCase().includes(search) || (q.name || "").toLowerCase().includes(search) || (q.email || "").toLowerCase().includes(search))
+      : cached;
+    return { ok: true, data: filtered, fxRate: await getFxRate(env), cached: true };
+  }
   try {
     const filter = { and: [{ property: "Name", title: { contains: "Cotización" } }, { property: "Tipo", select: { equals: "Music Knobs" } }] };
     if (statusFilter) filter.and.push({ property: "Estatus", select: { equals: statusFilter } });
@@ -2899,6 +2913,7 @@ async function listManagerQuotes(env, searchParams) {
       const parsed = parseQuoteBlocks(blocks, title);
       return { id: page.id, quoteNumber: parsed.quoteNumber, name: parsed.clientName, email: parsed.email, phone: parsed.phone, date: dateProp, items: parsed.items, total: parsed.total, totalMXN: parsed.totalMXN, totalUSD: parsed.totalUSD, seguimiento: parsed.seguimiento, estatus, origen: parsed.origen };
     }));
+    if (!statusFilter) managerQuotesCache = { data, ts: Date.now() }; // cache the full unfiltered set
     const filtered = search ? data.filter((q) => (q.quoteNumber||"").toLowerCase().includes(search)||(q.name||"").toLowerCase().includes(search)||(q.email||"").toLowerCase().includes(search)) : data;
     return { ok: true, data: filtered, fxRate: await getFxRate(env) };
   } catch (e) { return { ok: false, error: String(e?.message || e) }; }
@@ -3008,6 +3023,37 @@ async function queryPortalDb(env, dsId, filter, sorts) {
   return payload?.results || [];
 }
 
+// Lightweight quote list for the portal: ONE Notion query, no per-quote block parsing.
+// clientName + quoteNumber come from the page TITLE; estatus from a property.
+// This is what makes portal login fast (listManagerQuotes parses every quote's blocks).
+let portalQuotesLiteCache = { data: null, ts: 0 };
+const PORTAL_QUOTES_LITE_TTL = 120000; // 2 min — keeps login warm; new quotes appear within this
+async function portalQuotesLite(env) {
+  if (portalQuotesLiteCache.data && Date.now() - portalQuotesLiteCache.ts < PORTAL_QUOTES_LITE_TTL) return portalQuotesLiteCache.data;
+  const notionToken = env.NOTION_TOKEN || "", notionVersion = env.NOTION_VERSION || "2022-06-28";
+  const filter = { and: [{ property: "Name", title: { contains: "Cotización" } }, { property: "Tipo", select: { equals: "Music Knobs" } }] };
+  const resp = await fetch(`https://api.notion.com/v1/data_sources/${ARCHIVO_DS_ID}/query`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${notionToken}`, "Notion-Version": notionVersion, "Content-Type": "application/json" },
+    body: JSON.stringify({ filter, page_size: 100 }),
+  });
+  if (!resp.ok) throw new Error(await resp.text());
+  const payload = await resp.json();
+  const data = (payload?.results || []).map((page) => {
+    const title = readNotionTitle(page.properties || {});
+    const m = title.match(QUOTE_NUMBER_RE);
+    const sep = title.indexOf("— ");
+    return {
+      id: page.id,
+      quoteNumber: m ? m[0] : "",
+      name: sep >= 0 ? title.slice(sep + 2).trim() : "",
+      estatus: page.properties?.Estatus?.select?.name || "",
+    };
+  });
+  portalQuotesLiteCache = { data, ts: Date.now() };
+  return data;
+}
+
 // Resolve a portal access code → the client and ALL their quotes.
 // Valid only if the name slug matches a client AND at least one of that client's
 // quote numbers ends in the 3-digit suffix. Returns ok:false generically otherwise
@@ -3015,9 +3061,9 @@ async function queryPortalDb(env, dsId, filter, sorts) {
 async function resolvePortalCode(env, code) {
   const { slug, suffix } = parsePortalCode(code);
   if (!slug || !suffix) return { ok: false };
-  const quotesResult = await listManagerQuotes(env, new URLSearchParams());
-  if (!quotesResult.ok) return { ok: false, error: quotesResult.error };
-  const clientQuotes = (quotesResult.data || []).filter((q) => portalSlug(q.name) === slug);
+  let quotes;
+  try { quotes = await portalQuotesLite(env); } catch (e) { return { ok: false, error: String(e?.message || e) }; }
+  const clientQuotes = quotes.filter((q) => portalSlug(q.name) === slug);
   if (!clientQuotes.length) return { ok: false };
   if (!clientQuotes.some((q) => quoteLast3(q.quoteNumber) === suffix)) return { ok: false };
   return { ok: true, clientName: clientQuotes[0].name, slug, quotes: clientQuotes };
@@ -3033,9 +3079,6 @@ async function portalAuth(env, code) {
       id: q.id,
       quoteNumber: q.quoteNumber,
       estatus: q.estatus,
-      total: q.total,
-      totalMXN: q.totalMXN,
-      totalUSD: q.totalUSD,
     })),
   };
 }
@@ -3046,16 +3089,19 @@ async function portalAuth(env, code) {
 async function portalCotizacion(env, pageId, code) {
   const resolved = await resolvePortalCode(env, code);
   if (!resolved.ok) return { ok: false, unauthorized: true };
-  if (!resolved.quotes.some((q) => q.id === pageId)) return { ok: false, unauthorized: true };
+  const q = resolved.quotes.find((x) => normNotionId(x.id) === normNotionId(pageId));
+  if (!q) return { ok: false, unauthorized: true };
 
-  const detail = await getManagerQuoteDetail(env, pageId);
-  if (!detail.ok) return detail;
-
-  const trackPages = await queryPortalDb(env, PORTAL_TRACKS_DS_ID, {
-    property: "Cotización", relation: { contains: pageId },
-  });
-  const tracks = [];
-  for (const tp of trackPages) {
+  // Quote totals need the parsed blocks — but only for THIS one quote (cheap).
+  // Run it in parallel with the track query below.
+  const [detail, trackPages] = await Promise.all([
+    getManagerQuoteDetail(env, pageId).catch(() => null),
+    queryPortalDb(env, PORTAL_TRACKS_DS_ID, { property: "Cotización", relation: { contains: pageId } }),
+  ]);
+  const totalMXN = detail?.data?.totalMXN || 0;
+  const totalUSD = detail?.data?.totalUSD || 0;
+  // Fetch each track's versions in parallel (was sequential — slow with many tracks).
+  const tracks = await Promise.all(trackPages.map(async (tp) => {
     const tprops = tp.properties || {};
     const versionPages = await queryPortalDb(env, PORTAL_VERSIONS_DS_ID, {
       and: [
@@ -3079,15 +3125,15 @@ async function portalCotizacion(env, pageId, code) {
         peaks: Array.isArray(peaks) ? peaks : [],
       };
     });
-    tracks.push({
+    return {
       id: tp.id,
       name: readNotionTitle(tprops),
       estado: tprops?.Estado?.select?.name || "",
       descargaHabilitada: Boolean(tprops?.["Descarga habilitada"]?.checkbox),
       moneda: tprops?.Moneda?.select?.name || "",
       versions,
-    });
-  }
+    };
+  }));
 
   const paymentPages = await queryPortalDb(env, PORTAL_PAYMENTS_DS_ID, {
     property: "Cotización", relation: { contains: pageId },
@@ -3106,17 +3152,16 @@ async function portalCotizacion(env, pageId, code) {
 
   return {
     ok: true,
-    quote: detail.data,
-    fxRate: detail.fxRate,
+    quote: { quoteNumber: q.quoteNumber, clientName: q.name, status: q.estatus },
     tracks,
     estadoCuenta: {
-      totalMXN: detail.data.totalMXN,
-      totalUSD: detail.data.totalUSD,
+      totalMXN,
+      totalUSD,
       abonos,
       totalAbonosMXN,
       totalAbonosUSD,
-      saldoMXN: (detail.data.totalMXN || 0) - totalAbonosMXN,
-      saldoUSD: (detail.data.totalUSD || 0) - totalAbonosUSD,
+      saldoMXN: totalMXN - totalAbonosMXN,
+      saldoUSD: totalUSD - totalAbonosUSD,
     },
   };
 }
@@ -3301,8 +3346,7 @@ async function portalAdminCotizacion(env, pageId) {
   const trackPages = await queryPortalDb(env, PORTAL_TRACKS_DS_ID, {
     property: "Cotización", relation: { contains: pageId },
   });
-  const tracks = [];
-  for (const tp of trackPages) {
+  const tracks = await Promise.all(trackPages.map(async (tp) => {
     const tprops = tp.properties || {};
     const versionPages = await queryPortalDb(env, PORTAL_VERSIONS_DS_ID, {
       property: "Track", relation: { contains: tp.id },
@@ -3323,15 +3367,15 @@ async function portalAdminCotizacion(env, pageId) {
         peaks: Array.isArray(peaks) ? peaks : [],
       };
     });
-    tracks.push({
+    return {
       id: tp.id,
       name: readNotionTitle(tprops),
       estado: tprops?.Estado?.select?.name || "",
       descargaHabilitada: Boolean(tprops?.["Descarga habilitada"]?.checkbox),
       moneda: tprops?.Moneda?.select?.name || "",
       versions,
-    });
-  }
+    };
+  }));
 
   // Statement of account (so the admin can see balance + register payments).
   const paymentPages = await queryPortalDb(env, PORTAL_PAYMENTS_DS_ID, {
