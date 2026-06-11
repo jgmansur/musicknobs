@@ -3471,3 +3471,22 @@ body.messages-active .container {
   /* Player header title can shrink */
   .portal-player-title { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 }
+
+/* ─── Portal admin: prevent horizontal overflow (flex text children + mobile) ─ */
+.portal-version-name,
+.portal-track-head > strong,
+.portal-card-name,
+.portal-comment-text,
+.portal-player-title,
+.portal-abono-amount,
+.portal-abono-date { min-width: 0; overflow-wrap: anywhere; }
+
+@media (max-width: 720px) {
+  #tab-portal { overflow-x: hidden; }
+  #portal-detail-view, #portal-list-view { max-width: 100%; }
+  #tab-portal input, #tab-portal select, #tab-portal textarea, #tab-portal button { box-sizing: border-box; max-width: 100%; }
+  #tab-portal .portal-track, #tab-portal .portal-account, #tab-portal .portal-upload,
+  #tab-portal .portal-player, #tab-portal .portal-card, #tab-portal .pa-table { max-width: 100%; box-sizing: border-box; }
+  #portal-player-canvas { max-width: 100%; }
+  .pa-table { table-layout: fixed; }
+}
