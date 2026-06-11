@@ -3436,3 +3436,38 @@ body.messages-active .container {
 .portal-abono-recibo-link { color: var(--primary); text-decoration: none; }
 .portal-abono-recibo-link:hover { text-decoration: underline; }
 .portal-abono-norecibo { color: var(--text-muted); font-size: 12px; }
+
+/* ─── Portal admin: mobile responsive (≤720px) ───────────────────────────── */
+@media (max-width: 720px) {
+  .portal-grid { grid-template-columns: 1fr; }
+
+  /* Track header: title on top, actions wrap to a right-aligned second line */
+  .portal-track-head { flex-wrap: wrap; gap: 8px; }
+  .portal-track-head > strong { flex: 1 1 100%; }
+  .portal-track-head .portal-version-controls { flex: 1 1 100%; justify-content: flex-end; flex-wrap: wrap; }
+
+  /* Version rows: play + name on line 1, controls wrap below */
+  .portal-version { flex-wrap: wrap; }
+  .portal-version-name { flex: 1 1 auto; }
+  .portal-version-controls { flex: 1 1 100%; justify-content: flex-end; flex-wrap: wrap; gap: 14px; }
+
+  /* Abono form: inputs stack full-width */
+  .portal-abono-form { flex-wrap: wrap; }
+  .portal-abono-form input[type="number"] { width: 100%; }
+  .portal-abono-form select,
+  .portal-abono-form input[type="date"],
+  .portal-abono-form .btn { flex: 1 1 100%; }
+  .portal-abono-row { flex-wrap: wrap; gap: 2px 10px; }
+  .portal-abono-amount { min-width: 0; }
+
+  /* Player comment reply: input full width */
+  .portal-comment-form { flex-wrap: wrap; }
+  .portal-comment-form input { flex: 1 1 100%; order: 3; }
+  .portal-comment-form .btn { flex: 1 1 auto; }
+
+  /* Statement table: tighter padding so it fits */
+  .pa-table th, .pa-table td { padding-left: 5px; padding-right: 5px; font-size: 13px; }
+
+  /* Player header title can shrink */
+  .portal-player-title { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+}
