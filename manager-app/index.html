@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;700;800&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="./styles.css?v=2.0.68" />
+    <link rel="stylesheet" href="./styles.css?v=2.0.69" />
     <link rel="manifest" href="./manifest.json" />
     <link rel="icon" type="image/png" href="./icon-32.png" />
     <link rel="apple-touch-icon" href="./icon-180.png" />
@@ -511,22 +511,21 @@
           </div>
           <div id="portal-tracks"></div>
 
+          <div class="portal-account portal-extra-card">
+            <h4>Horas extra de grabación</h4>
+            <div class="portal-extra-controls">
+              <button id="portal-extra-dec" class="portal-extra-btn" type="button" aria-label="Quitar una hora">−</button>
+              <span id="portal-extra-count" class="portal-extra-count">0</span>
+              <button id="portal-extra-inc" class="portal-extra-btn" type="button" aria-label="Agregar una hora">+</button>
+              <span class="portal-extra-rate">× $700 MXN / hora</span>
+              <span id="portal-extra-amount" class="portal-extra-amount">MXN 0</span>
+              <span id="portal-extra-status" class="qd-save-status"></span>
+            </div>
+          </div>
+
           <div class="portal-account">
             <h4>Estado de cuenta</h4>
             <div id="portal-account-summary" class="portal-account-summary"></div>
-            <div class="portal-extra-hours">
-              <div class="portal-extra-head">
-                <span class="portal-extra-label">Horas extra de grabación</span>
-                <span id="portal-extra-amount" class="portal-extra-amount">MXN 0</span>
-              </div>
-              <div class="portal-extra-controls">
-                <button id="portal-extra-dec" class="portal-extra-btn" type="button" aria-label="Quitar una hora">−</button>
-                <span id="portal-extra-count" class="portal-extra-count">0</span>
-                <button id="portal-extra-inc" class="portal-extra-btn" type="button" aria-label="Agregar una hora">+</button>
-                <span class="portal-extra-rate">× $700 MXN / hora</span>
-                <span id="portal-extra-status" class="qd-save-status"></span>
-              </div>
-            </div>
             <div class="portal-abono-form">
               <input id="portal-abono-monto" type="number" min="0" step="0.01" placeholder="Monto" inputmode="decimal">
               <select id="portal-abono-moneda">
@@ -621,6 +620,6 @@
     <script src="./config.js"></script>
     <script src="./vendor/howler.min.js"></script>
     <script src="./tracks.js?v=salesfix404v1"></script>
-    <script src="./app.js?v=2.0.68"></script>
+    <script src="./app.js?v=2.0.69"></script>
   </body>
   </html>

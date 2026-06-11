@@ -5901,6 +5901,16 @@ function mkGenerateContract() {
   mkShowContractPromptCard(prompt);
 }
 
+// Mirror of the worker's portal access-code derivation (client-name slug + the
+// last 3 alphanumerics of the quote number) so the contract can hand the client
+// their login. Keep in sync with cloudflare-proxy/src/worker.js (portalSlug/quoteLast3).
+const MK_PORTAL_URL = 'https://www.musicknobs.com/portal';
+function mkPortalAccessCode(name, quoteNumber) {
+  const slug = String(name || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]/g, '');
+  const last3 = String(quoteNumber || '').toLowerCase().replace(/[^a-z0-9]/g, '').slice(-3);
+  return (slug && last3) ? slug + last3 : '';
+}
+
 function mkBuildContractPrompt(q, negotiated) {
   const pageId = String(quotesCurrentPageId || '');
   const notionUrl = pageId ? `https://www.notion.so/${pageId.replace(/-/g, '')}` : '(sin id de página)';
@@ -5916,6 +5926,7 @@ function mkBuildContractPrompt(q, negotiated) {
   const startDate = seg.startDate ? (formatQuoteDate(seg.startDate) || seg.startDate) : '';
   const deliveryDate = seg.deliveryDate ? (formatQuoteDate(seg.deliveryDate) || seg.deliveryDate) : '';
   const contractNotes = String(seg.contractNotes || '').trim();
+  const accessCode = mkPortalAccessCode(q.clientName, q.quoteNumber);
   const idiomaRaw = String(q.idioma || '').toLowerCase();
   const idioma = (idiomaRaw.includes('english') || idiomaRaw === 'en')
     ? 'English — REDACTÁ EL CONTRATO EN INGLÉS'
@@ -5936,6 +5947,8 @@ function mkBuildContractPrompt(q, negotiated) {
     `• Fecha máxima del cliente (deadline): ${deadline || '—'}`,
     `• Fecha de inicio del proyecto: ${startDate || '—'}`,
     `• Fecha de entrega comprometida: ${deliveryDate || '—'}`,
+    `• Portal del cliente (incluir en el contrato): ${MK_PORTAL_URL}`,
+    `• Código de acceso del cliente (incluir en el contrato): ${accessCode || '—'}`,
     `• Nota de Notion (contexto y decisiones de la llamada): ${notionUrl}`,
     `• Carpeta de salida (Drive local, ya montado): ${outFolder}`,
     '',
@@ -6266,6 +6279,7 @@ async function openPortalCotizacion(quoteId, clientName, quoteNumber) {
     const data = await fetchJson(`${API_BASE}/portal/admin/cotizacion/${quoteId}`);
     portalActiveQuote = { id: quoteId, quoteNumber, clientName, tracks: data?.tracks || [], estadoCuenta: data?.estadoCuenta || null, seguimiento: data?.quote?.seguimiento || {} };
     renderPortalTracks(portalActiveQuote.tracks);
+    renderPortalExtraHours(portalActiveQuote.estadoCuenta);
     renderPortalAccount(portalActiveQuote.estadoCuenta);
   } catch (e) {
     if (tracksRoot) tracksRoot.innerHTML = `<p class="hint">Error: ${escapeHtmlSafe(e?.message || String(e))}</p>`;
@@ -6297,7 +6311,6 @@ function renderPortalAccount(ec) {
     <thead><tr><th>Moneda</th><th class="pa-num">Total</th><th class="pa-num">Pagado</th><th class="pa-num">Saldo</th></tr></thead>
     <tbody>${rows.join('')}</tbody>
   </table>`;
-  renderPortalExtraHours(ec);
   renderPortalAbonosList(ec.abonos || []);
 }
 
@@ -6331,7 +6344,8 @@ async function changePortalExtraHours(delta) {
   ec.horasExtraMonto = next * rate;
   ec.totalMXN = base + ec.horasExtraMonto;
   ec.saldoMXN = ec.totalMXN - (ec.totalAbonosMXN || 0);
-  renderPortalAccount(ec); // optimistic: re-render table + counter
+  renderPortalExtraHours(ec); // refresh count + amount
+  renderPortalAccount(ec); // refresh the account totals (now include the new hours)
   // Persist into the FULL seguimiento object so other fields aren't clobbered.
   const seg = { ...(portalActiveQuote.seguimiento || {}) };
   if (next > 0) seg.horasExtra = String(next); else delete seg.horasExtra;
