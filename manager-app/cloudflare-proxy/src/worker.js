@@ -3156,7 +3156,7 @@ async function portalResolveVersion(env, versionId, code) {
 
   const fileId = richTextToString(vprops?.["Drive File ID"]?.rich_text);
   if (!fileId) return { ok: false, status: 404, error: "Sin archivo" };
-  return { ok: true, fileId, vprops, tprops, cotizacionId };
+  return { ok: true, fileId, vprops, tprops, cotizacionId, clientName: resolved.clientName };
 }
 
 // True when a quote has no outstanding balance (both currencies settled).
@@ -3192,6 +3192,44 @@ async function portalDownload(versionId, request, env, code) {
   if (!allowed) return json({ error: "Pago pendiente" }, 402);
   const name = `${readNotionTitle(r.tprops) || "track"} - ${readNotionTitle(r.vprops) || "version"}`;
   return streamDriveAudioFile(r.fileId, request, env, name);
+}
+
+// ─── PORTAL COMMENTS (timestamped, both sides) ────────────────────────────────
+function portalCommentFromPage(cp) {
+  const p = cp.properties || {};
+  return {
+    id: cp.id,
+    texto: readNotionTitle(p),
+    timestamp: p["Timestamp (seg)"]?.number || 0,
+    autor: richTextToString(p.Autor?.rich_text),
+    esAdmin: Boolean(p.EsAdmin?.checkbox),
+    fecha: p.Fecha?.date?.start || "",
+  };
+}
+
+async function portalListComments(env, versionId) {
+  const pages = await queryPortalDb(env, PORTAL_COMMENTS_DS_ID, {
+    property: "Versión", relation: { contains: versionId },
+  });
+  const comments = pages.map(portalCommentFromPage).sort((a, b) => a.timestamp - b.timestamp);
+  return { ok: true, comments };
+}
+
+async function portalCreateComment(env, { versionId, texto, timestamp, autor, esAdmin }) {
+  const body = String(texto || "").trim();
+  if (!versionId) return { ok: false, error: "versionId requerido" };
+  if (!body) return { ok: false, error: "texto requerido" };
+  const properties = {
+    Name: { title: [{ type: "text", text: { content: body.slice(0, 1900) } }] },
+    "Versión": { relation: [{ id: versionId }] },
+    "Timestamp (seg)": { number: Math.max(0, Math.round(Number(timestamp) || 0)) },
+    Autor: { rich_text: [{ type: "text", text: { content: String(autor || "").slice(0, 200) } }] },
+    EsAdmin: { checkbox: Boolean(esAdmin) },
+    Fecha: { date: { start: new Date().toISOString().slice(0, 10) } },
+  };
+  const created = await createNotionPage(env, PORTAL_COMMENTS_DS_ID, properties);
+  if (!created.ok) return created;
+  return { ok: true, id: created.id };
 }
 
 // ─── PORTAL ADMIN (Manager App) ───────────────────────────────────────────────
@@ -3771,6 +3809,25 @@ export default {
       const code = request.headers.get("X-Portal-Code") || url.searchParams.get("code") || "";
       return portalDownload(versionId, request, env, code);
     }
+    if (request.method === "GET" && url.pathname.startsWith("/portal/comments/")) {
+      const versionId = url.pathname.replace("/portal/comments/", "").trim();
+      if (!versionId) return json({ error: "versionId required" }, 400);
+      const code = request.headers.get("X-Portal-Code") || url.searchParams.get("code") || "";
+      const r = await portalResolveVersion(env, versionId, code);
+      if (!r.ok) return json({ error: r.error }, r.status);
+      return json(await portalListComments(env, versionId), 200);
+    }
+    if (request.method === "POST" && url.pathname === "/portal/comments") {
+      const body = await request.json().catch(() => ({}));
+      const code = request.headers.get("X-Portal-Code") || body?.code || "";
+      const r = await portalResolveVersion(env, body?.versionId, code);
+      if (!r.ok) return json({ error: r.error }, r.status);
+      const result = await portalCreateComment(env, {
+        versionId: body.versionId, texto: body.texto, timestamp: body.timestamp,
+        autor: r.clientName || "Cliente", esAdmin: false,
+      });
+      return json(result, result.ok === false ? 400 : 201);
+    }
     // ─── Portal admin (Manager App, behind the client-side Google gate) ─────────
     if (request.method === "GET" && url.pathname === "/portal/admin/cotizaciones") {
       const result = await listManagerQuotes(env, new URLSearchParams());
@@ -3825,6 +3882,19 @@ export default {
     if (request.method === "POST" && url.pathname === "/portal/admin/abono") {
       const body = await request.json().catch(() => ({}));
       const result = await portalAdminCreateAbono(env, body);
+      return json(result, result.ok === false ? 400 : 201);
+    }
+    if (request.method === "GET" && url.pathname.startsWith("/portal/admin/comments/")) {
+      const versionId = url.pathname.replace("/portal/admin/comments/", "").trim();
+      if (!versionId) return json({ error: "versionId required" }, 400);
+      return json(await portalListComments(env, versionId), 200);
+    }
+    if (request.method === "POST" && url.pathname === "/portal/admin/comment") {
+      const body = await request.json().catch(() => ({}));
+      const result = await portalCreateComment(env, {
+        versionId: body?.versionId, texto: body?.texto, timestamp: body?.timestamp,
+        autor: "Music Knobs", esAdmin: true,
+      });
       return json(result, result.ok === false ? 400 : 201);
     }
     // ───────────────────────────────────────────────────────────────────────────

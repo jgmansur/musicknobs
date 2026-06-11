@@ -6459,7 +6459,7 @@ async function renamePortalVersion(version) {
 }
 
 // ── Admin waveform player (vanilla, reuses Drive stream + stored peaks) ──────
-let portalPlayerState = { peaks: [], duration: 0 };
+let portalPlayerState = { peaks: [], duration: 0, versionId: '', comments: [] };
 
 function portalDrawWaveform() {
   const canvas = document.getElementById('portal-player-canvas');
@@ -6486,6 +6486,14 @@ function portalDrawWaveform() {
     ctx.fillStyle = x < playedX ? '#ff1097' : '#424242';
     ctx.fillRect(x, mid - barH, Math.max(barW - (barW > 2 ? 1 : 0), 1), barH * 2);
   }
+  if (dur > 0) {
+    for (const cm of (portalPlayerState.comments || [])) {
+      const cx = (cm.timestamp / dur) * w;
+      ctx.fillStyle = '#ffc127';
+      ctx.fillRect(cx - 1, 0, 2, 8);
+      ctx.beginPath(); ctx.arc(cx, 4, 3, 0, Math.PI * 2); ctx.fill();
+    }
+  }
   if (progress > 0) { ctx.fillStyle = '#ff1097'; ctx.fillRect(playedX - 1, 0, 2, h); }
 }
 
@@ -6501,7 +6509,7 @@ function portalPlayVersion(version, trackName) {
   if (!wrap || !audio) return;
   if (!version.driveFileId) { portalUploadStatus('Esta versión no tiene archivo.'); return; }
 
-  portalPlayerState = { peaks: version.peaks || [], duration: version.duracion || 0 };
+  portalPlayerState = { peaks: version.peaks || [], duration: version.duracion || 0, versionId: version.id, comments: [] };
   wrap.classList.remove('hidden');
   if (titleEl) titleEl.textContent = `${trackName} — ${version.name}`;
   audio.src = `${API_BASE}/api/audio/${version.driveFileId}`;
@@ -6509,6 +6517,78 @@ function portalPlayVersion(version, trackName) {
   if (durEl) durEl.textContent = portalFmtTime(version.duracion || 0);
   audio.play().catch(() => {});
   portalDrawWaveform();
+  loadAdminComments(version.id);
+}
+
+async function loadAdminComments(versionId) {
+  try {
+    const data = await fetchJson(`${API_BASE}/portal/admin/comments/${versionId}`);
+    if (portalPlayerState.versionId === versionId) {
+      portalPlayerState.comments = data?.comments || [];
+      renderAdminComments();
+      portalDrawWaveform();
+    }
+  } catch {
+    renderAdminComments();
+  }
+}
+
+function renderAdminComments() {
+  const root = document.getElementById('portal-comment-list');
+  if (!root) return;
+  const comments = portalPlayerState.comments || [];
+  if (!comments.length) { root.innerHTML = '<li class="portal-comment-empty">Sin comentarios todavía.</li>'; return; }
+  root.innerHTML = '';
+  comments.forEach((cm) => {
+    const li = document.createElement('li');
+    li.className = 'portal-comment' + (cm.esAdmin ? ' is-admin' : '');
+    const t = document.createElement('button');
+    t.type = 'button';
+    t.className = 'portal-comment-jump';
+    t.textContent = portalFmtTime(cm.timestamp);
+    t.addEventListener('click', () => {
+      const audio = document.getElementById('portal-player-audio');
+      if (audio) { audio.currentTime = cm.timestamp; portalDrawWaveform(); }
+    });
+    const body = document.createElement('div');
+    body.innerHTML = `<div class="portal-comment-text"></div><div class="portal-comment-meta"></div>`;
+    body.querySelector('.portal-comment-text').textContent = cm.texto;
+    body.querySelector('.portal-comment-meta').textContent = cm.esAdmin ? `${cm.autor} · admin` : cm.autor;
+    li.appendChild(t);
+    li.appendChild(body);
+    root.appendChild(li);
+  });
+}
+
+async function postAdminComment() {
+  const input = document.getElementById('portal-comment-text');
+  const audio = document.getElementById('portal-player-audio');
+  const texto = (input?.value || '').trim();
+  if (!texto || !portalPlayerState.versionId) return;
+  const timestamp = audio ? audio.currentTime : 0;
+  const btn = document.getElementById('portal-comment-btn');
+  if (btn) btn.disabled = true;
+  // optimistic
+  const optimistic = { id: 'tmp' + Date.now(), texto, timestamp, autor: 'Music Knobs', esAdmin: true, fecha: '' };
+  portalPlayerState.comments = [...(portalPlayerState.comments || []), optimistic].sort((a, b) => a.timestamp - b.timestamp);
+  renderAdminComments(); portalDrawWaveform();
+  if (input) input.value = '';
+  try {
+    const res = await fetch(`${API_BASE}/portal/admin/comment`, {
+      method: 'POST', headers: apiHeaders(),
+      body: JSON.stringify({ versionId: portalPlayerState.versionId, texto, timestamp }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || !data.ok) throw new Error(data.error || `HTTP ${res.status}`);
+    portalNotify('Comentario enviado.');
+    loadAdminComments(portalPlayerState.versionId);
+  } catch (e) {
+    portalPlayerState.comments = (portalPlayerState.comments || []).filter((c) => c.id !== optimistic.id);
+    renderAdminComments(); portalDrawWaveform();
+    portalNotify('No se pudo comentar: ' + (e?.message || e), true);
+  } finally {
+    if (btn) btn.disabled = false;
+  }
 }
 
 function setupPortalPlayer() {
@@ -6524,7 +6604,12 @@ function setupPortalPlayer() {
   if (audio) {
     audio.addEventListener('play', () => { if (toggle) toggle.textContent = '⏸'; });
     audio.addEventListener('pause', () => { if (toggle) toggle.textContent = '▶'; });
-    audio.addEventListener('timeupdate', () => { if (curEl) curEl.textContent = portalFmtTime(audio.currentTime); portalDrawWaveform(); });
+    audio.addEventListener('timeupdate', () => {
+      if (curEl) curEl.textContent = portalFmtTime(audio.currentTime);
+      const ct = document.getElementById('portal-comment-time');
+      if (ct) ct.textContent = portalFmtTime(audio.currentTime);
+      portalDrawWaveform();
+    });
     audio.addEventListener('loadedmetadata', () => {
       if (Number.isFinite(audio.duration)) { portalPlayerState.duration = portalPlayerState.duration || audio.duration; if (durEl) durEl.textContent = portalFmtTime(portalPlayerState.duration); }
     });
@@ -6540,6 +6625,12 @@ function setupPortalPlayer() {
   if (closeBtn) closeBtn.addEventListener('click', () => {
     audio.pause();
     document.getElementById('portal-player')?.classList.add('hidden');
+  });
+  const commentBtn = document.getElementById('portal-comment-btn');
+  if (commentBtn) commentBtn.addEventListener('click', postAdminComment);
+  const commentInput = document.getElementById('portal-comment-text');
+  if (commentInput) commentInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') { e.preventDefault(); postAdminComment(); }
   });
 }
 

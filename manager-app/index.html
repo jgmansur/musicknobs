@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;700;800&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="./styles.css?v=2.0.54" />
+    <link rel="stylesheet" href="./styles.css?v=2.0.55" />
     <link rel="manifest" href="./manifest.json" />
     <link rel="icon" type="image/png" href="./icon-32.png" />
     <link rel="apple-touch-icon" href="./icon-180.png" />
@@ -491,6 +491,15 @@
             <canvas id="portal-player-canvas" class="portal-player-canvas"></canvas>
             <div class="portal-player-times"><span id="portal-player-cur">0:00</span><span id="portal-player-dur">0:00</span></div>
             <audio id="portal-player-audio" preload="metadata"></audio>
+            <div class="portal-comments">
+              <h4>Comentarios</h4>
+              <div class="portal-comment-form">
+                <span id="portal-comment-time" class="portal-comment-time">0:00</span>
+                <input id="portal-comment-text" type="text" placeholder="Responder en este punto…" autocomplete="off">
+                <button id="portal-comment-btn" class="btn" type="button">Responder</button>
+              </div>
+              <ul id="portal-comment-list" class="portal-comment-list"></ul>
+            </div>
           </div>
           <div id="portal-tracks"></div>
 
@@ -581,6 +590,6 @@
     <script src="./config.js"></script>
     <script src="./vendor/howler.min.js"></script>
     <script src="./tracks.js?v=salesfix404v1"></script>
-    <script src="./app.js?v=2.0.54"></script>
+    <script src="./app.js?v=2.0.55"></script>
   </body>
   </html>
