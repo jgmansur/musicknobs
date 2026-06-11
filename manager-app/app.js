@@ -6147,20 +6147,86 @@ function renderPortalAccount(ec) {
   renderPortalAbonosList(ec.abonos || []);
 }
 
+let portalAbonoEditId = null;
+
 function renderPortalAbonosList(abonos) {
   const list = document.getElementById('portal-abono-list');
   if (!list) return;
-  if (!abonos.length) { list.innerHTML = ''; return; }
-  list.innerHTML = abonos.map((a) => {
-    const recibo = a.recibo
-      ? `<a class="portal-abono-recibo-link" href="${API_BASE}/api/audio/${a.recibo}" target="_blank" rel="noopener">ver recibo</a>`
-      : '<span class="portal-abono-norecibo">sin recibo</span>';
-    return `<li class="portal-abono-row">
-      <span class="portal-abono-amount">${portalMoney(a.monto, a.moneda)}</span>
-      <span class="portal-abono-date">${escapeHtmlSafe(a.fecha || '')}</span>
-      ${recibo}
-    </li>`;
-  }).join('');
+  list.innerHTML = '';
+  if (!abonos.length) return;
+  abonos.forEach((a) => {
+    const li = document.createElement('li');
+    li.className = 'portal-abono-row';
+
+    const amount = document.createElement('span');
+    amount.className = 'portal-abono-amount';
+    amount.textContent = portalMoney(a.monto, a.moneda);
+    const date = document.createElement('span');
+    date.className = 'portal-abono-date';
+    date.textContent = a.fecha || '';
+    li.appendChild(amount);
+    li.appendChild(date);
+
+    if (a.recibo) {
+      const link = document.createElement('a');
+      link.className = 'portal-abono-recibo-link';
+      link.href = `${API_BASE}/api/audio/${a.recibo}`;
+      link.target = '_blank'; link.rel = 'noopener';
+      link.textContent = 'ver recibo';
+      li.appendChild(link);
+    } else {
+      li.appendChild(Object.assign(document.createElement('span'), { className: 'portal-abono-norecibo', textContent: 'sin recibo' }));
+    }
+
+    const edit = document.createElement('button');
+    edit.type = 'button'; edit.className = 'portal-icon-btn'; edit.textContent = '✎'; edit.title = 'Editar abono';
+    edit.disabled = !a.id;
+    edit.addEventListener('click', () => editAbono(a));
+    const del = document.createElement('button');
+    del.type = 'button'; del.className = 'portal-icon-btn portal-icon-danger'; del.textContent = '🗑'; del.title = 'Borrar abono';
+    del.disabled = !a.id;
+    del.addEventListener('click', () => deleteAbono(a));
+    li.appendChild(edit);
+    li.appendChild(del);
+    list.appendChild(li);
+  });
+}
+
+function editAbono(a) {
+  if (!a.id) return;
+  portalAbonoEditId = a.id;
+  const montoEl = document.getElementById('portal-abono-monto');
+  const monedaEl = document.getElementById('portal-abono-moneda');
+  const fechaEl = document.getElementById('portal-abono-fecha');
+  if (montoEl) montoEl.value = a.monto;
+  if (monedaEl) monedaEl.value = a.moneda || 'MXN';
+  if (fechaEl) fechaEl.value = a.fecha || '';
+  const btn = document.getElementById('portal-abono-btn');
+  if (btn) btn.textContent = 'Guardar cambios';
+  montoEl?.focus();
+  portalNotify('Editando abono — cambiá y guardá (el recibo solo si subís uno nuevo).');
+}
+
+async function deleteAbono(a) {
+  if (!a.id) return;
+  if (!confirm(`¿Borrar este abono de ${portalMoney(a.monto, a.moneda)}?\nSi tiene recibo también se borra de Drive.`)) return;
+  const ec = portalActiveQuote.estadoCuenta;
+  const snapshot = JSON.parse(JSON.stringify(ec));
+  ec.abonos = (ec.abonos || []).filter((x) => x.id !== a.id);
+  if (a.moneda === 'USD') { ec.totalAbonosUSD -= a.monto; ec.saldoUSD = ec.totalUSD - ec.totalAbonosUSD; }
+  else { ec.totalAbonosMXN -= a.monto; ec.saldoMXN = ec.totalMXN - ec.totalAbonosMXN; }
+  renderPortalAccount(ec);
+  try {
+    if (a.recibo) { try { await portalDeleteFromDrive(a.recibo); } catch { /* ignore drive errors */ } }
+    const res = await fetch(`${API_BASE}/portal/admin/abono/${a.id}`, { method: 'DELETE', headers: apiHeaders() });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || !data.ok) throw new Error(data.error || `HTTP ${res.status}`);
+    portalNotify('Abono borrado.');
+  } catch (e) {
+    portalActiveQuote.estadoCuenta = snapshot;
+    renderPortalAccount(snapshot);
+    portalNotify('No se pudo borrar el abono: ' + (e?.message || e), true);
+  }
 }
 
 async function registerPortalAbono() {
@@ -6195,12 +6261,37 @@ async function registerPortalAbono() {
     return;
   }
 
-  // Optimistic: update the statement now, undo + notify if the server rejects it.
+  // EDIT mode: PATCH the existing abono, then refresh the statement.
+  if (portalAbonoEditId) {
+    try {
+      const body = { monto, moneda, fecha };
+      if (reciboFileId) body.reciboFileId = reciboFileId;
+      const res = await fetch(`${API_BASE}/portal/admin/abono/${portalAbonoEditId}`, {
+        method: 'PATCH', headers: apiHeaders(), body: JSON.stringify(body),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.ok) throw new Error(data.error || `HTTP ${res.status}`);
+      portalNotify('Abono actualizado.');
+      portalAbonoEditId = null;
+      if (btn) btn.textContent = 'Registrar abono';
+      if (montoEl) montoEl.value = '';
+      if (reciboEl) reciboEl.value = '';
+      await openPortalCotizacion(portalActiveQuote.id, portalActiveQuote.clientName, portalActiveQuote.quoteNumber);
+    } catch (e) {
+      portalNotify('No se pudo actualizar el abono: ' + (e?.message || e), true);
+    } finally {
+      if (btn) btn.disabled = false;
+    }
+    return;
+  }
+
+  // CREATE (optimistic): update the statement now, undo + notify if the server rejects it.
   const ec = portalActiveQuote.estadoCuenta;
   const snapshot = ec ? JSON.parse(JSON.stringify(ec)) : null;
+  const optimistic = { monto, moneda, fecha, recibo: reciboFileId };
   if (ec) {
     ec.abonos = ec.abonos || [];
-    ec.abonos.push({ monto, moneda, fecha, recibo: reciboFileId });
+    ec.abonos.push(optimistic);
     if (moneda === 'USD') { ec.totalAbonosUSD += monto; ec.saldoUSD = ec.totalUSD - ec.totalAbonosUSD; }
     else { ec.totalAbonosMXN += monto; ec.saldoMXN = ec.totalMXN - ec.totalAbonosMXN; }
     renderPortalAccount(ec);
@@ -6217,6 +6308,8 @@ async function registerPortalAbono() {
     });
     const data = await res.json().catch(() => ({}));
     if (!res.ok || !data.ok) throw new Error(data.error || `HTTP ${res.status}`);
+    optimistic.id = data.id; // so it can be edited/deleted without a reload
+    renderPortalAccount(ec);
     portalNotify('Abono registrado.');
   } catch (e) {
     if (snapshot) { portalActiveQuote.estadoCuenta = snapshot; renderPortalAccount(snapshot); }

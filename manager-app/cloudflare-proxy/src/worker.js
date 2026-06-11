@@ -3469,6 +3469,16 @@ async function portalAdminCreateAbono(env, body) {
   if (reciboFileId) properties.Recibo = { rich_text: chunkRichText(reciboFileId) };
   return createNotionPage(env, PORTAL_PAYMENTS_DS_ID, properties);
 }
+
+async function portalAdminPatchAbono(env, abonoId, body) {
+  const props = {};
+  if (body?.monto != null && Number(body.monto) > 0) props.Monto = { number: Number(body.monto) };
+  if (body?.moneda === "MXN" || body?.moneda === "USD") props.Moneda = { select: { name: body.moneda } };
+  if (typeof body?.fecha === "string" && body.fecha) props.Fecha = { date: { start: body.fecha } };
+  if (typeof body?.reciboFileId === "string" && body.reciboFileId) props.Recibo = { rich_text: chunkRichText(body.reciboFileId) };
+  if (!Object.keys(props).length) return { ok: false, error: "nada para actualizar" };
+  return patchNotionPage(env, abonoId, props);
+}
 // ─────────────────────────────────────────────────────────────────────────────
 
 export default {
@@ -3888,6 +3898,19 @@ export default {
       const body = await request.json().catch(() => ({}));
       const result = await portalAdminCreateAbono(env, body);
       return json(result, result.ok === false ? 400 : 201);
+    }
+    if (request.method === "PATCH" && url.pathname.startsWith("/portal/admin/abono/")) {
+      const abonoId = url.pathname.replace("/portal/admin/abono/", "").trim();
+      if (!abonoId) return json({ error: "abonoId required" }, 400);
+      const body = await request.json().catch(() => ({}));
+      const result = await portalAdminPatchAbono(env, abonoId, body);
+      return json(result, result.ok === false ? 400 : 200);
+    }
+    if (request.method === "DELETE" && url.pathname.startsWith("/portal/admin/abono/")) {
+      const abonoId = url.pathname.replace("/portal/admin/abono/", "").trim();
+      if (!abonoId) return json({ error: "abonoId required" }, 400);
+      const result = await archiveNotionPage(env, abonoId);
+      return json(result, result.ok === false ? 400 : 200);
     }
     if (request.method === "GET" && url.pathname.startsWith("/portal/admin/comments/")) {
       const versionId = url.pathname.replace("/portal/admin/comments/", "").trim();
