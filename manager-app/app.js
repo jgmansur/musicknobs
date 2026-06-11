@@ -6091,11 +6091,20 @@ function mkShowContractPromptCard(promptText) {
 async function mkDeleteSelectedQuotes() {
   const ids = Array.from(quotesSelectedIds);
   if (ids.length === 0 || !API_BASE) return;
-  if (!confirm(`¿Borrar ${ids.length} cotización${ids.length === 1 ? '' : 'es'}? Van a la papelera de Notion (recuperables 30 días).`)) return;
+  const n = ids.length;
+  if (!confirm(`¿Borrar ${n} cotización${n === 1 ? '' : 'es'}?\n\nTambién se eliminan sus canciones, versiones, archivos de audio, abonos y recibos. Los contratos y el cliente NO se tocan.\n\nLas notas van a la papelera de Notion (recuperables 30 días); los archivos de Drive se borran de forma definitiva.`)) return;
   const statusEl = document.getElementById('quotes-status');
   if (statusEl) statusEl.textContent = 'Borrando…';
   for (const id of ids) {
-    try { await fetch(`${API_BASE}/api/manager/quotes/${id}`, { method: 'DELETE', headers: apiHeaders() }); } catch {}
+    try {
+      const r = await fetch(`${API_BASE}/api/manager/quotes/${id}`, { method: 'DELETE', headers: apiHeaders() });
+      const data = await r.json().catch(() => ({}));
+      // The worker archived the Notion residue; delete the Drive files it found
+      // (version audio + abono receipts) with the admin's Google token.
+      for (const fid of (data?.driveFileIds || [])) {
+        try { await portalDeleteFromDrive(fid); } catch { /* drive file orphaned — Notion already cleaned */ }
+      }
+    } catch {}
   }
   quotesSelectedIds = new Set();
   quotesSelectMode = false;

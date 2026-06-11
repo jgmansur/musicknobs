@@ -2962,18 +2962,44 @@ async function saveQuoteSeguimiento(env, pageId, body) {
   } catch (e) { return { ok: false, error: String(e?.message || e) }; }
 }
 
+// Delete a quote = cascade-archive ALL its portal residue (tracks, versions,
+// their comments, abonos) plus the quote page itself, and return the Drive file
+// ids (version audio + abono receipts) so the caller can remove them from Drive
+// (the worker's service account can't delete Drive files — only a writer).
+// Deliberately untouched: contracts (separate Drive folder / Docuseal) and the
+// client's Cartera entry (a client can have other quotes).
 async function deleteManagerQuote(env, pageId) {
-  const notionToken = env.NOTION_TOKEN || "", notionVersion = env.NOTION_VERSION || "2022-06-28";
+  const notionToken = env.NOTION_TOKEN || "";
   if (!notionToken) return { ok: false, error: "NOTION_TOKEN not configured" };
+  const driveFileIds = [];
   try {
-    const r = await fetch(`https://api.notion.com/v1/pages/${pageId}`, {
-      method: "PATCH",
-      headers: { Authorization: `Bearer ${notionToken}`, "Notion-Version": notionVersion, "Content-Type": "application/json" },
-      body: JSON.stringify({ archived: true }),
-    });
-    if (!r.ok) return { ok: false, error: await r.text() };
-    return { ok: true };
-  } catch (e) { return { ok: false, error: String(e?.message || e) }; }
+    // Tracks → versions (+ comments) → archive; collect each version's Drive file.
+    const tracks = await queryPortalDb(env, PORTAL_TRACKS_DS_ID, { property: "Cotización", relation: { contains: pageId } }).catch(() => []);
+    for (const tr of tracks) {
+      const versions = await queryPortalDb(env, PORTAL_VERSIONS_DS_ID, { property: "Track", relation: { contains: tr.id } }).catch(() => []);
+      for (const v of versions) {
+        const fid = richTextToString(v.properties?.["Drive File ID"]?.rich_text);
+        if (fid) driveFileIds.push(fid);
+        const comments = await queryPortalDb(env, PORTAL_COMMENTS_DS_ID, { property: "Versión", relation: { contains: v.id } }).catch(() => []);
+        for (const c of comments) await archiveNotionPage(env, c.id);
+        await archiveNotionPage(env, v.id);
+      }
+      await archiveNotionPage(env, tr.id);
+    }
+    // Abonos → archive; collect each receipt's Drive file.
+    const abonos = await queryPortalDb(env, PORTAL_PAYMENTS_DS_ID, { property: "Cotización", relation: { contains: pageId } }).catch(() => []);
+    for (const ab of abonos) {
+      const fid = richTextToString(ab.properties?.Recibo?.rich_text);
+      if (fid) driveFileIds.push(fid);
+      await archiveNotionPage(env, ab.id);
+    }
+    // Finally the quote page itself (client + contracts are left alone).
+    const r = await archiveNotionPage(env, pageId);
+    if (!r.ok) return { ok: false, error: r.error || "archive failed", driveFileIds };
+    managerQuotesCache = { data: null, ts: 0 };       // drop the deleted quote from the cached lists
+    portalQuotesLiteCache = { data: null, ts: 0 };
+    return { ok: true, driveFileIds };
+  } catch (e) { return { ok: false, error: String(e?.message || e), driveFileIds }; }
 }
 // ─────────────────────────────────────────────────────────────────────────────
 
