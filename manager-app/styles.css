@@ -3510,6 +3510,8 @@ body.messages-active .container {
 .portal-abono-form input:focus, .portal-abono-form select:focus { border-color: var(--primary); }
 .portal-abono-form input[type="number"] { width: 120px; }
 .portal-abono-form .portal-abono-recibo-file { font-size: 12px; max-width: 200px; padding: 7px 9px; }
+/* Collapsed: only the "Registrar abono" button shows; click it to reveal the fields. */
+.portal-abono-form.is-collapsed > :not(#portal-abono-btn) { display: none; }
 
 /* ─── Portal admin: icon buttons (rename / delete) ───────────────────────── */
 .portal-icon-btn {

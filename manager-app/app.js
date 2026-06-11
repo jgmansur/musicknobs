@@ -5059,7 +5059,7 @@ function setupActions() {
   bindClick('portal-refresh', () => loadPortalCotizaciones());
   bindClick('portal-back', () => showPortalDetail(false));
   bindClick('portal-upload-btn', uploadPortalVersion);
-  bindClick('portal-abono-btn', registerPortalAbono);
+  bindClick('portal-abono-btn', handlePortalAbonoBtn);
   // "Subir versión(es)" card collapses by clicking its title.
   bindClick('portal-upload-toggle', () => {
     document.getElementById('portal-upload-card')?.classList.toggle('is-collapsed');
@@ -6433,6 +6433,12 @@ async function openPortalCotizacion(quoteId, clientName, quoteNumber) {
     renderPortalTracks(portalActiveQuote.tracks);
     renderPortalExtraHours(portalActiveQuote.estadoCuenta);
     renderPortalAccount(portalActiveQuote.estadoCuenta);
+    // Start collapsed every time a quote is opened: upload card + abono fields.
+    document.getElementById('portal-upload-card')?.classList.add('is-collapsed');
+    document.getElementById('portal-abono-form')?.classList.add('is-collapsed');
+    portalAbonoEditId = null;
+    const abonoBtn = document.getElementById('portal-abono-btn');
+    if (abonoBtn) abonoBtn.textContent = 'Registrar abono';
   } catch (e) {
     if (tracksRoot) tracksRoot.innerHTML = `<p class="hint">Error: ${escapeHtmlSafe(e?.message || String(e))}</p>`;
   }
@@ -6563,6 +6569,7 @@ function renderPortalAbonosList(abonos) {
 function editAbono(a) {
   if (!a.id) return;
   portalAbonoEditId = a.id;
+  document.getElementById('portal-abono-form')?.classList.remove('is-collapsed'); // show the fields to edit
   const montoEl = document.getElementById('portal-abono-monto');
   const monedaEl = document.getElementById('portal-abono-moneda');
   const fechaEl = document.getElementById('portal-abono-fecha');
@@ -6595,6 +6602,22 @@ async function deleteAbono(a) {
     renderPortalAccount(snapshot);
     portalNotify('No se pudo borrar el abono: ' + (e?.message || e), true);
   }
+}
+
+// The "Registrar abono" button is two-step: collapsed → expand the fields;
+// expanded → actually register. After registering it collapses again.
+function handlePortalAbonoBtn() {
+  const form = document.getElementById('portal-abono-form');
+  if (form && form.classList.contains('is-collapsed')) {
+    form.classList.remove('is-collapsed');
+    document.getElementById('portal-abono-monto')?.focus();
+    return;
+  }
+  registerPortalAbono();
+}
+
+function collapsePortalAbonoForm() {
+  document.getElementById('portal-abono-form')?.classList.add('is-collapsed');
 }
 
 async function registerPortalAbono() {
@@ -6678,6 +6701,7 @@ async function registerPortalAbono() {
     if (!res.ok || !data.ok) throw new Error(data.error || `HTTP ${res.status}`);
     optimistic.id = data.id; // so it can be edited/deleted without a reload
     renderPortalAccount(ec);
+    collapsePortalAbonoForm(); // hide the fields again — back to just the button
     portalNotify('Abono registrado.');
   } catch (e) {
     if (snapshot) { portalActiveQuote.estadoCuenta = snapshot; renderPortalAccount(snapshot); }
