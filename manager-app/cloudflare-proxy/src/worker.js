@@ -2982,6 +2982,20 @@ async function deleteManagerQuote(env, pageId) {
 const PORTAL_TRACKS_DS_ID = "7a33d528-2b51-48f9-b8c2-8eb2bc430e22";
 const PORTAL_VERSIONS_DS_ID = "ba3318ed-f64a-4c42-a953-20e1f6da9670";
 const PORTAL_PAYMENTS_DS_ID = "a6c520a9-efa0-47ee-9c77-0185d9263a73";
+
+// Order portal versions by the admin-set "Orden" number. Versions without an
+// explicit Orden (never reordered, or freshly uploaded) sort last, oldest-first
+// by creation time — so new uploads naturally land at the end of the list.
+function sortPortalVersions(versions) {
+  const ord = (v) => (v && v.orden != null ? v.orden : Number.MAX_SAFE_INTEGER);
+  return versions.sort((a, b) => (ord(a) - ord(b)) || String(a.created || "").localeCompare(String(b.created || "")));
+}
+
+// Today's date (YYYY-MM-DD) in Mexico City time — keeps Notion-stored dates aligned
+// with what Jay sees, instead of UTC (which rolls over a day early in the evening).
+function mxToday() {
+  return new Date().toLocaleDateString("en-CA", { timeZone: "America/Mexico_City" });
+}
 const PORTAL_COMMENTS_DS_ID = "9b517273-7404-4e19-a40d-c92b7016b0f5";
 // Drive folder where portal version files are uploaded (shared with the service account).
 const PORTAL_FILES_FOLDER_ID = "1sequwARPJQcoVs52TlCZ0MWcxYS_1nb5";
@@ -3110,7 +3124,7 @@ async function portalCotizacion(env, pageId, code) {
         { property: "Visible", checkbox: { equals: true } },
       ],
     });
-    const versions = versionPages.map((vp) => {
+    const versions = sortPortalVersions(versionPages.map((vp) => {
       const vprops = vp.properties || {};
       // Peaks are a JSON array of normalized amplitudes stored as Notion rich_text
       // (possibly split across segments — richTextToString rejoins them).
@@ -3123,9 +3137,11 @@ async function portalCotizacion(env, pageId, code) {
         favorita: Boolean(vprops?.Favorita?.checkbox),
         duracion: vprops?.["Duración (seg)"]?.number || 0,
         fecha: vprops?.Fecha?.date?.start || "",
+        orden: vprops?.Orden?.number ?? null,
+        created: vp.created_time || "",
         peaks: Array.isArray(peaks) ? peaks : [],
       };
-    });
+    }));
     return {
       id: tp.id,
       name: readNotionTitle(tprops),
@@ -3352,7 +3368,7 @@ async function portalAdminCotizacion(env, pageId) {
     const versionPages = await queryPortalDb(env, PORTAL_VERSIONS_DS_ID, {
       property: "Track", relation: { contains: tp.id },
     });
-    const versions = versionPages.map((vp) => {
+    const versions = sortPortalVersions(versionPages.map((vp) => {
       const vprops = vp.properties || {};
       let peaks = [];
       const peaksRaw = richTextToString(vprops?.Peaks?.rich_text);
@@ -3364,10 +3380,12 @@ async function portalAdminCotizacion(env, pageId) {
         visible: Boolean(vprops?.Visible?.checkbox),
         duracion: vprops?.["Duración (seg)"]?.number || 0,
         fecha: vprops?.Fecha?.date?.start || "",
+        orden: vprops?.Orden?.number ?? null,
+        created: vp.created_time || "",
         driveFileId: richTextToString(vprops?.["Drive File ID"]?.rich_text),
         peaks: Array.isArray(peaks) ? peaks : [],
       };
-    });
+    }));
     return {
       id: tp.id,
       name: readNotionTitle(tprops),
@@ -3440,7 +3458,7 @@ async function portalAdminCreateVersion(env, body) {
     Visible: { checkbox: true },
     Favorita: { checkbox: favorita },
     "Duración (seg)": { number: Math.round(duracion) },
-    Fecha: { date: { start: new Date().toISOString().slice(0, 10) } },
+    Fecha: { date: { start: mxToday() } },
   };
   if (peaksRaw && peaksRaw !== "[]") properties.Peaks = { rich_text: chunkRichText(peaksRaw) };
 
@@ -3457,6 +3475,7 @@ async function portalAdminPatchVersion(env, versionId, body) {
     props.Name = { title: [{ type: "text", text: { content: body.name.trim() } }] };
   }
   if (typeof body?.visible === "boolean") props.Visible = { checkbox: body.visible };
+  if (body?.orden != null && Number.isFinite(Number(body.orden))) props.Orden = { number: Number(body.orden) };
   if (typeof body?.favorita === "boolean") {
     props.Favorita = { checkbox: body.favorita };
     if (body.favorita === true) {
@@ -3499,7 +3518,7 @@ async function portalAdminCreateAbono(env, body) {
   const cotizacionId = String(body?.cotizacionId || "").trim();
   const monto = Number(body?.monto || 0);
   const moneda = String(body?.moneda || "").trim();
-  const fecha = String(body?.fecha || "").trim() || new Date().toISOString().slice(0, 10);
+  const fecha = String(body?.fecha || "").trim() || mxToday();
   if (!cotizacionId) return { ok: false, error: "cotizacionId requerido" };
   if (!monto || monto <= 0) return { ok: false, error: "monto inválido" };
   if (moneda !== "MXN" && moneda !== "USD") return { ok: false, error: "moneda debe ser MXN o USD" };

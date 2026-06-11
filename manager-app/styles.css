@@ -2814,6 +2814,22 @@ body.messages-active .container {
 .qd-input:focus,
 .qd-textarea:focus { outline: none; border-color: var(--accent, #FF1097); }
 
+.portal-progress {
+  width: 100%;
+  height: 8px;
+  margin: .6rem 0 .2rem;
+  background: var(--glass-border, rgba(255,255,255,.12));
+  border-radius: 999px;
+  overflow: hidden;
+}
+.portal-progress-bar {
+  height: 100%;
+  width: 0%;
+  background: var(--accent, #FF1097);
+  border-radius: 999px;
+  transition: width .15s ease;
+}
+
 .qd-service-row {
   display: flex;
   align-items: center;

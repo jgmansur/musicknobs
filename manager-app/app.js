@@ -5274,6 +5274,19 @@ function formatQuoteDate(raw) {
   return out;
 }
 
+const QUOTE_DATE_DAYS_SHORT = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+
+// Short, friendly date for lists (abonos, etc.): "Mié 10 de Julio del 2026".
+// Parses date-only strings as LOCAL to avoid the UTC day-shift.
+function formatLongDate(raw) {
+  if (!raw) return '';
+  const s = String(raw).trim();
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(s);
+  const d = m ? new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3])) : new Date(s);
+  if (isNaN(d.getTime())) return s;
+  return `${QUOTE_DATE_DAYS_SHORT[d.getDay()]} ${d.getDate()} de ${QUOTE_DATE_MONTHS[d.getMonth()]} del ${d.getFullYear()}`;
+}
+
 // ─── Cotizador clone (mirror of musicknobs-web catalogES) ─────────────────────
 // Keep in sync via the mk-cotizador-catalog-sync skill. `name` is the join key.
 const MK_QUOTE_CATALOG = [
@@ -6303,7 +6316,7 @@ function renderPortalAbonosList(abonos) {
     amount.textContent = portalMoney(a.monto, a.moneda);
     const date = document.createElement('span');
     date.className = 'portal-abono-date';
-    date.textContent = a.fecha || '';
+    date.textContent = formatLongDate(a.fecha) || '';
     li.appendChild(amount);
     li.appendChild(date);
 
@@ -6529,7 +6542,7 @@ function renderPortalTracks(tracks) {
 
     const list = document.createElement('ul');
     list.className = 'portal-version-list';
-    (t.versions || []).forEach((v) => {
+    (t.versions || []).forEach((v, vIdx, vArr) => {
       const li = document.createElement('li');
       li.className = 'portal-version';
 
@@ -6604,6 +6617,26 @@ function renderPortalTracks(tracks) {
       verDelete.title = 'Borrar versión';
       verDelete.addEventListener('click', () => deletePortalVersion(v, t));
 
+      // Reorder arrows — move this version up/down within the track. Persisted
+      // via the version's "Orden" number (see portalReorderVersion).
+      const up = document.createElement('button');
+      up.type = 'button';
+      up.className = 'portal-icon-btn';
+      up.textContent = '↑';
+      up.title = 'Subir versión';
+      up.disabled = vIdx === 0;
+      up.addEventListener('click', () => portalReorderVersion(t, v, 'up'));
+
+      const down = document.createElement('button');
+      down.type = 'button';
+      down.className = 'portal-icon-btn';
+      down.textContent = '↓';
+      down.title = 'Bajar versión';
+      down.disabled = vIdx === vArr.length - 1;
+      down.addEventListener('click', () => portalReorderVersion(t, v, 'down'));
+
+      controls.appendChild(up);
+      controls.appendChild(down);
       controls.appendChild(fav);
       controls.appendChild(vis);
       controls.appendChild(verRename);
@@ -6617,6 +6650,25 @@ function renderPortalTracks(tracks) {
     el.appendChild(list);
     root.appendChild(el);
   });
+}
+
+// Move a version up/down within its track, optimistically. Normalizes every
+// version's `orden` to its new index and persists the ones that changed.
+async function portalReorderVersion(track, version, dir) {
+  const arr = track.versions || [];
+  const i = arr.indexOf(version);
+  if (i === -1) return;
+  const j = dir === 'up' ? i - 1 : i + 1;
+  if (j < 0 || j >= arr.length) return;
+  [arr[i], arr[j]] = [arr[j], arr[i]]; // swap in place
+  const changed = [];
+  arr.forEach((v, idx) => { if (v.orden !== idx) { v.orden = idx; changed.push(v); } });
+  renderPortalTracks(portalActiveQuote.tracks); // optimistic
+  try {
+    for (const v of changed) await portalPatchVersion(v.id, { orden: v.orden });
+  } catch (e) {
+    portalNotify('No se pudo guardar el orden: ' + (e?.message || e), true);
+  }
 }
 
 async function portalPatchVersion(versionId, body) {
@@ -6979,8 +7031,11 @@ async function portalEnsureTrack(name) {
 // Upload a file straight to Drive as the logged-in admin (we have an OAuth token
 // with drive.file scope). Service accounts can't own files in a personal My Drive,
 // so the upload must happen here, not in the worker. Returns the new file id.
-async function portalUploadToDrive(file, name, folderId = PORTAL_DRIVE_FOLDER) {
-  if (!googleAccessToken) throw new Error('Sesión de Google no disponible. Volvé a iniciar sesión.');
+// Uploads a file to Drive as the logged-in admin. Uses XMLHttpRequest (not fetch)
+// so we get real upload progress events — `onProgress(fraction)` is called with
+// 0..1 as bytes go out.
+function portalUploadToDrive(file, name, folderId = PORTAL_DRIVE_FOLDER, onProgress) {
+  if (!googleAccessToken) return Promise.reject(new Error('Sesión de Google no disponible. Volvé a iniciar sesión.'));
   const boundary = '-mkportal' + Date.now();
   const metadata = { name, parents: [folderId], mimeType: file.type || 'application/octet-stream' };
   const body = new Blob([
@@ -6991,23 +7046,35 @@ async function portalUploadToDrive(file, name, folderId = PORTAL_DRIVE_FOLDER) {
     `\r\n--${boundary}--`,
   ], { type: `multipart/related; boundary=${boundary}` });
 
-  const res = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id', {
-    method: 'POST',
-    headers: { Authorization: `Bearer ${googleAccessToken}`, 'Content-Type': `multipart/related; boundary=${boundary}` },
-    body,
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id');
+    xhr.setRequestHeader('Authorization', `Bearer ${googleAccessToken}`);
+    xhr.setRequestHeader('Content-Type', `multipart/related; boundary=${boundary}`);
+    xhr.upload.onprogress = (e) => {
+      if (typeof onProgress === 'function' && e.lengthComputable) onProgress(e.loaded / e.total);
+    };
+    xhr.onload = () => {
+      if (xhr.status === 401 || xhr.status === 403) {
+        return reject(new Error('Falta permiso de Drive. Cerrá sesión y volvé a entrar para autorizar la subida de archivos.'));
+      }
+      let data = {};
+      try { data = JSON.parse(xhr.responseText); } catch {}
+      if (xhr.status < 200 || xhr.status >= 300 || !data.id) {
+        return reject(new Error(data?.error?.message || `Drive HTTP ${xhr.status}`));
+      }
+      if (typeof onProgress === 'function') onProgress(1);
+      resolve(data.id);
+    };
+    xhr.onerror = () => reject(new Error('Error de red al subir a Drive.'));
+    xhr.send(body);
   });
-  if (res.status === 401 || res.status === 403) {
-    throw new Error('Falta permiso de Drive. Cerrá sesión y volvé a entrar para autorizar la subida de archivos.');
-  }
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok || !data.id) throw new Error(data?.error?.message || `Drive HTTP ${res.status}`);
-  return data.id;
 }
 
 // Upload one file → a version under `track`. Appends locally on success.
-async function portalUploadOneVersion(file, track, label, favorita) {
+async function portalUploadOneVersion(file, track, label, favorita, onProgress) {
   const { peaks, duration } = await generatePeaks(file);
-  const driveFileId = await portalUploadToDrive(file, `${label} - ${file.name}`);
+  const driveFileId = await portalUploadToDrive(file, `${label} - ${file.name}`, PORTAL_DRIVE_FOLDER, onProgress);
   const res = await fetch(`${API_BASE}/portal/admin/version`, {
     method: 'POST',
     headers: apiHeaders(),
@@ -7016,8 +7083,20 @@ async function portalUploadOneVersion(file, track, label, favorita) {
   const data = await res.json().catch(() => ({}));
   if (!res.ok || !data.ok) throw new Error(data.error || `HTTP ${res.status}`);
   if (favorita) track.versions.forEach((v) => { v.favorita = false; });
-  track.versions.push({ id: data.id, name: label, favorita, visible: true, duracion: duration, fecha: '', driveFileId, peaks });
+  track.versions.push({ id: data.id, name: label, favorita, visible: true, duracion: duration, fecha: '', orden: null, driveFileId, peaks });
   renderPortalTracks(portalActiveQuote.tracks);
+}
+
+// Show/update/hide the upload progress bar (0..1). Hiding resets it to 0%.
+function portalSetUploadProgress(fraction) {
+  const wrap = document.getElementById('portal-upload-progress');
+  const bar = document.getElementById('portal-upload-progress-bar');
+  if (!wrap || !bar) return;
+  if (fraction == null) { wrap.classList.add('hidden'); bar.style.width = '0%'; return; }
+  const pct = Math.max(0, Math.min(100, Math.round(fraction * 100)));
+  wrap.classList.remove('hidden');
+  bar.style.width = pct + '%';
+  wrap.setAttribute('aria-valuenow', String(pct));
 }
 
 const fileStem = (name) => String(name || 'audio').replace(/\.[^.]+$/, '');
@@ -7039,9 +7118,12 @@ async function uploadPortalVersion() {
   const multi = files.length > 1;
   let ok = 0, failed = 0;
 
+  portalSetUploadProgress(0);
   for (let i = 0; i < files.length; i++) {
     const file = files[i];
     portalUploadStatus(`Subiendo ${i + 1}/${files.length}: ${file.name}…`);
+    // Overall progress across all files: completed files + current file fraction.
+    const onProgress = (frac) => portalSetUploadProgress((i + frac) / files.length);
     try {
       let track, verLabel;
       if (asSongs) {
@@ -7052,13 +7134,14 @@ async function uploadPortalVersion() {
         verLabel = multi ? fileStem(file.name) : (label || fileStem(file.name));
       }
       // favorita only applies to a single-file upload
-      await portalUploadOneVersion(file, track, verLabel, multi ? false : favorita);
+      await portalUploadOneVersion(file, track, verLabel, multi ? false : favorita, onProgress);
       ok++;
     } catch (e) {
       failed++;
       portalNotify(`Falló ${file.name}: ${(e?.message || e)}`, true);
     }
   }
+  portalSetUploadProgress(null); // hide + reset
 
   portalUploadStatus('');
   if (ok) portalNotify(ok === 1 ? 'Versión subida.' : `${ok} archivo(s) subido(s).` + (failed ? ` ${failed} fallaron.` : ''));
