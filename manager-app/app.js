@@ -5347,6 +5347,8 @@ let quoteDetailPriceOverrides = {}; // per-service negotiated price (by service 
 let quoteDetailUnmatched = []; // client services not found in the active catalog
 let mkActiveCatalog = MK_QUOTE_CATALOG; // switched per quote origin in mkInitCotizadorClone
 let negotiationSaveTimer = null; // debounce for autosave
+let quoteDetailSeguimiento = {}; // seguimiento fields (startDate, deliveryDate, contractNotes, …) for the open quote
+let seguimientoSaveTimer = null; // debounce for the seguimiento autosave
 
 function mkAllServices() {
   return mkActiveCatalog.flatMap((c) => c.services);
@@ -5670,6 +5672,68 @@ async function mkFlushNegotiationSave() {
   await negotiationSaveChain; // wait for all queued/in-flight saves to finish
 }
 
+// ─── Seguimiento fields (start/delivery date + contract notes) ────────────────
+// Stored in the Notion "Seguimiento" section. Saved independently from the
+// negotiation, but chained the same way to avoid concurrent read-modify-write
+// duplications of the section.
+let seguimientoSaveChain = Promise.resolve();
+
+function mkSetSeguimientoStatus(text, cls) {
+  const el = document.getElementById('qd-seg-save-status');
+  if (!el) return;
+  el.textContent = text;
+  el.className = 'qd-save-status' + (cls ? ' ' + cls : '');
+}
+
+async function mkSaveSeguimientoNow() {
+  if (!quotesCurrentPageId || !API_BASE) return;
+  mkSetSeguimientoStatus('Guardando…', 'saving');
+  try {
+    const r = await fetch(`${API_BASE}/api/manager/quotes/${quotesCurrentPageId}`, {
+      method: 'PATCH',
+      headers: apiHeaders(),
+      // Send the whole seguimiento object: the worker replaces the section wholesale.
+      body: JSON.stringify({ seguimiento: quoteDetailSeguimiento }),
+    });
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    mkSetSeguimientoStatus('Guardado ✓', 'saved');
+  } catch (e) {
+    mkSetSeguimientoStatus('Error al guardar', 'error');
+  }
+}
+
+function mkSaveSeguimiento() {
+  seguimientoSaveChain = seguimientoSaveChain.then(mkSaveSeguimientoNow, mkSaveSeguimientoNow);
+  return seguimientoSaveChain;
+}
+
+function mkScheduleSeguimientoSave() {
+  if (!quotesCurrentPageId) return;
+  mkSetSeguimientoStatus('Editando…', 'editing');
+  clearTimeout(seguimientoSaveTimer);
+  seguimientoSaveTimer = setTimeout(mkSaveSeguimiento, 1000);
+}
+
+// Wire the seguimiento inputs to the live object + debounced autosave.
+function mkBindSeguimientoFields() {
+  const map = {
+    'qd-start-date': 'startDate',
+    'qd-delivery-date': 'deliveryDate',
+    'qd-contract-notes': 'contractNotes',
+  };
+  for (const [elId, key] of Object.entries(map)) {
+    const el = document.getElementById(elId);
+    if (!el) continue;
+    el.value = quoteDetailSeguimiento[key] || '';
+    el.oninput = () => {
+      const v = el.value.trim();
+      if (v) quoteDetailSeguimiento[key] = v;
+      else delete quoteDetailSeguimiento[key];
+      mkScheduleSeguimientoSave();
+    };
+  }
+}
+
 function mkBindCloneEvents(container) {
   container.querySelectorAll('.mk-svc-chk').forEach((chk) => {
     chk.addEventListener('change', (e) => {
@@ -5834,6 +5898,11 @@ function mkBuildContractPrompt(q, negotiated) {
   });
   const totalEl = document.getElementById('qd-total');
   const total = totalEl ? totalEl.textContent.trim() : '';
+  const seg = quoteDetailSeguimiento || {};
+  const deadline = q.deadline ? (formatQuoteDate(q.deadline) || q.deadline) : '';
+  const startDate = seg.startDate ? (formatQuoteDate(seg.startDate) || seg.startDate) : '';
+  const deliveryDate = seg.deliveryDate ? (formatQuoteDate(seg.deliveryDate) || seg.deliveryDate) : '';
+  const contractNotes = String(seg.contractNotes || '').trim();
   const idiomaRaw = String(q.idioma || '').toLowerCase();
   const idioma = (idiomaRaw.includes('english') || idiomaRaw === 'en')
     ? 'English — REDACTÁ EL CONTRATO EN INGLÉS'
@@ -5851,6 +5920,9 @@ function mkBuildContractPrompt(q, negotiated) {
     `• Teléfono: ${q.phone || '—'}`,
     `• N.º de cotización: ${q.quoteNumber || '—'}`,
     `• Fecha: ${formatQuoteDate(q.date) || '—'}`,
+    `• Fecha máxima del cliente (deadline): ${deadline || '—'}`,
+    `• Fecha de inicio del proyecto: ${startDate || '—'}`,
+    `• Fecha de entrega comprometida: ${deliveryDate || '—'}`,
     `• Nota de Notion (contexto y decisiones de la llamada): ${notionUrl}`,
     `• Carpeta de salida (Drive local, ya montado): ${outFolder}`,
     '',
@@ -5858,6 +5930,7 @@ function mkBuildContractPrompt(q, negotiated) {
     ...(lines.length ? lines : ['- (sin servicios seleccionados — revisá la negociación antes de generar)']),
     '',
     `Total acordado (referencia de la app): ${total || '—'}`,
+    ...(contractNotes ? ['', 'NOTAS PARA EL CONTRATO (incluilas en la sección de notas del contrato y respetá cualquier condición que indiquen):', contractNotes] : []),
     '',
     'Generá el PDF en la carpeta de salida con nombre Contrato-<n>-<Cliente>.pdf, revisalo con el checklist del skill, y reportame la ruta + un resumen de los términos clave.',
   ].join('\n');
@@ -6075,7 +6148,13 @@ function renderQuoteDetail(q) {
     ? (waDigits ? `<a class="qd-link" href="https://wa.me/${waDigits}" target="_blank" rel="noopener">${escapeHtml(phone)}</a>` : escapeHtml(phone))
     : '—');
   setSpan('qd-date', formatQuoteDate(q.date));
+  setSpan('qd-deadline', q.deadline ? (formatQuoteDate(q.deadline) || q.deadline) : '—');
   setSpan('qd-total', formatQuoteTotal(q, quotesFxRate) || '—');
+
+  // Seguimiento fields (start/delivery date + contract notes) — load + autosave.
+  quoteDetailSeguimiento = { ...(q.seguimiento || {}) };
+  mkSetSeguimientoStatus('', '');
+  mkBindSeguimientoFields();
 
   mkSetSaveStatus('', '');
   const contractStatusEl = document.getElementById('quote-contract-status');

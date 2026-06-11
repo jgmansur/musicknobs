@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;700;800&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="./styles.css?v=2.0.65" />
+    <link rel="stylesheet" href="./styles.css?v=2.0.66" />
     <link rel="manifest" href="./manifest.json" />
     <link rel="icon" type="image/png" href="./icon-32.png" />
     <link rel="apple-touch-icon" href="./icon-180.png" />
@@ -455,7 +455,15 @@
               <div class="qd-field"><span class="qd-label">Email</span><span id="qd-client-email">—</span></div>
               <div class="qd-field"><span class="qd-label">Teléfono</span><span id="qd-client-phone">—</span></div>
               <div class="qd-field"><span class="qd-label">Fecha</span><span id="qd-date">—</span></div>
+              <div class="qd-field"><span class="qd-label">Fecha máxima (cliente)</span><span id="qd-deadline">—</span></div>
               <div class="qd-field"><span class="qd-label">Total cotizado</span><span id="qd-total">—</span></div>
+            </div>
+
+            <div class="quote-detail-section">
+              <h4>Producción y seguimiento <span id="qd-seg-save-status" class="qd-save-status"></span></h4>
+              <div class="qd-field qd-field-input"><label class="qd-label" for="qd-start-date">Fecha de inicio</label><input type="date" id="qd-start-date" class="qd-input"></div>
+              <div class="qd-field qd-field-input"><label class="qd-label" for="qd-delivery-date">Fecha de entrega</label><input type="date" id="qd-delivery-date" class="qd-input"></div>
+              <div class="qd-field qd-field-col"><label class="qd-label" for="qd-contract-notes">Notas para el contrato</label><textarea id="qd-contract-notes" class="qd-textarea" rows="3" placeholder="Condiciones especiales, acuerdos de la llamada… se incluyen en el contrato y en la nota de Notion."></textarea></div>
             </div>
 
             <div class="quote-detail-section mk-catalog-section">
@@ -599,6 +607,6 @@
     <script src="./config.js"></script>
     <script src="./vendor/howler.min.js"></script>
     <script src="./tracks.js?v=salesfix404v1"></script>
-    <script src="./app.js?v=2.0.65"></script>
+    <script src="./app.js?v=2.0.66"></script>
   </body>
   </html>

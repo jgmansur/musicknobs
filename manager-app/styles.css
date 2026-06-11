@@ -2790,6 +2790,30 @@ body.messages-active .container {
 
 .qd-label { color: var(--text-muted); }
 
+.qd-field-input { align-items: center; }
+.qd-field-col {
+  display: flex;
+  flex-direction: column;
+  gap: .4rem;
+  padding: .55rem 0;
+  border-bottom: 1px solid var(--glass-border);
+  font-size: .9rem;
+}
+.qd-input,
+.qd-textarea {
+  background: var(--glass-bg, rgba(255,255,255,.04));
+  border: 1px solid var(--glass-border);
+  border-radius: 8px;
+  color: var(--text-primary);
+  padding: .4rem .6rem;
+  font-size: .9rem;
+  font-family: inherit;
+}
+.qd-input { max-width: 11rem; }
+.qd-textarea { width: 100%; resize: vertical; line-height: 1.5; }
+.qd-input:focus,
+.qd-textarea:focus { outline: none; border-color: var(--accent, #FF1097); }
+
 .qd-service-row {
   display: flex;
   align-items: center;

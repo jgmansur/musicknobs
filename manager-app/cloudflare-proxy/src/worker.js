@@ -2720,7 +2720,7 @@ function parseQuoteBlocks(blocks, pageTitle = "") {
   const separatorIdx = title.indexOf("— ");
   const clientName = separatorIdx >= 0 ? title.slice(separatorIdx + 2).trim() : "";
 
-  let email = "", phone = "", date = "";
+  let email = "", phone = "", date = "", deadline = "";
   let origen = "internacional"; // default for legacy quotes without the Origen line
   const items = [];
   const negotiated = []; // saved negotiation override, if any
@@ -2744,6 +2744,7 @@ function parseQuoteBlocks(blocks, pageTitle = "") {
           if (k === "email" || k === "correo") email = v;
           else if (k === "whatsapp" || k === "teléfono" || k === "telefono" || k === "phone") phone = v;
           else if (k === "fecha" || k === "date") date = v;
+          else if (k === "fecha máxima de entrega" || k === "fecha maxima de entrega" || k === "deadline") deadline = v;
           else if (k === "origen") origen = v.trim().toLowerCase() === "local" ? "local" : "internacional";
         }
         lastHeading3 = ""; continue;
@@ -2799,7 +2800,7 @@ function parseQuoteBlocks(blocks, pageTitle = "") {
     else if (m.currency === "USD") totalUSD += m.amount;
   }
 
-  return { quoteNumber, clientName, email, phone, date, items, total, totalMXN, totalUSD, seguimiento, origen, negotiated };
+  return { quoteNumber, clientName, email, phone, date, deadline, items, total, totalMXN, totalUSD, seguimiento, origen, negotiated };
 }
 
 function cellRT(content) {
@@ -2858,7 +2859,7 @@ async function replaceSeguimientoSection(pageId, seguimientoData, notionToken, n
       if (!r.ok) throw new Error(await r.text());
     }
   }
-  const fields = ["musicians","studio","vocals","externalEngineers","revisions","royalties","deposit","finalPrice","deliveryDate","estatus","callNotes"];
+  const fields = ["musicians","studio","vocals","externalEngineers","revisions","royalties","deposit","finalPrice","startDate","deliveryDate","contractNotes","estatus","callNotes"];
   const content = fields.filter((k) => seguimientoData[k] !== undefined && seguimientoData[k] !== null && seguimientoData[k] !== "").map((k) => `${k}: ${seguimientoData[k]}`).join("\n");
   const r = await fetch(`https://api.notion.com/v1/blocks/${pageId}/children`, {
     method: "PATCH",
@@ -2935,7 +2936,7 @@ async function getManagerQuoteDetail(env, pageId) {
     blocks = await expandTableRows(blocks, notionToken, notionVersion);
     const parsed = parseQuoteBlocks(blocks, title);
     const idioma = props?.Idioma?.select?.name || ""; // "English" | "Español" | "" (cotizar route writes it)
-    return { ok: true, data: { pageId, quoteNumber: parsed.quoteNumber, clientName: parsed.clientName, email: parsed.email, phone: parsed.phone, status: estatus, date: dateProp, total: parsed.total, totalMXN: parsed.totalMXN, totalUSD: parsed.totalUSD, services: parsed.items, seguimiento: parsed.seguimiento, origen: parsed.origen, negotiated: parsed.negotiated, idioma }, fxRate: await getFxRate(env) };
+    return { ok: true, data: { pageId, quoteNumber: parsed.quoteNumber, clientName: parsed.clientName, email: parsed.email, phone: parsed.phone, status: estatus, date: dateProp, deadline: parsed.deadline, total: parsed.total, totalMXN: parsed.totalMXN, totalUSD: parsed.totalUSD, services: parsed.items, seguimiento: parsed.seguimiento, origen: parsed.origen, negotiated: parsed.negotiated, idioma }, fxRate: await getFxRate(env) };
   } catch (e) { return { ok: false, error: String(e?.message || e) }; }
 }
 
