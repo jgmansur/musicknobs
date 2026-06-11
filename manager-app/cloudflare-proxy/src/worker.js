@@ -3926,6 +3926,7 @@ export default {
       if (!result.ok) return json({ error: result.error }, 502);
       const quotes = (result.data || []).map((q) => ({
         id: q.id, name: q.name, quoteNumber: q.quoteNumber, estatus: q.estatus,
+        email: q.email || "", phone: q.phone || "",
       }));
       return json({ ok: true, quotes }, 200);
     }

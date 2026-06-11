@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;700;800&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="./styles.css?v=2.0.72" />
+    <link rel="stylesheet" href="./styles.css?v=2.0.73" />
     <link rel="manifest" href="./manifest.json" />
     <link rel="icon" type="image/png" href="./icon-32.png" />
     <link rel="apple-touch-icon" href="./icon-180.png" />
@@ -482,6 +482,7 @@
             <button id="portal-refresh" class="btn btn-ghost" type="button">Actualizar</button>
           </div>
           <p id="portal-status" class="hint status" aria-live="polite">Entregas de archivos por cotización.</p>
+          <input id="portal-search" class="portal-search" type="search" placeholder="Buscar por nombre, email, N.º de cotización o teléfono…" autocomplete="off" aria-label="Buscar cliente">
           <div id="portal-cotizaciones" class="portal-grid"></div>
         </div>
 
@@ -552,12 +553,9 @@
                 <option value="USD">USD</option>
               </select>
               <input id="portal-abono-fecha" type="date">
+              <input id="portal-abono-recibo" class="portal-abono-recibo-file" type="file" accept="image/*,application/pdf" title="Recibo / comprobante (opcional)" aria-label="Recibo / comprobante (opcional)">
               <button id="portal-abono-btn" class="btn" type="button">Registrar abono</button>
             </div>
-            <label class="portal-abono-recibo">
-              <span>Recibo / comprobante (opcional)</span>
-              <input id="portal-abono-recibo" type="file" accept="image/*,application/pdf">
-            </label>
             <p id="portal-abono-status" class="hint" aria-live="polite"></p>
             <ul id="portal-abono-list" class="portal-abono-list"></ul>
           </div>
@@ -627,6 +625,6 @@
     <script src="./config.js"></script>
     <script src="./vendor/howler.min.js"></script>
     <script src="./tracks.js?v=salesfix404v1"></script>
-    <script src="./app.js?v=2.0.72"></script>
+    <script src="./app.js?v=2.0.73"></script>
   </body>
   </html>

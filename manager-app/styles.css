@@ -3398,6 +3398,18 @@ body.messages-active .container {
 }
 
 /* ─── Portal de Clientes (admin) ─────────────────────────────────────────── */
+.portal-search {
+  width: 100%;
+  margin: 10px 0 4px;
+  background: #000;
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  padding: 10px 14px;
+  color: var(--text-main);
+  font-size: 14px;
+  outline: none;
+}
+.portal-search:focus { border-color: var(--primary); }
 .portal-grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); margin-top: 12px; }
 .portal-card {
   display: flex; flex-direction: column; gap: 4px; text-align: left;
@@ -3478,6 +3490,7 @@ body.messages-active .container {
 }
 .portal-abono-form input:focus, .portal-abono-form select:focus { border-color: var(--primary); }
 .portal-abono-form input[type="number"] { width: 120px; }
+.portal-abono-form .portal-abono-recibo-file { font-size: 12px; max-width: 200px; padding: 7px 9px; }
 
 /* ─── Portal admin: icon buttons (rename / delete) ───────────────────────── */
 .portal-icon-btn {
@@ -3584,6 +3597,7 @@ body.messages-active .container {
   .portal-abono-form input[type="number"] { width: 100%; }
   .portal-abono-form select,
   .portal-abono-form input[type="date"],
+  .portal-abono-form .portal-abono-recibo-file,
   .portal-abono-form .btn { flex: 1 1 100%; }
   .portal-abono-row { flex-wrap: wrap; gap: 2px 10px; }
   .portal-abono-amount { min-width: 0; }

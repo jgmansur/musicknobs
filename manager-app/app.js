@@ -5064,6 +5064,12 @@ function setupActions() {
   bindClick('portal-upload-toggle', () => {
     document.getElementById('portal-upload-card')?.classList.toggle('is-collapsed');
   });
+  // Live search over the portal client list (name / email / quote # / phone).
+  const portalSearchEl = document.getElementById('portal-search');
+  if (portalSearchEl) portalSearchEl.addEventListener('input', () => {
+    portalSearchQuery = portalSearchEl.value;
+    renderPortalListFiltered();
+  });
   const bulkChk = document.getElementById('portal-bulk-songs');
   if (bulkChk) bulkChk.addEventListener('change', () => {
     const f = document.getElementById('portal-track-name-field');
@@ -6322,11 +6328,33 @@ async function loadPortalCotizaciones() {
   try {
     const data = await fetchJson(`${API_BASE}/portal/admin/cotizaciones`);
     portalCotizacionesCache = data?.quotes || [];
-    renderPortalCotizaciones(portalCotizacionesCache);
-    portalSetStatus(portalCotizacionesCache.length ? '' : 'No hay cotizaciones todavía.');
+    renderPortalListFiltered();
   } catch (e) {
     portalSetStatus('Error al cargar: ' + (e?.message || e));
   }
+}
+
+let portalSearchQuery = '';
+
+// Filter the cached quotes by name / email / quote number / phone (digits).
+function portalFilterQuotes() {
+  const q = portalSearchQuery.trim().toLowerCase();
+  if (!q) return portalCotizacionesCache;
+  const qDigits = q.replace(/\D/g, '');
+  return portalCotizacionesCache.filter((x) => {
+    const hay = `${x.name || ''} ${x.email || ''} ${x.quoteNumber || ''}`.toLowerCase();
+    if (hay.includes(q)) return true;
+    if (qDigits && String(x.phone || '').replace(/\D/g, '').includes(qDigits)) return true;
+    return false;
+  });
+}
+
+function renderPortalListFiltered() {
+  const filtered = portalFilterQuotes();
+  renderPortalCotizaciones(filtered);
+  if (!portalCotizacionesCache.length) portalSetStatus('No hay cotizaciones todavía.');
+  else if (!filtered.length) portalSetStatus('Sin resultados para tu búsqueda.');
+  else portalSetStatus('');
 }
 
 function renderPortalCotizaciones(quotes) {
