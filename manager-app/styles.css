@@ -3424,3 +3424,15 @@ body.messages-active .container {
 
 .portal-comment > div { flex: 1; min-width: 0; }
 .portal-comment-del { flex: 0 0 auto; margin-left: auto; align-self: flex-start; }
+
+/* ─── Portal admin: abonos list + recibo ─────────────────────────────────── */
+.portal-abono-recibo { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; font-size: 13px; }
+.portal-abono-recibo > span { color: var(--text-muted); }
+.portal-abono-recibo input[type="file"] { background: #000; border: 1px solid var(--glass-border); border-radius: 10px; padding: 8px 10px; color: var(--text-main); }
+.portal-abono-list { list-style: none; margin: 12px 0 0; padding: 0; display: grid; gap: 6px; }
+.portal-abono-row { display: flex; align-items: center; gap: 12px; font-size: 14px; border-top: 1px solid rgba(255,255,255,.05); padding-top: 6px; }
+.portal-abono-amount { font-variant-numeric: tabular-nums; color: var(--text-main); min-width: 110px; }
+.portal-abono-date { color: var(--text-muted); flex: 1; }
+.portal-abono-recibo-link { color: var(--primary); text-decoration: none; }
+.portal-abono-recibo-link:hover { text-decoration: underline; }
+.portal-abono-norecibo { color: var(--text-muted); font-size: 12px; }

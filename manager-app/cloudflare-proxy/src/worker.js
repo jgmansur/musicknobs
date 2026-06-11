@@ -3337,9 +3337,11 @@ async function portalAdminCotizacion(env, pageId) {
     property: "Cotización", relation: { contains: pageId },
   });
   const abonos = paymentPages.map((pp) => ({
+    id: pp.id,
     monto: pp.properties?.Monto?.number || 0,
     moneda: pp.properties?.Moneda?.select?.name || "",
     fecha: pp.properties?.Fecha?.date?.start || "",
+    recibo: richTextToString(pp.properties?.Recibo?.rich_text),
   }));
   const totalAbonosMXN = abonos.filter((a) => a.moneda === "MXN").reduce((s, a) => s + a.monto, 0);
   const totalAbonosUSD = abonos.filter((a) => a.moneda === "USD").reduce((s, a) => s + a.monto, 0);
@@ -3462,6 +3464,8 @@ async function portalAdminCreateAbono(env, body) {
     Moneda: { select: { name: moneda } },
     Fecha: { date: { start: fecha } },
   };
+  const reciboFileId = String(body?.reciboFileId || "").trim();
+  if (reciboFileId) properties.Recibo = { rich_text: chunkRichText(reciboFileId) };
   return createNotionPage(env, PORTAL_PAYMENTS_DS_ID, properties);
 }
 // ─────────────────────────────────────────────────────────────────────────────

@@ -79,6 +79,8 @@ const GOOGLE_SCOPES = 'openid email profile https://www.googleapis.com/auth/driv
 // Portal: client files live here (My Drive/Manager App/Clientes/Archivos). The admin
 // uploads version files directly to Drive (the service account has no storage quota).
 const PORTAL_DRIVE_FOLDER = '1sequwARPJQcoVs52TlCZ0MWcxYS_1nb5';
+// Receipts (proof of payment) folder — shared with the worker SA so it can display them.
+const PORTAL_RECIBOS_FOLDER = '1LQ-9Pjvp-hnbmoYJlA-YAYCy0NXfqWpk';
 const AUTH_STORAGE_KEY = 'managerApp.googleAuth';
 const TOKEN_REFRESH_BUFFER_MS = 5 * 60 * 1000;
 const ADMIN_EMAILS = ['jgmansur2@gmail.com'];
@@ -6137,11 +6139,28 @@ function renderPortalAccount(ec) {
   };
   if (ec.totalMXN || ec.totalAbonosMXN) addRow('MXN', ec.totalMXN, ec.totalAbonosMXN, ec.saldoMXN);
   if (ec.totalUSD || ec.totalAbonosUSD) addRow('USD', ec.totalUSD, ec.totalAbonosUSD, ec.saldoUSD);
-  if (!rows.length) { root.innerHTML = '<p class="hint">Cotización sin total.</p>'; return; }
-  root.innerHTML = `<table class="pa-table">
+  if (!rows.length) { root.innerHTML = '<p class="hint">Cotización sin total.</p>'; }
+  else root.innerHTML = `<table class="pa-table">
     <thead><tr><th>Moneda</th><th class="pa-num">Total</th><th class="pa-num">Pagado</th><th class="pa-num">Saldo</th></tr></thead>
     <tbody>${rows.join('')}</tbody>
   </table>`;
+  renderPortalAbonosList(ec.abonos || []);
+}
+
+function renderPortalAbonosList(abonos) {
+  const list = document.getElementById('portal-abono-list');
+  if (!list) return;
+  if (!abonos.length) { list.innerHTML = ''; return; }
+  list.innerHTML = abonos.map((a) => {
+    const recibo = a.recibo
+      ? `<a class="portal-abono-recibo-link" href="${API_BASE}/api/audio/${a.recibo}" target="_blank" rel="noopener">ver recibo</a>`
+      : '<span class="portal-abono-norecibo">sin recibo</span>';
+    return `<li class="portal-abono-row">
+      <span class="portal-abono-amount">${portalMoney(a.monto, a.moneda)}</span>
+      <span class="portal-abono-date">${escapeHtmlSafe(a.fecha || '')}</span>
+      ${recibo}
+    </li>`;
+  }).join('');
 }
 
 async function registerPortalAbono() {
@@ -6156,27 +6175,45 @@ async function registerPortalAbono() {
 
   const moneda = monedaEl?.value || 'MXN';
   const fecha = fechaEl?.value || '';
+  const reciboEl = document.getElementById('portal-abono-recibo');
+  const reciboFile = reciboEl?.files?.[0];
+
+  const btn = document.getElementById('portal-abono-btn');
+  if (btn) btn.disabled = true;
+
+  // Upload the receipt first (browser → Drive as the admin), then register the abono.
+  let reciboFileId = '';
+  try {
+    if (reciboFile) {
+      setStatus('Subiendo recibo…');
+      reciboFileId = await portalUploadToDrive(reciboFile, `Recibo ${fecha || ''} - ${portalActiveQuote.quoteNumber || ''}`, PORTAL_RECIBOS_FOLDER);
+    }
+  } catch (e) {
+    setStatus('');
+    portalNotify('No se pudo subir el recibo: ' + (e?.message || e), true);
+    if (btn) btn.disabled = false;
+    return;
+  }
 
   // Optimistic: update the statement now, undo + notify if the server rejects it.
   const ec = portalActiveQuote.estadoCuenta;
   const snapshot = ec ? JSON.parse(JSON.stringify(ec)) : null;
   if (ec) {
     ec.abonos = ec.abonos || [];
-    ec.abonos.push({ monto, moneda, fecha });
+    ec.abonos.push({ monto, moneda, fecha, recibo: reciboFileId });
     if (moneda === 'USD') { ec.totalAbonosUSD += monto; ec.saldoUSD = ec.totalUSD - ec.totalAbonosUSD; }
     else { ec.totalAbonosMXN += monto; ec.saldoMXN = ec.totalMXN - ec.totalAbonosMXN; }
     renderPortalAccount(ec);
   }
   if (montoEl) montoEl.value = '';
+  if (reciboEl) reciboEl.value = '';
   setStatus('');
 
-  const btn = document.getElementById('portal-abono-btn');
-  if (btn) btn.disabled = true;
   try {
     const res = await fetch(`${API_BASE}/portal/admin/abono`, {
       method: 'POST',
       headers: apiHeaders(),
-      body: JSON.stringify({ cotizacionId: portalActiveQuote.id, monto, moneda, fecha }),
+      body: JSON.stringify({ cotizacionId: portalActiveQuote.id, monto, moneda, fecha, reciboFileId }),
     });
     const data = await res.json().catch(() => ({}));
     if (!res.ok || !data.ok) throw new Error(data.error || `HTTP ${res.status}`);
@@ -6707,10 +6744,10 @@ async function portalEnsureTrack(name) {
 // Upload a file straight to Drive as the logged-in admin (we have an OAuth token
 // with drive.file scope). Service accounts can't own files in a personal My Drive,
 // so the upload must happen here, not in the worker. Returns the new file id.
-async function portalUploadToDrive(file, name) {
+async function portalUploadToDrive(file, name, folderId = PORTAL_DRIVE_FOLDER) {
   if (!googleAccessToken) throw new Error('Sesión de Google no disponible. Volvé a iniciar sesión.');
   const boundary = '-mkportal' + Date.now();
-  const metadata = { name, parents: [PORTAL_DRIVE_FOLDER], mimeType: file.type || 'application/octet-stream' };
+  const metadata = { name, parents: [folderId], mimeType: file.type || 'application/octet-stream' };
   const body = new Blob([
     `--${boundary}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n`,
     JSON.stringify(metadata),
