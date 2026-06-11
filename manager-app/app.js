@@ -5060,6 +5060,11 @@ function setupActions() {
   bindClick('portal-back', () => showPortalDetail(false));
   bindClick('portal-upload-btn', uploadPortalVersion);
   bindClick('portal-abono-btn', registerPortalAbono);
+  const bulkChk = document.getElementById('portal-bulk-songs');
+  if (bulkChk) bulkChk.addEventListener('change', () => {
+    const f = document.getElementById('portal-track-name-field');
+    if (f) f.style.display = bulkChk.checked ? 'none' : '';
+  });
   setupPortalPlayer();
   bindClick('refresh-messages', () => loadMessagesFromApi());
   bindClick('refresh-messages-overview', () => loadMessagesFromApi());
@@ -6864,55 +6869,68 @@ async function portalUploadToDrive(file, name, folderId = PORTAL_DRIVE_FOLDER) {
   return data.id;
 }
 
+// Upload one file → a version under `track`. Appends locally on success.
+async function portalUploadOneVersion(file, track, label, favorita) {
+  const { peaks, duration } = await generatePeaks(file);
+  const driveFileId = await portalUploadToDrive(file, `${label} - ${file.name}`);
+  const res = await fetch(`${API_BASE}/portal/admin/version`, {
+    method: 'POST',
+    headers: apiHeaders(),
+    body: JSON.stringify({ trackId: track.id, label, favorita, duracion: duration, peaks, driveFileId }),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok || !data.ok) throw new Error(data.error || `HTTP ${res.status}`);
+  if (favorita) track.versions.forEach((v) => { v.favorita = false; });
+  track.versions.push({ id: data.id, name: label, favorita, visible: true, duracion: duration, fecha: '', driveFileId, peaks });
+  renderPortalTracks(portalActiveQuote.tracks);
+}
+
+const fileStem = (name) => String(name || 'audio').replace(/\.[^.]+$/, '');
+
 async function uploadPortalVersion() {
   if (!portalActiveQuote) return;
   const trackName = (document.getElementById('portal-track-name')?.value || '').trim();
   const label = (document.getElementById('portal-version-label')?.value || '').trim();
   const favorita = Boolean(document.getElementById('portal-version-favorita')?.checked);
+  const asSongs = Boolean(document.getElementById('portal-bulk-songs')?.checked);
   const fileInput = document.getElementById('portal-version-file');
-  const file = fileInput?.files?.[0];
+  const files = Array.from(fileInput?.files || []);
 
-  if (!trackName) return portalUploadStatus('Poné el nombre de la canción.');
-  if (!file) return portalUploadStatus('Elegí un archivo de audio.');
+  if (!files.length) return portalUploadStatus('Elegí uno o más archivos de audio.');
+  if (!asSongs && !trackName) return portalUploadStatus('Poné el nombre de la canción (o marcá "cada archivo es una canción distinta").');
 
   const btn = document.getElementById('portal-upload-btn');
   if (btn) btn.disabled = true;
-  try {
-    portalUploadStatus('Analizando audio…');
-    const { peaks, duration } = await generatePeaks(file);
+  const multi = files.length > 1;
+  let ok = 0, failed = 0;
 
-    portalUploadStatus('Subiendo archivo a Drive…');
-    const driveFileId = await portalUploadToDrive(file, `${label || 'Versión'} - ${file.name}`);
-
-    portalUploadStatus('Creando canción…');
-    const track = await portalEnsureTrack(trackName);
-
-    portalUploadStatus('Guardando versión…');
-    const res = await fetch(`${API_BASE}/portal/admin/version`, {
-      method: 'POST',
-      headers: apiHeaders(),
-      body: JSON.stringify({ trackId: track.id, label: label || 'Versión', favorita, duracion: duration, peaks, driveFileId }),
-    });
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok || !data.ok) throw new Error(data.error || `HTTP ${res.status}`);
-
-    // Append the new version locally (no full refetch).
-    if (favorita) track.versions.forEach((v) => { v.favorita = false; });
-    track.versions.push({
-      id: data.id, name: label || 'Versión', favorita, visible: true,
-      duracion: duration, fecha: '', driveFileId, peaks,
-    });
-    renderPortalTracks(portalActiveQuote.tracks);
-    portalUploadStatus('');
-    portalNotify('Versión subida.');
-    if (fileInput) fileInput.value = '';
-    document.getElementById('portal-version-label').value = '';
-    document.getElementById('portal-version-favorita').checked = false;
-  } catch (e) {
-    portalUploadStatus('Error: ' + (e?.message || e));
-  } finally {
-    if (btn) btn.disabled = false;
+  for (let i = 0; i < files.length; i++) {
+    const file = files[i];
+    portalUploadStatus(`Subiendo ${i + 1}/${files.length}: ${file.name}…`);
+    try {
+      let track, verLabel;
+      if (asSongs) {
+        track = await portalEnsureTrack(fileStem(file.name));   // each file → its own song
+        verLabel = label || 'Versión';
+      } else {
+        track = await portalEnsureTrack(trackName);             // all files → versions of one song
+        verLabel = multi ? fileStem(file.name) : (label || fileStem(file.name));
+      }
+      // favorita only applies to a single-file upload
+      await portalUploadOneVersion(file, track, verLabel, multi ? false : favorita);
+      ok++;
+    } catch (e) {
+      failed++;
+      portalNotify(`Falló ${file.name}: ${(e?.message || e)}`, true);
+    }
   }
+
+  portalUploadStatus('');
+  if (ok) portalNotify(ok === 1 ? 'Versión subida.' : `${ok} archivo(s) subido(s).` + (failed ? ` ${failed} fallaron.` : ''));
+  if (fileInput) fileInput.value = '';
+  document.getElementById('portal-version-label').value = '';
+  document.getElementById('portal-version-favorita').checked = false;
+  if (btn) btn.disabled = false;
 }
 // ──────────────────────────────────────────────────────────────────────────────
 

@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;700;800&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="./styles.css?v=2.0.60" />
+    <link rel="stylesheet" href="./styles.css?v=2.0.61" />
     <link rel="manifest" href="./manifest.json" />
     <link rel="icon" type="image/png" href="./icon-32.png" />
     <link rel="apple-touch-icon" href="./icon-180.png" />
@@ -524,25 +524,29 @@
           </div>
 
           <div class="portal-upload">
-            <h4>Subir versión</h4>
-            <label class="portal-field">
+            <h4>Subir versión(es)</h4>
+            <label class="portal-field portal-checkbox">
+              <input id="portal-bulk-songs" type="checkbox">
+              <span>Cada archivo es una canción distinta</span>
+            </label>
+            <label class="portal-field" id="portal-track-name-field">
               <span>Canción / Track</span>
               <input id="portal-track-name" type="text" list="portal-track-list" placeholder="ej. Tema principal" autocomplete="off">
               <datalist id="portal-track-list"></datalist>
             </label>
             <label class="portal-field">
-              <span>Etiqueta de la versión</span>
-              <input id="portal-version-label" type="text" placeholder="ej. Mezcla v2" autocomplete="off">
+              <span>Etiqueta de la versión (opcional)</span>
+              <input id="portal-version-label" type="text" placeholder="ej. Mezcla v2 — si subís varios, se usa el nombre del archivo" autocomplete="off">
             </label>
             <label class="portal-field portal-checkbox">
               <input id="portal-version-favorita" type="checkbox">
-              <span>Marcar como versión principal (favorita)</span>
+              <span>Marcar como versión principal (favorita) — solo si subís 1 archivo</span>
             </label>
             <label class="portal-field">
-              <span>Archivo de audio</span>
-              <input id="portal-version-file" type="file" accept="audio/*">
+              <span>Archivo(s) de audio — podés elegir varios</span>
+              <input id="portal-version-file" type="file" accept="audio/*" multiple>
             </label>
-            <button id="portal-upload-btn" class="btn" type="button">Subir versión</button>
+            <button id="portal-upload-btn" class="btn" type="button">Subir</button>
             <p id="portal-upload-status" class="hint" aria-live="polite"></p>
           </div>
         </div>
@@ -595,6 +599,6 @@
     <script src="./config.js"></script>
     <script src="./vendor/howler.min.js"></script>
     <script src="./tracks.js?v=salesfix404v1"></script>
-    <script src="./app.js?v=2.0.60"></script>
+    <script src="./app.js?v=2.0.61"></script>
   </body>
   </html>
