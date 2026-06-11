@@ -5358,10 +5358,51 @@ function mkNormalizeName(s) {
   return String(s == null ? '' : s).normalize('NFC').trim().toLowerCase();
 }
 
+// English service names → catalog service id, so quotes submitted through the
+// English cotizador still map to the (Spanish) catalog. Keyed by service id to
+// avoid cross-catalog collisions (e.g. the "Release under Music Knobs Label"
+// label points to different services in the international vs local catalog).
+// Keep in sync via the mk-cotizador-catalog-sync skill (mirror of catalogEN).
+const MK_SERVICE_ALIASES = {
+  // International (MK_QUOTE_CATALOG)
+  'produccion-mezcla-master': ['Production + Mix + Master'],
+  'produccion-mezcla': ['Production + Mix'],
+  'produccion': ['Full Production'],
+  'mezcla': ['Professional Mixing'],
+  'afinacion': ['Pitch Correction (Melodyne)'],
+  'edicion': ['Audio Editing & Repair'],
+  'consultoria-hora': ['Consulting Session'],
+  'consultoria-paquete': ['Consulting Package (8 hours)'],
+  'jingle': ['Jingle / Corporate Music'],
+  'distribucion-label': ['Release under Music Knobs Label'],
+  'asesoria-distribucion': ['Self-publishing Advisory'],
+  'spotify-positioning': ['Spotify Positioning'],
+  // Local (MK_QUOTE_CATALOG_LOCAL)
+  'prod-musicos': ['Full production with local musicians'],
+  'prod-programada': ['Full production with programmed track'],
+  'grabacion-5hrs': ['5-hour package'],
+  'grabacion-hora-extra': ['Extra recording hour'],
+  'mezcla-local': ['Professional mix'],
+  'afinacion-local': ['Pitch Correction (Melodyne)'],
+  'edicion-local': ['Audio Editing & Repair'],
+  'spotify-local': ['Spotify Positioning'],
+  'label-local': ['Release under Music Knobs Label'],
+  'consultoria-local': ['Artist Consulting'],
+  // Shared ids across both catalogs (same English name)
+  'diseño-portada': ['Professional Cover Design'],
+  'fotografia-profesional': ['Professional Photography'],
+  'pintura-oleo': ['Oil Painting'],
+  // 'mastering' / 'mastering-local' are identical in EN/ES — no alias needed.
+};
+
 function mkFindByName(name) {
   const target = mkNormalizeName(name);
   if (!target) return null;
-  return mkAllServices().find((s) => mkNormalizeName(s.name) === target) || null;
+  return mkAllServices().find((s) => {
+    if (mkNormalizeName(s.name) === target) return true;
+    const aliases = MK_SERVICE_ALIASES[s.id];
+    return Array.isArray(aliases) && aliases.some((a) => mkNormalizeName(a) === target);
+  }) || null;
 }
 
 function mkHasOverride(id) {
@@ -5383,7 +5424,7 @@ function mkEffectiveCurrency(svc) {
 
 function mkBuildSummaryHtml() {
   const ids = Object.keys(quoteDetailSelection).filter((id) => quoteDetailSelection[id] > 0);
-  if (ids.length === 0) return '<p class="hint" style="text-align:center;padding:.75rem 0;">Sin servicios seleccionados.</p>';
+  if (ids.length === 0 && quoteDetailUnmatched.length === 0) return '<p class="hint" style="text-align:center;padding:.75rem 0;">Sin servicios seleccionados.</p>';
   let usd = 0, mxn = 0;
   const rows = ids.map((id) => {
     const svc = mkAllServices().find((s) => s.id === id);
@@ -5401,12 +5442,20 @@ function mkBuildSummaryHtml() {
     const edited = mkHasOverride(id) ? ' <span class="mk-sum-edited">editado</span>' : '';
     return `<div class="mk-sum-item"><span>${escapeHtml(svc.name)}${svc.hasQty ? ` ×${qty}` : ''}${edited}</span><span>${priceStr}</span></div>`;
   }).join('');
+  // Unmatched client services: show them and fold their amount into the totals.
+  const extraRows = quoteDetailUnmatched.map((item) => {
+    const m = mkParseMoney(item.price);
+    if (m.currency === 'MXN') mxn += m.amount;
+    else if (m.currency !== 'quote') usd += m.amount;
+    return `<div class="mk-sum-item"><span>${escapeHtml(item.name)} <span class="mk-sum-edited">adicional</span></span><span>${escapeHtml(String(item.price || '—'))}</span></div>`;
+  }).join('');
+  const allRows = rows + extraRows;
   const totals = (usd > 0 && mxn > 0)
     ? `<div class="mk-sum-total"><span>Total USD</span><span>$${usd.toLocaleString('en-US')}</span></div><div class="mk-sum-total"><span>Total MXN</span><span>$${mxn.toLocaleString('en-US')} MXN</span></div>`
     : mxn > 0
       ? `<div class="mk-sum-total"><span>Total</span><span>$${mxn.toLocaleString('en-US')} MXN</span></div>`
       : `<div class="mk-sum-total"><span>Total</span><span>$${usd.toLocaleString('en-US')} USD</span></div>`;
-  return `<div class="mk-sum-title">Resumen</div><div class="mk-sum-items">${rows}</div>${totals}`;
+  return `<div class="mk-sum-title">Resumen</div><div class="mk-sum-items">${allRows}</div>${totals}`;
 }
 
 function mkPriceRowHtml(svc) {
@@ -5495,6 +5544,13 @@ function mkNegotiatedSubtotals() {
     const cur = mkEffectiveCurrency(svc);
     if (cur === 'MXN') mxn += price;
     else if (cur !== 'quote') usd += price;
+  }
+  // Unmatched (client) services still count toward the total, parsed from their
+  // original price string, so the detail total matches the quote-list total.
+  for (const item of quoteDetailUnmatched) {
+    const m = mkParseMoney(item.price);
+    if (m.currency === 'MXN') mxn += m.amount;
+    else if (m.currency !== 'quote') usd += m.amount;
   }
   return { totalMXN: mxn, totalUSD: usd };
 }
