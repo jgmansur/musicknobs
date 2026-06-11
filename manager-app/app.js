@@ -5331,6 +5331,11 @@ const MK_QUOTE_CATALOG = [
   { id: 'estudio', title: 'Estudio Profesional · exclusivo seguimiento', services: [
     { id: 'dia-estudio', name: 'Día de Estudio Profesional — Troubled Cleff Studios', description: 'Día completo de grabación en Troubled Cleff Studios, San Miguel de Allende.', priceLabel: '$2,000 USD / día', hasQty: true, qtyLabel: 'Días', basePrice: 2000, calcPrice: (q) => q * 2000, currency: 'USD', managerOnly: true },
   ]},
+  { id: 'adicionales', title: 'Servicios adicionales', services: [
+    { id: 'consultoria-industria', name: 'Consultoría de industria, producción y educación para hijos artistas', description: 'Sesión sobre la industria musical, producción o educación para hijos artistas. Hasta 4 horas por sesión.', priceLabel: '$5,000 MXN / sesión (hasta 4 h)', hasQty: true, qtyLabel: 'Sesiones', basePrice: 5000, calcPrice: (q) => q * 5000, currency: 'MXN' },
+    { id: 'stems-produccion', name: 'Entrega de Stems de Producción (para vivo)', description: 'Tu producción de estudio separada en tracks/stems para tocar en vivo.', priceLabel: '$1,000 MXN / canción', hasQty: true, qtyLabel: 'Canciones', basePrice: 1000, calcPrice: (q) => q * 1000, currency: 'MXN' },
+    { id: 'mezcla-atmos', name: 'Mezcla ATMOS', description: 'Mezcla inmersiva en Dolby Atmos para una experiencia espacial.', priceLabel: '$500 USD / canción', hasQty: true, qtyLabel: 'Canciones', basePrice: 500, calcPrice: (q) => q * 500, currency: 'USD' },
+  ]},
 ];
 
 // Local market catalog — mirror of musicknobs-web/app/locales/cotizar (catalogLocalES).
@@ -5362,6 +5367,14 @@ const MK_QUOTE_CATALOG_LOCAL = [
   ]},
   { id: 'estudio', title: 'Estudio Profesional · exclusivo seguimiento', services: [
     { id: 'dia-estudio', name: 'Día de Estudio Profesional — Troubled Cleff Studios', description: 'Día completo de grabación en Troubled Cleff Studios, San Miguel de Allende.', priceLabel: '$1,000 USD / día', hasQty: true, qtyLabel: 'Días', basePrice: 1000, calcPrice: (q) => q * 1000, currency: 'USD', managerOnly: true },
+  ]},
+  { id: 'adicionales', title: 'Servicios adicionales', services: [
+    { id: 'demo-ai', name: 'Demo con AI + grabación de tu voz', description: 'Creamos una pista demo con inteligencia artificial y grabamos tu voz original encima. Conservás todos los derechos.', priceLabel: '$4,000 MXN / canción', hasQty: true, qtyLabel: 'Canciones', basePrice: 4000, calcPrice: (q) => q * 4000, currency: 'MXN' },
+    { id: 'video-redes', name: 'Grabación y edición de video para redes', description: 'Grabación y edición de video tocando o en playback con el audio de estudio, listo para redes.', priceLabel: '$4,000 MXN / video', hasQty: true, qtyLabel: 'Videos', basePrice: 4000, calcPrice: (q) => q * 4000, currency: 'MXN' },
+    { id: 'consultoria-industria', name: 'Consultoría de industria, producción y educación para hijos artistas', description: 'Sesión sobre la industria musical, producción o educación para hijos artistas. Hasta 4 horas por sesión.', priceLabel: '$5,000 MXN / sesión (hasta 4 h)', hasQty: true, qtyLabel: 'Sesiones', basePrice: 5000, calcPrice: (q) => q * 5000, currency: 'MXN' },
+    { id: 'stems-ai', name: 'Extracción de Stems con AI', description: 'Separación de tu canción en stems (voz, batería, bajo, etc.) con inteligencia artificial.', priceLabel: '$500 MXN / canción', hasQty: true, qtyLabel: 'Canciones', basePrice: 500, calcPrice: (q) => q * 500, currency: 'MXN' },
+    { id: 'stems-produccion', name: 'Entrega de Stems de Producción (para vivo)', description: 'Tu producción de estudio separada en tracks/stems para tocar en vivo.', priceLabel: '$1,000 MXN / canción', hasQty: true, qtyLabel: 'Canciones', basePrice: 1000, calcPrice: (q) => q * 1000, currency: 'MXN' },
+    { id: 'mezcla-atmos', name: 'Mezcla ATMOS', description: 'Mezcla inmersiva en Dolby Atmos para una experiencia espacial.', priceLabel: '$4,500 MXN / canción', hasQty: true, qtyLabel: 'Canciones', basePrice: 4500, calcPrice: (q) => q * 4500, currency: 'MXN' },
   ]},
 ];
 
@@ -5418,6 +5431,14 @@ const MK_SERVICE_ALIASES = {
   'fotografia-profesional': ['Professional Photography'],
   'pintura-oleo': ['Oil Painting'],
   // 'mastering' / 'mastering-local' are identical in EN/ES — no alias needed.
+  // "Servicios adicionales" (new services)
+  'demo-ai': ['AI Demo + your vocal recording'],
+  'video-redes': ['Video recording & editing for social media'],
+  'consultoria-industria': ['Industry, production & artist-kids coaching'],
+  'stems-ai': ['AI Stem Extraction'],
+  'stems-produccion': ['Production Stems delivery (for live)'],
+  // 'mezcla-atmos' is "ATMOS Mix" in EN — close enough, but add the alias to be safe.
+  'mezcla-atmos': ['ATMOS Mix'],
 };
 
 function mkFindByName(name) {
