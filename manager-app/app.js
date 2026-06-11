@@ -6642,8 +6642,10 @@ async function postAdminComment() {
     });
     const data = await res.json().catch(() => ({}));
     if (!res.ok || !data.ok) throw new Error(data.error || `HTTP ${res.status}`);
+    // Swap the temp id for the real one so delete works immediately (no refetch).
+    const real = (portalPlayerState.comments || []).find((c) => c.id === optimistic.id);
+    if (real && data.id) { real.id = data.id; renderAdminComments(); }
     portalNotify('Comentario enviado.');
-    loadAdminComments(portalPlayerState.versionId);
   } catch (e) {
     portalPlayerState.comments = (portalPlayerState.comments || []).filter((c) => c.id !== optimistic.id);
     renderAdminComments(); portalDrawWaveform();
