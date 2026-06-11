@@ -2859,7 +2859,7 @@ async function replaceSeguimientoSection(pageId, seguimientoData, notionToken, n
       if (!r.ok) throw new Error(await r.text());
     }
   }
-  const fields = ["musicians","studio","vocals","externalEngineers","revisions","royalties","deposit","finalPrice","startDate","deliveryDate","contractNotes","estatus","callNotes"];
+  const fields = ["musicians","studio","vocals","externalEngineers","revisions","royalties","deposit","finalPrice","startDate","deliveryDate","contractNotes","horasExtra","estatus","callNotes"];
   const content = fields.filter((k) => seguimientoData[k] !== undefined && seguimientoData[k] !== null && seguimientoData[k] !== "").map((k) => `${k}: ${seguimientoData[k]}`).join("\n");
   const r = await fetch(`https://api.notion.com/v1/blocks/${pageId}/children`, {
     method: "PATCH",
@@ -2997,6 +2997,9 @@ function mxToday() {
   return new Date().toLocaleDateString("en-CA", { timeZone: "America/Mexico_City" });
 }
 const PORTAL_COMMENTS_DS_ID = "9b517273-7404-4e19-a40d-c92b7016b0f5";
+// Extra recording-hour rate (local studio). Hours are tracked on the quote's
+// Seguimiento section (horasExtra) and added to the portal account total.
+const EXTRA_HOUR_RATE_MXN = 700;
 // Drive folder where portal version files are uploaded (shared with the service account).
 const PORTAL_FILES_FOLDER_ID = "1sequwARPJQcoVs52TlCZ0MWcxYS_1nb5";
 
@@ -3113,7 +3116,9 @@ async function portalCotizacion(env, pageId, code) {
     getManagerQuoteDetail(env, pageId).catch(() => null),
     queryPortalDb(env, PORTAL_TRACKS_DS_ID, { property: "Cotización", relation: { contains: pageId } }),
   ]);
-  const totalMXN = detail?.data?.totalMXN || 0;
+  const horasExtra = Number(detail?.data?.seguimiento?.horasExtra) || 0;
+  const horasExtraMonto = horasExtra * EXTRA_HOUR_RATE_MXN;
+  const totalMXN = (detail?.data?.totalMXN || 0) + horasExtraMonto;
   const totalUSD = detail?.data?.totalUSD || 0;
   // Fetch each track's versions in parallel (was sequential — slow with many tracks).
   const tracks = await Promise.all(trackPages.map(async (tp) => {
@@ -3179,6 +3184,9 @@ async function portalCotizacion(env, pageId, code) {
       totalAbonosUSD,
       saldoMXN: totalMXN - totalAbonosMXN,
       saldoUSD: totalUSD - totalAbonosUSD,
+      horasExtra,
+      horasExtraMonto,
+      horasExtraRate: EXTRA_HOUR_RATE_MXN,
     },
   };
 }
@@ -3409,7 +3417,9 @@ async function portalAdminCotizacion(env, pageId) {
   }));
   const totalAbonosMXN = abonos.filter((a) => a.moneda === "MXN").reduce((s, a) => s + a.monto, 0);
   const totalAbonosUSD = abonos.filter((a) => a.moneda === "USD").reduce((s, a) => s + a.monto, 0);
-  const totalMXN = detail?.data?.totalMXN || 0;
+  const horasExtra = Number(detail?.data?.seguimiento?.horasExtra) || 0;
+  const horasExtraMonto = horasExtra * EXTRA_HOUR_RATE_MXN;
+  const totalMXN = (detail?.data?.totalMXN || 0) + horasExtraMonto;
   const totalUSD = detail?.data?.totalUSD || 0;
 
   return {
@@ -3420,6 +3430,9 @@ async function portalAdminCotizacion(env, pageId) {
       totalMXN, totalUSD, abonos, totalAbonosMXN, totalAbonosUSD,
       saldoMXN: totalMXN - totalAbonosMXN,
       saldoUSD: totalUSD - totalAbonosUSD,
+      horasExtra,
+      horasExtraMonto,
+      horasExtraRate: EXTRA_HOUR_RATE_MXN,
     },
   };
 }

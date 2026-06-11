@@ -6264,7 +6264,7 @@ async function openPortalCotizacion(quoteId, clientName, quoteNumber) {
   if (tracksRoot) tracksRoot.innerHTML = '<p class="hint">Cargando…</p>';
   try {
     const data = await fetchJson(`${API_BASE}/portal/admin/cotizacion/${quoteId}`);
-    portalActiveQuote = { id: quoteId, quoteNumber, clientName, tracks: data?.tracks || [], estadoCuenta: data?.estadoCuenta || null };
+    portalActiveQuote = { id: quoteId, quoteNumber, clientName, tracks: data?.tracks || [], estadoCuenta: data?.estadoCuenta || null, seguimiento: data?.quote?.seguimiento || {} };
     renderPortalTracks(portalActiveQuote.tracks);
     renderPortalAccount(portalActiveQuote.estadoCuenta);
   } catch (e) {
@@ -6297,7 +6297,56 @@ function renderPortalAccount(ec) {
     <thead><tr><th>Moneda</th><th class="pa-num">Total</th><th class="pa-num">Pagado</th><th class="pa-num">Saldo</th></tr></thead>
     <tbody>${rows.join('')}</tbody>
   </table>`;
+  renderPortalExtraHours(ec);
   renderPortalAbonosList(ec.abonos || []);
+}
+
+// Extra recording hours counter. Hours × rate add to the MXN total (and the
+// client's statement). Saved into the quote's Seguimiento section (horasExtra).
+function renderPortalExtraHours(ec) {
+  const countEl = document.getElementById('portal-extra-count');
+  const amtEl = document.getElementById('portal-extra-amount');
+  if (!countEl || !amtEl) return;
+  const count = Number(ec?.horasExtra) || 0;
+  const rate = Number(ec?.horasExtraRate) || 700;
+  countEl.textContent = String(count);
+  amtEl.textContent = portalMoney(count * rate, 'MXN');
+  const dec = document.getElementById('portal-extra-dec');
+  const inc = document.getElementById('portal-extra-inc');
+  if (dec) { dec.disabled = count <= 0; dec.onclick = () => changePortalExtraHours(-1); }
+  if (inc) inc.onclick = () => changePortalExtraHours(1);
+}
+
+async function changePortalExtraHours(delta) {
+  if (!portalActiveQuote) return;
+  const ec = portalActiveQuote.estadoCuenta;
+  if (!ec) return;
+  const rate = Number(ec.horasExtraRate) || 700;
+  const prev = Number(ec.horasExtra) || 0;
+  const next = Math.max(0, prev + delta);
+  if (next === prev) return;
+  // The base total (services, without extra hours) stays constant.
+  const base = (ec.totalMXN || 0) - (ec.horasExtraMonto || 0);
+  ec.horasExtra = next;
+  ec.horasExtraMonto = next * rate;
+  ec.totalMXN = base + ec.horasExtraMonto;
+  ec.saldoMXN = ec.totalMXN - (ec.totalAbonosMXN || 0);
+  renderPortalAccount(ec); // optimistic: re-render table + counter
+  // Persist into the FULL seguimiento object so other fields aren't clobbered.
+  const seg = { ...(portalActiveQuote.seguimiento || {}) };
+  if (next > 0) seg.horasExtra = String(next); else delete seg.horasExtra;
+  portalActiveQuote.seguimiento = seg;
+  const statusEl = document.getElementById('portal-extra-status');
+  if (statusEl) { statusEl.textContent = 'Guardando…'; statusEl.className = 'qd-save-status saving'; }
+  try {
+    const r = await fetch(`${API_BASE}/api/manager/quotes/${portalActiveQuote.id}`, {
+      method: 'PATCH', headers: apiHeaders(), body: JSON.stringify({ seguimiento: seg }),
+    });
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    if (statusEl) { statusEl.textContent = 'Guardado ✓'; statusEl.className = 'qd-save-status saved'; }
+  } catch (e) {
+    if (statusEl) { statusEl.textContent = 'Error al guardar'; statusEl.className = 'qd-save-status error'; }
+  }
 }
 
 let portalAbonoEditId = null;
