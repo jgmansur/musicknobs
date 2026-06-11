@@ -3098,6 +3098,7 @@ async function portalCotizacion(env, pageId, code) {
       monto: pprops?.Monto?.number || 0,
       moneda: pprops?.Moneda?.select?.name || "",
       fecha: pprops?.Fecha?.date?.start || "",
+      recibo: richTextToString(pprops?.Recibo?.rich_text),
     };
   });
   const totalAbonosMXN = abonos.filter((a) => a.moneda === "MXN").reduce((s, a) => s + a.monto, 0);
