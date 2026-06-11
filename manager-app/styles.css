@@ -3317,8 +3317,9 @@ body.messages-active .container {
 }
 .portal-row-play:hover:not(:disabled) { border-color: var(--primary); color: var(--primary); }
 .portal-row-play:disabled { opacity: .4; cursor: default; }
-.portal-fav { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 18px; line-height: 1; padding: 0; }
-.portal-fav.is-fav { color: var(--primary); }
+.portal-fav { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 18px; line-height: 1; padding: 0; opacity: .5; transition: color .15s ease, opacity .15s ease; }
+.portal-fav:hover { opacity: 1; }
+.portal-fav.is-fav { color: #ffc83d; opacity: 1; text-shadow: 0 0 8px rgba(255, 200, 61, .45); }
 .portal-player {
   border: 1px solid var(--glass-border); border-radius: 15px; background: var(--glass-bg);
   padding: 14px 16px; margin: 12px 0 16px;
