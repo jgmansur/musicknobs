@@ -207,7 +207,7 @@ function extractDriveFileId(value) {
   }
 }
 
-async function streamDriveAudioFile(fileId, request, env) {
+async function streamDriveAudioFile(fileId, request, env, downloadName) {
   if (!isValidDriveFileId(fileId)) {
     return json({ error: "fileId inválido" }, 400);
   }
@@ -262,6 +262,12 @@ async function streamDriveAudioFile(fileId, request, env) {
       const v = mediaResp.headers.get(h);
       if (v) responseHeaders.set(h, v);
     });
+
+    if (downloadName) {
+      // Force a download (vs inline playback) with a clean filename.
+      const safe = String(downloadName).replace(/["\r\n]/g, "").slice(0, 200);
+      responseHeaders.set("Content-Disposition", `attachment; filename="${safe}"`);
+    }
 
     return new Response(mediaResp.body, {
       status: mediaResp.status,
@@ -3127,28 +3133,65 @@ async function getNotionPageProps(env, pageId) {
   return page?.properties || null;
 }
 
-// Stream a version's audio, gated by ownership: code → client → quote → track → version.
-// The <audio> element can't set headers, so the code is accepted via ?code= too.
-async function portalStream(versionId, request, env, code) {
+// Resolve a version for a portal code: validates visible + ownership chain
+// (code → client → quote → track → version). Returns the file id and Notion props,
+// or { ok:false, status, error } on any failure.
+async function portalResolveVersion(env, versionId, code) {
   const resolved = await resolvePortalCode(env, code);
-  if (!resolved.ok) return json({ error: "No autorizado" }, 403);
+  if (!resolved.ok) return { ok: false, status: 403, error: "No autorizado" };
 
   const vprops = await getNotionPageProps(env, versionId);
-  if (!vprops) return json({ error: "Versión no encontrada" }, 404);
-  if (!vprops?.Visible?.checkbox) return json({ error: "No disponible" }, 403);
+  if (!vprops) return { ok: false, status: 404, error: "Versión no encontrada" };
+  if (!vprops?.Visible?.checkbox) return { ok: false, status: 403, error: "No disponible" };
 
   const trackId = vprops?.Track?.relation?.[0]?.id;
-  if (!trackId) return json({ error: "No autorizado" }, 403);
+  if (!trackId) return { ok: false, status: 403, error: "No autorizado" };
   const tprops = await getNotionPageProps(env, trackId);
   const cotizacionId = tprops?.["Cotización"]?.relation?.[0]?.id;
-  if (!cotizacionId) return json({ error: "No autorizado" }, 403);
+  if (!cotizacionId) return { ok: false, status: 403, error: "No autorizado" };
 
-  const owned = resolved.quotes.some((q) => normNotionId(q.id) === normNotionId(cotizacionId));
-  if (!owned) return json({ error: "No autorizado" }, 403);
+  if (!resolved.quotes.some((q) => normNotionId(q.id) === normNotionId(cotizacionId))) {
+    return { ok: false, status: 403, error: "No autorizado" };
+  }
 
   const fileId = richTextToString(vprops?.["Drive File ID"]?.rich_text);
-  if (!fileId) return json({ error: "Sin archivo" }, 404);
-  return streamDriveAudioFile(fileId, request, env);
+  if (!fileId) return { ok: false, status: 404, error: "Sin archivo" };
+  return { ok: true, fileId, vprops, tprops, cotizacionId };
+}
+
+// True when a quote has no outstanding balance (both currencies settled).
+async function portalCotizacionSettled(env, cotizacionId) {
+  const detail = await getManagerQuoteDetail(env, cotizacionId).catch(() => null);
+  const totalMXN = detail?.data?.totalMXN || 0;
+  const totalUSD = detail?.data?.totalUSD || 0;
+  const paymentPages = await queryPortalDb(env, PORTAL_PAYMENTS_DS_ID, {
+    property: "Cotización", relation: { contains: cotizacionId },
+  });
+  let abMXN = 0, abUSD = 0;
+  for (const pp of paymentPages) {
+    const m = pp.properties?.Monto?.number || 0;
+    if ((pp.properties?.Moneda?.select?.name || "") === "USD") abUSD += m; else abMXN += m;
+  }
+  return (totalMXN - abMXN) <= 0 && (totalUSD - abUSD) <= 0;
+}
+
+// The <audio> element can't set headers, so the code is accepted via ?code= too.
+async function portalStream(versionId, request, env, code) {
+  const r = await portalResolveVersion(env, versionId, code);
+  if (!r.ok) return json({ error: r.error }, r.status);
+  return streamDriveAudioFile(r.fileId, request, env);
+}
+
+// Gated download: allowed if the track has "Descarga habilitada" OR the quote is
+// fully paid. 402 (payment required) otherwise.
+async function portalDownload(versionId, request, env, code) {
+  const r = await portalResolveVersion(env, versionId, code);
+  if (!r.ok) return json({ error: r.error }, r.status);
+  const descargaHabilitada = Boolean(r.tprops?.["Descarga habilitada"]?.checkbox);
+  const allowed = descargaHabilitada || await portalCotizacionSettled(env, r.cotizacionId);
+  if (!allowed) return json({ error: "Pago pendiente" }, 402);
+  const name = `${readNotionTitle(r.tprops) || "track"} - ${readNotionTitle(r.vprops) || "version"}`;
+  return streamDriveAudioFile(r.fileId, request, env, name);
 }
 
 // ─── PORTAL ADMIN (Manager App) ───────────────────────────────────────────────
@@ -3228,7 +3271,31 @@ async function portalAdminCotizacion(env, pageId) {
       versions,
     });
   }
-  return { ok: true, quote: detail?.data || { quoteNumber: "", clientName: "" }, tracks };
+
+  // Statement of account (so the admin can see balance + register payments).
+  const paymentPages = await queryPortalDb(env, PORTAL_PAYMENTS_DS_ID, {
+    property: "Cotización", relation: { contains: pageId },
+  });
+  const abonos = paymentPages.map((pp) => ({
+    monto: pp.properties?.Monto?.number || 0,
+    moneda: pp.properties?.Moneda?.select?.name || "",
+    fecha: pp.properties?.Fecha?.date?.start || "",
+  }));
+  const totalAbonosMXN = abonos.filter((a) => a.moneda === "MXN").reduce((s, a) => s + a.monto, 0);
+  const totalAbonosUSD = abonos.filter((a) => a.moneda === "USD").reduce((s, a) => s + a.monto, 0);
+  const totalMXN = detail?.data?.totalMXN || 0;
+  const totalUSD = detail?.data?.totalUSD || 0;
+
+  return {
+    ok: true,
+    quote: detail?.data || { quoteNumber: "", clientName: "" },
+    tracks,
+    estadoCuenta: {
+      totalMXN, totalUSD, abonos, totalAbonosMXN, totalAbonosUSD,
+      saldoMXN: totalMXN - totalAbonosMXN,
+      saldoUSD: totalUSD - totalAbonosUSD,
+    },
+  };
 }
 
 async function portalAdminCreateTrack(env, body) {
@@ -3311,6 +3378,25 @@ async function portalAdminPatchTrack(env, trackId, body) {
   }
   if (!Object.keys(props).length) return { ok: false, error: "nada para actualizar" };
   return patchNotionPage(env, trackId, props);
+}
+
+// Register a payment (abono) against a quote.
+async function portalAdminCreateAbono(env, body) {
+  const cotizacionId = String(body?.cotizacionId || "").trim();
+  const monto = Number(body?.monto || 0);
+  const moneda = String(body?.moneda || "").trim();
+  const fecha = String(body?.fecha || "").trim() || new Date().toISOString().slice(0, 10);
+  if (!cotizacionId) return { ok: false, error: "cotizacionId requerido" };
+  if (!monto || monto <= 0) return { ok: false, error: "monto inválido" };
+  if (moneda !== "MXN" && moneda !== "USD") return { ok: false, error: "moneda debe ser MXN o USD" };
+  const properties = {
+    Name: { title: [{ type: "text", text: { content: `Abono ${fecha}` } }] },
+    "Cotización": { relation: [{ id: cotizacionId }] },
+    Monto: { number: monto },
+    Moneda: { select: { name: moneda } },
+    Fecha: { date: { start: fecha } },
+  };
+  return createNotionPage(env, PORTAL_PAYMENTS_DS_ID, properties);
 }
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -3651,6 +3737,12 @@ export default {
       const code = request.headers.get("X-Portal-Code") || url.searchParams.get("code") || "";
       return portalStream(versionId, request, env, code);
     }
+    if (request.method === "GET" && url.pathname.startsWith("/portal/download/")) {
+      const versionId = url.pathname.replace("/portal/download/", "").trim();
+      if (!versionId) return json({ error: "versionId required" }, 400);
+      const code = request.headers.get("X-Portal-Code") || url.searchParams.get("code") || "";
+      return portalDownload(versionId, request, env, code);
+    }
     // ─── Portal admin (Manager App, behind the client-side Google gate) ─────────
     if (request.method === "GET" && url.pathname === "/portal/admin/cotizaciones") {
       const result = await listManagerQuotes(env, new URLSearchParams());
@@ -3689,6 +3781,11 @@ export default {
       const body = await request.json().catch(() => ({}));
       const result = await portalAdminPatchTrack(env, trackId, body);
       return json(result, result.ok === false ? 400 : 200);
+    }
+    if (request.method === "POST" && url.pathname === "/portal/admin/abono") {
+      const body = await request.json().catch(() => ({}));
+      const result = await portalAdminCreateAbono(env, body);
+      return json(result, result.ok === false ? 400 : 201);
     }
     // ───────────────────────────────────────────────────────────────────────────
 

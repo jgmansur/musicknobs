@@ -5057,6 +5057,7 @@ function setupActions() {
   bindClick('portal-refresh', () => loadPortalCotizaciones());
   bindClick('portal-back', () => showPortalDetail(false));
   bindClick('portal-upload-btn', uploadPortalVersion);
+  bindClick('portal-abono-btn', registerPortalAbono);
   setupPortalPlayer();
   bindClick('refresh-messages', () => loadMessagesFromApi());
   bindClick('refresh-messages-overview', () => loadMessagesFromApi());
@@ -6091,10 +6092,65 @@ async function openPortalCotizacion(quoteId, clientName, quoteNumber) {
   if (tracksRoot) tracksRoot.innerHTML = '<p class="hint">Cargando…</p>';
   try {
     const data = await fetchJson(`${API_BASE}/portal/admin/cotizacion/${quoteId}`);
-    portalActiveQuote = { id: quoteId, quoteNumber, clientName, tracks: data?.tracks || [] };
+    portalActiveQuote = { id: quoteId, quoteNumber, clientName, tracks: data?.tracks || [], estadoCuenta: data?.estadoCuenta || null };
     renderPortalTracks(portalActiveQuote.tracks);
+    renderPortalAccount(portalActiveQuote.estadoCuenta);
   } catch (e) {
     if (tracksRoot) tracksRoot.innerHTML = `<p class="hint">Error: ${escapeHtmlSafe(e?.message || String(e))}</p>`;
+  }
+}
+
+function portalMoney(amount, currency) {
+  return `${currency} ${Number(amount || 0).toLocaleString('es-MX', { maximumFractionDigits: 0 })}`;
+}
+
+function renderPortalAccount(ec) {
+  const root = document.getElementById('portal-account-summary');
+  if (!root) return;
+  if (!ec) { root.innerHTML = '<p class="hint">Sin datos de cuenta.</p>'; return; }
+  const rows = [];
+  if (ec.totalMXN || ec.totalAbonosMXN) {
+    rows.push(`<div><span>MXN</span><span>Total ${portalMoney(ec.totalMXN, 'MXN')} · Pagado ${portalMoney(ec.totalAbonosMXN, 'MXN')} · Saldo <strong>${portalMoney(ec.saldoMXN, 'MXN')}</strong></span></div>`);
+  }
+  if (ec.totalUSD || ec.totalAbonosUSD) {
+    rows.push(`<div><span>USD</span><span>Total ${portalMoney(ec.totalUSD, 'USD')} · Pagado ${portalMoney(ec.totalAbonosUSD, 'USD')} · Saldo <strong>${portalMoney(ec.saldoUSD, 'USD')}</strong></span></div>`);
+  }
+  root.innerHTML = rows.join('') || '<p class="hint">Cotización sin total.</p>';
+}
+
+async function registerPortalAbono() {
+  if (!portalActiveQuote) return;
+  const montoEl = document.getElementById('portal-abono-monto');
+  const monedaEl = document.getElementById('portal-abono-moneda');
+  const fechaEl = document.getElementById('portal-abono-fecha');
+  const statusEl = document.getElementById('portal-abono-status');
+  const setStatus = (m) => { if (statusEl) statusEl.textContent = m || ''; };
+  const monto = Number(montoEl?.value || 0);
+  if (!monto || monto <= 0) return setStatus('Poné un monto válido.');
+
+  const btn = document.getElementById('portal-abono-btn');
+  if (btn) btn.disabled = true;
+  try {
+    setStatus('Registrando…');
+    const res = await fetch(`${API_BASE}/portal/admin/abono`, {
+      method: 'POST',
+      headers: apiHeaders(),
+      body: JSON.stringify({
+        cotizacionId: portalActiveQuote.id,
+        monto,
+        moneda: monedaEl?.value || 'MXN',
+        fecha: fechaEl?.value || '',
+      }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || !data.ok) throw new Error(data.error || `HTTP ${res.status}`);
+    setStatus('✓ Abono registrado.');
+    if (montoEl) montoEl.value = '';
+    await openPortalCotizacion(portalActiveQuote.id, portalActiveQuote.clientName, portalActiveQuote.quoteNumber);
+  } catch (e) {
+    setStatus('Error: ' + (e?.message || e));
+  } finally {
+    if (btn) btn.disabled = false;
   }
 }
 
