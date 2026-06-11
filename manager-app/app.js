@@ -6773,19 +6773,12 @@ function renderPortalTracks(tracks) {
 
       const name = document.createElement('span');
       name.className = 'portal-version-name';
+      name.dataset.versionId = v.id; // so the playing version can be marquee'd
       const nameText = document.createElement('span');
       nameText.className = 'vn-text';
       nameText.textContent = v.name + (v.duracion ? ` · ${Math.round(v.duracion)}s` : '');
       name.appendChild(nameText);
       name.title = nameText.textContent;
-      // Once laid out, if the name overflows its row, auto-scroll it (marquee).
-      requestAnimationFrame(() => {
-        const overflow = nameText.scrollWidth - name.clientWidth;
-        if (overflow > 4) {
-          name.style.setProperty('--vn-shift', `-${overflow + 8}px`);
-          name.classList.add('marquee');
-        }
-      });
 
       const controls = document.createElement('span');
       controls.className = 'portal-version-controls';
@@ -6879,6 +6872,8 @@ function renderPortalTracks(tracks) {
     el.appendChild(list);
     root.appendChild(el);
   });
+  // Keep the playing version's name scrolling after a re-render.
+  if (portalPlayerState && portalPlayerState.versionId) portalApplyPlayingMarquee(portalPlayerState.versionId);
 }
 
 // Move a version up/down within its track, optimistically. Normalizes every
@@ -7069,6 +7064,27 @@ function portalPlayVersion(version, trackName) {
   audio.play().catch(() => {});
   portalDrawWaveform();
   loadAdminComments(version.id);
+  portalApplyPlayingMarquee(version.id);
+}
+
+// Marquee ONLY the version that's currently playing (if its name overflows the
+// row). Clears any previous one first — one scrolling name at a time, tidy.
+function portalApplyPlayingMarquee(versionId) {
+  document.querySelectorAll('.portal-version-name.marquee').forEach((el) => {
+    el.classList.remove('marquee');
+    el.style.removeProperty('--vn-shift');
+  });
+  if (!versionId) return;
+  const el = document.querySelector(`.portal-version-name[data-version-id="${versionId}"]`);
+  const text = el && el.querySelector('.vn-text');
+  if (!el || !text) return;
+  requestAnimationFrame(() => {
+    const overflow = text.scrollWidth - el.clientWidth;
+    if (overflow > 4) {
+      el.style.setProperty('--vn-shift', `-${overflow + 8}px`);
+      el.classList.add('marquee');
+    }
+  });
 }
 
 async function loadAdminComments(versionId) {

@@ -3449,20 +3449,24 @@ body.messages-active .container {
 .portal-toggle { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-muted); cursor: pointer; }
 .portal-toggle input { accent-color: var(--primary); }
 .portal-version { display: flex; align-items: center; gap: 10px; }
-/* One tidy line; long names auto-scroll (marquee) instead of wrapping. */
-.portal-version-name {
-  flex: 1 1 auto; min-width: 0;
+/* One tidy line. By default the name truncates with "…"; the version that is
+   PLAYING auto-scrolls (marquee) so its full name is readable — one at a time. */
+.portal-version-name { flex: 1 1 auto; min-width: 0; overflow: hidden; }
+.portal-version-name > .vn-text {
+  display: block;               /* block child fills the shrunk flex width → truncates cleanly */
   overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
 }
-.portal-version-name .vn-text { display: inline-block; }
-.portal-version-name.marquee { text-overflow: clip; }
-.portal-version-name.marquee .vn-text { animation: vn-marquee 9s ease-in-out infinite alternate; }
+.portal-version-name.marquee > .vn-text {
+  display: inline-block;        /* sizes to content, clipped by the parent's overflow:hidden */
+  overflow: visible; text-overflow: clip;
+  animation: vn-marquee 9s ease-in-out infinite alternate;
+}
 @keyframes vn-marquee {
   0%, 12% { transform: translateX(0); }
   88%, 100% { transform: translateX(var(--vn-shift, 0)); }
 }
 @media (prefers-reduced-motion: reduce) {
-  .portal-version-name.marquee .vn-text { animation: none; }
+  .portal-version-name.marquee > .vn-text { animation: none; }
 }
 .portal-version-controls { display: inline-flex; align-items: center; gap: 12px; }
 .portal-row-play {
