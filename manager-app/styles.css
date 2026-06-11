@@ -2830,6 +2830,46 @@ body.messages-active .container {
   letter-spacing: .3px;
 }
 
+/* Portal detail: drop the outer card so only the inner element cards show */
+#tab-portal.portal-bare {
+  background: transparent;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+}
+
+/* Collapsible cards (upload) + accordion (songs) */
+.portal-collapse-head {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .5rem;
+  user-select: none;
+}
+.portal-collapse-caret { transition: transform .2s ease; color: var(--text-muted); font-size: .8em; }
+.portal-collapse.is-collapsed .portal-collapse-caret { transform: rotate(-90deg); }
+.portal-collapse.is-collapsed .portal-collapse-body { display: none; }
+
+.portal-track-title {
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
+  background: none;
+  border: none;
+  color: inherit;
+  font: inherit;
+  font-weight: 700;
+  padding: 0;
+  text-align: left;
+}
+.portal-track-title.is-toggle { cursor: pointer; }
+.portal-track-caret { color: var(--text-muted); font-size: .75em; transition: transform .2s ease; }
+.portal-track.is-collapsed .portal-track-caret { transform: rotate(-90deg); }
+.portal-track.is-collapsed .portal-version-list { display: none; }
+
 .portal-progress {
   width: 100%;
   height: 8px;

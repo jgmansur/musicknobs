@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;700;800&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="./styles.css?v=2.0.71" />
+    <link rel="stylesheet" href="./styles.css?v=2.0.72" />
     <link rel="manifest" href="./manifest.json" />
     <link rel="icon" type="image/png" href="./icon-32.png" />
     <link rel="apple-touch-icon" href="./icon-180.png" />
@@ -510,20 +510,38 @@
               <ul id="portal-comment-list" class="portal-comment-list"></ul>
             </div>
           </div>
-          <div id="portal-tracks"></div>
-
-          <div class="portal-account portal-extra-card">
-            <h4>Horas extra de grabación</h4>
-            <div class="portal-extra-controls">
-              <button id="portal-extra-dec" class="portal-extra-btn" type="button" aria-label="Quitar una hora">−</button>
-              <span id="portal-extra-count" class="portal-extra-count">0</span>
-              <button id="portal-extra-inc" class="portal-extra-btn" type="button" aria-label="Agregar una hora">+</button>
-              <span class="portal-extra-rate">× $700 MXN / hora</span>
-              <span id="portal-extra-amount" class="portal-extra-amount">MXN 0</span>
-              <span id="portal-extra-status" class="qd-save-status"></span>
+          <!-- 1. Subir versiones (colapsable por su título) -->
+          <div class="portal-upload portal-collapse" id="portal-upload-card">
+            <h4 class="portal-collapse-head" id="portal-upload-toggle" role="button" tabindex="0">Subir versión(es)<span class="portal-collapse-caret">▾</span></h4>
+            <div class="portal-collapse-body" id="portal-upload-body">
+              <label class="portal-field portal-checkbox">
+                <input id="portal-bulk-songs" type="checkbox">
+                <span>Cada archivo es una canción distinta</span>
+              </label>
+              <label class="portal-field" id="portal-track-name-field">
+                <span>Canción / Track</span>
+                <input id="portal-track-name" type="text" list="portal-track-list" placeholder="ej. Tema principal" autocomplete="off">
+                <datalist id="portal-track-list"></datalist>
+              </label>
+              <label class="portal-field">
+                <span>Etiqueta de la versión (opcional)</span>
+                <input id="portal-version-label" type="text" placeholder="ej. Mezcla v2 — si subís varios, se usa el nombre del archivo" autocomplete="off">
+              </label>
+              <label class="portal-field portal-checkbox">
+                <input id="portal-version-favorita" type="checkbox">
+                <span>Marcar como versión principal (favorita) — solo si subís 1 archivo</span>
+              </label>
+              <label class="portal-field">
+                <span>Archivo(s) de audio — podés elegir varios</span>
+                <input id="portal-version-file" type="file" accept="audio/*" multiple>
+              </label>
+              <button id="portal-upload-btn" class="btn" type="button">Subir</button>
+              <div id="portal-upload-progress" class="portal-progress hidden" role="progressbar" aria-valuemin="0" aria-valuemax="100"><div id="portal-upload-progress-bar" class="portal-progress-bar"></div></div>
+              <p id="portal-upload-status" class="hint" aria-live="polite"></p>
             </div>
           </div>
 
+          <!-- 2. Estado de cuenta -->
           <div class="portal-account">
             <h4>Estado de cuenta</h4>
             <div id="portal-account-summary" class="portal-account-summary"></div>
@@ -544,33 +562,21 @@
             <ul id="portal-abono-list" class="portal-abono-list"></ul>
           </div>
 
-          <div class="portal-upload">
-            <h4>Subir versión(es)</h4>
-            <label class="portal-field portal-checkbox">
-              <input id="portal-bulk-songs" type="checkbox">
-              <span>Cada archivo es una canción distinta</span>
-            </label>
-            <label class="portal-field" id="portal-track-name-field">
-              <span>Canción / Track</span>
-              <input id="portal-track-name" type="text" list="portal-track-list" placeholder="ej. Tema principal" autocomplete="off">
-              <datalist id="portal-track-list"></datalist>
-            </label>
-            <label class="portal-field">
-              <span>Etiqueta de la versión (opcional)</span>
-              <input id="portal-version-label" type="text" placeholder="ej. Mezcla v2 — si subís varios, se usa el nombre del archivo" autocomplete="off">
-            </label>
-            <label class="portal-field portal-checkbox">
-              <input id="portal-version-favorita" type="checkbox">
-              <span>Marcar como versión principal (favorita) — solo si subís 1 archivo</span>
-            </label>
-            <label class="portal-field">
-              <span>Archivo(s) de audio — podés elegir varios</span>
-              <input id="portal-version-file" type="file" accept="audio/*" multiple>
-            </label>
-            <button id="portal-upload-btn" class="btn" type="button">Subir</button>
-            <div id="portal-upload-progress" class="portal-progress hidden" role="progressbar" aria-valuemin="0" aria-valuemax="100"><div id="portal-upload-progress-bar" class="portal-progress-bar"></div></div>
-            <p id="portal-upload-status" class="hint" aria-live="polite"></p>
+          <!-- 3. Horas extra de grabación -->
+          <div class="portal-account portal-extra-card">
+            <h4>Horas extra de grabación</h4>
+            <div class="portal-extra-controls">
+              <button id="portal-extra-dec" class="portal-extra-btn" type="button" aria-label="Quitar una hora">−</button>
+              <span id="portal-extra-count" class="portal-extra-count">0</span>
+              <button id="portal-extra-inc" class="portal-extra-btn" type="button" aria-label="Agregar una hora">+</button>
+              <span class="portal-extra-rate">× $700 MXN / hora</span>
+              <span id="portal-extra-amount" class="portal-extra-amount">MXN 0</span>
+              <span id="portal-extra-status" class="qd-save-status"></span>
+            </div>
           </div>
+
+          <!-- 4. Canciones (acordeón) -->
+          <div id="portal-tracks"></div>
         </div>
       </section>
 
@@ -621,6 +627,6 @@
     <script src="./config.js"></script>
     <script src="./vendor/howler.min.js"></script>
     <script src="./tracks.js?v=salesfix404v1"></script>
-    <script src="./app.js?v=2.0.71"></script>
+    <script src="./app.js?v=2.0.72"></script>
   </body>
   </html>

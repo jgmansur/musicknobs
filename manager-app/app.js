@@ -5060,6 +5060,10 @@ function setupActions() {
   bindClick('portal-back', () => showPortalDetail(false));
   bindClick('portal-upload-btn', uploadPortalVersion);
   bindClick('portal-abono-btn', registerPortalAbono);
+  // "Subir versión(es)" card collapses by clicking its title.
+  bindClick('portal-upload-toggle', () => {
+    document.getElementById('portal-upload-card')?.classList.toggle('is-collapsed');
+  });
   const bulkChk = document.getElementById('portal-bulk-songs');
   if (bulkChk) bulkChk.addEventListener('change', () => {
     const f = document.getElementById('portal-track-name-field');
@@ -6273,6 +6277,7 @@ function renderQuoteDetail(q) {
 // ─── PORTAL DE CLIENTES (admin) ───────────────────────────────────────────────
 let portalCotizacionesCache = [];
 let portalActiveQuote = null; // { id, quoteNumber, clientName, tracks }
+let portalOpenTrackId = null; // accordion: which song is expanded (null=default first, ''=all collapsed)
 
 function portalSetStatus(msg) {
   const el = document.getElementById('portal-status');
@@ -6289,6 +6294,9 @@ function showPortalDetail(show) {
   const detail = document.getElementById('portal-detail-view');
   if (list) list.classList.toggle('hidden', show);
   if (detail) detail.classList.toggle('hidden', !show);
+  // Drop the outer card (gray wrapper) in the detail view — only inner cards show.
+  const section = document.getElementById('tab-portal');
+  if (section) section.classList.toggle('portal-bare', show);
 }
 
 // Transient toast — used to confirm optimistic actions and surface failures.
@@ -6360,6 +6368,7 @@ async function openPortalCotizacion(quoteId, clientName, quoteNumber) {
   try {
     const data = await fetchJson(`${API_BASE}/portal/admin/cotizacion/${quoteId}`);
     portalActiveQuote = { id: quoteId, quoteNumber, clientName, tracks: data?.tracks || [], estadoCuenta: data?.estadoCuenta || null, seguimiento: data?.quote?.seguimiento || {} };
+    portalOpenTrackId = null; // reset accordion for the freshly-opened quote
     renderPortalTracks(portalActiveQuote.tracks);
     renderPortalExtraHours(portalActiveQuote.estadoCuenta);
     renderPortalAccount(portalActiveQuote.estadoCuenta);
@@ -6630,14 +6639,37 @@ function renderPortalTracks(tracks) {
     return;
   }
 
+  // Accordion: with >1 song, only one is open at a time (click the title to
+  // open/close). A single song is always open and can't be hidden.
+  const multi = tracks.length > 1;
+  if (multi && portalOpenTrackId === null) portalOpenTrackId = tracks[0].id;
+  if (multi && portalOpenTrackId && !tracks.some((t) => t.id === portalOpenTrackId)) portalOpenTrackId = tracks[0].id;
+
   tracks.forEach((t) => {
     const el = document.createElement('div');
     el.className = 'portal-track';
+    const isOpen = !multi || t.id === portalOpenTrackId;
+    if (!isOpen) el.classList.add('is-collapsed');
 
     const head = document.createElement('div');
     head.className = 'portal-track-head';
-    const title = document.createElement('strong');
-    title.textContent = t.name;
+    // Title doubles as the accordion toggle when there's more than one song.
+    const title = document.createElement(multi ? 'button' : 'strong');
+    title.className = 'portal-track-title' + (multi ? ' is-toggle' : '');
+    if (multi) {
+      title.type = 'button';
+      const caret = document.createElement('span');
+      caret.className = 'portal-track-caret';
+      caret.textContent = '▾';
+      title.appendChild(caret);
+      title.appendChild(document.createTextNode(' ' + t.name));
+      title.addEventListener('click', () => {
+        portalOpenTrackId = (portalOpenTrackId === t.id) ? '' : t.id;
+        renderPortalTracks(portalActiveQuote.tracks);
+      });
+    } else {
+      title.textContent = t.name;
+    }
     head.appendChild(title);
 
     // All track actions grouped to the right (consistent with version rows).
