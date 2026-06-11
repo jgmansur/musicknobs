@@ -6198,6 +6198,23 @@ function renderPortalTracks(tracks) {
     dl.appendChild(dlInput);
     dl.appendChild(Object.assign(document.createElement('span'), { textContent: 'Descarga' }));
     head.appendChild(dl);
+
+    const trackRename = document.createElement('button');
+    trackRename.type = 'button';
+    trackRename.className = 'portal-icon-btn';
+    trackRename.textContent = '✎';
+    trackRename.title = 'Renombrar canción';
+    trackRename.addEventListener('click', () => renamePortalTrack(t));
+    head.appendChild(trackRename);
+
+    const trackDelete = document.createElement('button');
+    trackDelete.type = 'button';
+    trackDelete.className = 'portal-icon-btn portal-icon-danger';
+    trackDelete.textContent = '🗑';
+    trackDelete.title = 'Borrar canción y todas sus versiones';
+    trackDelete.addEventListener('click', () => deletePortalTrack(t));
+    head.appendChild(trackDelete);
+
     el.appendChild(head);
 
     const list = document.createElement('ul');
@@ -6260,8 +6277,24 @@ function renderPortalTracks(tracks) {
       vis.appendChild(visInput);
       vis.appendChild(Object.assign(document.createElement('span'), { textContent: 'Visible' }));
 
+      const verRename = document.createElement('button');
+      verRename.type = 'button';
+      verRename.className = 'portal-icon-btn';
+      verRename.textContent = '✎';
+      verRename.title = 'Renombrar versión';
+      verRename.addEventListener('click', () => renamePortalVersion(v));
+
+      const verDelete = document.createElement('button');
+      verDelete.type = 'button';
+      verDelete.className = 'portal-icon-btn portal-icon-danger';
+      verDelete.textContent = '🗑';
+      verDelete.title = 'Borrar versión';
+      verDelete.addEventListener('click', () => deletePortalVersion(v));
+
       controls.appendChild(fav);
       controls.appendChild(vis);
+      controls.appendChild(verRename);
+      controls.appendChild(verDelete);
 
       li.appendChild(play);
       li.appendChild(name);
@@ -6289,6 +6322,86 @@ async function portalPatchTrack(trackId, body) {
   const data = await res.json().catch(() => ({}));
   if (!res.ok || !data.ok) throw new Error(data.error || `HTTP ${res.status}`);
   return data;
+}
+
+// Delete a Drive file as the logged-in admin (we created it via drive.file, so we can
+// remove it). 404 = already gone (OK). The service account can't delete it (only writer).
+async function portalDeleteFromDrive(fileId) {
+  if (!fileId) return;
+  if (!googleAccessToken) throw new Error('Sesión de Google no disponible. Volvé a iniciar sesión.');
+  const res = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?supportsAllDrives=true`, {
+    method: 'DELETE', headers: { Authorization: `Bearer ${googleAccessToken}` },
+  });
+  if (res.status === 401 || res.status === 403) {
+    throw new Error('Falta permiso de Drive. Cerrá sesión y volvé a entrar.');
+  }
+  if (!res.ok && res.status !== 404) {
+    throw new Error(`Drive ${res.status}`);
+  }
+}
+
+async function refreshPortalDetail() {
+  if (!portalActiveQuote) return;
+  await openPortalCotizacion(portalActiveQuote.id, portalActiveQuote.clientName, portalActiveQuote.quoteNumber);
+}
+
+async function deletePortalVersion(version) {
+  if (!confirm(`¿Borrar la versión "${version.name}"?\nSe elimina también el archivo de Drive. No se puede deshacer.`)) return;
+  try {
+    portalUploadStatus('Borrando versión…');
+    await portalDeleteFromDrive(version.driveFileId);
+    const res = await fetch(`${API_BASE}/portal/admin/version/${version.id}`, { method: 'DELETE', headers: apiHeaders() });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || !data.ok) throw new Error(data.error || `HTTP ${res.status}`);
+    portalUploadStatus('✓ Versión borrada.');
+    await refreshPortalDetail();
+  } catch (e) {
+    portalUploadStatus('Error: ' + (e?.message || e));
+  }
+}
+
+async function deletePortalTrack(track) {
+  const n = (track.versions || []).length;
+  if (!confirm(`¿Borrar la canción "${track.name}" y sus ${n} versión(es)?\nSe eliminan también los archivos de Drive. No se puede deshacer.`)) return;
+  try {
+    portalUploadStatus('Borrando canción…');
+    for (const v of (track.versions || [])) {
+      await portalDeleteFromDrive(v.driveFileId);
+    }
+    const res = await fetch(`${API_BASE}/portal/admin/track/${track.id}`, { method: 'DELETE', headers: apiHeaders() });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || !data.ok) throw new Error(data.error || `HTTP ${res.status}`);
+    portalUploadStatus('✓ Canción borrada.');
+    await refreshPortalDetail();
+  } catch (e) {
+    portalUploadStatus('Error: ' + (e?.message || e));
+  }
+}
+
+async function renamePortalTrack(track) {
+  const name = prompt('Nuevo nombre de la canción:', track.name);
+  if (name === null || !name.trim() || name.trim() === track.name) return;
+  try {
+    portalUploadStatus('Renombrando…');
+    await portalPatchTrack(track.id, { name: name.trim() });
+    portalUploadStatus('✓ Renombrado.');
+    await refreshPortalDetail();
+  } catch (e) {
+    portalUploadStatus('Error: ' + (e?.message || e));
+  }
+}
+
+async function renamePortalVersion(version) {
+  const name = prompt('Nuevo nombre de la versión:', version.name);
+  if (name === null || !name.trim() || name.trim() === version.name) return;
+  try {
+    portalUploadStatus('Renombrando…');
+    await portalPatchVersion(version.id, { name: name.trim() });
+    portalUploadStatus('✓ Renombrado.');
+    await refreshPortalDetail();
+  } catch (e) {
+    portalUploadStatus('Error: ' + (e?.message || e));
+  }
 }
 
 // ── Admin waveform player (vanilla, reuses Drive stream + stored peaks) ──────

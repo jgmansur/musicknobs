@@ -3349,3 +3349,12 @@ body.messages-active .container {
 }
 .portal-abono-form input:focus, .portal-abono-form select:focus { border-color: var(--primary); }
 .portal-abono-form input[type="number"] { width: 120px; }
+
+/* ─── Portal admin: icon buttons (rename / delete) ───────────────────────── */
+.portal-icon-btn {
+  background: none; border: none; cursor: pointer; font-size: 14px; line-height: 1;
+  color: var(--text-muted); padding: 4px; border-radius: 6px; transition: color .15s ease, background .15s ease;
+}
+.portal-icon-btn:hover { color: var(--text-main); background: rgba(255,255,255,.06); }
+.portal-icon-danger:hover { color: #ff5a5a; background: rgba(255,90,90,.12); }
+.portal-track-head { gap: 8px; }

@@ -3234,6 +3234,28 @@ async function patchNotionPage(env, pageId, properties) {
   return { ok: true };
 }
 
+// Move a Notion page to trash (archived pages drop out of data-source queries).
+async function archiveNotionPage(env, pageId) {
+  const notionToken = env.NOTION_TOKEN || "", notionVersion = env.NOTION_VERSION || "2022-06-28";
+  const resp = await fetch(`https://api.notion.com/v1/pages/${pageId}`, {
+    method: "PATCH",
+    headers: { Authorization: `Bearer ${notionToken}`, "Notion-Version": notionVersion, "Content-Type": "application/json" },
+    body: JSON.stringify({ archived: true }),
+  });
+  if (!resp.ok) return { ok: false, error: await resp.text() };
+  return { ok: true };
+}
+
+// Delete a track and all its versions in Notion. Drive files are removed client-side
+// (the admin owns them; the service account is only a writer and can't delete them).
+async function portalAdminDeleteTrack(env, trackId) {
+  const versions = await queryPortalDb(env, PORTAL_VERSIONS_DS_ID, {
+    property: "Track", relation: { contains: trackId },
+  });
+  for (const v of versions) await archiveNotionPage(env, v.id);
+  return archiveNotionPage(env, trackId);
+}
+
 // Admin view of a quote: tracks + ALL versions (no Visible filter, no code gate).
 async function portalAdminCotizacion(env, pageId) {
   const detail = await getManagerQuoteDetail(env, pageId).catch(() => null);
@@ -3345,6 +3367,9 @@ async function portalAdminCreateVersion(env, body) {
 // true unsets the others.
 async function portalAdminPatchVersion(env, versionId, body) {
   const props = {};
+  if (typeof body?.name === "string" && body.name.trim()) {
+    props.Name = { title: [{ type: "text", text: { content: body.name.trim() } }] };
+  }
   if (typeof body?.visible === "boolean") props.Visible = { checkbox: body.visible };
   if (typeof body?.favorita === "boolean") {
     props.Favorita = { checkbox: body.favorita };
@@ -3370,6 +3395,9 @@ async function portalAdminPatchVersion(env, versionId, body) {
 // Toggle a track's "Descarga habilitada" (and optionally Estado).
 async function portalAdminPatchTrack(env, trackId, body) {
   const props = {};
+  if (typeof body?.name === "string" && body.name.trim()) {
+    props.Name = { title: [{ type: "text", text: { content: body.name.trim() } }] };
+  }
   if (typeof body?.descargaHabilitada === "boolean") {
     props["Descarga habilitada"] = { checkbox: body.descargaHabilitada };
   }
@@ -3780,6 +3808,18 @@ export default {
       if (!trackId) return json({ error: "trackId required" }, 400);
       const body = await request.json().catch(() => ({}));
       const result = await portalAdminPatchTrack(env, trackId, body);
+      return json(result, result.ok === false ? 400 : 200);
+    }
+    if (request.method === "DELETE" && url.pathname.startsWith("/portal/admin/version/")) {
+      const versionId = url.pathname.replace("/portal/admin/version/", "").trim();
+      if (!versionId) return json({ error: "versionId required" }, 400);
+      const result = await archiveNotionPage(env, versionId);
+      return json(result, result.ok === false ? 400 : 200);
+    }
+    if (request.method === "DELETE" && url.pathname.startsWith("/portal/admin/track/")) {
+      const trackId = url.pathname.replace("/portal/admin/track/", "").trim();
+      if (!trackId) return json({ error: "trackId required" }, 400);
+      const result = await portalAdminDeleteTrack(env, trackId);
       return json(result, result.ok === false ? 400 : 200);
     }
     if (request.method === "POST" && url.pathname === "/portal/admin/abono") {
