@@ -5897,8 +5897,57 @@ function mkToggleSelectMode() {
 function mkGenerateContract() {
   if (!quotesCurrentPageId) return;
   const q = quotesCurrentDetail || {};
-  const prompt = mkBuildContractPrompt(q, mkCollectNegotiated());
+  const negotiated = mkCollectNegotiated();
+  const prompt = mkBuildContractPrompt(q, negotiated);
   mkShowContractPromptCard(prompt);
+  mkSendContractNotice(q, negotiated); // notify the client of the agreed terms (once)
+}
+
+const MK_CONTRACT_NOTICE_URL = 'https://www.musicknobs.com/api/contract-notice';
+
+// "$X MXN" / "$X USD" / "$X MXN + $Y USD" from per-currency amounts.
+function mkCurrencyLabel(mxn, usd) {
+  const parts = [];
+  if (mxn > 0) parts.push(`$${Math.round(mxn).toLocaleString('en-US')} MXN`);
+  if (usd > 0) parts.push(`$${Math.round(usd).toLocaleString('en-US')} USD`);
+  return parts.join(' + ') || '$0';
+}
+
+function mkSetContractStatus(text) {
+  const el = document.getElementById('quote-contract-status');
+  if (el) el.textContent = text || '';
+}
+
+// Sends the client the "agreed terms + 50% deposit + contract within 24h" email.
+// Fired on "Generar contrato" but only ONCE per quote: the flag lives in the
+// Seguimiento section (avisoContrato) so repeated clicks don't spam the client.
+async function mkSendContractNotice(q, negotiated) {
+  if (!API_BASE) return;
+  const seg = quoteDetailSeguimiento || {};
+  if (seg.avisoContrato) { mkSetContractStatus(`Aviso de acuerdo ya enviado al cliente (${seg.avisoContrato}).`); return; }
+  if (!q.email) { mkSetContractStatus('Sin email del cliente — no se envió el aviso de acuerdo.'); return; }
+  if (!Array.isArray(negotiated) || !negotiated.length) { mkSetContractStatus('Sin servicios en la negociación — no se envió el aviso.'); return; }
+
+  const sub = mkNegotiatedSubtotals();
+  const totalLabel = mkCurrencyLabel(sub.totalMXN, sub.totalUSD);
+  const depositLabel = mkCurrencyLabel(sub.totalMXN / 2, sub.totalUSD / 2);
+  const lang = String(q.idioma || '').toLowerCase().includes('english') ? 'en' : 'es';
+
+  mkSetContractStatus('Enviando aviso de acuerdo al cliente…');
+  try {
+    const r = await fetch(MK_CONTRACT_NOTICE_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: q.clientName, email: q.email, quoteNumber: q.quoteNumber, lang, terms: negotiated, totalLabel, depositLabel }),
+    });
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' });
+    quoteDetailSeguimiento = { ...seg, avisoContrato: today };
+    mkSaveSeguimiento(); // persist the one-time flag
+    mkSetContractStatus(`Aviso de acuerdo enviado al cliente ✓ (${q.email})`);
+  } catch (e) {
+    mkSetContractStatus(`No se pudo enviar el aviso al cliente: ${e?.message || e}`);
+  }
 }
 
 // Mirror of the worker's portal access-code derivation (client-name slug + the

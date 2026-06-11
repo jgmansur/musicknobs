@@ -2859,7 +2859,7 @@ async function replaceSeguimientoSection(pageId, seguimientoData, notionToken, n
       if (!r.ok) throw new Error(await r.text());
     }
   }
-  const fields = ["musicians","studio","vocals","externalEngineers","revisions","royalties","deposit","finalPrice","startDate","deliveryDate","contractNotes","horasExtra","estatus","callNotes"];
+  const fields = ["musicians","studio","vocals","externalEngineers","revisions","royalties","deposit","finalPrice","startDate","deliveryDate","contractNotes","horasExtra","avisoContrato","estatus","callNotes"];
   const content = fields.filter((k) => seguimientoData[k] !== undefined && seguimientoData[k] !== null && seguimientoData[k] !== "").map((k) => `${k}: ${seguimientoData[k]}`).join("\n");
   const r = await fetch(`https://api.notion.com/v1/blocks/${pageId}/children`, {
     method: "PATCH",
