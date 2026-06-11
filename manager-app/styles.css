@@ -3420,6 +3420,7 @@ body.messages-active .container {
 .portal-card:hover { border-color: var(--glass-border-hover); }
 .portal-card-name { font-weight: 600; }
 .portal-card-meta { font-size: 13px; color: var(--text-muted); }
+#portal-tracks { margin-top: 18px; } /* gap from the "Horas extra" card above */
 .portal-track {
   border: 1px solid var(--glass-border); border-radius: 15px;
   background: var(--glass-bg); padding: 14px 16px; margin-bottom: 12px;
@@ -3448,7 +3449,21 @@ body.messages-active .container {
 .portal-toggle { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-muted); cursor: pointer; }
 .portal-toggle input { accent-color: var(--primary); }
 .portal-version { display: flex; align-items: center; gap: 10px; }
-.portal-version-name { flex: 1; }
+/* One tidy line; long names auto-scroll (marquee) instead of wrapping. */
+.portal-version-name {
+  flex: 1 1 auto; min-width: 0;
+  overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
+}
+.portal-version-name .vn-text { display: inline-block; }
+.portal-version-name.marquee { text-overflow: clip; }
+.portal-version-name.marquee .vn-text { animation: vn-marquee 9s ease-in-out infinite alternate; }
+@keyframes vn-marquee {
+  0%, 12% { transform: translateX(0); }
+  88%, 100% { transform: translateX(var(--vn-shift, 0)); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .portal-version-name.marquee .vn-text { animation: none; }
+}
 .portal-version-controls { display: inline-flex; align-items: center; gap: 12px; }
 .portal-row-play {
   width: 30px; height: 30px; flex: 0 0 auto; border-radius: 50%;
@@ -3615,7 +3630,6 @@ body.messages-active .container {
 }
 
 /* ─── Portal admin: prevent horizontal overflow (flex text children + mobile) ─ */
-.portal-version-name,
 .portal-track-head > strong,
 .portal-card-name,
 .portal-comment-text,

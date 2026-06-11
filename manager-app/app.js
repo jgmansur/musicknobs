@@ -5972,12 +5972,15 @@ async function mkSendContractNotice(q, negotiated) {
   }
 }
 
-// Mirror of the worker's portal access-code derivation (client-name slug + the
-// last 3 alphanumerics of the quote number) so the contract can hand the client
-// their login. Keep in sync with cloudflare-proxy/src/worker.js (portalSlug/quoteLast3).
+// Portal access code we SHOW to share with the client: client name lowercased
+// (accents stripped, spaces removed, but punctuation like dots kept for
+// readability — "Dr. Jackie B. Copeland" → "dr.jackieb.copeland") + the last 3
+// alphanumerics of the quote number. Login still works because the worker
+// normalizes the typed code by stripping every non-alphanumeric char, so the
+// dotted form and the bare form resolve to the same slug.
 const MK_PORTAL_URL = 'https://www.musicknobs.com/portal';
 function mkPortalAccessCode(name, quoteNumber) {
-  const slug = String(name || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]/g, '');
+  const slug = String(name || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/\s+/g, '');
   const last3 = String(quoteNumber || '').toLowerCase().replace(/[^a-z0-9]/g, '').slice(-3);
   return (slug && last3) ? slug + last3 : '';
 }
@@ -6770,7 +6773,19 @@ function renderPortalTracks(tracks) {
 
       const name = document.createElement('span');
       name.className = 'portal-version-name';
-      name.textContent = v.name + (v.duracion ? ` · ${Math.round(v.duracion)}s` : '');
+      const nameText = document.createElement('span');
+      nameText.className = 'vn-text';
+      nameText.textContent = v.name + (v.duracion ? ` · ${Math.round(v.duracion)}s` : '');
+      name.appendChild(nameText);
+      name.title = nameText.textContent;
+      // Once laid out, if the name overflows its row, auto-scroll it (marquee).
+      requestAnimationFrame(() => {
+        const overflow = nameText.scrollWidth - name.clientWidth;
+        if (overflow > 4) {
+          name.style.setProperty('--vn-shift', `-${overflow + 8}px`);
+          name.classList.add('marquee');
+        }
+      });
 
       const controls = document.createElement('span');
       controls.className = 'portal-version-controls';
