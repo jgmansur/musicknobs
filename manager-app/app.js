@@ -5918,6 +5918,18 @@ function mkSetContractStatus(text) {
   if (el) el.textContent = text || '';
 }
 
+// Copy text to the clipboard and confirm with a toast. Used for the client
+// access codes so Jay can share them with one click.
+async function mkCopyToClipboard(text, okMsg) {
+  if (!text) return;
+  try {
+    await navigator.clipboard.writeText(text);
+    portalNotify(okMsg || 'Copiado al portapapeles ✓');
+  } catch {
+    portalNotify('No se pudo copiar al portapapeles', true);
+  }
+}
+
 // Sends the client the "agreed terms + 50% deposit + contract within 24h" email.
 // Fired on "Generar contrato" but only ONCE per quote: the flag lives in the
 // Seguimiento section (avisoContrato) so repeated clicks don't spam the client.
@@ -6215,6 +6227,21 @@ function renderQuoteDetail(q) {
     if (el) el.innerHTML = html || '—';
   };
   setSpan('qd-client-name', q.clientName);
+  // Access code (click to copy) — same derivation the client uses to log in.
+  const accessCode = mkPortalAccessCode(q.clientName, q.quoteNumber);
+  const codeEl = document.getElementById('qd-access-code');
+  if (codeEl) {
+    if (accessCode) {
+      codeEl.textContent = accessCode;
+      codeEl.classList.add('mk-code-copy');
+      codeEl.title = 'Click para copiar';
+      codeEl.onclick = () => mkCopyToClipboard(accessCode, `Código ${accessCode} copiado ✓`);
+    } else {
+      codeEl.textContent = '—';
+      codeEl.classList.remove('mk-code-copy');
+      codeEl.onclick = null;
+    }
+  }
   const email = q.email || '';
   setHtml('qd-client-email', email ? `<a class="qd-link" href="mailto:${escapeHtml(email)}">${escapeHtml(email)}</a>` : '—');
   const phone = q.phone || '';
@@ -6302,9 +6329,15 @@ function renderPortalCotizaciones(quotes) {
     const card = document.createElement('button');
     card.type = 'button';
     card.className = 'portal-card';
+    const code = mkPortalAccessCode(q.name, q.quoteNumber);
     card.innerHTML = `<span class="portal-card-name">${escapeHtmlSafe(q.name || '—')}</span>` +
-      `<span class="portal-card-meta">${escapeHtmlSafe(q.quoteNumber || q.id.slice(0, 6))}${q.estatus ? ' · ' + escapeHtmlSafe(q.estatus) : ''}</span>`;
+      `<span class="portal-card-meta">${escapeHtmlSafe(q.quoteNumber || q.id.slice(0, 6))}${q.estatus ? ' · ' + escapeHtmlSafe(q.estatus) : ''}</span>` +
+      (code ? `<span class="portal-card-code mk-code-copy" title="Click para copiar el código de acceso">${escapeHtmlSafe(code)}</span>` : '');
     card.addEventListener('click', () => openPortalCotizacion(q.id, q.name, q.quoteNumber));
+    if (code) {
+      const codeEl = card.querySelector('.portal-card-code');
+      if (codeEl) codeEl.addEventListener('click', (e) => { e.stopPropagation(); mkCopyToClipboard(code, `Código ${code} copiado ✓`); });
+    }
     root.appendChild(card);
   });
 }

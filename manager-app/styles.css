@@ -2814,6 +2814,22 @@ body.messages-active .container {
 .qd-input:focus,
 .qd-textarea:focus { outline: none; border-color: var(--accent, #FF1097); }
 
+/* Click-to-copy access code (quote detail + list cards) */
+.qd-access-code, .portal-card-code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+.mk-code-copy {
+  color: var(--accent, #FF1097);
+  cursor: pointer;
+  border-bottom: 1px dashed transparent;
+  transition: border-color .15s ease;
+}
+.mk-code-copy:hover { border-bottom-color: var(--accent, #FF1097); }
+.portal-card-code {
+  display: inline-block;
+  margin-top: .35rem;
+  font-size: .8rem;
+  letter-spacing: .3px;
+}
+
 .portal-progress {
   width: 100%;
   height: 8px;
