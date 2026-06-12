@@ -7808,6 +7808,7 @@ function pfDragAfterElement(container, y) {
 }
 
 // Reordenar con Pointer Events (funciona en touch Y mouse — el HTML5 drag no anda en iOS).
+// Se escucha en document (no dependemos de setPointerCapture, que en iOS a veces no engancha).
 function pfInitDrag(li, listEl) {
   const handle = li.querySelector('.pf-drag');
   if (!handle) return;
@@ -7815,19 +7816,18 @@ function pfInitDrag(li, listEl) {
 
   handle.addEventListener('pointerdown', (e) => {
     e.preventDefault();
+    e.stopPropagation();
     li.classList.add('pf-dragging');
+    document.body.classList.add('pf-dragging-active');
     try { handle.setPointerCapture(e.pointerId); } catch (_) {}
-
-    const autoScroll = (y) => {
-      const margin = 70, speed = 12;
-      if (y < margin) window.scrollBy(0, -speed);
-      else if (y > window.innerHeight - margin) window.scrollBy(0, speed);
-    };
 
     const onMove = (ev) => {
       ev.preventDefault();
-      autoScroll(ev.clientY);
-      const after = pfDragAfterElement(listEl, ev.clientY);
+      const y = ev.clientY;
+      const margin = 80, speed = 12;
+      if (y < margin) window.scrollBy(0, -speed);
+      else if (y > window.innerHeight - margin) window.scrollBy(0, speed);
+      const after = pfDragAfterElement(listEl, y);
       if (after == null) {
         if (listEl.lastElementChild !== li) listEl.appendChild(li);
       } else if (after !== li) {
@@ -7836,17 +7836,18 @@ function pfInitDrag(li, listEl) {
     };
 
     const onUp = () => {
-      handle.removeEventListener('pointermove', onMove);
-      handle.removeEventListener('pointerup', onUp);
-      handle.removeEventListener('pointercancel', onUp);
+      document.removeEventListener('pointermove', onMove);
+      document.removeEventListener('pointerup', onUp);
+      document.removeEventListener('pointercancel', onUp);
       try { handle.releasePointerCapture(e.pointerId); } catch (_) {}
       li.classList.remove('pf-dragging');
+      document.body.classList.remove('pf-dragging-active');
       persistPortfolioOrder();
     };
 
-    handle.addEventListener('pointermove', onMove);
-    handle.addEventListener('pointerup', onUp);
-    handle.addEventListener('pointercancel', onUp);
+    document.addEventListener('pointermove', onMove, { passive: false });
+    document.addEventListener('pointerup', onUp);
+    document.addEventListener('pointercancel', onUp);
   });
 }
 

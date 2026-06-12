@@ -3834,3 +3834,26 @@ body.messages-active .container {
 }
 .pf-drag { -webkit-tap-highlight-color: transparent; }
 /* ─── /PORTFOLIO no-select ───────────────────────────────────────────────────── */
+
+/* ─── PORTFOLIO · handle de arrastre grande y agarrable ──────────────────────── */
+.pf-drag {
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 38px;
+  padding: 0 0.3rem;
+  font-size: 1.2rem;
+  color: var(--text-muted);
+  border-radius: 0.5rem;
+  touch-action: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.pf-drag:active,
+.portfolio-item.pf-dragging .pf-drag { background: rgba(255, 16, 151, 0.16); color: var(--text-main); }
+.portfolio-item.pf-dragging { box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5); }
+body.pf-dragging-active, body.pf-dragging-active * { -webkit-user-select: none; user-select: none; cursor: grabbing; }
+@media (max-width: 720px) {
+  .pf-drag { min-width: 40px; padding: 0 0.2rem; font-size: 1.15rem; }
+}
+/* ─── /PORTFOLIO handle ──────────────────────────────────────────────────────── */
