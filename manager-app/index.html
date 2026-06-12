@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;700;800&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="./styles.css?v=2.0.79" />
+    <link rel="stylesheet" href="./styles.css?v=2.0.80" />
     <link rel="manifest" href="./manifest.json" />
     <link rel="icon" type="image/png" href="./icon-32.png" />
     <link rel="apple-touch-icon" href="./icon-180.png" />
@@ -492,25 +492,6 @@
             <div class="quote-detail-title"><span id="portal-detail-number">—</span></div>
           </div>
           <p id="portal-detail-client" class="hint"></p>
-          <div id="portal-player" class="portal-player hidden">
-            <div class="portal-player-head">
-              <button id="portal-player-toggle" class="portal-play-btn" type="button" aria-label="Play">▶</button>
-              <span id="portal-player-title" class="portal-player-title"></span>
-              <button id="portal-player-close" class="btn ghost portal-player-close" type="button">✕</button>
-            </div>
-            <canvas id="portal-player-canvas" class="portal-player-canvas"></canvas>
-            <div class="portal-player-times"><span id="portal-player-cur">0:00</span><span id="portal-player-dur">0:00</span></div>
-            <audio id="portal-player-audio" preload="metadata"></audio>
-            <div class="portal-comments">
-              <h4>Comentarios</h4>
-              <div class="portal-comment-form">
-                <span id="portal-comment-time" class="portal-comment-time">0:00</span>
-                <input id="portal-comment-text" type="text" placeholder="Responder en este punto…" autocomplete="off">
-                <button id="portal-comment-btn" class="btn" type="button">Responder</button>
-              </div>
-              <ul id="portal-comment-list" class="portal-comment-list"></ul>
-            </div>
-          </div>
           <!-- 1. Subir versiones (colapsable por su título) -->
           <div class="portal-upload portal-collapse" id="portal-upload-card">
             <h4 class="portal-collapse-head" id="portal-upload-toggle" role="button" tabindex="0">Subir versión(es)<span class="portal-collapse-caret">▾</span></h4>
@@ -573,6 +554,26 @@
             </div>
           </div>
 
+          <!-- Reproductor: debajo de estado de cuenta, encima de las canciones -->
+          <div id="portal-player" class="portal-player hidden">
+            <div class="portal-player-head">
+              <button id="portal-player-toggle" class="portal-play-btn" type="button" aria-label="Play">▶</button>
+              <span id="portal-player-title" class="portal-player-title"></span>
+              <button id="portal-player-close" class="btn ghost portal-player-close" type="button">✕</button>
+            </div>
+            <canvas id="portal-player-canvas" class="portal-player-canvas"></canvas>
+            <div class="portal-player-times"><span id="portal-player-cur">0:00</span><span id="portal-player-dur">0:00</span></div>
+            <audio id="portal-player-audio" preload="metadata"></audio>
+            <div class="portal-comments">
+              <h4>Comentarios</h4>
+              <div class="portal-comment-form">
+                <span id="portal-comment-time" class="portal-comment-time">0:00</span>
+                <input id="portal-comment-text" type="text" placeholder="Responder en este punto…" autocomplete="off">
+                <button id="portal-comment-btn" class="btn" type="button">Responder</button>
+              </div>
+              <ul id="portal-comment-list" class="portal-comment-list"></ul>
+            </div>
+          </div>
           <!-- 4. Canciones (acordeón) -->
           <div id="portal-tracks"></div>
         </div>
@@ -625,6 +626,6 @@
     <script src="./config.js"></script>
     <script src="./vendor/howler.min.js"></script>
     <script src="./tracks.js?v=salesfix404v1"></script>
-    <script src="./app.js?v=2.0.79"></script>
+    <script src="./app.js?v=2.0.80"></script>
   </body>
   </html>

@@ -6783,7 +6783,7 @@ function renderPortalTracks(tracks) {
   tracks.forEach((t) => {
     const el = document.createElement('div');
     el.className = 'portal-track' + (portalSongsEditMode ? ' is-edit' : '');
-    el.dataset.trackId = t.id; // so drag-reorder can read the new order back
+    el.dataset.id = t.id; // so drag-reorder can read the new order back
     const isOpen = !multi || t.id === portalOpenTrackId;
     if (!isOpen) el.classList.add('is-collapsed');
 
@@ -6900,6 +6900,18 @@ function renderPortalTracks(tracks) {
     (t.versions || []).forEach((v) => {
       const li = document.createElement('li');
       li.className = 'portal-version';
+      li.dataset.id = v.id; // for version drag-reorder
+
+      // Drag handle to reorder versions within the song (edit mode only).
+      if (portalSongsEditMode) {
+        const vHandle = document.createElement('button');
+        vHandle.type = 'button';
+        vHandle.className = 'portal-version-drag';
+        vHandle.textContent = '≡';
+        vHandle.title = 'Arrastrar para ordenar la versión';
+        vHandle.setAttribute('aria-label', 'Arrastrar para ordenar la versión');
+        li.appendChild(vHandle);
+      }
 
       const play = document.createElement('button');
       play.type = 'button';
@@ -6987,6 +6999,7 @@ function renderPortalTracks(tracks) {
       list.appendChild(li);
     });
     el.appendChild(list);
+    if (portalSongsEditMode) setupPortalVersionDrag(list, t);
     cards.appendChild(el);
   });
   root.appendChild(cards);
@@ -7028,95 +7041,123 @@ async function bulkDeleteSelectedTracks() {
   }
 }
 
-// ── Drag-reorder songs (handle ≡) — finger on touch, pointer on web. ──────────
-// Only active in edit mode. The dragged card follows the pointer; a thin accent
-// line marks where it will land (robust with variable card heights). On drop we
-// persist each track's new "Orden" so the client portal shows the same order.
-let ptDrag = null;
-function setupPortalTrackDrag(wrap) {
-  wrap.querySelectorAll('.portal-drag-handle').forEach((handle) => {
-    handle.addEventListener('pointerdown', (e) => beginTrackDrag(e, handle, wrap));
+// ── Generic drag-reorder (handle ≡) — finger on touch, pointer on web. ────────
+// Used for both songs and versions (edit mode only). The dragged item follows the
+// pointer; a thin accent line marks where it will land (robust with variable item
+// heights). Items must expose dataset.id; on drop we hand the new id order back.
+let dragState = null;
+function setupDragReorder(wrap, opts) {
+  wrap.querySelectorAll(opts.handleSelector).forEach((handle) => {
+    handle.addEventListener('pointerdown', (e) => beginDragReorder(e, handle, wrap, opts));
   });
 }
 
-function beginTrackDrag(e, handle, wrap) {
+function beginDragReorder(e, handle, wrap, opts) {
   e.preventDefault();
-  const card = handle.closest('.portal-track');
-  if (!card) return;
-  const items = [...wrap.querySelectorAll('.portal-track')];
-  const from = items.indexOf(card);
+  const item = handle.closest(opts.itemSelector);
+  if (!item) return;
+  const items = [...wrap.querySelectorAll(opts.itemSelector)];
+  const from = items.indexOf(item);
   if (from < 0) return;
   const wrapTop = wrap.getBoundingClientRect().top;
   const metrics = items.map((el) => {
     const r = el.getBoundingClientRect();
-    return { el, top: r.top - wrapTop, bottom: r.top + r.height - wrapTop, mid: r.top + r.height / 2 };
+    return { top: r.top - wrapTop, bottom: r.top + r.height - wrapTop, mid: r.top + r.height / 2 };
   });
   try { handle.setPointerCapture(e.pointerId); } catch {}
-  card.classList.add('portal-track-dragging');
+  item.classList.add('drag-active');
   const indicator = document.createElement('div');
   indicator.className = 'portal-drop-indicator';
   wrap.appendChild(indicator);
-  ptDrag = { card, wrap, handle, items, metrics, from, to: from, startY: e.clientY, indicator };
-  positionPortalDropIndicator();
+  dragState = { item, wrap, items, metrics, from, to: from, startY: e.clientY, indicator, opts };
+  positionDragIndicator();
 
-  const move = (ev) => onTrackDragMove(ev);
+  const move = (ev) => onDragReorderMove(ev);
   const end = () => {
     handle.removeEventListener('pointermove', move);
     handle.removeEventListener('pointerup', end);
     handle.removeEventListener('pointercancel', end);
-    onTrackDragEnd();
+    onDragReorderEnd();
   };
   handle.addEventListener('pointermove', move);
   handle.addEventListener('pointerup', end);
   handle.addEventListener('pointercancel', end);
 }
 
-function onTrackDragMove(ev) {
-  if (!ptDrag) return;
-  const { card, metrics, from } = ptDrag;
-  const dy = ev.clientY - ptDrag.startY;
-  card.style.transform = `translateY(${dy}px)`;
+function onDragReorderMove(ev) {
+  if (!dragState) return;
+  const { item, metrics, from } = dragState;
+  const dy = ev.clientY - dragState.startY;
+  item.style.transform = `translateY(${dy}px)`;
   const center = metrics[from].mid + dy;
   let to = 0;
   for (let i = 0; i < metrics.length; i++) {
     if (i === from) continue;
     if (center > metrics[i].mid) to += 1;
   }
-  ptDrag.to = to;
-  positionPortalDropIndicator();
+  dragState.to = to;
+  positionDragIndicator();
 }
 
-function positionPortalDropIndicator() {
-  if (!ptDrag) return;
-  const { metrics, from, to, indicator } = ptDrag;
+function positionDragIndicator() {
+  if (!dragState) return;
+  const { metrics, from, to, indicator } = dragState;
   const y = (to <= from) ? metrics[to].top : metrics[to].bottom;
   indicator.style.top = `${y}px`;
 }
 
-function onTrackDragEnd() {
-  if (!ptDrag) return;
-  const { card, wrap, items, from, to, indicator } = ptDrag;
-  card.style.transform = '';
-  card.classList.remove('portal-track-dragging');
+function onDragReorderEnd() {
+  if (!dragState) return;
+  const { item, wrap, items, from, to, indicator, opts } = dragState;
+  item.style.transform = '';
+  item.classList.remove('drag-active');
   indicator.remove();
   if (to !== from && items[to]) {
-    if (to > from) items[to].after(card); else items[to].before(card);
+    if (to > from) items[to].after(item); else items[to].before(item);
   }
-  const orderedIds = [...wrap.querySelectorAll('.portal-track')].map((el) => el.dataset.trackId).filter(Boolean);
-  ptDrag = null;
+  const orderedIds = [...wrap.querySelectorAll(opts.itemSelector)].map((el) => el.dataset.id).filter(Boolean);
+  dragState = null;
   if (to === from) return;
-  const byId = new Map(portalActiveQuote.tracks.map((t) => [String(t.id), t]));
-  portalActiveQuote.tracks = orderedIds.map((id) => byId.get(id)).filter(Boolean);
-  void persistPortalTrackOrder();
+  opts.onReorder(orderedIds);
 }
 
-// Normalize every track's `orden` to its index and persist the ones that changed.
-async function persistPortalTrackOrder() {
-  const arr = portalActiveQuote.tracks || [];
+function setupPortalTrackDrag(wrap) {
+  setupDragReorder(wrap, {
+    handleSelector: '.portal-drag-handle',
+    itemSelector: '.portal-track',
+    onReorder: reorderPortalTracksByIds,
+  });
+}
+
+function setupPortalVersionDrag(list, track) {
+  setupDragReorder(list, {
+    handleSelector: '.portal-version-drag',
+    itemSelector: '.portal-version',
+    onReorder: (ids) => reorderPortalVersionsByIds(track, ids),
+  });
+}
+
+// Reorder the songs to match the dropped id order, then persist each new "Orden".
+function reorderPortalTracksByIds(orderedIds) {
+  const byId = new Map(portalActiveQuote.tracks.map((t) => [String(t.id), t]));
+  portalActiveQuote.tracks = orderedIds.map((id) => byId.get(id)).filter(Boolean);
+  void persistPortalOrden(portalActiveQuote.tracks, portalPatchTrack);
+}
+
+// Reorder a song's versions to match the dropped id order, then persist "Orden".
+function reorderPortalVersionsByIds(track, orderedIds) {
+  const byId = new Map((track.versions || []).map((v) => [String(v.id), v]));
+  track.versions = orderedIds.map((id) => byId.get(id)).filter(Boolean);
+  void persistPortalOrden(track.versions, portalPatchVersion);
+}
+
+// Normalize each item's `orden` to its index and persist the ones that changed,
+// using the given PATCH function (portalPatchTrack or portalPatchVersion).
+async function persistPortalOrden(arr, patchFn) {
   const changed = [];
-  arr.forEach((t, idx) => { if (t.orden !== idx) { t.orden = idx; changed.push(t); } });
+  (arr || []).forEach((it, idx) => { if (it.orden !== idx) { it.orden = idx; changed.push(it); } });
   try {
-    for (const t of changed) await portalPatchTrack(t.id, { orden: t.orden });
+    for (const it of changed) await patchFn(it.id, { orden: it.orden });
   } catch (e) {
     portalNotify('No se pudo guardar el orden: ' + (e?.message || e), true);
   }
@@ -7303,6 +7344,8 @@ function portalPlayVersion(version, trackName) {
 
   portalPlayerState = { peaks: version.peaks || [], duration: version.duracion || 0, versionId: version.id, comments: [] };
   wrap.classList.remove('hidden');
+  // Player sits above the songs now — bring it into view when you hit play.
+  wrap.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   if (titleEl) titleEl.textContent = `${trackName} — ${version.name}`;
   audio.src = `${API_BASE}/api/audio/${version.driveFileId}`;
   const durEl = document.getElementById('portal-player-dur');

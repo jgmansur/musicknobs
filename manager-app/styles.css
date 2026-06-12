@@ -3451,7 +3451,7 @@ body.messages-active .container {
 .portal-version { display: flex; align-items: center; gap: 10px; }
 /* One tidy line. By default the name truncates with "…"; the version that is
    PLAYING auto-scrolls (marquee) so its full name is readable — one at a time. */
-.portal-version-name { flex: 1 1 auto; min-width: 0; overflow: hidden; }
+.portal-version-name { flex: 1 1 0; min-width: 0; overflow: hidden; }
 .portal-version-name > .vn-text {
   display: block;               /* block child fills the shrunk flex width → truncates cleanly */
   overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
@@ -3501,20 +3501,25 @@ body.messages-active .container {
 .portal-songs-bulk-del:disabled { opacity: .4; cursor: default; }
 .portal-songs-toolbar-hint { color: var(--text-muted); font-size: 12px; }
 
-/* The cards wrapper is the drag arena — the drop indicator is positioned in it. */
+/* The cards wrapper (and each version list) is a drag arena — the drop indicator
+   is absolutely positioned inside it. */
 .portal-track-cards { position: relative; }
+.portal-version-list { position: relative; }
 .portal-track.is-edit { touch-action: pan-y; }
-.portal-track.portal-track-dragging {
+.portal-track.drag-active,
+.portal-version.drag-active {
   position: relative; z-index: 5; opacity: .96;
   box-shadow: 0 10px 24px rgba(0,0,0,.45); border-color: var(--primary);
 }
 .portal-track-select { width: 17px; height: 17px; flex: 0 0 auto; accent-color: var(--primary); cursor: pointer; }
-.portal-drag-handle {
+.portal-drag-handle, .portal-version-drag {
   flex: 0 0 auto; background: none; border: none; color: var(--text-muted);
-  cursor: grab; font-size: 18px; line-height: 1; padding: 2px 4px;
+  cursor: grab; line-height: 1; padding: 2px 4px;
   touch-action: none; /* let the handle own the gesture so the page doesn't scroll */
 }
-.portal-drag-handle:active { cursor: grabbing; color: var(--primary); }
+.portal-drag-handle { font-size: 18px; }
+.portal-version-drag { font-size: 15px; }
+.portal-drag-handle:active, .portal-version-drag:active { cursor: grabbing; color: var(--primary); }
 .portal-track-caret-btn { flex: 0 0 auto; background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: .8em; padding: 2px 4px; transition: transform .2s ease; }
 .portal-track.is-edit.is-collapsed .portal-track-caret-btn { transform: rotate(-90deg); }
 .portal-track-name-input {
@@ -3658,7 +3663,7 @@ body.messages-active .container {
 
   /* Version rows: play + name on line 1, controls wrap below */
   .portal-version { flex-wrap: wrap; }
-  .portal-version-name { flex: 1 1 auto; }
+  .portal-version-name { flex: 1 1 0; }
   .portal-version-controls { flex: 1 1 100%; justify-content: flex-end; flex-wrap: wrap; gap: 14px; }
 
   /* Abono form: inputs stack full-width */
