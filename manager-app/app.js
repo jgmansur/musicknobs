@@ -6438,6 +6438,10 @@ async function openPortalCotizacion(quoteId, clientName, quoteNumber) {
     renderPortalTracks(portalActiveQuote.tracks);
     renderPortalExtraHours(portalActiveQuote.estadoCuenta);
     renderPortalAccount(portalActiveQuote.estadoCuenta);
+    // Quote status control (Empezó → Terminado, etc.) right in the portal detail.
+    const listItem = portalCotizacionesCache.find((x) => x.id === quoteId);
+    portalActiveQuote.status = listItem?.estatus || data?.quote?.estatus || '';
+    renderPortalEstatus(portalActiveQuote.status);
     // Start collapsed every time a quote is opened: upload card + abono fields.
     document.getElementById('portal-upload-card')?.classList.add('is-collapsed');
     document.getElementById('portal-abono-form')?.classList.add('is-collapsed');
@@ -6447,6 +6451,31 @@ async function openPortalCotizacion(quoteId, clientName, quoteNumber) {
   } catch (e) {
     if (tracksRoot) tracksRoot.innerHTML = `<p class="hint">Error: ${escapeHtmlSafe(e?.message || String(e))}</p>`;
   }
+}
+
+// Status select for the OPEN quote (per cotización, not per client). Reuses the
+// same estatus options + PATCH as the Cotizaciones tab.
+function renderPortalEstatus(status) {
+  const sel = document.getElementById('portal-estatus-select');
+  if (!sel) return;
+  sel.innerHTML = mkEstatusOptionsHtml(status || '');
+  sel.onchange = async () => {
+    const nuevo = sel.value;
+    const statusEl = document.getElementById('portal-estatus-status');
+    sel.disabled = true;
+    if (statusEl) statusEl.textContent = 'Guardando…';
+    const ok = await mkChangeEstatus(portalActiveQuote.id, nuevo);
+    sel.disabled = false;
+    if (ok) {
+      portalActiveQuote.status = nuevo;
+      const item = portalCotizacionesCache.find((x) => x.id === portalActiveQuote.id);
+      if (item) item.estatus = nuevo; // keep the list card in sync
+      if (statusEl) statusEl.textContent = 'Guardado ✓';
+      setTimeout(() => { if (statusEl) statusEl.textContent = ''; }, 2000);
+    } else if (statusEl) {
+      statusEl.textContent = 'No se pudo guardar';
+    }
+  };
 }
 
 function portalMoney(amount, currency) {

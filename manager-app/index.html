@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;700;800&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="./styles.css?v=2.0.81" />
+    <link rel="stylesheet" href="./styles.css?v=2.0.82" />
     <link rel="manifest" href="./manifest.json" />
     <link rel="icon" type="image/png" href="./icon-32.png" />
     <link rel="apple-touch-icon" href="./icon-180.png" />
@@ -492,6 +492,11 @@
             <div class="quote-detail-title"><span id="portal-detail-number">—</span></div>
           </div>
           <p id="portal-detail-client" class="hint"></p>
+          <div class="portal-detail-estatus">
+            <span class="portal-detail-estatus-label">Estatus</span>
+            <select id="portal-estatus-select" aria-label="Estatus de la cotización"></select>
+            <span id="portal-estatus-status" class="qd-save-status"></span>
+          </div>
           <!-- 1. Subir versiones (colapsable por su título) -->
           <div class="portal-upload portal-collapse" id="portal-upload-card">
             <h4 class="portal-collapse-head" id="portal-upload-toggle" role="button" tabindex="0">Subir versión(es)<span class="portal-collapse-caret">▾</span></h4>
@@ -626,6 +631,6 @@
     <script src="./config.js"></script>
     <script src="./vendor/howler.min.js"></script>
     <script src="./tracks.js?v=salesfix404v1"></script>
-    <script src="./app.js?v=2.0.81"></script>
+    <script src="./app.js?v=2.0.82"></script>
   </body>
   </html>
