@@ -7767,7 +7767,6 @@ function renderPortfolio() {
   portfolioCache.forEach((item) => {
     const li = document.createElement('li');
     li.className = 'portfolio-item' + (item.visible ? '' : ' pf-hidden');
-    li.draggable = true;
     li.dataset.id = item.id;
     const cats = (item.categorias || []).map((c) => `<span class="pf-cat">${escapeHtml(c)}</span>`).join('');
     li.innerHTML = `
@@ -7791,19 +7790,7 @@ function renderPortfolio() {
     li.querySelector('[data-pf-del]').addEventListener('click', () => portfolioDelete(item.id));
     li.querySelector('[data-pf-visible]').addEventListener('click', () => portfolioToggleVisible(item.id));
 
-    li.addEventListener('dragstart', () => { li.classList.add('pf-dragging'); });
-    li.addEventListener('dragend', () => {
-      li.classList.remove('pf-dragging');
-      persistPortfolioOrder();
-    });
-    li.addEventListener('dragover', (e) => {
-      e.preventDefault();
-      const dragging = listEl.querySelector('.pf-dragging');
-      if (!dragging || dragging === li) return;
-      const after = pfDragAfterElement(listEl, e.clientY);
-      if (after == null) listEl.appendChild(dragging);
-      else listEl.insertBefore(dragging, after);
-    });
+    pfInitDrag(li, listEl);
 
     listEl.appendChild(li);
   });
@@ -7818,6 +7805,49 @@ function pfDragAfterElement(container, y) {
     if (offset < 0 && offset > closest.offset) closest = { offset, element: el };
   }
   return closest.element;
+}
+
+// Reordenar con Pointer Events (funciona en touch Y mouse — el HTML5 drag no anda en iOS).
+function pfInitDrag(li, listEl) {
+  const handle = li.querySelector('.pf-drag');
+  if (!handle) return;
+  handle.style.touchAction = 'none';
+
+  handle.addEventListener('pointerdown', (e) => {
+    e.preventDefault();
+    li.classList.add('pf-dragging');
+    try { handle.setPointerCapture(e.pointerId); } catch (_) {}
+
+    const autoScroll = (y) => {
+      const margin = 70, speed = 12;
+      if (y < margin) window.scrollBy(0, -speed);
+      else if (y > window.innerHeight - margin) window.scrollBy(0, speed);
+    };
+
+    const onMove = (ev) => {
+      ev.preventDefault();
+      autoScroll(ev.clientY);
+      const after = pfDragAfterElement(listEl, ev.clientY);
+      if (after == null) {
+        if (listEl.lastElementChild !== li) listEl.appendChild(li);
+      } else if (after !== li) {
+        listEl.insertBefore(li, after);
+      }
+    };
+
+    const onUp = () => {
+      handle.removeEventListener('pointermove', onMove);
+      handle.removeEventListener('pointerup', onUp);
+      handle.removeEventListener('pointercancel', onUp);
+      try { handle.releasePointerCapture(e.pointerId); } catch (_) {}
+      li.classList.remove('pf-dragging');
+      persistPortfolioOrder();
+    };
+
+    handle.addEventListener('pointermove', onMove);
+    handle.addEventListener('pointerup', onUp);
+    handle.addEventListener('pointercancel', onUp);
+  });
 }
 
 async function persistPortfolioOrder() {
