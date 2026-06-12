@@ -6317,6 +6317,8 @@ function renderQuoteDetail(q) {
 let portalCotizacionesCache = [];
 let portalActiveQuote = null; // { id, quoteNumber, clientName, tracks }
 let portalOpenTrackId = null; // accordion: which song is expanded (null=default first, ''=all collapsed)
+let portalSongsEditMode = false; // edit mode: inline rename + multi-select delete + drag-reorder songs
+let portalSelectedTrackIds = new Set(); // tracks ticked for bulk delete while in edit mode
 
 function portalSetStatus(msg) {
   const el = document.getElementById('portal-status');
@@ -6430,6 +6432,9 @@ async function openPortalCotizacion(quoteId, clientName, quoteNumber) {
     const data = await fetchJson(`${API_BASE}/portal/admin/cotizacion/${quoteId}`);
     portalActiveQuote = { id: quoteId, quoteNumber, clientName, tracks: data?.tracks || [], estadoCuenta: data?.estadoCuenta || null, seguimiento: data?.quote?.seguimiento || {} };
     portalOpenTrackId = null; // reset accordion for the freshly-opened quote
+    // Songs always open in read mode (not edit), with nothing selected.
+    portalSongsEditMode = false;
+    portalSelectedTrackIds = new Set();
     renderPortalTracks(portalActiveQuote.tracks);
     renderPortalExtraHours(portalActiveQuote.estadoCuenta);
     renderPortalAccount(portalActiveQuote.estadoCuenta);
@@ -6613,6 +6618,15 @@ function handlePortalAbonoBtn() {
     document.getElementById('portal-abono-monto')?.focus();
     return;
   }
+  // Expanded + nothing entered (no amount, no date, no receipt) → just close
+  // again, so opening it by mistake doesn't force you to register anything.
+  const monto = (document.getElementById('portal-abono-monto')?.value || '').trim();
+  const fecha = (document.getElementById('portal-abono-fecha')?.value || '').trim();
+  const recibo = document.getElementById('portal-abono-recibo')?.files?.[0];
+  if (!monto && !fecha && !recibo && !portalAbonoEditId) {
+    collapsePortalAbonoForm();
+    return;
+  }
   registerPortalAbono();
 }
 
@@ -6720,8 +6734,41 @@ function renderPortalTracks(tracks) {
   if (datalist) datalist.innerHTML = tracks.map((t) => `<option value="${escapeHtmlSafe(t.name)}">`).join('');
 
   if (!tracks.length) {
+    portalSongsEditMode = false;
+    portalSelectedTrackIds = new Set();
     root.innerHTML = '<p class="hint">Todavía no hay canciones. Subí la primera versión abajo.</p>';
     return;
+  }
+
+  // Drop any selection that points at tracks no longer present.
+  portalSelectedTrackIds.forEach((id) => { if (!tracks.some((t) => t.id === id)) portalSelectedTrackIds.delete(id); });
+
+  // Header bar: section title + the Editar/Listo toggle for the whole songs area.
+  const bar = document.createElement('div');
+  bar.className = 'portal-songs-bar';
+  bar.appendChild(Object.assign(document.createElement('span'), { className: 'portal-songs-bar-title', textContent: 'Canciones' }));
+  const editBtn = document.createElement('button');
+  editBtn.type = 'button';
+  editBtn.className = 'portal-songs-edit-btn' + (portalSongsEditMode ? ' is-active' : '');
+  editBtn.textContent = portalSongsEditMode ? 'Listo' : 'Editar';
+  editBtn.addEventListener('click', togglePortalSongsEdit);
+  bar.appendChild(editBtn);
+  root.appendChild(bar);
+
+  // Bulk toolbar (edit mode only): delete every ticked song at once.
+  if (portalSongsEditMode) {
+    const toolbar = document.createElement('div');
+    toolbar.className = 'portal-songs-toolbar';
+    const count = portalSelectedTrackIds.size;
+    const del = document.createElement('button');
+    del.type = 'button';
+    del.className = 'portal-songs-bulk-del';
+    del.textContent = count ? `Borrar seleccionadas (${count})` : 'Borrar seleccionadas';
+    del.disabled = !count;
+    del.addEventListener('click', bulkDeleteSelectedTracks);
+    toolbar.appendChild(del);
+    toolbar.appendChild(Object.assign(document.createElement('span'), { className: 'portal-songs-toolbar-hint', textContent: 'Arrastrá ≡ para ordenar' }));
+    root.appendChild(toolbar);
   }
 
   // Accordion: with >1 song, only one is open at a time (click the title to
@@ -6730,38 +6777,101 @@ function renderPortalTracks(tracks) {
   if (multi && portalOpenTrackId === null) portalOpenTrackId = tracks[0].id;
   if (multi && portalOpenTrackId && !tracks.some((t) => t.id === portalOpenTrackId)) portalOpenTrackId = tracks[0].id;
 
+  const cards = document.createElement('div');
+  cards.className = 'portal-track-cards';
+
   tracks.forEach((t) => {
     const el = document.createElement('div');
-    el.className = 'portal-track';
+    el.className = 'portal-track' + (portalSongsEditMode ? ' is-edit' : '');
+    el.dataset.trackId = t.id; // so drag-reorder can read the new order back
     const isOpen = !multi || t.id === portalOpenTrackId;
     if (!isOpen) el.classList.add('is-collapsed');
 
     const head = document.createElement('div');
     head.className = 'portal-track-head';
-    // Title doubles as the accordion toggle when there's more than one song.
-    const title = document.createElement(multi ? 'button' : 'strong');
-    title.className = 'portal-track-title' + (multi ? ' is-toggle' : '');
-    if (multi) {
-      title.type = 'button';
-      const caret = document.createElement('span');
-      caret.className = 'portal-track-caret';
-      caret.textContent = '▾';
-      title.appendChild(caret);
-      title.appendChild(document.createTextNode(' ' + t.name));
-      title.addEventListener('click', () => {
-        portalOpenTrackId = (portalOpenTrackId === t.id) ? '' : t.id;
+
+    if (portalSongsEditMode) {
+      // Select checkbox (for bulk delete)
+      const sel = document.createElement('input');
+      sel.type = 'checkbox';
+      sel.className = 'portal-track-select';
+      sel.checked = portalSelectedTrackIds.has(t.id);
+      sel.title = 'Seleccionar canción';
+      sel.addEventListener('change', () => {
+        if (sel.checked) portalSelectedTrackIds.add(t.id); else portalSelectedTrackIds.delete(t.id);
         renderPortalTracks(portalActiveQuote.tracks);
       });
-    } else {
-      title.textContent = t.name;
-    }
-    head.appendChild(title);
+      head.appendChild(sel);
 
-    // All track actions grouped to the right (consistent with version rows).
+      // Drag handle — finger (touch) or mouse (web). Reorders songs.
+      const handle = document.createElement('button');
+      handle.type = 'button';
+      handle.className = 'portal-drag-handle';
+      handle.textContent = '≡';
+      handle.title = 'Arrastrar para ordenar';
+      handle.setAttribute('aria-label', 'Arrastrar para ordenar');
+      head.appendChild(handle);
+
+      // Caret toggle (only with multiple songs) — expand to manage versions.
+      if (multi) {
+        const caretBtn = document.createElement('button');
+        caretBtn.type = 'button';
+        caretBtn.className = 'portal-track-caret-btn';
+        caretBtn.textContent = '▾';
+        caretBtn.title = isOpen ? 'Colapsar' : 'Expandir';
+        caretBtn.addEventListener('click', () => {
+          portalOpenTrackId = (portalOpenTrackId === t.id) ? '' : t.id;
+          renderPortalTracks(portalActiveQuote.tracks);
+        });
+        head.appendChild(caretBtn);
+      }
+
+      // Inline name editing — type directly in the title, commit on Enter/blur.
+      const nameInput = document.createElement('input');
+      nameInput.type = 'text';
+      nameInput.className = 'portal-track-name-input';
+      nameInput.value = t.name;
+      nameInput.setAttribute('aria-label', 'Nombre de la canción');
+      nameInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); nameInput.blur(); } });
+      nameInput.addEventListener('change', async () => {
+        const val = nameInput.value.trim();
+        if (!val || val === t.name) { nameInput.value = t.name; return; }
+        const prev = t.name;
+        t.name = val;
+        try {
+          await portalPatchTrack(t.id, { name: val });
+          portalNotify('Renombrado.');
+        } catch (e) {
+          t.name = prev;
+          nameInput.value = prev;
+          portalNotify('No se pudo renombrar: ' + (e?.message || e), true);
+        }
+      });
+      head.appendChild(nameInput);
+    } else {
+      // Title doubles as the accordion toggle when there's more than one song.
+      const title = document.createElement(multi ? 'button' : 'strong');
+      title.className = 'portal-track-title' + (multi ? ' is-toggle' : '');
+      if (multi) {
+        title.type = 'button';
+        const caret = document.createElement('span');
+        caret.className = 'portal-track-caret';
+        caret.textContent = '▾';
+        title.appendChild(caret);
+        title.appendChild(document.createTextNode(' ' + t.name));
+        title.addEventListener('click', () => {
+          portalOpenTrackId = (portalOpenTrackId === t.id) ? '' : t.id;
+          renderPortalTracks(portalActiveQuote.tracks);
+        });
+      } else {
+        title.textContent = t.name;
+      }
+      head.appendChild(title);
+    }
+
+    // Descarga habilitada toggle (track level) — kept in both modes.
     const headActions = document.createElement('span');
     headActions.className = 'portal-version-controls';
-
-    // Descarga habilitada toggle (track level)
     const dl = document.createElement('label');
     dl.className = 'portal-toggle';
     const dlInput = document.createElement('input');
@@ -6782,29 +6892,12 @@ function renderPortalTracks(tracks) {
     dl.appendChild(dlInput);
     dl.appendChild(Object.assign(document.createElement('span'), { textContent: 'Descarga' }));
     headActions.appendChild(dl);
-
-    const trackRename = document.createElement('button');
-    trackRename.type = 'button';
-    trackRename.className = 'portal-icon-btn';
-    trackRename.textContent = '✎';
-    trackRename.title = 'Renombrar canción';
-    trackRename.addEventListener('click', () => renamePortalTrack(t));
-    headActions.appendChild(trackRename);
-
-    const trackDelete = document.createElement('button');
-    trackDelete.type = 'button';
-    trackDelete.className = 'portal-icon-btn portal-icon-danger';
-    trackDelete.textContent = '🗑';
-    trackDelete.title = 'Borrar canción y todas sus versiones';
-    trackDelete.addEventListener('click', () => deletePortalTrack(t));
-    headActions.appendChild(trackDelete);
-
     head.appendChild(headActions);
     el.appendChild(head);
 
     const list = document.createElement('ul');
     list.className = 'portal-version-list';
-    (t.versions || []).forEach((v, vIdx, vArr) => {
+    (t.versions || []).forEach((v) => {
       const li = document.createElement('li');
       li.className = 'portal-version';
 
@@ -6821,9 +6914,13 @@ function renderPortalTracks(tracks) {
       name.dataset.versionId = v.id; // so the playing version can be marquee'd
       const nameText = document.createElement('span');
       nameText.className = 'vn-text';
-      nameText.textContent = v.name + (v.duracion ? ` · ${Math.round(v.duracion)}s` : '');
+      nameText.textContent = v.name;
       name.appendChild(nameText);
-      name.title = nameText.textContent;
+      name.title = v.name;
+
+      const dur = document.createElement('span');
+      dur.className = 'portal-version-dur';
+      dur.textContent = portalFmtTime(v.duracion || 0);
 
       const controls = document.createElement('span');
       controls.className = 'portal-version-controls';
@@ -6836,7 +6933,6 @@ function renderPortalTracks(tracks) {
       fav.title = 'Versión principal';
       fav.addEventListener('click', async () => {
         const next = !v.favorita;
-        // Optimistic: favorita is exclusive per track — set this, clear siblings.
         const prev = t.versions.map((x) => x.favorita);
         t.versions.forEach((x) => { x.favorita = (x.id === v.id) ? next : false; });
         renderPortalTracks(portalActiveQuote.tracks);
@@ -6870,55 +6966,160 @@ function renderPortalTracks(tracks) {
       vis.appendChild(visInput);
       vis.appendChild(Object.assign(document.createElement('span'), { textContent: 'Visible' }));
 
-      const verRename = document.createElement('button');
-      verRename.type = 'button';
-      verRename.className = 'portal-icon-btn';
-      verRename.textContent = '✎';
-      verRename.title = 'Renombrar versión';
-      verRename.addEventListener('click', () => renamePortalVersion(v));
-
-      const verDelete = document.createElement('button');
-      verDelete.type = 'button';
-      verDelete.className = 'portal-icon-btn portal-icon-danger';
-      verDelete.textContent = '🗑';
-      verDelete.title = 'Borrar versión';
-      verDelete.addEventListener('click', () => deletePortalVersion(v, t));
-
-      // Reorder arrows — move this version up/down within the track. Persisted
-      // via the version's "Orden" number (see portalReorderVersion).
-      const up = document.createElement('button');
-      up.type = 'button';
-      up.className = 'portal-icon-btn';
-      up.textContent = '↑';
-      up.title = 'Subir versión';
-      up.disabled = vIdx === 0;
-      up.addEventListener('click', () => portalReorderVersion(t, v, 'up'));
-
-      const down = document.createElement('button');
-      down.type = 'button';
-      down.className = 'portal-icon-btn';
-      down.textContent = '↓';
-      down.title = 'Bajar versión';
-      down.disabled = vIdx === vArr.length - 1;
-      down.addEventListener('click', () => portalReorderVersion(t, v, 'down'));
-
-      controls.appendChild(up);
-      controls.appendChild(down);
       controls.appendChild(fav);
       controls.appendChild(vis);
-      controls.appendChild(verRename);
-      controls.appendChild(verDelete);
+
+      // Delete a version lives ONLY in edit mode (keeps the normal view clean).
+      if (portalSongsEditMode) {
+        const verDelete = document.createElement('button');
+        verDelete.type = 'button';
+        verDelete.className = 'portal-icon-btn portal-icon-danger';
+        verDelete.textContent = '🗑';
+        verDelete.title = 'Borrar versión';
+        verDelete.addEventListener('click', () => deletePortalVersion(v, t));
+        controls.appendChild(verDelete);
+      }
 
       li.appendChild(play);
       li.appendChild(name);
+      li.appendChild(dur);
       li.appendChild(controls);
       list.appendChild(li);
     });
     el.appendChild(list);
-    root.appendChild(el);
+    cards.appendChild(el);
   });
+  root.appendChild(cards);
+
+  if (portalSongsEditMode) setupPortalTrackDrag(cards);
+
   // Keep the playing version's name scrolling after a re-render.
   if (portalPlayerState && portalPlayerState.versionId) portalApplyPlayingMarquee(portalPlayerState.versionId);
+}
+
+// Toggle the songs edit mode (inline rename + multi-select delete + drag-reorder).
+function togglePortalSongsEdit() {
+  portalSongsEditMode = !portalSongsEditMode;
+  if (!portalSongsEditMode) portalSelectedTrackIds = new Set();
+  renderPortalTracks(portalActiveQuote.tracks);
+}
+
+// Delete every ticked song (and its versions + Drive files) in one confirm.
+async function bulkDeleteSelectedTracks() {
+  if (!portalActiveQuote) return;
+  const removed = portalActiveQuote.tracks.filter((t) => portalSelectedTrackIds.has(t.id));
+  if (!removed.length) return;
+  const totalVers = removed.reduce((s, t) => s + (t.versions || []).length, 0);
+  if (!confirm(`¿Borrar ${removed.length} canción(es) y sus ${totalVers} versión(es)?\nSe eliminan también los archivos de Drive. No se puede deshacer.`)) return;
+  // Optimistic: drop them from the UI now.
+  portalActiveQuote.tracks = portalActiveQuote.tracks.filter((t) => !portalSelectedTrackIds.has(t.id));
+  portalSelectedTrackIds = new Set();
+  renderPortalTracks(portalActiveQuote.tracks);
+  try {
+    for (const t of removed) {
+      for (const v of (t.versions || [])) await portalDeleteFromDrive(v.driveFileId);
+      const res = await fetch(`${API_BASE}/portal/admin/track/${t.id}`, { method: 'DELETE', headers: apiHeaders() });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.ok) throw new Error(data.error || `HTTP ${res.status}`);
+    }
+    portalNotify(`${removed.length} canción(es) borrada(s).`);
+  } catch (e) {
+    portalNotify('No se pudieron borrar todas: ' + (e?.message || e) + '. Recargá la cotización.', true);
+  }
+}
+
+// ── Drag-reorder songs (handle ≡) — finger on touch, pointer on web. ──────────
+// Only active in edit mode. The dragged card follows the pointer; a thin accent
+// line marks where it will land (robust with variable card heights). On drop we
+// persist each track's new "Orden" so the client portal shows the same order.
+let ptDrag = null;
+function setupPortalTrackDrag(wrap) {
+  wrap.querySelectorAll('.portal-drag-handle').forEach((handle) => {
+    handle.addEventListener('pointerdown', (e) => beginTrackDrag(e, handle, wrap));
+  });
+}
+
+function beginTrackDrag(e, handle, wrap) {
+  e.preventDefault();
+  const card = handle.closest('.portal-track');
+  if (!card) return;
+  const items = [...wrap.querySelectorAll('.portal-track')];
+  const from = items.indexOf(card);
+  if (from < 0) return;
+  const wrapTop = wrap.getBoundingClientRect().top;
+  const metrics = items.map((el) => {
+    const r = el.getBoundingClientRect();
+    return { el, top: r.top - wrapTop, bottom: r.top + r.height - wrapTop, mid: r.top + r.height / 2 };
+  });
+  try { handle.setPointerCapture(e.pointerId); } catch {}
+  card.classList.add('portal-track-dragging');
+  const indicator = document.createElement('div');
+  indicator.className = 'portal-drop-indicator';
+  wrap.appendChild(indicator);
+  ptDrag = { card, wrap, handle, items, metrics, from, to: from, startY: e.clientY, indicator };
+  positionPortalDropIndicator();
+
+  const move = (ev) => onTrackDragMove(ev);
+  const end = () => {
+    handle.removeEventListener('pointermove', move);
+    handle.removeEventListener('pointerup', end);
+    handle.removeEventListener('pointercancel', end);
+    onTrackDragEnd();
+  };
+  handle.addEventListener('pointermove', move);
+  handle.addEventListener('pointerup', end);
+  handle.addEventListener('pointercancel', end);
+}
+
+function onTrackDragMove(ev) {
+  if (!ptDrag) return;
+  const { card, metrics, from } = ptDrag;
+  const dy = ev.clientY - ptDrag.startY;
+  card.style.transform = `translateY(${dy}px)`;
+  const center = metrics[from].mid + dy;
+  let to = 0;
+  for (let i = 0; i < metrics.length; i++) {
+    if (i === from) continue;
+    if (center > metrics[i].mid) to += 1;
+  }
+  ptDrag.to = to;
+  positionPortalDropIndicator();
+}
+
+function positionPortalDropIndicator() {
+  if (!ptDrag) return;
+  const { metrics, from, to, indicator } = ptDrag;
+  const y = (to <= from) ? metrics[to].top : metrics[to].bottom;
+  indicator.style.top = `${y}px`;
+}
+
+function onTrackDragEnd() {
+  if (!ptDrag) return;
+  const { card, wrap, items, from, to, indicator } = ptDrag;
+  card.style.transform = '';
+  card.classList.remove('portal-track-dragging');
+  indicator.remove();
+  if (to !== from && items[to]) {
+    if (to > from) items[to].after(card); else items[to].before(card);
+  }
+  const orderedIds = [...wrap.querySelectorAll('.portal-track')].map((el) => el.dataset.trackId).filter(Boolean);
+  ptDrag = null;
+  if (to === from) return;
+  const byId = new Map(portalActiveQuote.tracks.map((t) => [String(t.id), t]));
+  portalActiveQuote.tracks = orderedIds.map((id) => byId.get(id)).filter(Boolean);
+  void persistPortalTrackOrder();
+}
+
+// Normalize every track's `orden` to its index and persist the ones that changed.
+async function persistPortalTrackOrder() {
+  const arr = portalActiveQuote.tracks || [];
+  const changed = [];
+  arr.forEach((t, idx) => { if (t.orden !== idx) { t.orden = idx; changed.push(t); } });
+  try {
+    for (const t of changed) await portalPatchTrack(t.id, { orden: t.orden });
+  } catch (e) {
+    portalNotify('No se pudo guardar el orden: ' + (e?.message || e), true);
+  }
 }
 
 // Move a version up/down within its track, optimistically. Normalizes every

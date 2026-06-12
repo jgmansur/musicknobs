@@ -3017,6 +3017,14 @@ function sortPortalVersions(versions) {
   return versions.sort((a, b) => (ord(a) - ord(b)) || String(a.created || "").localeCompare(String(b.created || "")));
 }
 
+// Order portal tracks (songs) the same way: by the admin-set "Orden" number, then
+// oldest-first by creation time for tracks never reordered. Lets the admin drag to
+// arrange songs manually and have the client portal honor that exact order.
+function sortPortalTracks(tracks) {
+  const ord = (t) => (t && t.orden != null ? t.orden : Number.MAX_SAFE_INTEGER);
+  return tracks.sort((a, b) => (ord(a) - ord(b)) || String(a.created || "").localeCompare(String(b.created || "")));
+}
+
 // Today's date (YYYY-MM-DD) in Mexico City time — keeps Notion-stored dates aligned
 // with what Jay sees, instead of UTC (which rolls over a day early in the evening).
 function mxToday() {
@@ -3179,9 +3187,12 @@ async function portalCotizacion(env, pageId, code) {
       estado: tprops?.Estado?.select?.name || "",
       descargaHabilitada: Boolean(tprops?.["Descarga habilitada"]?.checkbox),
       moneda: tprops?.Moneda?.select?.name || "",
+      orden: tprops?.Orden?.number ?? null,
+      created: tp.created_time || "",
       versions,
     };
   }));
+  sortPortalTracks(tracks);
 
   const paymentPages = await queryPortalDb(env, PORTAL_PAYMENTS_DS_ID, {
     property: "Cotización", relation: { contains: pageId },
@@ -3426,9 +3437,12 @@ async function portalAdminCotizacion(env, pageId) {
       estado: tprops?.Estado?.select?.name || "",
       descargaHabilitada: Boolean(tprops?.["Descarga habilitada"]?.checkbox),
       moneda: tprops?.Moneda?.select?.name || "",
+      orden: tprops?.Orden?.number ?? null,
+      created: tp.created_time || "",
       versions,
     };
   }));
+  sortPortalTracks(tracks);
 
   // Statement of account (so the admin can see balance + register payments).
   const paymentPages = await queryPortalDb(env, PORTAL_PAYMENTS_DS_ID, {
@@ -3547,6 +3561,9 @@ async function portalAdminPatchTrack(env, trackId, body) {
   }
   if (typeof body?.estado === "string" && body.estado) {
     props.Estado = { select: { name: body.estado } };
+  }
+  if (body?.orden != null && Number.isFinite(Number(body.orden))) {
+    props.Orden = { number: Number(body.orden) };
   }
   if (!Object.keys(props).length) return { ok: false, error: "nada para actualizar" };
   return patchNotionPage(env, trackId, props);

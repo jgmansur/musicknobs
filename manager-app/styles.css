@@ -3479,6 +3479,54 @@ body.messages-active .container {
 .portal-fav { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 18px; line-height: 1; padding: 0; opacity: .5; transition: color .15s ease, opacity .15s ease; }
 .portal-fav:hover { opacity: 1; }
 .portal-fav.is-fav { color: #ffc83d; opacity: 1; text-shadow: 0 0 8px rgba(255, 200, 61, .45); }
+.portal-version-dur { flex: 0 0 auto; color: var(--text-muted); font-size: 13px; font-variant-numeric: tabular-nums; }
+
+/* ─── Portal admin: songs header + edit mode (rename / select / reorder) ──── */
+.portal-songs-bar { display: flex; align-items: center; justify-content: space-between; margin: 0 0 10px; }
+.portal-songs-bar-title { font-family: 'Bebas Neue', sans-serif; text-transform: uppercase; letter-spacing: .12em; font-size: 14px; color: var(--text-muted); }
+.portal-songs-edit-btn {
+  background: none; border: 1px solid var(--glass-border); border-radius: 9999px;
+  color: var(--text-muted); cursor: pointer; font-size: 13px; padding: 5px 14px;
+  transition: color .15s ease, border-color .15s ease;
+}
+.portal-songs-edit-btn:hover { color: var(--text-main); border-color: var(--text-muted); }
+.portal-songs-edit-btn.is-active { color: #fff; border-color: var(--primary); background: var(--primary); }
+.portal-songs-toolbar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin: 0 0 12px; }
+.portal-songs-bulk-del {
+  background: none; border: 1px solid var(--glass-border); border-radius: 9999px;
+  color: #ff6d6d; cursor: pointer; font-size: 13px; padding: 6px 14px;
+  transition: background .15s ease, border-color .15s ease, opacity .15s ease;
+}
+.portal-songs-bulk-del:hover:not(:disabled) { border-color: #ff6d6d; background: rgba(255,109,109,.1); }
+.portal-songs-bulk-del:disabled { opacity: .4; cursor: default; }
+.portal-songs-toolbar-hint { color: var(--text-muted); font-size: 12px; }
+
+/* The cards wrapper is the drag arena — the drop indicator is positioned in it. */
+.portal-track-cards { position: relative; }
+.portal-track.is-edit { touch-action: pan-y; }
+.portal-track.portal-track-dragging {
+  position: relative; z-index: 5; opacity: .96;
+  box-shadow: 0 10px 24px rgba(0,0,0,.45); border-color: var(--primary);
+}
+.portal-track-select { width: 17px; height: 17px; flex: 0 0 auto; accent-color: var(--primary); cursor: pointer; }
+.portal-drag-handle {
+  flex: 0 0 auto; background: none; border: none; color: var(--text-muted);
+  cursor: grab; font-size: 18px; line-height: 1; padding: 2px 4px;
+  touch-action: none; /* let the handle own the gesture so the page doesn't scroll */
+}
+.portal-drag-handle:active { cursor: grabbing; color: var(--primary); }
+.portal-track-caret-btn { flex: 0 0 auto; background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: .8em; padding: 2px 4px; transition: transform .2s ease; }
+.portal-track.is-edit.is-collapsed .portal-track-caret-btn { transform: rotate(-90deg); }
+.portal-track-name-input {
+  flex: 1 1 auto; min-width: 0; background: #000; border: 1px solid var(--glass-border);
+  border-radius: 10px; padding: 8px 10px; color: var(--text-main); font-size: 15px;
+  font-family: 'Poppins', 'Inter', sans-serif; outline: none;
+}
+.portal-track-name-input:focus { border-color: var(--primary); }
+.portal-drop-indicator {
+  position: absolute; left: 0; right: 0; height: 2px; background: var(--primary);
+  border-radius: 2px; pointer-events: none; box-shadow: 0 0 6px rgba(255,16,151,.6);
+}
 .portal-player {
   border: 1px solid var(--glass-border); border-radius: 15px; background: var(--glass-bg);
   padding: 14px 16px; margin: 12px 0 16px;
