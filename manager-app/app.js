@@ -5830,14 +5830,15 @@ function formatQuoteTotal(q, fxRate) {
   return parts.join(' + ');
 }
 
-const QUOTE_ESTADOS = ['Idea Por Checar', 'Pendiente', 'Empezó', 'Terminado', 'Rechazado'];
+const QUOTE_ESTADOS = ['Idea Por Checar', 'Pendiente', 'Empezó', 'Terminado', 'Rechazado', 'Archivado'];
 let quotesSelectedIds = new Set();
 let quotesSelectMode = false; // checkboxes hidden until the user taps "Seleccionar"
-let quotesShowArchived = false; // archived = status "Terminado"; hidden from the default list
+let quotesShowArchived = false; // archived = status "Archivado"; hidden from the default list
 let quotesSearchTerm = ''; // free-text filter: number, name, email, phone, date
 
-// "Terminado" quotes count as archived: hidden unless the user opts to show them.
-const QUOTE_ARCHIVED_STATUS = 'Terminado';
+// "Archivado" quotes count as archived: hidden unless the user opts to show them.
+// "Terminado" means finished/delivered but STAYS visible (client keeps their files).
+const QUOTE_ARCHIVED_STATUS = 'Archivado';
 
 function mkQuoteMatchesSearch(q, term) {
   const fields = [q.quoteNumber, q.name, q.email, q.phone, formatQuoteDate(q.date), q.date];
@@ -5847,7 +5848,7 @@ function mkQuoteMatchesSearch(q, term) {
 function mkVisibleQuotes(quotes) {
   const list = quotes || [];
   const term = quotesSearchTerm.trim().toLowerCase();
-  // A search spans EVERYTHING, including archived (Terminado) quotes.
+  // A search spans EVERYTHING, including archived quotes.
   if (term) return list.filter((q) => mkQuoteMatchesSearch(q, term));
   if (quotesShowArchived) return list;
   return list.filter((q) => (q.estatus || '') !== QUOTE_ARCHIVED_STATUS);
@@ -6135,16 +6136,16 @@ async function mkDeleteSelectedQuotes() {
   loadQuotesFromApi();
 }
 
-// Archive = mark as "Terminado". Archived quotes are simply the finished ones;
-// they drop out of the default list but stay in Notion (no real archiving),
-// reversible by changing the status back. Findable by a future search/toggle.
+// Archive = mark as "Archivado". Archived quotes drop out of the default list but
+// stay in Notion (no real archiving), reversible by changing the status back.
+// (Different from "Terminado", which means finished/delivered yet still visible.)
 async function mkArchiveSelectedQuotes() {
   const ids = Array.from(quotesSelectedIds);
   if (ids.length === 0 || !API_BASE) return;
   const statusEl = document.getElementById('quotes-status');
   if (statusEl) statusEl.textContent = 'Archivando…';
   for (const id of ids) {
-    await mkChangeEstatus(id, 'Terminado');
+    await mkChangeEstatus(id, 'Archivado');
   }
   quotesSelectedIds = new Set();
   quotesSelectMode = false;
@@ -6402,7 +6403,7 @@ function renderPortalCotizaciones(quotes) {
     card.className = 'portal-card';
     const code = mkPortalAccessCode(q.name, q.quoteNumber);
     card.innerHTML = `<span class="portal-card-name">${escapeHtmlSafe(q.name || '—')}</span>` +
-      `<span class="portal-card-meta">${escapeHtmlSafe(q.quoteNumber || q.id.slice(0, 6))}${q.estatus ? ' · ' + escapeHtmlSafe(q.estatus) : ''}</span>` +
+      `<span class="portal-card-meta">${escapeHtmlSafe(q.quoteNumber || q.id.slice(0, 6))}</span>` +
       (code ? `<span class="portal-card-code mk-code-copy" title="Click para copiar el código de acceso">${escapeHtmlSafe(code)}</span>` : '');
     card.addEventListener('click', () => openPortalCotizacion(q.id, q.name, q.quoteNumber));
     if (code) {

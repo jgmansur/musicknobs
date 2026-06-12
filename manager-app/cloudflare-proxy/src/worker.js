@@ -2677,7 +2677,7 @@ async function ipvDelete(env, id) {
 const ARCHIVO_DB_ID = "129c1932-ede8-8003-b423-deca245759ec";
 const ARCHIVO_DS_ID = "6405719e-5f90-4fc0-8eab-d9352387dd07";
 const QUOTE_NUMBER_RE = /MK[L]?-\d{4}-\w+/;
-const QUOTE_ESTATUS_ENUM = ["Idea Por Checar", "Pendiente", "Empezó", "Terminado", "Rechazado"];
+const QUOTE_ESTATUS_ENUM = ["Idea Por Checar", "Pendiente", "Empezó", "Terminado", "Rechazado", "Archivado"];
 
 // Parse a price cell string ("$13,500 MXN", "$300", "A cotizar") into { amount, currency }.
 function parseQuoteMoney(priceStr) {
