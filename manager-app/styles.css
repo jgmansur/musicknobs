@@ -3715,3 +3715,77 @@ body.messages-active .container {
   #portal-player-canvas { max-width: 100%; }
   .pa-table { table-layout: fixed; }
 }
+
+/* ─── PORTFOLIO ─────────────────────────────────────────────────────────────── */
+.portfolio-form { display: flex; flex-direction: column; gap: 0.75rem; }
+.portfolio-link-row { display: flex; gap: 0.5rem; }
+.portfolio-link-row .field-input { flex: 1; }
+
+.portfolio-preview {
+  display: flex; gap: 1rem; padding: 0.85rem;
+  border: 1px solid var(--glass-border); border-radius: 0.9rem;
+  background: rgba(255, 255, 255, 0.02);
+}
+.portfolio-preview.hidden { display: none; }
+.portfolio-preview-art {
+  width: 96px; height: 96px; flex: 0 0 96px; border-radius: 0.6rem; overflow: hidden;
+  background: #121212; display: flex; align-items: center; justify-content: center;
+}
+.portfolio-preview-art img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.portfolio-preview-info { flex: 1; display: flex; flex-direction: column; gap: 0.5rem; min-width: 0; }
+.portfolio-preview-badges { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+
+.pf-badge {
+  font-size: 0.68rem; font-weight: 700; letter-spacing: 0.03em;
+  padding: 0.18rem 0.5rem; border-radius: 0.4rem; color: #000; background: var(--text-soft);
+  text-transform: uppercase; white-space: nowrap;
+}
+.pf-badge-spotify { background: #1DB954; color: #000; }
+.pf-badge-apple { background: #FC3C44; color: #fff; }
+.pf-badge-youtube { background: #FF0000; color: #fff; }
+.pf-badge-ghost { background: transparent; color: var(--text-muted); border: 1px solid var(--glass-border); }
+
+.portfolio-roles { display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; }
+.pf-roles-label { font-size: 0.78rem; color: var(--text-muted); margin-right: 0.2rem; }
+.pf-chip {
+  display: inline-flex; align-items: center; gap: 0.3rem; cursor: pointer;
+  font-size: 0.78rem; color: var(--text-soft);
+  padding: 0.28rem 0.55rem; border: 1px solid var(--glass-border); border-radius: 999px;
+  user-select: none; transition: border-color .15s, color .15s, background .15s;
+}
+.pf-chip input { accent-color: var(--primary); margin: 0; }
+.pf-chip:has(input:checked) { border-color: var(--primary); color: var(--text-main); background: rgba(255, 16, 151, 0.12); }
+.pf-visible { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.82rem; color: var(--text-soft); cursor: pointer; }
+.pf-visible input { accent-color: var(--primary); }
+
+.portfolio-list { display: flex; flex-direction: column; gap: 0.55rem; margin-top: 0.5rem; }
+.portfolio-item {
+  display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem 0.7rem;
+  border: 1px solid var(--glass-border); border-radius: 0.85rem;
+  background: var(--glass-bg); transition: border-color .15s, opacity .15s, transform .08s;
+}
+.portfolio-item.pf-dragging { opacity: 0.5; border-color: var(--primary); }
+.portfolio-item.pf-hidden { opacity: 0.5; }
+.pf-drag { cursor: grab; color: var(--text-muted); font-size: 1.1rem; line-height: 1; padding: 0 0.1rem; touch-action: none; }
+.pf-drag:active { cursor: grabbing; }
+.pf-thumb {
+  width: 52px; height: 52px; flex: 0 0 52px; border-radius: 0.5rem; overflow: hidden;
+  background: #121212; display: flex; align-items: center; justify-content: center;
+}
+.pf-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.pf-thumb-ph { color: var(--primary); font-size: 1.2rem; }
+.pf-meta { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.18rem; }
+.pf-title { font-weight: 600; color: var(--text-main); font-size: 0.92rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pf-sub { font-size: 0.78rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pf-tags { display: flex; gap: 0.3rem; flex-wrap: wrap; margin-top: 0.15rem; align-items: center; }
+.pf-cat { font-size: 0.66rem; color: var(--text-soft); padding: 0.12rem 0.4rem; border: 1px solid var(--glass-border); border-radius: 0.4rem; }
+.pf-actions { display: flex; gap: 0.25rem; flex: 0 0 auto; }
+.pf-icon {
+  background: transparent; border: 1px solid var(--glass-border); border-radius: 0.5rem;
+  width: 2rem; height: 2rem; cursor: pointer; font-size: 0.9rem; color: var(--text-soft);
+  display: inline-flex; align-items: center; justify-content: center; transition: border-color .15s, color .15s;
+}
+.pf-icon:hover { border-color: var(--glass-border-hover); color: var(--text-main); }
+.pf-icon-danger:hover { border-color: #ff4d4d; color: #ff6b6b; }
+.hint.status.error { color: #ff6b6b; }
+/* ─── /PORTFOLIO ────────────────────────────────────────────────────────────── */

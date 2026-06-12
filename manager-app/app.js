@@ -5026,6 +5026,9 @@ function setupTabs() {
       if (targetTab === 'portal' && isAuthenticated) {
         loadPortalCotizaciones();
       }
+      if (targetTab === 'portfolio' && isAuthenticated) {
+        loadPortfolio();
+      }
       updateAuthGateForCurrentTab();
     });
   });
@@ -5193,6 +5196,7 @@ function init() {
   resetTaskForm();
   setTaskFormVisibility(false);
   setupTabs();
+  setupPortfolio();
   setupCatalogPlayerControls();
   setupCatalogInfiniteScroll();
   setupContactsInfiniteScroll();
@@ -7715,5 +7719,289 @@ async function uploadPortalVersion() {
   if (btn) btn.disabled = false;
 }
 // ──────────────────────────────────────────────────────────────────────────────
+
+// ─── PORTFOLIO (controlador del portafolio público) ───────────────────────────
+const PORTFOLIO_ROLES = ['Producción', 'Composición', 'Mezcla & Master', 'Video'];
+let portfolioCache = [];
+
+function pfPlatformClass(platform) {
+  if (platform === 'Spotify') return 'spotify';
+  if (platform === 'Apple Music') return 'apple';
+  if (platform === 'YouTube') return 'youtube';
+  return 'ghost';
+}
+
+function pfSetStatus(text, isErr) {
+  const el = document.getElementById('portfolio-status');
+  if (!el) return;
+  el.textContent = text || '';
+  el.classList.toggle('error', !!isErr);
+}
+
+function pfDetectStatus(text, isErr) {
+  const el = document.getElementById('portfolio-detect-status');
+  if (!el) return;
+  el.textContent = text || '';
+  el.classList.toggle('error', !!isErr);
+}
+
+async function loadPortfolio() {
+  const listEl = document.getElementById('portfolio-list');
+  if (!listEl) return;
+  pfSetStatus('Cargando portafolio...');
+  try {
+    const res = await fetch(`${API_BASE}/api/portfolio/list`, { headers: apiHeaders() });
+    const data = await res.json();
+    portfolioCache = Array.isArray(data.data) ? data.data : [];
+    renderPortfolio();
+    pfSetStatus(portfolioCache.length ? `${portfolioCache.length} trabajo(s) en el portafolio.` : 'Sin trabajos todavía. Tocá ＋ Agregar y pegá un link.');
+  } catch (e) {
+    pfSetStatus('No se pudo cargar el portafolio.', true);
+  }
+}
+
+function renderPortfolio() {
+  const listEl = document.getElementById('portfolio-list');
+  if (!listEl) return;
+  listEl.innerHTML = '';
+  portfolioCache.forEach((item) => {
+    const li = document.createElement('li');
+    li.className = 'portfolio-item' + (item.visible ? '' : ' pf-hidden');
+    li.draggable = true;
+    li.dataset.id = item.id;
+    const cats = (item.categorias || []).map((c) => `<span class="pf-cat">${escapeHtml(c)}</span>`).join('');
+    li.innerHTML = `
+      <span class="pf-drag" title="Arrastrar para reordenar" aria-hidden="true">⠿</span>
+      <div class="pf-thumb">${item.portada ? `<img src="${escapeHtml(item.portada)}" alt="" loading="lazy" />` : '<span class="pf-thumb-ph">♪</span>'}</div>
+      <div class="pf-meta">
+        <div class="pf-title">${escapeHtml(item.titulo || 'Sin título')}</div>
+        <div class="pf-sub">${escapeHtml(item.artista || '—')}${item.anio ? ' · ' + escapeHtml(item.anio) : ''}</div>
+        <div class="pf-tags">
+          <span class="pf-badge pf-badge-${pfPlatformClass(item.plataforma)}">${escapeHtml(item.plataforma || '')}</span>
+          <span class="pf-badge pf-badge-ghost">${escapeHtml(item.tipo || '')}</span>
+          ${cats}
+        </div>
+      </div>
+      <div class="pf-actions">
+        <button class="pf-icon" data-pf-visible type="button" title="${item.visible ? 'Ocultar del sitio' : 'Mostrar en el sitio'}">${item.visible ? '👁' : '🙈'}</button>
+        <button class="pf-icon" data-pf-edit type="button" title="Editar">✎</button>
+        <button class="pf-icon pf-icon-danger" data-pf-del type="button" title="Borrar">🗑</button>
+      </div>`;
+    li.querySelector('[data-pf-edit]').addEventListener('click', () => portfolioEdit(item.id));
+    li.querySelector('[data-pf-del]').addEventListener('click', () => portfolioDelete(item.id));
+    li.querySelector('[data-pf-visible]').addEventListener('click', () => portfolioToggleVisible(item.id));
+
+    li.addEventListener('dragstart', () => { li.classList.add('pf-dragging'); });
+    li.addEventListener('dragend', () => {
+      li.classList.remove('pf-dragging');
+      persistPortfolioOrder();
+    });
+    li.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      const dragging = listEl.querySelector('.pf-dragging');
+      if (!dragging || dragging === li) return;
+      const after = pfDragAfterElement(listEl, e.clientY);
+      if (after == null) listEl.appendChild(dragging);
+      else listEl.insertBefore(dragging, after);
+    });
+
+    listEl.appendChild(li);
+  });
+}
+
+function pfDragAfterElement(container, y) {
+  const els = [...container.querySelectorAll('.portfolio-item:not(.pf-dragging)')];
+  let closest = { offset: Number.NEGATIVE_INFINITY, element: null };
+  for (const el of els) {
+    const box = el.getBoundingClientRect();
+    const offset = y - box.top - box.height / 2;
+    if (offset < 0 && offset > closest.offset) closest = { offset, element: el };
+  }
+  return closest.element;
+}
+
+async function persistPortfolioOrder() {
+  const listEl = document.getElementById('portfolio-list');
+  if (!listEl) return;
+  const order = [...listEl.querySelectorAll('.portfolio-item')].map((li) => li.dataset.id);
+  // ¿cambió el orden?
+  const current = portfolioCache.map((it) => it.id);
+  if (order.join(',') === current.join(',')) return;
+  // reordenar cache localmente
+  portfolioCache = order.map((id) => portfolioCache.find((it) => it.id === id)).filter(Boolean);
+  pfSetStatus('Guardando orden...');
+  try {
+    const res = await fetch(`${API_BASE}/api/portfolio/reorder`, {
+      method: 'POST', headers: apiHeaders(), body: JSON.stringify({ order }),
+    });
+    const data = await res.json();
+    if (data.error || data.ok === false) { pfSetStatus('No se pudo guardar el orden.', true); return; }
+    pfSetStatus(`${portfolioCache.length} trabajo(s) en el portafolio.`);
+  } catch (e) {
+    pfSetStatus('No se pudo guardar el orden.', true);
+  }
+}
+
+function pfGetRoleChecks() {
+  return [...document.querySelectorAll('#portfolio-preview .portfolio-roles input[type="checkbox"]')];
+}
+
+function pfSetRoles(cats) {
+  const set = new Set(cats || []);
+  pfGetRoleChecks().forEach((cb) => { cb.checked = set.has(cb.value); });
+}
+
+function pfReadRoles() {
+  return pfGetRoleChecks().filter((cb) => cb.checked).map((cb) => cb.value);
+}
+
+function pfShowForm(show) {
+  const card = document.getElementById('portfolio-form-card');
+  if (card) card.classList.toggle('hidden', !show);
+}
+
+function pfResetForm() {
+  ['portfolio-link', 'portfolio-title', 'portfolio-artist', 'portfolio-year'].forEach((id) => {
+    const el = document.getElementById(id); if (el) el.value = '';
+  });
+  ['portfolio-edit-id', 'portfolio-cur-link', 'portfolio-cur-platform', 'portfolio-cur-type', 'portfolio-cur-cover'].forEach((id) => {
+    const el = document.getElementById(id); if (el) el.value = '';
+  });
+  pfSetRoles([]);
+  const vis = document.getElementById('portfolio-visible'); if (vis) vis.checked = true;
+  const prev = document.getElementById('portfolio-preview'); if (prev) prev.classList.add('hidden');
+  pfDetectStatus('');
+}
+
+function pfFillPreview(d) {
+  document.getElementById('portfolio-cur-link').value = d.link || '';
+  document.getElementById('portfolio-cur-platform').value = d.plataforma || '';
+  document.getElementById('portfolio-cur-type').value = d.tipo || '';
+  document.getElementById('portfolio-cur-cover').value = d.portada || '';
+  const img = document.getElementById('portfolio-preview-img');
+  if (d.portada) { img.src = d.portada; img.style.display = ''; } else { img.removeAttribute('src'); img.style.display = 'none'; }
+  const pf = document.getElementById('portfolio-preview-platform');
+  pf.textContent = d.plataforma || '';
+  pf.className = 'pf-badge pf-badge-' + pfPlatformClass(d.plataforma);
+  document.getElementById('portfolio-preview-type').textContent = d.tipo || '';
+  document.getElementById('portfolio-title').value = d.titulo || '';
+  document.getElementById('portfolio-artist').value = d.artista || '';
+  document.getElementById('portfolio-year').value = d.anio || '';
+  document.getElementById('portfolio-preview').classList.remove('hidden');
+}
+
+async function portfolioDetect() {
+  const link = (document.getElementById('portfolio-link').value || '').trim();
+  if (!link) { pfDetectStatus('Pegá un link primero.', true); return; }
+  pfDetectStatus('Detectando...');
+  try {
+    const res = await fetch(`${API_BASE}/api/portfolio/preview`, {
+      method: 'POST', headers: apiHeaders(), body: JSON.stringify({ link }),
+    });
+    const data = await res.json();
+    if (data.error) { pfDetectStatus(data.error, true); return; }
+    pfFillPreview(data.data || {});
+    pfDetectStatus('Detectado. Elegí el rol y guardá.');
+  } catch (e) {
+    pfDetectStatus('Error detectando el link.', true);
+  }
+}
+
+async function portfolioSave() {
+  const editId = (document.getElementById('portfolio-edit-id').value || '').trim();
+  const link = (document.getElementById('portfolio-cur-link').value || document.getElementById('portfolio-link').value || '').trim();
+  if (!link) { pfDetectStatus('Primero pegá un link y tocá Detectar.', true); return; }
+  const body = {
+    link,
+    titulo: (document.getElementById('portfolio-title').value || '').trim(),
+    artista: (document.getElementById('portfolio-artist').value || '').trim(),
+    anio: (document.getElementById('portfolio-year').value || '').trim(),
+    categorias: pfReadRoles(),
+    portada: document.getElementById('portfolio-cur-cover').value || '',
+    visible: document.getElementById('portfolio-visible').checked,
+  };
+  const saveBtn = document.getElementById('portfolio-save');
+  if (saveBtn) saveBtn.disabled = true;
+  pfDetectStatus('Guardando...');
+  try {
+    const url = editId
+      ? `${API_BASE}/api/portfolio/update/${encodeURIComponent(editId)}`
+      : `${API_BASE}/api/portfolio/create`;
+    const res = await fetch(url, { method: editId ? 'PATCH' : 'POST', headers: apiHeaders(), body: JSON.stringify(body) });
+    const data = await res.json();
+    if (data.error) { pfDetectStatus(data.error, true); return; }
+    pfResetForm();
+    pfShowForm(false);
+    await loadPortfolio();
+  } catch (e) {
+    pfDetectStatus('No se pudo guardar.', true);
+  } finally {
+    if (saveBtn) saveBtn.disabled = false;
+  }
+}
+
+function portfolioEdit(id) {
+  const item = portfolioCache.find((it) => it.id === id);
+  if (!item) return;
+  pfShowForm(true);
+  document.getElementById('portfolio-edit-id').value = item.id;
+  document.getElementById('portfolio-link').value = item.link || '';
+  pfFillPreview({
+    link: item.link, plataforma: item.plataforma, tipo: item.tipo,
+    portada: item.portada, titulo: item.titulo, artista: item.artista, anio: item.anio,
+  });
+  pfSetRoles(item.categorias);
+  document.getElementById('portfolio-visible').checked = item.visible !== false;
+  pfDetectStatus('Editando. Cambiá lo que quieras y guardá.');
+  document.getElementById('portfolio-form-card').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+async function portfolioToggleVisible(id) {
+  const item = portfolioCache.find((it) => it.id === id);
+  if (!item) return;
+  const next = !item.visible;
+  item.visible = next;
+  renderPortfolio();
+  try {
+    await fetch(`${API_BASE}/api/portfolio/update/${encodeURIComponent(id)}`, {
+      method: 'PATCH', headers: apiHeaders(), body: JSON.stringify({ visible: next }),
+    });
+  } catch (e) {
+    item.visible = !next; renderPortfolio();
+    pfSetStatus('No se pudo cambiar la visibilidad.', true);
+  }
+}
+
+async function portfolioDelete(id) {
+  const item = portfolioCache.find((it) => it.id === id);
+  if (!confirm(`¿Borrar "${item?.titulo || 'este trabajo'}" del portafolio?`)) return;
+  try {
+    const res = await fetch(`${API_BASE}/api/portfolio/delete/${encodeURIComponent(id)}`, { method: 'DELETE', headers: apiHeaders() });
+    const data = await res.json();
+    if (data.error) { pfSetStatus(data.error, true); return; }
+    portfolioCache = portfolioCache.filter((it) => it.id !== id);
+    renderPortfolio();
+    pfSetStatus(portfolioCache.length ? `${portfolioCache.length} trabajo(s) en el portafolio.` : 'Sin trabajos todavía. Tocá ＋ Agregar y pegá un link.');
+  } catch (e) {
+    pfSetStatus('No se pudo borrar.', true);
+  }
+}
+
+function setupPortfolio() {
+  const bind = (id, ev, fn) => { const el = document.getElementById(id); if (el) el.addEventListener(ev, fn); };
+  bind('refresh-portfolio', 'click', loadPortfolio);
+  bind('portfolio-form-toggle', 'click', () => {
+    const card = document.getElementById('portfolio-form-card');
+    const willShow = card.classList.contains('hidden');
+    if (willShow) { pfResetForm(); }
+    pfShowForm(willShow);
+    if (willShow) document.getElementById('portfolio-link').focus();
+  });
+  bind('portfolio-detect', 'click', portfolioDetect);
+  bind('portfolio-link', 'keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); portfolioDetect(); } });
+  bind('portfolio-save', 'click', portfolioSave);
+  bind('portfolio-cancel', 'click', () => { pfResetForm(); pfShowForm(false); });
+}
+// ─── /PORTFOLIO ───────────────────────────────────────────────────────────────
 
 init();

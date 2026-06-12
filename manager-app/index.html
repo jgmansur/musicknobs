@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;700;800&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="./styles.css?v=2.0.83" />
+    <link rel="stylesheet" href="./styles.css?v=2.0.84" />
     <link rel="manifest" href="./manifest.json" />
     <link rel="icon" type="image/png" href="./icon-32.png" />
     <link rel="apple-touch-icon" href="./icon-180.png" />
@@ -359,6 +359,66 @@
         </div>
       </section>
 
+      <section id="tab-portfolio" class="panel card">
+        <div class="panel-head">
+          <h3 class="ov-section-title">Portafolio público</h3>
+          <div class="actions">
+            <button id="refresh-portfolio" class="ov-icon-btn" type="button" aria-label="Refrescar" title="Refrescar">⟳</button>
+            <button id="portfolio-form-toggle" class="btn ov-new-btn" type="button">＋ Agregar</button>
+          </div>
+        </div>
+        <p class="hint">Pegá el link de Spotify, Apple Music o YouTube. Se llena solo — vos solo elegís el rol. Controla <strong>musicknobs.com/portfolio</strong>.</p>
+
+        <div id="portfolio-form-card" class="task-form-card hidden">
+          <div class="portfolio-form">
+            <div class="portfolio-link-row">
+              <input id="portfolio-link" class="field-input" type="url" placeholder="Pegá el link de Spotify / Apple Music / YouTube..." autocomplete="off" />
+              <button id="portfolio-detect" class="btn" type="button">Detectar</button>
+            </div>
+            <p id="portfolio-detect-status" class="hint status" aria-live="polite"></p>
+
+            <div id="portfolio-preview" class="portfolio-preview hidden">
+              <div class="portfolio-preview-art">
+                <img id="portfolio-preview-img" alt="" />
+              </div>
+              <div class="portfolio-preview-info">
+                <div class="portfolio-preview-badges">
+                  <span id="portfolio-preview-platform" class="pf-badge"></span>
+                  <span id="portfolio-preview-type" class="pf-badge pf-badge-ghost"></span>
+                </div>
+                <input id="portfolio-title" class="field-input" type="text" placeholder="Título" />
+                <input id="portfolio-artist" class="field-input" type="text" placeholder="Artista" />
+                <input id="portfolio-year" class="field-input" type="text" placeholder="Año (opcional)" />
+
+                <div class="portfolio-roles">
+                  <span class="pf-roles-label">Rol:</span>
+                  <label class="pf-chip"><input type="checkbox" value="Producción" /><span>Producción</span></label>
+                  <label class="pf-chip"><input type="checkbox" value="Composición" /><span>Composición</span></label>
+                  <label class="pf-chip"><input type="checkbox" value="Mezcla &amp; Master" /><span>Mezcla &amp; Master</span></label>
+                  <label class="pf-chip"><input type="checkbox" value="Video" /><span>Video</span></label>
+                </div>
+
+                <label class="pf-visible"><input id="portfolio-visible" type="checkbox" checked /> Visible en el sitio público</label>
+
+                <div class="actions">
+                  <button id="portfolio-save" class="btn" type="button">Guardar</button>
+                  <button id="portfolio-cancel" class="btn ghost" type="button">Cancelar</button>
+                </div>
+              </div>
+            </div>
+
+            <input id="portfolio-edit-id" type="hidden" />
+            <input id="portfolio-cur-link" type="hidden" />
+            <input id="portfolio-cur-platform" type="hidden" />
+            <input id="portfolio-cur-type" type="hidden" />
+            <input id="portfolio-cur-cover" type="hidden" />
+          </div>
+        </div>
+
+        <p id="portfolio-status" class="hint status" aria-live="polite">Cargando portafolio...</p>
+        <ul id="portfolio-list" class="list portfolio-list"></ul>
+      </section>
+
       <section id="tab-contacts" class="panel card">
         <div class="panel-head">
           <h3 class="ov-section-title">Contactos Manager</h3>
@@ -597,6 +657,10 @@
           <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 5h16v14H4z"/><path d="M8 9h8M8 13h8M8 17h5"/></svg>
           <span class="tab-label">Catálogo</span>
         </button>
+        <button class="tab" id="tab-btn-portfolio" data-tab="portfolio">
+          <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2.4"/></svg>
+          <span class="tab-label">Portafolio</span>
+        </button>
         <button class="tab" id="tab-btn-quotes" data-tab="quotes" style="display:none;">
           <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 13h6M9 17h4"/></svg>
           <span class="tab-label">Cotizaciones</span>
@@ -631,6 +695,6 @@
     <script src="./config.js"></script>
     <script src="./vendor/howler.min.js"></script>
     <script src="./tracks.js?v=salesfix404v1"></script>
-    <script src="./app.js?v=2.0.83"></script>
+    <script src="./app.js?v=2.0.84"></script>
   </body>
   </html>

@@ -3601,6 +3601,331 @@ async function portalAdminPatchAbono(env, abonoId, body) {
 }
 // ─────────────────────────────────────────────────────────────────────────────
 
+// ─── PORTFOLIO ───────────────────────────────────────────────────────────────
+// Controlador del portafolio público (musicknobs.com/portfolio).
+// DB "Portafolio" dentro de ARCHIVO. Solo se AGREGA código nuevo aquí.
+
+const PORTFOLIO_DEFAULT_DB_ID = "62f3023d-5d38-4a9c-aa8f-ac08cf844a78";
+const PORTFOLIO_DEFAULT_DATA_SOURCE_ID = "8d77ffda-180a-4ac9-ac8e-fb3a544209d3";
+
+const PORTFOLIO_PLATFORMS = ["Spotify", "Apple Music", "YouTube"];
+const PORTFOLIO_TYPES = ["Canción", "Álbum", "Video", "Playlist"];
+const PORTFOLIO_CATEGORIES = ["Producción", "Composición", "Mezcla & Master", "Video"];
+
+// Del link saca plataforma + tipo + url de embed. 100% determinístico (patrón URL).
+function parsePortfolioLink(rawLink) {
+  const link = String(rawLink || "").trim();
+  if (!link) return null;
+  let u;
+  try { u = new URL(link); } catch { return null; }
+  const host = u.hostname.replace(/^www\./, "").toLowerCase();
+  const path = u.pathname;
+
+  // Spotify (incluye paths localizados /intl-xx/)
+  if (host === "open.spotify.com" || host.endsWith(".spotify.com")) {
+    const m = path.match(/\/(?:intl-[a-z]{2}\/)?(track|album|playlist)\/([A-Za-z0-9]+)/);
+    if (m) {
+      const kind = m[1], id = m[2];
+      const tipo = kind === "track" ? "Canción" : kind === "album" ? "Álbum" : "Playlist";
+      return { plataforma: "Spotify", tipo, embedId: id, embedUrl: `https://open.spotify.com/embed/${kind}/${id}` };
+    }
+  }
+  // YouTube
+  if (["youtube.com", "m.youtube.com", "music.youtube.com", "youtu.be"].includes(host)) {
+    let id = "";
+    if (host === "youtu.be") id = path.slice(1).split("/")[0];
+    else if (path.startsWith("/watch")) id = u.searchParams.get("v") || "";
+    else if (path.startsWith("/embed/")) id = path.split("/")[2] || "";
+    else if (path.startsWith("/shorts/")) id = path.split("/")[2] || "";
+    if (id) return { plataforma: "YouTube", tipo: "Video", embedId: id, embedUrl: `https://www.youtube.com/embed/${id}` };
+  }
+  // Apple Music
+  if (host === "music.apple.com" || host === "embed.music.apple.com") {
+    const isSong = u.searchParams.has("i") || /\/song\//.test(path);
+    const isPlaylist = /\/playlist\//.test(path);
+    const tipo = isPlaylist ? "Playlist" : isSong ? "Canción" : "Álbum";
+    return { plataforma: "Apple Music", tipo, embedId: "", embedUrl: `https://embed.music.apple.com${path}${u.search}` };
+  }
+  return null;
+}
+
+function portfolioDecodeHtml(s) {
+  return String(s || "")
+    .replace(/&amp;/g, "&").replace(/&quot;/g, '"').replace(/&#0?39;/g, "'")
+    .replace(/&#x27;/gi, "'").replace(/&apos;/g, "'").replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">").replace(/&#x2F;/gi, "/").replace(/&nbsp;/g, " ").trim();
+}
+
+async function portfolioFetchOg(link) {
+  const out = { title: "", image: "", description: "" };
+  try {
+    const resp = await fetch(link, {
+      headers: { "User-Agent": "Mozilla/5.0 (compatible; MusicKnobsBot/1.0)", "Accept-Language": "es,en;q=0.8" },
+      redirect: "follow",
+    });
+    if (!resp.ok) return out;
+    const html = await resp.text();
+    const grab = (prop) => {
+      const re1 = new RegExp(`<meta[^>]+(?:property|name)=["']${prop}["'][^>]+content=["']([^"']*)["']`, "i");
+      const re2 = new RegExp(`<meta[^>]+content=["']([^"']*)["'][^>]+(?:property|name)=["']${prop}["']`, "i");
+      const m = html.match(re1) || html.match(re2);
+      return m ? portfolioDecodeHtml(m[1]) : "";
+    };
+    out.title = grab("og:title");
+    out.image = grab("og:image");
+    out.description = grab("og:description");
+  } catch (_) { /* best effort */ }
+  return out;
+}
+
+function portfolioArtistFromSpotifyDesc(desc, title) {
+  if (!desc) return "";
+  const cleaned = desc.replace(/^listen to .*? on spotify\.?\s*/i, "").trim();
+  const STOP = /^(song|album|single|ep|playlist|podcast|episode|\d{4}|\d+\s+songs?)$/i;
+  for (const p of cleaned.split("·").map((s) => s.trim()).filter(Boolean)) {
+    if (!STOP.test(p) && p.toLowerCase() !== String(title || "").toLowerCase()) return p;
+  }
+  return "";
+}
+
+// Saca título + artista + portada del link (server-side, sin CORS).
+async function portfolioFetchMeta(link, plataforma) {
+  const meta = { titulo: "", artista: "", portada: "" };
+  try {
+    if (plataforma === "YouTube") {
+      const oe = await fetch(`https://www.youtube.com/oembed?url=${encodeURIComponent(link)}&format=json`);
+      if (oe.ok) {
+        const d = await oe.json();
+        meta.titulo = d.title || "";
+        meta.artista = String(d.author_name || "").replace(/\s*-\s*Topic$/i, "").trim();
+        meta.portada = d.thumbnail_url || "";
+      }
+      return meta;
+    }
+    if (plataforma === "Spotify") {
+      try {
+        const oe = await fetch(`https://open.spotify.com/oembed?url=${encodeURIComponent(link)}`);
+        if (oe.ok) {
+          const d = await oe.json();
+          meta.titulo = d.title || "";
+          meta.portada = d.thumbnail_url || "";
+        }
+      } catch (_) {}
+      const og = await portfolioFetchOg(link);
+      if (!meta.titulo) meta.titulo = og.title;
+      if (!meta.portada) meta.portada = og.image;
+      meta.artista = portfolioArtistFromSpotifyDesc(og.description, meta.titulo);
+      return meta;
+    }
+    if (plataforma === "Apple Music") {
+      const og = await portfolioFetchOg(link);
+      meta.portada = og.image;
+      const t = String(og.title || "");
+      const m = t.match(/^(.*?)\s+by\s+(.*?)(?:\s+on Apple Music)?$/i);
+      if (m) { meta.titulo = m[1].trim(); meta.artista = m[2].trim(); }
+      else { meta.titulo = t.replace(/\s+on Apple Music$/i, "").trim(); }
+      return meta;
+    }
+  } catch (_) { /* best effort */ }
+  return meta;
+}
+
+function portfolioParsePage(page) {
+  const props = page?.properties || {};
+  const sel = (n) => props[n]?.select?.name || "";
+  const txt = (n) => richTextToString(props[n]?.rich_text || []);
+  return {
+    id: page.id,
+    titulo: richTextToString(props["Título"]?.title || []),
+    artista: txt("Artista"),
+    link: props["Link"]?.url || "",
+    plataforma: sel("Plataforma"),
+    tipo: sel("Tipo"),
+    categorias: (props["Categorías"]?.multi_select || []).map((o) => o.name),
+    anio: txt("Año"),
+    orden: typeof props["Orden"]?.number === "number" ? props["Orden"].number : 0,
+    portada: props["Portada"]?.url || "",
+    visible: props["Visible"]?.checkbox === true,
+    creado: page.created_time || "",
+    actualizado: page.last_edited_time || "",
+    url: page.url || "",
+  };
+}
+
+function portfolioBuildProperties(input) {
+  const props = {};
+  if (input.titulo !== undefined) props["Título"] = { title: [{ text: { content: String(input.titulo || "") } }] };
+  if (input.artista !== undefined) props["Artista"] = { rich_text: input.artista ? [{ text: { content: String(input.artista) } }] : [] };
+  if (input.link !== undefined) props["Link"] = { url: input.link ? String(input.link) : null };
+  if (input.plataforma !== undefined) props["Plataforma"] = input.plataforma ? { select: { name: input.plataforma } } : { select: null };
+  if (input.tipo !== undefined) props["Tipo"] = input.tipo ? { select: { name: input.tipo } } : { select: null };
+  if (input.categorias !== undefined) {
+    const cats = (Array.isArray(input.categorias) ? input.categorias : []).filter((c) => PORTFOLIO_CATEGORIES.includes(c));
+    props["Categorías"] = { multi_select: cats.map((name) => ({ name })) };
+  }
+  if (input.anio !== undefined) props["Año"] = { rich_text: input.anio ? [{ text: { content: String(input.anio) } }] : [] };
+  if (input.orden !== undefined) props["Orden"] = { number: typeof input.orden === "number" ? input.orden : (Number(input.orden) || 0) };
+  if (input.portada !== undefined) props["Portada"] = { url: input.portada ? String(input.portada) : null };
+  if (input.visible !== undefined) props["Visible"] = { checkbox: !!input.visible };
+  return props;
+}
+
+async function portfolioList(env) {
+  const token = env.NOTION_TOKEN || "";
+  const ver = env.NOTION_VERSION || "2022-06-28";
+  const dsId = env.PORTFOLIO_DATA_SOURCE_ID || PORTFOLIO_DEFAULT_DATA_SOURCE_ID;
+  const dbId = env.PORTFOLIO_DB_ID || PORTFOLIO_DEFAULT_DB_ID;
+  if (!token) return { error: "NOTION_TOKEN not configured", data: [] };
+
+  const body = JSON.stringify({ page_size: 100, sorts: [{ property: "Orden", direction: "ascending" }] });
+  const endpoints = [
+    `https://api.notion.com/v1/data_sources/${dsId}/query`,
+    `https://api.notion.com/v1/databases/${dbId}/query`,
+  ];
+  let lastError = "";
+  for (const url of endpoints) {
+    const resp = await fetch(url, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}`, "Notion-Version": ver, "Content-Type": "application/json" },
+      body,
+    });
+    if (resp.ok) {
+      const payload = await resp.json();
+      const data = (payload.results || []).map(portfolioParsePage).sort((a, b) => a.orden - b.orden);
+      return { data };
+    }
+    lastError = await resp.text();
+  }
+  return { error: "Notion query failed", details: lastError, data: [] };
+}
+
+// Preview: del link devuelve plataforma/tipo/título/artista/portada SIN guardar.
+async function portfolioPreview(env, body) {
+  const parsed = parsePortfolioLink(body?.link);
+  if (!parsed) return { error: "Link no reconocido. Pegá un link de Spotify, Apple Music o YouTube." };
+  const meta = await portfolioFetchMeta(parsed.embedUrl ? body.link : body.link, parsed.plataforma);
+  return {
+    ok: true,
+    data: {
+      link: String(body.link).trim(),
+      plataforma: parsed.plataforma,
+      tipo: parsed.tipo,
+      embedUrl: parsed.embedUrl,
+      titulo: meta.titulo,
+      artista: meta.artista,
+      portada: meta.portada,
+    },
+  };
+}
+
+async function portfolioCreate(env, body) {
+  const token = env.NOTION_TOKEN || "";
+  const ver = env.NOTION_VERSION || "2022-06-28";
+  const dbId = env.PORTFOLIO_DB_ID || PORTFOLIO_DEFAULT_DB_ID;
+  if (!token) return { error: "NOTION_TOKEN not configured" };
+
+  const parsed = parsePortfolioLink(body?.link);
+  if (!parsed) return { error: "Link no reconocido. Pegá un link de Spotify, Apple Music o YouTube." };
+
+  // Auto-rellenar lo que el cliente no haya mandado.
+  let titulo = body.titulo, artista = body.artista, portada = body.portada;
+  if (titulo === undefined || artista === undefined || portada === undefined || !titulo) {
+    const meta = await portfolioFetchMeta(body.link, parsed.plataforma);
+    if (titulo === undefined || !titulo) titulo = meta.titulo;
+    if (artista === undefined) artista = meta.artista;
+    if (portada === undefined) portada = meta.portada;
+  }
+
+  // Orden: al final.
+  let orden = body.orden;
+  if (orden === undefined) {
+    const current = await portfolioList(env);
+    const max = (current.data || []).reduce((m, it) => Math.max(m, it.orden || 0), 0);
+    orden = max + 1;
+  }
+
+  const input = {
+    titulo: titulo || "Sin título",
+    artista: artista || "",
+    link: String(body.link).trim(),
+    plataforma: parsed.plataforma,
+    tipo: PORTFOLIO_TYPES.includes(body.tipo) ? body.tipo : parsed.tipo,
+    categorias: Array.isArray(body.categorias) ? body.categorias : [],
+    anio: body.anio || "",
+    orden,
+    portada: portada || "",
+    visible: body.visible === undefined ? true : !!body.visible,
+  };
+
+  const resp = await fetch("https://api.notion.com/v1/pages", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}`, "Notion-Version": ver, "Content-Type": "application/json" },
+    body: JSON.stringify({ parent: { database_id: dbId }, properties: portfolioBuildProperties(input) }),
+  });
+  if (!resp.ok) return { error: "Notion create failed", details: await resp.text() };
+  return { ok: true, data: portfolioParsePage(await resp.json()) };
+}
+
+async function portfolioUpdate(env, id, body) {
+  const token = env.NOTION_TOKEN || "";
+  const ver = env.NOTION_VERSION || "2022-06-28";
+  if (!token) return { error: "NOTION_TOKEN not configured" };
+  if (!id) return { error: "id required" };
+
+  const input = { ...body };
+  // Si cambió el link, re-derivar plataforma + tipo.
+  if (body.link !== undefined) {
+    const parsed = parsePortfolioLink(body.link);
+    if (!parsed) return { error: "Link no reconocido." };
+    input.plataforma = parsed.plataforma;
+    if (body.tipo === undefined) input.tipo = parsed.tipo;
+  }
+  if (input.tipo !== undefined && !PORTFOLIO_TYPES.includes(input.tipo)) delete input.tipo;
+
+  const resp = await fetch(`https://api.notion.com/v1/pages/${id}`, {
+    method: "PATCH",
+    headers: { Authorization: `Bearer ${token}`, "Notion-Version": ver, "Content-Type": "application/json" },
+    body: JSON.stringify({ properties: portfolioBuildProperties(input) }),
+  });
+  if (!resp.ok) return { error: "Notion update failed", details: await resp.text() };
+  return { ok: true, data: portfolioParsePage(await resp.json()) };
+}
+
+// Reordenar: body.order = [id1, id2, ...] en el orden deseado.
+async function portfolioReorder(env, body) {
+  const token = env.NOTION_TOKEN || "";
+  const ver = env.NOTION_VERSION || "2022-06-28";
+  if (!token) return { error: "NOTION_TOKEN not configured" };
+  const order = Array.isArray(body?.order) ? body.order : [];
+  if (!order.length) return { error: "order array required" };
+
+  const results = [];
+  for (let i = 0; i < order.length; i++) {
+    const resp = await fetch(`https://api.notion.com/v1/pages/${order[i]}`, {
+      method: "PATCH",
+      headers: { Authorization: `Bearer ${token}`, "Notion-Version": ver, "Content-Type": "application/json" },
+      body: JSON.stringify({ properties: { "Orden": { number: i + 1 } } }),
+    });
+    results.push({ id: order[i], ok: resp.ok });
+  }
+  return { ok: results.every((r) => r.ok), results };
+}
+
+async function portfolioDelete(env, id) {
+  const token = env.NOTION_TOKEN || "";
+  const ver = env.NOTION_VERSION || "2022-06-28";
+  if (!token) return { error: "NOTION_TOKEN not configured" };
+  if (!id) return { error: "id required" };
+  const resp = await fetch(`https://api.notion.com/v1/pages/${id}`, {
+    method: "PATCH",
+    headers: { Authorization: `Bearer ${token}`, "Notion-Version": ver, "Content-Type": "application/json" },
+    body: JSON.stringify({ archived: true }),
+  });
+  if (!resp.ok) return { error: "Notion delete failed", details: await resp.text() };
+  return { ok: true };
+}
+// ─── /PORTFOLIO ──────────────────────────────────────────────────────────────
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -4053,6 +4378,39 @@ export default {
       return json(result, result.ok === false ? 400 : 200);
     }
     // ───────────────────────────────────────────────────────────────────────────
+
+    // ─── PORTFOLIO ─────────────────────────────────────────────────────────────
+    if (request.method === "GET" && url.pathname === "/api/portfolio/list") {
+      const result = await portfolioList(env);
+      return json(result, result.error ? 502 : 200);
+    }
+    if (request.method === "POST" && url.pathname === "/api/portfolio/preview") {
+      const body = await request.json().catch(() => ({}));
+      const result = await portfolioPreview(env, body);
+      return json(result, result.error ? 400 : 200);
+    }
+    if (request.method === "POST" && url.pathname === "/api/portfolio/create") {
+      const body = await request.json().catch(() => ({}));
+      const result = await portfolioCreate(env, body);
+      return json(result, result.error ? 400 : 201);
+    }
+    if (request.method === "POST" && url.pathname === "/api/portfolio/reorder") {
+      const body = await request.json().catch(() => ({}));
+      const result = await portfolioReorder(env, body);
+      return json(result, result.error ? 400 : 200);
+    }
+    if (request.method === "PATCH" && url.pathname.startsWith("/api/portfolio/update/")) {
+      const id = url.pathname.replace("/api/portfolio/update/", "").trim();
+      const body = await request.json().catch(() => ({}));
+      const result = await portfolioUpdate(env, id, body);
+      return json(result, result.error ? 400 : 200);
+    }
+    if (request.method === "DELETE" && url.pathname.startsWith("/api/portfolio/delete/")) {
+      const id = url.pathname.replace("/api/portfolio/delete/", "").trim();
+      const result = await portfolioDelete(env, id);
+      return json(result, result.error ? 400 : 200);
+    }
+    // ─── /PORTFOLIO ────────────────────────────────────────────────────────────
 
     if (!["GET", "POST", "PATCH", "DELETE"].includes(request.method)) {
       return json({ error: "Method not allowed" }, 405);
