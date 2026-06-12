@@ -3821,3 +3821,16 @@ body.messages-active .container {
   .portfolio-preview-art { width: 100%; height: 180px; flex: 0 0 auto; }
 }
 /* ─── /PORTFOLIO ajustes ─────────────────────────────────────────────────────── */
+
+/* ─── PORTFOLIO · sin selección de texto al arrastrar (iOS long-press) ───────── */
+.portfolio-list,
+.portfolio-item,
+.portfolio-item *,
+.pf-drag {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+.pf-drag { -webkit-tap-highlight-color: transparent; }
+/* ─── /PORTFOLIO no-select ───────────────────────────────────────────────────── */
