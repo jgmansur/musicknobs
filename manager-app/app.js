@@ -5336,8 +5336,7 @@ const MK_QUOTE_CATALOG = [
     { id: 'edicion', name: 'Edición y reparación de audio', description: 'Limpieza de ruidos, edición de takes, corrección de timing.', priceLabel: '$100 hasta 5 tracks · +$20 por track extra', hasQty: true, qtyLabel: 'Tracks', basePrice: 100, calcPrice: (q) => (q <= 5 ? 100 : 100 + (q - 5) * 20), currency: 'USD' },
   ]},
   { id: 'consultoria', title: 'Consultoría', services: [
-    { id: 'consultoria-hora', name: 'Sesión de Consultoría', description: 'Orientación de carrera, estrategia de lanzamiento, revisión de material.', priceLabel: '$150 USD / hora', hasQty: true, qtyLabel: 'Horas', basePrice: 150, calcPrice: (q) => q * 150, currency: 'USD' },
-    { id: 'consultoria-paquete', name: 'Paquete Consultoría (8 horas)', description: '8 horas para trabajar en profundidad tu proyecto y carrera.', priceLabel: '$1,200 USD', hasQty: false, basePrice: 1200, currency: 'USD' },
+    { id: 'consultoria-hora', name: 'Sesión de Consultoría', description: 'Orientación de carrera, estrategia de lanzamiento, revisión de material.', priceLabel: '$300 USD / hora', hasQty: true, qtyLabel: 'Horas', basePrice: 300, calcPrice: (q) => q * 300, currency: 'USD' },
   ]},
   { id: 'jingle', title: 'Jingle y Corporativo', services: [
     { id: 'jingle', name: 'Jingle / Música Corporativa', description: 'Composición original para marcas, campañas y audiovisual. Sin inteligencia artificial.', priceLabel: '$3,000 USD / pieza', hasQty: true, qtyLabel: 'Piezas', basePrice: 3000, calcPrice: (q) => q * 3000, currency: 'USD' },
@@ -5384,7 +5383,7 @@ const MK_QUOTE_CATALOG_LOCAL = [
   { id: 'distribucion', title: 'Distribución y Promoción', services: [
     { id: 'spotify-local', name: 'Posicionamiento en Spotify', description: '~60,000 plays auténticos en playlists orgánicas. Resultados en 2-4 semanas.', priceLabel: '$300 USD / track', hasQty: true, qtyLabel: 'Tracks', basePrice: 300, calcPrice: (q) => q * 300, currency: 'USD' },
     { id: 'label-local', name: 'Distribución bajo Music Knobs Label', description: 'Distribución completa en todas las plataformas. Conservás el 80% de regalías y todos los derechos.', priceLabel: '$100 USD primer año · $50 USD / año renovación', hasQty: false, basePrice: 100, currency: 'USD' },
-    { id: 'consultoria-local', name: 'Consultoría para artistas', description: 'Orientación de carrera, estrategia de lanzamiento, revisión de material.', priceLabel: '$150 USD / hora · $1,200 USD paquete 8 horas', hasQty: true, qtyLabel: 'Horas', basePrice: 150, calcPrice: (q) => (q >= 8 ? 1200 : q * 150), currency: 'USD' },
+    { id: 'consultoria-local', name: 'Consultoría para artistas', description: 'Orientación de carrera, estrategia de lanzamiento, revisión de material.', priceLabel: '$150 USD / hora', hasQty: true, qtyLabel: 'Horas', basePrice: 150, calcPrice: (q) => q * 150, currency: 'USD' },
   ]},
   { id: 'arte', title: 'Arte y Diseño', services: [
     { id: 'diseño-portada', name: 'Diseño de Portada Profesional', description: 'Portada diseñada por un artista humano. 2 revisiones incluidas. Revisión extra: $1,000 MXN.', priceLabel: '$4,000 MXN / diseño · Revisión extra $1,000 MXN', hasQty: true, qtyLabel: 'Diseños', basePrice: 4000, calcPrice: (q) => q * 4000, currency: 'MXN' },
@@ -5438,7 +5437,6 @@ const MK_SERVICE_ALIASES = {
   'afinacion': ['Pitch Correction (Melodyne)'],
   'edicion': ['Audio Editing & Repair'],
   'consultoria-hora': ['Consulting Session'],
-  'consultoria-paquete': ['Consulting Package (8 hours)'],
   'jingle': ['Jingle / Corporate Music'],
   'distribucion-label': ['Release under Music Knobs Label'],
   'asesoria-distribucion': ['Self-publishing Advisory'],
