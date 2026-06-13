@@ -5383,7 +5383,7 @@ const MK_QUOTE_CATALOG_LOCAL = [
   { id: 'distribucion', title: 'Distribución y Promoción', services: [
     { id: 'spotify-local', name: 'Posicionamiento en Spotify', description: '~60,000 plays auténticos en playlists orgánicas. Resultados en 2-4 semanas.', priceLabel: '$300 USD / track', hasQty: true, qtyLabel: 'Tracks', basePrice: 300, calcPrice: (q) => q * 300, currency: 'USD' },
     { id: 'label-local', name: 'Distribución bajo Music Knobs Label', description: 'Distribución completa en todas las plataformas. Conservás el 80% de regalías y todos los derechos.', priceLabel: '$100 USD primer año · $50 USD / año renovación', hasQty: false, basePrice: 100, currency: 'USD' },
-    { id: 'consultoria-local', name: 'Consultoría para artistas', description: 'Orientación de carrera, estrategia de lanzamiento, revisión de material.', priceLabel: '$150 USD / hora', hasQty: true, qtyLabel: 'Horas', basePrice: 150, calcPrice: (q) => q * 150, currency: 'USD' },
+    { id: 'consultoria-local', name: 'Consultoría para artistas', description: 'Orientación de carrera, estrategia de lanzamiento, revisión de material.', priceLabel: '$3,000 MXN / hora', hasQty: true, qtyLabel: 'Horas', basePrice: 3000, calcPrice: (q) => q * 3000, currency: 'MXN' },
   ]},
   { id: 'arte', title: 'Arte y Diseño', services: [
     { id: 'diseño-portada', name: 'Diseño de Portada Profesional', description: 'Portada diseñada por un artista humano. 2 revisiones incluidas. Revisión extra: $1,000 MXN.', priceLabel: '$4,000 MXN / diseño · Revisión extra $1,000 MXN', hasQty: true, qtyLabel: 'Diseños', basePrice: 4000, calcPrice: (q) => q * 4000, currency: 'MXN' },
