@@ -139,7 +139,7 @@ let playlistAddSelection = new Set();    // canciones elegidas para agregar
 let playlistAddQuery = '';               // búsqueda dentro del panel de agregar
 let contactsVisibleCount = 12;
 let messagesVisibleCount = 20;
-let catalogVisibleCount = 20;
+let catalogVisibleCount = 50;
 let catalogSearchQuery = '';
 let catalogFilterView = 'genres';
 let catalogDeepLinkSongId = '';
@@ -2492,6 +2492,26 @@ function renderCatalog() {
   });
 
   updateActiveSongRow();
+
+  // Si el primer render no llena el viewport (típico en desktop/monitores
+  // grandes), el evento `scroll` nunca se dispara y la carga infinita se queda
+  // clavada. Revelamos más canciones hasta que haya scroll real o se muestren
+  // todas, para que NO dependa de que el usuario alcance a scrollear.
+  ensureCatalogViewportFilled();
+}
+
+// Revela más canciones mientras la lista no desborde su contenedor y queden
+// canciones por mostrar. Leer scrollHeight fuerza un reflow sincrónico, así que
+// la medición es correcta dentro del mismo ciclo.
+function ensureCatalogViewportFilled() {
+  if (getActiveTabName() !== 'catalog') return;
+  if (catalogQueue.length <= catalogVisibleCount) return; // ya se muestran todas
+  const container = document.querySelector('main.container');
+  const songs = document.getElementById('catalog-songs');
+  const overflows = (el) => !!el && el.scrollHeight > el.clientHeight + 4;
+  if (overflows(container) || overflows(songs)) return; // ya hay scroll: el usuario puede pedir más
+  catalogVisibleCount = Math.min(catalogVisibleCount + CATALOG_PAGE_STEP, catalogQueue.length);
+  renderCatalog(); // re-evalúa al final vía ensureCatalogViewportFilled (recursión acotada)
 }
 
 // ── Rating (admin) + Likes (visitante) + Plays: helpers ──────────────────────
