@@ -4044,8 +4044,7 @@ async function listProveedores(env) {
     return {
       id: page.id,
       nombre: propText(props, "Name"),
-      // Extra props are tolerated if Jay enriches this DB later.
-      categoria: propSelect(props, "Categoría") || propSelect(props, "Categoria"),
+      categoria: propText(props, "Categoría"),
       email: propText(props, "Email"),
       telefono: propText(props, "Telefono") || propText(props, "Teléfono"),
       whatsapp: propText(props, "WhatsApp"),
@@ -4057,6 +4056,111 @@ async function listProveedores(env) {
   });
   data.sort((a, b) => String(a.nombre).localeCompare(String(b.nombre)));
   return { data };
+}
+
+// Database IDs (page-level) for create fallback. Data source IDs are above.
+const CLIENTES_DB_ID = "37bc1932ede8804abc41f9783c5c2e4e";
+const MUSICOS_DB_ID = "178c1932ede8804885d7cab700565ba3";
+const PROVEEDORES_DB_ID = "37fc1932ede88049a054fbb5472e5ad1";
+
+// Notion property value builders.
+function pvTitle(v) { return { title: [{ text: { content: String(v || "") } }] }; }
+function pvText(v) { const s = String(v || ""); return { rich_text: s ? [{ text: { content: s } }] : [] }; }
+function pvSelect(v) { return { select: v ? { name: String(v) } : null }; }
+function pvMulti(arr) {
+  const list = Array.isArray(arr) ? arr : String(arr || "").split(",");
+  return { multi_select: list.map((s) => String(s).trim()).filter(Boolean).map((name) => ({ name })) };
+}
+function pvEmail(v) { return { email: v ? String(v) : null }; }
+function pvPhone(v) { return { phone_number: v ? String(v) : null }; }
+function pvUrl(v) { return { url: v ? String(v) : null }; }
+
+const CLIENTE_ESTADOS = ["Prospecto", "Cliente activo", "Inactivo"];
+const CLIENTE_IDIOMAS = ["Español", "English"];
+const CLIENTE_ORIGENES = ["Local", "Internacional"];
+
+function clientesBuildProperties(input) {
+  const p = {};
+  if (input.nombre !== undefined) p["Name"] = pvTitle(input.nombre);
+  if (input.estado !== undefined) p["Estado"] = pvSelect(CLIENTE_ESTADOS.includes(input.estado) ? input.estado : "");
+  if (input.email !== undefined) p["Email"] = pvEmail(input.email);
+  if (input.whatsapp !== undefined) p["WhatsApp"] = pvPhone(input.whatsapp);
+  if (input.idioma !== undefined) p["Idioma"] = pvSelect(CLIENTE_IDIOMAS.includes(input.idioma) ? input.idioma : "");
+  if (input.origen !== undefined) p["Origen"] = pvSelect(CLIENTE_ORIGENES.includes(input.origen) ? input.origen : "");
+  if (input.notas !== undefined) p["Notas"] = pvText(input.notas);
+  if (input.serviciosCotizados !== undefined) p["Servicios cotizados"] = pvText(input.serviciosCotizados);
+  return p;
+}
+
+function musicosBuildProperties(input) {
+  const p = {};
+  if (input.nombre !== undefined) p["Músico"] = pvTitle(input.nombre);
+  if (input.especialidad !== undefined) p["Especialidad"] = pvMulti(input.especialidad);
+  if (input.ciudad !== undefined) p["Ciudad de Residencia"] = pvMulti(input.ciudad);
+  if (input.descripcion !== undefined) p["Descripción"] = pvText(input.descripcion);
+  if (input.email !== undefined) p["Email"] = pvText(input.email);
+  if (input.telefono !== undefined) p["Telefono"] = pvText(input.telefono);
+  if (input.instagram !== undefined) p["Instagram"] = pvText(input.instagram);
+  return p;
+}
+
+function proveedoresBuildProperties(input) {
+  const p = {};
+  if (input.nombre !== undefined) p["Name"] = pvTitle(input.nombre);
+  if (input.categoria !== undefined) p["Categoría"] = pvText(input.categoria);
+  if (input.email !== undefined) p["Email"] = pvEmail(input.email);
+  if (input.telefono !== undefined) p["Telefono"] = pvPhone(input.telefono);
+  if (input.whatsapp !== undefined) p["WhatsApp"] = pvPhone(input.whatsapp);
+  if (input.instagram !== undefined) p["Instagram"] = pvText(input.instagram);
+  if (input.web !== undefined) p["Web"] = pvUrl(input.web);
+  if (input.notas !== undefined) p["Notas"] = pvText(input.notas);
+  return p;
+}
+
+async function createDirectoryPage(env, dsId, dbId, properties) {
+  const token = env.NOTION_TOKEN || "";
+  const ver = env.NOTION_VERSION || "2022-06-28";
+  if (!token) return { error: "NOTION_TOKEN not configured" };
+  const parentShapes = [{ data_source_id: dsId }, { database_id: dbId }];
+  let lastError = "";
+  for (const parent of parentShapes) {
+    const resp = await fetch("https://api.notion.com/v1/pages", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}`, "Notion-Version": ver, "Content-Type": "application/json" },
+      body: JSON.stringify({ parent, properties }),
+    });
+    if (resp.ok) { const page = await resp.json(); return { ok: true, id: page.id }; }
+    lastError = await resp.text();
+  }
+  return { error: "Create failed", details: lastError };
+}
+
+async function updateDirectoryPage(env, id, properties) {
+  const token = env.NOTION_TOKEN || "";
+  const ver = env.NOTION_VERSION || "2022-06-28";
+  if (!token) return { error: "NOTION_TOKEN not configured" };
+  if (!id) return { error: "id required" };
+  const resp = await fetch(`https://api.notion.com/v1/pages/${id}`, {
+    method: "PATCH",
+    headers: { Authorization: `Bearer ${token}`, "Notion-Version": ver, "Content-Type": "application/json" },
+    body: JSON.stringify({ properties }),
+  });
+  if (!resp.ok) return { error: "Update failed", details: await resp.text() };
+  return { ok: true };
+}
+
+async function deleteDirectoryPage(env, id) {
+  const token = env.NOTION_TOKEN || "";
+  const ver = env.NOTION_VERSION || "2022-06-28";
+  if (!token) return { error: "NOTION_TOKEN not configured" };
+  if (!id) return { error: "id required" };
+  const resp = await fetch(`https://api.notion.com/v1/pages/${id}`, {
+    method: "PATCH",
+    headers: { Authorization: `Bearer ${token}`, "Notion-Version": ver, "Content-Type": "application/json" },
+    body: JSON.stringify({ archived: true }),
+  });
+  if (!resp.ok) return { error: "Delete failed", details: await resp.text() };
+  return { ok: true };
 }
 // ─── /CLIENTES Y PROVEEDORES ─────────────────────────────────────────────────
 
@@ -4558,6 +4662,60 @@ export default {
     if (request.method === "GET" && url.pathname === "/api/proveedores/list") {
       const result = await listProveedores(env);
       return json(result, result.error ? 502 : 200);
+    }
+    // Clientes CRUD
+    if (request.method === "POST" && url.pathname === "/api/clientes/create") {
+      const body = await request.json().catch(() => ({}));
+      if (!String(body?.nombre || "").trim()) return json({ error: "nombre is required" }, 400);
+      const result = await createDirectoryPage(env, CLIENTES_DS_ID, CLIENTES_DB_ID, clientesBuildProperties(body));
+      return json(result, result.error ? 400 : 201);
+    }
+    if (request.method === "PATCH" && url.pathname.startsWith("/api/clientes/update/")) {
+      const id = url.pathname.replace("/api/clientes/update/", "").trim();
+      const body = await request.json().catch(() => ({}));
+      const result = await updateDirectoryPage(env, id, clientesBuildProperties(body));
+      return json(result, result.error ? 400 : 200);
+    }
+    if (request.method === "DELETE" && url.pathname.startsWith("/api/clientes/delete/")) {
+      const id = url.pathname.replace("/api/clientes/delete/", "").trim();
+      const result = await deleteDirectoryPage(env, id);
+      return json(result, result.error ? 400 : 200);
+    }
+    // Músicos CRUD
+    if (request.method === "POST" && url.pathname === "/api/musicos/create") {
+      const body = await request.json().catch(() => ({}));
+      if (!String(body?.nombre || "").trim()) return json({ error: "nombre is required" }, 400);
+      const result = await createDirectoryPage(env, MUSICOS_DS_ID, MUSICOS_DB_ID, musicosBuildProperties(body));
+      return json(result, result.error ? 400 : 201);
+    }
+    if (request.method === "PATCH" && url.pathname.startsWith("/api/musicos/update/")) {
+      const id = url.pathname.replace("/api/musicos/update/", "").trim();
+      const body = await request.json().catch(() => ({}));
+      const result = await updateDirectoryPage(env, id, musicosBuildProperties(body));
+      return json(result, result.error ? 400 : 200);
+    }
+    if (request.method === "DELETE" && url.pathname.startsWith("/api/musicos/delete/")) {
+      const id = url.pathname.replace("/api/musicos/delete/", "").trim();
+      const result = await deleteDirectoryPage(env, id);
+      return json(result, result.error ? 400 : 200);
+    }
+    // Proveedores CRUD
+    if (request.method === "POST" && url.pathname === "/api/proveedores/create") {
+      const body = await request.json().catch(() => ({}));
+      if (!String(body?.nombre || "").trim()) return json({ error: "nombre is required" }, 400);
+      const result = await createDirectoryPage(env, PROVEEDORES_DS_ID, PROVEEDORES_DB_ID, proveedoresBuildProperties(body));
+      return json(result, result.error ? 400 : 201);
+    }
+    if (request.method === "PATCH" && url.pathname.startsWith("/api/proveedores/update/")) {
+      const id = url.pathname.replace("/api/proveedores/update/", "").trim();
+      const body = await request.json().catch(() => ({}));
+      const result = await updateDirectoryPage(env, id, proveedoresBuildProperties(body));
+      return json(result, result.error ? 400 : 200);
+    }
+    if (request.method === "DELETE" && url.pathname.startsWith("/api/proveedores/delete/")) {
+      const id = url.pathname.replace("/api/proveedores/delete/", "").trim();
+      const result = await deleteDirectoryPage(env, id);
+      return json(result, result.error ? 400 : 200);
     }
     // ─── /CLIENTES Y PROVEEDORES ─────────────────────────────────────────────
 

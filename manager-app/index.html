@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;700;800&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="./styles.css?v=2.0.94" />
+    <link rel="stylesheet" href="./styles.css?v=2.0.95" />
     <link rel="manifest" href="./manifest.json" />
     <link rel="icon" type="image/png" href="./icon-32.png" />
     <link rel="apple-touch-icon" href="./icon-180.png" />
@@ -145,6 +145,34 @@
         <div class="actions" style="justify-content:center;">
           <button class="btn" id="focus-reschedule-save">Guardar</button>
           <button class="btn ghost" id="focus-reschedule-cancel">Cancelar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal crear/editar cliente, músico o proveedor -->
+    <div id="cp-form-modal" class="auth-gate" role="dialog" aria-modal="true" aria-labelledby="cp-form-title">
+      <div class="auth-gate-card" style="width:min(520px,100%); text-align:left;">
+        <h2 id="cp-form-title" style="text-align:center; margin-bottom:1.2rem;">Nuevo</h2>
+        <div id="cp-form-fields"></div>
+        <p id="cp-form-status" class="hint status" aria-live="polite"></p>
+        <div class="actions" style="justify-content:center; margin-top:1rem;">
+          <button class="btn" id="cp-form-save">Guardar</button>
+          <button class="btn ghost" id="cp-form-cancel">Cancelar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal detalle de músico o proveedor -->
+    <div id="cp-detail-modal" class="auth-gate" role="dialog" aria-modal="true" aria-labelledby="cp-detail-title">
+      <div class="auth-gate-card" style="width:min(520px,100%); text-align:left;">
+        <div id="cp-detail-body"></div>
+        <div class="actions cp-detail-actions" style="justify-content:center; margin-top:1.2rem;">
+          <button class="btn ghost" id="cp-detail-edit">✎ Editar</button>
+          <button class="btn ghost" id="cp-detail-share">↗ Compartir</button>
+          <button class="btn ghost cp-danger" id="cp-detail-delete">🗑 Borrar</button>
+        </div>
+        <div class="actions" style="justify-content:center; margin-top:.4rem;">
+          <button class="btn ghost" id="cp-detail-close">Cerrar</button>
         </div>
       </div>
     </div>
@@ -466,6 +494,9 @@
         </div>
 
         <div id="cp-view-clientes" class="cp-view active">
+          <div class="cp-actions">
+            <button id="cp-new-cliente" class="btn ov-new-btn" type="button">＋ Nuevo cliente</button>
+          </div>
           <div class="task-filters">
             <input id="clientes-search" class="field-input" type="search" placeholder="Buscar cliente por nombre, email, código..." />
           </div>
@@ -480,6 +511,9 @@
           </div>
 
           <div id="cp-sub-musicos" class="cp-subview active">
+            <div class="cp-actions">
+              <button id="cp-new-musico" class="btn ov-new-btn" type="button">＋ Nuevo músico</button>
+            </div>
             <div class="task-filters">
               <input id="musicos-search" class="field-input" type="search" placeholder="Buscar músico por nombre, especialidad, ciudad..." />
             </div>
@@ -488,6 +522,9 @@
           </div>
 
           <div id="cp-sub-proveedores" class="cp-subview">
+            <div class="cp-actions">
+              <button id="cp-new-proveedor" class="btn ov-new-btn" type="button">＋ Nuevo proveedor</button>
+            </div>
             <div class="task-filters">
               <input id="proveedores-search" class="field-input" type="search" placeholder="Buscar proveedor..." />
             </div>
@@ -742,6 +779,6 @@
     <script src="./config.js"></script>
     <script src="./vendor/howler.min.js"></script>
     <script src="./tracks.js?v=salesfix404v1"></script>
-    <script src="./app.js?v=2.0.94"></script>
+    <script src="./app.js?v=2.0.95"></script>
   </body>
   </html>

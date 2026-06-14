@@ -4355,6 +4355,10 @@ function setClientes(rows) {
             <div class="contact-meta">${meta || 'Sin detalles'}</div>
             <div class="cp-code-row"><span class="cp-code-label">Código de acceso:</span> ${code}</div>
           </div>
+          <div class="actions">
+            <button class="mini-btn" data-cp-edit="${escapeHtml(c.id)}">Editar</button>
+            <button class="mini-btn" data-cp-del="${escapeHtml(c.id)}">Borrar</button>
+          </div>
         </div>
       </li>`;
   }).join('');
@@ -4364,6 +4368,11 @@ function setClientes(rows) {
       mkCopyToClipboard(code, `Código ${code} copiado ✓`);
     });
   });
+  list.querySelectorAll('[data-cp-edit]').forEach((b) => b.addEventListener('click', () => {
+    const c = clientesCache.find((x) => x.id === b.dataset.cpEdit);
+    if (c) cpOpenForm('clientes', c);
+  }));
+  list.querySelectorAll('[data-cp-del]').forEach((b) => b.addEventListener('click', () => cpDeleteEntity('clientes', b.dataset.cpDel)));
 }
 
 function setMusicos(rows) {
@@ -4373,27 +4382,29 @@ function setMusicos(rows) {
   const q = musicosQuery.trim().toLowerCase();
   const filtered = rows.filter((m) => cpMatch([m.nombre, (m.especialidad || []).join(' '), (m.ciudad || []).join(' '), m.descripcion, m.email], q));
   list.innerHTML = filtered.map((m) => {
-    const esp = (m.especialidad || []).map((e) => `<span class="cp-tag">${escapeHtml(e)}</span>`).join('');
+    const esp = (m.especialidad || []).slice(0, 4).map((e) => `<span class="cp-tag">${escapeHtml(e)}</span>`).join('');
     const ciudad = (m.ciudad || []).join(', ');
-    const email = m.email ? `<a href="mailto:${escapeHtml(m.email)}">${escapeHtml(m.email)}</a>` : '';
-    const tel = m.telefono ? `<a href="tel:${escapeHtml(String(m.telefono).replace(/[\s\-().]/g, ''))}">${escapeHtml(m.telefono)}</a>` : '';
-    const igHref = normalizeInstagramLink(m.instagram);
-    const ig = igHref ? `<a href="${igHref}" target="_blank" rel="noopener">Instagram</a>` : '';
-    const meta = [ciudad, email, tel, ig].filter(Boolean).join(' · ');
-    const avatar = m.foto ? `<img class="cp-avatar" src="${escapeHtml(m.foto)}" alt="" loading="lazy" referrerpolicy="no-referrer" />` : '';
+    const avatar = m.foto
+      ? `<img class="cp-avatar" src="${escapeHtml(m.foto)}" alt="" loading="lazy" referrerpolicy="no-referrer" />`
+      : '<div class="cp-avatar cp-avatar-empty">🎵</div>';
     return `
       <li>
-        <div class="contact-card cp-card-rich">
+        <div class="contact-card cp-card-rich cp-clickable" data-cp-id="${escapeHtml(m.id)}" role="button" tabindex="0">
           ${avatar}
           <div class="contact-main">
             <div class="contact-name">${escapeHtml(m.nombre || 'Sin nombre')}</div>
             ${esp ? `<div class="cp-tags">${esp}</div>` : ''}
-            <div class="contact-meta">${meta || 'Sin detalles'}</div>
-            ${m.descripcion ? `<div class="cp-desc">${escapeHtml(m.descripcion)}</div>` : ''}
+            ${ciudad ? `<div class="contact-meta">${escapeHtml(ciudad)}</div>` : ''}
           </div>
+          <span class="cp-chevron">›</span>
         </div>
       </li>`;
   }).join('');
+  list.querySelectorAll('[data-cp-id]').forEach((el) => {
+    const open = () => { const m = musicosCache.find((x) => x.id === el.dataset.cpId); if (m) cpOpenDetail('musicos', m); };
+    el.addEventListener('click', open);
+    el.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); } });
+  });
 }
 
 function setProveedores(rows) {
@@ -4403,28 +4414,226 @@ function setProveedores(rows) {
   const q = proveedoresQuery.trim().toLowerCase();
   const filtered = rows.filter((p) => cpMatch([p.nombre, p.categoria, p.email, p.telefono, p.notas], q));
   list.innerHTML = filtered.map((p) => {
-    const email = p.email ? `<a href="mailto:${escapeHtml(p.email)}">${escapeHtml(p.email)}</a>` : '';
-    const tel = p.telefono ? `<a href="tel:${escapeHtml(String(p.telefono).replace(/[\s\-().]/g, ''))}">${escapeHtml(p.telefono)}</a>` : '';
-    const waHref = normalizeWhatsappLink(p.whatsapp);
-    const wa = waHref ? `<a href="${waHref}" target="_blank" rel="noopener">WhatsApp</a>` : '';
-    const igHref = normalizeInstagramLink(p.instagram);
-    const ig = igHref ? `<a href="${igHref}" target="_blank" rel="noopener">Instagram</a>` : '';
-    const webHref = cpWebHref(p.web);
-    const web = webHref ? `<a href="${escapeHtml(webHref)}" target="_blank" rel="noopener">Web</a>` : '';
     const cat = p.categoria ? `<span class="cp-badge">${escapeHtml(p.categoria)}</span>` : '';
-    const meta = [email, tel, wa, ig, web].filter(Boolean).join(' · ');
+    const meta = [p.telefono, p.email].filter(Boolean).map(escapeHtml).join(' · ');
     return `
       <li>
-        <div class="contact-card">
+        <div class="contact-card cp-clickable" data-cp-id="${escapeHtml(p.id)}" role="button" tabindex="0">
           <div class="contact-main">
             <div class="contact-name">${escapeHtml(p.nombre || 'Sin nombre')} ${cat}</div>
-            <div class="contact-meta">${meta || 'Sin detalles'}</div>
-            ${p.notas ? `<div class="cp-desc">${escapeHtml(p.notas)}</div>` : ''}
+            ${meta ? `<div class="contact-meta">${meta}</div>` : ''}
           </div>
+          <span class="cp-chevron">›</span>
         </div>
       </li>`;
   }).join('');
+  list.querySelectorAll('[data-cp-id]').forEach((el) => {
+    const open = () => { const p = proveedoresCache.find((x) => x.id === el.dataset.cpId); if (p) cpOpenDetail('proveedores', p); };
+    el.addEventListener('click', open);
+    el.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); } });
+  });
 }
+
+// ─── CRUD + detalle (formulario y modal de detalle) ────────────────────────
+const CP_ENTITY_CONFIG = {
+  clientes: {
+    titulo: 'cliente',
+    create: '/api/clientes/create',
+    update: (id) => `/api/clientes/update/${id}`,
+    del: (id) => `/api/clientes/delete/${id}`,
+    reload: () => loadClientes(true),
+    fields: [
+      { key: 'nombre', label: 'Nombre', type: 'text', required: true },
+      { key: 'estado', label: 'Estado', type: 'select', options: ['', 'Prospecto', 'Cliente activo', 'Inactivo'] },
+      { key: 'email', label: 'Email', type: 'email' },
+      { key: 'whatsapp', label: 'WhatsApp', type: 'text' },
+      { key: 'idioma', label: 'Idioma', type: 'select', options: ['', 'Español', 'English'] },
+      { key: 'origen', label: 'Origen', type: 'select', options: ['', 'Local', 'Internacional'] },
+      { key: 'serviciosCotizados', label: 'Servicios cotizados', type: 'textarea' },
+      { key: 'notas', label: 'Notas', type: 'textarea' },
+    ],
+  },
+  musicos: {
+    titulo: 'músico',
+    create: '/api/musicos/create',
+    update: (id) => `/api/musicos/update/${id}`,
+    del: (id) => `/api/musicos/delete/${id}`,
+    reload: () => loadMusicos(true),
+    fields: [
+      { key: 'nombre', label: 'Nombre', type: 'text', required: true },
+      { key: 'especialidad', label: 'Especialidad (separar con comas)', type: 'text' },
+      { key: 'ciudad', label: 'Ciudad de residencia (separar con comas)', type: 'text' },
+      { key: 'email', label: 'Email', type: 'text' },
+      { key: 'telefono', label: 'Teléfono', type: 'text' },
+      { key: 'instagram', label: 'Instagram', type: 'text' },
+      { key: 'descripcion', label: 'Descripción', type: 'textarea' },
+    ],
+  },
+  proveedores: {
+    titulo: 'proveedor',
+    create: '/api/proveedores/create',
+    update: (id) => `/api/proveedores/update/${id}`,
+    del: (id) => `/api/proveedores/delete/${id}`,
+    reload: () => loadProveedores(true),
+    fields: [
+      { key: 'nombre', label: 'Nombre', type: 'text', required: true },
+      { key: 'categoria', label: 'Categoría', type: 'text' },
+      { key: 'email', label: 'Email', type: 'email' },
+      { key: 'telefono', label: 'Teléfono', type: 'text' },
+      { key: 'whatsapp', label: 'WhatsApp', type: 'text' },
+      { key: 'instagram', label: 'Instagram', type: 'text' },
+      { key: 'web', label: 'Web', type: 'url' },
+      { key: 'notas', label: 'Notas', type: 'textarea' },
+    ],
+  },
+};
+
+let cpFormEntity = null;
+let cpFormEditId = '';
+let cpDetailEntity = null;
+let cpDetailRecord = null;
+
+function cpOpenForm(entity, record) {
+  const cfg = CP_ENTITY_CONFIG[entity];
+  if (!cfg) return;
+  cpFormEntity = entity;
+  cpFormEditId = record?.id || '';
+  const titleEl = document.getElementById('cp-form-title');
+  if (titleEl) titleEl.textContent = `${cpFormEditId ? 'Editar' : 'Nuevo'} ${cfg.titulo}`;
+  const fieldsEl = document.getElementById('cp-form-fields');
+  if (fieldsEl) {
+    fieldsEl.innerHTML = cfg.fields.map((f) => {
+      const raw = record ? record[f.key] : '';
+      const val = Array.isArray(raw) ? raw.join(', ') : (raw == null ? '' : String(raw));
+      const id = `cp-f-${f.key}`;
+      let input;
+      if (f.type === 'select') {
+        input = `<select id="${id}" class="field-input">${f.options.map((o) => `<option value="${escapeHtml(o)}" ${o === val ? 'selected' : ''}>${escapeHtml(o || '—')}</option>`).join('')}</select>`;
+      } else if (f.type === 'textarea') {
+        input = `<textarea id="${id}" class="field-input" rows="3">${escapeHtml(val)}</textarea>`;
+      } else {
+        const t = f.type === 'email' ? 'email' : (f.type === 'url' ? 'url' : 'text');
+        input = `<input id="${id}" class="field-input" type="${t}" value="${escapeHtml(val)}" />`;
+      }
+      return `<div class="cp-form-row"><label class="focus-edit-label" for="${id}">${escapeHtml(f.label)}${f.required ? ' *' : ''}</label>${input}</div>`;
+    }).join('');
+  }
+  setStatus('cp-form-status', '');
+  document.getElementById('cp-form-modal')?.classList.add('active');
+}
+
+function cpCloseForm() {
+  document.getElementById('cp-form-modal')?.classList.remove('active');
+  cpFormEntity = null;
+  cpFormEditId = '';
+}
+
+async function cpSaveForm() {
+  const cfg = CP_ENTITY_CONFIG[cpFormEntity];
+  if (!cfg) return;
+  const payload = {};
+  cfg.fields.forEach((f) => {
+    const el = document.getElementById(`cp-f-${f.key}`);
+    payload[f.key] = el ? String(el.value || '').trim() : '';
+  });
+  if (!payload.nombre) { setStatus('cp-form-status', 'El nombre es obligatorio.', true); return; }
+  try {
+    if (!API_BASE) throw new Error('apiBaseUrl no configurado');
+    const endpoint = cpFormEditId ? `${API_BASE}${cfg.update(cpFormEditId)}` : `${API_BASE}${cfg.create}`;
+    const method = cpFormEditId ? 'PATCH' : 'POST';
+    const r = await fetch(endpoint, { method, headers: apiHeaders(), body: JSON.stringify(payload) });
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    cpCloseForm();
+    cpCloseDetail();
+    await cfg.reload();
+  } catch (e) {
+    setStatus('cp-form-status', `No se pudo guardar: ${e?.message || e}`, true);
+  }
+}
+
+async function cpDeleteEntity(entity, id) {
+  const cfg = CP_ENTITY_CONFIG[entity];
+  if (!cfg || !id) return;
+  if (!window.confirm('¿Borrar este registro? Se archiva en Notion.')) return;
+  try {
+    if (!API_BASE) throw new Error('apiBaseUrl no configurado');
+    const r = await fetch(`${API_BASE}${cfg.del(id)}`, { method: 'DELETE', headers: apiHeaders() });
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    cpCloseDetail();
+    await cfg.reload();
+  } catch (e) {
+    portalNotify(`No se pudo borrar: ${e?.message || e}`, true);
+  }
+}
+
+function cpDetailRow(label, valueHtml) {
+  if (!valueHtml) return '';
+  return `<div class="cp-detail-row"><span class="cp-detail-label">${escapeHtml(label)}</span><span class="cp-detail-val">${valueHtml}</span></div>`;
+}
+
+function cpRenderMusicoDetail(m) {
+  const esp = (m.especialidad || []).map((e) => `<span class="cp-tag">${escapeHtml(e)}</span>`).join('');
+  const email = m.email ? `<a href="mailto:${escapeHtml(m.email)}">${escapeHtml(m.email)}</a>` : '';
+  const tel = m.telefono ? `<a href="tel:${escapeHtml(String(m.telefono).replace(/[\s\-().]/g, ''))}">${escapeHtml(m.telefono)}</a>` : '';
+  const igHref = normalizeInstagramLink(m.instagram);
+  const ig = igHref ? `<a href="${igHref}" target="_blank" rel="noopener">${escapeHtml(m.instagram)}</a>` : (m.instagram ? escapeHtml(m.instagram) : '');
+  const avatar = m.foto ? `<img class="cp-detail-avatar" src="${escapeHtml(m.foto)}" alt="" referrerpolicy="no-referrer" />` : '';
+  return `
+    <div class="cp-detail-head">${avatar}<h2 class="cp-detail-name" id="cp-detail-title">${escapeHtml(m.nombre || 'Sin nombre')}</h2></div>
+    ${esp ? `<div class="cp-tags cp-detail-tags">${esp}</div>` : ''}
+    ${cpDetailRow('Ciudad', (m.ciudad || []).map(escapeHtml).join(', '))}
+    ${cpDetailRow('Teléfono', tel)}
+    ${cpDetailRow('Email', email)}
+    ${cpDetailRow('Instagram', ig)}
+    ${m.descripcion ? `<div class="cp-detail-desc">${escapeHtml(m.descripcion)}</div>` : ''}`;
+}
+
+function cpRenderProveedorDetail(p) {
+  const email = p.email ? `<a href="mailto:${escapeHtml(p.email)}">${escapeHtml(p.email)}</a>` : '';
+  const tel = p.telefono ? `<a href="tel:${escapeHtml(String(p.telefono).replace(/[\s\-().]/g, ''))}">${escapeHtml(p.telefono)}</a>` : '';
+  const waHref = normalizeWhatsappLink(p.whatsapp);
+  const wa = waHref ? `<a href="${waHref}" target="_blank" rel="noopener">${escapeHtml(p.whatsapp || 'WhatsApp')}</a>` : (p.whatsapp ? escapeHtml(p.whatsapp) : '');
+  const igHref = normalizeInstagramLink(p.instagram);
+  const ig = igHref ? `<a href="${igHref}" target="_blank" rel="noopener">${escapeHtml(p.instagram)}</a>` : (p.instagram ? escapeHtml(p.instagram) : '');
+  const webHref = cpWebHref(p.web);
+  const web = webHref ? `<a href="${escapeHtml(webHref)}" target="_blank" rel="noopener">${escapeHtml(p.web)}</a>` : '';
+  return `
+    <div class="cp-detail-head"><h2 class="cp-detail-name" id="cp-detail-title">${escapeHtml(p.nombre || 'Sin nombre')}</h2></div>
+    ${p.categoria ? `<div class="cp-tags cp-detail-tags"><span class="cp-badge">${escapeHtml(p.categoria)}</span></div>` : ''}
+    ${cpDetailRow('Teléfono', tel)}
+    ${cpDetailRow('WhatsApp', wa)}
+    ${cpDetailRow('Email', email)}
+    ${cpDetailRow('Web', web)}
+    ${cpDetailRow('Instagram', ig)}
+    ${p.notas ? `<div class="cp-detail-desc">${escapeHtml(p.notas)}</div>` : ''}`;
+}
+
+function cpOpenDetail(entity, record) {
+  cpDetailEntity = entity;
+  cpDetailRecord = record;
+  const body = document.getElementById('cp-detail-body');
+  if (body) body.innerHTML = entity === 'musicos' ? cpRenderMusicoDetail(record) : cpRenderProveedorDetail(record);
+  document.getElementById('cp-detail-modal')?.classList.add('active');
+}
+
+function cpCloseDetail() {
+  document.getElementById('cp-detail-modal')?.classList.remove('active');
+}
+
+function cpShareDetail() {
+  if (!cpDetailRecord) return;
+  const r = cpDetailRecord;
+  let lines;
+  if (cpDetailEntity === 'musicos') {
+    lines = [r.nombre, (r.especialidad || []).join(', '), (r.ciudad || []).join(', '),
+      r.telefono && `Tel: ${r.telefono}`, r.email && `Email: ${r.email}`, r.instagram && `IG: ${r.instagram}`, r.descripcion];
+  } else {
+    lines = [r.nombre, r.categoria, r.telefono && `Tel: ${r.telefono}`, r.whatsapp && `WhatsApp: ${r.whatsapp}`,
+      r.email && `Email: ${r.email}`, r.web && `Web: ${r.web}`, r.instagram && `IG: ${r.instagram}`, r.notas];
+  }
+  mkCopyToClipboard(lines.filter(Boolean).join('\n'), 'Información copiada ✓');
+}
+// ─── /CRUD + detalle ────────────────────────────────────────────────────────
 
 async function loadClientes(force = false) {
   if (!isAuthenticated) return;
@@ -4523,6 +4732,25 @@ function setupClientesTab() {
     const sub = document.querySelector('#tab-clientes .cp-segmented-sub .cp-seg-btn.active')?.dataset.cpSub || 'musicos';
     if (sub === 'musicos') loadMusicos(true); else loadProveedores(true);
   });
+
+  // Botones "+ Nuevo"
+  document.getElementById('cp-new-cliente')?.addEventListener('click', () => cpOpenForm('clientes', null));
+  document.getElementById('cp-new-musico')?.addEventListener('click', () => cpOpenForm('musicos', null));
+  document.getElementById('cp-new-proveedor')?.addEventListener('click', () => cpOpenForm('proveedores', null));
+
+  // Modal de formulario
+  document.getElementById('cp-form-save')?.addEventListener('click', cpSaveForm);
+  document.getElementById('cp-form-cancel')?.addEventListener('click', cpCloseForm);
+
+  // Modal de detalle
+  document.getElementById('cp-detail-edit')?.addEventListener('click', () => {
+    if (cpDetailEntity && cpDetailRecord) cpOpenForm(cpDetailEntity, cpDetailRecord);
+  });
+  document.getElementById('cp-detail-share')?.addEventListener('click', cpShareDetail);
+  document.getElementById('cp-detail-delete')?.addEventListener('click', () => {
+    if (cpDetailEntity && cpDetailRecord) cpDeleteEntity(cpDetailEntity, cpDetailRecord.id);
+  });
+  document.getElementById('cp-detail-close')?.addEventListener('click', cpCloseDetail);
 }
 
 function clearClientesData() {
