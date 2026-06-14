@@ -4039,6 +4039,7 @@ function setAuthGate(locked) {
 
 function clearSensitiveData() {
   setContacts([]);
+  clearClientesData();
   setTasks([]);
   setMessages([]);
   focusTodayTasks = [];
@@ -4312,6 +4313,224 @@ async function loadContactsFromNotion() {
     setStatus('contacts-status', `Sin conexión a Notion/API: ${reason}`, true);
   }
 }
+
+// ─── CLIENTES Y PROVEEDORES ────────────────────────────────────────────────
+// Read-only directory tab. Three Notion DBs via the Cloudflare Worker:
+// clientes (con código de acceso al portal), músicos y proveedores.
+let clientesCache = [], musicosCache = [], proveedoresCache = [];
+let clientesQuery = '', musicosQuery = '', proveedoresQuery = '';
+let clientesLoaded = false, musicosLoaded = false, proveedoresLoaded = false;
+
+function cpMatch(parts, q) {
+  if (!q) return true;
+  return parts.map((v) => String(v || '').toLowerCase()).join(' ').includes(q);
+}
+
+function cpWebHref(value) {
+  const v = String(value || '').trim();
+  if (!v) return '';
+  return /^https?:\/\//i.test(v) ? v : `https://${v}`;
+}
+
+function setClientes(rows) {
+  clientesCache = rows;
+  const list = document.getElementById('clientes-list');
+  if (!list) return;
+  const q = clientesQuery.trim().toLowerCase();
+  const filtered = rows.filter((c) => cpMatch([c.nombre, c.email, c.whatsapp, c.estado, c.origen, c.idioma, c.accessCode], q));
+  list.innerHTML = filtered.map((c) => {
+    const email = c.email ? `<a href="mailto:${escapeHtml(c.email)}">${escapeHtml(c.email)}</a>` : '';
+    const waHref = normalizeWhatsappLink(c.whatsapp);
+    const whatsapp = waHref ? `<a href="${waHref}" target="_blank" rel="noopener">WhatsApp</a>` : (c.whatsapp ? escapeHtml(c.whatsapp) : '');
+    const estado = c.estado ? `<span class="cp-badge">${escapeHtml(c.estado)}</span>` : '';
+    const meta = [email, whatsapp, c.origen, c.idioma].filter(Boolean).join(' · ');
+    const code = c.accessCode
+      ? `<span class="portal-card-code mk-code-copy" data-code="${escapeHtml(c.accessCode)}" title="Click para copiar el código de acceso">${escapeHtml(c.accessCode)}</span>`
+      : '<span class="cp-code-empty">sin cotización</span>';
+    return `
+      <li>
+        <div class="contact-card">
+          <div class="contact-main">
+            <div class="contact-name">${escapeHtml(c.nombre || 'Sin nombre')} ${estado}</div>
+            <div class="contact-meta">${meta || 'Sin detalles'}</div>
+            <div class="cp-code-row"><span class="cp-code-label">Código de acceso:</span> ${code}</div>
+          </div>
+        </div>
+      </li>`;
+  }).join('');
+  list.querySelectorAll('.mk-code-copy').forEach((el) => {
+    el.addEventListener('click', () => {
+      const code = el.dataset.code || '';
+      mkCopyToClipboard(code, `Código ${code} copiado ✓`);
+    });
+  });
+}
+
+function setMusicos(rows) {
+  musicosCache = rows;
+  const list = document.getElementById('musicos-list');
+  if (!list) return;
+  const q = musicosQuery.trim().toLowerCase();
+  const filtered = rows.filter((m) => cpMatch([m.nombre, (m.especialidad || []).join(' '), (m.ciudad || []).join(' '), m.descripcion, m.email], q));
+  list.innerHTML = filtered.map((m) => {
+    const esp = (m.especialidad || []).map((e) => `<span class="cp-tag">${escapeHtml(e)}</span>`).join('');
+    const ciudad = (m.ciudad || []).join(', ');
+    const email = m.email ? `<a href="mailto:${escapeHtml(m.email)}">${escapeHtml(m.email)}</a>` : '';
+    const tel = m.telefono ? `<a href="tel:${escapeHtml(String(m.telefono).replace(/[\s\-().]/g, ''))}">${escapeHtml(m.telefono)}</a>` : '';
+    const igHref = normalizeInstagramLink(m.instagram);
+    const ig = igHref ? `<a href="${igHref}" target="_blank" rel="noopener">Instagram</a>` : '';
+    const meta = [ciudad, email, tel, ig].filter(Boolean).join(' · ');
+    const avatar = m.foto ? `<img class="cp-avatar" src="${escapeHtml(m.foto)}" alt="" loading="lazy" referrerpolicy="no-referrer" />` : '';
+    return `
+      <li>
+        <div class="contact-card cp-card-rich">
+          ${avatar}
+          <div class="contact-main">
+            <div class="contact-name">${escapeHtml(m.nombre || 'Sin nombre')}</div>
+            ${esp ? `<div class="cp-tags">${esp}</div>` : ''}
+            <div class="contact-meta">${meta || 'Sin detalles'}</div>
+            ${m.descripcion ? `<div class="cp-desc">${escapeHtml(m.descripcion)}</div>` : ''}
+          </div>
+        </div>
+      </li>`;
+  }).join('');
+}
+
+function setProveedores(rows) {
+  proveedoresCache = rows;
+  const list = document.getElementById('proveedores-list');
+  if (!list) return;
+  const q = proveedoresQuery.trim().toLowerCase();
+  const filtered = rows.filter((p) => cpMatch([p.nombre, p.categoria, p.email, p.telefono, p.notas], q));
+  list.innerHTML = filtered.map((p) => {
+    const email = p.email ? `<a href="mailto:${escapeHtml(p.email)}">${escapeHtml(p.email)}</a>` : '';
+    const tel = p.telefono ? `<a href="tel:${escapeHtml(String(p.telefono).replace(/[\s\-().]/g, ''))}">${escapeHtml(p.telefono)}</a>` : '';
+    const waHref = normalizeWhatsappLink(p.whatsapp);
+    const wa = waHref ? `<a href="${waHref}" target="_blank" rel="noopener">WhatsApp</a>` : '';
+    const igHref = normalizeInstagramLink(p.instagram);
+    const ig = igHref ? `<a href="${igHref}" target="_blank" rel="noopener">Instagram</a>` : '';
+    const webHref = cpWebHref(p.web);
+    const web = webHref ? `<a href="${escapeHtml(webHref)}" target="_blank" rel="noopener">Web</a>` : '';
+    const cat = p.categoria ? `<span class="cp-badge">${escapeHtml(p.categoria)}</span>` : '';
+    const meta = [email, tel, wa, ig, web].filter(Boolean).join(' · ');
+    return `
+      <li>
+        <div class="contact-card">
+          <div class="contact-main">
+            <div class="contact-name">${escapeHtml(p.nombre || 'Sin nombre')} ${cat}</div>
+            <div class="contact-meta">${meta || 'Sin detalles'}</div>
+            ${p.notas ? `<div class="cp-desc">${escapeHtml(p.notas)}</div>` : ''}
+          </div>
+        </div>
+      </li>`;
+  }).join('');
+}
+
+async function loadClientes(force = false) {
+  if (!isAuthenticated) return;
+  if (clientesLoaded && !force) return;
+  try {
+    if (!API_BASE) throw new Error('apiBaseUrl no configurado');
+    setStatus('clientes-status', 'Cargando clientes...');
+    const res = await fetchJson(`${API_BASE}/api/clientes/list`);
+    const rows = res.data || [];
+    clientesLoaded = true;
+    setClientes(rows);
+    setStatus('clientes-status', rows.length ? `${rows.length} clientes cargados desde Notion.` : 'Sin clientes en la base.');
+  } catch (e) {
+    setStatus('clientes-status', `No se pudo cargar clientes: ${e?.message || e}`, true);
+  }
+}
+
+async function loadMusicos(force = false) {
+  if (!isAuthenticated) return;
+  if (musicosLoaded && !force) return;
+  try {
+    if (!API_BASE) throw new Error('apiBaseUrl no configurado');
+    setStatus('musicos-status', 'Cargando músicos...');
+    const res = await fetchJson(`${API_BASE}/api/musicos/list`);
+    const rows = res.data || [];
+    musicosLoaded = true;
+    setMusicos(rows);
+    setStatus('musicos-status', rows.length ? `${rows.length} músicos cargados desde Notion.` : 'Sin músicos en la base.');
+  } catch (e) {
+    setStatus('musicos-status', `No se pudo cargar músicos: ${e?.message || e}`, true);
+  }
+}
+
+async function loadProveedores(force = false) {
+  if (!isAuthenticated) return;
+  if (proveedoresLoaded && !force) return;
+  try {
+    if (!API_BASE) throw new Error('apiBaseUrl no configurado');
+    setStatus('proveedores-status', 'Cargando proveedores...');
+    const res = await fetchJson(`${API_BASE}/api/proveedores/list`);
+    const rows = res.data || [];
+    proveedoresLoaded = true;
+    setProveedores(rows);
+    setStatus('proveedores-status', rows.length ? `${rows.length} proveedores cargados desde Notion.` : 'Sin proveedores en la base.');
+  } catch (e) {
+    setStatus('proveedores-status', `No se pudo cargar proveedores: ${e?.message || e}`, true);
+  }
+}
+
+function cpSelectSeg(seg) {
+  document.querySelectorAll('#tab-clientes .cp-segmented:not(.cp-segmented-sub) .cp-seg-btn')
+    .forEach((b) => b.classList.toggle('active', b.dataset.cpSeg === seg));
+  const cv = document.getElementById('cp-view-clientes');
+  const pv = document.getElementById('cp-view-proveedores');
+  if (cv) cv.classList.toggle('active', seg === 'clientes');
+  if (pv) pv.classList.toggle('active', seg === 'proveedores');
+  if (seg === 'clientes') loadClientes();
+  else loadMusicos();
+}
+
+function cpSelectSub(sub) {
+  document.querySelectorAll('#tab-clientes .cp-segmented-sub .cp-seg-btn')
+    .forEach((b) => b.classList.toggle('active', b.dataset.cpSub === sub));
+  const mv = document.getElementById('cp-sub-musicos');
+  const pv = document.getElementById('cp-sub-proveedores');
+  if (mv) mv.classList.toggle('active', sub === 'musicos');
+  if (pv) pv.classList.toggle('active', sub === 'proveedores');
+  if (sub === 'musicos') loadMusicos();
+  else loadProveedores();
+}
+
+function loadClientesTabActive() {
+  const seg = document.querySelector('#tab-clientes .cp-segmented:not(.cp-segmented-sub) .cp-seg-btn.active')?.dataset.cpSeg || 'clientes';
+  if (seg === 'clientes') { loadClientes(); return; }
+  const sub = document.querySelector('#tab-clientes .cp-segmented-sub .cp-seg-btn.active')?.dataset.cpSub || 'musicos';
+  if (sub === 'musicos') loadMusicos(); else loadProveedores();
+}
+
+function setupClientesTab() {
+  document.querySelectorAll('#tab-clientes [data-cp-seg]').forEach((b) => {
+    b.addEventListener('click', () => cpSelectSeg(b.dataset.cpSeg));
+  });
+  document.querySelectorAll('#tab-clientes [data-cp-sub]').forEach((b) => {
+    b.addEventListener('click', () => cpSelectSub(b.dataset.cpSub));
+  });
+  const cs = document.getElementById('clientes-search');
+  if (cs) cs.addEventListener('input', (e) => { clientesQuery = e.target.value || ''; setClientes(clientesCache); });
+  const ms = document.getElementById('musicos-search');
+  if (ms) ms.addEventListener('input', (e) => { musicosQuery = e.target.value || ''; setMusicos(musicosCache); });
+  const ps = document.getElementById('proveedores-search');
+  if (ps) ps.addEventListener('input', (e) => { proveedoresQuery = e.target.value || ''; setProveedores(proveedoresCache); });
+  const refresh = document.getElementById('refresh-clientes');
+  if (refresh) refresh.addEventListener('click', () => {
+    const seg = document.querySelector('#tab-clientes .cp-segmented:not(.cp-segmented-sub) .cp-seg-btn.active')?.dataset.cpSeg || 'clientes';
+    if (seg === 'clientes') { loadClientes(true); return; }
+    const sub = document.querySelector('#tab-clientes .cp-segmented-sub .cp-seg-btn.active')?.dataset.cpSub || 'musicos';
+    if (sub === 'musicos') loadMusicos(true); else loadProveedores(true);
+  });
+}
+
+function clearClientesData() {
+  clientesLoaded = musicosLoaded = proveedoresLoaded = false;
+  clientesCache = musicosCache = proveedoresCache = [];
+  setClientes([]); setMusicos([]); setProveedores([]);
+}
+// ─── /CLIENTES Y PROVEEDORES ───────────────────────────────────────────────
 
 function setContactFormVisibility(show) {
   const card = document.getElementById('contact-form-card');
@@ -5049,6 +5268,9 @@ function setupTabs() {
       if (targetTab === 'portfolio' && isAuthenticated) {
         loadPortfolio();
       }
+      if (targetTab === 'clientes' && isAuthenticated) {
+        loadClientesTabActive();
+      }
       updateAuthGateForCurrentTab();
     });
   });
@@ -5220,6 +5442,7 @@ function init() {
   setupCatalogPlayerControls();
   setupCatalogInfiniteScroll();
   setupContactsInfiniteScroll();
+  setupClientesTab();
   setupMenuAutoClose();
   setupActions();
   syncPlaylistCreateControlsVisibility();

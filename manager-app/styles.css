@@ -3857,3 +3857,68 @@ body.pf-dragging-active, body.pf-dragging-active * { -webkit-user-select: none; 
   .pf-drag { min-width: 40px; padding: 0 0.2rem; font-size: 1.15rem; }
 }
 /* ─── /PORTFOLIO handle ──────────────────────────────────────────────────────── */
+
+/* ─── CLIENTES Y PROVEEDORES ─────────────────────────────────────────────────── */
+.cp-segmented {
+  display: inline-flex;
+  gap: .25rem;
+  padding: .25rem;
+  margin-bottom: .9rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.03);
+}
+.cp-segmented-sub { margin-top: .2rem; }
+.cp-seg-btn {
+  border: none;
+  background: transparent;
+  color: var(--text-soft);
+  font: inherit;
+  font-size: .85rem;
+  font-weight: 600;
+  padding: .4rem .95rem;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background .15s ease, color .15s ease;
+}
+.cp-seg-btn:hover { color: var(--text-main); }
+.cp-seg-btn.active { background: var(--accent, #FF1097); color: #fff; }
+
+.cp-view, .cp-subview { display: none; }
+.cp-view.active, .cp-subview.active { display: block; }
+
+.cp-code-row { margin-top: .4rem; font-size: .8rem; color: var(--text-muted); }
+.cp-code-label { margin-right: .35rem; }
+.cp-code-empty { color: var(--text-muted); font-style: italic; font-size: .8rem; }
+
+.cp-badge {
+  display: inline-block;
+  margin-left: .4rem;
+  padding: .08rem .5rem;
+  border-radius: 999px;
+  font-size: .7rem;
+  font-weight: 600;
+  color: var(--text-soft);
+  background: rgba(255, 255, 255, 0.07);
+  vertical-align: middle;
+}
+.cp-tags { display: flex; flex-wrap: wrap; gap: .3rem; margin: .35rem 0; }
+.cp-tag {
+  padding: .1rem .5rem;
+  border-radius: 6px;
+  font-size: .7rem;
+  color: var(--accent, #FF1097);
+  background: rgba(255, 16, 151, 0.1);
+}
+.cp-desc { margin-top: .35rem; font-size: .8rem; color: var(--text-muted); }
+
+.cp-card-rich { display: flex; gap: .75rem; align-items: flex-start; }
+.cp-avatar {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+/* ─── /CLIENTES Y PROVEEDORES ────────────────────────────────────────────────── */

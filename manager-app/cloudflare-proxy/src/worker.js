@@ -3926,6 +3926,140 @@ async function portfolioDelete(env, id) {
 }
 // ─── /PORTFOLIO ──────────────────────────────────────────────────────────────
 
+// ─── CLIENTES Y PROVEEDORES ──────────────────────────────────────────────────
+// Read-only directory tabs for the Manager App. Three Notion DBs, all under
+// ARCHIVO so the Antigravity integration can read them:
+//   - Cartera de Clientes DB    (clients + computed portal access code)
+//   - Directorio de Músicos     (musicians)
+//   - Proveedores de Music Knobs DB (vendors)
+const CLIENTES_DS_ID = "37bc1932-ede8-80b7-87aa-000b90657452";
+const MUSICOS_DS_ID = "178c1932-ede8-80da-b8ac-000b9713d75b";
+const PROVEEDORES_DS_ID = "37fc1932-ede8-80dd-8b95-000b73684802";
+
+// Generic read-only data_source query. Kept separate from queryPortalDb so the
+// portal flow stays untouched.
+async function queryDirectoryDb(env, dsId) {
+  const token = env.NOTION_TOKEN || "";
+  const ver = env.NOTION_VERSION || "2022-06-28";
+  if (!token) return { error: "NOTION_TOKEN not configured", data: [] };
+  const resp = await fetch(`https://api.notion.com/v1/data_sources/${dsId}/query`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}`, "Notion-Version": ver, "Content-Type": "application/json" },
+    body: JSON.stringify({ page_size: 100 }),
+  });
+  if (!resp.ok) return { error: "Notion query failed", details: await resp.text(), data: [] };
+  const payload = await resp.json();
+  return { results: payload.results || [] };
+}
+
+// Tolerant Notion property readers (handle missing or renamed properties).
+function propText(props, name) {
+  const p = props?.[name];
+  if (!p) return "";
+  if (p.type === "title") return richTextToString(p.title || []);
+  if (p.type === "rich_text") return richTextToString(p.rich_text || []);
+  if (p.type === "email") return p.email || "";
+  if (p.type === "phone_number") return p.phone_number || "";
+  if (p.type === "url") return p.url || "";
+  if (p.type === "select") return p.select?.name || "";
+  if (p.type === "number") return p.number ?? "";
+  return "";
+}
+function propSelect(props, name) { return props?.[name]?.select?.name || ""; }
+function propMulti(props, name) { return (props?.[name]?.multi_select || []).map((o) => o.name); }
+function propFileUrl(props, name) {
+  const f = (props?.[name]?.files || [])[0];
+  if (!f) return "";
+  return f.type === "external" ? (f.external?.url || "") : (f.file?.url || "");
+}
+
+// Display form of the portal access code: keeps punctuation like dots for
+// readability (matches the front-end mkPortalAccessCode). Login still works
+// because the worker normalizes typed codes by stripping non-alphanumerics.
+function portalDisplayCode(name, quoteNumber) {
+  const slug = String(name || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/\s+/g, "");
+  const last3 = quoteLast3(quoteNumber);
+  return (slug && last3) ? slug + last3 : "";
+}
+
+async function listClientes(env) {
+  const res = await queryDirectoryDb(env, CLIENTES_DS_ID);
+  if (res.error) return res;
+  // Join each client with their quotes (by name slug) to derive the access code.
+  let quotes = [];
+  try { quotes = await portalQuotesLite(env); } catch { quotes = []; }
+  const data = res.results.map((page) => {
+    const props = page.properties || {};
+    const nombre = propText(props, "Name");
+    const slug = portalSlug(nombre);
+    const matches = slug ? quotes.filter((q) => portalSlug(q.name) === slug && q.quoteNumber) : [];
+    const quoteNumber = matches.length ? matches[matches.length - 1].quoteNumber : "";
+    return {
+      id: page.id,
+      nombre,
+      estado: propSelect(props, "Estado"),
+      email: propText(props, "Email"),
+      whatsapp: propText(props, "WhatsApp"),
+      idioma: propSelect(props, "Idioma"),
+      origen: propSelect(props, "Origen"),
+      cotizaciones: props["Cotizaciones"]?.number ?? null,
+      serviciosCotizados: propText(props, "Servicios cotizados"),
+      notas: propText(props, "Notas"),
+      quoteNumber,
+      accessCode: portalDisplayCode(nombre, quoteNumber),
+      url: page.url || "",
+    };
+  });
+  data.sort((a, b) => String(a.nombre).localeCompare(String(b.nombre)));
+  return { data };
+}
+
+async function listMusicos(env) {
+  const res = await queryDirectoryDb(env, MUSICOS_DS_ID);
+  if (res.error) return res;
+  const data = res.results.map((page) => {
+    const props = page.properties || {};
+    return {
+      id: page.id,
+      nombre: propText(props, "Músico"),
+      especialidad: propMulti(props, "Especialidad"),
+      ciudad: propMulti(props, "Ciudad de Residencia"),
+      descripcion: propText(props, "Descripción"),
+      email: propText(props, "Email"),
+      telefono: propText(props, "Telefono"),
+      instagram: propText(props, "Instagram"),
+      foto: propFileUrl(props, "Foto"),
+      url: page.url || "",
+    };
+  });
+  data.sort((a, b) => String(a.nombre).localeCompare(String(b.nombre)));
+  return { data };
+}
+
+async function listProveedores(env) {
+  const res = await queryDirectoryDb(env, PROVEEDORES_DS_ID);
+  if (res.error) return res;
+  const data = res.results.map((page) => {
+    const props = page.properties || {};
+    return {
+      id: page.id,
+      nombre: propText(props, "Name"),
+      // Extra props are tolerated if Jay enriches this DB later.
+      categoria: propSelect(props, "Categoría") || propSelect(props, "Categoria"),
+      email: propText(props, "Email"),
+      telefono: propText(props, "Telefono") || propText(props, "Teléfono"),
+      whatsapp: propText(props, "WhatsApp"),
+      instagram: propText(props, "Instagram"),
+      web: propText(props, "Web") || propText(props, "Sitio Web"),
+      notas: propText(props, "Notas"),
+      url: page.url || "",
+    };
+  });
+  data.sort((a, b) => String(a.nombre).localeCompare(String(b.nombre)));
+  return { data };
+}
+// ─── /CLIENTES Y PROVEEDORES ─────────────────────────────────────────────────
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -4411,6 +4545,21 @@ export default {
       return json(result, result.error ? 400 : 200);
     }
     // ─── /PORTFOLIO ────────────────────────────────────────────────────────────
+
+    // ─── CLIENTES Y PROVEEDORES (read-only) ──────────────────────────────────
+    if (request.method === "GET" && url.pathname === "/api/clientes/list") {
+      const result = await listClientes(env);
+      return json(result, result.error ? 502 : 200);
+    }
+    if (request.method === "GET" && url.pathname === "/api/musicos/list") {
+      const result = await listMusicos(env);
+      return json(result, result.error ? 502 : 200);
+    }
+    if (request.method === "GET" && url.pathname === "/api/proveedores/list") {
+      const result = await listProveedores(env);
+      return json(result, result.error ? 502 : 200);
+    }
+    // ─── /CLIENTES Y PROVEEDORES ─────────────────────────────────────────────
 
     if (!["GET", "POST", "PATCH", "DELETE"].includes(request.method)) {
       return json({ error: "Method not allowed" }, 405);
