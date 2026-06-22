@@ -1,0 +1,43 @@
+# Musicknobs Labs - robots.txt
+# Allows all AI crawlers and search engines to index all content
+
+User-agent: *
+Allow: /
+Disallow: /manager-app/
+
+# AI Crawlers - explicitly allowed
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Applebot
+Allow: /
+
+User-agent: Googlebot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+User-agent: cohere-ai
+Allow: /
+
+User-agent: anthropic-ai
+Allow: /
+
+User-agent: Omgilibot
+Allow: /
+
+# Sitemaps
+Sitemap: https://labs.musicknobs.com/sitemap.xml

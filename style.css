@@ -229,6 +229,12 @@ footer p {
     font-size: 0.9rem;
 }
 
+.footer-updated {
+    font-size: 0.75rem;
+    opacity: 0.5;
+    margin-top: 0.25rem;
+}
+
 .social-links {
     margin-top: 2rem;
     display: flex;
