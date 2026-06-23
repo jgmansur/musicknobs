@@ -1,0 +1,12 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "musicknobs-labs-proxy",
+  "main": "src/index.js",
+  "compatibility_date": "2026-06-15",
+  "workers_dev": true,
+  "observability": { "enabled": true },
+  "routes": [
+    { "pattern": "musicknobs.com/labs*", "zone_name": "musicknobs.com" },
+    { "pattern": "www.musicknobs.com/labs*", "zone_name": "musicknobs.com" }
+  ]
+}
