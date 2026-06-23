@@ -13,6 +13,18 @@ const UPSTREAM_ORIGIN = "https://jgmansur.github.io";
 const UPSTREAM_BASE = "/musicknobs"; // GitHub Pages project path
 const PREFIX = "/labs";
 
+// Old gear-guide pages that now live as redesigned articles at /blog.
+// 301 the guide root only (not sub-assets like /labs/EQ/chart.png).
+const GUIDE_REDIRECTS = {
+  "/EQ": "/blog/eq-lab",
+  "/compresores": "/blog/compressors",
+  "/delays": "/blog/delays",
+  "/flanger": "/blog/modulation",
+  "/sintetizadores": "/blog/synthesizers",
+  "/microfonos": "/blog/microphones",
+  "/guitaramps": "/blog/guitar-amps",
+};
+
 export default {
   async fetch(request) {
     const url = new URL(request.url);
@@ -31,6 +43,12 @@ export default {
     const EXCLUDED = ["/manager-app", "/finance-dashboard"];
     if (EXCLUDED.some((p) => rest === p || rest.startsWith(`${p}/`))) {
       return new Response("Not found", { status: 404 });
+    }
+
+    // Migrated gear guides: 301 the guide root to its new /blog article.
+    const guideKey = rest.replace(/\/$/, "");
+    if (GUIDE_REDIRECTS[guideKey]) {
+      return Response.redirect(`${url.origin}${GUIDE_REDIRECTS[guideKey]}`, 301);
     }
 
     const upstreamUrl = `${UPSTREAM_ORIGIN}${UPSTREAM_BASE}${rest}${url.search}`;

@@ -4164,6 +4164,47 @@ async function deleteDirectoryPage(env, id) {
 }
 // ─── /CLIENTES Y PROVEEDORES ─────────────────────────────────────────────────
 
+// ─── NEWSLETTER (musicknobs.com/blog) ────────────────────────────────────────
+const NEWSLETTER_DB_ID = "d60cce9e-73c3-4bef-94a1-86636f404a48";
+const NEWSLETTER_DS_ID = "f1e1a7f8-73bb-4c8b-b29d-ce782731cdad";
+
+function newsletterBuildProperties(input) {
+  const props = {};
+  const email = String(input.email || "").trim();
+  props["Email"] = { title: [{ text: { content: email } }] };
+  const idioma = String(input.lang || input.idioma || "").toUpperCase() === "EN" ? "EN" : "ES";
+  props["Idioma"] = { select: { name: idioma } };
+  const origen = String(input.source || input.origen || "blog").trim();
+  props["Origen"] = { rich_text: origen ? [{ text: { content: origen } }] : [] };
+  props["Estado"] = { select: { name: "Suscrito" } };
+  return props;
+}
+
+async function newsletterList(env) {
+  const token = env.NOTION_TOKEN || "";
+  const ver = env.NOTION_VERSION || "2022-06-28";
+  if (!token) return { error: "NOTION_TOKEN not configured", data: [] };
+  const endpoints = [
+    `https://api.notion.com/v1/data_sources/${NEWSLETTER_DS_ID}/query`,
+    `https://api.notion.com/v1/databases/${NEWSLETTER_DB_ID}/query`,
+  ];
+  let lastError = "";
+  for (const u of endpoints) {
+    const resp = await fetch(u, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}`, "Notion-Version": ver, "Content-Type": "application/json" },
+      body: JSON.stringify({ page_size: 100 }),
+    });
+    if (resp.ok) {
+      const pl = await resp.json();
+      return { data: (pl.results || []).map((pg) => ({ id: pg.id, email: richTextToString(pg.properties?.Email?.title || []) })) };
+    }
+    lastError = await resp.text();
+  }
+  return { error: "Newsletter query failed", details: lastError, data: [] };
+}
+// ─── /NEWSLETTER ─────────────────────────────────────────────────────────────
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -4718,6 +4759,25 @@ export default {
       return json(result, result.error ? 400 : 200);
     }
     // ─── /CLIENTES Y PROVEEDORES ─────────────────────────────────────────────
+
+    // ─── NEWSLETTER (musicknobs.com/blog) ────────────────────────────────────
+    if (request.method === "POST" && url.pathname === "/api/newsletter/subscribe") {
+      const body = await request.json().catch(() => ({}));
+      const email = String(body?.email || "").trim();
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return json({ error: "invalid_email" }, 422);
+      const result = await createDirectoryPage(env, NEWSLETTER_DS_ID, NEWSLETTER_DB_ID, newsletterBuildProperties(body));
+      return json(result, result.error ? 400 : 201);
+    }
+    if (request.method === "GET" && url.pathname === "/api/newsletter/list") {
+      const result = await newsletterList(env);
+      return json(result, result.error ? 500 : 200);
+    }
+    if (request.method === "DELETE" && url.pathname.startsWith("/api/newsletter/delete/")) {
+      const id = url.pathname.replace("/api/newsletter/delete/", "").trim();
+      const result = await deleteDirectoryPage(env, id);
+      return json(result, result.error ? 400 : 200);
+    }
+    // ─── /NEWSLETTER ─────────────────────────────────────────────────────────
 
     if (!["GET", "POST", "PATCH", "DELETE"].includes(request.method)) {
       return json({ error: "Method not allowed" }, 405);
