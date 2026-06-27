@@ -1316,6 +1316,17 @@ function refreshCatalogProgressUi() {
   current.textContent = formatTime(seek);
   duration.textContent = formatTime(total);
 
+  // CarPlay / lock screen: refleja posición y duración en la barra del sistema.
+  if ('mediaSession' in navigator && navigator.mediaSession.setPositionState && total > 0) {
+    try {
+      navigator.mediaSession.setPositionState({
+        duration: total,
+        position: Math.min(Math.max(0, seek), total),
+        playbackRate: 1,
+      });
+    } catch {}
+  }
+
   // Cuenta un play cuando se escuchó ≥10s o ≥25% (una sola vez por reproducción).
   if (catalogNowPlayingId && catalogPlayCountedId !== catalogNowPlayingId
       && (seek >= 10 || (total > 0 && seek / total >= 0.25))) {
@@ -1349,6 +1360,7 @@ function clearCatalogHowl() {
   catalogPlayer.isLoading = false;
   catalogPlayer.activeSoundId = null;
   catalogPlayer.pendingPlay = false;
+  clearCatalogMediaSession();
 }
 
 function requestCatalogPlay() {
@@ -1832,6 +1844,15 @@ function prefetchNextAudioBlob() {
 // Cola contextual: navega sobre lo que se está viendo (género/playlist/búsqueda),
 // no sobre el catálogo global. Fallback al catálogo completo si no hay vista.
 function getCatalogQueue() {
+  // Si hay una playlist abierta, la reproducción (incl. random y auto-avance) se
+  // queda DENTRO de esa playlist, sin importar re-renders que toquen catalogQueue.
+  if (catalogFilterView === 'playlists' && selectedPlaylistId) {
+    const pl = playlistsCache.find((p) => p.id === selectedPlaylistId);
+    const ids = (pl && Array.isArray(pl.tracks) ? pl.tracks : [])
+      .map((t) => String(t.id || ''))
+      .filter((id) => catalogCache.some((s) => String(s.id) === id));
+    if (ids.length) return ids;
+  }
   return catalogQueue.length ? catalogQueue : catalogCache.map((s) => s.id);
 }
 
@@ -1881,8 +1902,8 @@ async function loadCatalogTrack(index, { autoplay = false } = {}) {
     return;
   }
 
-  if (!window.Howl) {
-    setStatus('catalog-status', 'Howler no está disponible. Ejecuta npm run sync:howler.', true);
+  if (typeof Audio === 'undefined') {
+    setStatus('catalog-status', 'Este navegador no soporta reproducción de audio.', true);
     return;
   }
 
@@ -1913,6 +1934,163 @@ async function loadCatalogTrack(index, { autoplay = false } = {}) {
   mountCatalogHowl(track, { autoplay });
 }
 
+// ─── Motor de audio NATIVO ───────────────────────────────────────────────
+// Reemplaza Howler para el player del catálogo. Howler, aun con html5:true,
+// mantiene vivo un AudioContext global (Web Audio) que en iOS rompe la salida
+// por CarPlay wireless (micro-cortes cada ~0.5s). Esta clase envuelve un único
+// <audio> nativo y expone SOLO el subconjunto de la API de Howler que usa el
+// player (state/duration/seek/play/playing/pause/unload/on), de modo que el
+// resto del código (karaoke, playlists, random, seek, deep-links) no cambia.
+// CERO Web Audio.
+// Elemento <audio> ÚNICO y persistente para TODO el player del catálogo.
+// Reusarlo (en vez de crear uno nuevo por pista) conserva el "permiso" del gesto
+// del usuario, lo que permite que iOS siga reproduciendo y AVANCE a la siguiente
+// canción aun con la pantalla bloqueada o la app en background.
+let sharedCatalogAudioEl = null;
+function getSharedCatalogAudioEl() {
+  if (!sharedCatalogAudioEl) {
+    const a = new Audio();
+    a.preload = 'auto';
+    a.setAttribute('playsinline', '');
+    sharedCatalogAudioEl = a;
+  }
+  return sharedCatalogAudioEl;
+}
+
+class NativeSound {
+  constructor({ src, volume = 1, preload = true, autoplay = false } = {}) {
+    const a = getSharedCatalogAudioEl();
+    a.preload = preload ? 'auto' : 'metadata';
+    a.volume = Math.max(0, Math.min(1, Number(volume) || 1));
+    this._a = a;
+    this._loaded = false;
+    this._dead = false;
+    this._handlers = {};
+    this._soundId = 1; // id constante: el player solo maneja un sonido activo
+
+    // Listeners NOMBRADOS para poder quitarlos en unload (el elemento es compartido).
+    this._listeners = {
+      canplay: () => this._markLoaded(),
+      canplaythrough: () => this._markLoaded(),
+      playing: () => this._emit('play', this._soundId),
+      pause: () => { if (!a.ended) this._emit('pause', this._soundId); },
+      ended: () => this._emit('end', this._soundId),
+      error: () => this._emit('loaderror', this._soundId, (a.error && a.error.code) || 0),
+    };
+    for (const evt in this._listeners) a.addEventListener(evt, this._listeners[evt]);
+
+    // Cargar el nuevo audio EN EL MISMO elemento.
+    a.src = src;
+    try { a.load(); } catch {}
+
+    if (autoplay) this.play();
+  }
+
+  _emit(evt, ...args) {
+    if (this._dead) return;
+    (this._handlers[evt] || []).forEach((cb) => { try { cb(...args); } catch {} });
+  }
+
+  _markLoaded() {
+    if (this._loaded || this._dead) return;
+    this._loaded = true;
+    this._emit('load', this._soundId);
+  }
+
+  on(evt, cb) { (this._handlers[evt] = this._handlers[evt] || []).push(cb); return this; }
+
+  state() { return this._loaded ? 'loaded' : 'loading'; }
+
+  duration() { const d = Number(this._a.duration); return Number.isFinite(d) ? d : 0; }
+
+  // Getter: seek() / seek(undefined, id). Setter: seek(pos) / seek(pos, id).
+  seek(pos, _id) {
+    if (pos === undefined) return Number(this._a.currentTime) || 0;
+    try { this._a.currentTime = Math.max(0, Number(pos) || 0); } catch {}
+    return this;
+  }
+
+  play(_id) {
+    const p = this._a.play();
+    if (p && typeof p.catch === 'function') {
+      // Pasamos el Error real (DOMException) como "code": isAutoplayInteractionBlock
+      // lee .name/.message, así detecta NotAllowedError y muestra el hint amigable.
+      p.catch((err) => {
+        (this._handlers['playerror'] || []).forEach((cb) => { try { cb(this._soundId, err); } catch {} });
+      });
+    }
+    return this._soundId;
+  }
+
+  playing(_id) { return !this._a.paused && !this._a.ended; }
+
+  pause(_id) { try { this._a.pause(); } catch {} return this; }
+
+  volume(v) {
+    if (v === undefined) return this._a.volume;
+    this._a.volume = Math.max(0, Math.min(1, Number(v) || 0));
+    return this;
+  }
+
+  unload() {
+    this._dead = true;
+    this._handlers = {}; // evita emitir eventos al liberar
+    if (this._listeners) {
+      for (const evt in this._listeners) {
+        try { this._a.removeEventListener(evt, this._listeners[evt]); } catch {}
+      }
+      this._listeners = null;
+    }
+    try { this._a.pause(); } catch {}
+    this._loaded = false;
+    // El elemento <audio> compartido NO se destruye: se reusa para la próxima
+    // pista y así se conserva el permiso de reproducción en background.
+  }
+
+  get audioEl() { return this._a; }
+}
+
+// ─── Media Session (integración con CarPlay / lock screen) ─────────────────
+function updateCatalogMediaSession(track) {
+  if (!('mediaSession' in navigator)) return;
+  try {
+    const artwork = [];
+    const cover = String((track && track.cover) || '').trim();
+    if (/^https?:\/\//i.test(cover)) {
+      artwork.push({ src: cover, sizes: '512x512', type: 'image/jpeg' });
+    }
+    navigator.mediaSession.metadata = new MediaMetadata({
+      title: (track && track.obra) || 'Catálogo',
+      artist: (track && track.autores) || 'Music Knobs',
+      album: 'Music Knobs',
+      artwork,
+    });
+    const set = (action, handler) => {
+      try { navigator.mediaSession.setActionHandler(action, handler); } catch {}
+    };
+    set('play', () => requestCatalogPlay());
+    set('pause', () => { try { if (catalogPlayer.howl) catalogPlayer.howl.pause(); } catch {} });
+    set('previoustrack', () => playNextCatalogTrack(-1));
+    set('nexttrack', () => playNextCatalogTrack(1));
+    set('seekto', (d) => { if (d && typeof d.seekTime === 'number') catalogSeekTo(d.seekTime); });
+    set('seekbackward', (d) => catalogSeekRelative(-((d && d.seekOffset) || 10)));
+    set('seekforward', (d) => catalogSeekRelative((d && d.seekOffset) || 10));
+  } catch {}
+}
+
+function setCatalogMediaPlaybackState(state) {
+  if (!('mediaSession' in navigator)) return;
+  try { navigator.mediaSession.playbackState = state; } catch {}
+}
+
+function clearCatalogMediaSession() {
+  if (!('mediaSession' in navigator)) return;
+  try {
+    navigator.mediaSession.metadata = null;
+    navigator.mediaSession.playbackState = 'none';
+  } catch {}
+}
+
 // Monta (o re-monta) el Howl de la pista actual respetando catalogPlayer.karaokeMode.
 // startAt: segundo donde arrancar (para conservar posición al hacer swap 🎤).
 // Descarga el archivo COMPLETO a Blob primero (fix CarPlay wireless) y reproduce
@@ -1936,10 +2114,8 @@ function mountCatalogHowl(track, { startAt = 0, autoplay = false } = {}) {
 }
 
 function createCatalogHowl(track, src, { startAt = 0, autoplay = false } = {}) {
-  const howl = new window.Howl({
-    src: [src],
-    format: ['mp3'],          // los blob: URLs no tienen extensión; forzar formato
-    html5: true,
+  const howl = new NativeSound({
+    src,
     volume: catalogPlayer.volume,
     preload: true,
     autoplay: false,
@@ -1970,6 +2146,8 @@ function createCatalogHowl(track, src, { startAt = 0, autoplay = false } = {}) {
     startCatalogProgressTimer();
     prefetchNextAudioBlob();   // pre-descarga la siguiente para arranque instantáneo y sin cortes
     updateActiveSongRow();
+    updateCatalogMediaSession(track);   // CarPlay / lock screen: metadata + controles
+    setCatalogMediaPlaybackState('playing');
   });
 
   howl.on('pause', () => {
@@ -1980,6 +2158,7 @@ function createCatalogHowl(track, src, { startAt = 0, autoplay = false } = {}) {
     updateCatalogPlayerUi();
     stopCatalogProgressTimer();
     refreshCatalogProgressUi();
+    setCatalogMediaPlaybackState('paused');
   });
 
   howl.on('stop', () => {
