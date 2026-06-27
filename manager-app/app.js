@@ -2322,8 +2322,9 @@ function renderCatalog() {
           <li>
             <div class="catalog-song-row ${catalogNowPlayingId === row.id ? 'is-active' : ''}">
               <button class="catalog-song-main" data-catalog-play="${escapeHtml(row.id)}">
-                <span class="catalog-song-titleline"><span class="catalog-song-titleline-inner"><strong>${escapeHtml(row.obra || 'Sin título')}</strong>${buildCatalogStats(row)}</span></span>
+                <span class="catalog-song-titleline"><span class="catalog-song-titleline-inner"><strong>${escapeHtml(row.obra || 'Sin título')}</strong></span></span>
                 <span class="catalog-authors"><span class="catalog-authors-text">${escapeHtml(row.autores || '—')}</span></span>
+                ${buildCatalogStats(row)}
               </button>
               <div class="actions">
                 ${isAuthenticated ? buildCatalogStars(row) : ''}
@@ -5128,6 +5129,9 @@ async function loadCatalogFromApi() {
       certificadaIndautorCount: Number(item.certificadaIndautorCount || 0),
       registradaSacm: Boolean(item.registradaSacm),
       registradaBmi: Boolean(item.registradaBmi),
+      rating: Math.max(0, Math.min(3, Math.round(Number(item.rating || 0)))),
+      likes: Math.max(0, Number(item.likes || 0)),
+      plays: Math.max(0, Number(item.plays || 0)),
       searchText: item.searchText || '',
     }));
     catalogVisibleCount = CATALOG_PAGE_STEP;
