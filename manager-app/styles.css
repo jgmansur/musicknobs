@@ -1717,6 +1717,8 @@ a { color: #93c5fd; }
   display: inline-flex;
   gap: .4rem;
   flex: 0 0 auto;
+  justify-self: start;
+  margin-top: .05rem;
   color: var(--text-soft);
   font-size: .68rem;
   font-weight: 400;

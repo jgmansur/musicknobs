@@ -777,7 +777,9 @@
     </main>
 
     <script src="./config.js"></script>
-    <script src="./vendor/howler.min.js"></script>
+    <!-- Howler removido a proposito: incluso sin usarse, al cargarse crea un
+         AudioContext (Web Audio) que en iOS rompe el audio por CarPlay wireless
+         (micro-cortes). El player del catalogo usa un <audio> nativo. -->
     <script src="./tracks.js?v=salesfix404v1"></script>
     <script src="./app.js?v=2.0.95"></script>
   </body>
