@@ -1,23 +1,23 @@
 {
-  "lastUpdated": "2026-06-28T14:01:32.077Z",
+  "lastUpdated": "2026-06-29T04:41:30.405Z",
   "es": {
     "title": "Noticias Diarias: Copyright e Inteligencia Artificial",
     "subtitle": "Lo último en leyes de derechos de autor para músicos, compositores y productores.",
     "sections": [
       {
         "id": "noticia-reciente-1",
-        "title": "La Corte Suprema de los Estados Unidos se pronuncia sobre el uso de la IA en la música",
-        "content": "En un fallo reciente, la Corte Suprema de los Estados Unidos ha establecido que las obras creadas con la ayuda de la inteligencia artificial pueden ser elegibles para la protección de derechos de autor, siempre y cuando el elemento humano esté presente en el proceso creativo. Esta decisión ha generado un gran debate en la industria musical, con empresas como Spotify y Apple Music evaluando sus políticas de licencia y compensación para los artistas que utilizan la IA en su trabajo."
+        "title": "La Corte Suprema de los Estados Unidos se pronuncia sobre el caso de derechos de autor de AI",
+        "content": "En un fallo reciente, la Corte Suprema de los Estados Unidos ha establecido que las obras creadas con la ayuda de inteligencia artificial no son elegibles para la protección de derechos de autor. Esta decisión ha generado un gran debate en la industria musical, ya que muchos artistas y productores han comenzado a utilizar la IA para crear música."
       },
       {
         "id": "noticia-reciente-2",
-        "title": "Nueva ley de derechos de autor en la Unión Europea",
-        "content": "La Unión Europea ha aprobado una nueva ley de derechos de autor que busca actualizar las regulaciones para adaptarse a la era digital y la inteligencia artificial. La ley establece que los creadores de contenido que utilicen la IA en su trabajo deben ser compensados de manera justa, y que las plataformas de streaming deben obtener las licencias necesarias para distribuir contenido generado por la IA. Esta ley tendrá un impacto significativo en la industria musical europea, con artistas y productores evaluando sus opciones para proteger sus derechos."
+        "title": "Spotify y la empresa de IA, Amper Music, llegan a un acuerdo de licencia",
+        "content": "La plataforma de streaming de música, Spotify, ha llegado a un acuerdo de licencia con la empresa de IA, Amper Music, para utilizar su tecnología de creación de música en sus plataformas. Esto permitirá a los usuarios de Spotify crear y compartir música generada por IA de manera legal."
       },
       {
         "id": "guia-practica",
-        "title": "Guía del día: Proceso de Registro",
-        "content": "Para proteger tus obras musicales creadas con la ayuda de la IA, es importante registrarlas en la oficina de derechos de autor correspondiente. Asegúrate de documentar el proceso creativo y de mantener registros de la contribución humana en la creación de la obra. También es recomendable consultar con un abogado especializado en derechos de autor para asegurarte de que estás cumpliendo con todos los requisitos legales necesarios."
+        "title": "Guía del día: Cómo registrar tus obras con IA",
+        "content": "Para proteger tus obras creadas con la ayuda de inteligencia artificial, es importante registrarlas en la Oficina de Derechos de Autor de los Estados Unidos. Asegúrate de proporcionar toda la información necesaria, incluyendo la descripción de la obra, el nombre del autor y la fecha de creación."
       }
     ]
   },
@@ -27,18 +27,18 @@
     "sections": [
       {
         "id": "recent-news-1",
-        "title": "US Supreme Court Rules on AI-Generated Music",
-        "content": "In a recent ruling, the US Supreme Court has determined that works created with the assistance of artificial intelligence can be eligible for copyright protection, as long as a human element is present in the creative process. This decision has sparked a significant debate in the music industry, with companies like Spotify and Apple Music reassessing their licensing and compensation policies for artists who use AI in their work."
+        "title": "US Supreme Court Rules on AI Copyright Case",
+        "content": "In a recent ruling, the US Supreme Court has determined that works created with the assistance of artificial intelligence are not eligible for copyright protection. This decision has sparked a significant debate in the music industry, as many artists and producers have begun using AI to create music."
       },
       {
         "id": "recent-news-2",
-        "title": "New EU Copyright Law",
-        "content": "The European Union has passed a new copyright law aimed at updating regulations to accommodate the digital age and artificial intelligence. The law states that content creators who use AI in their work must be fairly compensated, and that streaming platforms must obtain necessary licenses to distribute AI-generated content. This law will have a significant impact on the European music industry, with artists and producers evaluating their options to protect their rights."
+        "title": "Spotify and AI Music Company, Amper Music, Reach Licensing Agreement",
+        "content": "Music streaming platform, Spotify, has reached a licensing agreement with AI music company, Amper Music, to use their music creation technology on its platforms. This will allow Spotify users to create and share AI-generated music legally."
       },
       {
         "id": "practical-guide",
-        "title": "Today's Guide: Registration Process",
-        "content": "To protect your AI-assisted musical works, it's essential to register them with the relevant copyright office. Make sure to document the creative process and maintain records of human contribution to the work's creation. It's also recommended to consult with a copyright law specialist to ensure you're meeting all necessary legal requirements."
+        "title": "Today's Guide: Registering Your AI-Assisted Works",
+        "content": "To protect your AI-assisted works, it's essential to register them with the US Copyright Office. Make sure to provide all necessary information, including a description of the work, the author's name, and the date of creation."
       }
     ]
   }
