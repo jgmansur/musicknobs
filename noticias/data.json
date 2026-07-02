@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-07-02T04:03:50.250Z",
+  "lastUpdated": "2026-07-02T14:16:53.228Z",
   "es": {
     "title": "Noticias Diarias: Copyright e Inteligencia Artificial",
     "subtitle": "Lo último en leyes de derechos de autor para músicos, compositores y productores.",
@@ -12,12 +12,12 @@
       {
         "id": "noticia-reciente-2",
         "title": "Nuevas regulaciones en la Unión Europea para la protección de derechos de autor de AI",
-        "content": "La Unión Europea ha anunciado nuevas regulaciones para la protección de derechos de autor de obras creadas con inteligencia artificial, lo que puede tener un impacto significativo en la industria musical. Productores y compositores deben estar al tanto de estos cambios para proteger sus obras."
+        "content": "La Unión Europea ha anunciado nuevas regulaciones para la protección de derechos de autor de obras creadas con inteligencia artificial, lo que podría tener un impacto significativo en la industria musical. Productores y compositores deben estar al tanto de estos cambios para proteger sus obras."
       },
       {
         "id": "guia-practica",
         "title": "Guía del día: Proceso de Registro de Obras con IA",
-        "content": "Para proteger sus obras con IA, los compositores y productores deben registrar sus obras en la oficina de derechos de autor correspondiente. Es importante mantener un registro detallado de la creación de la obra, incluyendo la fecha y hora de creación, así como la participación de cualquier inteligencia artificial en el proceso creativo."
+        "content": "Para proteger sus obras con IA, los compositores y productores deben registrar sus obras en la oficina de derechos de autor correspondiente. Es importante mantener un registro detallado de la creación de la obra, incluyendo la fecha y hora de creación, así como la información de la IA utilizada."
       }
     ]
   },
@@ -28,17 +28,17 @@
       {
         "id": "recent-news-1",
         "title": "US Supreme Court Rules on AI Copyright Case",
-        "content": "In a recent ruling, the US Supreme Court has decided that works created with the help of artificial intelligence are not eligible for copyright protection, sparking a heated debate in the music industry. Companies such as Amper Music and AIVA have been affected by this decision."
+        "content": "In a recent ruling, the US Supreme Court has decided that works created with the help of artificial intelligence are not eligible for copyright protection, sparking a significant debate in the music industry. Companies such as Amper Music and AIVA have been affected by this decision."
       },
       {
         "id": "recent-news-2",
         "title": "EU Introduces New Regulations for AI Copyright Protection",
-        "content": "The European Union has announced new regulations for the protection of copyrights for works created with artificial intelligence, which may have a significant impact on the music industry. Producers and composers must be aware of these changes to protect their works."
+        "content": "The European Union has announced new regulations for the protection of copyrights for works created with artificial intelligence, which could have a significant impact on the music industry. Producers and composers must be aware of these changes to protect their works."
       },
       {
         "id": "practical-guide",
         "title": "Today's Guide: Registration Process for AI-Assisted Works",
-        "content": "To protect their AI-assisted works, composers and producers must register their works with the relevant copyright office. It is essential to keep a detailed record of the work's creation, including the date and time of creation, as well as the participation of any artificial intelligence in the creative process."
+        "content": "To protect their AI-assisted works, composers and producers must register their works with the relevant copyright office. It is essential to keep a detailed record of the work's creation, including the date and time of creation, as well as information about the AI used."
       }
     ]
   }
