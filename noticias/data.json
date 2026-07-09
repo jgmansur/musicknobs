@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-07-09T03:51:43.548Z",
+  "lastUpdated": "2026-07-09T15:23:00.012Z",
   "es": {
     "title": "Noticias Diarias: Copyright e Inteligencia Artificial",
     "subtitle": "Lo último en leyes de derechos de autor para músicos, compositores y productores.",
@@ -7,17 +7,17 @@
       {
         "id": "noticia-reciente-1",
         "title": "La Corte Suprema de los Estados Unidos se pronuncia sobre el caso de derechos de autor de AI",
-        "content": "En una decisión reciente, la Corte Suprema de los Estados Unidos ha establecido que las obras creadas con la ayuda de inteligencia artificial no pueden ser registradas para obtener derechos de autor, lo que ha generado un debate entre los defensores de los derechos de autor y los desarrolladores de tecnología de IA, como Google y Microsoft."
+        "content": "En una decisión reciente, la Corte Suprema de los Estados Unidos ha establecido que las obras creadas con la ayuda de inteligencia artificial no pueden ser registradas para obtener derechos de autor, lo que ha generado un debate entre los defensores de la propiedad intelectual y los desarrolladores de tecnología de IA. Esta decisión afecta a empresas como Google y Microsoft, que han invertido mucho en el desarrollo de herramientas de creación de contenido con IA."
       },
       {
         "id": "noticia-reciente-2",
         "title": "Nuevas regulaciones en la Unión Europea para la protección de los derechos de autor en la música generada por IA",
-        "content": "La Unión Europea ha anunciado nuevas regulaciones para proteger los derechos de autor de los músicos y compositores en la era de la inteligencia artificial, lo que incluye la obligación de los desarrolladores de tecnología de IA de obtener permisos para utilizar obras protegidas por derechos de autor, y sanciones para aquellos que no cumplan con estas regulaciones."
+        "content": "La Unión Europea ha anunciado nuevas regulaciones para proteger los derechos de autor de los compositores y productores de música que utilizan inteligencia artificial en su proceso creativo. Estas regulaciones establecen pautas claras para el registro y la protección de las obras musicales generadas con IA, lo que beneficiará a artistas como Grimes y Arca, que han experimentado con la creación de música con IA."
       },
       {
         "id": "guia-practica",
-        "title": "Guía del día: Cómo registrar tus obras musicales creadas con IA",
-        "content": "Para proteger tus obras musicales creadas con la ayuda de inteligencia artificial, es importante registrarlas en la oficina de derechos de autor correspondiente, como la Oficina de Derechos de Autor de los Estados Unidos, y proporcionar información detallada sobre el proceso de creación y la contribución de la IA en la obra."
+        "title": "Guía del día: Cómo registrar tus obras con IA",
+        "content": "Para proteger tus obras musicales creadas con inteligencia artificial, es importante registrarlas en la oficina de derechos de autor correspondiente. Asegúrate de documentar el proceso de creación, incluyendo la contribución de la IA, y de cumplir con los requisitos de registro establecidos por la ley. También es recomendable consultar con un abogado especializado en derechos de autor para asegurarte de que estás cumpliendo con todas las regulaciones aplicables."
       }
     ]
   },
@@ -27,18 +27,18 @@
     "sections": [
       {
         "id": "recent-news-1",
-        "title": "US Supreme Court Rules on AI Copyright Case",
-        "content": "In a recent decision, the US Supreme Court has ruled that works created with the help of artificial intelligence cannot be registered for copyright, sparking a debate between copyright advocates and AI technology developers, such as Google and Microsoft."
+        "title": "US Supreme Court Rules on AI-Generated Copyright Case",
+        "content": "In a recent decision, the US Supreme Court has ruled that works created with the help of artificial intelligence cannot be registered for copyright, sparking a debate between intellectual property advocates and AI technology developers. This decision affects companies like Google and Microsoft, which have invested heavily in the development of AI-powered content creation tools."
       },
       {
         "id": "recent-news-2",
-        "title": "EU Introduces New Regulations for Protecting Music Copyrights in the Age of AI",
-        "content": "The European Union has announced new regulations to protect the copyrights of musicians and composers in the era of artificial intelligence, including the requirement for AI technology developers to obtain permissions to use copyrighted works, and penalties for those who fail to comply with these regulations."
+        "title": "EU Introduces New Regulations for Protecting Copyright in AI-Generated Music",
+        "content": "The European Union has announced new regulations to protect the copyrights of composers and music producers who use artificial intelligence in their creative process. These regulations establish clear guidelines for the registration and protection of AI-generated musical works, which will benefit artists like Grimes and Arca, who have experimented with AI-generated music."
       },
       {
         "id": "practical-guide",
-        "title": "Today's Guide: Registering Your AI-Generated Music",
-        "content": "To protect your AI-generated music, it's essential to register it with the relevant copyright office, such as the US Copyright Office, and provide detailed information about the creation process and the contribution of AI to the work."
+        "title": "Today's Guide: Registering Your AI-Generated Works",
+        "content": "To protect your AI-generated musical works, it's essential to register them with the relevant copyright office. Make sure to document the creation process, including the AI's contribution, and comply with the registration requirements set by law. It's also recommended to consult with a copyright law specialist to ensure you're meeting all applicable regulations."
       }
     ]
   }
