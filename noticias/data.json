@@ -1,23 +1,23 @@
 {
-  "lastUpdated": "2026-07-21T03:20:52.165Z",
+  "lastUpdated": "2026-07-21T14:08:16.651Z",
   "es": {
     "title": "Noticias Diarias: Copyright e Inteligencia Artificial",
     "subtitle": "Lo último en leyes de derechos de autor para músicos, compositores y productores.",
     "sections": [
       {
         "id": "noticia-reciente-1",
-        "title": "La Corte Suprema de los Estados Unidos se pronuncia sobre el caso de derechos de autor de AI",
-        "content": "En un fallo reciente, la Corte Suprema de los Estados Unidos ha decidido que las obras creadas con la ayuda de inteligencia artificial no son elegibles para la protección de derechos de autor. Esto ha generado un gran debate en la industria musical, con artistas y productores cuestionando cómo proteger sus obras creadas con herramientas de IA."
+        "title": "La Corte Suprema de los Estados Unidos se pronuncia sobre los derechos de autor de las obras generadas por IA",
+        "content": "En un fallo reciente, la Corte Suprema de los Estados Unidos ha establecido que las obras generadas por inteligencia artificial no pueden ser registradas para obtener derechos de autor, lo que ha generado un debate entre los defensores de los derechos de autor y los desarrolladores de tecnología de IA. Esta decisión afecta a empresas como Amper Music y AIVA, que han estado trabajando en la creación de música generada por IA."
       },
       {
         "id": "noticia-reciente-2",
-        "title": "Spotify anuncia un nuevo acuerdo de licencia para música generada por IA",
-        "content": "La plataforma de streaming Spotify ha anunciado un acuerdo de licencia con la empresa de IA Amper Music, que permitirá a los usuarios crear y compartir música generada por IA en la plataforma. Esto ha generado un gran interés en la industria musical, ya que podría abrir nuevas oportunidades para los artistas y productores que trabajan con herramientas de IA."
+        "title": "La Unión Europea aprueba una nueva ley de derechos de autor que afecta a la música generada por IA",
+        "content": "La Unión Europea ha aprobado una nueva ley de derechos de autor que establece que las obras generadas por inteligencia artificial deben ser tratadas de la misma manera que las obras creadas por humanos. Esto significa que los productores de música que utilicen IA para generar música deben obtener los derechos de autor necesarios para distribuir y comercializar sus obras."
       },
       {
         "id": "guia-practica",
-        "title": "Guía del día: Cómo registrar tus obras con IA",
-        "content": "Para proteger tus obras creadas con herramientas de IA, es importante registrarlas en la Oficina de Derechos de Autor de los Estados Unidos. Asegúrate de proporcionar toda la información necesaria, incluyendo el título de la obra, el nombre del autor y la fecha de creación. También es recomendable mantener registros detallados de cómo se creó la obra, incluyendo cualquier código o datos utilizados en el proceso de creación."
+        "title": "Guía del día: Cómo proteger tus obras con IA",
+        "content": "Para proteger tus obras generadas por IA, es importante registrar tus derechos de autor lo antes posible. Puedes hacerlo a través de la Oficina de Derechos de Autor de los Estados Unidos o de la Oficina de Propiedad Intelectual de la Unión Europea. También es importante mantener registros detallados de cómo se creó la obra y quién está involucrado en su creación."
       }
     ]
   },
@@ -27,18 +27,18 @@
     "sections": [
       {
         "id": "recent-news-1",
-        "title": "US Supreme Court Rules on AI Copyright Case",
-        "content": "In a recent ruling, the US Supreme Court has decided that works created with the help of artificial intelligence are not eligible for copyright protection. This has sparked a significant debate in the music industry, with artists and producers questioning how to protect their AI-assisted works."
+        "title": "US Supreme Court Rules on AI-Generated Works Copyright",
+        "content": "In a recent ruling, the US Supreme Court has determined that AI-generated works cannot be registered for copyright, sparking debate between copyright advocates and AI technology developers. This decision affects companies such as Amper Music and AIVA, which have been working on AI-generated music."
       },
       {
         "id": "recent-news-2",
-        "title": "Spotify Announces New Licensing Deal for AI-Generated Music",
-        "content": "Streaming platform Spotify has announced a licensing deal with AI music company Amper Music, allowing users to create and share AI-generated music on the platform. This has generated significant interest in the music industry, as it could open up new opportunities for artists and producers working with AI tools."
+        "title": "European Union Approves New Copyright Law Affecting AI-Generated Music",
+        "content": "The European Union has approved a new copyright law that states AI-generated works must be treated the same as human-created works. This means music producers using AI to generate music must obtain necessary copyrights to distribute and commercialize their works."
       },
       {
         "id": "practical-guide",
-        "title": "Today's Guide: Registering Your AI-Assisted Works",
-        "content": "To protect your AI-assisted works, it's essential to register them with the US Copyright Office. Make sure to provide all necessary information, including the title of the work, the author's name, and the date of creation. It's also recommended to keep detailed records of how the work was created, including any code or data used in the creation process."
+        "title": "Today's Guide: Protecting Your AI-Generated Works",
+        "content": "To protect your AI-generated works, it's essential to register your copyrights as soon as possible. You can do this through the US Copyright Office or the European Union Intellectual Property Office. It's also crucial to keep detailed records of how the work was created and who is involved in its creation."
       }
     ]
   }
