@@ -3576,16 +3576,11 @@ function renderFocusTaskBoard() {
   const modeChip = document.getElementById('focus-switch-mode');
   const progress = document.getElementById('focus-progress');
   const completeBtn = document.getElementById('focus-complete-btn');
-  const postponeBtn = document.getElementById('focus-postpone-btn');
+  const backlogBtn = document.getElementById('focus-backlog-btn');
   const rescheduleBtn = document.getElementById('focus-reschedule-trigger');
   const prevBtn = document.getElementById('focus-prev');
   const nextBtn = document.getElementById('focus-next');
   if (!root || !hint || !modeChip || !progress || !completeBtn) return;
-
-  const isAfter9pm = new Date().getHours() >= 21;
-  if (postponeBtn) {
-    postponeBtn.classList.toggle('hidden', !isAfter9pm);
-  }
 
   root.classList.remove('focus-board-done');
   const current = getCurrentFocusTask();
@@ -3630,7 +3625,7 @@ function renderFocusTaskBoard() {
       : 'Modo ATRASADAS: backlog pendiente por resolver.';
     completeBtn.disabled = false;
     completeBtn.textContent = 'Completar task';
-    if (postponeBtn) postponeBtn.disabled = false;
+    if (backlogBtn) backlogBtn.disabled = false;
     if (rescheduleBtn) rescheduleBtn.disabled = false;
     document.getElementById('focus-status')?.classList.add('clickable');
     return;
@@ -3647,7 +3642,7 @@ function renderFocusTaskBoard() {
       : 'No hay backlog con fecha pasada.';
     completeBtn.disabled = true;
     completeBtn.textContent = 'Sin task activa';
-    if (postponeBtn) postponeBtn.disabled = true;
+    if (backlogBtn) backlogBtn.disabled = true;
     if (rescheduleBtn) rescheduleBtn.disabled = true;
     return;
   }
@@ -3657,7 +3652,7 @@ function renderFocusTaskBoard() {
   hint.textContent = 'Dale a ⬅ para regresar al modo HOY.';
   completeBtn.disabled = true;
   completeBtn.textContent = 'Sin task activa';
-  if (postponeBtn) postponeBtn.disabled = true;
+  if (backlogBtn) backlogBtn.disabled = true;
   if (rescheduleBtn) rescheduleBtn.disabled = true;
 }
 
@@ -3795,29 +3790,71 @@ async function manualSyncFocusTasks() {
   ]);
 }
 
-async function postponeCurrentFocusTask() {
+async function sendCurrentTaskToBacklog() {
   if (!isAuthenticated) return;
   const current = getCurrentFocusTask();
   if (!current?.id) return;
 
-  const tomorrowDate = new Date(new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' }) + 'T00:00:00');
-  tomorrowDate.setDate(tomorrowDate.getDate() + 1);
-  const dateStr = tomorrowDate.toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' });
-  const tomorrowIso = `${dateStr}T09:00:00.000-06:00`;
+  const mxNow = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Mexico_City' }));
+  mxNow.setDate(mxNow.getDate() - 1);
+  const dateStr = mxNow.toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' });
+  const yesterdayIso = `${dateStr}T09:00:00.000-06:00`;
 
   try {
     const r = await fetch(`${API_BASE}/api/manager/tasks/${current.id}`, {
       method: 'PATCH',
       headers: apiHeaders(),
-      body: JSON.stringify({ dueDate: tomorrowIso })
+      body: JSON.stringify({ dueDate: yesterdayIso })
     });
     if (!r.ok) throw new Error(`HTTP ${r.status}`);
-    setStatus('focus-status', `Task movida a mañana (${tomorrowIso}). Sincronizando...`);
+    setStatus('focus-status', 'Task movida al backlog. Sincronizando...');
     await Promise.all([loadFocusTasks({ keepMode: true }), loadTasksFromApi()]);
   } catch (e) {
     const reason = e instanceof Error ? e.message : String(e);
-    setStatus('focus-status', `No se pudo posponer task: ${reason}`, true);
+    setStatus('focus-status', `No se pudo mover al backlog: ${reason}`, true);
   }
+}
+
+async function autoRolloverTodayTasks() {
+  if (!isAuthenticated) return;
+  const tasks = [...focusTodayTasks];
+  if (!tasks.length) return;
+
+  const mxNow = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Mexico_City' }));
+  mxNow.setDate(mxNow.getDate() + 1);
+  const dateStr = mxNow.toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' });
+  const tomorrowIso = `${dateStr}T09:00:00.000-06:00`;
+
+  let moved = 0;
+  for (const task of tasks) {
+    try {
+      const r = await fetch(`${API_BASE}/api/manager/tasks/${task.id}`, {
+        method: 'PATCH',
+        headers: apiHeaders(),
+        body: JSON.stringify({ dueDate: tomorrowIso })
+      });
+      if (r.ok) moved++;
+    } catch { /* individual failure is silent */ }
+  }
+
+  if (moved > 0) {
+    await Promise.all([loadFocusTasks({ keepMode: false }), loadTasksFromApi()]);
+    setStatus('focus-status', `Auto-rollover: ${moved} task(s) movidas a mañana.`);
+  }
+}
+
+function scheduleAutoRollover() {
+  const mxNow = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Mexico_City' }));
+  const mxRollover = new Date(mxNow);
+  mxRollover.setHours(23, 58, 0, 0);
+
+  let msUntil = mxRollover - mxNow;
+  if (msUntil <= 0) msUntil += 86400000;
+
+  setTimeout(async () => {
+    await autoRolloverTodayTasks();
+    scheduleAutoRollover();
+  }, msUntil);
 }
 
 async function openFocusEditModal() {
@@ -5785,7 +5822,7 @@ function setupActions() {
   bindClick('focus-next', () => rotateFocusTask(1));
   bindClick('focus-prev', () => rotateFocusTask(-1));
   bindClick('focus-complete-btn', completeCurrentFocusTask);
-  bindClick('focus-postpone-btn', postponeCurrentFocusTask);
+  bindClick('focus-backlog-btn', sendCurrentTaskToBacklog);
   bindClick('focus-status', openFocusEditModal);
   bindClick('focus-edit-save', saveFocusEditTask);
   bindClick('focus-edit-cancel', closeFocusEditModal);
@@ -5865,6 +5902,7 @@ function init() {
     autoLoginOnLoad();
   }
   initNotifications();
+  scheduleAutoRollover();
 }
 
 function maybeNotify(title, body) {
