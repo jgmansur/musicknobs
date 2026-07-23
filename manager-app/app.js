@@ -3625,7 +3625,10 @@ function renderFocusTaskBoard() {
       : 'Modo ATRASADAS: backlog pendiente por resolver.';
     completeBtn.disabled = false;
     completeBtn.textContent = 'Completar task';
-    if (backlogBtn) backlogBtn.disabled = false;
+    if (backlogBtn) {
+      backlogBtn.disabled = false;
+      backlogBtn.textContent = focusMode === 'today' ? '📥 Al backlog' : '📅 Para hoy';
+    }
     if (rescheduleBtn) rescheduleBtn.disabled = false;
     document.getElementById('focus-status')?.classList.add('clickable');
     return;
@@ -3796,22 +3799,23 @@ async function sendCurrentTaskToBacklog() {
   if (!current?.id) return;
 
   const mxNow = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Mexico_City' }));
-  mxNow.setDate(mxNow.getDate() - 1);
+  const movingToToday = focusMode === 'overdue';
+  if (!movingToToday) mxNow.setDate(mxNow.getDate() - 1);
   const dateStr = mxNow.toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' });
-  const yesterdayIso = `${dateStr}T09:00:00.000-06:00`;
+  const targetIso = `${dateStr}T09:00:00.000-06:00`;
 
   try {
     const r = await fetch(`${API_BASE}/api/manager/tasks/${current.id}`, {
       method: 'PATCH',
       headers: apiHeaders(),
-      body: JSON.stringify({ dueDate: yesterdayIso })
+      body: JSON.stringify({ dueDate: targetIso })
     });
     if (!r.ok) throw new Error(`HTTP ${r.status}`);
-    setStatus('focus-status', 'Task movida al backlog. Sincronizando...');
+    setStatus('focus-status', movingToToday ? 'Task movida a hoy. Sincronizando...' : 'Task movida al backlog. Sincronizando...');
     await Promise.all([loadFocusTasks({ keepMode: true }), loadTasksFromApi()]);
   } catch (e) {
     const reason = e instanceof Error ? e.message : String(e);
-    setStatus('focus-status', `No se pudo mover al backlog: ${reason}`, true);
+    setStatus('focus-status', `No se pudo mover la task: ${reason}`, true);
   }
 }
 
