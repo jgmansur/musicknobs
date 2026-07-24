@@ -3819,15 +3819,13 @@ async function sendCurrentTaskToBacklog() {
   }
 }
 
-async function autoRolloverTodayTasks() {
+async function autoRolloverTodayTasks(targetDateStr) {
   if (!isAuthenticated) return;
   const tasks = [...focusTodayTasks];
   if (!tasks.length) return;
 
-  const mxNow = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Mexico_City' }));
-  mxNow.setDate(mxNow.getDate() + 1);
-  const dateStr = mxNow.toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' });
-  const tomorrowIso = `${dateStr}T09:00:00.000-06:00`;
+  // targetDateStr: "YYYY-MM-DD" in MX timezone (provided by caller to avoid any timezone guessing)
+  const tomorrowIso = `${targetDateStr}T09:00:00.000-06:00`;
 
   let moved = 0;
   for (const task of tasks) {
@@ -3848,15 +3846,31 @@ async function autoRolloverTodayTasks() {
 }
 
 function scheduleAutoRollover() {
-  const mxNow = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Mexico_City' }));
-  const mxRollover = new Date(mxNow);
-  mxRollover.setHours(23, 58, 0, 0);
+  // Get exact MX time components — no Date parsing, no timezone confusion
+  const now = new Date();
+  const mxTime = now.toLocaleTimeString('en-US', {
+    timeZone: 'America/Mexico_City',
+    hour12: false,
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit'
+  });
+  let [h, m, s] = mxTime.split(':').map(Number);
+  if (h === 24) h = 0;
 
-  let msUntil = mxRollover - mxNow;
-  if (msUntil <= 0) msUntil += 86400000;
+  const TARGET_H = 23, TARGET_M = 58;
+  let minsUntil = (TARGET_H * 60 + TARGET_M) - (h * 60 + m);
+  if (minsUntil <= 0) minsUntil += 24 * 60;
+  const msUntil = minsUntil * 60000 - s * 1000;
 
   setTimeout(async () => {
-    await autoRolloverTodayTasks();
+    // Compute tomorrow's MX date at fire time — parse 'en-CA' gives "YYYY-MM-DD" unambiguously
+    const todayMx = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' });
+    const [y, mo, d] = todayMx.split('-').map(Number);
+    // Use UTC noon on tomorrow's date — always maps to correct MX calendar day regardless of offset
+    const tomorrowMx = new Date(Date.UTC(y, mo - 1, d + 1, 18, 0, 0))
+      .toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' });
+    await autoRolloverTodayTasks(tomorrowMx);
     scheduleAutoRollover();
   }, msUntil);
 }
