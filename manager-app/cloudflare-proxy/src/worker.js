@@ -136,20 +136,26 @@ async function importPrivateKey(pem) {
   );
 }
 
-async function getDriveAccessToken(env) {
-  if (driveAccessTokenCache.token && Date.now() < driveAccessTokenCache.expiresAt - 30_000) {
-    return driveAccessTokenCache.token;
-  }
+// Read-only es suficiente para Drive: los archivos del portal los sube el admin
+// logueado desde el cliente (los service accounts no tienen cuota en My Drive),
+// el worker solo los lee para hacer streaming.
+const GOOGLE_SCOPE_DRIVE = "https://www.googleapis.com/auth/drive.readonly";
+// Calendar: se necesita escritura para crear/mover/borrar los eventos de recordatorio.
+const GOOGLE_SCOPE_CALENDAR = "https://www.googleapis.com/auth/calendar.events";
+
+// Un token por scope: Google los emite acotados, así que no se pueden compartir.
+const googleTokenCacheByScope = new Map();
+
+async function getGoogleAccessToken(env, scope = GOOGLE_SCOPE_DRIVE) {
+  const cached = googleTokenCacheByScope.get(scope);
+  if (cached?.token && Date.now() < cached.expiresAt - 30_000) return cached.token;
 
   const serviceAccount = parseDriveServiceAccount(env);
   const now = Math.floor(Date.now() / 1000);
   const header = { alg: "RS256", typ: "JWT" };
   const payload = {
     iss: serviceAccount.client_email,
-    // Read-only is enough: portal version files are uploaded client-side as the
-    // logged-in admin (service accounts have no My Drive storage quota). The worker
-    // only reads files for streaming.
-    scope: "https://www.googleapis.com/auth/drive.readonly",
+    scope,
     aud: serviceAccount.token_uri || "https://oauth2.googleapis.com/token",
     iat: now,
     exp: now + 3600,
@@ -172,19 +178,23 @@ async function getDriveAccessToken(env) {
   });
 
   if (!tokenResp.ok) {
-    throw new Error(`No se pudo obtener token de Drive (${tokenResp.status})`);
+    throw new Error(`No se pudo obtener token de Google para ${scope} (${tokenResp.status})`);
   }
 
   const tokenPayload = await tokenResp.json();
   const accessToken = String(tokenPayload.access_token || "");
   const expiresIn = Number(tokenPayload.expires_in || 3600);
-  if (!accessToken) throw new Error("Token de Drive vacío");
+  if (!accessToken) throw new Error(`Token de Google vacío para ${scope}`);
 
-  driveAccessTokenCache = {
+  googleTokenCacheByScope.set(scope, {
     token: accessToken,
     expiresAt: Date.now() + Math.max(60, expiresIn) * 1000,
-  };
+  });
   return accessToken;
+}
+
+async function getDriveAccessToken(env) {
+  return getGoogleAccessToken(env, GOOGLE_SCOPE_DRIVE);
 }
 
 function isValidDriveFileId(fileId) {
@@ -2099,6 +2109,173 @@ async function rolloverTodayTasks(env) {
   return { ok: true, from: fromIso, to: toIso, movedCount: moved.length, moved, failed };
 }
 
+// ─── RECORDATORIOS: IVY (TELEGRAM) ──────────────────────────────────────────
+// Ivy usa POLLING para leer, así que este worker solo ENVÍA: llamar getUpdates
+// desde acá le robaría mensajes al proceso de Ivy. Enviar no conflictúa.
+
+async function sendIvyMessage(env, text) {
+  const token = env.TELEGRAM_BOT_TOKEN;
+  const chatId = env.TELEGRAM_CHAT_ID;
+  if (!token || !chatId) return { error: "Telegram no configurado" };
+
+  const resp = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ chat_id: chatId, text, parse_mode: "HTML" }),
+  });
+  if (!resp.ok) return { error: "Telegram falló", status: resp.status, details: (await resp.text()).slice(0, 200) };
+  return { ok: true };
+}
+
+// Minutos de anticipación de cada aviso.
+const REMINDER_LEAD_MINUTES = [30, 0];
+
+// Marca en KV que un aviso ya salió para que un reintento del cron no lo repita.
+// La clave incluye la fecha exacta: si la task se reagenda, cuenta como aviso nuevo.
+async function claimReminderSlot(env, taskId, dueDate, lead) {
+  if (!env.REMINDERS) return true; // sin KV se manda igual; la ventana de 1 min ya acota
+  const key = `sent:${taskId}:${dueDate}:${lead}`;
+  if (await env.REMINDERS.get(key)) return false;
+  await env.REMINDERS.put(key, "1", { expirationTtl: 172800 }); // 48h
+  return true;
+}
+
+async function notifyDueTasks(env) {
+  if (!env.NOTION_TOKEN) return { error: "NOTION_TOKEN no configurado" };
+
+  const notionVersion = env.NOTION_VERSION || "2022-06-28";
+  const dbId = env.MANAGER_TASKS_DB_ID || DEFAULT_MANAGER_TASKS_DB_ID;
+
+  const payload = await notionQueryAdvanced(dbId, env.NOTION_TOKEN, notionVersion, {
+    filter: {
+      and: [
+        { property: TASK_NOTIFY_PROPERTY, checkbox: { equals: true } },
+        { property: "Date (ToDo)", date: { is_not_empty: true } },
+        { property: "Estatus", select: { does_not_equal: "Terminado" } },
+      ],
+    },
+    pageSize: 100,
+  });
+
+  const now = Date.now();
+  const sent = [];
+
+  for (const page of payload.results || []) {
+    const props = page.properties || {};
+    const dueDate = props?.["Date (ToDo)"]?.date?.start || "";
+    if (!dueDate || !dueDate.includes("T")) continue; // sin hora no hay momento al que avisar
+
+    const dueMs = new Date(dueDate).getTime();
+    if (Number.isNaN(dueMs)) continue;
+
+    const minutesLeft = Math.round((dueMs - now) / 60000);
+    // Ventana de 2 min por si el cron se corre un poco; KV evita el duplicado.
+    const lead = REMINDER_LEAD_MINUTES.find((m) => minutesLeft === m || minutesLeft === m + 1);
+    if (lead === undefined) continue;
+    if (!(await claimReminderSlot(env, page.id, dueDate, lead))) continue;
+
+    const title = normalizeTaskTitle(readNotionTitle(props));
+    const hora = new Date(dueDate).toLocaleTimeString("es-MX", {
+      timeZone: "America/Mexico_City", hour: "2-digit", minute: "2-digit", hour12: true,
+    });
+    const cuando = lead === 0 ? "es ahora" : `es en ${lead} minutos`;
+    const res = await sendIvyMessage(env, `🔔 <b>${title}</b>\n\n${cuando} (${hora})\n\n<a href="${page.url}">Ver en Notion</a>`);
+    sent.push({ title, lead, ok: !res.error, ...(res.error ? { error: res.error } : {}) });
+  }
+
+  return { ok: true, checked: (payload.results || []).length, sentCount: sent.length, sent };
+}
+
+// ─── RECORDATORIOS: GOOGLE CALENDAR ─────────────────────────────────────────
+// El evento se crea al prender el switch 🔔, no a la hora de avisar: la alerta la
+// dispara Calendar, que es lo que hace que la notificación de iOS sea nativa y
+// confiable (y aparece en Notion Calendar, que lee Google Calendar).
+
+const CALENDAR_REMINDER_MINUTES = [30, 0];
+
+// Google exige que el id del evento sea base32hex (0-9, a-v). El page id de Notion
+// es hexadecimal, o sea un subconjunto válido: el id se DERIVA de la task y no hay
+// que guardarlo en ningún lado. Crear/mover/borrar queda idempotente.
+function calendarEventIdForTask(taskId) {
+  return `mk${String(taskId || "").replace(/-/g, "").toLowerCase()}`;
+}
+
+function calendarIdFor(env) {
+  return env.CALENDAR_ID || OWNER_EMAIL;
+}
+
+// Suma minutos a un ISO conservando el offset original (mismo criterio que el rollover).
+function isoPlusMinutes(iso, minutes) {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return iso;
+  const shifted = new Date(d.getTime() + minutes * 60000);
+  const offsetMatch = String(iso).match(/([+-]\d{2}:\d{2}|Z)$/);
+  if (!offsetMatch || offsetMatch[1] === "Z") return shifted.toISOString();
+  const [, sign, oh, om] = offsetMatch[1].match(/([+-])(\d{2}):(\d{2})/);
+  const offsetMs = (Number(oh) * 60 + Number(om)) * 60000 * (sign === "-" ? -1 : 1);
+  return new Date(shifted.getTime() + offsetMs).toISOString().replace(/\.\d{3}Z$/, `.000${offsetMatch[1]}`);
+}
+
+async function upsertTaskCalendarEvent(env, { taskId, title, dueDate, notionUrl }) {
+  if (!dueDate) return { skipped: "sin fecha" };
+  // Sin hora no hay a qué momento avisar: Calendar lo haría evento de día completo.
+  if (!String(dueDate).includes("T")) return { skipped: "sin hora" };
+
+  const token = await getGoogleAccessToken(env, GOOGLE_SCOPE_CALENDAR);
+  const eventId = calendarEventIdForTask(taskId);
+  const calendarId = encodeURIComponent(calendarIdFor(env));
+
+  const event = {
+    id: eventId,
+    summary: `🔔 ${title || "Task"}`,
+    description: notionUrl ? `Task de Manager App\n${notionUrl}` : "Task de Manager App",
+    start: { dateTime: dueDate, timeZone: "America/Mexico_City" },
+    end: { dateTime: isoPlusMinutes(dueDate, 30), timeZone: "America/Mexico_City" },
+    reminders: {
+      useDefault: false,
+      overrides: CALENDAR_REMINDER_MINUTES.map((minutes) => ({ method: "popup", minutes })),
+    },
+  };
+
+  const base = `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events`;
+  const headers = { Authorization: `Bearer ${token}`, "Content-Type": "application/json" };
+
+  // PUT actualiza si ya existe; si no existe (404) se crea con ese mismo id.
+  let resp = await fetch(`${base}/${eventId}`, { method: "PUT", headers, body: JSON.stringify(event) });
+  if (resp.status === 404 || resp.status === 410) {
+    resp = await fetch(base, { method: "POST", headers, body: JSON.stringify(event) });
+  }
+
+  if (!resp.ok) return { error: "Calendar upsert falló", status: resp.status, details: (await resp.text()).slice(0, 300) };
+  return { ok: true, eventId };
+}
+
+async function deleteTaskCalendarEvent(env, taskId) {
+  const token = await getGoogleAccessToken(env, GOOGLE_SCOPE_CALENDAR);
+  const calendarId = encodeURIComponent(calendarIdFor(env));
+  const resp = await fetch(
+    `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events/${calendarEventIdForTask(taskId)}`,
+    { method: "DELETE", headers: { Authorization: `Bearer ${token}` } }
+  );
+  // 404/410 = ya no estaba: para nuestros fines es éxito.
+  if (!resp.ok && resp.status !== 404 && resp.status !== 410) {
+    return { error: "Calendar delete falló", status: resp.status };
+  }
+  return { ok: true };
+}
+
+// Punto único de sincronización: decide crear/mover o borrar según el estado final
+// de la task. Se llama después de cada update y del rollover.
+async function syncTaskReminder(env, { taskId, notificar, title, dueDate, notionUrl }) {
+  try {
+    return notificar
+      ? await upsertTaskCalendarEvent(env, { taskId, title, dueDate, notionUrl })
+      : await deleteTaskCalendarEvent(env, taskId);
+  } catch (e) {
+    return { error: "Reminder sync falló", details: String(e?.message || e) };
+  }
+}
+
 async function listSocialLinks(env) {
   const notionVersion = env.NOTION_VERSION || "2022-06-28";
   const notionToken = env.NOTION_TOKEN || "";
@@ -2473,6 +2650,7 @@ async function updateManagerTask(env, taskId, body) {
   const hasShowInManager = "showInManager" in (body || {});
   const hasNotificar = "notificar" in (body || {});
   const hasSubtasks = Array.isArray(body?.subtasks);
+  let reminderResult = null;
   const subtasks = hasSubtasks
     ? normalizeSubtasks(body.subtasks.map((s) => ({ title: String(s?.title || "").trim(), done: Boolean(s?.done) })))
     : [];
@@ -2529,6 +2707,27 @@ async function updateManagerTask(env, taskId, body) {
 
     if (!resp.ok) return { error: "Task update failed", details: await resp.text() };
     clearFocusTasksCache();
+
+    // Sincroniza el recordatorio con el estado FINAL de la task. Si cambió la fecha,
+    // el evento se mueve; si se apagó el switch, se borra. `props` es el estado
+    // previo (ya leído arriba), así que no hace falta ninguna consulta extra.
+    const finalNotificar = hasNotificar
+      ? Boolean(body.notificar)
+      : Boolean(props?.[TASK_NOTIFY_PROPERTY]?.checkbox);
+    const finalDueDate = dueDate !== null ? dueDate : (props?.["Date (ToDo)"]?.date?.start || "");
+    const finalTitle = title || normalizeTaskTitle(readNotionTitle(props));
+    const isDone = (status || props?.Estatus?.select?.name || "") === "Terminado";
+
+    if (finalNotificar || hasNotificar) {
+      reminderResult = await syncTaskReminder(env, {
+        taskId,
+        // Una task terminada no debe seguir avisando.
+        notificar: finalNotificar && !isDone,
+        title: finalTitle,
+        dueDate: finalDueDate,
+        notionUrl: String(page.url || ""),
+      });
+    }
   }
 
   if (hasSubtasks) {
@@ -2545,7 +2744,7 @@ async function updateManagerTask(env, taskId, body) {
     }
   }
 
-  return { ok: true };
+  return reminderResult ? { ok: true, reminder: reminderResult } : { ok: true };
 }
 
 async function deleteManagerTask(env, taskId) {
@@ -4434,6 +4633,17 @@ export default {
       return json(result, result.error ? 502 : 200);
     }
 
+    // Corre el mismo chequeo de recordatorios que el cron de cada minuto.
+    // ?test=1 manda un mensaje de prueba por Ivy sin tocar tasks.
+    if (request.method === "POST" && url.pathname === "/api/manager/reminders/check") {
+      if (url.searchParams.get("test") === "1") {
+        const res = await sendIvyMessage(env, "🔔 Prueba de recordatorios — Ivy conectada al worker de Manager App.");
+        return json(res, res.error ? 502 : 200);
+      }
+      const result = await notifyDueTasks(env);
+      return json(result, result.error ? 502 : 200);
+    }
+
     if (request.method === "GET" && url.pathname === "/api/manager/messages") {
       const result = await listManagerMessages(env);
       return json(result, result.error ? 502 : 200);
@@ -4869,14 +5079,27 @@ export default {
     return json({ error: "Not found", path: url.pathname }, 404);
   },
 
-  // Cron Trigger: 58 5 * * * UTC = 23:58 México. Ver [triggers] en wrangler.toml.
+  // Dos crons (ver [triggers] en wrangler.toml):
+  //   "58 5 * * *" → 23:58 México: auto-rollover de tasks no completadas
+  //   "* * * * *"  → cada minuto: recordatorios de tasks con 🔔 Notificar
   async scheduled(event, env, ctx) {
+    if (event.cron === "58 5 * * *") {
+      ctx.waitUntil(
+        rolloverTodayTasks(env)
+          .then((res) => console.log("auto-rollover", JSON.stringify(res)))
+          .catch((e) => console.error("auto-rollover falló", String(e?.message || e)))
+      );
+      return;
+    }
+
     ctx.waitUntil(
-      rolloverTodayTasks(env).then((res) => {
-        console.log("auto-rollover", JSON.stringify(res));
-      }).catch((e) => {
-        console.error("auto-rollover falló", String(e?.message || e));
-      })
+      notifyDueTasks(env)
+        .then((res) => {
+          // Solo se loguea cuando hubo algo que mandar, para no llenar el log
+          // con 1440 corridas vacías al día.
+          if (res?.sentCount) console.log("recordatorios", JSON.stringify(res));
+        })
+        .catch((e) => console.error("recordatorios falló", String(e?.message || e)))
     );
   },
 };

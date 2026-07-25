@@ -5,7 +5,13 @@ compatibility_date = "2025-01-15"
 [observability]
 enabled = true
 
-# Auto-rollover de tasks de Focus: 05:58 UTC = 23:58 México (UTC-6 todo el año,
-# México no usa horario de verano desde 2022).
+# Dedupe de recordatorios ya enviados (y a futuro, suscripciones de Web Push).
+[[kv_namespaces]]
+binding = "REMINDERS"
+id = "0cb0bf6b05ae474d84f2aeee61778874"
+
+# "58 5 * * *"  → 05:58 UTC = 23:58 México: auto-rollover de tasks de Focus.
+# "* * * * *"   → cada minuto: recordatorios de tasks marcadas con 🔔 Notificar.
+# México es UTC-6 todo el año (sin horario de verano desde 2022).
 [triggers]
-crons = ["58 5 * * *"]
+crons = ["58 5 * * *", "* * * * *"]
