@@ -2012,33 +2012,32 @@ async function listManagerFocusTasks(env, options = {}) {
 
     const today = [];
     const overdue = [];
+    const forward = [];
     for (const task of scopedRows) {
       const due = toIsoDateOnly(task?.dueDate);
       if (!due) continue;
-      if (due === todayIso) {
-        today.push(task);
-        continue;
-      }
-      if (due < todayIso) overdue.push(task);
+      if (due === todayIso) { today.push(task); continue; }
+      if (due < todayIso) { overdue.push(task); continue; }
+      forward.push(task);
     }
 
-    today.sort((a, b) => String(a?.dueDate || "").localeCompare(String(b?.dueDate || "")) || String(a?.title || "").localeCompare(String(b?.title || ""), "es"));
-    overdue.sort((a, b) => String(a?.dueDate || "").localeCompare(String(b?.dueDate || "")) || String(a?.title || "").localeCompare(String(b?.title || ""), "es"));
+    const byDate = (a, b) => String(a?.dueDate || "").localeCompare(String(b?.dueDate || "")) || String(a?.title || "").localeCompare(String(b?.title || ""), "es");
+    today.sort(byDate);
+    overdue.sort(byDate);
+    forward.sort(byDate);
 
     const response = {
       source: "notion",
       today,
       overdue,
+      forward,
       users: allUsers,
-      counts: {
-        today: today.length,
-        overdue: overdue.length,
-      },
+      counts: { today: today.length, overdue: overdue.length, forward: forward.length },
     };
     setCachedFocusTasks({ scope, viewerEmail }, response);
     return response;
   } catch (e) {
-    return { source: "error", error: "Focus tasks query failed", details: String(e?.message || e), today: [], overdue: [] };
+    return { source: "error", error: "Focus tasks query failed", details: String(e?.message || e), today: [], overdue: [], forward: [] };
   }
 }
 
