@@ -2059,12 +2059,20 @@ function mxDatePlusDays(isoDate, days) {
     .toLocaleDateString("en-CA", { timeZone: "America/Mexico_City" });
 }
 
+// Cambia SOLO la parte de fecha y conserva hora + offset original: si la task era
+// a las 15:30, mañana sigue a las 15:30. Las que no tienen hora (fecha sola) caen
+// a las 09:00 México.
+function rolloverDueDate(originalDueDate, targetDateIso) {
+  const raw = String(originalDueDate || "");
+  const t = raw.indexOf("T");
+  return t === -1 ? `${targetDateIso}T09:00:00.000-06:00` : `${targetDateIso}${raw.slice(t)}`;
+}
+
 async function rolloverTodayTasks(env) {
   if (!env.NOTION_TOKEN) return { error: "NOTION_TOKEN no configurado" };
 
   const fromIso = mxDateOnly();
   const toIso = mxDatePlusDays(fromIso, 1);
-  const dueDate = `${toIso}T09:00:00.000-06:00`;
 
   // Estado fresco: el caché de 45s podría traer buckets de antes de la última mutación.
   clearFocusTasksCache();
@@ -2076,9 +2084,10 @@ async function rolloverTodayTasks(env) {
   const failed = [];
 
   for (const task of tasks) {
+    const dueDate = rolloverDueDate(task.dueDate, toIso);
     const res = await updateManagerTask(env, task.id, { dueDate });
     if (res?.error) failed.push({ title: task.title, details: res.error });
-    else moved.push(task.title);
+    else moved.push({ title: task.title, from: task.dueDate, to: dueDate });
   }
 
   clearFocusTasksCache();
@@ -4402,11 +4411,16 @@ export default {
         clearFocusTasksCache();
         const buckets = await listManagerFocusTasks(env, { scope: "mine", viewerEmail: OWNER_EMAIL });
         const fromIso = mxDateOnly();
+        const toIso = mxDatePlusDays(fromIso, 1);
         return json({
           dryRun: true,
           from: fromIso,
-          to: mxDatePlusDays(fromIso, 1),
-          wouldMove: (buckets?.today || []).map((t) => ({ title: t.title, dueDate: t.dueDate })),
+          to: toIso,
+          wouldMove: (buckets?.today || []).map((t) => ({
+            title: t.title,
+            from: t.dueDate,
+            to: rolloverDueDate(t.dueDate, toIso),
+          })),
         });
       }
       const result = await rolloverTodayTasks(env);
