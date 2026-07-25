@@ -3960,61 +3960,10 @@ function sendCurrentTaskToBacklog() {
   });
 }
 
-async function autoRolloverTodayTasks(targetDateStr) {
-  if (!isAuthenticated) return;
-  const tasks = [...focusTodayTasks];
-  if (!tasks.length) return;
-
-  // targetDateStr: "YYYY-MM-DD" in MX timezone (provided by caller to avoid any timezone guessing)
-  const tomorrowIso = `${targetDateStr}T09:00:00.000-06:00`;
-
-  let moved = 0;
-  for (const task of tasks) {
-    try {
-      const r = await fetch(`${API_BASE}/api/manager/tasks/${task.id}`, {
-        method: 'PATCH',
-        headers: apiHeaders(),
-        body: JSON.stringify({ dueDate: tomorrowIso })
-      });
-      if (r.ok) moved++;
-    } catch { /* individual failure is silent */ }
-  }
-
-  if (moved > 0) {
-    await Promise.all([loadFocusTasks({ keepMode: false }), loadTasksFromApi()]);
-    setStatus('focus-status', `Auto-rollover: ${moved} task(s) movidas a mañana.`);
-  }
-}
-
-function scheduleAutoRollover() {
-  // Get exact MX time components — no Date parsing, no timezone confusion
-  const now = new Date();
-  const mxTime = now.toLocaleTimeString('en-US', {
-    timeZone: 'America/Mexico_City',
-    hour12: false,
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit'
-  });
-  let [h, m, s] = mxTime.split(':').map(Number);
-  if (h === 24) h = 0;
-
-  const TARGET_H = 23, TARGET_M = 58;
-  let minsUntil = (TARGET_H * 60 + TARGET_M) - (h * 60 + m);
-  if (minsUntil <= 0) minsUntil += 24 * 60;
-  const msUntil = minsUntil * 60000 - s * 1000;
-
-  setTimeout(async () => {
-    // Compute tomorrow's MX date at fire time — parse 'en-CA' gives "YYYY-MM-DD" unambiguously
-    const todayMx = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' });
-    const [y, mo, d] = todayMx.split('-').map(Number);
-    // Use UTC noon on tomorrow's date — always maps to correct MX calendar day regardless of offset
-    const tomorrowMx = new Date(Date.UTC(y, mo - 1, d + 1, 18, 0, 0))
-      .toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' });
-    await autoRolloverTodayTasks(tomorrowMx);
-    scheduleAutoRollover();
-  }, msUntil);
-}
+// El auto-rollover de tasks vive en el worker como Cron Trigger (23:58 México),
+// NO acá. Un setTimeout en la PWA no dispara con el teléfono dormido, y al
+// reanudar disparaba tarde con estado viejo y movía las tasks 2 días.
+// Ver `scheduled()` y `rolloverTodayTasks()` en cloudflare-proxy/src/worker.js.
 
 async function openFocusEditModal() {
   const current = getCurrentFocusTask();
@@ -6055,7 +6004,6 @@ function init() {
     autoLoginOnLoad();
   }
   initNotifications();
-  scheduleAutoRollover();
 }
 
 function maybeNotify(title, body) {

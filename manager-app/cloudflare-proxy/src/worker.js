@@ -2041,6 +2041,50 @@ async function listManagerFocusTasks(env, options = {}) {
   }
 }
 
+// ─── AUTO-ROLLOVER ───────────────────────────────────────────────────────────
+// Mueve las tasks de HOY que no se completaron al día siguiente 09:00.
+// Vive acá y NO en el cliente: un setTimeout en la PWA no dispara con el teléfono
+// dormido, y al reanudar disparaba tarde calculando "mañana" contra el día
+// equivocado (movía 2 días). El Cron Trigger corre en Cloudflare pase lo que pase.
+
+function mxDateOnly(date = new Date()) {
+  return date.toLocaleDateString("en-CA", { timeZone: "America/Mexico_City" });
+}
+
+// Suma días a un "YYYY-MM-DD" de México. Usa mediodía UTC porque siempre cae en
+// el mismo día calendario en México (UTC-6 todo el año, sin horario de verano).
+function mxDatePlusDays(isoDate, days) {
+  const [y, mo, d] = String(isoDate).split("-").map(Number);
+  return new Date(Date.UTC(y, mo - 1, d + days, 18, 0, 0))
+    .toLocaleDateString("en-CA", { timeZone: "America/Mexico_City" });
+}
+
+async function rolloverTodayTasks(env) {
+  if (!env.NOTION_TOKEN) return { error: "NOTION_TOKEN no configurado" };
+
+  const fromIso = mxDateOnly();
+  const toIso = mxDatePlusDays(fromIso, 1);
+  const dueDate = `${toIso}T09:00:00.000-06:00`;
+
+  // Estado fresco: el caché de 45s podría traer buckets de antes de la última mutación.
+  clearFocusTasksCache();
+  const buckets = await listManagerFocusTasks(env, { scope: "mine", viewerEmail: OWNER_EMAIL });
+  if (buckets?.error) return { error: "No se pudo leer focus tasks", details: buckets.error };
+
+  const tasks = Array.isArray(buckets?.today) ? buckets.today : [];
+  const moved = [];
+  const failed = [];
+
+  for (const task of tasks) {
+    const res = await updateManagerTask(env, task.id, { dueDate });
+    if (res?.error) failed.push({ title: task.title, details: res.error });
+    else moved.push(task.title);
+  }
+
+  clearFocusTasksCache();
+  return { ok: true, from: fromIso, to: toIso, movedCount: moved.length, moved, failed };
+}
+
 async function listSocialLinks(env) {
   const notionVersion = env.NOTION_VERSION || "2022-06-28";
   const notionToken = env.NOTION_TOKEN || "";
@@ -4350,6 +4394,25 @@ export default {
       return json(result, result.error ? 502 : 200);
     }
 
+    // Mismo código que corre el Cron Trigger de las 23:58, invocable a mano para
+    // probar sin esperar. ?dry=1 reporta qué movería sin tocar Notion.
+    if (request.method === "POST" && url.pathname === "/api/manager/tasks/rollover") {
+      const dry = url.searchParams.get("dry") === "1";
+      if (dry) {
+        clearFocusTasksCache();
+        const buckets = await listManagerFocusTasks(env, { scope: "mine", viewerEmail: OWNER_EMAIL });
+        const fromIso = mxDateOnly();
+        return json({
+          dryRun: true,
+          from: fromIso,
+          to: mxDatePlusDays(fromIso, 1),
+          wouldMove: (buckets?.today || []).map((t) => ({ title: t.title, dueDate: t.dueDate })),
+        });
+      }
+      const result = await rolloverTodayTasks(env);
+      return json(result, result.error ? 502 : 200);
+    }
+
     if (request.method === "GET" && url.pathname === "/api/manager/messages") {
       const result = await listManagerMessages(env);
       return json(result, result.error ? 502 : 200);
@@ -4783,5 +4846,16 @@ export default {
     }
 
     return json({ error: "Not found", path: url.pathname }, 404);
+  },
+
+  // Cron Trigger: 58 5 * * * UTC = 23:58 México. Ver [triggers] en wrangler.toml.
+  async scheduled(event, env, ctx) {
+    ctx.waitUntil(
+      rolloverTodayTasks(env).then((res) => {
+        console.log("auto-rollover", JSON.stringify(res));
+      }).catch((e) => {
+        console.error("auto-rollover falló", String(e?.message || e));
+      })
+    );
   },
 };
