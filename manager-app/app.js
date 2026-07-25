@@ -117,6 +117,11 @@ let focusMode = 'today';
 let focusTodayIndex = 0;
 let focusOverdueIndex = 0;
 let focusForwardIndex = 0;
+// Mutaciones optimistas de Focus: la UI se mueve al instante y Notion se entera
+// después. Se guarda el id en vuelo para no disparar dos PATCH sobre la misma task.
+const focusPendingTaskIds = new Set();
+let focusReconcileTimer = null;
+let overviewTasksDirty = false;
 let catalogCache = [];
 let catalogGenreFilter = 'Todas';
 let catalogNowPlayingId = '';
@@ -3539,10 +3544,42 @@ function formatFocusTaskTime(startIso, endIso) {
   return `${start} - ${end}`;
 }
 
+function compareFocusTasks(a, b) {
+  return String(a?.dueDate || '').localeCompare(String(b?.dueDate || ''))
+    || String(a?.title || '').localeCompare(String(b?.title || ''), 'es');
+}
+
+function getFocusBucket(mode) {
+  if (mode === 'today') return focusTodayTasks;
+  if (mode === 'overdue') return focusOverdueTasks;
+  return focusForwardTasks;
+}
+
+function getFocusIndex(mode) {
+  if (mode === 'today') return focusTodayIndex;
+  if (mode === 'overdue') return focusOverdueIndex;
+  return focusForwardIndex;
+}
+
+function setFocusIndex(mode, value) {
+  if (mode === 'today') focusTodayIndex = value;
+  else if (mode === 'overdue') focusOverdueIndex = value;
+  else focusForwardIndex = value;
+}
+
+// Bucket al que pertenece una fecha, comparada contra hoy en horario de México.
+function focusBucketForDate(isoDate) {
+  const due = toIsoDateOnly(isoDate);
+  const todayIso = getTodayIso();
+  if (!due) return '';
+  if (due === todayIso) return 'today';
+  return due < todayIso ? 'overdue' : 'forward';
+}
+
 function getCurrentFocusTask() {
-  const list = focusMode === 'today' ? focusTodayTasks : focusMode === 'overdue' ? focusOverdueTasks : focusForwardTasks;
+  const list = getFocusBucket(focusMode);
   if (!list.length) return null;
-  const idx = focusMode === 'today' ? focusTodayIndex : focusMode === 'overdue' ? focusOverdueIndex : focusForwardIndex;
+  const idx = getFocusIndex(focusMode);
   if (idx < 0 || idx >= list.length) return list[0];
   return list[idx];
 }
@@ -3561,7 +3598,7 @@ function cycleFocusMode() {
 }
 
 function rotateFocusTask(direction = 1) {
-  const list = focusMode === 'today' ? focusTodayTasks : focusMode === 'overdue' ? focusOverdueTasks : focusForwardTasks;
+  const list = getFocusBucket(focusMode);
   if (!list.length) {
     if (focusMode === 'today' && direction > 0 && focusOverdueTasks.length) {
       focusMode = 'overdue';
@@ -3572,13 +3609,7 @@ function rotateFocusTask(direction = 1) {
   }
 
   const step = direction >= 0 ? 1 : -1;
-  if (focusMode === 'today') {
-    focusTodayIndex = (focusTodayIndex + step + list.length) % list.length;
-  } else if (focusMode === 'overdue') {
-    focusOverdueIndex = (focusOverdueIndex + step + list.length) % list.length;
-  } else {
-    focusForwardIndex = (focusForwardIndex + step + list.length) % list.length;
-  }
+  setFocusIndex(focusMode, (getFocusIndex(focusMode) + step + list.length) % list.length);
   renderFocusTaskBoard();
 }
 
@@ -3596,8 +3627,8 @@ function renderFocusTaskBoard() {
 
   root.classList.remove('focus-board-done');
   const current = getCurrentFocusTask();
-  const list = focusMode === 'today' ? focusTodayTasks : focusMode === 'overdue' ? focusOverdueTasks : focusForwardTasks;
-  const idx = focusMode === 'today' ? focusTodayIndex : focusMode === 'overdue' ? focusOverdueIndex : focusForwardIndex;
+  const list = getFocusBucket(focusMode);
+  const idx = getFocusIndex(focusMode);
 
   const canNavigate = list.length > 1;
   if (prevBtn) prevBtn.disabled = !canNavigate;
@@ -3716,10 +3747,9 @@ function splitFocusBuckets(rows = []) {
     forward.push(task);
   });
 
-  const byDate = (a, b) => String(a.dueDate || '').localeCompare(String(b.dueDate || '')) || String(a.title || '').localeCompare(String(b.title || ''), 'es');
-  today.sort(byDate);
-  overdue.sort(byDate);
-  forward.sort(byDate);
+  today.sort(compareFocusTasks);
+  overdue.sort(compareFocusTasks);
+  forward.sort(compareFocusTasks);
 
   return { today, overdue, forward };
 }
@@ -3750,7 +3780,7 @@ async function fetchFocusBucketsFallback({ scope = 'all', viewerEmail = '' } = {
   return splitFocusBuckets(rows);
 }
 
-async function loadFocusTasks({ keepMode = true } = {}) {
+async function loadFocusTasks({ keepMode = true, silent = false } = {}) {
   if (!isAuthenticated) {
     focusTodayTasks = [];
     focusOverdueTasks = [];
@@ -3798,14 +3828,20 @@ async function loadFocusTasks({ keepMode = true } = {}) {
       }
     }
 
-    const who = isAdminUser() ? 'admin' : 'usuario';
-    const statusText = usedFallback
-      ? `Focus (${who}): ${focusTodayTasks.length} de hoy · ${focusOverdueTasks.length} atrasadas · ${focusForwardTasks.length} futuras. (modo compatibilidad)`
-      : `Focus (${who}): ${focusTodayTasks.length} de hoy · ${focusOverdueTasks.length} atrasadas · ${focusForwardTasks.length} futuras.`;
-    setStatus('focus-status', statusText, false);
+    if (!silent) {
+      const who = isAdminUser() ? 'admin' : 'usuario';
+      const statusText = usedFallback
+        ? `Focus (${who}): ${focusTodayTasks.length} de hoy · ${focusOverdueTasks.length} atrasadas · ${focusForwardTasks.length} futuras. (modo compatibilidad)`
+        : `Focus (${who}): ${focusTodayTasks.length} de hoy · ${focusOverdueTasks.length} atrasadas · ${focusForwardTasks.length} futuras.`;
+      setStatus('focus-status', statusText, false);
+    }
   } catch (e) {
-    const reason = e instanceof Error ? e.message : String(e);
-    setStatus('focus-status', `No se pudo sincronizar focus tasks: ${reason}`, true);
+    // En reconcile silencioso no se molesta al usuario: la UI local ya es correcta
+    // y el próximo sync manual o de sesión lo va a resolver.
+    if (!silent) {
+      const reason = e instanceof Error ? e.message : String(e);
+      setStatus('focus-status', `No se pudo sincronizar focus tasks: ${reason}`, true);
+    }
   }
 
   renderFocusTaskBoard();
@@ -3814,36 +3850,114 @@ async function loadFocusTasks({ keepMode = true } = {}) {
 async function manualSyncFocusTasks() {
   if (!isAuthenticated) return;
   setStatus('focus-status', 'Sincronizando focus tasks con Notion...');
+  overviewTasksDirty = false;
   await Promise.all([
     loadFocusTasks({ keepMode: true }),
     loadTasksFromApi()
   ]);
 }
 
-async function sendCurrentTaskToBacklog() {
+function removeFocusTaskById(mode, taskId) {
+  const list = getFocusBucket(mode);
+  const i = list.findIndex((t) => t.id === taskId);
+  if (i === -1) return null;
+  const [task] = list.splice(i, 1);
+  return task;
+}
+
+function insertFocusTask(mode, task) {
+  const list = getFocusBucket(mode);
+  list.push(task);
+  list.sort(compareFocusTasks);
+}
+
+// Revalida contra Notion sin tocar el status ni mover la tarjeta. Corre solo,
+// unos segundos después de la mutación, para que la escritura ya haya propagado.
+function scheduleSilentFocusReconcile(delayMs = 2500) {
+  if (focusReconcileTimer) clearTimeout(focusReconcileTimer);
+  focusReconcileTimer = setTimeout(() => {
+    focusReconcileTimer = null;
+    if (focusPendingTaskIds.size) {
+      scheduleSilentFocusReconcile(1500);
+      return;
+    }
+    void loadFocusTasks({ keepMode: true, silent: true });
+  }, delayMs);
+}
+
+/**
+ * Mueve la task actual en el estado local, repinta al instante, y recién después
+ * manda el PATCH a Notion. Si el PATCH falla, hace rollback puntual de esa task
+ * (no de todo el estado) para no pisar otras mutaciones en vuelo.
+ */
+async function runOptimisticFocusMutation({ patch, moveTo = '', newDueDate = '', okMessage, errorPrefix }) {
   if (!isAuthenticated) return;
   const current = getCurrentFocusTask();
-  if (!current?.id) return;
+  if (!current?.id || focusPendingTaskIds.has(current.id)) return;
 
+  const taskId = current.id;
+  const sourceMode = focusMode;
+  focusPendingTaskIds.add(taskId);
+
+  const original = removeFocusTaskById(sourceMode, taskId);
+  if (!original) {
+    focusPendingTaskIds.delete(taskId);
+    return;
+  }
+
+  // moveTo vacío = la task sale de Focus (completada). moveTo igual al bucket actual
+  // sí reinserta: es un reagendado dentro del mismo día, solo cambia de posición.
+  if (moveTo) {
+    insertFocusTask(moveTo, newDueDate ? { ...original, dueDate: newDueDate } : original);
+  }
+
+  if (moveTo === sourceMode) {
+    // Reagendado dentro del mismo bucket: seguimos parados en la misma task.
+    setFocusIndex(sourceMode, Math.max(0, getFocusBucket(sourceMode).findIndex((t) => t.id === taskId)));
+  } else {
+    const srcList = getFocusBucket(sourceMode);
+    setFocusIndex(sourceMode, srcList.length ? Math.min(getFocusIndex(sourceMode), srcList.length - 1) : 0);
+  }
+
+  renderFocusTaskBoard();
+  setStatus('focus-status', okMessage, false);
+
+  try {
+    const r = await fetch(`${API_BASE}/api/manager/tasks/${taskId}`, {
+      method: 'PATCH',
+      headers: apiHeaders(),
+      body: JSON.stringify(patch)
+    });
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    overviewTasksDirty = true;
+    scheduleSilentFocusReconcile();
+  } catch (e) {
+    const reason = e instanceof Error ? e.message : String(e);
+    if (moveTo) removeFocusTaskById(moveTo, taskId);
+    insertFocusTask(sourceMode, original);
+    const restored = getFocusBucket(sourceMode);
+    setFocusIndex(sourceMode, Math.max(0, restored.findIndex((t) => t.id === taskId)));
+    renderFocusTaskBoard();
+    setStatus('focus-status', `${errorPrefix}: ${reason} — se revirtió el cambio.`, true);
+  } finally {
+    focusPendingTaskIds.delete(taskId);
+  }
+}
+
+function sendCurrentTaskToBacklog() {
   const mxNow = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Mexico_City' }));
   const movingToToday = focusMode === 'overdue' || focusMode === 'forward';
   if (!movingToToday) mxNow.setDate(mxNow.getDate() - 1);
   const dateStr = mxNow.toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' });
   const targetIso = `${dateStr}T09:00:00.000-06:00`;
 
-  try {
-    const r = await fetch(`${API_BASE}/api/manager/tasks/${current.id}`, {
-      method: 'PATCH',
-      headers: apiHeaders(),
-      body: JSON.stringify({ dueDate: targetIso })
-    });
-    if (!r.ok) throw new Error(`HTTP ${r.status}`);
-    setStatus('focus-status', movingToToday ? 'Task movida a hoy. Sincronizando...' : 'Task movida al backlog. Sincronizando...');
-    await Promise.all([loadFocusTasks({ keepMode: true }), loadTasksFromApi()]);
-  } catch (e) {
-    const reason = e instanceof Error ? e.message : String(e);
-    setStatus('focus-status', `No se pudo mover la task: ${reason}`, true);
-  }
+  return runOptimisticFocusMutation({
+    patch: { dueDate: targetIso },
+    moveTo: movingToToday ? 'today' : 'overdue',
+    newDueDate: targetIso,
+    okMessage: movingToToday ? 'Task movida a hoy.' : 'Task movida al backlog.',
+    errorPrefix: 'No se pudo mover la task'
+  });
 }
 
 async function autoRolloverTodayTasks(targetDateStr) {
@@ -3973,8 +4087,9 @@ async function confirmDeleteFocusTask() {
     });
     if (!r.ok) throw new Error(`HTTP ${r.status}`);
     closeFocusEditModal();
-    setStatus('focus-status', 'Task borrada. Sincronizando...');
-    await Promise.all([loadFocusTasks({ keepMode: true }), loadTasksFromApi()]);
+    setStatus('focus-status', 'Task borrada.');
+    overviewTasksDirty = true;
+    await loadFocusTasks({ keepMode: true, silent: true });
   } catch (e) {
     const reason = e instanceof Error ? e.message : String(e);
     setStatus('focus-status', `No se pudo borrar: ${reason}`, true);
@@ -4015,8 +4130,9 @@ async function saveFocusEditTask() {
       throw new Error(detail);
     }
     closeFocusEditModal();
-    setStatus('focus-status', 'Task actualizada. Sincronizando...');
-    await Promise.all([loadFocusTasks({ keepMode: true }), loadTasksFromApi()]);
+    setStatus('focus-status', 'Task actualizada.');
+    overviewTasksDirty = true;
+    await loadFocusTasks({ keepMode: true, silent: true });
   } catch (e) {
     const reason = e instanceof Error ? e.message : String(e);
     setStatus('focus-status', `No se pudo guardar: ${reason}`, true);
@@ -4084,8 +4200,9 @@ async function createFocusTask() {
     });
     if (!r.ok) throw new Error(`HTTP ${r.status}`);
     closeFocusNewTaskModal();
-    setStatus('focus-status', `Task "${title}" creada. Sincronizando...`);
-    await Promise.all([loadFocusTasks({ keepMode: true }), loadTasksFromApi()]);
+    setStatus('focus-status', `Task "${title}" creada.`);
+    overviewTasksDirty = true;
+    await loadFocusTasks({ keepMode: true, silent: true });
   } catch (e) {
     const reason = e instanceof Error ? e.message : String(e);
     setStatus('focus-status', `No se pudo crear la task: ${reason}`, true);
@@ -4135,39 +4252,22 @@ async function rescheduleCurrentFocusTask() {
 
   closeFocusRescheduleModal();
 
-  try {
-    const r = await fetch(`${API_BASE}/api/manager/tasks/${current.id}`, {
-      method: 'PATCH',
-      headers: apiHeaders(),
-      body: JSON.stringify({ dueDate: isoDate })
-    });
-    if (!r.ok) throw new Error(`HTTP ${r.status}`);
-    setStatus('focus-status', `Task reagendada para ${dateInput.value} ${time}. Sincronizando...`);
-    await Promise.all([loadFocusTasks({ keepMode: true }), loadTasksFromApi()]);
-  } catch (e) {
-    const reason = e instanceof Error ? e.message : String(e);
-    setStatus('focus-status', `No se pudo reagendar: ${reason}`, true);
-  }
+  return runOptimisticFocusMutation({
+    patch: { dueDate: isoDate },
+    moveTo: focusBucketForDate(isoDate),
+    newDueDate: isoDate,
+    okMessage: `Task reagendada para ${dateInput.value} ${time}.`,
+    errorPrefix: 'No se pudo reagendar'
+  });
 }
 
-async function completeCurrentFocusTask() {
-  if (!isAuthenticated) return;
-  const current = getCurrentFocusTask();
-  if (!current?.id) return;
-
-  try {
-    const r = await fetch(`${API_BASE}/api/manager/tasks/${current.id}`, {
-      method: 'PATCH',
-      headers: apiHeaders(),
-      body: JSON.stringify({ status: 'Terminado' })
-    });
-    if (!r.ok) throw new Error(`HTTP ${r.status}`);
-    setStatus('focus-status', 'Task completada. Sincronizando...');
-    await Promise.all([loadFocusTasks({ keepMode: true }), loadTasksFromApi()]);
-  } catch (e) {
-    const reason = e instanceof Error ? e.message : String(e);
-    setStatus('focus-status', `No se pudo completar task: ${reason}`, true);
-  }
+function completeCurrentFocusTask() {
+  // Completada sale de todos los buckets: moveTo vacío = solo se quita.
+  return runOptimisticFocusMutation({
+    patch: { status: 'Terminado' },
+    okMessage: 'Task completada. ✅',
+    errorPrefix: 'No se pudo completar task'
+  });
 }
 
 function refreshAssigneeOptions() {
@@ -5754,6 +5854,12 @@ function setupTabs() {
         return;
       }
       activateTab(targetTab);
+      // Focus muta tasks sin recargar Overview (sería una query a Notion invisible
+      // bloqueando la UI). Se recarga acá, recién cuando la pestaña se vuelve visible.
+      if (targetTab === 'overview' && isAuthenticated && overviewTasksDirty) {
+        overviewTasksDirty = false;
+        void loadTasksFromApi();
+      }
       if (targetTab === 'quotes' && isAuthenticated && quotesCache.length === 0) {
         loadQuotesFromApi();
       }
