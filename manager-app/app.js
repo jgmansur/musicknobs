@@ -3722,6 +3722,7 @@ function mapTaskApiItem(item = {}) {
     tipo: item.tipo || '',
     focusOnly: Boolean(item.focusOnly),
     showInManager: item.showInManager !== undefined ? Boolean(item.showInManager) : true,
+    notificar: Boolean(item.notificar),
     notionUrl: item.notionUrl || '',
     hasExtraInfo: Boolean(item.hasExtraInfo),
     taskPreview: item.taskPreview || '',
@@ -3965,6 +3966,17 @@ function sendCurrentTaskToBacklog() {
 // reanudar disparaba tarde con estado viejo y movía las tasks 2 días.
 // Ver `scheduled()` y `rolloverTodayTasks()` en cloudflare-proxy/src/worker.js.
 
+// Resalta la fila del recordatorio cuando está prendido, y avisa si la task no
+// tiene hora: sin hora el recordatorio no tiene a qué momento dispararse.
+function syncFocusNotifyRow() {
+  const check = document.getElementById('focus-edit-notificar');
+  if (!check) return;
+  check.closest('.focus-edit-notify-row')?.classList.toggle('is-on', check.checked);
+  const hasTime = Boolean(document.getElementById('focus-edit-time')?.value);
+  document.getElementById('focus-edit-notify-warning')
+    ?.classList.toggle('hidden', !(check.checked && !hasTime));
+}
+
 async function openFocusEditModal() {
   const current = getCurrentFocusTask();
   if (!current?.id) return;
@@ -3981,6 +3993,9 @@ async function openFocusEditModal() {
   document.getElementById('focus-edit-time').value = timeStr;
   document.getElementById('focus-edit-focus-only').checked = Boolean(current.focusOnly);
   document.getElementById('focus-edit-show-in-manager').checked = current.showInManager !== false;
+  const notifyEl = document.getElementById('focus-edit-notificar');
+  if (notifyEl) notifyEl.checked = Boolean(current.notificar);
+  syncFocusNotifyRow();
 
   const tipoSel = document.getElementById('focus-edit-tipo');
   const statusSel = document.getElementById('focus-edit-status');
@@ -4063,6 +4078,7 @@ async function saveFocusEditTask() {
   const dueDate = dateVal ? `${dateVal}T${timeVal}:00.000-06:00` : '';
   const focusOnly = document.getElementById('focus-edit-focus-only')?.checked ?? false;
   const showInManager = document.getElementById('focus-edit-show-in-manager')?.checked ?? true;
+  const notificar = document.getElementById('focus-edit-notificar')?.checked ?? false;
 
   const saveBtn = document.getElementById('focus-edit-save');
   if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = 'Guardando...'; }
@@ -4071,7 +4087,7 @@ async function saveFocusEditTask() {
     const r = await fetch(`${API_BASE}/api/manager/tasks/${id}`, {
       method: 'PATCH',
       headers: apiHeaders(),
-      body: JSON.stringify({ title, tipo, status, prioridad, assignee, dueDate, focusOnly, showInManager })
+      body: JSON.stringify({ title, tipo, status, prioridad, assignee, dueDate, focusOnly, showInManager, notificar })
     });
     if (!r.ok) {
       let detail = `HTTP ${r.status}`;
@@ -5928,6 +5944,8 @@ function setupActions() {
   bindClick('focus-status', openFocusEditModal);
   bindClick('focus-edit-save', saveFocusEditTask);
   bindClick('focus-edit-cancel', closeFocusEditModal);
+  document.getElementById('focus-edit-notificar')?.addEventListener('change', syncFocusNotifyRow);
+  document.getElementById('focus-edit-time')?.addEventListener('change', syncFocusNotifyRow);
   bindClick('focus-edit-delete', showFocusEditDeleteConfirm);
   bindClick('focus-edit-delete-confirm-yes', confirmDeleteFocusTask);
   bindClick('focus-edit-delete-confirm-no', () => {

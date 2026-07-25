@@ -29,6 +29,7 @@ const TASK_ASSIGNEES_PROPERTY = "Asignar Usuarios";
 const TASK_ASSIGNEES_PROPERTY_LEGACY = "Asignar Usuario";
 const TASK_SHOW_IN_MANAGER_PROPERTY = "Mostrar en Manager App";
 const TASK_FOCUS_ONLY_PROPERTY = "Focus Only";
+const TASK_NOTIFY_PROPERTY = "Notificar";
 const ADMIN_EMAILS = ["jgmansur2@gmail.com"];
 const CLEAR_LOG_PASSWORD = "9776";
 const OWNER_EMAIL = "jgmansur2@gmail.com";
@@ -1870,6 +1871,7 @@ async function listManagerTasks(env, options = {}) {
       const dueEndDate = props?.["Date (ToDo)"]?.date?.end || "";
       const focusOnly = Boolean(props?.[TASK_FOCUS_ONLY_PROPERTY]?.checkbox);
       const showInManager = Boolean(props?.[TASK_SHOW_IN_MANAGER_PROPERTY]?.checkbox);
+      const notificar = Boolean(props?.[TASK_NOTIFY_PROPERTY]?.checkbox);
       const assignees = parseAssigneesFromProperty(props, allUsers);
       const subtaskBlocks = await notionGetPageChildren(page.id, notionToken, notionVersion);
       const subtasks = parseSubtasksFromBlocks(subtaskBlocks);
@@ -1889,6 +1891,7 @@ async function listManagerTasks(env, options = {}) {
         dueEndDate,
         focusOnly,
         showInManager,
+        notificar,
         notionUrl: String(page.url || ""),
         hasExtraInfo,
         taskPreview,
@@ -1976,6 +1979,7 @@ async function listManagerFocusTasks(env, options = {}) {
       const dueEndDate = props?.["Date (ToDo)"]?.date?.end || "";
       const focusOnly = Boolean(props?.[TASK_FOCUS_ONLY_PROPERTY]?.checkbox);
       const showInManager = Boolean(props?.[TASK_SHOW_IN_MANAGER_PROPERTY]?.checkbox);
+      const notificar = Boolean(props?.[TASK_NOTIFY_PROPERTY]?.checkbox);
       const assignees = parseAssigneesFromProperty(props, allUsers);
       const subtaskBlocks = await notionGetPageChildren(page.id, notionToken, notionVersion);
       const subtasks = parseSubtasksFromBlocks(subtaskBlocks);
@@ -1995,6 +1999,7 @@ async function listManagerFocusTasks(env, options = {}) {
         dueEndDate,
         focusOnly,
         showInManager,
+        notificar,
         notionUrl: String(page.url || ""),
         hasExtraInfo,
         taskPreview,
@@ -2466,6 +2471,7 @@ async function updateManagerTask(env, taskId, body) {
   const prioridadRaw = String(body?.prioridad || "").trim();
   const hasFocusOnly = "focusOnly" in (body || {});
   const hasShowInManager = "showInManager" in (body || {});
+  const hasNotificar = "notificar" in (body || {});
   const hasSubtasks = Array.isArray(body?.subtasks);
   const subtasks = hasSubtasks
     ? normalizeSubtasks(body.subtasks.map((s) => ({ title: String(s?.title || "").trim(), done: Boolean(s?.done) })))
@@ -2492,6 +2498,7 @@ async function updateManagerTask(env, taskId, body) {
   if (prioridadRaw) properties.Prioridad = { select: { name: prioridadRaw } };
   if (hasFocusOnly) properties[TASK_FOCUS_ONLY_PROPERTY] = { checkbox: Boolean(body.focusOnly) };
   if (hasShowInManager) properties[TASK_SHOW_IN_MANAGER_PROPERTY] = { checkbox: Boolean(body.showInManager) };
+  if (hasNotificar) properties[TASK_NOTIFY_PROPERTY] = { checkbox: Boolean(body.notificar) };
 
   if (dueDate !== null) {
     properties["Date (ToDo)"] = dueDate ? { date: { start: dueDate } } : { date: null };

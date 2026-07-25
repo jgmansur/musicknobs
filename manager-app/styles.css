@@ -880,6 +880,33 @@ body.tabbar-hidden .container {
   user-select: none;
 }
 
+/* Recordatorio: fila aparte y resaltada — es la única opción del modal que
+   dispara algo hacia afuera (Calendar, Telegram, push). */
+.focus-edit-notify-row {
+  padding: .6rem .7rem;
+  border-radius: .6rem;
+  border: 1px solid rgba(255,255,255,.16);
+  background: rgba(255,255,255,.05);
+  margin-bottom: 1.2rem;
+}
+
+.focus-edit-notify-row.is-on {
+  border-color: rgba(255, 193, 7, .5);
+  background: rgba(255, 193, 7, .1);
+}
+
+.focus-edit-notify-hint {
+  color: rgba(255,255,255,.55);
+  font-size: .78rem;
+}
+
+.focus-edit-notify-warning {
+  margin: -.9rem 0 1.2rem;
+  font-size: .76rem;
+  line-height: 1.35;
+  color: #ffc107;
+}
+
 #tab-overview.panel-fullscreen {
   max-height: calc(100dvh - 220px);
   overflow-y: auto;
