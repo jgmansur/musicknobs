@@ -24,7 +24,7 @@ const DEUDAS_RECIBOS_FOLDER_ID = '157KDn-vbkuHH1L8xbaJBGz-oKmT7p5a9';
 const SPREADSHEET_RSM_ID = '14VsoPHGNTSUSbzMOqGWs2qSL-pGywPgjUoHD3MqIJfo'; // Recibos Salud Mariel
 const SALDOS_SHEET_ID    = '1-cX_qxld3ioSpcO9lEBPg90Db6AyK7SczpJTvj7rw4U'; // Saldos (fuente de verdad — Claude accede vía service account)
 const RSM_FOLDER_ID = '1-ZfeWQ-Rmh-Wm2WMCkULkN6MQWBuxYnj';
-const APP_VERSION  = 'v8.6.2';
+const APP_VERSION  = 'v8.6.3';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -7520,6 +7520,19 @@ function autos_cancelDocCropPanel() {
 }
 
 async function autos_openDocCropper(file, options = {}) {
+    // El panel vive fuera de las vistas justamente para poder abrirse desde
+    // cualquier pestaña. Si algún día vuelve a quedar dentro de una vista, esa
+    // vista estaría en display:none al llamarlo desde otra pestaña: el
+    // recortador se abriría invisible y la promesa jamás se resolvería, que fue
+    // exactamente el bug de las fotos de Recetas. Aquí se detecta y se sigue de
+    // largo con el archivo original en vez de dejar la subida colgada.
+    const panel = document.getElementById('autos-doc-crop-panel');
+    const vistaContenedora = panel?.closest('.view');
+    if (!panel || (vistaContenedora && !vistaContenedora.classList.contains('active'))) {
+        console.warn('El recortador quedó dentro de una vista inactiva; se usa el archivo original.');
+        return null;
+    }
+
     const dataUrl = await autos_fileToDataUrl(file);
     const image = await autos_loadImage(dataUrl);
     const mode = (options.mode || 'carta').toString();
