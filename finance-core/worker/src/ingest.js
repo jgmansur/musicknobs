@@ -320,6 +320,14 @@ export async function runIngest({
 
             const s = classify(parsed, { cardMap, fixedExpenses: fixed, bankDefaults, reglas, beneficiarios, lugares });
 
+            // Los SPEI recibidos de Hey llegan sin monto porque el banco lo omite,
+            // y Jay decidió no perseguir esas cifras. Entran archivados en vez de
+            // acumularse en la bandeja; siguen en la base por si algún día quiere
+            // recuperarlos.
+            if (parsed.template === 'hey_spei_recibido' && !Number.isFinite(parsed.amount)) {
+                s.status = 'rejected';
+            }
+
             const duplicado = s.status === 'pending'
                 ? await buscarDuplicado(sql, {
                     accountId: s.accountId,
