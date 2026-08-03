@@ -24,7 +24,7 @@ const DEUDAS_RECIBOS_FOLDER_ID = '157KDn-vbkuHH1L8xbaJBGz-oKmT7p5a9';
 const SPREADSHEET_RSM_ID = '14VsoPHGNTSUSbzMOqGWs2qSL-pGywPgjUoHD3MqIJfo'; // Recibos Salud Mariel
 const SALDOS_SHEET_ID    = '1-cX_qxld3ioSpcO9lEBPg90Db6AyK7SczpJTvj7rw4U'; // Saldos (fuente de verdad — Claude accede vía service account)
 const RSM_FOLDER_ID = '1-ZfeWQ-Rmh-Wm2WMCkULkN6MQWBuxYnj';
-const APP_VERSION  = 'v8.6.4';
+const APP_VERSION  = 'v8.6.5';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -37,6 +37,11 @@ const ACCOUNTS_SHEET_KEY = 'finance_accounts_sheet_v1'; // localStorage key for 
 const AI_MIRROR_SYNC_URL = 'http://localhost:8787/api/ai-mirror/sync';
 const AI_MIRROR_TOKEN_KEY = 'finance_ai_mirror_api_token_v1';
 const ENGRAM_API_BASE = 'http://127.0.0.1:8788';
+// Ese api-server es local y HTTP. Desde una página servida por HTTPS el
+// navegador bloquea la petición por contenido mixto, y desde el iPhone 127.0.0.1
+// es el propio teléfono: nunca va a responder. Se consulta solo en local para
+// no gastar el intento ni ensuciar la consola.
+const ENGRAM_API_DISPONIBLE = location.protocol === 'http:' || location.hostname === 'localhost';
 const AI_MIRROR_LAST_SYNC_KEY = 'finance_ai_mirror_last_sync_v1';
 const AI_MIRROR_SYNC_DEBOUNCE_MS = 15_000;
 const AI_MIRROR_SYNC_MAX_WAIT_MS = 5 * 60_000;
@@ -5973,6 +5978,17 @@ async function planner_cargarVista() {
             plannerState.autoSortedThisMonth = false;
         }
         planner_render();
+    } catch (e) {
+        // Antes esto era try/finally sin catch: cualquier fallo dejaba el
+        // spinner "Armando plan..." para siempre y sin rastro en pantalla.
+        console.error('No se pudo armar el plan:', e);
+        if (groupsEl) {
+            groupsEl.innerHTML = `<div class="empty-state" style="color:#f87171;">`
+                + `No se pudo armar el plan: ${e.message}</div>`;
+        }
+        const sub = document.getElementById('plan-summary-sub');
+        if (sub) sub.innerText = 'Error al cargar';
+        showToast(`⚠️ Plan: ${e.message}`);
     } finally {
         plannerState.loading = false;
     }
@@ -15422,12 +15438,19 @@ async function skills_cargarVista() {
     try {
         let skills = null;
         try {
-            const resp = await fetch(ENGRAM_API_BASE + '/api/skills');
-            const json = await resp.json();
-            skills = json.skills || null;
+            if (ENGRAM_API_DISPONIBLE) {
+                const resp = await fetch(ENGRAM_API_BASE + '/api/skills');
+                const json = await resp.json();
+                skills = json.skills || null;
+            }
         } catch(_) {}
         if (!skills) {
-            const resp = await fetch('./public/skills.json?v=' + APP_VERSION);
+            // Vite copia el contenido de public/ a la RAÍZ del build, así que
+            // en producción el archivo NO está en ./public/. Y como vercel.json
+            // reescribe todo lo desconocido a /index.html, pedir la ruta vieja
+            // devolvía 200 con el HTML de la app y reventaba al parsear JSON.
+            const resp = await fetch('./skills.json?v=' + APP_VERSION);
+            if (!resp.ok) throw new Error(`skills.json respondió ${resp.status}`);
             const json = await resp.json();
             skills = json.skills || [];
         }
