@@ -43,6 +43,10 @@ export function classify(parsed, { cardMap, fixedExpenses }) {
         const day = when.getDate();
 
         fixedMatch = fixedExpenses.find((f) => {
+            // Un fijo en 0 está desactivado; si se dejara pasar, la tolerancia
+            // mínima de $1 lo emparejaría con cualquier gasto de un peso.
+            if (!(Number(f.monto) > 0)) return false;
+
             const perPart = Number(f.monto) / (f.pagos_mes || 1);
             const near =
                 Math.abs(perPart - parsed.amount) <= Math.max(1, perPart * AMOUNT_TOLERANCE);
