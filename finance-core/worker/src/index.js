@@ -11,16 +11,25 @@
 import postgres from 'postgres';
 import { runIngest } from './ingest.js';
 
+const CORS = {
+    'access-control-allow-origin': '*',
+    'access-control-allow-headers': 'content-type, x-finance-token',
+    'access-control-allow-methods': 'GET, POST, OPTIONS',
+    'access-control-max-age': '86400',
+};
+
 const json = (data, status = 200) =>
     new Response(JSON.stringify(data), {
         status,
-        headers: {
-            'content-type': 'application/json; charset=utf-8',
-            'access-control-allow-origin': '*',
-            'access-control-allow-headers': 'content-type, x-finance-token',
-            'access-control-allow-methods': 'GET, POST, OPTIONS',
-        },
+        headers: { 'content-type': 'application/json; charset=utf-8', ...CORS },
     });
+
+/**
+ * Respuesta al preflight. Un 204 NO puede llevar cuerpo: mandarle uno hace que
+ * el runtime tire 500, el navegador aborta el fetch y el error que ve el usuario
+ * es un genérico "Load failed" que no dice nada de la causa real.
+ */
+const preflight = () => new Response(null, { status: 204, headers: CORS });
 
 const connect = (env) =>
     postgres(env.SUPABASE_DB_URL, {
@@ -191,7 +200,7 @@ export default {
     },
 
     async fetch(request, env, ctx) {
-        if (request.method === 'OPTIONS') return json({}, 204);
+        if (request.method === 'OPTIONS') return preflight();
 
         const url = new URL(request.url);
         if (url.pathname === '/health') return json({ ok: true });
