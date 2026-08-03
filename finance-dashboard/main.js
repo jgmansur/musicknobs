@@ -3912,11 +3912,58 @@ function gastos_bindEvents() {
     });
 }
 
+
+/**
+ * Carga el historial de movimientos desde finance-core.
+ * Devuelve false si no hay token o el worker falla, para caer a la hoja.
+ */
+async function gastos_cargarDesdeWorker() {
+    if (!bandeja_token()) return false;
+    try {
+        const { movimientos } = await bandeja_api('/api/movimientos?limite=3000');
+        if (!movimientos) return false;
+
+        gastosState.allRows = movimientos
+            // Las transferencias entre cuentas propias no son gasto ni ingreso:
+            // se omiten del historial para no inflar los totales.
+            .filter(m => m.kind !== 'transfer')
+            .map(m => {
+                const montoAbs = Math.abs(Number(m.amount));
+                return {
+                    id:       m.id,
+                    rowNum:   null,
+                    fecha:    m.fecha,
+                    lugar:    m.merchant || '',
+                    concepto: m.description || '',
+                    montoOriginal: montoAbs,
+                    moneda:   m.currency || 'MXN',
+                    monto:    convertTransactionAmountToMxn(montoAbs, m.currency || 'MXN'),
+                    tipo:     m.kind === 'ingreso' ? 'Ingreso' : 'Gasto',
+                    formaPago: m.cuenta || '',
+                    fotos:    m.receipt_url || '',
+                    fechaCreacion: m.created_at || '',
+                };
+            });
+        gastosState.offset = 0;
+        gastos_renderLista(false);
+        balance_updateKpi();
+        return true;
+    } catch (err) {
+        console.warn('[Gastos] finance-core no respondió:', err.message);
+        return false;
+    }
+}
+
 async function gastos_cargarHistorial() {
     const lista = document.getElementById('g-lista');
     lista.innerHTML = '<div class="loading-spinner">⏳ Cargando...</div>';
     try {
         await ensureUsdMxnRateForTransactions();
+
+        // Fuente de verdad: finance-core. `id` sustituye a `rowNum`, que solo
+        // tenía sentido cuando los movimientos vivían en filas de una hoja.
+        if (await gastos_cargarDesdeWorker()) return;
+
         const rows = await sheetsGet(SPREADSHEET_LOG_ID, 'Hoja 1!A2:I');
         balance_updateLogNetFromRows(rows);
         gastosState.allRows = rows.map((row, i) => {
@@ -4051,7 +4098,25 @@ async function gastos_guardar() {
             const allUrls  = [existing, ...nuevasUrls].filter(Boolean).join(',');
             const fechaCreacionEdit = document.getElementById('g-fecha-creacion')?.value || gastosState.detailRow?.fechaCreacion || '';
             const fechaCreacionISO = fechaCreacionEdit ? new Date(fechaCreacionEdit).toISOString() : '';
-            await sheetsUpdate(SPREADSHEET_LOG_ID, `Hoja 1!B${idFila}:I${idFila}`, [[lugar, concepto, parseSheetValue(monto), tipo, forma, allUrls, moneda, fechaCreacionISO]]);
+
+            // Los ids de finance-core son UUID; los de la hoja, números de fila.
+            if (gastosState.detailRow?.id) {
+                const cuenta = balanceAccounts.find(a =>
+                    balance_getAccountMatchKeys(a).includes(balance_normalizePaymentKey(forma)));
+                await bandeja_api(`/api/movimientos/${idFila}`, {
+                    method: 'PATCH',
+                    body: JSON.stringify({
+                        merchant: lugar, description: concepto,
+                        amount: Math.abs(parseSheetValue(monto)),
+                        accountId: cuenta?.id ?? null,
+                        occurredAt: fecha ? `${fecha}T12:00:00-06:00` : null,
+                        receiptUrl: allUrls || null,
+                    }),
+                });
+                await balance_loadFromWorker();
+            } else {
+                await sheetsUpdate(SPREADSHEET_LOG_ID, `Hoja 1!B${idFila}:I${idFila}`, [[lugar, concepto, parseSheetValue(monto), tipo, forma, allUrls, moneda, fechaCreacionISO]]);
+            }
         } else {
             const fechaCreacionNow = new Date().toISOString();
             await sheetsAppend(SPREADSHEET_LOG_ID, 'Hoja 1!A:I', [[fecha, lugar, concepto, parseSheetValue(monto), tipo, forma, nuevasUrls.join(','), moneda, fechaCreacionNow]]);
@@ -4141,7 +4206,7 @@ function gastos_editarDesdeModal() {
     document.getElementById('g-currency').value  = row.moneda || 'MXN';
     document.getElementById('g-tipo').value      = row.tipo;
     document.getElementById('g-forma-pago').value= row.formaPago;
-    document.getElementById('g-id-fila').value   = row.rowNum;
+    document.getElementById('g-id-fila').value   = row.id || row.rowNum;
     // Show and pre-fill the date field for editing
     const fechaField = document.getElementById('g-fecha-creacion-field');
     const fechaInput = document.getElementById('g-fecha-creacion');
@@ -4179,8 +4244,13 @@ async function gastos_borrarDesdeModal() {
                 if (match) await driveDeleteFile(match[0]).catch(() => {});
             }
         }
-        if (gastosState.logSheetId === null) gastosState.logSheetId = await getSheetId(SPREADSHEET_LOG_ID, 'Hoja 1');
-        await sheetsDeleteRow(SPREADSHEET_LOG_ID, gastosState.logSheetId, row.rowNum - 1);
+        if (row.id) {
+            await bandeja_api(`/api/movimientos/${row.id}`, { method: 'DELETE' });
+            await balance_loadFromWorker();
+        } else {
+            if (gastosState.logSheetId === null) gastosState.logSheetId = await getSheetId(SPREADSHEET_LOG_ID, 'Hoja 1');
+            await sheetsDeleteRow(SPREADSHEET_LOG_ID, gastosState.logSheetId, row.rowNum - 1);
+        }
         status.innerText = '✅ Eliminado'; status.style.color = 'var(--accent-green)';
         gastos_cargarHistorial();
     } catch(e) {

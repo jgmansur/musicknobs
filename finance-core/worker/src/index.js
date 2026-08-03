@@ -272,6 +272,67 @@ export default {
                 return json({ ok: true, name: acc.name, balance: b.display_balance });
             }
 
+            if (url.pathname === '/api/movimientos' && request.method === 'GET') {
+                const limite = Math.min(Number(url.searchParams.get('limite')) || 1000, 5000);
+                const rows = await sql`
+                    select t.id, to_char(t.occurred_at, 'YYYY-MM-DD') as fecha,
+                           t.occurred_at, t.amount, t.kind, t.merchant, t.description,
+                           t.category, t.receipt_url, t.transfer_group_id, t.source,
+                           t.fixed_expense_id, t.created_at,
+                           a.name as cuenta, a.currency
+                    from transactions t join accounts a on a.id = t.account_id
+                    order by t.occurred_at desc, t.created_at desc
+                    limit ${limite}
+                `;
+                return json({ movimientos: rows });
+            }
+
+            const movMatch = url.pathname.match(/^\/api\/movimientos\/([\w-]+)$/);
+            if (movMatch && request.method === 'DELETE') {
+                // Si el movimiento saldaba un gasto fijo, la parte vuelve a
+                // quedar pendiente: el borrado no puede dejarla marcada.
+                const borrado = await sql.begin(async (tx) => {
+                    await tx`
+                        delete from fixed_expense_payments where transaction_id = ${movMatch[1]}
+                    `;
+                    await tx`
+                        update pending_transactions
+                        set status = 'pending', transaction_id = null, resolved_at = null
+                        where transaction_id = ${movMatch[1]}
+                    `;
+                    const [t] = await tx`
+                        delete from transactions where id = ${movMatch[1]} returning id, transfer_group_id
+                    `;
+                    // Una transferencia son dos filas ligadas: borrar solo una
+                    // dejaría dinero apareciendo o desapareciendo de la nada.
+                    if (t?.transfer_group_id) {
+                        await tx`
+                            delete from transactions where transfer_group_id = ${t.transfer_group_id}
+                        `;
+                    }
+                    return t;
+                });
+                return json(borrado ? { ok: true } : { error: 'no encontrado' }, borrado ? 200 : 404);
+            }
+
+            if (movMatch && request.method === 'PATCH') {
+                const b = await request.json().catch(() => ({}));
+                const [t] = await sql`
+                    update transactions set
+                        occurred_at = coalesce(${b.occurredAt ?? null}, occurred_at),
+                        account_id  = coalesce(${b.accountId ?? null}, account_id),
+                        amount      = case when ${b.amount ?? null}::numeric is null then amount
+                                           when kind = 'ingreso' then abs(${b.amount ?? null}::numeric)
+                                           else -abs(${b.amount ?? null}::numeric) end,
+                        merchant    = coalesce(${b.merchant ?? null}, merchant),
+                        description = coalesce(${b.description ?? null}, description),
+                        receipt_url = coalesce(${b.receiptUrl ?? null}, receipt_url)
+                    where id = ${movMatch[1]}
+                    returning id
+                `;
+                return json(t ? { ok: true } : { error: 'no encontrado' }, t ? 200 : 404);
+            }
+
             if (url.pathname === '/api/movimientos' && request.method === 'POST') {
                 const b = await request.json().catch(() => ({}));
                 const magnitude = Math.abs(Number(b.amount));
