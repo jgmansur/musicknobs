@@ -24,7 +24,7 @@ const DEUDAS_RECIBOS_FOLDER_ID = '157KDn-vbkuHH1L8xbaJBGz-oKmT7p5a9';
 const SPREADSHEET_RSM_ID = '14VsoPHGNTSUSbzMOqGWs2qSL-pGywPgjUoHD3MqIJfo'; // Recibos Salud Mariel
 const SALDOS_SHEET_ID    = '1-cX_qxld3ioSpcO9lEBPg90Db6AyK7SczpJTvj7rw4U'; // Saldos (fuente de verdad — Claude accede vía service account)
 const RSM_FOLDER_ID = '1-ZfeWQ-Rmh-Wm2WMCkULkN6MQWBuxYnj';
-const APP_VERSION  = 'v8.2.45';
+const APP_VERSION  = 'v8.3.0';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -704,6 +704,7 @@ document.addEventListener('DOMContentLoaded', () => {
     ipv_bindEvents();
     rsm_bindEvents();
     documentos_bindEvents();
+    recetas_bindEvents();
     estados_bindEvents();
     pelo_bindEvents();
     prompts_bindEvents();
@@ -2041,6 +2042,7 @@ function showTab(name) {
         if (name === 'ipv')       ipv_cargarVista();
         if (name === 'rsm')       rsm_cargarVista();
         if (name === 'documentos') documentos_cargarVista();
+        if (name === 'recetas')   recetas_cargarVista();
         if (name === 'estados') estados_cargarVista();
         if (name === 'pelo')      pelo_cargarVista();
         if (name === 'prompts')   prompts_cargarVista();
@@ -7065,6 +7067,33 @@ function autos_refreshAllDailyValuations() {
     run().catch(() => {});
 }
 
+const AUTOS_POLIZA_TONE_COLORS = { danger: '#f87171', warn: '#fbbf24', ok: '#34d399', muted: '' };
+
+// Aplica a poliza y tenencia: ambas son femeninas, el copy sirve igual para las dos.
+function autos_vencimientoInfo(value) {
+    const raw = (value || '').toString().trim();
+    if (!raw) return { label: 'Sin registrar', tone: 'muted' };
+    const parsed = new Date(`${raw}T12:00:00`);
+    if (Number.isNaN(parsed.getTime())) return { label: raw, tone: 'muted' };
+    const pretty = parsed.toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' });
+    const today = new Date();
+    today.setHours(12, 0, 0, 0);
+    const days = Math.round((parsed - today) / 86400000);
+    if (days < 0) return { label: `${pretty} · vencida hace ${Math.abs(days)} d`, tone: 'danger' };
+    if (days === 0) return { label: `${pretty} · vence hoy`, tone: 'danger' };
+    if (days <= 30) return { label: `${pretty} · vence en ${days} d`, tone: 'warn' };
+    return { label: `${pretty} · vigente`, tone: 'ok' };
+}
+
+function autos_pagoTenenciaSuffix(car) {
+    const monto = parseSheetValue(car.pagoTenencia);
+    return monto > 0 ? ` · Pago ${formatCurrency(monto)}` : '';
+}
+
+function autos_showsPolizaVencimiento(car) {
+    return !!(car.tieneSeguro || (car.vencimientoPoliza || '').toString().trim());
+}
+
 function autos_openCarDetail() {
     const car = autosState.cars.find(c => c.id === autosState.selectedCarId);
     if (!car) return;
@@ -7090,8 +7119,15 @@ function autos_openCarDetail() {
     if (car.propietario) detailRows.push(`<div class="autos-detail-row"><strong>Propietario:</strong> <span>${car.propietario}</span></div>`);
     const seguroParts = [car.tieneSeguro ? 'Si' : 'No'];
     if (car.polizaSeguro) seguroParts.push(`Poliza ${car.polizaSeguro}`);
-    if (car.vencimientoPoliza) seguroParts.push(`Vence ${car.vencimientoPoliza}`);
     detailRows.push(`<div class="autos-detail-row"><strong>Seguro:</strong> <span>${seguroParts.join(' · ')}</span></div>`);
+    if (autos_showsPolizaVencimiento(car)) {
+        const poliza = autos_vencimientoInfo(car.vencimientoPoliza);
+        const color = AUTOS_POLIZA_TONE_COLORS[poliza.tone];
+        detailRows.push(`<div class="autos-detail-row"><strong>Vence póliza:</strong> <span${color ? ` style="color:${color};"` : ''}>${poliza.label}</span></div>`);
+    }
+    const tenenciaDetail = autos_vencimientoInfo(car.vencimientoTenencia);
+    const tenenciaDetailColor = AUTOS_POLIZA_TONE_COLORS[tenenciaDetail.tone];
+    detailRows.push(`<div class="autos-detail-row"><strong>Vence tenencia:</strong> <span${tenenciaDetailColor ? ` style="color:${tenenciaDetailColor};"` : ''}>${tenenciaDetail.label}${autos_pagoTenenciaSuffix(car)}</span></div>`);
     if (car.polizaArchivo) detailRows.push(`<div class="autos-detail-row"><strong>Archivo poliza:</strong> <span><a href="${car.polizaArchivo}" target="_blank" rel="noopener">Abrir original</a></span></div>`);
     if (car.extraDoc1Url) detailRows.push(`<div class="autos-detail-row"><strong>${extra1Name}:</strong> <span><a href="${car.extraDoc1Url}" target="_blank" rel="noopener">Abrir original</a></span></div>`);
     if (car.extraDoc2Url) detailRows.push(`<div class="autos-detail-row"><strong>${extra2Name}:</strong> <span><a href="${car.extraDoc2Url}" target="_blank" rel="noopener">Abrir original</a></span></div>`);
@@ -8104,7 +8140,6 @@ function autos_renderSelectedCar() {
 
     const seguroParts = [car.tieneSeguro ? 'Si' : 'No'];
     if (car.polizaSeguro) seguroParts.push(`Poliza ${car.polizaSeguro}`);
-    if (car.vencimientoPoliza) seguroParts.push(`Vence ${car.vencimientoPoliza}`);
     const infoLines = [];
     if (car.placa || car.vin) infoLines.push(`<span class="account-type-label">${car.placa ? `Placa: ${car.placa}` : ''}${car.placa && car.vin ? ' · ' : ''}${car.vin ? `VIN: ${car.vin}` : ''}</span>`);
     if (mileageNumber) infoLines.push(`<span class="account-type-label">Kilometraje: ${mileageLabel}</span>`);
@@ -8112,6 +8147,14 @@ function autos_renderSelectedCar() {
     if (invoiceValue > 0) infoLines.push(`<span class="account-type-label">Factura: ${invoiceLabel}</span>`);
     if (car.propietario) infoLines.push(`<span class="account-type-label">Propietario: ${car.propietario}</span>`);
     infoLines.push(`<span class="account-type-label">Seguro: ${seguroParts.join(' · ')}${car.tipoLlantas ? ` · Llantas: ${car.tipoLlantas}` : ''}</span>`);
+    if (autos_showsPolizaVencimiento(car)) {
+        const poliza = autos_vencimientoInfo(car.vencimientoPoliza);
+        const color = AUTOS_POLIZA_TONE_COLORS[poliza.tone];
+        infoLines.push(`<span class="account-type-label"${color ? ` style="color:${color};"` : ''}>🛡️ Vence póliza: ${poliza.label}</span>`);
+    }
+    const tenenciaInfo = autos_vencimientoInfo(car.vencimientoTenencia);
+    const tenenciaColor = AUTOS_POLIZA_TONE_COLORS[tenenciaInfo.tone];
+    infoLines.push(`<span class="account-type-label"${tenenciaColor ? ` style="color:${tenenciaColor};"` : ''}>🧾 Vence tenencia: ${tenenciaInfo.label}${autos_pagoTenenciaSuffix(car)}</span>`);
     const docsParts = [];
     if (car.facturaArchivo) docsParts.push('Factura ✅');
     if (car.polizaArchivo) docsParts.push('Poliza ✅');
@@ -8270,6 +8313,8 @@ function autos_openCarSheet(carId) {
     document.getElementById('autos-car-factura-archivo').value = car?.facturaArchivo || '';
     document.getElementById('autos-car-poliza').value = car?.polizaSeguro || '';
     document.getElementById('autos-car-vencimiento-poliza').value = car?.vencimientoPoliza || '';
+    document.getElementById('autos-car-vencimiento-tenencia').value = car?.vencimientoTenencia || '';
+    document.getElementById('autos-car-pago-tenencia').value = car?.pagoTenencia || '';
     document.getElementById('autos-car-proxima-revision-km').value = car?.proximaRevisionKm || '';
     document.getElementById('autos-car-poliza-archivo').value = car?.polizaArchivo || '';
     document.getElementById('autos-car-extra1-name').value = car?.extraDoc1Nombre || '';
@@ -8333,6 +8378,8 @@ async function autos_saveCar() {
         facturaArchivo: document.getElementById('autos-car-factura-archivo').value.trim(),
         polizaSeguro: document.getElementById('autos-car-poliza').value.trim(),
         vencimientoPoliza: document.getElementById('autos-car-vencimiento-poliza').value.trim(),
+        vencimientoTenencia: document.getElementById('autos-car-vencimiento-tenencia').value.trim(),
+        pagoTenencia: document.getElementById('autos-car-pago-tenencia').value.trim(),
         proximaRevisionKm: document.getElementById('autos-car-proxima-revision-km').value.trim(),
         polizaArchivo: document.getElementById('autos-car-poliza-archivo').value.trim(),
         extraDoc1Nombre: document.getElementById('autos-car-extra1-name').value.trim(),
@@ -15790,3 +15837,725 @@ document.addEventListener('DOMContentLoaded', () => {
         if (rechazar) return bandeja_rechazar(rechazar.dataset.id, rechazar);
     });
 });
+
+// ══════════════════════════════════════════════════════════════════════════
+// RECETAS MÉDICAS
+// Archivo médico de la familia. Vive en el workbook de Deudas, junto a
+// Documentos/Estudio/Pelo: es un catálogo, no toca dinero, y ese workbook no
+// se migró ni se va a borrar. Las fotos van a la MISMA carpeta de Drive que
+// los recibos ('Jay App Recibos'), vía autos_uploadFirstFile.
+// ══════════════════════════════════════════════════════════════════════════
+
+const RECETAS_SHEET = 'RecetasMedicas';
+const RECETAS_HEADERS = [
+    'id', 'member', 'fecha', 'doctor', 'especialidad', 'diagnostico',
+    'medicamentos', 'indicaciones', 'proximaCita', 'vigenciaHasta',
+    'fotoUrl', 'driveFileId', 'fotoUrl2', 'driveFileId2',
+    'reciboUrl', 'reciboFileId', 'montoConsulta', 'formaPago', 'movimientoId',
+    'notas', 'createdAt', 'updatedAt',
+];
+
+/** El costo de la consulta SÍ es dinero, así que no vive en la hoja: se manda a
+ *  Supabase como movimiento normal. `sourceRef` lo hace idempotente (el worker
+ *  tiene `on conflict (source, source_ref) do nothing`), así que reintentar no
+ *  duplica el gasto. */
+const RECETAS_MOV_SOURCE = 'receta';
+
+const recetasState = {
+    items: [],
+    headers: RECETAS_HEADERS.slice(),
+    selectedMember: 'all',
+    search: '',
+    meds: [],   // medicamentos en edición
+    pending: { foto: '', foto2: '', recibo: '' }, // adjuntos ya subidos a Drive
+    loaded: false,
+};
+
+function recetas_bindEvents() {
+    document.getElementById('recetas-btn-add')?.addEventListener('click', () => recetas_openSheet(null));
+    document.getElementById('recetas-sheet-overlay')?.addEventListener('click', recetas_closeSheet);
+    document.getElementById('recetas-detalle-overlay')?.addEventListener('click', () =>
+        document.getElementById('recetas-detalle').classList.add('hidden'));
+    document.getElementById('recetas-save')?.addEventListener('click', recetas_save);
+    document.getElementById('recetas-delete')?.addEventListener('click', recetas_delete);
+    document.getElementById('recetas-med-add')?.addEventListener('click', () => recetas_addMedRow());
+    document.getElementById('recetas-search')?.addEventListener('input', (e) => {
+        recetasState.search = (e.target.value || '').toLowerCase().trim();
+        recetas_render();
+    });
+    [
+        ['recetas-foto-camara', 'foto'], ['recetas-foto-archivo', 'foto'],
+        ['recetas-foto2-camara', 'foto2'], ['recetas-foto2-archivo', 'foto2'],
+        ['recetas-recibo-camara', 'recibo'], ['recetas-recibo-archivo', 'recibo'],
+    ].forEach(([inputId, slot]) => {
+        document.getElementById(inputId)?.addEventListener('change', () =>
+            recetas_subirFoto(inputId, slot));
+    });
+}
+
+// ── Datos ────────────────────────────────────────────────────────────────
+
+async function recetas_cargarVista() {
+    try {
+        await autos_ensureSheet(RECETAS_SHEET, RECETAS_HEADERS);
+        await recetas_loadData();
+        recetasState.loaded = true;
+        recetas_render();
+    } catch (e) {
+        console.error('Recetas:', e);
+        showToast(`⚠️ No pude cargar las recetas: ${e.message}`);
+    }
+}
+
+async function recetas_loadData() {
+    const head = await sheetsGet(SPREADSHEET_AUTOS_ID, `${RECETAS_SHEET}!A1:AZ1`).catch(() => []);
+    const headers = (head[0] && head[0].length)
+        ? head[0].map((x) => (x || '').toString().trim())
+        : RECETAS_HEADERS.slice();
+    recetasState.headers = headers;
+    const map = autos_headersToMap(headers);
+    const get = (row, key, fallback = '') => {
+        const idx = map[key];
+        return idx === undefined ? fallback : (row[idx] ?? fallback);
+    };
+    const rows = await sheetsGet(SPREADSHEET_AUTOS_ID, `${RECETAS_SHEET}!A2:AZ`).catch(() => []);
+    recetasState.items = rows.map((row) => ({
+        id: (get(row, 'id') || '').toString(),
+        member: (get(row, 'member', 'yo') || 'yo').toString(),
+        fecha: (get(row, 'fecha') || '').toString(),
+        doctor: (get(row, 'doctor') || '').toString(),
+        especialidad: (get(row, 'especialidad') || '').toString(),
+        diagnostico: (get(row, 'diagnostico') || '').toString(),
+        medicamentos: recetas_parseMeds(get(row, 'medicamentos')),
+        indicaciones: (get(row, 'indicaciones') || '').toString(),
+        proximaCita: (get(row, 'proximaCita') || '').toString(),
+        vigenciaHasta: (get(row, 'vigenciaHasta') || '').toString(),
+        fotoUrl: (get(row, 'fotoUrl') || '').toString(),
+        driveFileId: (get(row, 'driveFileId') || '').toString(),
+        fotoUrl2: (get(row, 'fotoUrl2') || '').toString(),
+        driveFileId2: (get(row, 'driveFileId2') || '').toString(),
+        reciboUrl: (get(row, 'reciboUrl') || '').toString(),
+        reciboFileId: (get(row, 'reciboFileId') || '').toString(),
+        montoConsulta: (get(row, 'montoConsulta') || '').toString(),
+        formaPago: (get(row, 'formaPago') || '').toString(),
+        movimientoId: (get(row, 'movimientoId') || '').toString(),
+        notas: (get(row, 'notas') || '').toString(),
+        createdAt: (get(row, 'createdAt') || '').toString(),
+        updatedAt: (get(row, 'updatedAt') || '').toString(),
+    })).filter((r) => r.id || r.doctor || r.diagnostico);
+}
+
+/** Los medicamentos viajan como JSON en una sola celda: son una lista de
+ *  longitud variable y no vale la pena explotarlos en columnas fijas. */
+function recetas_parseMeds(raw) {
+    const texto = (raw || '').toString().trim();
+    if (!texto) return [];
+    try {
+        const parsed = JSON.parse(texto);
+        return Array.isArray(parsed) ? parsed.filter((m) => m && m.nombre) : [];
+    } catch (_) {
+        // Si alguien editó la celda a mano, se rescata como un solo medicamento.
+        return [{ nombre: texto, dosis: '', frecuencia: '', duracion: '' }];
+    }
+}
+
+async function recetas_saveRows() {
+    const headers = RECETAS_HEADERS.slice();
+    recetasState.headers = headers;
+    const letter = autos_colLetter(headers.length);
+    await sheetsUpdate(SPREADSHEET_AUTOS_ID, `${RECETAS_SHEET}!A1:${letter}1`, [headers]);
+    const rows = recetasState.items
+        .slice()
+        .sort((a, b) => (b.fecha || '').localeCompare(a.fecha || ''))
+        .map((r) => {
+            const campos = {
+                id: r.id || '',
+                member: r.member || '',
+                fecha: r.fecha || '',
+                doctor: r.doctor || '',
+                especialidad: r.especialidad || '',
+                diagnostico: r.diagnostico || '',
+                medicamentos: JSON.stringify(r.medicamentos || []),
+                indicaciones: r.indicaciones || '',
+                proximaCita: r.proximaCita || '',
+                vigenciaHasta: r.vigenciaHasta || '',
+                fotoUrl: r.fotoUrl || '',
+                driveFileId: r.driveFileId || '',
+                fotoUrl2: r.fotoUrl2 || '',
+                driveFileId2: r.driveFileId2 || '',
+                reciboUrl: r.reciboUrl || '',
+                reciboFileId: r.reciboFileId || '',
+                montoConsulta: r.montoConsulta || '',
+                formaPago: r.formaPago || '',
+                movimientoId: r.movimientoId || '',
+                notas: r.notas || '',
+                createdAt: r.createdAt || '',
+                updatedAt: r.updatedAt || '',
+            };
+            return headers.map((h) => campos[h] ?? '');
+        });
+    if (rows.length) {
+        await sheetsUpdate(SPREADSHEET_AUTOS_ID, `${RECETAS_SHEET}!A2:${letter}${1 + rows.length}`, rows);
+    }
+    await sheetsClear(SPREADSHEET_AUTOS_ID, `${RECETAS_SHEET}!A${2 + rows.length}:AZ`);
+}
+
+// ── Gasto de la consulta ─────────────────────────────────────────────────
+
+/** Crea, actualiza o borra el movimiento ligado a una receta.
+ *  Devuelve el id del movimiento (o '' si no debe existir). */
+async function recetas_syncGasto(receta, movimientoPrevio) {
+    const monto = Math.abs(parseSheetValue(receta.montoConsulta || 0));
+
+    // Sin monto no hay gasto: si antes existía uno, se borra.
+    if (!monto) {
+        if (movimientoPrevio) {
+            try { await bandeja_api(`/api/movimientos/${movimientoPrevio}`, { method: 'DELETE' }); }
+            catch (e) { console.warn('No se pudo borrar el gasto de la receta:', e); }
+        }
+        return '';
+    }
+
+    const cuenta = balanceAccounts.find(a =>
+        balance_getAccountMatchKeys(a).includes(balance_normalizePaymentKey(receta.formaPago)));
+    if (!cuenta) {
+        throw new Error(`"${receta.formaPago || 'sin forma de pago'}" no existe como cuenta`);
+    }
+
+    const concepto = `Consulta ${receta.doctor || 'médica'}${receta.especialidad ? ` (${receta.especialidad})` : ''}`;
+
+    // Si ya había movimiento, se actualiza en lugar de crear otro.
+    if (movimientoPrevio) {
+        await bandeja_api(`/api/movimientos/${movimientoPrevio}`, {
+            method: 'PATCH',
+            body: JSON.stringify({
+                occurredAt: receta.fecha || undefined,
+                accountId: cuenta.id,
+                amount: monto,
+                merchant: `Consulta ${recetas_memberLabel(receta.member)}`,
+                description: concepto,
+                receiptUrl: receta.reciboUrl || undefined,
+            }),
+        });
+        return movimientoPrevio;
+    }
+
+    const creado = await bandeja_api('/api/movimientos', {
+        method: 'POST',
+        body: JSON.stringify({
+            occurredAt: receta.fecha || undefined,
+            accountId: cuenta.id,
+            amount: monto,
+            kind: 'gasto',
+            merchant: `Consulta ${recetas_memberLabel(receta.member)}`,
+            description: concepto,
+            category: 'Salud',
+            receiptUrl: receta.reciboUrl || null,
+            source: RECETAS_MOV_SOURCE,
+            sourceRef: `${RECETAS_MOV_SOURCE}:${receta.id}`,
+        }),
+    });
+    return creado?.id || '';
+}
+
+// ── Helpers de presentación ──────────────────────────────────────────────
+
+/** Mismas cuentas que usa el resto de la app, para que la forma de pago de la
+ *  consulta se resuelva igual que en Gastos. */
+function recetas_fillFormaPago(seleccionada) {
+    const el = document.getElementById('recetas-forma-pago');
+    if (!el) return;
+    const cuentas = (balanceAccounts || []).filter((a) => !a.hidden);
+    el.innerHTML = '<option value="">— Sin registrar gasto —</option>'
+        + cuentas.map((a) => `<option value="${a.name}">${a.name}</option>`).join('');
+    el.value = seleccionada || '';
+}
+
+function recetas_memberLabel(id) {
+    return DOCS_MEMBERS.find((m) => m.id === id)?.label || id || '—';
+}
+
+function recetas_fechaBonita(iso) {
+    const texto = (iso || '').toString().trim();
+    if (!texto) return '';
+    const d = new Date(`${texto}T12:00:00`);
+    if (Number.isNaN(d.getTime())) return texto;
+    return d.toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' });
+}
+
+function recetas_diasHasta(iso) {
+    const texto = (iso || '').toString().trim();
+    if (!texto) return null;
+    const d = new Date(`${texto}T12:00:00`);
+    if (Number.isNaN(d.getTime())) return null;
+    const hoy = new Date();
+    hoy.setHours(12, 0, 0, 0);
+    return Math.round((d - hoy) / 86400000);
+}
+
+function recetas_tratamientoActivo(receta) {
+    const dias = recetas_diasHasta(receta.vigenciaHasta);
+    return dias !== null && dias >= 0;
+}
+
+// ── Render ───────────────────────────────────────────────────────────────
+
+function recetas_render() {
+    recetas_renderMemberTabs();
+    recetas_renderKpis();
+    recetas_renderLista();
+    recetas_renderDatalists();
+}
+
+function recetas_renderMemberTabs() {
+    const el = document.getElementById('recetas-member-tabs');
+    if (!el) return;
+    // Solo se ofrecen los miembros que de verdad tienen recetas, más "Todos".
+    const conRecetas = new Set(recetasState.items.map((r) => r.member));
+    const visibles = DOCS_MEMBERS.filter((m) => m.id === 'all' || conRecetas.has(m.id));
+    el.innerHTML = visibles.map((m) => {
+        const n = m.id === 'all'
+            ? recetasState.items.length
+            : recetasState.items.filter((r) => r.member === m.id).length;
+        const activo = recetasState.selectedMember === m.id ? ' active' : '';
+        return `<button class="estudio-subtab${activo}" onclick="recetas_selectMember('${m.id}')">${m.label} (${n})</button>`;
+    }).join('');
+}
+
+window.recetas_selectMember = function (id) {
+    recetasState.selectedMember = id;
+    recetas_render();
+};
+
+function recetas_renderKpis() {
+    const total = document.getElementById('recetas-total');
+    if (total) total.innerText = recetasState.items.length;
+
+    const subtitle = document.getElementById('recetas-subtitle');
+    if (subtitle) {
+        const quienes = new Set(recetasState.items.map((r) => r.member)).size;
+        subtitle.innerText = quienes
+            ? `${quienes} paciente${quienes === 1 ? '' : 's'} con historial`
+            : 'Archivo médico familiar';
+    }
+
+    // Próxima cita: la más cercana que todavía no pasa.
+    const futuras = recetasState.items
+        .map((r) => ({ receta: r, dias: recetas_diasHasta(r.proximaCita) }))
+        .filter((x) => x.dias !== null && x.dias >= 0)
+        .sort((a, b) => a.dias - b.dias);
+    const citaEl = document.getElementById('recetas-proxima-cita');
+    const citaQuienEl = document.getElementById('recetas-proxima-cita-quien');
+    if (citaEl && citaQuienEl) {
+        if (futuras.length) {
+            const { receta, dias } = futuras[0];
+            citaEl.innerText = dias === 0 ? 'Hoy' : dias === 1 ? 'Mañana' : `En ${dias} d`;
+            citaQuienEl.innerText = `${recetas_memberLabel(receta.member)} · ${receta.doctor || 'sin doctor'} · ${recetas_fechaBonita(receta.proximaCita)}`;
+        } else {
+            citaEl.innerText = '—';
+            citaQuienEl.innerText = 'Sin citas agendadas';
+        }
+    }
+
+    // Gasto médico acumulado del mes en curso.
+    const mesActual = new Date().toLocaleDateString('en-CA').slice(0, 7);
+    const gastoMes = recetasState.items
+        .filter((r) => (r.fecha || '').startsWith(mesActual))
+        .reduce((suma, r) => suma + Math.abs(parseSheetValue(r.montoConsulta || 0)), 0);
+    const gastoEl = document.getElementById('recetas-gasto-mes');
+    if (gastoEl) gastoEl.innerText = formatCurrency(gastoMes);
+
+    const activos = recetasState.items.filter(recetas_tratamientoActivo);
+    const activosEl = document.getElementById('recetas-activos');
+    const activosDetalleEl = document.getElementById('recetas-activos-detalle');
+    if (activosEl) activosEl.innerText = activos.length;
+    if (activosDetalleEl) {
+        activosDetalleEl.innerText = activos.length
+            ? activos.map((r) => recetas_memberLabel(r.member)).join(', ')
+            : 'Con vigencia al día';
+    }
+}
+
+function recetas_filtradas() {
+    const q = recetasState.search;
+    return recetasState.items
+        .filter((r) => recetasState.selectedMember === 'all' || r.member === recetasState.selectedMember)
+        .filter((r) => {
+            if (!q) return true;
+            const meds = (r.medicamentos || []).map((m) => m.nombre).join(' ');
+            return [r.doctor, r.especialidad, r.diagnostico, r.indicaciones, r.notas, meds]
+                .join(' ').toLowerCase().includes(q);
+        })
+        .sort((a, b) => (b.fecha || '').localeCompare(a.fecha || ''));
+}
+
+function recetas_renderLista() {
+    const el = document.getElementById('recetas-list');
+    if (!el) return;
+    const lista = recetas_filtradas();
+    if (!lista.length) {
+        el.innerHTML = recetasState.items.length
+            ? '<div class="empty-state">Ninguna receta coincide con el filtro</div>'
+            : '<div class="empty-state">Todavía no hay recetas. Toca «+ Nueva receta» para guardar la primera.</div>';
+        return;
+    }
+    el.innerHTML = lista.map((r) => {
+        const meds = r.medicamentos || [];
+        const medsTexto = meds.length
+            ? meds.slice(0, 3).map((m) => m.nombre).join(', ') + (meds.length > 3 ? ` +${meds.length - 3}` : '')
+            : 'Sin medicamentos';
+        const chips = [];
+        if (recetas_tratamientoActivo(r)) {
+            chips.push('<span class="recetas-chip recetas-chip--activo">Tratamiento activo</span>');
+        } else if (r.vigenciaHasta) {
+            chips.push('<span class="recetas-chip recetas-chip--vencido">Tratamiento terminado</span>');
+        }
+        const diasCita = recetas_diasHasta(r.proximaCita);
+        if (diasCita !== null && diasCita >= 0) {
+            const txt = diasCita === 0 ? 'Cita hoy' : diasCita === 1 ? 'Cita mañana' : `Cita en ${diasCita} d`;
+            chips.push(`<span class="recetas-chip recetas-chip--cita">${txt}</span>`);
+        }
+        return `<div class="account-card glass-subtle" onclick="recetas_openDetalle('${r.id}')">
+            <div class="account-card-left">
+                <span class="account-icon" style="background:rgba(236,72,153,.12);color:#ec4899">🩺</span>
+                <div class="account-info">
+                    <span class="account-name">${r.diagnostico || r.doctor || 'Receta'}</span>
+                    <span class="account-type-label">${recetas_memberLabel(r.member)} · ${recetas_fechaBonita(r.fecha) || 'sin fecha'}${r.doctor ? ` · ${r.doctor}` : ''}</span>
+                    <span class="account-type-label">💊 ${medsTexto}</span>
+                    ${chips.length ? `<span style="display:flex;gap:.3rem;flex-wrap:wrap;margin-top:.2rem;">${chips.join('')}</span>` : ''}
+                </div>
+            </div>
+            <div class="account-card-right">
+                ${(() => { const m = Math.abs(parseSheetValue(r.montoConsulta || 0));
+                    return m ? `<span class="account-balance text-danger">-${formatCurrency(m)}</span>` : ''; })()}
+                ${[r.fotoUrl, r.fotoUrl2, r.reciboUrl].filter(Boolean).length
+                    ? `<span class="diff-label">📎 ${[r.fotoUrl, r.fotoUrl2, r.reciboUrl].filter(Boolean).length}</span>` : ''}
+            </div>
+        </div>`;
+    }).join('');
+}
+
+/** Autocompletado de doctores y especialidades a partir de lo ya capturado:
+ *  con el tiempo capturar una receta se vuelve casi solo elegir. */
+function recetas_renderDatalists() {
+    const doctores = [...new Set(recetasState.items.map((r) => r.doctor).filter(Boolean))].sort();
+    const especialidades = [...new Set(recetasState.items.map((r) => r.especialidad).filter(Boolean))].sort();
+    const dl1 = document.getElementById('recetas-doctores');
+    const dl2 = document.getElementById('recetas-especialidades');
+    if (dl1) dl1.innerHTML = doctores.map((d) => `<option value="${d}">`).join('');
+    if (dl2) dl2.innerHTML = especialidades.map((e) => `<option value="${e}">`).join('');
+}
+
+// ── Detalle ──────────────────────────────────────────────────────────────
+
+window.recetas_openDetalle = function (id) {
+    const r = recetasState.items.find((x) => x.id === id);
+    if (!r) return;
+    document.getElementById('recetas-detalle-title').innerText =
+        r.diagnostico || r.doctor || 'Receta';
+    const meds = r.medicamentos || [];
+    const bloques = [];
+
+    bloques.push(`<div class="autos-detail-row"><strong>Paciente:</strong> <span>${recetas_memberLabel(r.member)}</span></div>`);
+    if (r.fecha) bloques.push(`<div class="autos-detail-row"><strong>Fecha:</strong> <span>${recetas_fechaBonita(r.fecha)}</span></div>`);
+    if (r.doctor) bloques.push(`<div class="autos-detail-row"><strong>Doctor:</strong> <span>${r.doctor}${r.especialidad ? ` · ${r.especialidad}` : ''}</span></div>`);
+    if (r.proximaCita) {
+        const dias = recetas_diasHasta(r.proximaCita);
+        const nota = dias === null ? '' : dias < 0 ? ' · ya pasó' : dias === 0 ? ' · hoy' : ` · en ${dias} d`;
+        bloques.push(`<div class="autos-detail-row"><strong>Próxima cita:</strong> <span>${recetas_fechaBonita(r.proximaCita)}${nota}</span></div>`);
+    }
+    if (r.vigenciaHasta) {
+        bloques.push(`<div class="autos-detail-row"><strong>Tratamiento hasta:</strong> <span>${recetas_fechaBonita(r.vigenciaHasta)}${recetas_tratamientoActivo(r) ? ' · activo' : ' · terminado'}</span></div>`);
+    }
+
+    const montoConsulta = Math.abs(parseSheetValue(r.montoConsulta || 0));
+    if (montoConsulta) {
+        bloques.push(`<div class="autos-detail-row"><strong>Costo consulta:</strong> <span>${formatCurrency(montoConsulta)}${r.formaPago ? ` · ${r.formaPago}` : ''}${r.movimientoId ? ' · registrado como gasto' : ''}</span></div>`);
+    }
+
+    let html = `<div class="glass-subtle" style="padding:.85rem;display:grid;gap:.5rem;">${bloques.join('')}</div>`;
+
+    if (meds.length) {
+        html += `<div class="recetas-detalle-seccion"><h4>Medicamentos</h4>${meds.map((m) => `
+            <div class="recetas-detalle-med">
+                <strong>${m.nombre}</strong>
+                <span>${[m.dosis, m.frecuencia, m.duracion].filter(Boolean).join(' · ') || 'Sin detalle'}</span>
+            </div>`).join('')}</div>`;
+    }
+    if (r.indicaciones) {
+        html += `<div class="recetas-detalle-seccion"><h4>Indicaciones</h4><div class="glass-subtle" style="padding:.6rem;font-size:.85rem;white-space:pre-wrap;">${r.indicaciones}</div></div>`;
+    }
+    if (r.notas) {
+        html += `<div class="recetas-detalle-seccion"><h4>Notas</h4><div class="glass-subtle" style="padding:.6rem;font-size:.85rem;white-space:pre-wrap;">${r.notas}</div></div>`;
+    }
+    const adjuntos = [
+        ['Receta 1', r.fotoUrl],
+        ['Receta 2', r.fotoUrl2],
+        ['Recibo de la consulta', r.reciboUrl],
+    ].filter(([, url]) => !!url);
+    if (adjuntos.length) {
+        html += `<div class="recetas-detalle-seccion"><h4>Adjuntos</h4>
+            <div class="recetas-detalle-adjuntos">${adjuntos.map(([etiqueta, url]) => `
+                <div>
+                    <div class="diff-label" style="margin-bottom:.3rem;">${etiqueta}</div>
+                    ${autos_docPreview(url, etiqueta)}
+                </div>`).join('')}</div></div>`;
+    }
+    html += `<button class="primary-btn" style="margin-top:.9rem;width:100%;" onclick="recetas_editarDesdeDetalle('${r.id}')">✏️ Editar receta</button>`;
+
+    document.getElementById('recetas-detalle-body').innerHTML = html;
+    document.getElementById('recetas-detalle').classList.remove('hidden');
+};
+
+window.recetas_editarDesdeDetalle = function (id) {
+    document.getElementById('recetas-detalle').classList.add('hidden');
+    recetas_openSheet(id);
+};
+
+// ── Alta / edición ───────────────────────────────────────────────────────
+
+function recetas_openSheet(id) {
+    const r = id ? recetasState.items.find((x) => x.id === id) : null;
+    document.getElementById('recetas-sheet-title').innerText = r ? 'Editar receta' : 'Nueva receta';
+    document.getElementById('recetas-edit-id').value = r?.id || '';
+    document.getElementById('recetas-delete').classList.toggle('hidden', !r);
+
+    const select = document.getElementById('recetas-member');
+    // Sin "Todos": una receta siempre es de alguien concreto.
+    select.innerHTML = DOCS_MEMBERS.filter((m) => m.id !== 'all')
+        .map((m) => `<option value="${m.id}">${m.label}</option>`).join('');
+    // Al crear se preselecciona el miembro que se está viendo: si estás
+    // revisando las de Roby, lo más probable es que la nueva sea de Roby.
+    select.value = r?.member
+        || (recetasState.selectedMember !== 'all' ? recetasState.selectedMember : 'yo');
+
+    document.getElementById('recetas-fecha').value = r?.fecha || new Date().toLocaleDateString('en-CA');
+    document.getElementById('recetas-doctor').value = r?.doctor || '';
+    document.getElementById('recetas-especialidad').value = r?.especialidad || '';
+    document.getElementById('recetas-diagnostico').value = r?.diagnostico || '';
+    document.getElementById('recetas-indicaciones').value = r?.indicaciones || '';
+    document.getElementById('recetas-notas').value = r?.notas || '';
+    document.getElementById('recetas-proxima-cita').value = r?.proximaCita || '';
+    document.getElementById('recetas-vigencia').value = r?.vigenciaHasta || '';
+
+    recetasState.pending = {
+        foto: r?.fotoUrl || '',
+        foto2: r?.fotoUrl2 || '',
+        recibo: r?.reciboUrl || '',
+    };
+    document.getElementById('recetas-monto').value = r?.montoConsulta || '';
+    recetas_fillFormaPago(r?.formaPago || '');
+    recetasState.meds = (r?.medicamentos || []).map((m) => ({ ...m }));
+    if (!recetasState.meds.length) recetasState.meds.push({ nombre: '', dosis: '', frecuencia: '', duracion: '' });
+
+    ['recetas-foto-camara', 'recetas-foto-archivo', 'recetas-foto2-camara',
+     'recetas-foto2-archivo', 'recetas-recibo-camara', 'recetas-recibo-archivo']
+        .forEach((idInput) => { const el = document.getElementById(idInput); if (el) el.value = ''; });
+    RECETAS_SLOTS.forEach((slot) => {
+        const el = document.getElementById(slot.feedback);
+        if (el) el.innerText = '';
+    });
+    recetas_renderFotoPreview();
+    recetas_renderMedRows();
+    recetas_renderDatalists();
+
+    document.getElementById('recetas-sheet').classList.remove('hidden');
+}
+
+function recetas_closeSheet() {
+    document.getElementById('recetas-sheet').classList.add('hidden');
+}
+
+/** Los tres adjuntos comparten la misma mecánica; solo cambia el slot y el
+ *  texto. Se declaran juntos para no repetir tres veces lo mismo. */
+const RECETAS_SLOTS = [
+    { key: 'foto',   preview: 'recetas-foto-preview',   feedback: 'recetas-foto-feedback',   vacio: 'Receta 1 — toma la foto o sube el archivo', crop: 'Recortar receta' },
+    { key: 'foto2',  preview: 'recetas-foto2-preview',  feedback: 'recetas-foto2-feedback',  vacio: 'Receta 2 (opcional)', crop: 'Recortar receta 2' },
+    { key: 'recibo', preview: 'recetas-recibo-preview', feedback: 'recetas-recibo-feedback', vacio: 'Recibo de la consulta (opcional)', crop: 'Recortar recibo' },
+];
+
+function recetas_renderFotoPreview() {
+    RECETAS_SLOTS.forEach((slot) => {
+        const el = document.getElementById(slot.preview);
+        if (!el) return;
+        const url = recetasState.pending[slot.key] || '';
+        el.innerHTML = url ? autos_docPreview(url, slot.crop) : slot.vacio;
+    });
+}
+
+// ── Medicamentos ─────────────────────────────────────────────────────────
+
+function recetas_renderMedRows() {
+    const el = document.getElementById('recetas-meds-lista');
+    if (!el) return;
+    if (!recetasState.meds.length) {
+        el.innerHTML = '<div class="recetas-meds-vacio">Sin medicamentos. Toca «+ Agregar».</div>';
+        return;
+    }
+    el.innerHTML = recetasState.meds.map((m, i) => `
+        <div class="recetas-med-fila">
+            <input class="field-input recetas-med-nombre" data-med-i="${i}" data-med-k="nombre"
+                   placeholder="Medicamento" value="${(m.nombre || '').replace(/"/g, '&quot;')}">
+            <input class="field-input" data-med-i="${i}" data-med-k="dosis"
+                   placeholder="Dosis" value="${(m.dosis || '').replace(/"/g, '&quot;')}">
+            <input class="field-input" data-med-i="${i}" data-med-k="frecuencia"
+                   placeholder="Cada..." value="${(m.frecuencia || '').replace(/"/g, '&quot;')}">
+            <button type="button" class="recetas-med-quitar" data-med-del="${i}" title="Quitar">✕</button>
+        </div>`).join('');
+
+    // Se lee del DOM al vuelo para no perder lo escrito al agregar o quitar filas.
+    el.querySelectorAll('[data-med-i]').forEach((input) => {
+        input.addEventListener('input', () => {
+            const i = Number(input.dataset.medI);
+            const k = input.dataset.medK;
+            if (recetasState.meds[i]) recetasState.meds[i][k] = input.value;
+        });
+    });
+    el.querySelectorAll('[data-med-del]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+            recetasState.meds.splice(Number(btn.dataset.medDel), 1);
+            recetas_renderMedRows();
+        });
+    });
+}
+
+function recetas_addMedRow() {
+    recetasState.meds.push({ nombre: '', dosis: '', frecuencia: '', duracion: '' });
+    recetas_renderMedRows();
+    const filas = document.querySelectorAll('#recetas-meds-lista .recetas-med-nombre');
+    filas[filas.length - 1]?.focus();
+}
+
+// ── Foto ─────────────────────────────────────────────────────────────────
+
+async function recetas_subirFoto(inputId, slotKey) {
+    const input = document.getElementById(inputId);
+    if (!input?.files?.length) return;
+    const slot = RECETAS_SLOTS.find((s) => s.key === slotKey);
+    const feedback = document.getElementById(slot?.feedback || '');
+    if (feedback) feedback.innerText = '⏳ Subiendo a Drive...';
+    try {
+        // Misma carpeta que los recibos ('Jay App Recibos'). Recorte tipo carta:
+        // tanto la receta como el recibo suelen ser una hoja.
+        const url = await autos_uploadFirstFile(inputId, {
+            enableCrop: true,
+            cropTitle: slot?.crop || 'Recortar',
+            cropMode: 'carta',
+        });
+        if (!url) throw new Error('no se obtuvo URL');
+        recetasState.pending[slotKey] = url;
+        recetas_renderFotoPreview();
+        if (feedback) feedback.innerText = '✅ Listo';
+    } catch (e) {
+        console.error('Recetas adjunto:', e);
+        if (feedback) feedback.innerText = `⚠️ No se pudo subir: ${e.message}`;
+    } finally {
+        input.value = '';
+    }
+}
+
+// ── Guardar / borrar ─────────────────────────────────────────────────────
+
+async function recetas_save() {
+    const doctor = (document.getElementById('recetas-doctor').value || '').trim();
+    const diagnostico = (document.getElementById('recetas-diagnostico').value || '').trim();
+    if (!doctor && !diagnostico) {
+        showToast('⚠️ Pon al menos el doctor o el diagnóstico');
+        return;
+    }
+    const id = (document.getElementById('recetas-edit-id').value || '').trim();
+    const ahora = new Date().toLocaleDateString('en-CA');
+    const meds = recetasState.meds
+        .map((m) => ({
+            nombre: (m.nombre || '').trim(),
+            dosis: (m.dosis || '').trim(),
+            frecuencia: (m.frecuencia || '').trim(),
+            duracion: (m.duracion || '').trim(),
+        }))
+        .filter((m) => m.nombre);
+
+    const payload = {
+        id: id || `receta-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+        member: document.getElementById('recetas-member').value || 'yo',
+        fecha: (document.getElementById('recetas-fecha').value || '').trim(),
+        doctor,
+        especialidad: (document.getElementById('recetas-especialidad').value || '').trim(),
+        diagnostico,
+        medicamentos: meds,
+        indicaciones: (document.getElementById('recetas-indicaciones').value || '').trim(),
+        proximaCita: (document.getElementById('recetas-proxima-cita').value || '').trim(),
+        vigenciaHasta: (document.getElementById('recetas-vigencia').value || '').trim(),
+        fotoUrl: recetasState.pending.foto || '',
+        driveFileId: documentos_parseDriveId(recetasState.pending.foto || ''),
+        fotoUrl2: recetasState.pending.foto2 || '',
+        driveFileId2: documentos_parseDriveId(recetasState.pending.foto2 || ''),
+        reciboUrl: recetasState.pending.recibo || '',
+        reciboFileId: documentos_parseDriveId(recetasState.pending.recibo || ''),
+        montoConsulta: (document.getElementById('recetas-monto').value || '').trim(),
+        formaPago: (document.getElementById('recetas-forma-pago').value || '').trim(),
+        movimientoId: '',
+        notas: (document.getElementById('recetas-notas').value || '').trim(),
+        createdAt: ahora,
+        updatedAt: ahora,
+    };
+
+    const idx = recetasState.items.findIndex((x) => x.id === payload.id);
+    const previo = idx === -1 ? null : recetasState.items[idx];
+
+    // El gasto se sincroniza ANTES de tocar la hoja: si la cuenta no existe,
+    // se aborta sin dejar la receta guardada con un movimiento fantasma.
+    try {
+        payload.movimientoId = await recetas_syncGasto(payload, previo?.movimientoId || '');
+    } catch (e) {
+        showToast(`⚠️ ${e.message}`);
+        return;
+    }
+
+    if (idx === -1) recetasState.items.push(payload);
+    else recetasState.items[idx] = { ...previo, ...payload, createdAt: previo.createdAt || ahora };
+
+    try {
+        await recetas_saveRows();
+        recetas_closeSheet();
+        recetas_render();
+        const monto = Math.abs(parseSheetValue(payload.montoConsulta || 0));
+        showToast(monto
+            ? `✅ Receta guardada · gasto de ${formatCurrency(monto)} registrado`
+            : '✅ Receta guardada');
+    } catch (e) {
+        console.error('Recetas guardar:', e);
+        showToast(`⚠️ No se pudo guardar: ${e.message}`);
+    }
+}
+
+async function recetas_delete() {
+    const id = (document.getElementById('recetas-edit-id').value || '').trim();
+    if (!id) return;
+    const target = recetasState.items.find((x) => x.id === id);
+    const monto = Math.abs(parseSheetValue(target?.montoConsulta || 0));
+    const aviso = monto
+        ? `¿Eliminar esta receta? También se borran los archivos de Drive y el gasto de ${formatCurrency(monto)}.`
+        : '¿Eliminar esta receta? Los archivos en Drive también se borran.';
+    if (!confirm(aviso)) return;
+
+    if (target?.movimientoId) {
+        try { await bandeja_api(`/api/movimientos/${target.movimientoId}`, { method: 'DELETE' }); }
+        catch (e) { console.warn('No se pudo borrar el gasto ligado:', e); }
+    }
+    [
+        target?.driveFileId || documentos_parseDriveId(target?.fotoUrl || ''),
+        target?.driveFileId2 || documentos_parseDriveId(target?.fotoUrl2 || ''),
+        target?.reciboFileId || documentos_parseDriveId(target?.reciboUrl || ''),
+    ].filter(Boolean).forEach(async (fid) => {
+        try { await driveDeleteFile(fid); } catch (e) { console.warn('No se pudo borrar de Drive:', e); }
+    });
+    recetasState.items = recetasState.items.filter((x) => x.id !== id);
+    try {
+        await recetas_saveRows();
+        recetas_closeSheet();
+        recetas_render();
+        showToast('🗑️ Receta eliminada');
+    } catch (e) {
+        showToast(`⚠️ No se pudo eliminar: ${e.message}`);
+    }
+}

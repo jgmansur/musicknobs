@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 """
-finance_write.py — Escribe datos financieros a Google Sheets via service account.
+finance_write.py — Escribe datos financieros.
+
+Gastos, fijos y deudas ya NO van a Google Sheets: se migraron a Supabase y
+pasan por el worker finance-core (ver ~/tools/finance_api.py). Recuerdos, RSM y
+Pelo siguen en hoja porque esas no se migraron.
 
 Uso:
   python3 finance_write.py --sheet gastos --data '{"fecha":"2026-04-17","monto":450,"concepto":"Gasolina","lugar":"BP","forma_pago":"Santander débito","tipo":"Gasto"}'
@@ -20,6 +24,10 @@ import subprocess
 import time
 import re
 from datetime import datetime
+
+# El cliente del worker vive en ~/tools, fuera de este repo.
+sys.path.insert(0, '/Users/jaystudio/tools')
+import finance_api
 
 RECEIPT_ITEMS_SHEET = 'Receipt Items'
 RECEIPT_ITEMS_HEADERS = [
@@ -250,64 +258,71 @@ def extract_row_number(updated_range):
     return int(match.group(1))
 
 def write_gastos(service, env_vars, data):
-    """
-    Columnas: Fecha, Lugar, Concepto, Monto, Tipo, Forma de Pago, Recibos
-    """
+    """Registra un movimiento en Supabase. `service` ya no se usa aquí."""
     forma_pago = normalize_forma_pago(data.get('forma_pago', ''))
+    cuenta = finance_api.buscar_cuenta(forma_pago)
+    if not cuenta:
+        raise ValueError(f"La forma de pago '{forma_pago}' no existe como cuenta en finance-core")
+
     receipt_input_path = get_recibo_source_path(data)
     recibo_url = resolve_recibo_value(data)
-    row = [
-        format_date(data.get('fecha')),
-        data.get('lugar', ''),
-        data.get('concepto', ''),
-        format_amount(data.get('monto', 0)),
-        data.get('tipo', 'Gasto'),
-        forma_pago,
-        recibo_url
-    ]
-    result = append_row_with_meta(service, env_vars['SPREADSHEET_LOG_ID'], 'Hoja 1', row)
+    es_ingreso = str(data.get('tipo', 'Gasto')).strip().lower() == 'ingreso'
 
+    creado = finance_api.api_post('/api/movimientos', {
+        'occurredAt': format_date(data.get('fecha')),
+        'accountId': cuenta['id'],
+        # El worker toma la magnitud y le pone el signo según `kind`.
+        'amount': format_amount(data.get('monto', 0)),
+        'kind': 'ingreso' if es_ingreso else 'gasto',
+        'merchant': data.get('lugar', ''),
+        'description': data.get('concepto', ''),
+        'receiptUrl': recibo_url or None,
+        'source': 'bot',
+    })
+
+    # El recibo puede tardar en aparecer en Drive: antes se parchaba la celda G,
+    # ahora se parcha el movimiento por id.
     if not recibo_url and receipt_input_path:
         wait_seconds = int(os.getenv('FINANCE_RECIBO_WAIT_SECONDS', '180'))
         wait_interval = int(os.getenv('FINANCE_RECIBO_WAIT_INTERVAL_SECONDS', '5'))
         delayed_url = wait_for_drive_url(receipt_input_path, wait_seconds, wait_interval)
-        target_row = extract_row_number(result.get('updated_range'))
-        if delayed_url and target_row:
-            service.spreadsheets().values().update(
-                spreadsheetId=env_vars['SPREADSHEET_LOG_ID'],
-                range=f'Hoja 1!G{target_row}',
-                valueInputOption='USER_ENTERED',
-                body={'values': [[delayed_url]]}
-            ).execute()
-            print(f"INFO: Link de recibo aplicado en Hoja 1!G{target_row}")
-        elif receipt_input_path:
+        if delayed_url and creado.get('id'):
+            finance_api.api_patch(f"/api/movimientos/{creado['id']}", {'receiptUrl': delayed_url})
+            print(f"INFO: Link de recibo aplicado al movimiento {creado['id']}")
+        else:
             print("WARNING: No se pudo obtener link de Drive dentro del tiempo de espera")
 
-    return result.get('updated_rows', 0)
+    if creado.get('balance') is not None:
+        print(f"INFO: Saldo de {cuenta['name']}: {creado['balance']}")
+    return 1
 
 def write_fijos(service, env_vars, data):
-    """
-    Columnas: Fecha, Concepto, Gasto, Ingreso, Categoria, Pendiente/Pagado
-    """
-    row = [
-        format_date(data.get('fecha')),
-        data.get('concepto', ''),
-        format_amount(data.get('gasto', 0)) if data.get('gasto') else '',
-        format_amount(data.get('ingreso', 0)) if data.get('ingreso') else '',
-        data.get('categoria', ''),
-        data.get('estado', 'Pendiente')
-    ]
-    return append_row(service, env_vars['SPREADSHEET_FIXED_ID'], 'Hoja 1', row)
+    """Da de alta un gasto fijo en Supabase."""
+    gasto = format_amount(data.get('gasto', 0)) if data.get('gasto') else 0
+    ingreso = format_amount(data.get('ingreso', 0)) if data.get('ingreso') else 0
+    if not gasto and not ingreso:
+        raise ValueError('falta el monto: manda `gasto` o `ingreso`')
+
+    finance_api.api_post('/api/fijos', {
+        'concepto': data.get('concepto', ''),
+        'monto': ingreso or gasto,
+        'tipo': 'ingreso' if ingreso else 'gasto',
+        'categoria': data.get('categoria') or None,
+        'moneda': data.get('moneda', 'MXN'),
+        'diaMes': data.get('dia_mes') or data.get('diaMes'),
+        'pagador': data.get('forma_pago') or data.get('pagador'),
+    })
+    return 1
 
 def write_deudas(service, env_vars, data):
-    """
-    Columnas: Concepto, Monto adeudado
-    """
-    row = [
-        data.get('concepto', ''),
-        format_amount(data.get('monto', 0))
-    ]
-    return append_row(service, env_vars['SPREADSHEET_AUTOS_ID'], 'Hoja 1', row)
+    """Da de alta una deuda en Supabase."""
+    if not data.get('concepto'):
+        raise ValueError('falta el concepto de la deuda')
+    finance_api.api_post('/api/deudas', {
+        'concepto': data.get('concepto', ''),
+        'monto': format_amount(data.get('monto', 0)),
+    })
+    return 1
 
 def write_recuerdos(service, env_vars, data):
     """
@@ -373,6 +388,18 @@ def write_receipt_items(service, env_vars, data):
               forma_pago, recibo, confianza, grupo_producto, hormiga_auto,
               hormiga_override
     """
+    # La hoja 'Receipt Items' vivía en Control de Gastos, que se migró y se va a
+    # borrar. En Supabase la tabla receipt_items existe, pero el worker solo la
+    # EXPONE (`GET /api/hormiga`) — no hay endpoint para escribirla: el único que
+    # inserta es el ingest de tickets de Gmail. Escribir a la hoja aquí sería
+    # perder los datos en silencio, así que se falla fuerte a propósito.
+    raise ValueError(
+        'receipt_items ya no se escribe desde aquí: la hoja se migró y el worker '
+        'no expone un endpoint de escritura (solo GET /api/hormiga). Hoy los '
+        'artículos los inserta el ingest de tickets. Si hace falta capturarlos a '
+        'mano, hay que agregar POST /api/hormiga/items al worker primero.'
+    )
+
     spreadsheet_id = env_vars['SPREADSHEET_LOG_ID']
     ensure_headers(service, spreadsheet_id, RECEIPT_ITEMS_SHEET, RECEIPT_ITEMS_HEADERS)
     items = normalize_receipt_items(data)
@@ -423,6 +450,11 @@ SHEET_WRITERS = {
     'receipt_items': write_receipt_items,
 }
 
+# Destinos que siguen viviendo en Google Sheets. El resto va al worker.
+# Pelo vive en el workbook de Deudas y Recuerdos/RSM en los suyos: ninguno de
+# esos tres se migró ni se va a borrar.
+SHEET_BACKED = {'recuerdos', 'rsm', 'pelo', 'receipt_items'}
+
 def main():
     parser = argparse.ArgumentParser(description='Escribe datos financieros a Google Sheets')
     parser.add_argument('--sheet', required=True, choices=list(SHEET_WRITERS.keys()),
@@ -444,7 +476,11 @@ def main():
         return
 
     env_vars = load_credentials()
-    service = get_sheets_service(env_vars)
+    # Solo los destinos que siguen en hoja necesitan el cliente de Sheets.
+    # Gastos, fijos y deudas van al worker y no deben exigir esas credenciales.
+    service = None
+    if args.sheet in SHEET_BACKED:
+        service = get_sheets_service(env_vars)
 
     writer = SHEET_WRITERS[args.sheet]
     try:
