@@ -210,9 +210,15 @@ const MATCHERS = [
         template: 'hey_ahorro',
         // Movimientos entre la cuenta Hey y su bolsa de ahorro: mismo dinero,
         // distinto cajón. No es gasto ni ingreso.
+        //
+        // El último caso es una "Confirmación de transferencia desde Hey Banco"
+        // que en realidad mueve dinero de un apartado a la cuenta. Se reconoce
+        // por el concepto de pago, no por el asunto, porque ese mismo asunto
+        // también se usa para transferencias reales a terceros.
         re: new RegExp(
             String.raw`(?:dep[óo]sito\s+a\s+tu\s+ahorro|retiro\s+a\s+tu\s+ahorro|` +
-            String.raw`retiro\s+de\s+tu\s+Ahorro\s+Inmediato)`,
+            String.raw`retiro\s+de\s+tu\s+Ahorro\s+Inmediato|` +
+            String.raw`Concepto\s+de\s+pago:\s*Retiro\s+Ahorro)`,
             'i',
         ),
         build: () => ({ kind: 'internal', instrument: 'cuenta', currency: 'MXN' }),
