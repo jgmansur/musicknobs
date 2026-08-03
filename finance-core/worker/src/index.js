@@ -369,6 +369,39 @@ export default {
                 return json(result, result.error ? 400 : 200);
             }
 
+            if (url.pathname === '/api/hormiga' && request.method === 'GET') {
+                // Se devuelven en el orden de columnas de la hoja para que el
+                // dashboard aplique su propia clasificación sin cambios.
+                const [items, grupos] = await Promise.all([
+                    sql`select to_char(fecha, 'YYYY-MM-DD') as fecha, recibo_id, comercio,
+                               producto_raw, producto_normalizado, categoria, subcategoria,
+                               cantidad, precio_unitario, total_item, forma_pago, recibo_url,
+                               confianza, grupo_producto, hormiga_auto, hormiga_override
+                        from receipt_items order by fecha desc limit 3000`,
+                    sql`select grupo_producto, aliases, hormiga_default, notas,
+                               to_char(updated_at, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as updated_at
+                        from product_groups order by grupo_producto`,
+                ]);
+                return json({ items, grupos });
+            }
+
+            const grupoMatch = url.pathname.match(/^\/api\/hormiga\/grupos\/(.+)$/);
+            if (grupoMatch && request.method === 'PUT') {
+                const nombre = decodeURIComponent(grupoMatch[1]);
+                const b = await request.json().catch(() => ({}));
+                await sql`
+                    insert into product_groups (grupo_producto, aliases, hormiga_default, notas, updated_at)
+                    values (${nombre}, ${b.aliases ?? []}, ${!!b.hormigaDefault}, ${b.notas ?? null}, now())
+                    on conflict (grupo_producto) do update set
+                        hormiga_default = excluded.hormiga_default,
+                        aliases = case when ${b.aliases ?? null}::text[] is null
+                                       then product_groups.aliases else excluded.aliases end,
+                        notas = coalesce(excluded.notas, product_groups.notas),
+                        updated_at = now()
+                `;
+                return json({ ok: true });
+            }
+
             if (url.pathname === '/api/fijos' && request.method === 'GET') {
                 const periodo = (url.searchParams.get('period') ?? new Date().toISOString().slice(0, 7)) + '-01';
                 // El estado de pago vive por periodo, así que no hace falta el

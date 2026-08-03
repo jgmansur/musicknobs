@@ -2643,9 +2643,10 @@ async function dashboard_datosDesdeWorker() {
     if (!bandeja_token()) return null;
     try {
         const periodo = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`;
-        const [mov, fij] = await Promise.all([
+        const [mov, fij, hor] = await Promise.all([
             bandeja_api('/api/movimientos?limite=3000'),
             bandeja_api(`/api/fijos?period=${periodo}`),
+            bandeja_api('/api/hormiga'),
         ]);
         if (!mov?.movimientos || !fij?.fijos) return null;
 
@@ -2679,7 +2680,23 @@ async function dashboard_datosDesdeWorker() {
                 (f.fechas_pago || []).join('|'),
             ];
         });
-        return { logRows, fixedRows, fixedIds };
+        // El clasificador de hormiga de la app espera booleanos como texto y los
+        // alias en una sola cadena, tal como venían de la hoja. Se reproduce ese
+        // formato aquí para no tocar esa lógica, que es delicada.
+        const bool = (v) => (v === true ? 'si' : v === false ? 'no' : '');
+        const receiptItemRows = (hor?.items ?? []).map(i => [
+            i.fecha, i.recibo_id || '', i.comercio || '', i.producto_raw || '',
+            i.producto_normalizado || '', i.categoria || '', i.subcategoria || '',
+            i.cantidad ?? '', i.precio_unitario ?? '', i.total_item ?? '',
+            i.forma_pago || '', i.recibo_url || '', i.confianza || '',
+            i.grupo_producto || '', bool(i.hormiga_auto), bool(i.hormiga_override),
+        ]);
+        const productGroupRows = (hor?.grupos ?? []).map(g => [
+            g.grupo_producto, (g.aliases || []).join(','),
+            g.hormiga_default ? 'si' : 'no', g.notas || '', g.updated_at || '',
+        ]);
+
+        return { logRows, fixedRows, fixedIds, receiptItemRows, productGroupRows };
     } catch (err) {
         console.warn('[Dashboard] finance-core no respondió:', err.message);
         return null;
@@ -2696,11 +2713,8 @@ async function fetchAndProcess() {
         // siguen en la hoja porque todavía no se migran.
         const core = await dashboard_datosDesdeWorker();
         if (core) {
-            const [receiptItemRows, productGroupRows] = await Promise.all([
-                sheetsGet(SPREADSHEET_LOG_ID, `${RECEIPT_ITEMS_SHEET}!A2:P`).catch(() => []),
-                sheetsGet(SPREADSHEET_LOG_ID, `${PRODUCT_GROUPS_SHEET}!A2:E`).catch(() => []),
-            ]);
-            processAndRender(core.logRows, core.fixedRows, receiptItemRows, productGroupRows, core.fixedIds);
+            processAndRender(core.logRows, core.fixedRows, core.receiptItemRows,
+                             core.productGroupRows, core.fixedIds);
             status.innerText = 'Sincronizado ✓'; status.style.color = 'var(--accent-green)';
             return;
         }
@@ -3440,6 +3454,19 @@ window.productGroups_toggleHormiga = async function(encodedGroupName, checked) {
         hormigaPanelState.prevMonthName
     );
     try {
+        // Fuente de verdad: finance-core. La hoja solo se usa si no hay token.
+        if (bandeja_token()) {
+            await bandeja_api(`/api/hormiga/grupos/${encodeURIComponent(groupName)}`, {
+                method: 'PUT',
+                body: JSON.stringify({
+                    hormigaDefault: checked,
+                    aliases: catalogGroup?.aliasesList || [],
+                    notas: existing?.notas || null,
+                }),
+            });
+            return;
+        }
+
         await productGroups_ensureSheet();
         const row = [groupName, aliases, nextRaw, existing?.notas || '', now];
         const saved = productGroups_find(groupName);
