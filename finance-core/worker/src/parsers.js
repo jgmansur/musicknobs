@@ -15,6 +15,8 @@
 export const TRANSACTIONAL_SENDERS = new Set([
     'santander@envio.santander.com.mx',
     'clientes@bbva.mx',
+    'alertas@heybanco.com',
+    'noreply@hey.inc',
 ]);
 
 // Remitentes de marketing, listados explícitamente para documentar por qué se
@@ -25,6 +27,7 @@ export const MARKETING_SENDERS = new Set([
     'miexperiencia@calidad.santander.com.mx',
     'clientes@email.bbva.mx',
     'marketingdir@email.banamex.com',
+    'noreply@conecta.hey.inc',
 ]);
 
 const HTML_ENTITIES = {
@@ -152,9 +155,67 @@ const MATCHERS = [
             cardLast4: m[1],
             instrument: 'cuenta',
             counterparty: `cuenta ****${m[2]}`,
+            counterpartyLast4: m[2],
             amount: parseAmount(m[3]),
             currency: 'MXN',
         }),
+    },
+    {
+        bank: 'hey',
+        template: 'hey_compra',
+        // "La transacción que realizaste con tu Debito Hey con terminación **1884
+        //  fue exitosa. ... Comercio: Canva* 04842-55657800 Sydney
+        //  Cantidad: $149.00 Fecha y hora de la transacción: 08/04/2026 - 13:33 hrs"
+        re: new RegExp(
+            String.raw`transacci[óo]n\s+que\s+realizaste\s+con\s+tu\s+(.+?)\s+con\s+terminaci[óo]n` +
+            String.raw`\s*\**\s*(\d{4})\s+fue\s+exitosa` +
+            String.raw`.*?Comercio:\s*(.+?)\s+Cantidad:\s*${AMOUNT}` +
+            String.raw`(?:.*?Fecha\s+y\s+hora\s+de\s+la\s+transacci[óo]n:\s*` +
+            String.raw`(\d{2}\/\d{2}\/\d{4})\s*-\s*([\d:]+))?`,
+            'i',
+        ),
+        build: (m) => ({
+            kind: 'gasto',
+            instrument: /cr[ée]dito/i.test(m[1]) ? 'credito' : 'debito',
+            cardLast4: m[2],
+            merchant: m[3].replace(/\s+/g, ' ').trim(),
+            amount: parseAmount(m[4]),
+            currency: 'MXN',
+            occurredAt: parseMxDateTime(m[5], m[6]),
+        }),
+    },
+    {
+        bank: 'hey',
+        template: 'hey_spei_recibido',
+        // Hey avisa que llegó dinero pero NO dice cuánto. Se deja pasar sin monto
+        // a propósito: mejor que Jay lo complete en la bandeja a perder 29
+        // entradas de dinero al año.
+        re: new RegExp(
+            String.raw`Recibiste\s+una\s+transferencia\s+nacional\s+SPEI\s+de\s+la\s+cuenta` +
+            String.raw`\s+con\s+terminaci[óo]n\s*\**\s*(\d{4})\s+a\s+tu\s+tarjeta\s+Hey`,
+            'i',
+        ),
+        amountOptional: true,
+        build: (m) => ({
+            kind: 'ingreso',
+            counterparty: `cuenta ****${m[1]}`,
+            counterpartyLast4: m[1],
+            instrument: 'cuenta',
+            currency: 'MXN',
+            amount: null,
+        }),
+    },
+    {
+        bank: 'hey',
+        template: 'hey_ahorro',
+        // Movimientos entre la cuenta Hey y su bolsa de ahorro: mismo dinero,
+        // distinto cajón. No es gasto ni ingreso.
+        re: new RegExp(
+            String.raw`(?:dep[óo]sito\s+a\s+tu\s+ahorro|retiro\s+a\s+tu\s+ahorro|` +
+            String.raw`retiro\s+de\s+tu\s+Ahorro\s+Inmediato)`,
+            'i',
+        ),
+        build: () => ({ kind: 'internal', instrument: 'cuenta', currency: 'MXN' }),
     },
     {
         bank: 'bbva',
@@ -210,6 +271,7 @@ const MATCHERS = [
             merchant: 'Pago de tarjeta de crédito',
             amount: parseAmount(m[1]),
             counterparty: m[2] ? `tarjeta ****${m[2]}` : null,
+            counterpartyLast4: m[2] ?? null,
             instrument: 'cuenta',
             currency: 'MXN',
             occurredAt: parseSpanishDate(m[3], m[4], m[5], m[6]),
@@ -255,8 +317,14 @@ export function parseBankEmail(msg) {
 
     const text = msg.text || htmlToText(msg.html);
 
-    // Aviso de rechazo: no movió dinero.
-    if (/rechazo\s+en\s+tarjeta/i.test(msg.subject || '') || /fondos\s+insuficientes/i.test(text)) {
+    // Aviso de rechazo: no movió dinero. El motivo varía (fondos insuficientes,
+    // parámetros de montos, ...), así que se detecta el rechazo en sí y no la causa.
+    if (
+        /rechazo\s+en\s+tarjeta/i.test(msg.subject || '') ||
+        /(?:fue|ha\s+sido)\s+rechazad[ao]/i.test(text) ||
+        /se\s+identific[óo]\s+un\s+rechazo/i.test(text) ||
+        /fondos\s+insuficientes/i.test(text)
+    ) {
         return { matched: false, reason: 'declined' };
     }
 
@@ -265,7 +333,7 @@ export function parseBankEmail(msg) {
         if (!m) continue;
 
         const parsed = matcher.build(m);
-        if (parsed.kind !== 'internal' && !Number.isFinite(parsed.amount)) {
+        if (!matcher.amountOptional && parsed.kind !== 'internal' && !Number.isFinite(parsed.amount)) {
             // Hizo match la forma pero no el monto: mejor mandarlo a revisión
             // que inventar un número.
             return {

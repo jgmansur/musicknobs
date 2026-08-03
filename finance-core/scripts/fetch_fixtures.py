@@ -26,6 +26,8 @@ OUT = os.path.join(os.path.dirname(HERE), "fixtures")
 SENDERS = [
     "santander@envio.santander.com.mx",
     "clientes@bbva.mx",
+    "alertas@heybanco.com",
+    "noreply@hey.inc",
 ]
 
 

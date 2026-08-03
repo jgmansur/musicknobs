@@ -47,6 +47,13 @@ const CARDS = [
     // TDC Santander. Es la LikeU, confirmado por Jay. Al ser cuenta de crédito,
     // una compra entra negativa (crece la deuda) y la vista la muestra positiva.
     { last4: '0774', account: 'Tarjeta de Crédito LikeU', instrument: 'credito', label: 'TDC LikeU' },
+    // Hey Banco: tarjeta virtual donde Jay concentra las suscripciones. Fondea la
+    // cuenta transfiriendo desde Santander. 0017 es la cuenta y 0025 el ahorro;
+    // ambos apuntan a la misma cuenta porque mover dinero entre ellos no cambia
+    // cuánto tiene.
+    { last4: '1884', account: 'Hey Banco', instrument: 'debito', label: 'Tarjeta virtual Hey' },
+    { last4: '0017', account: 'Hey Banco', instrument: 'cuenta', label: 'Cuenta Hey' },
+    { last4: '0025', account: 'Hey Banco', instrument: 'cuenta', label: 'Ahorro Hey' },
 ];
 
 async function seedCards() {

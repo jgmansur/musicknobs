@@ -31,11 +31,35 @@ export function buildQuery(sinceDate) {
  * La confianza es deliberadamente conservadora: sin tarjeta mapeada nunca
  * pasa de 0.35, para que salte a la vista en la bandeja.
  */
-export function classify(parsed, { cardMap, fixedExpenses }) {
-    const account = parsed.cardLast4 ? cardMap.get(parsed.cardLast4) : null;
+export function classify(parsed, { cardMap, fixedExpenses, bankDefaults = new Map() }) {
+    // Algunos avisos no mencionan tarjeta (el SPEI recibido de Hey solo dice
+    // "a tu tarjeta Hey"), pero el banco basta para saber la cuenta.
+    const account =
+        (parsed.cardLast4 ? cardMap.get(parsed.cardLast4) : null) ??
+        bankDefaults.get(parsed.bank) ??
+        null;
 
     let confidence = 0.35;
     if (account) confidence = parsed.merchant ? 0.9 : 0.7;
+    // Sin monto no se puede aprobar a ciegas: Jay tiene que teclearlo.
+    if (!Number.isFinite(parsed.amount) && parsed.kind !== 'internal') confidence = 0.4;
+
+    // Si el destino también es una cuenta de Jay, esto no es un gasto: es mover
+    // dinero de un bolsillo suyo a otro. Pasa seguido — transfiere de Santander a
+    // Hey para que caigan ahí los pagos de suscripciones. Contarlo como gasto lo
+    // duplicaría, porque el cargo real llega después en la tarjeta Hey.
+    const destino = parsed.counterpartyLast4 ? cardMap.get(parsed.counterpartyLast4) : null;
+    if (destino && account && destino.id !== account.id) {
+        return {
+            accountId: account.id,
+            kind: 'transfer',
+            status: 'pending',
+            transferAccountId: destino.id,
+            fixedExpenseId: null,
+            category: null,
+            confidence: 0.95,
+        };
+    }
 
     let fixedMatch = null;
     if (account && parsed.kind === 'gasto' && Number.isFinite(parsed.amount)) {
@@ -88,12 +112,21 @@ export async function runIngest({ sql, credentials, lookbackDays = DEFAULT_LOOKB
     const stats = { seen: 0, created: 0, skipped: 0, unmatched: 0 };
 
     try {
-        const [cards, fixed] = await Promise.all([
+        const [cards, fixed, accounts] = await Promise.all([
             sql`select last4, account_id from card_map`,
             sql`select id, concepto, categoria, monto, pagos_mes, fechas_pago
                 from fixed_expenses where active`,
+            sql`select id, name from accounts`,
         ]);
         const cardMap = new Map(cards.map((c) => [c.last4, { id: c.account_id }]));
+
+        // Cuenta por defecto de cada banco, para los avisos que no traen tarjeta.
+        const byName = new Map(accounts.map((a) => [a.name, { id: a.id }]));
+        const bankDefaults = new Map(
+            [['santander', 'Santander'], ['bbva', 'BBVA'], ['hey', 'Hey Banco']]
+                .map(([bank, name]) => [bank, byName.get(name)])
+                .filter(([, acc]) => acc),
+        );
 
         const token = await getAccessToken(credentials);
         const since = await resolveSince(sql, lookbackDays);
@@ -115,7 +148,7 @@ export async function runIngest({ sql, credentials, lookbackDays = DEFAULT_LOOKB
                 continue;
             }
 
-            const s = classify(parsed, { cardMap, fixedExpenses: fixed });
+            const s = classify(parsed, { cardMap, fixedExpenses: fixed, bankDefaults });
 
             const inserted = await sql`
                 insert into pending_transactions (
