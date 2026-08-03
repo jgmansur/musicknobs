@@ -1,0 +1,6 @@
+{
+  "name": "finance-core-worker",
+  "private": true,
+  "type": "module",
+  "scripts": { "test": "node --test src/*.test.js" }
+}

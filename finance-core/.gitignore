@@ -1,0 +1,5 @@
+node_modules/
+token_gmail.json
+.env
+.env.local
+__pycache__/
