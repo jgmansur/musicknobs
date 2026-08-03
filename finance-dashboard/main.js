@@ -4244,14 +4244,17 @@ async function gastos_guardar() {
             }
         } else {
             const fechaCreacionNow = new Date().toISOString();
-            await sheetsAppend(SPREADSHEET_LOG_ID, 'Hoja 1!A:I', [[fecha, lugar, concepto, parseSheetValue(monto), tipo, forma, nuevasUrls.join(','), moneda, fechaCreacionNow]]);
-            engramSync('/api/engram/gasto', { fecha, lugar, concepto, monto: parseSheetValue(monto), tipo, forma_pago: forma, recibo: nuevasUrls.join(','), moneda, fuente: 'dashboard' });
-            // Replica en finance-core solo cuando es alta, no edición: una
-            // edición ya tiene su movimiento y volver a mandarlo lo duplicaría.
-            if (!idFila) {
+
+            // Con finance-core activo, el gasto va SOLO ahí. Escribir además a
+            // la hoja la volvería indispensable: al borrarla, el append fallaría
+            // y el gasto ni siquiera llegaría a la base.
+            if (balanceDesdeWorker) {
                 await financeCoreSync({ fecha, lugar, concepto, monto: parseSheetValue(monto),
                                         tipo, forma, recibo: nuevasUrls.join(',') });
+            } else {
+                await sheetsAppend(SPREADSHEET_LOG_ID, 'Hoja 1!A:I', [[fecha, lugar, concepto, parseSheetValue(monto), tipo, forma, nuevasUrls.join(','), moneda, fechaCreacionNow]]);
             }
+            engramSync('/api/engram/gasto', { fecha, lugar, concepto, monto: parseSheetValue(monto), tipo, forma_pago: forma, recibo: nuevasUrls.join(','), moneda, fuente: 'dashboard' });
         }
         status.innerText = nuevasUrls.length
             ? '✅ ' + (idFila ? 'Actualizado con recibo' : 'Guardado con recibo')
@@ -4391,8 +4394,15 @@ window.gastos_borrarRecibo = async function(url, idx) {
         const urls = row.fotos.split(',').map(u => u.trim()).filter(u => u && u !== url);
         row.fotos = urls.join(',');
         // Update the sheet
-        if (gastosState.logSheetId === null) gastosState.logSheetId = await getSheetId(SPREADSHEET_LOG_ID, 'Hoja 1');
-        await sheetsUpdate(SPREADSHEET_LOG_ID, `Hoja 1!G${row.rowNum}`, [[row.fotos]]);
+        if (row.id) {
+            await bandeja_api(`/api/movimientos/${row.id}`, {
+                method: 'PATCH',
+                body: JSON.stringify({ receiptUrl: row.fotos || '' }),
+            });
+        } else {
+            if (gastosState.logSheetId === null) gastosState.logSheetId = await getSheetId(SPREADSHEET_LOG_ID, 'Hoja 1');
+            await sheetsUpdate(SPREADSHEET_LOG_ID, `Hoja 1!G${row.rowNum}`, [[row.fotos]]);
+        }
         // Delete from Drive
         const match = url.match(/[-\w]{25,}/);
         if (match) await driveDeleteFile(match[0]).catch(() => {});
@@ -4891,7 +4901,14 @@ window.fijos_clearLinkGroup = async function(id) {
     if (!item || !(item.linkGroup || '').trim()) return;
     if (!confirm(`¿Quitar el grupo "${item.linkGroup}" de este gasto fijo?`)) return;
     try {
-        await sheetsUpdate(SPREADSHEET_FIXED_ID, `Hoja 1!O${id}:O${id}`, [['']]);
+        if (typeof id === 'string' && id.includes('-')) {
+            await bandeja_api(`/api/fijos/${id}`, {
+                method: 'PATCH',
+                body: JSON.stringify({ linkGroup: null }),
+            });
+        } else {
+            await sheetsUpdate(SPREADSHEET_FIXED_ID, `Hoja 1!O${id}:O${id}`, [['']]);
+        }
         item.linkGroup = '';
         fijos_aplicarFiltros();
         showToast('✅ Grupo desasignado');
