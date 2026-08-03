@@ -44,6 +44,46 @@ const AI_MIRROR_SYNC_MAX_WAIT_MS = 5 * 60_000;
 // =============================================
 // ENGRAM v2 SYNC (fire-and-forget — never blocks UI)
 // =============================================
+
+/**
+ * Replica un movimiento en finance-core (Supabase), la fuente de verdad de los
+ * saldos.
+ *
+ * A diferencia de engramSync, esto NO es fire-and-forget: si falla, el saldo
+ * queda mal y hay que enterarse. Se avisa, no se traga el error.
+ */
+async function financeCoreSync({ fecha, lugar, concepto, monto, tipo, forma, recibo, source = 'manual' }) {
+    if (!balanceDesdeWorker || !bandeja_token()) return;
+
+    const cuenta = balanceAccounts.find(a =>
+        balance_getAccountMatchKeys(a).includes(balance_normalizePaymentKey(forma)));
+    if (!cuenta) {
+        alert(`El movimiento se guardó, pero "${forma}" no existe como cuenta en finance-core, ` +
+              'así que el saldo no se movió.');
+        return;
+    }
+    try {
+        await bandeja_api('/api/movimientos', {
+            method: 'POST',
+            body: JSON.stringify({
+                accountId: cuenta.id,
+                amount: Math.abs(Number(monto)),
+                kind: (tipo || '').toLowerCase().startsWith('ingreso') ? 'ingreso' : 'gasto',
+                occurredAt: fecha ? `${fecha}T12:00:00-06:00` : undefined,
+                merchant: lugar || null,
+                description: concepto || null,
+                receiptUrl: recibo || null,
+                source,
+            }),
+        });
+        await balance_loadFromWorker();
+        balance_updateKpi?.();
+    } catch (err) {
+        alert(`El movimiento se guardó, pero no llegó a finance-core: ${err.message}\n` +
+              'El saldo puede quedar desfasado hasta que se reintente.');
+    }
+}
+
 function engramSync(endpoint, payload) {
     fetch(`${ENGRAM_API_BASE}${endpoint}`, {
         method: 'POST',
@@ -890,6 +930,10 @@ async function balance_refreshInvestmentRates(force = false) {
 }
 
 let balanceAccounts   = [];
+/* Los saldos de finance-core ya vienen derivados de los movimientos, así que
+   el ajuste que la app calculaba sobre la hoja de Gastos sobra. Aplicarlo
+   encima duplicaría cada gasto. */
+let balanceDesdeWorker = false;
 let balanceEditingId  = null;
 let balancePendingFixed = 0; // Set by dashboard when fixed expenses load
 let balancePendingFixedIncome = 0; // Unpaid fixed ingresos pending this month
@@ -1079,6 +1123,9 @@ function balance_syncAccountLogAnchors() {
 }
 
 function balance_getAccountLogAdjustmentMxn(acc) {
+    // El saldo de finance-core ya incluye todos los movimientos. Sumarle el
+    // ajuste calculado sobre la hoja de Gastos duplicaría cada gasto.
+    if (balanceDesdeWorker) return 0;
     const idKey = String(acc.id);
     const total = Number(balanceAccountLogTotals[idKey] || 0);
     const anchor = Number(balanceAccountLogAnchor[idKey]);
@@ -1143,7 +1190,53 @@ function balance_getOrCreateSheet() {
     return Promise.resolve(SALDOS_SHEET_ID);
 }
 
+/**
+ * Carga las cuentas desde finance-core (Supabase), la fuente de verdad.
+ * Devuelve false si no hay token o el worker no responde, para que quien llama
+ * caiga a la hoja de Google mientras dure la migración.
+ */
+async function balance_loadFromWorker() {
+    if (!bandeja_token()) return false;
+    try {
+        const { balances } = await bandeja_api('/api/balances');
+        if (!balances?.length) return false;
+
+        balanceAccounts = balances.map(b => balance_normalizeAccount({
+            id: b.id,
+            name: b.name,
+            // display_balance ya trae el signo que Jay espera leer: en crédito,
+            // la deuda es positiva.
+            balance: Number(b.display_balance),
+            type: b.type,
+            hidden: b.hidden,
+            creditLimit: Number(b.credit_limit),
+            creditLimitVisible: b.credit_limit_visible,
+            currency: b.currency,
+            investmentType: b.investment_type,
+            customAnnualRate: Number(b.custom_annual_rate),
+            bitcoinInitialMxn: Number(b.bitcoin_initial_mxn),
+        }));
+        balanceDesdeWorker = true;
+        localStorage.setItem('finance_accounts_v1', JSON.stringify(balanceAccounts));
+        debugUpdate({ load: `finance-core (${balanceAccounts.length})` });
+        return true;
+    } catch (err) {
+        console.warn('[Saldos] finance-core no respondió:', err.message);
+        return false;
+    }
+}
+
 async function balance_loadAccounts() {
+    // Fuente de verdad: finance-core. La hoja queda solo como respaldo mientras
+    // se termina de migrar el resto de las pestañas.
+    if (await balance_loadFromWorker()) {
+        balance_refreshUsdMxnRate();
+        balance_refreshBtcMxnRate();
+        balance_refreshInvestmentRates();
+        return;
+    }
+    balanceDesdeWorker = false;
+
     if (!accessToken) {
         try {
             const raw = localStorage.getItem('finance_accounts_v1');
@@ -1485,7 +1578,8 @@ function balance_renderPanel() {
     list.querySelectorAll('.acc-credit-limit-btn').forEach(btn =>
         btn.addEventListener('click', () => balance_toggleCreditLimitVisibility(parseInt(btn.dataset.id))));
     list.querySelectorAll('.acc-reconcile-btn').forEach(btn =>
-        btn.addEventListener('click', () => balance_openReconcile(parseInt(btn.dataset.id))));
+        // El id puede ser un UUID de finance-core, así que NO se parsea a número.
+        btn.addEventListener('click', () => balance_openReconcile(btn.dataset.id)));
 }
 
 // ── Panel open/close ─────────────────────────────────────
@@ -1656,6 +1750,23 @@ async function balance_openReconcile(id) {
 
     // Update base balance
     acc.balance = newBalance;
+
+    // Con finance-core la reconciliación la hace el servidor: reancla el saldo
+    // y a partir de ahí vuelve a derivarlo de los movimientos.
+    if (balanceDesdeWorker) {
+        try {
+            await bandeja_api(`/api/accounts/${acc.id}/reconcile`, {
+                method: 'POST',
+                body: JSON.stringify({ balance: newBalance }),
+            });
+            await balance_loadFromWorker();
+            balance_renderPanel();
+            balance_updateKpi();
+        } catch (err) {
+            alert(`No se pudo ajustar el saldo: ${err.message}`);
+        }
+        return;
+    }
 
     // Sync anchor → delta becomes 0, so displayed = newBalance exactly
     const idKey = String(acc.id);
@@ -3945,6 +4056,12 @@ async function gastos_guardar() {
             const fechaCreacionNow = new Date().toISOString();
             await sheetsAppend(SPREADSHEET_LOG_ID, 'Hoja 1!A:I', [[fecha, lugar, concepto, parseSheetValue(monto), tipo, forma, nuevasUrls.join(','), moneda, fechaCreacionNow]]);
             engramSync('/api/engram/gasto', { fecha, lugar, concepto, monto: parseSheetValue(monto), tipo, forma_pago: forma, recibo: nuevasUrls.join(','), moneda, fuente: 'dashboard' });
+            // Replica en finance-core solo cuando es alta, no edición: una
+            // edición ya tiene su movimiento y volver a mandarlo lo duplicaría.
+            if (!idFila) {
+                await financeCoreSync({ fecha, lugar, concepto, monto: parseSheetValue(monto),
+                                        tipo, forma, recibo: nuevasUrls.join(',') });
+            }
         }
         status.innerText = nuevasUrls.length
             ? '✅ ' + (idFila ? 'Actualizado con recibo' : 'Guardado con recibo')

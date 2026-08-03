@@ -232,11 +232,73 @@ export default {
             }
 
             if (url.pathname === '/api/balances' && request.method === 'GET') {
+                // Se devuelven TODOS los campos que el dashboard necesita para
+                // pintar sus tarjetas, no solo el saldo: así puede dejar de leer
+                // la hoja por completo.
                 const rows = await sql`
-                    select name, type, currency, display_balance, last_movement_at
-                    from account_balances where not hidden order by name
+                    select a.id, a.legacy_id, a.name, a.type, a.currency, a.hidden,
+                           a.credit_limit, a.credit_limit_visible, a.investment_type,
+                           a.custom_annual_rate, a.bitcoin_initial_mxn,
+                           b.balance, b.display_balance, b.movements, b.last_movement_at
+                    from accounts a
+                    join account_balances b on b.id = a.id
+                    order by a.name
                 `;
                 return json({ balances: rows });
+            }
+
+            const reconcileMatch = url.pathname.match(/^\/api\/accounts\/([\w-]+)\/reconcile$/);
+            if (reconcileMatch && request.method === 'POST') {
+                const body = await request.json().catch(() => ({}));
+                const real = Number(body.balance);
+                if (!Number.isFinite(real)) return json({ error: 'saldo inválido' }, 400);
+
+                const [acc] = await sql`
+                    select id, name, type from accounts where id = ${reconcileMatch[1]}
+                `;
+                if (!acc) return json({ error: 'cuenta no encontrada' }, 404);
+
+                // En crédito el usuario dicta la deuda como positiva; el signo
+                // interno es negativo.
+                const guardado = acc.type === 'credit' ? -Math.abs(real) : real;
+                await sql`
+                    update accounts
+                    set opening_balance = ${guardado}, opening_balance_at = now()
+                    where id = ${acc.id}
+                `;
+                const [b] = await sql`
+                    select display_balance from account_balances where id = ${acc.id}
+                `;
+                return json({ ok: true, name: acc.name, balance: b.display_balance });
+            }
+
+            if (url.pathname === '/api/movimientos' && request.method === 'POST') {
+                const b = await request.json().catch(() => ({}));
+                const magnitude = Math.abs(Number(b.amount));
+                if (!b.accountId || !Number.isFinite(magnitude) || magnitude === 0) {
+                    return json({ error: 'falta cuenta o monto' }, 400);
+                }
+                const kind = b.kind === 'ingreso' ? 'ingreso' : 'gasto';
+                const [t] = await sql`
+                    insert into transactions (
+                        occurred_at, account_id, amount, kind, merchant, description,
+                        category, receipt_url, source, source_ref
+                    ) values (
+                        ${b.occurredAt ?? new Date()}, ${b.accountId},
+                        ${kind === 'ingreso' ? magnitude : -magnitude}, ${kind},
+                        ${b.merchant ?? null}, ${b.description ?? null},
+                        ${b.category ?? null}, ${b.receiptUrl ?? null},
+                        ${b.source ?? 'manual'}, ${b.sourceRef ?? null}
+                    )
+                    on conflict (source, source_ref) where source_ref is not null
+                    do nothing
+                    returning id
+                `;
+                if (!t) return json({ error: 'ese movimiento ya estaba registrado' }, 409);
+                const [bal] = await sql`
+                    select display_balance from account_balances where id = ${b.accountId}
+                `;
+                return json({ ok: true, id: t.id, balance: bal?.display_balance });
             }
 
             const approveMatch = url.pathname.match(/^\/api\/pending\/([\w-]+)\/approve$/);

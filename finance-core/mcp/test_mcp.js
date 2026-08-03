@@ -64,13 +64,21 @@ const sinConcepto = await call('finanzas_registrar_movimiento', {
 });
 check('exige concepto', /Falta el concepto/.test(sinConcepto));
 
+// Ojo: esta llamada SÍ escribe. La regla avisa pero no bloquea, porque un gasto
+// real puede tener un concepto que suene a traspaso. Hay que limpiarla.
+const CONCEPTO_SOSPECHA = 'PRUEBA MCP traspaso a Hey para fondear';
 const sospecha = await call('finanzas_registrar_movimiento', {
-    tipo: 'gasto', monto: 1, cuenta: 'Santander', concepto: 'traspaso a Hey para fondear',
+    tipo: 'gasto', monto: 1, cuenta: 'Santander', concepto: CONCEPTO_SOSPECHA,
 });
 check('avisa cuando huele a transferencia', /Aviso:.*transferencia/s.test(sospecha));
 
 console.log('\nESCRITURA (se revierte)\n');
 const sql = postgres(envValue('SUPABASE_DB_URL'), { prepare: false, max: 2 });
+
+const borradas = await sql`
+    delete from transactions where description = ${CONCEPTO_SOSPECHA} returning id
+`;
+check('la prueba del aviso quedó limpia', borradas.length === 1);
 const saldoDe = async (n) => {
     const [r] = await sql`select balance from account_balances where name = ${n}`;
     return Number(r.balance);
