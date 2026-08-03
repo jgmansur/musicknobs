@@ -24,7 +24,7 @@ const DEUDAS_RECIBOS_FOLDER_ID = '157KDn-vbkuHH1L8xbaJBGz-oKmT7p5a9';
 const SPREADSHEET_RSM_ID = '14VsoPHGNTSUSbzMOqGWs2qSL-pGywPgjUoHD3MqIJfo'; // Recibos Salud Mariel
 const SALDOS_SHEET_ID    = '1-cX_qxld3ioSpcO9lEBPg90Db6AyK7SczpJTvj7rw4U'; // Saldos (fuente de verdad — Claude accede vía service account)
 const RSM_FOLDER_ID = '1-ZfeWQ-Rmh-Wm2WMCkULkN6MQWBuxYnj';
-const APP_VERSION  = 'v8.5.0';
+const APP_VERSION  = 'v8.6.0';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -8693,104 +8693,57 @@ async function estudio_cargarVista() {
 }
 
 async function estudio_ensureSheets() {
-    await autos_ensureSheet('EstudioInventario', ESTUDIO_INVENTARIO_HEADERS);
-    await autos_ensureSheet('EstudioPlugins', ESTUDIO_PLUGIN_HEADERS);
+    // Inventario y plugins viven en Supabase; ya no hay pestañas que crear.
 }
 
 async function estudio_loadData() {
-    const [inventarioRows, pluginRows] = await Promise.all([
-        sheetsGet(SPREADSHEET_ESTUDIO_ID, 'EstudioInventario!A2:P').catch(() => []),
-        sheetsGet(SPREADSHEET_ESTUDIO_ID, 'EstudioPlugins!A2:O').catch(() => []),
-    ]);
+    // Inventario y plugins comparten tabla en Supabase (studio_gear) y se
+    // separan por `tipo`, porque tienen casi las mismas columnas.
+    const { items } = await bandeja_api('/api/studio');
+    const hoy = new Date().toLocaleDateString('en-CA');
 
-    if (!inventarioRows.length && !pluginRows.length) {
-        await estudio_seedInitialData();
-        return estudio_loadData();
-    }
-
-    estudioState.inventario = inventarioRows.map((r) => ({
-        id: (r[0] || '').toString(),
-        name: (r[1] || '').toString(),
-        cantidad: Math.max(1, parseInt(r[2], 10) || 1),
-        precioUsd: parseSheetValue(r[3]),
-        categoria: (r[4] || '').toString(),
-        anioCompra: (r[5] || '').toString(),
-        foto: (r[6] || '').toString(),
-        marca: (r[7] || '').toString(),
-        modelo: (r[8] || '').toString(),
-        site: (r[9] || '').toString(),
-        serial: (r[10] || '').toString(),
-        account: (r[11] || '').toString(),
-        notas: (r[12] || '').toString(),
-        fechaCompra: normalizeDateString(r[13] || new Date().toLocaleDateString('en-CA')),
-        logMarker: (r[14] || '').toString(),
-        formaPago: (r[15] || '').toString(),
+    estudioState.inventario = (items || []).filter(g => g.tipo === 'equipo').map((g) => ({
+        id: g.legacy_key || '',
+        name: g.name || '',
+        cantidad: Math.max(1, parseInt(g.cantidad, 10) || 1),
+        precioUsd: parseSheetValue(g.precio_usd),
+        categoria: g.categoria || '',
+        anioCompra: g.anio_compra || '',
+        foto: g.foto || '',
+        marca: g.marca || '',
+        modelo: g.modelo || '',
+        site: g.site || '',
+        serial: g.serial || '',
+        account: g.account || '',
+        notas: g.notas || '',
+        fechaCompra: normalizeDateString(g.fecha_compra || hoy),
+        logMarker: g.transaction_id || '',
+        formaPago: g.forma_pago || '',
     })).filter((x) => x.id && x.name);
 
-    estudioState.plugins = pluginRows.map((r) => ({
-        id: (r[0] || '').toString(),
-        name: (r[1] || '').toString(),
-        marca: (r[2] || '').toString(),
-        descripcion: (r[3] || '').toString(),
-        precioUsd: parseSheetValue(r[4]),
-        site: (r[5] || '').toString(),
-        licencia: (r[6] || '').toString(),
-        serial: (r[7] || '').toString(),
-        account: (r[8] || '').toString(),
-        foto: (r[9] || '').toString(),
-        fechaCompra: normalizeDateString(r[10] || new Date().toLocaleDateString('en-CA')),
-        logMarker: (r[11] || '').toString(),
-        currency: parseCurrencyCode((r[12] || 'USD').toString().toUpperCase() === 'MXN' ? 'MXN' : 'USD'),
-        categoria: (r[13] || r[3] || '').toString(),
-        formaPago: (r[14] || '').toString(),
+    estudioState.plugins = (items || []).filter(g => g.tipo === 'plugin').map((g) => ({
+        id: g.legacy_key || '',
+        name: g.name || '',
+        marca: g.marca || '',
+        descripcion: g.descripcion || '',
+        precioUsd: parseSheetValue(g.precio_usd),
+        site: g.site || '',
+        licencia: g.licencia || '',
+        serial: g.serial || '',
+        account: g.account || '',
+        foto: g.foto || '',
+        fechaCompra: normalizeDateString(g.fecha_compra || hoy),
+        logMarker: g.transaction_id || '',
+        currency: parseCurrencyCode((g.currency || 'USD').toUpperCase() === 'MXN' ? 'MXN' : 'USD'),
+        categoria: g.categoria || g.descripcion || '',
+        formaPago: g.forma_pago || '',
     })).filter((x) => x.id && x.name);
 
     estudioState.loaded = true;
 }
 
-async function estudio_seedInitialData() {
-    const nowDate = normalizeDateString(new Date().toLocaleDateString('en-CA'));
-    const inventario = ESTUDIO_SEED_INVENTARIO.map((r, i) => ({
-        id: `inv-${Date.now()}-${i + 1}`,
-        name: r[0],
-        cantidad: r[1],
-        precioUsd: r[2],
-        categoria: r[3],
-        anioCompra: r[4],
-        foto: r[5],
-        marca: r[6],
-        modelo: r[7],
-        site: r[8],
-        serial: r[9],
-        account: r[10],
-        notas: r[11],
-        fechaCompra: nowDate,
-        logMarker: '',
-    }));
-    const plugins = ESTUDIO_SEED_PLUGINS.map((r, i) => ({
-        id: `plg-${Date.now()}-${i + 1}`,
-        name: r[0],
-        marca: r[1],
-        descripcion: r[2],
-        precioUsd: r[3],
-        site: r[4],
-        licencia: r[5],
-        serial: r[6],
-        account: r[7],
-        foto: r[8],
-        fechaCompra: nowDate,
-        logMarker: '',
-        currency: 'USD',
-        categoria: (r[13] || r[2] || '').toString(),
-    }));
-    await sheetsUpdate(SPREADSHEET_ESTUDIO_ID, `EstudioInventario!A2:O${1 + inventario.length}`, inventario.map((x) => [
-        x.id, x.name, x.cantidad, x.precioUsd, x.categoria, x.anioCompra, x.foto, x.marca, x.modelo, x.site,
-        x.serial, x.account, x.notas, x.fechaCompra, x.logMarker,
-    ]));
-    await sheetsUpdate(SPREADSHEET_ESTUDIO_ID, `EstudioPlugins!A2:N${1 + plugins.length}`, plugins.map((x) => [
-        x.id, x.name, x.marca, x.descripcion, x.precioUsd, x.site, x.licencia, x.serial, x.account, x.foto, x.fechaCompra, x.logMarker, x.currency, x.categoria,
-    ]));
-}
+// estudio_seedInitialData se eliminó al migrar a Supabase: sembraba el
+// inventario reescribiendo las pestañas, y los datos ya viven en la base.
 
 function estudio_uniqueCategories(items, key) {
     return [...new Set(items.map((x) => (x?.[key] || '').toString().trim()).filter(Boolean))]
@@ -9084,14 +9037,44 @@ async function estudio_saveInventario() {
     showToast('✅ Equipo guardado');
 }
 
-async function estudio_saveInventarioSheet() {
-    await sheetsClear(SPREADSHEET_ESTUDIO_ID, 'EstudioInventario!A2:P');
-    if (!estudioState.inventario.length) return;
-    await sheetsUpdate(SPREADSHEET_ESTUDIO_ID, `EstudioInventario!A2:P${1 + estudioState.inventario.length}`, estudioState.inventario.map((x) => [
-        x.id, x.name, x.cantidad, x.precioUsd, x.categoria, x.anioCompra, x.foto, x.marca, x.modelo, x.site,
-        x.serial, x.account, x.notas, x.fechaCompra, x.logMarker || '', x.formaPago || '',
-    ]));
+/**
+ * Inventario y plugins comparten tabla, y el PUT reemplaza el conjunto
+ * completo. Por eso SIEMPRE se mandan las dos listas juntas: enviar solo una
+ * borraría la otra.
+ */
+async function estudio_saveAll() {
+    const equipos = estudioState.inventario.map((x) => ({
+        legacyKey: x.id, tipo: 'equipo', name: x.name,
+        cantidad: Math.max(1, parseInt(x.cantidad, 10) || 1),
+        precioUsd: parseSheetValue(x.precioUsd) || null,
+        currency: 'USD',
+        categoria: x.categoria, anioCompra: x.anioCompra, foto: x.foto,
+        marca: x.marca, modelo: x.modelo, site: x.site, serial: x.serial,
+        account: x.account, notas: x.notas,
+        fechaCompra: x.fechaCompra || null,
+        formaPago: x.formaPago || '',
+        transactionId: gastoLigado_esId(x.logMarker) ? x.logMarker : null,
+    }));
+    const plugins = estudioState.plugins.map((x) => ({
+        legacyKey: x.id, tipo: 'plugin', name: x.name,
+        cantidad: 1,
+        precioUsd: parseSheetValue(x.precioUsd) || null,
+        currency: x.currency || 'USD',
+        marca: x.marca, descripcion: x.descripcion, categoria: x.categoria,
+        site: x.site, licencia: x.licencia, serial: x.serial,
+        account: x.account, foto: x.foto,
+        fechaCompra: x.fechaCompra || null,
+        formaPago: x.formaPago || '',
+        transactionId: gastoLigado_esId(x.logMarker) ? x.logMarker : null,
+    }));
+    await bandeja_api('/api/studio', {
+        method: 'PUT',
+        body: JSON.stringify({ items: [...equipos, ...plugins] }),
+    });
 }
+
+// Se conservan los dos nombres viejos para no tocar sus ~10 llamadas.
+async function estudio_saveInventarioSheet() { await estudio_saveAll(); }
 
 function estudio_openPluginSheet(id) {
     const item = estudioState.plugins.find((x) => x.id === id) || null;
@@ -9165,13 +9148,7 @@ async function estudio_savePlugin() {
     showToast('✅ Plugin guardado');
 }
 
-async function estudio_savePluginsSheet() {
-    await sheetsClear(SPREADSHEET_ESTUDIO_ID, 'EstudioPlugins!A2:O');
-    if (!estudioState.plugins.length) return;
-    await sheetsUpdate(SPREADSHEET_ESTUDIO_ID, `EstudioPlugins!A2:O${1 + estudioState.plugins.length}`, estudioState.plugins.map((x) => [
-        x.id, x.name, x.marca, x.descripcion, x.precioUsd, x.site, x.licencia, x.serial, x.account, x.foto, x.fechaCompra, x.logMarker || '', x.currency || 'USD', x.categoria || '', x.formaPago || '',
-    ]));
-}
+async function estudio_savePluginsSheet() { await estudio_saveAll(); }
 
 function estudio_getInventarioMarker(id) {
     return `ESTUDIOLOG#INV#${id}`;
@@ -15729,20 +15706,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // ══════════════════════════════════════════════════════════════════════════
 // RECETAS MÉDICAS
-// Archivo médico de la familia. Vive en el workbook de Deudas, junto a
-// Documentos/Estudio/Pelo: es un catálogo, no toca dinero, y ese workbook no
-// se migró ni se va a borrar. Las fotos van a la MISMA carpeta de Drive que
-// los recibos ('Jay App Recibos'), vía autos_uploadFirstFile.
+// Archivo médico de la familia. Los datos viven en Supabase (tabla
+// prescriptions) y las fotos en la MISMA carpeta de Drive que los recibos
+// ('Jay App Recibos'), vía autos_uploadFirstFile.
 // ══════════════════════════════════════════════════════════════════════════
 
-const RECETAS_SHEET = 'RecetasMedicas';
-const RECETAS_HEADERS = [
-    'id', 'member', 'fecha', 'doctor', 'especialidad', 'diagnostico',
-    'medicamentos', 'indicaciones', 'proximaCita', 'vigenciaHasta',
-    'fotoUrl', 'driveFileId', 'fotoUrl2', 'driveFileId2',
-    'reciboUrl', 'reciboFileId', 'montoConsulta', 'formaPago', 'movimientoId',
-    'notas', 'createdAt', 'updatedAt',
-];
 
 /** El costo de la consulta SÍ es dinero, así que no vive en la hoja: se manda a
  *  Supabase como movimiento normal. `sourceRef` lo hace idempotente (el worker
@@ -15752,7 +15720,6 @@ const RECETAS_MOV_SOURCE = 'receta';
 
 const recetasState = {
     items: [],
-    headers: RECETAS_HEADERS.slice(),
     selectedMember: 'all',
     search: '',
     meds: [],   // medicamentos en edición
@@ -15786,7 +15753,6 @@ function recetas_bindEvents() {
 
 async function recetas_cargarVista() {
     try {
-        await autos_ensureSheet(RECETAS_SHEET, RECETAS_HEADERS);
         await recetas_loadData();
         recetasState.loaded = true;
         recetas_render();
@@ -15797,41 +15763,28 @@ async function recetas_cargarVista() {
 }
 
 async function recetas_loadData() {
-    const head = await sheetsGet(SPREADSHEET_AUTOS_ID, `${RECETAS_SHEET}!A1:AZ1`).catch(() => []);
-    const headers = (head[0] && head[0].length)
-        ? head[0].map((x) => (x || '').toString().trim())
-        : RECETAS_HEADERS.slice();
-    recetasState.headers = headers;
-    const map = autos_headersToMap(headers);
-    const get = (row, key, fallback = '') => {
-        const idx = map[key];
-        return idx === undefined ? fallback : (row[idx] ?? fallback);
-    };
-    const rows = await sheetsGet(SPREADSHEET_AUTOS_ID, `${RECETAS_SHEET}!A2:AZ`).catch(() => []);
-    recetasState.items = rows.map((row) => ({
-        id: (get(row, 'id') || '').toString(),
-        member: (get(row, 'member', 'yo') || 'yo').toString(),
-        fecha: (get(row, 'fecha') || '').toString(),
-        doctor: (get(row, 'doctor') || '').toString(),
-        especialidad: (get(row, 'especialidad') || '').toString(),
-        diagnostico: (get(row, 'diagnostico') || '').toString(),
-        medicamentos: recetas_parseMeds(get(row, 'medicamentos')),
-        indicaciones: (get(row, 'indicaciones') || '').toString(),
-        proximaCita: (get(row, 'proximaCita') || '').toString(),
-        vigenciaHasta: (get(row, 'vigenciaHasta') || '').toString(),
-        fotoUrl: (get(row, 'fotoUrl') || '').toString(),
-        driveFileId: (get(row, 'driveFileId') || '').toString(),
-        fotoUrl2: (get(row, 'fotoUrl2') || '').toString(),
-        driveFileId2: (get(row, 'driveFileId2') || '').toString(),
-        reciboUrl: (get(row, 'reciboUrl') || '').toString(),
-        reciboFileId: (get(row, 'reciboFileId') || '').toString(),
-        montoConsulta: (get(row, 'montoConsulta') || '').toString(),
-        formaPago: (get(row, 'formaPago') || '').toString(),
-        movimientoId: (get(row, 'movimientoId') || '').toString(),
-        notas: (get(row, 'notas') || '').toString(),
-        createdAt: (get(row, 'createdAt') || '').toString(),
-        updatedAt: (get(row, 'updatedAt') || '').toString(),
-    })).filter((r) => r.id || r.doctor || r.diagnostico);
+    const { items } = await bandeja_api('/api/prescriptions');
+    recetasState.items = (items || []).map((r) => ({
+        id: r.legacy_key || '',
+        member: r.member || 'yo',
+        fecha: r.fecha || '',
+        doctor: r.doctor || '',
+        especialidad: r.especialidad || '',
+        diagnostico: r.diagnostico || '',
+        medicamentos: Array.isArray(r.medicamentos) ? r.medicamentos : [],
+        indicaciones: r.indicaciones || '',
+        proximaCita: r.proxima_cita || '',
+        vigenciaHasta: r.vigencia_hasta || '',
+        fotoUrl: r.foto_url || '',
+        fotoUrl2: r.foto_url_2 || '',
+        reciboUrl: r.recibo_url || '',
+        montoConsulta: r.monto_consulta ?? '',
+        formaPago: r.forma_pago || '',
+        movimientoId: r.transaction_id || '',
+        notas: r.notas || '',
+        createdAt: r.created_at || '',
+        updatedAt: r.updated_at || '',
+    }));
 }
 
 /** Los medicamentos viajan como JSON en una sola celda: son una lista de
@@ -15849,44 +15802,31 @@ function recetas_parseMeds(raw) {
 }
 
 async function recetas_saveRows() {
-    const headers = RECETAS_HEADERS.slice();
-    recetasState.headers = headers;
-    const letter = autos_colLetter(headers.length);
-    await sheetsUpdate(SPREADSHEET_AUTOS_ID, `${RECETAS_SHEET}!A1:${letter}1`, [headers]);
-    const rows = recetasState.items
-        .slice()
-        .sort((a, b) => (b.fecha || '').localeCompare(a.fecha || ''))
-        .map((r) => {
-            const campos = {
-                id: r.id || '',
-                member: r.member || '',
-                fecha: r.fecha || '',
-                doctor: r.doctor || '',
-                especialidad: r.especialidad || '',
-                diagnostico: r.diagnostico || '',
-                medicamentos: JSON.stringify(r.medicamentos || []),
-                indicaciones: r.indicaciones || '',
-                proximaCita: r.proximaCita || '',
-                vigenciaHasta: r.vigenciaHasta || '',
-                fotoUrl: r.fotoUrl || '',
-                driveFileId: r.driveFileId || '',
-                fotoUrl2: r.fotoUrl2 || '',
-                driveFileId2: r.driveFileId2 || '',
-                reciboUrl: r.reciboUrl || '',
-                reciboFileId: r.reciboFileId || '',
-                montoConsulta: r.montoConsulta || '',
-                formaPago: r.formaPago || '',
-                movimientoId: r.movimientoId || '',
-                notas: r.notas || '',
-                createdAt: r.createdAt || '',
-                updatedAt: r.updatedAt || '',
-            };
-            return headers.map((h) => campos[h] ?? '');
-        });
-    if (rows.length) {
-        await sheetsUpdate(SPREADSHEET_AUTOS_ID, `${RECETAS_SHEET}!A2:${letter}${1 + rows.length}`, rows);
-    }
-    await sheetsClear(SPREADSHEET_AUTOS_ID, `${RECETAS_SHEET}!A${2 + rows.length}:AZ`);
+    // El PUT reemplaza el conjunto completo, igual que reescribir la pestaña.
+    await bandeja_api('/api/prescriptions', {
+        method: 'PUT',
+        body: JSON.stringify({
+            items: recetasState.items.map((r) => ({
+                legacyKey: r.id,
+                member: r.member,
+                fecha: r.fecha || null,
+                doctor: r.doctor,
+                especialidad: r.especialidad,
+                diagnostico: r.diagnostico,
+                medicamentos: r.medicamentos || [],
+                indicaciones: r.indicaciones,
+                proximaCita: r.proximaCita || null,
+                vigenciaHasta: r.vigenciaHasta || null,
+                notas: r.notas,
+                fotoUrl: r.fotoUrl,
+                fotoUrl2: r.fotoUrl2,
+                reciboUrl: r.reciboUrl,
+                montoConsulta: parseSheetValue(r.montoConsulta) || null,
+                formaPago: r.formaPago,
+                transactionId: gastoLigado_esId(r.movimientoId) ? r.movimientoId : null,
+            })),
+        }),
+    });
 }
 
 // ══════════════════════════════════════════════════════════════════════════
