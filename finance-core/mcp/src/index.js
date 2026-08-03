@@ -24,6 +24,7 @@ import {
 // exactamente lo mismo venga de la app o de un asistente.
 import { aprobarPendiente, borrarMovimiento } from '../../shared/movimientos.js';
 import { categoriaPara, aprenderReglas, normalizar } from '../../shared/categorias.js';
+import { lugarPara, sinCatalogar } from '../../shared/lugares.js';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ENV = join(HERE, '..', '..', '.env');
@@ -1103,6 +1104,95 @@ server.tool(
                   + '\n\nSuelen ser compras con Apple Pay de BBVA: ese banco no manda '
                   + 'aviso de compra, así que el ticket es el único registro.'
                 : ''),
+        );
+    },
+);
+
+
+// ---------------------------------------------------------- Catálogo de lugares
+
+server.tool(
+    'finanzas_lugares',
+    'Catálogo del campo "Lugar". Es cerrado a propósito: como texto libre había '
+    + '274 valores para muchos menos lugares reales y no se podía agrupar.',
+    {},
+    async () => {
+        const rows = await sql`
+            select p.nombre, p.tipo, p.categoria, p.aliases,
+                   (select count(*)::int from transactions t where t.merchant = p.nombre) as usos
+            from places p order by p.tipo, p.nombre
+        `;
+        return texto(
+            `${rows.length} lugares:\n` + rows.map((r) =>
+                `  ${r.nombre.padEnd(20)} [${r.tipo}]${r.categoria ? ` → ${r.categoria}` : ''}`
+                + `  ${r.usos} movs`
+                + (r.aliases?.length ? `\n      alias: ${r.aliases.join(', ')}` : '')).join('\n'),
+        );
+    },
+);
+
+server.tool(
+    'finanzas_crear_lugar',
+    'Da de alta un lugar y normaliza hacia atrás los movimientos que le correspondan.',
+    {
+        nombre: z.string().describe('Nombre canónico, como quieres verlo en los reportes'),
+        aliases: z.array(z.string()).default([])
+            .describe('Fragmentos que manda el banco, ej. ["oxxo", "oxxogrand"]'),
+        tipo: z.enum(['comercio', 'persona', 'servicio', 'marcador']).default('comercio'),
+        categoria: z.string().optional().describe('Categoría por omisión de sus gastos'),
+        dry_run: z.boolean().default(false),
+    },
+    async ({ nombre, aliases, tipo, categoria, dry_run }) => {
+        const candidato = { nombre, aliases };
+        const movs = await sql`
+            select id, merchant from transactions where merchant is not null
+        `;
+        const afectados = movs.filter((m) => lugarPara(m.merchant, [candidato]));
+
+        if (dry_run) {
+            const ejemplos = [...new Set(afectados.map((m) => m.merchant))].slice(0, 8);
+            return texto(
+                `Simulación: "${nombre}" absorbería ${afectados.length} movimientos.\n`
+                + ejemplos.map((e) => `  ${e}`).join('\n'),
+            );
+        }
+
+        await sql`
+            insert into places (nombre, tipo, aliases, categoria)
+            values (${nombre}, ${tipo}, ${aliases}, ${categoria ?? null})
+            on conflict (nombre) do update set
+                aliases = excluded.aliases, categoria = excluded.categoria, tipo = excluded.tipo
+        `;
+        for (const m of afectados) {
+            if (m.merchant === nombre) continue;
+            await sql`
+                update transactions set merchant_raw = coalesce(merchant_raw, merchant),
+                                        merchant = ${nombre},
+                                        category = coalesce(category, ${categoria ?? null})
+                where id = ${m.id}
+            `;
+        }
+        return texto(`Lugar "${nombre}" creado. Se normalizaron ${afectados.length} movimientos.`);
+    },
+);
+
+server.tool(
+    'finanzas_lugares_sin_catalogar',
+    'Valores de "Lugar" que no corresponden a ningún lugar del catálogo, agrupados '
+    + 'para darlos de alta en bloque.',
+    { limite: z.number().int().min(1).max(60).default(25) },
+    async ({ limite }) => {
+        const [catalogo, movs] = await Promise.all([
+            sql`select nombre, aliases from places`,
+            sql`select merchant from transactions where merchant is not null`,
+        ]);
+        const sueltos = sinCatalogar(movs.map((m) => m.merchant), catalogo);
+        if (!sueltos.length) return texto('Todos los lugares están catalogados.');
+        return texto(
+            `${sueltos.length} valores fuera del catálogo:\n`
+            + sueltos.slice(0, limite).map((s) =>
+                `  ${String(s.n).padStart(4)}×  ${s.crudo.slice(0, 46)}`).join('\n')
+            + '\n\nUsa finanzas_crear_lugar para agruparlos.',
         );
     },
 );

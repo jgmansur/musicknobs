@@ -13,6 +13,7 @@ import { parseBankEmail, TRANSACTIONAL_SENDERS } from './parsers.js';
 import { parseOxxoTicket, TICKET_SENDERS } from './tickets.js';
 import { getAccessToken, listMessageIds, getMessage } from './gmail.js';
 import { categoriaPara } from '../../shared/categorias.js';
+import { lugarPara } from '../../shared/lugares.js';
 
 const DEFAULT_LOOKBACK_DAYS = 7;
 
@@ -63,6 +64,7 @@ export function buildQuery(sinceDate) {
  */
 export function classify(parsed, {
     cardMap, fixedExpenses, bankDefaults = new Map(), reglas = [], beneficiarios = [],
+    lugares = [],
 }) {
     // Algunos avisos no mencionan tarjeta (el SPEI recibido de Hey solo dice
     // "a tu tarjeta Hey"), pero el banco basta para saber la cuenta.
@@ -142,6 +144,10 @@ export function classify(parsed, {
         { merchant: parsed.merchant, description: parsed.counterparty, kind: parsed.kind }, reglas,
     );
 
+    // "Lugar" se resuelve contra el catálogo: el banco manda ruido de sucursal
+    // ("OXXO ZAVALA QRF") que sin normalizar cuenta como un lugar distinto.
+    const enCatalogo = parsed.merchant ? lugarPara(parsed.merchant, lugares) : null;
+
     // El beneficiario es evidencia más fuerte que emparejar por monto: se sabe a
     // quién se le pagó, no solo cuánto.
     const fijoDelPayee = payee?.fixed_expense_id ?? null;
@@ -153,9 +159,12 @@ export function classify(parsed, {
         kind: parsed.kind === 'internal' ? null : parsed.kind,
         status: parsed.kind === 'internal' ? 'ignored' : 'pending',
         payeeId: payee?.id ?? null,
-        merchant: payee?.nombre ?? null,
+        merchant: payee?.nombre ?? enCatalogo?.nombre ?? null,
+        merchantRaw: parsed.merchant ?? null,
+        categoriaLugar: enCatalogo?.lugar?.categoria ?? null,
         fixedExpenseId: fijoDelPayee ?? fixedMatch?.id ?? null,
-        category: payee?.categoria ?? fixedMatch?.categoria ?? porRegla?.categoria ?? null,
+        category: payee?.categoria ?? fixedMatch?.categoria ?? porRegla?.categoria
+            ?? enCatalogo?.lugar?.categoria ?? null,
         reglaId: porRegla?.regla?.id ?? null,
         confidence,
     };
@@ -262,6 +271,7 @@ export async function runIngest({
             sql`select id, patron, categoria, prioridad, aplica_a from category_rules`,
             sql`select id, last4, nombre, tipo, fixed_expense_id, categoria from payees`,
         ]);
+        const lugares = await sql`select id, nombre, aliases, categoria from places`;
         const cardMap = new Map(cards.map((c) => [c.last4, { id: c.account_id }]));
 
         // Cuenta por defecto de cada banco, para los avisos que no traen tarjeta.
@@ -308,7 +318,7 @@ export async function runIngest({
                 continue;
             }
 
-            const s = classify(parsed, { cardMap, fixedExpenses: fixed, bankDefaults, reglas, beneficiarios });
+            const s = classify(parsed, { cardMap, fixedExpenses: fixed, bankDefaults, reglas, beneficiarios, lugares });
 
             const duplicado = s.status === 'pending'
                 ? await buscarDuplicado(sql, {
