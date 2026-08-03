@@ -206,6 +206,23 @@ async function guardarTicket(sql, msg, ticket, cardMap) {
         movimiento = t?.id ?? null;
     }
 
+    // Sin movimiento del banco, el ticket es el ÚNICO registro de esa compra.
+    // Pasa siempre con la Apple Pay de BBVA: ese banco no manda aviso. Si el
+    // ticket no creara el movimiento, esas compras no existirían para el sistema.
+    if (!movimiento && ticket.total != null && cuenta?.id) {
+        const [creado] = await sql`
+            insert into transactions (occurred_at, account_id, amount, kind,
+                merchant, description, category, source, source_ref)
+            values (${cuando}, ${cuenta.id}, ${-Math.abs(ticket.total)}, 'gasto',
+                    'Oxxo', ${ticket.tienda ?? 'Ticket OXXO'}, 'Gasto hormiga',
+                    'receipt', ${'ticket:' + msg.id})
+            on conflict (source, source_ref) where source_ref is not null
+            do nothing
+            returning id
+        `;
+        movimiento = creado?.id ?? null;
+    }
+
     for (const it of ticket.items) {
         await sql`
             insert into receipt_items (fecha, recibo_id, comercio, producto_raw,
@@ -217,7 +234,8 @@ async function guardarTicket(sql, msg, ticket, cardMap) {
                     'alta', ${movimiento})
         `;
     }
-    return { creados: ticket.items.length, ligados: movimiento ? ticket.items.length : 0 };
+    return { creados: ticket.items.length, ligados: movimiento ? ticket.items.length : 0,
+             movimientoCreado: Boolean(movimiento) };
 }
 
 export async function runIngest({
