@@ -19,6 +19,31 @@ const DEFAULT_LOOKBACK_DAYS = 7;
 const AMOUNT_TOLERANCE = 0.02;
 const DAY_WINDOW = 3;
 
+
+/**
+ * Busca un movimiento ya registrado que se parezca a este.
+ *
+ * Existe porque Jay a veces captura un pago a mano y después llega el correo del
+ * banco: sin esto, el mismo gasto entraría dos veces.
+ *
+ * Se MARCA la sospecha, no se descarta. Dos compras de $50 en el OXXO el mismo
+ * día son perfectamente posibles, y descartar automáticamente perdería una.
+ */
+async function buscarDuplicado(sql, { accountId, amount, occurredAt }) {
+    if (!accountId || !Number.isFinite(amount)) return null;
+    const magnitud = Math.abs(amount);
+    const [dup] = await sql`
+        select id from transactions
+        where account_id = ${accountId}
+          and abs(abs(amount) - ${magnitud}) < 0.01
+          and occurred_at between ${occurredAt}::timestamptz - interval '3 days'
+                              and ${occurredAt}::timestamptz + interval '3 days'
+        order by abs(extract(epoch from (occurred_at - ${occurredAt}::timestamptz)))
+        limit 1
+    `;
+    return dup?.id ?? null;
+}
+
 export function buildQuery(sinceDate) {
     const senders = [...TRANSACTIONAL_SENDERS].map((s) => `from:${s}`).join(' OR ');
     // Gmail solo filtra por día, así que se resta uno para no perder correos
@@ -32,7 +57,9 @@ export function buildQuery(sinceDate) {
  * La confianza es deliberadamente conservadora: sin tarjeta mapeada nunca
  * pasa de 0.35, para que salte a la vista en la bandeja.
  */
-export function classify(parsed, { cardMap, fixedExpenses, bankDefaults = new Map(), reglas = [] }) {
+export function classify(parsed, {
+    cardMap, fixedExpenses, bankDefaults = new Map(), reglas = [], beneficiarios = [],
+}) {
     // Algunos avisos no mencionan tarjeta (el SPEI recibido de Hey solo dice
     // "a tu tarjeta Hey"), pero el banco basta para saber la cuenta.
     const account =
@@ -44,6 +71,28 @@ export function classify(parsed, { cardMap, fixedExpenses, bankDefaults = new Ma
     if (account) confidence = parsed.merchant ? 0.9 : 0.7;
     // Sin monto no se puede aprobar a ciegas: Jay tiene que teclearlo.
     if (!Number.isFinite(parsed.amount) && parsed.kind !== 'internal') confidence = 0.4;
+
+    // Beneficiario conocido: le pone nombre a una terminación que el banco deja
+    // anónima. "transferencia a la cuenta terminación 1791" se vuelve
+    // "Javier Tinajero — Mantenimiento Alberca".
+    const payee = parsed.counterpartyLast4
+        ? beneficiarios.find((b) => b.last4 === parsed.counterpartyLast4)
+        : null;
+
+    // Una cuenta propia registrada como beneficiario convierte el movimiento en
+    // transferencia, aunque esa cuenta no exista todavía en el sistema.
+    if (payee?.tipo === 'cuenta_propia') {
+        return {
+            accountId: account?.id ?? null,
+            kind: 'transfer',
+            status: 'pending',
+            payeeId: payee.id,
+            merchant: payee.nombre,
+            fixedExpenseId: null,
+            category: null,
+            confidence: 0.95,
+        };
+    }
 
     // Si el destino también es una cuenta de Jay, esto no es un gasto: es mover
     // dinero de un bolsillo suyo a otro. Pasa seguido — transfiere de Santander a
@@ -89,13 +138,20 @@ export function classify(parsed, { cardMap, fixedExpenses, bankDefaults = new Ma
         { merchant: parsed.merchant, description: parsed.counterparty, kind: parsed.kind }, reglas,
     );
 
+    // El beneficiario es evidencia más fuerte que emparejar por monto: se sabe a
+    // quién se le pagó, no solo cuánto.
+    const fijoDelPayee = payee?.fixed_expense_id ?? null;
+    if (payee) confidence = Math.max(confidence, fijoDelPayee ? 0.95 : 0.85);
+
     return {
         accountId: account?.id ?? null,
         // Un movimiento interno (apartado BBVA) no es gasto ni ingreso.
         kind: parsed.kind === 'internal' ? null : parsed.kind,
         status: parsed.kind === 'internal' ? 'ignored' : 'pending',
-        fixedExpenseId: fixedMatch?.id ?? null,
-        category: fixedMatch?.categoria ?? porRegla?.categoria ?? null,
+        payeeId: payee?.id ?? null,
+        merchant: payee?.nombre ?? null,
+        fixedExpenseId: fijoDelPayee ?? fixedMatch?.id ?? null,
+        category: payee?.categoria ?? fixedMatch?.categoria ?? porRegla?.categoria ?? null,
         reglaId: porRegla?.regla?.id ?? null,
         confidence,
     };
@@ -117,7 +173,7 @@ export async function runIngest({ sql, credentials, lookbackDays = DEFAULT_LOOKB
         insert into ingest_runs default values returning id
     `;
 
-    const stats = { seen: 0, created: 0, skipped: 0, unmatched: 0 };
+    const stats = { seen: 0, created: 0, skipped: 0, unmatched: 0, duplicados: 0 };
 
     try {
         const [cards, fixed, accounts] = await Promise.all([
@@ -126,9 +182,10 @@ export async function runIngest({ sql, credentials, lookbackDays = DEFAULT_LOOKB
                 from fixed_expenses where active`,
             sql`select id, name from accounts`,
         ]);
-        const reglas = await sql`
-            select id, patron, categoria, prioridad, aplica_a from category_rules
-        `;
+        const [reglas, beneficiarios] = await Promise.all([
+            sql`select id, patron, categoria, prioridad, aplica_a from category_rules`,
+            sql`select id, last4, nombre, tipo, fixed_expense_id, categoria from payees`,
+        ]);
         const cardMap = new Map(cards.map((c) => [c.last4, { id: c.account_id }]));
 
         // Cuenta por defecto de cada banco, para los avisos que no traen tarjeta.
@@ -159,7 +216,15 @@ export async function runIngest({ sql, credentials, lookbackDays = DEFAULT_LOOKB
                 continue;
             }
 
-            const s = classify(parsed, { cardMap, fixedExpenses: fixed, bankDefaults, reglas });
+            const s = classify(parsed, { cardMap, fixedExpenses: fixed, bankDefaults, reglas, beneficiarios });
+
+            const duplicado = s.status === 'pending'
+                ? await buscarDuplicado(sql, {
+                    accountId: s.accountId,
+                    amount: parsed.amount,
+                    occurredAt: parsed.occurredAt ?? msg.receivedAt,
+                })
+                : null;
 
             const inserted = await sql`
                 insert into pending_transactions (
@@ -167,17 +232,19 @@ export async function runIngest({ sql, credentials, lookbackDays = DEFAULT_LOOKB
                     bank, template, raw_subject, raw_text,
                     occurred_at, amount, currency, merchant, card_last4, counterparty,
                     suggested_account_id, suggested_kind, suggested_category,
-                    suggested_fixed_expense_id, match_confidence, status
+                    suggested_fixed_expense_id, match_confidence, status,
+                    payee_id, duplicate_of
                 ) values (
                     ${msg.id}, ${msg.threadId}, ${msg.receivedAt},
                     ${parsed.bank}, ${parsed.template}, ${msg.subject},
                     ${(parsed.text ?? '').slice(0, 4000)},
                     ${parsed.occurredAt ?? msg.receivedAt},
                     ${parsed.amount ?? null}, ${parsed.currency ?? 'MXN'},
-                    ${parsed.merchant ?? null}, ${parsed.cardLast4 ?? null},
+                    ${s.merchant ?? parsed.merchant ?? null}, ${parsed.cardLast4 ?? null},
                     ${parsed.counterparty ?? null},
                     ${s.accountId}, ${s.kind}, ${s.category},
-                    ${s.fixedExpenseId}, ${s.confidence}, ${s.status}
+                    ${s.fixedExpenseId}, ${s.confidence}, ${s.status},
+                    ${s.payeeId ?? null}, ${duplicado}
                 )
                 on conflict (gmail_message_id) do nothing
                 returning id
@@ -185,6 +252,7 @@ export async function runIngest({ sql, credentials, lookbackDays = DEFAULT_LOOKB
 
             if (inserted.length) {
                 stats.created += 1;
+                if (duplicado) stats.duplicados += 1;
                 if (s.reglaId) {
                     await sql`
                         update category_rules set veces_aplicada = veces_aplicada + 1

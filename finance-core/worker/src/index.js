@@ -78,6 +78,9 @@ export default {
                            p.counterparty, p.card_last4, p.bank, p.template,
                            p.suggested_kind, p.match_confidence, p.raw_subject,
                            a.name as suggested_account, f.concepto as suggested_fixed,
+                           py.nombre as beneficiario, p.duplicate_of,
+                           dup.merchant as duplicado_comercio,
+                           to_char(dup.occurred_at, 'YYYY-MM-DD') as duplicado_fecha,
                            -- Anterior al ancla del saldo: aprobarlo llena el
                            -- historial pero no mueve el saldo, porque ese gasto
                            -- ya está incluido en el saldo inicial.
@@ -85,6 +88,8 @@ export default {
                     from pending_transactions p
                     left join accounts a on a.id = p.suggested_account_id
                     left join fixed_expenses f on f.id = p.suggested_fixed_expense_id
+                    left join payees py on py.id = p.payee_id
+                    left join transactions dup on dup.id = p.duplicate_of
                     where p.status = 'pending'
                     order by p.occurred_at desc
                     limit 200

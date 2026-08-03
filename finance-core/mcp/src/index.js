@@ -964,5 +964,100 @@ server.tool(
     },
 );
 
+
+// -------------------------------------------------------- Beneficiarios
+
+server.tool(
+    'finanzas_beneficiarios',
+    'Cuentas a las que Jay transfiere, identificadas por la terminación que revela '
+    + 'el banco. Con esto una transferencia anónima se vuelve un gasto fijo con nombre.',
+    {},
+    async () => {
+        const rows = await sql`
+            select p.last4, p.banco, p.nombre, p.descripcion, p.tipo, p.categoria,
+                   f.concepto as fijo, p.veces_visto
+            from payees p left join fixed_expenses f on f.id = p.fixed_expense_id
+            order by p.tipo, p.nombre
+        `;
+        if (!rows.length) return texto('No hay beneficiarios registrados.');
+        return texto(
+            `${rows.length} beneficiarios:\n` + rows.map((r) =>
+                `  ••${r.last4}  ${(r.banco ?? '').padEnd(13)} ${r.nombre.slice(0, 26).padEnd(26)}`
+                + ` [${r.tipo}]${r.fijo ? ` → ${r.fijo}` : ''}`
+                + `${r.descripcion ? `\n         ${r.descripcion}` : ''}`).join('\n'),
+        );
+    },
+);
+
+server.tool(
+    'finanzas_registrar_beneficiario',
+    'Registra a quién pertenece una terminación de cuenta, para que las '
+    + 'transferencias futuras se identifiquen solas.',
+    {
+        last4: z.string().length(4).describe('Últimos 4 dígitos de la cuenta o CLABE'),
+        nombre: z.string(),
+        banco: z.string().optional(),
+        descripcion: z.string().optional(),
+        tipo: z.enum(['fijo', 'variable', 'persona', 'cuenta_propia']).default('persona'),
+        gasto_fijo: z.string().optional().describe('Concepto del gasto fijo que salda'),
+        categoria: z.string().optional(),
+    },
+    async ({ last4, nombre, banco, descripcion, tipo, gasto_fijo, categoria }) => {
+        let fixedId = null;
+        if (gasto_fijo) {
+            const candidatos = await sql`
+                select id, concepto from fixed_expenses
+                where concepto ilike ${'%' + gasto_fijo + '%'} and active
+            `;
+            if (!candidatos.length) return texto(`No existe un gasto fijo como "${gasto_fijo}".`);
+            if (candidatos.length > 1) {
+                return texto(ambiguedad(gasto_fijo, candidatos.map((c) => c.concepto), 'gasto fijo'));
+            }
+            fixedId = candidatos[0].id;
+        }
+        const [p] = await sql`
+            insert into payees (last4, banco, nombre, descripcion, tipo, fixed_expense_id, categoria)
+            values (${last4}, ${banco ?? null}, ${nombre}, ${descripcion ?? null},
+                    ${tipo}, ${fixedId}, ${categoria ?? null})
+            on conflict (last4, coalesce(lower(banco), '')) do update set
+                nombre = excluded.nombre, descripcion = excluded.descripcion,
+                tipo = excluded.tipo, fixed_expense_id = excluded.fixed_expense_id,
+                categoria = excluded.categoria
+            returning id
+        `;
+        return texto(
+            `Registrado: ••${last4} ${banco ? `(${banco}) ` : ''}→ ${nombre} [${tipo}]`
+            + (gasto_fijo ? `, ligado al fijo "${gasto_fijo}"` : '')
+            + '.\nLas transferencias futuras a esa cuenta se identificarán solas.',
+        );
+    },
+);
+
+server.tool(
+    'finanzas_posibles_duplicados',
+    'Pendientes que se parecen a un movimiento ya registrado — misma cuenta, mismo '
+    + 'monto, hasta 3 días de diferencia. Se marcan, no se descartan: dos compras '
+    + 'iguales el mismo día son posibles.',
+    {},
+    async () => {
+        const rows = await sql`
+            select to_char(p.occurred_at, 'YYYY-MM-DD') as fecha, p.merchant, p.amount, p.id,
+                   to_char(t.occurred_at, 'YYYY-MM-DD') as fecha_ya,
+                   t.merchant as ya_registrado, t.source
+            from pending_transactions p
+            join transactions t on t.id = p.duplicate_of
+            where p.status = 'pending'
+            order by p.occurred_at desc
+        `;
+        if (!rows.length) return texto('No hay pendientes que parezcan duplicados.');
+        return texto(
+            `${rows.length} posibles duplicados:\n` + rows.map((r) =>
+                `  ${r.fecha}  ${dinero(Math.abs(r.amount))}  ${(r.merchant ?? '—').slice(0, 24)}\n`
+                + `      ya existe: ${r.fecha_ya} ${(r.ya_registrado ?? '—').slice(0, 24)} (${r.source})\n`
+                + `      id: ${r.id}`).join('\n'),
+        );
+    },
+);
+
 const transport = new StdioServerTransport();
 await server.connect(transport);
