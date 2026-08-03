@@ -24,7 +24,7 @@ const DEUDAS_RECIBOS_FOLDER_ID = '157KDn-vbkuHH1L8xbaJBGz-oKmT7p5a9';
 const SPREADSHEET_RSM_ID = '14VsoPHGNTSUSbzMOqGWs2qSL-pGywPgjUoHD3MqIJfo'; // Recibos Salud Mariel
 const SALDOS_SHEET_ID    = '1-cX_qxld3ioSpcO9lEBPg90Db6AyK7SczpJTvj7rw4U'; // Saldos (fuente de verdad — Claude accede vía service account)
 const RSM_FOLDER_ID = '1-ZfeWQ-Rmh-Wm2WMCkULkN6MQWBuxYnj';
-const APP_VERSION  = 'v8.6.0';
+const APP_VERSION  = 'v8.6.1';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -8390,7 +8390,15 @@ async function autos_saveCar() {
     if (idx >= 0) autosState.cars[idx] = car;
     else autosState.cars.push(car);
     autosState.selectedCarId = car.id;
-    await autos_saveCarsSheet();
+    try {
+        await autos_saveCarsSheet();
+    } catch (e) {
+        // Sin esto un fallo de red dejaba el panel abierto y sin ningún aviso,
+        // que se siente exactamente como "el botón no sirve".
+        console.error('No se pudo guardar el auto:', e);
+        showToast(`⚠️ No se pudo guardar el auto: ${e.message}`);
+        return;
+    }
     autos_closeCarSheet();
     autos_render();
     await autos_refreshCarValuationIfNeeded(car, { force: shouldForceValuation, interactiveAuth: true });
@@ -8493,14 +8501,31 @@ async function autos_saveRepair() {
     }
 
     const idx = autosState.repairs.findIndex(r => r.id === id);
+    // El gasto se sincroniza ANTES de persistir: es quien asigna el id del
+    // movimiento, y si se guardara primero ese id nunca llegaría a la base y
+    // el siguiente guardado crearía un movimiento duplicado.
+    let avisoGasto = '';
+    try {
+        await autos_syncRepairToLog(repair);
+    } catch (e) {
+        // Sin forma de pago válida no se puede crear el movimiento, pero eso no
+        // es razón para tirar lo que el usuario acaba de capturar.
+        console.warn('No se pudo sincronizar el gasto de la reparacion:', e);
+        avisoGasto = ` · ⚠️ sin registrar como gasto (${e.message})`;
+    }
+
     if (idx >= 0) autosState.repairs[idx] = repair;
     else autosState.repairs.push(repair);
-    await autos_saveRepairsSheet();
-    await autos_syncRepairToLog(repair);
+    try {
+        await autos_saveRepairsSheet();
+    } catch (e) {
+        showToast(`⚠️ No se pudo guardar la reparacion: ${e.message}`);
+        return;
+    }
     autos_closeRepairSheet();
     autos_render();
     markGastosStale();
-    showToast('✅ Reparacion guardada');
+    showToast(`✅ Reparacion guardada${avisoGasto}`);
 }
 
 async function autos_saveRepairsSheet() {
@@ -9018,9 +9043,8 @@ async function estudio_saveInventario() {
         showToast('⚠️ Captura nombre del equipo');
         return;
     }
-    if (idx >= 0) estudioState.inventario[idx] = { ...estudioState.inventario[idx], ...item };
-    else estudioState.inventario.push(item);
-    await estudio_saveInventarioSheet();
+    // Igual que en autos: el sync asigna el id del movimiento, así que va
+    // ANTES de persistir o ese id se pierde y se duplica el gasto.
     try {
         if (isNew) {
             await estudio_syncInventarioToLog(item, { allowCreate: true });
@@ -9028,8 +9052,17 @@ async function estudio_saveInventario() {
             await estudio_syncInventarioToLog(item, { allowCreate: false });
         }
     } catch (e) {
-        console.warn('No se pudo sincronizar inventario a Control de Gastos:', e);
-        showToast('⚠️ Se guardo el equipo, pero fallo la sincronizacion a gastos');
+        console.warn('No se pudo sincronizar inventario a gastos:', e);
+        showToast('⚠️ Se guarda el equipo, pero no se registró como gasto');
+    }
+    if (idx >= 0) estudioState.inventario[idx] = { ...estudioState.inventario[idx], ...item };
+    else estudioState.inventario.push(item);
+    try {
+        await estudio_saveInventarioSheet();
+    } catch (e) {
+        console.error('No se pudo guardar el equipo:', e);
+        showToast(`⚠️ No se pudo guardar: ${e.message}`);
+        return;
     }
     estudio_closeInventarioSheet();
     estudio_render();
@@ -9129,9 +9162,7 @@ async function estudio_savePlugin() {
         showToast('⚠️ Captura nombre del plugin');
         return;
     }
-    if (idx >= 0) estudioState.plugins[idx] = { ...estudioState.plugins[idx], ...item };
-    else estudioState.plugins.push(item);
-    await estudio_savePluginsSheet();
+    // El sync asigna el id del movimiento: va ANTES de persistir.
     try {
         if (isNew) {
             await estudio_syncPluginToLog(item, { allowCreate: true });
@@ -9139,8 +9170,17 @@ async function estudio_savePlugin() {
             await estudio_syncPluginToLog(item, { allowCreate: false });
         }
     } catch (e) {
-        console.warn('No se pudo sincronizar plugin a Control de Gastos:', e);
-        showToast('⚠️ Se guardo el plugin, pero fallo la sincronizacion a gastos');
+        console.warn('No se pudo sincronizar plugin a gastos:', e);
+        showToast('⚠️ Se guarda el plugin, pero no se registró como gasto');
+    }
+    if (idx >= 0) estudioState.plugins[idx] = { ...estudioState.plugins[idx], ...item };
+    else estudioState.plugins.push(item);
+    try {
+        await estudio_savePluginsSheet();
+    } catch (e) {
+        console.error('No se pudo guardar el plugin:', e);
+        showToast(`⚠️ No se pudo guardar: ${e.message}`);
+        return;
     }
     estudio_closePluginSheet();
     estudio_render();
@@ -12818,8 +12858,17 @@ async function pelo_save() {
         formaPago: (document.getElementById('hair-forma-pago').value || '').trim(),
     };
 
-    const sync = await pelo_syncExpense(payload);
-    payload.expenseMarker = sync.marker;
+    // Igual que en autos y estudio: si el gasto falla se avisa, pero no se
+    // tira la entrada que el usuario acaba de capturar.
+    let avisoGasto = '';
+    try {
+        const sync = await pelo_syncExpense(payload);
+        payload.expenseMarker = sync.marker;
+    } catch (e) {
+        console.warn('No se pudo registrar el gasto del corte:', e);
+        payload.expenseMarker = existing?.expenseMarker || '';
+        avisoGasto = ` · ⚠️ sin registrar como gasto (${e.message})`;
+    }
     payload.expenseRowNum = sync.rowNum || payload.expenseRowNum;
 
     const idx = hairState.items.findIndex((x) => x.id === id);
@@ -12827,12 +12876,18 @@ async function pelo_save() {
     else hairState.items[idx] = payload;
 
     if (!hairState.members.includes(member)) hairState.members.push(member);
-    await pelo_saveMembersMeta();
-    await pelo_saveRows();
+    try {
+        await pelo_saveMembersMeta();
+        await pelo_saveRows();
+    } catch (e) {
+        console.error('No se pudo guardar la entrada de Pelo:', e);
+        showToast(`⚠️ No se pudo guardar: ${e.message}`);
+        return;
+    }
     engramSync('/api/engram/gasto', { fecha: payload.date, monto: payload.amount, concepto: 'Corte de pelo', tipo: 'pelo', forma_pago: payload.formaPago, fuente: 'dashboard' });
     pelo_closeSheet();
     pelo_render();
-    showToast('✅ Entrada de Pelo guardada y sincronizada');
+    showToast(`✅ Entrada de Pelo guardada${avisoGasto}`);
 }
 
 async function pelo_delete() {
@@ -15871,8 +15926,17 @@ async function gastoLigado_sync(opts) {
         return '';
     }
 
-    const cuenta = balanceAccounts.find(a =>
+    const buscarCuenta = () => balanceAccounts.find(a =>
         balance_getAccountMatchKeys(a).includes(balance_normalizePaymentKey(opts.formaPago)));
+
+    let cuenta = buscarCuenta();
+    // El arranque dispara balance_loadAccounts() sin esperarlo, así que si se
+    // entra directo a Autos o Estudio y se guarda rápido, balanceAccounts
+    // todavía puede estar vacío. Se carga una vez antes de darse por vencido.
+    if (!cuenta && !balanceAccounts.length) {
+        await balance_loadAccounts();
+        cuenta = buscarCuenta();
+    }
     if (!cuenta) {
         throw new Error(`"${opts.formaPago || 'sin forma de pago'}" no existe como cuenta`);
     }
@@ -16427,11 +16491,16 @@ async function recetas_save() {
 
     // El gasto se sincroniza ANTES de tocar la hoja: si la cuenta no existe,
     // se aborta sin dejar la receta guardada con un movimiento fantasma.
+    // Si el gasto falla NO se tira la receta: se guarda y se avisa. Perder lo
+    // que el usuario acaba de capturar es peor que quedarse sin el movimiento,
+    // que además se puede corregir editando.
+    let avisoGasto = '';
     try {
         payload.movimientoId = await recetas_syncGasto(payload, previo?.movimientoId || '');
     } catch (e) {
-        showToast(`⚠️ ${e.message}`);
-        return;
+        console.warn('No se pudo registrar el gasto de la consulta:', e);
+        payload.movimientoId = previo?.movimientoId || '';
+        avisoGasto = ` · ⚠️ sin registrar como gasto (${e.message})`;
     }
 
     if (idx === -1) recetasState.items.push(payload);
@@ -16442,9 +16511,9 @@ async function recetas_save() {
         recetas_closeSheet();
         recetas_render();
         const monto = Math.abs(parseSheetValue(payload.montoConsulta || 0));
-        showToast(monto
+        showToast(monto && !avisoGasto
             ? `✅ Receta guardada · gasto de ${formatCurrency(monto)} registrado`
-            : '✅ Receta guardada');
+            : `✅ Receta guardada${avisoGasto}`);
     } catch (e) {
         console.error('Recetas guardar:', e);
         showToast(`⚠️ No se pudo guardar: ${e.message}`);
