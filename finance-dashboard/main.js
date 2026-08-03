@@ -2631,11 +2631,80 @@ function handleApiError(err, el, retryFn) {
 // =============================================
 // DASHBOARD MODULE
 // =============================================
+
+/**
+ * Adaptadores de finance-core al formato de filas que espera processAndRender.
+ *
+ * Se traduce a la forma de la hoja en vez de reescribir processAndRender, que
+ * son cientos de líneas de agregados y gráficas. La traducción es barata; el
+ * refactor sería arriesgado sin ganar nada hoy.
+ */
+async function dashboard_datosDesdeWorker() {
+    if (!bandeja_token()) return null;
+    try {
+        const periodo = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`;
+        const [mov, fij] = await Promise.all([
+            bandeja_api('/api/movimientos?limite=3000'),
+            bandeja_api(`/api/fijos?period=${periodo}`),
+        ]);
+        if (!mov?.movimientos || !fij?.fijos) return null;
+
+        // Hoja de Gastos: A=Fecha B=Lugar C=Concepto D=Monto E=Tipo F=FormaPago G=Recibos H=Moneda
+        const logRows = mov.movimientos
+            .filter(m => m.kind !== 'transfer')
+            .map(m => [
+                m.fecha, m.merchant || '', m.description || '',
+                Math.abs(Number(m.amount)), m.kind === 'ingreso' ? 'Ingreso' : 'Gasto',
+                m.cuenta || '', m.receipt_url || '', m.currency || 'MXN',
+            ]);
+
+        const fixedIds = [];
+        // Hoja de Fijos: 16 columnas; ver el comentario de extract_fixed en la migración.
+        const fixedRows = fij.fijos.map(f => {
+            const pagosMes = Number(f.pagos_mes) || 1;
+            const partes = f.partes || {};
+            const pagos  = Array.from({ length: pagosMes }, (_, i) => !!partes[i]?.paid);
+            const waived = Array.from({ length: pagosMes }, (_, i) => !!partes[i]?.waived);
+            fixedIds.push(f.id);
+            return [
+                String(f.dia_mes ?? ''), f.concepto || '',
+                f.tipo === 'ingreso' ? '' : Number(f.monto),
+                f.tipo === 'ingreso' ? Number(f.monto) : '',
+                f.categoria || 'General',
+                pagos.every((v, i) => v || waived[i]) ? 'TRUE' : 'FALSE',
+                pagosMes, serializePaymentStates(pagos),
+                f.periodicidad || 'mensual', f.inicio_mes || '',
+                f.pagador || '', f.budget_category || '', f.moneda || 'MXN',
+                serializePaymentStates(waived), f.link_group || '',
+                (f.fechas_pago || []).join('|'),
+            ];
+        });
+        return { logRows, fixedRows, fixedIds };
+    } catch (err) {
+        console.warn('[Dashboard] finance-core no respondió:', err.message);
+        return null;
+    }
+}
+
 async function fetchAndProcess() {
     const status = document.getElementById('sync-status');
     status.innerText = 'Sincronizando...'; status.style.color = 'var(--primary)';
     try {
         await ensureUsdMxnRateForTransactions();
+
+        // Fuente de verdad: finance-core. Los recibos y grupos de producto
+        // siguen en la hoja porque todavía no se migran.
+        const core = await dashboard_datosDesdeWorker();
+        if (core) {
+            const [receiptItemRows, productGroupRows] = await Promise.all([
+                sheetsGet(SPREADSHEET_LOG_ID, `${RECEIPT_ITEMS_SHEET}!A2:P`).catch(() => []),
+                sheetsGet(SPREADSHEET_LOG_ID, `${PRODUCT_GROUPS_SHEET}!A2:E`).catch(() => []),
+            ]);
+            processAndRender(core.logRows, core.fixedRows, receiptItemRows, productGroupRows, core.fixedIds);
+            status.innerText = 'Sincronizado ✓'; status.style.color = 'var(--accent-green)';
+            return;
+        }
+
         const [logData, fixedData, receiptItemRows, productGroupRows] = await Promise.all([
             sheetsGet(SPREADSHEET_LOG_ID, 'Hoja 1!A2:H'),
             sheetsGet(SPREADSHEET_FIXED_ID, 'Hoja 1!A2:P'),  // H=estado pagos, I=periodicidad, J=inicio, K=pagador, L=budget, M=moneda, N=waive, O=linkGroup, P=fechasPago
@@ -2655,7 +2724,7 @@ async function fetchAndProcess() {
     }
 }
 
-function processAndRender(logRows, fixedRows, receiptItemRows = [], productGroupRows = []) {
+function processAndRender(logRows, fixedRows, receiptItemRows = [], productGroupRows = [], fixedIds = []) {
     balance_updateLogNetFromRows(logRows);
     productGroups_setRows(productGroupRows);
     receiptItems_setRows(receiptItemRows);
@@ -2868,7 +2937,7 @@ function processAndRender(logRows, fixedRows, receiptItemRows = [], productGroup
         const paidAmount = partAmount * Math.max(0, pagosHechos);
         const pendingAmount = partAmount * Math.max(0, pagosMes - pagosHechos);
         const formaPago = parseFixedFormaPago(row[10]);
-        return { rowNum: i + 2, concepto, categoria, monto, montoOriginal, moneda, tipo, isPaid, pagosMes, pagosEstado, waivedEstado, pagosHechos, paidAmount, pendingAmount, periodicidad, inicioMes, isDueThisMonth, pagador: parseFixedPayer(row[10]), formaPago, budgetCategory: parseBudgetCategory(row[11]), linkGroup: (row[14] || '').toString().trim(), fechasPago: parseFechasPago(row[15], pagosMes) };
+        return { id: fixedIds[i] ?? (i + 2), rowNum: i + 2, concepto, categoria, monto, montoOriginal, moneda, tipo, isPaid, pagosMes, pagosEstado, waivedEstado, pagosHechos, paidAmount, pendingAmount, periodicidad, inicioMes, isDueThisMonth, pagador: parseFixedPayer(row[10]), formaPago, budgetCategory: parseBudgetCategory(row[11]), linkGroup: (row[14] || '').toString().trim(), fechasPago: parseFechasPago(row[15], pagosMes) };
     }).filter(e => e.concepto);
 
     // KPI: count partial progress for fixed expenses
@@ -2947,12 +3016,12 @@ function renderFixedTable(expenses) {
                 const clsPart = e.isPaid ? 'pagado-btn pagado-btn--paid' : 'pagado-btn pagado-btn--pending';
                 const isWaived = !!(e.waivedEstado && e.waivedEstado[0]);
                 const lbl = e.isPaid ? (isWaived ? '🟡 Waived' : '✅ Pagado') : '⏳ Pendiente';
-                return `<button class="${clsPart}" ${fixedPartButtonAttrs(e.rowNum, 0, 'dashboard')}>${lbl}</button>`;
+                return `<button class="${clsPart}" ${fixedPartButtonAttrs(e.id, 0, 'dashboard')}>${lbl}</button>`;
             })()
             : e.pagosEstado.map((isPartPaid, idx) => {
                 const clsPart = isPartPaid ? 'pagado-btn pagado-btn--paid' : 'pagado-btn pagado-btn--pending';
                 const isWaived = !!(e.waivedEstado && e.waivedEstado[idx]);
-                return `<button class="${clsPart} fixed-remote-btn" ${fixedPartButtonAttrs(e.rowNum, idx, 'dashboard')}>${isPartPaid && isWaived ? 'W' : (idx + 1)}</button>`;
+                return `<button class="${clsPart} fixed-remote-btn" ${fixedPartButtonAttrs(e.id, idx, 'dashboard')}>${isPartPaid && isWaived ? 'W' : (idx + 1)}</button>`;
             }).join('');
         const controlsClass = pagosMes === 1 ? 'fixed-remote-controls fixed-remote-controls--single' : 'fixed-remote-controls fixed-remote-controls--parts';
         const controlsStyle = pagosMes === 1 ? '' : `style="grid-template-columns:repeat(${pagosMes}, minmax(0, 1fr));"`;
@@ -3019,9 +3088,9 @@ window.dashboard_togglePagoPart = async function(id, partIndex, options = {}) {
         // click era lo que hacía parpadear la pantalla.
         if (!fijosState.allItems?.length) await fijos_cargarDatos();
         await window.fijos_togglePagoPart(id, partIndex, options);
-        if (currentTab === 'dashboard') {
-            await fetchAndProcess();
-        }
+        // Los totales del mes cambian al pagar un fijo, pero refrescarlos aquí
+        // redibujaría toda la vista. El botón ya se repintó solo.
+        balance_updateKpi();
     } catch (e) {
         console.error('Error toggling dashboard fixed payment:', e);
         showToast('⚠️ Error al actualizar pago');
@@ -3029,7 +3098,29 @@ window.dashboard_togglePagoPart = async function(id, partIndex, options = {}) {
 };
 
 function fixedPartButtonAttrs(id, partIndex, source) {
-    return `onpointerdown="fixed_partPointerDown('${id}', ${partIndex}, '${source}')" onpointerup="fixed_partPointerUp()" onpointerleave="fixed_partPointerUp()" onpointercancel="fixed_partPointerUp()" onclick="fixed_partClick('${id}', ${partIndex}, '${source}')"`;
+    // Los data-* permiten repintar un botón concreto sin volver a dibujar la
+    // vista entera, que es lo que hace posible la actualización optimista.
+    return `data-fixed-id="${id}" data-part="${partIndex}" onpointerdown="fixed_partPointerDown('${id}', ${partIndex}, '${source}')" onpointerup="fixed_partPointerUp()" onpointerleave="fixed_partPointerUp()" onpointercancel="fixed_partPointerUp()" onclick="fixed_partClick('${id}', ${partIndex}, '${source}')"`;
+}
+
+/**
+ * Repinta en el acto los botones de una parte, estén en la pestaña de Fijos o
+ * en la tabla del Dashboard. Ambas vistas pintan el mismo id.
+ */
+function fixed_paintPartButtons(id, partIndex, { paid, waived, single }) {
+    document.querySelectorAll(
+        `[data-fixed-id="${id}"][data-part="${partIndex}"]`,
+    ).forEach((btn) => {
+        btn.classList.toggle('pagado-btn--paid', paid);
+        btn.classList.toggle('pagado-btn--pending', !paid);
+        if (single) {
+            btn.textContent = paid ? (waived ? '🟡 Waived' : '✅ Pagado') : '⏳ Pendiente';
+        } else if (paid && waived) {
+            btn.textContent = 'W';
+        } else {
+            btn.textContent = String(partIndex + 1);
+        }
+    });
 }
 
 window.fixed_partPointerDown = function(id, partIndex, source) {
@@ -4818,6 +4909,11 @@ async function fijos_togglePagoPartWorker(item, partIndex, options = {}) {
 
     fijos_aplicarFiltros();
     fijos_syncDashboardStats();
+    fixed_paintPartButtons(item.id, partIndex, {
+        paid: item.pagosEstado[partIndex] || item.waivedEstado[partIndex],
+        waived: item.waivedEstado[partIndex],
+        single: item.pagosMes === 1,
+    });
 
     const revertir = () => {
         item.pagosEstado  = previo.pagos;
@@ -4826,6 +4922,11 @@ async function fijos_togglePagoPartWorker(item, partIndex, options = {}) {
         item.isPaid       = previo.pagado;
         fijos_aplicarFiltros();
         fijos_syncDashboardStats();
+        fixed_paintPartButtons(item.id, partIndex, {
+            paid: previo.pagos[partIndex] || previo.waived[partIndex],
+            waived: previo.waived[partIndex],
+            single: item.pagosMes === 1,
+        });
     };
 
     try {
