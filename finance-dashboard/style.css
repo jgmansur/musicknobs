@@ -2120,3 +2120,74 @@ select.field-input { background-image: url("data:image/svg+xml,%3Csvg xmlns='htt
   .escolar-stats-grid { grid-template-columns: repeat(3, 1fr); }
   .escolar-materia-bar { display: none; }
 }
+
+/* =============================================
+   BANDEJA — movimientos pendientes de aprobar
+   ============================================= */
+
+.bandeja-badge {
+  min-width: 1.15rem; padding: 0 .3rem; margin-left: .35rem;
+  border-radius: 999px; background: var(--accent-orange); color: #0b1120;
+  font-size: .68rem; font-weight: 700; line-height: 1.15rem; text-align: center;
+}
+
+.bandeja-resumen { display: flex; align-items: center; gap: 1.5rem; padding: 1rem 1.25rem; }
+.bandeja-stat { display: flex; flex-direction: column; }
+.bandeja-stat-num { font-size: 1.6rem; font-weight: 700; color: var(--text-main); line-height: 1; }
+.bandeja-stat-lbl {
+  font-size: .68rem; color: var(--text-soft);
+  text-transform: uppercase; letter-spacing: .05em; margin-top: .2rem;
+}
+.bandeja-resumen .btn-secondary { margin-left: auto; }
+
+.bandeja-filtros { display: flex; gap: .5rem; margin-bottom: 1rem; }
+.bandeja-filtro {
+  background: rgba(255,255,255,.06); border: 1px solid var(--glass-border);
+  color: var(--text-soft); border-radius: 999px; padding: .4rem 1rem;
+  font-family: var(--font-family); font-size: .8rem; cursor: pointer; transition: all .2s;
+}
+.bandeja-filtro:hover { color: var(--text-main); }
+.bandeja-filtro.active {
+  background: rgba(251,191,36,.15); border-color: rgba(251,191,36,.4); color: #fbbf24;
+}
+
+.bandeja-item {
+  background: var(--glass-bg); border: 1px solid var(--glass-border);
+  border-radius: 1rem; padding: .9rem 1rem; margin-bottom: .6rem;
+}
+/* Los históricos son anteriores al ancla del saldo: aprobarlos completa el
+   historial pero no mueve ningún saldo. Se atenúan para que se note. */
+.bandeja-item.es-historico { opacity: .62; }
+
+.bandeja-item-main { display: flex; align-items: center; gap: 1rem; }
+.bandeja-item-txt { flex: 1; min-width: 0; }
+.bandeja-fecha { font-size: .7rem; color: var(--text-soft); display: block; }
+.bandeja-titulo {
+  font-size: .92rem; color: var(--text-main); font-weight: 600;
+  display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+
+.bandeja-chips { display: flex; gap: .35rem; flex-wrap: wrap; margin-top: .4rem; }
+.bandeja-chip {
+  font-size: .66rem; padding: .16rem .5rem; border-radius: 999px;
+  background: rgba(255,255,255,.07); color: var(--text-soft);
+}
+.bandeja-chip.es-fijo     { background: rgba(59,130,246,.16);  color: #93c5fd; }
+.bandeja-chip.es-transfer { background: rgba(148,163,184,.16); color: #cbd5e1; }
+.bandeja-chip.es-duda     { background: rgba(249,115,22,.16);  color: #fdba74; }
+
+.bandeja-monto { font-size: 1.05rem; font-weight: 700; color: #fca5a5; white-space: nowrap; }
+.bandeja-monto.es-ingreso { color: var(--accent-green); }
+.bandeja-monto-input { max-width: 9rem; }
+
+.bandeja-acciones { display: flex; gap: .5rem; margin-top: .75rem; }
+.bandeja-acciones button { flex: 1; padding: .5rem; font-size: .82rem; }
+
+.bandeja-vacio {
+  text-align: center; color: var(--text-soft); font-size: .85rem; padding: 2.5rem 1rem;
+}
+
+@media (max-width: 480px) {
+  .bandeja-resumen { gap: 1rem; }
+  .bandeja-item-main { flex-wrap: wrap; }
+}

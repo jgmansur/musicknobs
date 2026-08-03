@@ -1840,6 +1840,13 @@ function showTab(name) {
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
     const btn = document.getElementById(`tab-${name}`);
     if (btn) btn.classList.add('active');
+    // La bandeja no lee Sheets, así que no depende del login de Google.
+    if (name === 'bandeja') {
+        tabInited[name] = true;
+        bandeja_cargarVista();
+        return;
+    }
+
     if (accessToken && !tabInited[name]) {
         tabInited[name] = true;
         if (name === 'dashboard') fetchAndProcess();
@@ -14773,3 +14780,216 @@ function skills_closeSheet() {
     document.getElementById('skills-sheet-backdrop').style.display = 'none';
     document.body.style.overflow = '';
 }
+
+/* ==========================================================================
+   BANDEJA — movimientos detectados en el correo, pendientes de aprobación
+   ==========================================================================
+   Los llena el Worker de finance-core cada 15 minutos leyendo las alertas de
+   Santander, BBVA y Hey. Aquí solo se revisan y se aprueban.
+
+   El token no puede vivir en el código: esta app es estática y cualquiera
+   podría leerlo del bundle. Se pide una vez y se guarda en este navegador.
+   -------------------------------------------------------------------------- */
+
+const BANDEJA_API = 'https://finance-core.musicknobs.workers.dev';
+const BANDEJA_TOKEN_KEY = 'finance_core_token_v1';
+
+let bandejaPendientes = [];
+let bandejaFiltro = 'nuevos';
+
+const bandeja_token = () => localStorage.getItem(BANDEJA_TOKEN_KEY) || '';
+
+async function bandeja_api(path, options = {}) {
+    const res = await fetch(BANDEJA_API + path, {
+        ...options,
+        headers: { 'content-type': 'application/json', 'x-finance-token': bandeja_token() },
+    });
+    if (res.status === 401) {
+        localStorage.removeItem(BANDEJA_TOKEN_KEY);
+        throw new Error('El token no es válido. Vuelve a conectarlo.');
+    }
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || `Error ${res.status}`);
+    return data;
+}
+
+function bandeja_cargarVista() {
+    const setup = document.getElementById('bandeja-setup');
+    const contenido = document.getElementById('bandeja-contenido');
+
+    if (!bandeja_token()) {
+        setup.hidden = false;
+        contenido.hidden = true;
+        return;
+    }
+    setup.hidden = true;
+    contenido.hidden = false;
+    bandeja_cargarPendientes();
+}
+
+async function bandeja_cargarPendientes() {
+    const lista = document.getElementById('bandeja-lista');
+    lista.innerHTML = '<div class="bandeja-vacio">Cargando…</div>';
+    try {
+        const { pending } = await bandeja_api('/api/pending');
+        bandejaPendientes = pending || [];
+        bandeja_render();
+    } catch (err) {
+        lista.innerHTML = `<div class="bandeja-vacio">${err.message}</div>`;
+        if (!bandeja_token()) bandeja_cargarVista();
+    }
+}
+
+function bandeja_visibles() {
+    if (bandejaFiltro === 'nuevos')     return bandejaPendientes.filter(p => !p.historico);
+    if (bandejaFiltro === 'historicos') return bandejaPendientes.filter(p => p.historico);
+    return bandejaPendientes;
+}
+
+function bandeja_render() {
+    const nuevos = bandejaPendientes.filter(p => !p.historico).length;
+    const historicos = bandejaPendientes.length - nuevos;
+    document.getElementById('bandeja-num-nuevos').textContent = nuevos;
+    document.getElementById('bandeja-num-historicos').textContent = historicos;
+
+    const badge = document.getElementById('bandeja-badge');
+    badge.textContent = nuevos;
+    badge.hidden = nuevos === 0;
+
+    const visibles = bandeja_visibles();
+    const lista = document.getElementById('bandeja-lista');
+
+    if (!visibles.length) {
+        lista.innerHTML = '<div class="bandeja-vacio">Nada por revisar. Todo al día.</div>';
+        return;
+    }
+
+    lista.innerHTML = visibles.map(p => {
+        const monto = p.amount == null ? null : Math.abs(Number(p.amount));
+        const fecha = (p.occurred_at || '').slice(0, 10);
+        const titulo = p.merchant || p.counterparty || p.raw_subject || 'Movimiento';
+        const esIngreso = p.suggested_kind === 'ingreso';
+        const conf = Number(p.match_confidence || 0);
+
+        // Sin monto (los SPEI de Hey no lo incluyen) hay que teclearlo antes de
+        // poder aprobar.
+        const campoMonto = monto == null
+            ? `<input type="number" step="0.01" class="field-input bandeja-monto-input"
+                      id="monto-${p.id}" placeholder="¿Cuánto fue?">`
+            : `<span class="bandeja-monto ${esIngreso ? 'es-ingreso' : ''}">
+                   ${esIngreso ? '+' : '−'}$${monto.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
+               </span>`;
+
+        const chips = [
+            p.suggested_account ? `<span class="bandeja-chip">${p.suggested_account}</span>` : '',
+            p.card_last4 ? `<span class="bandeja-chip">••${p.card_last4}</span>` : '',
+            p.suggested_fixed ? `<span class="bandeja-chip es-fijo">fijo: ${p.suggested_fixed}</span>` : '',
+            p.suggested_kind === 'transfer' ? '<span class="bandeja-chip es-transfer">transferencia</span>' : '',
+            conf < 0.6 ? '<span class="bandeja-chip es-duda">revisar</span>' : '',
+        ].join('');
+
+        return `
+          <div class="bandeja-item ${p.historico ? 'es-historico' : ''}" data-id="${p.id}">
+            <div class="bandeja-item-main">
+              <div class="bandeja-item-txt">
+                <span class="bandeja-fecha">${fecha}</span>
+                <span class="bandeja-titulo">${titulo}</span>
+                <div class="bandeja-chips">${chips}</div>
+              </div>
+              ${campoMonto}
+            </div>
+            <div class="bandeja-acciones">
+              <button class="btn-primary bandeja-aprobar" data-id="${p.id}">Aprobar</button>
+              <button class="btn-secondary bandeja-rechazar" data-id="${p.id}">Descartar</button>
+            </div>
+          </div>`;
+    }).join('');
+}
+
+async function bandeja_aprobar(id, boton) {
+    const item = bandejaPendientes.find(p => p.id === id);
+    const input = document.getElementById(`monto-${id}`);
+
+    if (item && item.amount == null) {
+        const tecleado = Number(input?.value);
+        if (!Number.isFinite(tecleado) || tecleado <= 0) {
+            input?.focus();
+            return bandeja_aviso('Ese movimiento no traía monto: tecléalo para aprobarlo.');
+        }
+        var overrides = { amount: tecleado };
+    }
+
+    boton.disabled = true;
+    boton.textContent = 'Aprobando…';
+    try {
+        await bandeja_api(`/api/pending/${id}/approve`, {
+            method: 'POST',
+            body: JSON.stringify(overrides || {}),
+        });
+        bandejaPendientes = bandejaPendientes.filter(p => p.id !== id);
+        bandeja_render();
+        // El saldo cambió si el movimiento es posterior al ancla.
+        if (!item?.historico) refreshCurrentTab?.();
+    } catch (err) {
+        boton.disabled = false;
+        boton.textContent = 'Aprobar';
+        bandeja_aviso(err.message);
+    }
+}
+
+async function bandeja_rechazar(id, boton) {
+    boton.disabled = true;
+    try {
+        await bandeja_api(`/api/pending/${id}/reject`, { method: 'POST' });
+        bandejaPendientes = bandejaPendientes.filter(p => p.id !== id);
+        bandeja_render();
+    } catch (err) {
+        boton.disabled = false;
+        bandeja_aviso(err.message);
+    }
+}
+
+function bandeja_aviso(msg) {
+    if (typeof showToast === 'function') showToast(msg);
+    else alert(msg);
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('bandeja-guardar-token')?.addEventListener('click', () => {
+        const val = document.getElementById('bandeja-token').value.trim();
+        if (!val) return;
+        localStorage.setItem(BANDEJA_TOKEN_KEY, val);
+        document.getElementById('bandeja-token').value = '';
+        bandeja_cargarVista();
+    });
+
+    document.getElementById('bandeja-refrescar')?.addEventListener('click', async (e) => {
+        e.target.disabled = true;
+        e.target.textContent = 'Buscando…';
+        try {
+            await bandeja_api('/api/ingest', { method: 'POST' });
+            await bandeja_cargarPendientes();
+        } catch (err) {
+            bandeja_aviso(err.message);
+        } finally {
+            e.target.disabled = false;
+            e.target.textContent = 'Buscar ahora';
+        }
+    });
+
+    document.querySelectorAll('.bandeja-filtro').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.bandeja-filtro').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            bandejaFiltro = btn.dataset.filtro;
+            bandeja_render();
+        });
+    });
+
+    document.getElementById('bandeja-lista')?.addEventListener('click', (e) => {
+        const aprobar = e.target.closest('.bandeja-aprobar');
+        if (aprobar) return bandeja_aprobar(aprobar.dataset.id, aprobar);
+        const rechazar = e.target.closest('.bandeja-rechazar');
+        if (rechazar) return bandeja_rechazar(rechazar.dataset.id, rechazar);
+    });
+});

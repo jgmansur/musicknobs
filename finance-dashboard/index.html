@@ -206,6 +206,41 @@
       <!-- ══════════════════════════════════
            VIEW: CONTROL DE GASTOS (Tab 2)
            ══════════════════════════════════ -->
+      <div id="view-bandeja" class="view">
+
+        <!-- Alta del token: la app es estática, así que el token no puede vivir
+             en el código. Se pide una vez y se guarda en este navegador. -->
+        <div class="form-card glass" id="bandeja-setup" hidden>
+          <div class="form-field">
+            <label class="field-label">Token de la API de finanzas</label>
+            <input type="password" id="bandeja-token" class="field-input" placeholder="Pégalo aquí una sola vez">
+          </div>
+          <button class="btn-primary" id="bandeja-guardar-token">Conectar</button>
+        </div>
+
+        <div id="bandeja-contenido" hidden>
+          <div class="form-card glass bandeja-resumen">
+            <div class="bandeja-stat">
+              <span class="bandeja-stat-num" id="bandeja-num-nuevos">0</span>
+              <span class="bandeja-stat-lbl">por revisar</span>
+            </div>
+            <div class="bandeja-stat">
+              <span class="bandeja-stat-num" id="bandeja-num-historicos">0</span>
+              <span class="bandeja-stat-lbl">históricos</span>
+            </div>
+            <button class="btn-secondary" id="bandeja-refrescar">Buscar ahora</button>
+          </div>
+
+          <div class="bandeja-filtros">
+            <button class="bandeja-filtro active" data-filtro="nuevos">Nuevos</button>
+            <button class="bandeja-filtro" data-filtro="historicos">Históricos</button>
+            <button class="bandeja-filtro" data-filtro="todos">Todos</button>
+          </div>
+
+          <div id="bandeja-lista"></div>
+        </div>
+      </div>
+
       <div id="view-gastos" class="view">
 
         <!-- Form card -->
@@ -1884,6 +1919,11 @@
         <button class="tab active" id="tab-dashboard" data-tab="dashboard">
           <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
           <span class="tab-label">Dashboard</span>
+        </button>
+        <button class="tab" id="tab-bandeja" data-tab="bandeja">
+          <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>
+          <span class="tab-label">Bandeja</span>
+          <span class="bandeja-badge" id="bandeja-badge" hidden></span>
         </button>
         <button class="tab" id="tab-gastos" data-tab="gastos">
           <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
