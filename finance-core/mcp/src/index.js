@@ -17,8 +17,8 @@ import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { z } from 'zod';
 import postgres from 'postgres';
 import {
-    montoConSigno, validarMovimiento, pareceTransferencia,
-    BUDGET_BUCKETS, CUENTAS_PROPIAS,
+    montoConSigno, validarMovimiento, detectarTransferencia, ambiguedad,
+    BUDGET_BUCKETS,
 } from './reglas.js';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -40,15 +40,41 @@ const texto = (s) => ({ content: [{ type: 'text', text: s }] });
 const dinero = (n) =>
     Number(n).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-/** Resuelve una cuenta por nombre, tolerando abreviaciones ("likeu", "hey"). */
+/**
+ * Resuelve una cuenta por nombre, tolerando abreviaciones ("likeu", "hey").
+ *
+ * Devuelve `{cuenta}` si hay una sola, `{error}` si no existe o si el término es
+ * ambiguo. Nunca elige por su cuenta entre varias: hacerlo puede registrar un
+ * movimiento en la cuenta equivocada y nadie se entera hasta que no cuadran los
+ * saldos.
+ */
 async function buscarCuenta(nombre) {
-    const [exacta] = await sql`select id, name, type, currency from accounts where name = ${nombre}`;
-    if (exacta) return exacta;
-    const [parcial] = await sql`
-        select id, name, type, currency from accounts
-        where name ilike ${'%' + nombre + '%'} limit 2
+    const [exacta] = await sql`
+        select id, name, type, currency from accounts where lower(name) = lower(${nombre ?? ''})
     `;
-    return parcial ?? null;
+    if (exacta) return { cuenta: exacta };
+
+    const parciales = await sql`
+        select id, name, type, currency from accounts
+        where name ilike ${'%' + (nombre ?? '') + '%'}
+        order by name
+    `;
+    if (parciales.length === 1) return { cuenta: parciales[0] };
+    if (parciales.length > 1) {
+        return { error: ambiguedad(nombre, parciales.map((c) => c.name), 'cuenta') };
+    }
+
+    const todas = await sql`select name from accounts order by name`;
+    return {
+        error: `No existe la cuenta "${nombre}". Las disponibles son:\n`
+            + todas.map((c) => `  - ${c.name}`).join('\n'),
+    };
+}
+
+/** Lista de nombres de cuentas propias, para detectar transferencias. */
+async function nombresDeCuentas() {
+    const rows = await sql`select name from accounts`;
+    return rows.map((r) => r.name);
 }
 
 const server = new McpServer({ name: 'finanzas-jay', version: '1.0.0' });
@@ -134,43 +160,59 @@ server.tool(
 
 server.tool(
     'finanzas_registrar_movimiento',
-    'Registra un gasto o ingreso. Rechaza lo que parezca transferencia entre cuentas propias.',
+    'Registra un gasto o ingreso. BLOQUEA cuando identifica que el destino es otra '
+    + 'cuenta propia (sería una transferencia y contaría doble); si solo lo sospecha '
+    + 'por el texto, registra y advierte.',
     {
         tipo: z.enum(['gasto', 'ingreso']),
         monto: z.number().describe('Siempre positivo; el signo lo pone el sistema'),
-        cuenta: z.string().describe(`Cuenta o forma de pago. Propias: ${CUENTAS_PROPIAS.join(', ')}`),
+        cuenta: z.string().describe('Cuenta o forma de pago. Usa finanzas_saldos para verlas.'),
         concepto: z.string(),
         comercio: z.string().optional(),
         categoria: z.string().optional(),
         fecha: z.string().optional().describe('YYYY-MM-DD; por omisión hoy'),
+        destino: z.string().optional()
+            .describe('Si el dinero fue a otra cuenta propia, decláralo: se bloqueará'),
+        idempotency_key: z.string().optional()
+            .describe('Repetir la llamada con la misma clave no duplica el movimiento'),
     },
-    async ({ tipo, monto, cuenta, concepto, comercio, categoria, fecha }) => {
+    async ({ tipo, monto, cuenta, concepto, comercio, categoria, fecha, destino, idempotency_key }) => {
         const problemas = validarMovimiento({ cuenta, monto, tipo, concepto, categoria });
         if (problemas.length) return texto(`No se registró:\n- ${problemas.join('\n- ')}`);
 
-        const aviso = pareceTransferencia({ cuenta, destino: null, concepto });
-        const acc = await buscarCuenta(cuenta);
-        if (!acc) {
-            return texto(
-                `No existe la cuenta "${cuenta}". Las disponibles son:\n  ${CUENTAS_PROPIAS.join('\n  ')}`,
-            );
+        const { cuenta: acc, error } = await buscarCuenta(cuenta);
+        if (error) return texto(error);
+
+        const sospecha = detectarTransferencia({
+            cuenta: acc.name, destino, concepto, comercio,
+            cuentasPropias: await nombresDeCuentas(),
+        });
+        // Certeza: no existe un caso legítimo donde esto sea un gasto.
+        if (sospecha?.nivel === 'certeza') {
+            return texto(`NO se registró.\n\n${sospecha.mensaje}`);
         }
 
         const [t] = await sql`
             insert into transactions (occurred_at, account_id, amount, kind, merchant,
-                                      description, category, source)
+                                      description, category, source, source_ref)
             values (${fecha ? `${fecha}T12:00:00-06:00` : new Date()}, ${acc.id},
                     ${montoConSigno(monto, tipo)}, ${tipo}, ${comercio ?? null},
-                    ${concepto}, ${categoria ?? null}, 'manual')
+                    ${concepto}, ${categoria ?? null}, 'manual',
+                    ${idempotency_key ? `mcp:${idempotency_key}` : null})
+            on conflict (source, source_ref) where source_ref is not null do nothing
             returning id
         `;
+        if (!t) {
+            return texto('Ese movimiento ya estaba registrado con esa misma clave; no se duplicó.');
+        }
+
         const [saldo] = await sql`
             select display_balance from account_balances where id = ${acc.id}
         `;
         return texto(
             `Registrado: ${tipo} de ${dinero(monto)} en ${acc.name}.\n` +
             `Saldo ahora: ${dinero(saldo.display_balance)}${acc.type === 'credit' ? ' de deuda' : ''}.` +
-            (aviso ? `\n\nAviso: ${aviso}` : ''),
+            (sospecha ? `\n\nAviso: ${sospecha.mensaje}` : ''),
         );
     },
 );
@@ -184,12 +226,23 @@ server.tool(
         monto: z.number().positive(),
         concepto: z.string().optional(),
         fecha: z.string().optional().describe('YYYY-MM-DD; por omisión hoy'),
+        idempotency_key: z.string().optional()
+            .describe('Repetir la llamada con la misma clave no duplica la transferencia'),
     },
-    async ({ origen, destino, monto, concepto, fecha }) => {
-        const [a, b] = await Promise.all([buscarCuenta(origen), buscarCuenta(destino)]);
-        if (!a) return texto(`No existe la cuenta de origen "${origen}".`);
-        if (!b) return texto(`No existe la cuenta destino "${destino}".`);
+    async ({ origen, destino, monto, concepto, fecha, idempotency_key }) => {
+        const [ra, rb] = await Promise.all([buscarCuenta(origen), buscarCuenta(destino)]);
+        if (ra.error) return texto(`Origen: ${ra.error}`);
+        if (rb.error) return texto(`Destino: ${rb.error}`);
+        const a = ra.cuenta, b = rb.cuenta;
         if (a.id === b.id) return texto('El origen y el destino son la misma cuenta.');
+
+        if (idempotency_key) {
+            const [ya] = await sql`
+                select id from transactions
+                where source = 'manual' and source_ref = ${`mcp:tr:${idempotency_key}`}
+            `;
+            if (ya) return texto('Esa transferencia ya estaba registrada con esa clave.');
+        }
 
         const cuando = fecha ? `${fecha}T12:00:00-06:00` : new Date();
         const etiqueta = concepto || `Transferencia ${a.name} → ${b.name}`;
@@ -200,11 +253,12 @@ server.tool(
             const [{ gen_random_uuid: grupo }] = await tx`select gen_random_uuid()`;
             await tx`
                 insert into transactions (occurred_at, account_id, amount, kind, merchant,
-                                          description, transfer_group_id, source)
+                                          description, transfer_group_id, source, source_ref)
                 values (${cuando}, ${a.id}, ${-Math.abs(monto)}, 'transfer', ${b.name},
-                        ${etiqueta}, ${grupo}, 'manual'),
+                        ${etiqueta}, ${grupo}, 'manual',
+                        ${idempotency_key ? `mcp:tr:${idempotency_key}` : null}),
                        (${cuando}, ${b.id}, ${Math.abs(monto)}, 'transfer', ${a.name},
-                        ${etiqueta}, ${grupo}, 'manual')
+                        ${etiqueta}, ${grupo}, 'manual', null)
             `;
         });
 
@@ -221,26 +275,93 @@ server.tool(
 
 server.tool(
     'finanzas_ajustar_saldo',
-    'Reconcilia una cuenta contra el banco: fija el saldo real y reancla el cálculo desde hoy.',
-    { cuenta: z.string(), saldo_real: z.number() },
-    async ({ cuenta, saldo_real }) => {
-        const acc = await buscarCuenta(cuenta);
-        if (!acc) return texto(`No existe la cuenta "${cuenta}".`);
+    'Reconcilia una cuenta contra el banco: fija el saldo real y reancla el cálculo. '
+    + 'Es la operación más destructiva del sistema — borra el efecto de todos los '
+    + 'movimientos anteriores — así que exige el saldo actual esperado y queda en bitácora.',
+    {
+        cuenta: z.string(),
+        saldo_real: z.number().describe('En crédito, la deuda como número positivo'),
+        saldo_esperado: z.number().optional()
+            .describe('Saldo que crees que tiene ahora. Si no coincide, se aborta: '
+                + 'protege contra reanclar sobre un estado que ya cambió.'),
+        motivo: z.string().optional().describe('Por qué se reancla; queda en la bitácora'),
+        dry_run: z.boolean().default(false).describe('Muestra el efecto sin escribir'),
+    },
+    async ({ cuenta, saldo_real, saldo_esperado, motivo, dry_run }) => {
+        const { cuenta: acc, error } = await buscarCuenta(cuenta);
+        if (error) return texto(error);
 
         const [antes] = await sql`select display_balance from account_balances where id = ${acc.id}`;
+        const actual = Number(antes.display_balance);
+        const diff = Number(saldo_real) - actual;
+
+        // Concurrencia optimista. Una confirmación no sirve aquí: la IA se
+        // confirmaría sola. Exigir el valor esperado sí detecta que algo cambió
+        // entre que se leyó el saldo y se decidió reanclarlo.
+        if (saldo_esperado != null && Math.abs(saldo_esperado - actual) > 0.01) {
+            return texto(
+                `Abortado: esperabas ${dinero(saldo_esperado)} pero la cuenta tiene `
+                + `${dinero(actual)}. Algo cambió desde que lo consultaste. `
+                + 'Vuelve a leer el saldo y decide con el dato nuevo.',
+            );
+        }
+
+        const resumen =
+            `${acc.name}\n  Antes: ${dinero(actual)}\n  Después: ${dinero(saldo_real)}\n`
+            + `  Diferencia: ${dinero(diff)}`;
+
+        if (dry_run) {
+            return texto(`Simulación, no se escribió nada.\n\n${resumen}`);
+        }
+
         // En crédito el usuario dicta la deuda como positiva; internamente va negativa.
         const guardado = acc.type === 'credit' ? -Math.abs(saldo_real) : saldo_real;
 
-        await sql`
-            update accounts set opening_balance = ${guardado}, opening_balance_at = now()
-            where id = ${acc.id}
-        `;
-        const diff = Number(saldo_real) - Number(antes.display_balance);
+        await sql.begin(async (tx) => {
+            await tx`
+                update accounts set opening_balance = ${guardado}, opening_balance_at = now()
+                where id = ${acc.id}
+            `;
+            await tx`
+                insert into balance_adjustments (account_id, saldo_anterior, saldo_nuevo,
+                                                 diferencia, motivo, origen)
+                values (${acc.id}, ${actual}, ${saldo_real}, ${diff}, ${motivo ?? null}, 'mcp')
+            `;
+        });
+
         return texto(
-            `${acc.name} reanclada.\n` +
-            `  Antes: ${dinero(antes.display_balance)}\n  Ahora: ${dinero(saldo_real)}\n` +
-            `  Diferencia: ${dinero(diff)}\n\n` +
-            'Los movimientos anteriores a este momento ya no afectan el saldo.',
+            `${acc.name} reanclada.\n${resumen}\n\n`
+            + 'Los movimientos anteriores a este momento ya no afectan el saldo. '
+            + 'El cambio quedó en la bitácora.',
+        );
+    },
+);
+
+server.tool(
+    'finanzas_historial_ajustes',
+    'Bitácora de reanclajes de saldo: quién movió qué cuenta, cuándo y por qué.',
+    { cuenta: z.string().optional(), limite: z.number().int().min(1).max(50).default(20) },
+    async ({ cuenta, limite }) => {
+        let accId = null;
+        if (cuenta) {
+            const r = await buscarCuenta(cuenta);
+            if (r.error) return texto(r.error);
+            accId = r.cuenta.id;
+        }
+        const rows = await sql`
+            select to_char(b.created_at, 'YYYY-MM-DD HH24:MI') as cuando, a.name,
+                   b.saldo_anterior, b.saldo_nuevo, b.diferencia, b.motivo, b.origen
+            from balance_adjustments b join accounts a on a.id = b.account_id
+            where (${accId}::uuid is null or b.account_id = ${accId})
+            order by b.created_at desc limit ${limite}
+        `;
+        if (!rows.length) return texto('Sin reanclajes registrados.');
+        return texto(
+            `${rows.length} reanclajes:\n` + rows.map((r) =>
+                `  ${r.cuando}  ${r.name.padEnd(24)} ${dinero(r.saldo_anterior).padStart(12)} → `
+                + `${dinero(r.saldo_nuevo).padStart(12)}  (${dinero(r.diferencia)})`
+                + `${r.motivo ? `\n      ${r.motivo}` : ''}`,
+            ).join('\n'),
         );
     },
 );
@@ -291,14 +412,27 @@ server.tool(
         fecha: z.string().optional(),
     },
     async ({ concepto, cuenta, parte, monto, fecha }) => {
-        const [f] = await sql`
+        const exactos = await sql`
             select id, concepto, monto, pagos_mes, tipo, categoria
-            from fixed_expenses where concepto ilike ${'%' + concepto + '%'} and active limit 2
+            from fixed_expenses where lower(concepto) = lower(${concepto}) and active
         `;
-        if (!f) return texto(`No encontré un gasto fijo que se llame "${concepto}".`);
+        const candidatos = exactos.length ? exactos : await sql`
+            select id, concepto, monto, pagos_mes, tipo, categoria
+            from fixed_expenses where concepto ilike ${'%' + concepto + '%'} and active
+            order by concepto
+        `;
+        if (!candidatos.length) {
+            return texto(`No encontré un gasto fijo que se llame "${concepto}".`);
+        }
+        // Varios fijos pueden parecerse ("Escuela Roby" y "Escuela Hans"): elegir
+        // uno en silencio pagaría el equivocado y movería mal el saldo.
+        if (candidatos.length > 1) {
+            return texto(ambiguedad(concepto, candidatos.map((c) => c.concepto), 'gasto fijo'));
+        }
+        const f = candidatos[0];
 
-        const acc = await buscarCuenta(cuenta);
-        if (!acc) return texto(`No existe la cuenta "${cuenta}".`);
+        const { cuenta: acc, error } = await buscarCuenta(cuenta);
+        if (error) return texto(error);
         if (parte > f.pagos_mes) return texto(`"${f.concepto}" solo tiene ${f.pagos_mes} parte(s).`);
 
         const cuando = fecha ? new Date(`${fecha}T12:00:00-06:00`) : new Date();

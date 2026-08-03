@@ -76,6 +76,9 @@ export function validarMovimiento({ cuenta, monto, tipo, concepto, categoria }) 
     return problemas;
 }
 
+/** Palabras que sugieren un movimiento entre cuentas propias. */
+const VERBOS_TRANSFERENCIA = /transferenc|traspas|fonde|dep[óo]sito a mi|mov[íi] a|pas[ée] a/i;
+
 /**
  * Detecta el error más caro de este dominio: registrar como gasto un movimiento
  * entre dos cuentas propias. Duplica el dinero, porque el gasto real aparece
@@ -83,15 +86,70 @@ export function validarMovimiento({ cuenta, monto, tipo, concepto, categoria }) 
  *
  * El caso vivo: Jay transfiere de Santander a Hey para fondear la tarjeta de
  * suscripciones. Eso no es un gasto, es cambiar de bolsillo.
+ *
+ * Devuelve el nivel de evidencia, porque la respuesta correcta es distinta:
+ *
+ *   'certeza'  — se identificó la cuenta destino y es de Jay. Se BLOQUEA: no
+ *                existe un caso legítimo donde esto sea un gasto.
+ *   'sospecha' — el texto suena a traspaso pero no se identificó destino. Solo
+ *                se ADVIERTE, porque un gasto real puede decir "traspaso" y
+ *                bloquearlo sería estorbar sin fundamento.
+ *
+ * @param {{cuenta: string, destino?: string|null, concepto?: string,
+ *          comercio?: string, cuentasPropias?: string[]}} args
+ * @returns {{nivel: 'certeza'|'sospecha', mensaje: string, destino?: string}|null}
  */
-export function pareceTransferencia({ cuenta, destino, concepto }) {
-    if (destino && CUENTAS_PROPIAS.includes(destino) && CUENTAS_PROPIAS.includes(cuenta)) {
-        return `${cuenta} y ${destino} son cuentas tuyas: esto es una transferencia, no un gasto. `
-            + 'Regístralo con finanzas_transferencia para que no cuente doble.';
+export function detectarTransferencia({
+    cuenta, destino = null, concepto = '', comercio = '', cuentasPropias = CUENTAS_PROPIAS,
+}) {
+    const propias = cuentasPropias.filter(Boolean);
+    const esPropia = (n) => propias.some((p) => p.toLowerCase() === (n ?? '').toLowerCase());
+
+    // Destino declarado explícitamente: la evidencia más fuerte.
+    if (destino && esPropia(destino) && esPropia(cuenta)) {
+        return {
+            nivel: 'certeza',
+            destino,
+            mensaje: `${cuenta} y ${destino} son cuentas tuyas: esto es una transferencia, no un `
+                + 'gasto. Regístralo con finanzas_transferencia para que el dinero no cuente doble.',
+        };
     }
-    if (/transferencia|traspaso|fondear|paso? a hey/i.test(concepto ?? '')) {
-        return 'El concepto suena a transferencia entre cuentas propias. Si lo es, usa '
-            + 'finanzas_transferencia; si el dinero salió de verdad, ignora este aviso.';
+
+    const texto = `${concepto} ${comercio}`.toLowerCase();
+
+    // Destino deducido: el texto nombra otra cuenta propia Y suena a traspaso.
+    // Una de las dos señales sola no basta — "pagué el súper con Santander"
+    // nombra una cuenta sin ser transferencia.
+    if (VERBOS_TRANSFERENCIA.test(texto)) {
+        const mencionada = propias.find(
+            (p) => p.toLowerCase() !== (cuenta ?? '').toLowerCase()
+                && texto.includes(p.toLowerCase()),
+        );
+        if (mencionada && esPropia(cuenta)) {
+            return {
+                nivel: 'certeza',
+                destino: mencionada,
+                mensaje: `El concepto menciona "${mencionada}", que es otra cuenta tuya: esto es `
+                    + 'una transferencia, no un gasto. Usa finanzas_transferencia.',
+            };
+        }
+        return {
+            nivel: 'sospecha',
+            mensaje: 'El concepto suena a transferencia entre cuentas propias. Si lo es, usa '
+                + 'finanzas_transferencia; si el dinero sí salió de tu patrimonio, ignora esto.',
+        };
     }
     return null;
+}
+
+/**
+ * Construye el mensaje de una búsqueda ambigua.
+ *
+ * Elegir la primera coincidencia en silencio puede registrar un movimiento en
+ * la cuenta equivocada, y nadie se entera hasta que los saldos no cuadran.
+ */
+export function ambiguedad(termino, opciones, queEs = 'cuenta') {
+    return `"${termino}" coincide con ${opciones.length} ${queEs}s y no voy a elegir por ti:\n`
+        + opciones.map((o) => `  - ${o}`).join('\n')
+        + '\n\nRepite la llamada con el nombre exacto.';
 }

@@ -64,21 +64,90 @@ const sinConcepto = await call('finanzas_registrar_movimiento', {
 });
 check('exige concepto', /Falta el concepto/.test(sinConcepto));
 
-// Ojo: esta llamada SÍ escribe. La regla avisa pero no bloquea, porque un gasto
-// real puede tener un concepto que suene a traspaso. Hay que limpiarla.
-const CONCEPTO_SOSPECHA = 'PRUEBA MCP traspaso a Hey para fondear';
+// Certeza: el concepto nombra otra cuenta propia. Debe BLOQUEAR sin escribir.
+const bloqueado = await call('finanzas_registrar_movimiento', {
+    tipo: 'gasto', monto: 1, cuenta: 'Santander',
+    concepto: 'PRUEBA MCP traspaso a Hey Banco',
+});
+check('bloquea la transferencia con destino identificado', /NO se registró/.test(bloqueado));
+
+const bloqueadoExplicito = await call('finanzas_registrar_movimiento', {
+    tipo: 'gasto', monto: 1, cuenta: 'Santander', concepto: 'PRUEBA MCP',
+    destino: 'BBVA',
+});
+check('bloquea cuando el destino se declara', /NO se registró/.test(bloqueadoExplicito));
+
+// Sospecha: suena a traspaso pero no identifica destino. Registra y advierte,
+// porque un gasto real puede llamarse así. Esta llamada SÍ escribe.
+const CONCEPTO_SOSPECHA = 'PRUEBA MCP traspaso de mercancia';
 const sospecha = await call('finanzas_registrar_movimiento', {
     tipo: 'gasto', monto: 1, cuenta: 'Santander', concepto: CONCEPTO_SOSPECHA,
 });
-check('avisa cuando huele a transferencia', /Aviso:.*transferencia/s.test(sospecha));
+check('advierte pero registra cuando solo hay sospecha', /Aviso:.*transferencia/s.test(sospecha));
+
+const ambigua = await call('finanzas_registrar_movimiento', {
+    tipo: 'gasto', monto: 1, cuenta: 'an', concepto: 'PRUEBA MCP ambigua',
+});
+check('no elige entre cuentas ambiguas', /no voy a elegir por ti/.test(ambigua));
+
+const inventado = await call('finanzas_pagar_fijo', { concepto: 'Escuela', cuenta: 'Santander' });
+check('no elige entre gastos fijos ambiguos', /no voy a elegir por ti/.test(inventado));
 
 console.log('\nESCRITURA (se revierte)\n');
 const sql = postgres(envValue('SUPABASE_DB_URL'), { prepare: false, max: 2 });
 
 const borradas = await sql`
-    delete from transactions where description = ${CONCEPTO_SOSPECHA} returning id
+    delete from transactions where description like 'PRUEBA MCP%' returning id
 `;
-check('la prueba del aviso quedó limpia', borradas.length === 1);
+check('solo se escribió el caso de sospecha', borradas.length === 1);
+
+console.log('\nIDEMPOTENCIA\n');
+const clave = 'prueba-idempotencia-001';
+const uno = await call('finanzas_registrar_movimiento', {
+    tipo: 'gasto', monto: 33, cuenta: 'Santander', concepto: 'PRUEBA IDEM',
+    idempotency_key: clave,
+});
+const dos = await call('finanzas_registrar_movimiento', {
+    tipo: 'gasto', monto: 33, cuenta: 'Santander', concepto: 'PRUEBA IDEM',
+    idempotency_key: clave,
+});
+check('el primer intento registra', /Registrado/.test(uno));
+check('el reintento no duplica', /ya estaba registrado/.test(dos));
+const idemRows = await sql`select id from transactions where description = 'PRUEBA IDEM'`;
+check('quedó una sola fila', idemRows.length === 1);
+await sql`delete from transactions where description = 'PRUEBA IDEM'`;
+
+console.log('\nRECONCILIACIÓN PROTEGIDA\n');
+const [antesRec] = await sql`select display_balance from account_balances where name = 'Santander'`;
+const saldoActual = Number(antesRec.display_balance);
+
+const abortado = await call('finanzas_ajustar_saldo', {
+    cuenta: 'Santander', saldo_real: 5000, saldo_esperado: saldoActual + 999,
+});
+check('aborta si el saldo esperado no coincide', /Abortado/.test(abortado));
+
+const simulado = await call('finanzas_ajustar_saldo', {
+    cuenta: 'Santander', saldo_real: 5000, dry_run: true,
+});
+check('dry_run no escribe', /Simulación/.test(simulado));
+const [trasDry] = await sql`select display_balance from account_balances where name = 'Santander'`;
+check('el saldo sigue igual tras dry_run', Math.abs(Number(trasDry.display_balance) - saldoActual) < 0.01);
+
+const aplicado = await call('finanzas_ajustar_saldo', {
+    cuenta: 'Santander', saldo_real: 1234.56, saldo_esperado: saldoActual,
+    motivo: 'PRUEBA MCP reconciliación',
+});
+check('reancla cuando el esperado coincide', /reanclada/.test(aplicado));
+
+const bitacora = await call('finanzas_historial_ajustes', { cuenta: 'Santander' });
+check('el reanclaje quedó en bitácora', /PRUEBA MCP reconciliación/.test(bitacora));
+
+// Restaurar el saldo real de Jay y borrar el rastro de la prueba.
+await sql`update accounts set opening_balance = ${saldoActual}, opening_balance_at = now()
+          where name = 'Santander'`;
+await sql`delete from balance_adjustments where motivo = 'PRUEBA MCP reconciliación'`;
+const [restaurado] = await sql`select display_balance from account_balances where name = 'Santander'`;
+check('saldo restaurado', Math.abs(Number(restaurado.display_balance) - saldoActual) < 0.01);
 const saldoDe = async (n) => {
     const [r] = await sql`select balance from account_balances where name = ${n}`;
     return Number(r.balance);
