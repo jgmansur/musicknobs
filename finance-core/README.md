@@ -34,12 +34,19 @@ scripts/migrate_sheets.py           Sheets → Supabase (con --dry-run)
 
 | Pieza | Estado |
 | --- | --- |
-| Esquema SQL | Escrito, sin aplicar (falta proyecto Supabase) |
+| Esquema SQL | **Aplicado** — PostgreSQL 17.6, 7 tablas, 2 vistas, 16 índices |
 | Parsers | **Verificados** — 10/10 tests en verde |
-| Migración | **Verificada en seco** — 7 cuentas, 504 movimientos, 46 fijos |
+| Migración | **Aplicada** — 7 cuentas, 504 movimientos, 46 fijos |
 | Worker de ingesta | Pendiente |
 | MCP de finanzas | Pendiente |
 | Pestaña de bandeja | Pendiente |
+
+Proyecto Supabase: `isdjwvvojatoiwfuvuod`, región `us-west-2`, pooler `aws-1`.
+La conexión va por **Session pooler** (puerto 5432): la conexión directa de
+Supabase solo resuelve por IPv6 y no es alcanzable desde una red IPv4.
+
+Saldos verificados contra la hoja tras migrar, con cero movimientos después del
+ancla — o sea, no hubo doble conteo.
 
 Los parsers de Santander (compra débito y TDC) están validados contra el correo
 real `19faf44a66a1bc6f`. Los de BBVA se construyeron a partir de fragmentos de
