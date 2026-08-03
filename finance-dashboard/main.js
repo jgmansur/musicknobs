@@ -10175,14 +10175,30 @@ async function propiedades_syncDeudas(item) {
     const miPct = propiedades_miParticipacionPct(item);
     const deudas = (item.deudas || []).filter((d) => parseSheetValue(d.monto) > 0 && (d.concepto || '').trim());
     if (!deudas.length) return;
-    const rows = deudas.map((d, idx) => [
-        `${item.nombre} - ${d.concepto} (mi parte) [PROP-DEBT:${item.id}:${idx + 1}]`,
-        Math.abs(parseSheetValue(d.monto)) * (miPct / 100),
-    ]);
-    await sheetsAppend(SPREADSHEET_DEUDAS_ID, `${sheetName}!A:B`, rows);
+    const filas = deudas.map((d, idx) => ({
+        concepto: `${item.nombre} - ${d.concepto} (mi parte) [PROP-DEBT:${item.id}:${idx + 1}]`,
+        monto: Math.abs(parseSheetValue(d.monto)) * (miPct / 100),
+    }));
+    if (deudasDesdeWorker) {
+        for (const f of filas) {
+            await bandeja_api('/api/deudas', {
+                method: 'POST',
+                body: JSON.stringify({ concepto: f.concepto, monto: f.monto, hidden: true }),
+            });
+        }
+        return;
+    }
+    await sheetsAppend(SPREADSHEET_DEUDAS_ID, `${sheetName}!A:B`, filas.map((f) => [f.concepto, f.monto]));
 }
 
 async function propiedades_removeDeudasByPrefix(prefix) {
+    if (deudasDesdeWorker) {
+        const { deudas } = await bandeja_api('/api/deudas');
+        for (const d of (deudas || []).filter((x) => (x.concepto || '').includes(prefix))) {
+            await bandeja_api(`/api/deudas/${d.id}`, { method: 'DELETE' });
+        }
+        return;
+    }
     const sheetName = await propiedades_getDeudasSheetName();
     const rows = await sheetsGet(SPREADSHEET_DEUDAS_ID, `${sheetName}!A2:B`).catch(() => []);
     if (!rows.length) return;
@@ -10200,6 +10216,37 @@ async function propiedades_removeDeudasByPrefix(prefix) {
 
 async function propiedades_upsertFijoByMarker(item, key, config) {
     const marker = `[PROP-FIX:${item.id}:${key}]`;
+
+    // Con finance-core el fijo se busca por su marcador dentro del concepto y
+    // se crea, actualiza o borra por id. Un monto en cero significa que esa
+    // parte de la propiedad ya no genera gasto: el fijo se da de baja.
+    if (bandeja_token() && fijosState.allItems?.some((f) => typeof f.id === 'string')) {
+        const monto = Math.max(0, parseSheetValue(config.monto));
+        const existente = fijosState.allItems.find((f) => (f.concepto || '').includes(marker));
+        if (monto <= 0) {
+            if (existente) await bandeja_api(`/api/fijos/${existente.id}`, { method: 'DELETE' });
+            return;
+        }
+        const cuerpo = {
+            concepto: `${config.concepto} ${marker}`,
+            monto,
+            categoria: config.categoria || 'Propiedades',
+            tipo: config.tipo === 'ingreso' ? 'ingreso' : 'gasto',
+            pagosMes: 1,
+            periodicidad: 'mensual',
+            inicioMes: config.monthStart || parseStartMonth(''),
+            pagador: config.formaPago || 'Santander',
+            budgetCategory: config.budgetCategory || 'Mantenimiento y Pago de Servicios',
+            moneda: 'MXN',
+            diaMes: Math.max(1, Math.min(31, parseDayOfMonth(config.day))),
+        };
+        await bandeja_api(existente ? `/api/fijos/${existente.id}` : '/api/fijos', {
+            method: existente ? 'PATCH' : 'POST',
+            body: JSON.stringify(cuerpo),
+        });
+        return;
+    }
+
     const rows = await sheetsGet(SPREADSHEET_FIXED_ID, `${propiedadesState.fixedSheetName}!A2:N`).catch(() => []);
     const foundIdx = rows.findIndex((row) => ((row[1] || '').toString()).includes(marker));
     const monto = Math.max(0, parseSheetValue(config.monto));
@@ -10235,6 +10282,12 @@ async function propiedades_upsertFijoByMarker(item, key, config) {
 }
 
 async function propiedades_removeFijosByPrefix(prefix) {
+    if (bandeja_token() && fijosState.allItems?.some((f) => typeof f.id === 'string')) {
+        for (const f of fijosState.allItems.filter((x) => (x.concepto || '').includes(prefix))) {
+            await bandeja_api(`/api/fijos/${f.id}`, { method: 'DELETE' });
+        }
+        return;
+    }
     const rows = await sheetsGet(SPREADSHEET_FIXED_ID, `${propiedadesState.fixedSheetName}!A2:N`).catch(() => []);
     if (!rows.length) return;
     const rowIndexes = [];
@@ -15019,7 +15072,18 @@ async function deudas_guardar() {
             const parentItem = deudas_getItemByKey(parentKey);
             if (parentItem && (parentItem.parentKey || '').toString().trim()) parentKey = '';
             if (parentKey && deudas_isDescendantKey(parentKey, debtKey, childrenMap)) parentKey = '';
-            await sheetsUpdate(SPREADSHEET_DEUDAS_ID, `${sheetName}!A${editId}:G${editId}`, [[concepto, monto, hiddenVal, existingCuotas, allUrls, debtKey, parentKey]]);
+            if (deudasDesdeWorker) {
+                await bandeja_api(`/api/deudas/${editId}`, {
+                    method: 'PATCH',
+                    body: JSON.stringify({
+                        concepto, monto: Math.abs(monto),
+                        hidden: hiddenVal === 'TRUE',
+                        archivos: allUrls || null,
+                    }),
+                });
+            } else {
+                await sheetsUpdate(SPREADSHEET_DEUDAS_ID, `${sheetName}!A${editId}:G${editId}`, [[concepto, monto, hiddenVal, existingCuotas, allUrls, debtKey, parentKey]]);
+            }
             if (cuotasForSave) {
                 if (existing) existing.cuotas = cuotasForSave;
                 const updatedFixed = await deudas_syncPendingFixedRows({
@@ -15040,7 +15104,18 @@ async function deudas_guardar() {
             let parentKey = selectedParentKey;
             const parentItem = deudas_getItemByKey(parentKey);
             if (!parentItem || (parentItem.parentKey || '').toString().trim()) parentKey = '';
-            await sheetsAppend(SPREADSHEET_DEUDAS_ID, `${sheetName}!A:G`, [[concepto, Math.abs(monto), 'FALSE', '', uploadedUrls.join(','), debtKey, parentKey]]);
+            if (deudasDesdeWorker) {
+                await bandeja_api('/api/deudas', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        concepto, monto: Math.abs(monto), hidden: false,
+                        archivos: uploadedUrls.join(',') || null,
+                        debtKey, parentKey: parentKey || null,
+                    }),
+                });
+            } else {
+                await sheetsAppend(SPREADSHEET_DEUDAS_ID, `${sheetName}!A:G`, [[concepto, Math.abs(monto), 'FALSE', '', uploadedUrls.join(','), debtKey, parentKey]]);
+            }
             showToast('✅ Deuda agregada');
         }
         deudas_cerrarSheet();
