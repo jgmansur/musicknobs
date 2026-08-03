@@ -24,7 +24,7 @@ const DEUDAS_RECIBOS_FOLDER_ID = '157KDn-vbkuHH1L8xbaJBGz-oKmT7p5a9';
 const SPREADSHEET_RSM_ID = '14VsoPHGNTSUSbzMOqGWs2qSL-pGywPgjUoHD3MqIJfo'; // Recibos Salud Mariel
 const SALDOS_SHEET_ID    = '1-cX_qxld3ioSpcO9lEBPg90Db6AyK7SczpJTvj7rw4U'; // Saldos (fuente de verdad — Claude accede vía service account)
 const RSM_FOLDER_ID = '1-ZfeWQ-Rmh-Wm2WMCkULkN6MQWBuxYnj';
-const APP_VERSION  = 'v8.6.3';
+const APP_VERSION  = 'v8.6.4';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -6394,6 +6394,7 @@ async function autos_uploadFirstFile(inputId, options = {}) {
         });
         if (cropped) file = cropped;
     }
+    options.onAntesDeSubir?.();
     return driveUploadFile(file, folderId);
 }
 
@@ -7527,10 +7528,16 @@ async function autos_openDocCropper(file, options = {}) {
     // exactamente el bug de las fotos de Recetas. Aquí se detecta y se sigue de
     // largo con el archivo original en vez de dejar la subida colgada.
     const panel = document.getElementById('autos-doc-crop-panel');
-    const vistaContenedora = panel?.closest('.view');
-    if (!panel || (vistaContenedora && !vistaContenedora.classList.contains('active'))) {
-        console.warn('El recortador quedó dentro de una vista inactiva; se usa el archivo original.');
+    if (!panel) {
+        console.warn('No existe el panel del recortador; se usa el archivo original.');
         return null;
+    }
+    // Se reubica en el body EN CALIENTE en vez de confiar en dónde lo dejó el
+    // HTML. El index.html se cachea sin cache-buster, así que un navegador con
+    // la versión vieja seguiría teniendo el panel dentro de #view-autos y la
+    // subida volvería a colgarse. Moverlo aquí lo arregla en cualquier copia.
+    if (panel.parentElement !== document.body) {
+        document.body.appendChild(panel);
     }
 
     const dataUrl = await autos_fileToDataUrl(file);
@@ -16463,14 +16470,20 @@ async function recetas_subirFoto(inputId, slotKey) {
     if (!input?.files?.length) return;
     const slot = RECETAS_SLOTS.find((s) => s.key === slotKey);
     const feedback = document.getElementById(slot?.feedback || '');
-    if (feedback) feedback.innerText = '⏳ Subiendo a Drive...';
+    // Aviso por etapa: si algo se atora, el texto dice DÓNDE. Antes solo decía
+    // "Subiendo a Drive..." y un cuelgue en el recortador era indistinguible de
+    // uno en la subida.
+    const paso = (txt) => { if (feedback) feedback.innerText = txt; };
+    paso('⏳ Preparando...');
     try {
         // Misma carpeta que los recibos ('Jay App Recibos'). Recorte tipo carta:
         // tanto la receta como el recibo suelen ser una hoja.
+        paso('✂️ Ajusta el recorte y confirma...');
         const url = await autos_uploadFirstFile(inputId, {
             enableCrop: true,
             cropTitle: slot?.crop || 'Recortar',
             cropMode: 'carta',
+            onAntesDeSubir: () => paso('⏳ Subiendo a Drive...'),
         });
         if (!url) throw new Error('no se obtuvo URL');
         recetasState.pending[slotKey] = url;
