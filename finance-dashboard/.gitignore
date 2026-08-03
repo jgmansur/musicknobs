@@ -22,3 +22,9 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Salida del build. Vercel compila desde el fuente en cada deploy, asi que
+# versionarla solo generaba ruido: llego a haber 17 bundles viejos y una copia
+# desactualizada de escolaridad.json conviviendo con la buena de public/.
+/dist
+/assets
