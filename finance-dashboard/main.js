@@ -4341,6 +4341,67 @@ function planner_refreshIfReady() {
     tabInited.plan = false;
 }
 
+
+/**
+ * Carga los gastos fijos desde finance-core.
+ *
+ * Nota: aquí NO hace falta el "reset mensual" que la app hacía reescribiendo la
+ * hoja cada vez que cambiaba el mes. El estado de pago vive por periodo, así que
+ * un mes nuevo simplemente todavía no tiene filas.
+ */
+async function fijos_cargarDesdeWorker(nowMonth) {
+    if (!bandeja_token()) return false;
+    try {
+        const periodo = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`;
+        const { fijos } = await bandeja_api(`/api/fijos?period=${periodo}`);
+        if (!fijos) return false;
+
+        fijosState.allItems = fijos.map((f) => {
+            const pagosMes = Number(f.pagos_mes) || 1;
+            const partes = f.partes || {};
+            const pagosEstado  = Array.from({ length: pagosMes }, (_, i) => !!partes[i]?.paid);
+            const waivedEstado = Array.from({ length: pagosMes }, (_, i) => !!partes[i]?.waived);
+            // Una parte condonada cuenta como cubierta: no se debe nada.
+            const pagosHechos = pagosEstado.filter((v, i) => v || waivedEstado[i]).length;
+            const moneda = parseCurrencyCode(f.moneda);
+            const montoOriginal = Number(f.monto);
+            const dia = Number(f.dia_mes) || 1;
+            const periodicidad = parseFixedPeriodicity(f.periodicidad);
+
+            return {
+                id: f.id,
+                fecha: `Día ${dia}`,
+                fechaValue: String(dia).padStart(2, '0'),
+                diaMes: dia,
+                concepto: f.concepto || '',
+                monto: convertTransactionAmountToMxn(montoOriginal, moneda),
+                montoOriginal,
+                moneda,
+                tipo: f.tipo === 'ingreso' ? 'ingreso' : 'gasto',
+                categoria: f.categoria || 'General',
+                isPaid: pagosHechos >= pagosMes,
+                pagosMes,
+                pagosEstado,
+                waivedEstado,
+                pagosHechos,
+                periodicidad,
+                inicioMes: f.inicio_mes || nowMonth,
+                isDueThisMonth: isFixedDueThisMonth(periodicidad, f.inicio_mes || nowMonth, nowMonth),
+                pagador: parseFixedPayer(f.pagador),
+                formaPago: parseFixedFormaPago(f.pagador),
+                budgetCategory: parseBudgetCategory(f.budget_category),
+                linkGroup: (f.link_group || '').toString().trim(),
+                fechasPago: f.fechas_pago || [],
+            };
+        }).filter(i => i.concepto).sort((a, b) => a.diaMes - b.diaMes);
+
+        return true;
+    } catch (err) {
+        console.warn('[Fijos] finance-core no respondió:', err.message);
+        return false;
+    }
+}
+
 async function fijos_cargarDatos() {
     document.getElementById('f-lista').innerHTML = '<div class="loading-spinner">⏳ Cargando...</div>';
     try {
@@ -4351,6 +4412,16 @@ async function fijos_cargarDatos() {
         ]);
         fijosState.categorias = catRows.map(r => r[0]).filter(Boolean);
         if (!fijosState.categorias.length) fijosState.categorias = ['General'];
+
+        // Fuente de verdad: finance-core. La hoja queda de respaldo.
+        const nowMonthW = `${new Date().getFullYear()}-${new Date().getMonth() + 1}`;
+        if (await fijos_cargarDesdeWorker(nowMonthW)) {
+            fijos_generarPills();
+            fijos_syncDashboardStats();
+            fijos_aplicarFiltros();
+            planner_refreshIfReady();
+            return;
+        }
 
         // ── Monthly Reset ──────────────────────────────────────────────
         // If month changed since last reset, clear all 'Pagado' checkboxes.
@@ -4699,10 +4770,60 @@ window.fijos_clearLinkGroup = async function(id) {
     }
 };
 
+
+/**
+ * Marca, condona o deshace una parte de un gasto fijo contra finance-core.
+ *
+ * Marcarla crea su movimiento, que es lo que mueve el saldo. Condonarla lo
+ * marca sin movimiento, porque no salió dinero. Deshacerla borra el movimiento
+ * para que el saldo regrese.
+ */
+async function fijos_togglePagoPartWorker(item, partIndex, options = {}) {
+    const yaPagada = !!item.pagosEstado[partIndex] || !!item.waivedEstado?.[partIndex];
+    const periodo = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`;
+    const condonar = !!(options.waive || options.skipControlLog);
+
+    try {
+        if (yaPagada) {
+            await bandeja_api(`/api/fijos/${item.id}/unpay`, {
+                method: 'POST',
+                body: JSON.stringify({ partIndex, period: periodo }),
+            });
+        } else if (condonar) {
+            await bandeja_api(`/api/fijos/${item.id}/waive`, {
+                method: 'POST',
+                body: JSON.stringify({ partIndex, period: periodo }),
+            });
+        } else {
+            const cuenta = balanceAccounts.find(a =>
+                balance_getAccountMatchKeys(a).includes(balance_normalizePaymentKey(item.formaPago)));
+            if (!cuenta) {
+                showToast(`⚠️ "${item.formaPago || 'sin forma de pago'}" no existe como cuenta`);
+                return;
+            }
+            await bandeja_api(`/api/fixed/${item.id}/pay`, {
+                method: 'POST',
+                body: JSON.stringify({ partIndex, accountId: cuenta.id }),
+            });
+        }
+        await Promise.all([balance_loadFromWorker(), fijos_cargarDatos()]);
+        balance_updateKpi();
+    } catch (err) {
+        showToast(`⚠️ ${err.message}`);
+        fijos_cargarDatos();
+    }
+}
+
 /** Toggle one partial payment state and sync to Control de Gastos */
 window.fijos_togglePagoPart = async function(id, partIndex, options = {}) {
     const item = fijosState.allItems.find(i => i.id === id);
     if (!item) return;
+
+    // Los fijos de finance-core tienen id UUID. Ahí el servidor se encarga de
+    // crear o borrar el movimiento, así que el saldo se mueve solo.
+    if (typeof id === 'string' && id.includes('-')) {
+        return fijos_togglePagoPartWorker(item, partIndex, options);
+    }
     const wasPartPaid = !!item.pagosEstado[partIndex];
     const wasPartWaived = !!(item.waivedEstado && item.waivedEstado[partIndex]);
     const nowPartPaid = !wasPartPaid;

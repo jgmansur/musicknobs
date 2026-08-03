@@ -369,6 +369,66 @@ export default {
                 return json(result, result.error ? 400 : 200);
             }
 
+            if (url.pathname === '/api/fijos' && request.method === 'GET') {
+                const periodo = (url.searchParams.get('period') ?? new Date().toISOString().slice(0, 7)) + '-01';
+                // El estado de pago vive por periodo, así que no hace falta el
+                // "reset mensual" que la app hacía reescribiendo la hoja: cada
+                // mes simplemente no tiene filas todavía.
+                const rows = await sql`
+                    select f.*,
+                           coalesce(
+                               jsonb_object_agg(p.part_index,
+                                   jsonb_build_object('paid', p.paid, 'waived', p.waived))
+                               filter (where p.id is not null),
+                               '{}'::jsonb
+                           ) as partes
+                    from fixed_expenses f
+                    left join fixed_expense_payments p
+                           on p.fixed_expense_id = f.id and p.period = ${periodo}::date
+                    where f.active
+                    group by f.id
+                    order by f.dia_mes nulls last, f.concepto
+                `;
+                return json({ periodo, fijos: rows });
+            }
+
+            const waiveMatch = url.pathname.match(/^\/api\/fijos\/([\w-]+)\/(waive|unpay)$/);
+            if (waiveMatch && request.method === 'POST') {
+                const [, fixedId, accion] = waiveMatch;
+                const body = await request.json().catch(() => ({}));
+                const idx = body.partIndex ?? 0;
+                const periodo = (body.period ?? new Date().toISOString().slice(0, 7)) + '-01';
+
+                if (accion === 'waive') {
+                    // Condonado: se marca sin movimiento, porque no salió dinero.
+                    await sql`
+                        insert into fixed_expense_payments (fixed_expense_id, period, part_index, waived)
+                        values (${fixedId}, ${periodo}, ${idx}, true)
+                        on conflict (fixed_expense_id, period, part_index)
+                        do update set waived = true, paid = false
+                    `;
+                    return json({ ok: true, waived: true });
+                }
+
+                // Deshacer: si había movimiento, se borra para que el saldo vuelva.
+                await sql.begin(async (tx) => {
+                    const [p] = await tx`
+                        select transaction_id from fixed_expense_payments
+                        where fixed_expense_id = ${fixedId} and period = ${periodo}
+                          and part_index = ${idx}
+                    `;
+                    if (p?.transaction_id) {
+                        await tx`delete from transactions where id = ${p.transaction_id}`;
+                    }
+                    await tx`
+                        delete from fixed_expense_payments
+                        where fixed_expense_id = ${fixedId} and period = ${periodo}
+                          and part_index = ${idx}
+                    `;
+                });
+                return json({ ok: true, undone: true });
+            }
+
             const payMatch = url.pathname.match(/^\/api\/fixed\/([\w-]+)\/pay$/);
             if (payMatch && request.method === 'POST') {
                 const body = await request.json().catch(() => ({}));
