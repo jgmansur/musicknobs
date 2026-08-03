@@ -55,11 +55,17 @@ def main() -> int:
         fh.write(creds.to_json())
     os.chmod(TOKEN_PATH, 0o600)
 
-    print(f"\nListo. Token guardado en {TOKEN_PATH}\n")
-    print("Guarda estos tres valores como secretos del Worker:\n")
-    print(f"  GMAIL_CLIENT_ID={creds.client_id}")
-    print(f"  GMAIL_CLIENT_SECRET={creds.client_secret}")
-    print(f"  GMAIL_REFRESH_TOKEN={creds.refresh_token}")
+    # Los secretos se escriben a disco, nunca a stdout: lo que se imprime queda
+    # en el historial de la terminal y en los transcripts del asistente.
+    secrets_path = os.path.join(HERE, "gmail_secrets.env")
+    with open(secrets_path, "w") as fh:
+        fh.write(f"GMAIL_CLIENT_ID={creds.client_id}\n")
+        fh.write(f"GMAIL_CLIENT_SECRET={creds.client_secret}\n")
+        fh.write(f"GMAIL_REFRESH_TOKEN={creds.refresh_token}\n")
+    os.chmod(secrets_path, 0o600)
+
+    print(f"\nListo. Token guardado en {TOKEN_PATH}")
+    print(f"Secretos del Worker en {secrets_path} (no se imprimen a propósito).")
     return 0
 
 

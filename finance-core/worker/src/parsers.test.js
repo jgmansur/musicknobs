@@ -112,6 +112,21 @@ test('retiro de efectivo BBVA es gasto', () => {
     assert.equal(r.merchant, 'Retiro de efectivo');
 });
 
+test('pago de tarjeta de crédito BBVA, con fecha en español largo', () => {
+    const r = parseBankEmail(bbva(
+        `BBVA Notificación app BBVA Hola, Mansur Gonzalez Juan Guillermo: La transferencia
+         que hiciste desde tu tarjeta de débito a la tarjeta de crédito de otros bancos fue
+         exitosa, te compartimos los detalles: Importe: $ 11,600.00 Tarjeta depósito: 8914
+         DETALLES DE OPERACIÓN Fecha: 23 de abril de 2026 Hora: 09:04:22`,
+        'La transferencia a tarjeta de crédito fue exitosa',
+    ));
+    assert.equal(r.matched, true);
+    assert.equal(r.template, 'bbva_pago_tdc');
+    assert.equal(r.amount, 11600);
+    assert.equal(r.counterparty, 'tarjeta ****8914');
+    assert.equal(r.occurredAt.toISOString(), '2026-04-23T15:04:22.000Z');
+});
+
 test('publicidad se descarta por remitente', () => {
     const r = parseBankEmail({
         from: 'clientes@envios.santander.com.mx',

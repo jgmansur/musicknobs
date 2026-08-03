@@ -73,6 +73,24 @@ export function parseMxDateTime(ddmmyyyy, hhmmss) {
     return new Date(`${yyyy}-${mm}-${dd}T${hh}:${mi}:${ss}-06:00`);
 }
 
+const MESES = {
+    enero: 1, febrero: 2, marzo: 3, abril: 4, mayo: 5, junio: 6,
+    julio: 7, agosto: 8, septiembre: 9, octubre: 10, noviembre: 11, diciembre: 12,
+};
+
+/** BBVA escribe la fecha larga: "22 de abril de 2026" + "13:48:44". */
+export function parseSpanishDate(dia, mes, anio, hora) {
+    const mm = MESES[(mes || '').toLowerCase()];
+    if (!mm) return null;
+    const time = /^(\d{1,2}):(\d{2})(?::(\d{2}))?$/.exec((hora || '').trim());
+    const hh = time ? time[1].padStart(2, '0') : '12';
+    const mi = time ? time[2] : '00';
+    const ss = time ? (time[3] ?? '00') : '00';
+    return new Date(
+        `${anio}-${String(mm).padStart(2, '0')}-${String(dia).padStart(2, '0')}T${hh}:${mi}:${ss}-06:00`,
+    );
+}
+
 const AMOUNT = String.raw`\$\s*([\d,]+(?:\.\d{2})?)`;
 
 const MATCHERS = [
@@ -169,6 +187,32 @@ const MATCHERS = [
             instrument: 'cuenta',
             amount: parseAmount(m[2]),
             currency: 'MXN',
+        }),
+    },
+    {
+        bank: 'bbva',
+        template: 'bbva_pago_tdc',
+        // "La transferencia que hiciste desde tu tarjeta de débito a la tarjeta de
+        //  crédito ... Importe: $ 1,000.00 Tarjeta depósito: 8914
+        //  Fecha: 22 de abril de 2026 Hora: 13:48:44"
+        // Si la tarjeta destino es de Jay, al aprobar se reclasifica como 'transfer'.
+        re: new RegExp(
+            String.raw`transferencia\s+que\s+hiciste\s+desde\s+tu\s+tarjeta\s+de\s+d[ée]bito` +
+            String.raw`\s+a\s+la\s+tarjeta\s+de\s+cr[ée]dito.*?fue\s+exitosa` +
+            String.raw`.*?Importe:\s*${AMOUNT}` +
+            String.raw`(?:.*?Tarjeta\s+dep[óo]sito:\s*\**\s*(\d{4}))?` +
+            String.raw`(?:.*?Fecha:\s*(\d{1,2})\s+de\s+([a-zá-ú]+)\s+de\s+(\d{4}))?` +
+            String.raw`(?:.*?Hora:\s*([\d:]+))?`,
+            'i',
+        ),
+        build: (m) => ({
+            kind: 'gasto',
+            merchant: 'Pago de tarjeta de crédito',
+            amount: parseAmount(m[1]),
+            counterparty: m[2] ? `tarjeta ****${m[2]}` : null,
+            instrument: 'cuenta',
+            currency: 'MXN',
+            occurredAt: parseSpanishDate(m[3], m[4], m[5], m[6]),
         }),
     },
     {
