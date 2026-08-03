@@ -6,13 +6,15 @@ compatibility_date = "2025-01-15"
 # necesita las APIs de Node.
 compatibility_flags = ["nodejs_compat"]
 
-[observability]
-enabled = true
-
 # La API queda en workers.dev pero exige token. Las URLs de preview se apagan:
 # generan endpoints extra por cada versión y aquí no hacen falta.
+# Ojo: van al nivel raíz. Debajo de [observability] quedan dentro de esa tabla
+# y wrangler los ignora en silencio.
 workers_dev = true
 preview_urls = false
+
+[observability]
+enabled = true
 
 # Cada 15 minutos. Las alertas del banco llegan en segundos, así que este
 # retraso es el techo de cuánto tarda un gasto en aparecer en la bandeja.

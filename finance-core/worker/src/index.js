@@ -392,6 +392,58 @@ export default {
                 return json({ periodo, fijos: rows });
             }
 
+            const fijoMatch = url.pathname.match(/^\/api\/fijos\/([\w-]+)$/);
+            if (fijoMatch && request.method === 'DELETE') {
+                // Baja lógica: los movimientos históricos siguen apuntando a este
+                // fijo, y borrarlo de verdad los dejaría huérfanos.
+                const [f] = await sql`
+                    update fixed_expenses set active = false
+                    where id = ${fijoMatch[1]} returning concepto
+                `;
+                return json(f ? { ok: true, concepto: f.concepto } : { error: 'no encontrado' },
+                            f ? 200 : 404);
+            }
+
+            if (fijoMatch && request.method === 'PATCH') {
+                const b = await request.json().catch(() => ({}));
+                const [f] = await sql`
+                    update fixed_expenses set
+                        concepto        = coalesce(${b.concepto ?? null}, concepto),
+                        categoria       = coalesce(${b.categoria ?? null}, categoria),
+                        monto           = coalesce(${b.monto ?? null}, monto),
+                        moneda          = coalesce(${b.moneda ?? null}, moneda),
+                        tipo            = coalesce(${b.tipo ?? null}, tipo),
+                        pagos_mes       = coalesce(${b.pagosMes ?? null}, pagos_mes),
+                        periodicidad    = coalesce(${b.periodicidad ?? null}, periodicidad),
+                        inicio_mes      = coalesce(${b.inicioMes ?? null}, inicio_mes),
+                        pagador         = coalesce(${b.pagador ?? null}, pagador),
+                        budget_category = coalesce(${b.budgetCategory ?? null}, budget_category),
+                        link_group      = ${b.linkGroup ?? null},
+                        dia_mes         = coalesce(${b.diaMes ?? null}, dia_mes)
+                    where id = ${fijoMatch[1]} returning id
+                `;
+                return json(f ? { ok: true } : { error: 'no encontrado' }, f ? 200 : 404);
+            }
+
+            if (url.pathname === '/api/fijos' && request.method === 'POST') {
+                const b = await request.json().catch(() => ({}));
+                if (!b.concepto || !Number.isFinite(Number(b.monto))) {
+                    return json({ error: 'falta concepto o monto' }, 400);
+                }
+                const [f] = await sql`
+                    insert into fixed_expenses (concepto, categoria, monto, moneda, tipo,
+                        pagos_mes, periodicidad, inicio_mes, pagador, budget_category,
+                        link_group, dia_mes, fechas_pago)
+                    values (${b.concepto}, ${b.categoria ?? null}, ${b.monto},
+                        ${b.moneda ?? 'MXN'}, ${b.tipo ?? 'gasto'}, ${b.pagosMes ?? 1},
+                        ${b.periodicidad ?? 'mensual'}, ${b.inicioMes ?? null},
+                        ${b.pagador ?? null}, ${b.budgetCategory ?? null},
+                        ${b.linkGroup ?? null}, ${b.diaMes ?? null}, ${b.fechasPago ?? []})
+                    returning id
+                `;
+                return json({ ok: true, id: f.id });
+            }
+
             const waiveMatch = url.pathname.match(/^\/api\/fijos\/([\w-]+)\/(waive|unpay)$/);
             if (waiveMatch && request.method === 'POST') {
                 const [, fixedId, accion] = waiveMatch;

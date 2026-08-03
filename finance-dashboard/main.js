@@ -3027,7 +3027,7 @@ window.dashboard_togglePagoPart = async function(id, partIndex, options = {}) {
 };
 
 function fixedPartButtonAttrs(id, partIndex, source) {
-    return `onpointerdown="fixed_partPointerDown(${id}, ${partIndex}, '${source}')" onpointerup="fixed_partPointerUp()" onpointerleave="fixed_partPointerUp()" onpointercancel="fixed_partPointerUp()" onclick="fixed_partClick(${id}, ${partIndex}, '${source}')"`;
+    return `onpointerdown="fixed_partPointerDown('${id}', ${partIndex}, '${source}')" onpointerup="fixed_partPointerUp()" onpointerleave="fixed_partPointerUp()" onpointercancel="fixed_partPointerUp()" onclick="fixed_partClick('${id}', ${partIndex}, '${source}')"`;
 }
 
 window.fixed_partPointerDown = function(id, partIndex, source) {
@@ -4678,7 +4678,7 @@ function fijos_renderCard(item, fmt) {
             ? `<div style="display:flex;align-items:center;gap:.35rem;flex-wrap:wrap;margin-top:.25rem;">
                 <span class="kpi-inline-note" style="font-size:.7rem;">Grupo:</span>
                 <button class="mini-btn" onclick="fijos_copyLinkGroup('${linkGroupRaw.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}')">${linkGroupEsc}</button>
-                <button class="mini-btn mini-btn-danger" onclick="fijos_clearLinkGroup(${item.id})" title="Desasignar grupo">✕</button>
+                <button class="mini-btn mini-btn-danger" onclick="fijos_clearLinkGroup('${item.id}')" title="Desasignar grupo">✕</button>
               </div>`
             : '';
         return `<div class="movimiento-card ${item.isPaid ? 'card-paid' : ''}">
@@ -4693,8 +4693,8 @@ function fijos_renderCard(item, fmt) {
             <div style="display:flex;gap:.35rem;flex-wrap:wrap;justify-content:flex-end;max-width:220px">${botonesPagos}</div>
             ${fechasPagoUi}
             <div style="display:flex;gap:.4rem;margin-top:.2rem">
-              <button class="mini-btn" onclick="fijos_editar(${item.id})">✏️</button>
-              <button class="mini-btn mini-btn-danger" onclick="fijos_borrar(${item.id})">🗑️</button>
+              <button class="mini-btn" onclick="fijos_editar('${item.id}')">✏️</button>
+              <button class="mini-btn mini-btn-danger" onclick="fijos_borrar('${item.id}')">🗑️</button>
             </div>
           </div>
         </div>`;
@@ -4740,8 +4740,14 @@ window.fijos_borrar = async function(id) {
     const el = document.getElementById('f-lista');
     el.innerHTML = '<div class="loading-spinner">Actualizando...</div>';
     try {
-        if (fijosState.sheetId === null) fijosState.sheetId = await getSheetId(SPREADSHEET_FIXED_ID, 'Hoja 1');
-        await sheetsDeleteRow(SPREADSHEET_FIXED_ID, fijosState.sheetId, id - 1);
+        // Los ids de finance-core son UUID: `id - 1` daría NaN y podría borrar
+        // la fila equivocada de la hoja.
+        if (typeof id === 'string' && id.includes('-')) {
+            await bandeja_api(`/api/fijos/${id}`, { method: 'DELETE' });
+        } else {
+            if (fijosState.sheetId === null) fijosState.sheetId = await getSheetId(SPREADSHEET_FIXED_ID, 'Hoja 1');
+            await sheetsDeleteRow(SPREADSHEET_FIXED_ID, fijosState.sheetId, id - 1);
+        }
         fijos_cargarDatos();
         planner_refreshIfReady();
     } catch(e) { console.error(e); el.innerHTML = '<div class="empty-state text-danger">❌ Error al borrar</div>'; }
@@ -5152,6 +5158,31 @@ async function fijos_guardar() {
     const ingreso= tipo === 'ingreso' ? monto : '';
     btn.disabled = true; btn.innerText = 'Guardando...';
     try {
+        // Fuente de verdad: finance-core. La hoja solo se toca si el fijo
+        // todavía viene de ahí (id numérico de fila).
+        const esWorker = !editId
+            ? bandeja_token() && fijosState.allItems.some(i => typeof i.id === 'string')
+            : typeof editId === 'string' && editId.includes('-');
+
+        if (esWorker) {
+            const cuerpo = {
+                concepto, categoria: catStr,
+                monto: Math.abs(parseSheetValue(gasto) || parseSheetValue(ingreso) || 0),
+                moneda, tipo: parseSheetValue(ingreso) > 0 ? 'ingreso' : 'gasto',
+                pagosMes, periodicidad, inicioMes,
+                pagador: formaPagoVal, budgetCategory, linkGroup,
+                diaMes: parseDayOfMonth(fecha),
+            };
+            await bandeja_api(editId ? `/api/fijos/${editId}` : '/api/fijos', {
+                method: editId ? 'PATCH' : 'POST',
+                body: JSON.stringify(cuerpo),
+            });
+            fijos_cerrarSheet?.();
+            await fijos_cargarDatos();
+            planner_refreshIfReady();
+            return;
+        }
+
         if (editId) {
             const current = fijosState.allItems.find(i => i.id === Number(editId));
             const prevStates = current?.pagosEstado || [];
