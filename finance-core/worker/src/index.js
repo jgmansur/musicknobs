@@ -358,6 +358,28 @@ export default {
                 return json({ ok: true, undone: true });
             }
 
+            if (url.pathname === '/api/lugares' && request.method === 'GET') {
+                const rows = await sql`
+                    select id, nombre, tipo, categoria from places
+                    where tipo <> 'marcador' order by nombre
+                `;
+                return json({ lugares: rows });
+            }
+
+            if (url.pathname === '/api/lugares' && request.method === 'POST') {
+                const b = await request.json().catch(() => ({}));
+                const nombre = (b.nombre ?? '').trim();
+                if (nombre.length < 2) return json({ error: 'nombre inválido' }, 400);
+                const [p] = await sql`
+                    insert into places (nombre, tipo, aliases, categoria)
+                    values (${nombre}, ${b.tipo ?? 'comercio'},
+                            ${b.aliases ?? [nombre.toLowerCase()]}, ${b.categoria ?? null})
+                    on conflict (nombre) do update set nombre = excluded.nombre
+                    returning id, nombre, categoria
+                `;
+                return json({ ok: true, lugar: p });
+            }
+
             if (url.pathname === '/api/deudas' && request.method === 'GET') {
                 const rows = await sql`
                     select d.*,

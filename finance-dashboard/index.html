@@ -272,7 +272,11 @@
           </div>
           <div class="form-field">
             <label class="field-label">Lugar</label>
-            <input type="text" id="g-lugar" class="field-input" placeholder="Ej. Oxxo">
+            <select id="g-lugar" class="field-input">
+              <option value="">— Elegir lugar —</option>
+            </select>
+            <!-- Se llena desde el catálogo. La última opción permite dar de alta
+                 uno nuevo sin salir del formulario. -->
           </div>
           <div class="form-field">
             <label class="field-label">Concepto</label>

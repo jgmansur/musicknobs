@@ -84,6 +84,74 @@ async function financeCoreSync({ fecha, lugar, concepto, monto, tipo, forma, rec
     }
 }
 
+
+/* ==========================================================================
+   CATÁLOGO DE LUGARES
+   ==========================================================================
+   "Lugar" dejó de ser texto libre: como cuadro abierto, el OXXO acabó guardado
+   de seis formas distintas y ningún reporte por lugar cuadraba. Aquí se llena
+   la lista desde el catálogo, con una opción al final para dar de alta uno
+   nuevo sin salir del formulario.
+   -------------------------------------------------------------------------- */
+
+let lugaresCatalogo = [];
+
+async function lugares_cargar() {
+    if (!bandeja_token()) return;
+    try {
+        const { lugares } = await bandeja_api('/api/lugares');
+        lugaresCatalogo = lugares || [];
+        lugares_pintarSelect();
+    } catch (err) {
+        console.warn('[Lugares] no se pudo cargar el catálogo:', err.message);
+    }
+}
+
+function lugares_pintarSelect(seleccionado = '') {
+    const sel = document.getElementById('g-lugar');
+    if (!sel || sel.tagName !== 'SELECT') return;
+    sel.innerHTML = '<option value="">— Elegir lugar —</option>'
+        + lugaresCatalogo.map((l) => `<option value="${l.nombre}">${l.nombre}</option>`).join('')
+        + '<option value="__nuevo__">➕ Agregar lugar nuevo…</option>';
+    if (seleccionado) {
+        // Un lugar que ya no está en el catálogo (movimiento viejo) se agrega
+        // como opción suelta para no perderlo al editar.
+        if (!lugaresCatalogo.some((l) => l.nombre === seleccionado)) {
+            sel.insertAdjacentHTML('beforeend',
+                `<option value="${seleccionado}">${seleccionado} (fuera del catálogo)</option>`);
+        }
+        sel.value = seleccionado;
+    }
+}
+
+async function lugares_altaRapida() {
+    const sel = document.getElementById('g-lugar');
+    const nombre = (prompt('Nombre del lugar nuevo:') || '').trim();
+    if (!nombre) { sel.value = ''; return; }
+    try {
+        const { lugar } = await bandeja_api('/api/lugares', {
+            method: 'POST',
+            body: JSON.stringify({ nombre, aliases: [nombre.toLowerCase()] }),
+        });
+        await lugares_cargar();
+        lugares_pintarSelect(lugar?.nombre ?? nombre);
+        showToast(`✅ Lugar "${nombre}" agregado`);
+    } catch (err) {
+        sel.value = '';
+        showToast(`⚠️ No se pudo agregar: ${err.message}`);
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const sel = document.getElementById('g-lugar');
+    if (sel && sel.tagName === 'SELECT') {
+        sel.addEventListener('change', () => {
+            if (sel.value === '__nuevo__') lugares_altaRapida();
+        });
+    }
+    lugares_cargar();
+});
+
 function engramSync(endpoint, payload) {
     fetch(`${ENGRAM_API_BASE}${endpoint}`, {
         method: 'POST',
@@ -4166,6 +4234,10 @@ async function gastos_guardar() {
     const btn      = document.getElementById('g-btn-save');
     const status   = document.getElementById('g-status');
     const lugar    = document.getElementById('g-lugar').value.trim();
+    if (lugar === '__nuevo__') {
+        showToast('⚠️ Elige un lugar de la lista o agrégalo primero');
+        return;
+    }
     const monto    = document.getElementById('g-monto').value;
     const idFila   = document.getElementById('g-id-fila').value;
     const moneda   = parseCurrencyCode(document.getElementById('g-currency').value);
@@ -4330,7 +4402,7 @@ function gastos_cerrarModal() {
 
 function gastos_editarDesdeModal() {
     const row = gastosState.detailRow; if (!row) return;
-    document.getElementById('g-lugar').value     = row.lugar;
+    lugares_pintarSelect(row.lugar || '');
     document.getElementById('g-concepto').value  = row.concepto;
     document.getElementById('g-monto').value     = row.montoOriginal;
     document.getElementById('g-currency').value  = row.moneda || 'MXN';
