@@ -11,6 +11,7 @@
 
 import { parseBankEmail, TRANSACTIONAL_SENDERS } from './parsers.js';
 import { getAccessToken, listMessageIds, getMessage } from './gmail.js';
+import { categoriaPara } from '../../shared/categorias.js';
 
 const DEFAULT_LOOKBACK_DAYS = 7;
 
@@ -31,7 +32,7 @@ export function buildQuery(sinceDate) {
  * La confianza es deliberadamente conservadora: sin tarjeta mapeada nunca
  * pasa de 0.35, para que salte a la vista en la bandeja.
  */
-export function classify(parsed, { cardMap, fixedExpenses, bankDefaults = new Map() }) {
+export function classify(parsed, { cardMap, fixedExpenses, bankDefaults = new Map(), reglas = [] }) {
     // Algunos avisos no mencionan tarjeta (el SPEI recibido de Hey solo dice
     // "a tu tarjeta Hey"), pero el banco basta para saber la cuenta.
     const account =
@@ -82,13 +83,20 @@ export function classify(parsed, { cardMap, fixedExpenses, bankDefaults = new Ma
         if (fixedMatch) confidence = Math.min(0.95, confidence + 0.05);
     }
 
+    // El gasto fijo manda sobre la regla de comercio: es más específico y ya
+    // trae su propia categoría.
+    const porRegla = categoriaPara(
+        { merchant: parsed.merchant, description: parsed.counterparty }, reglas,
+    );
+
     return {
         accountId: account?.id ?? null,
         // Un movimiento interno (apartado BBVA) no es gasto ni ingreso.
         kind: parsed.kind === 'internal' ? null : parsed.kind,
         status: parsed.kind === 'internal' ? 'ignored' : 'pending',
         fixedExpenseId: fixedMatch?.id ?? null,
-        category: fixedMatch?.categoria ?? null,
+        category: fixedMatch?.categoria ?? porRegla?.categoria ?? null,
+        reglaId: porRegla?.regla?.id ?? null,
         confidence,
     };
 }
@@ -118,6 +126,9 @@ export async function runIngest({ sql, credentials, lookbackDays = DEFAULT_LOOKB
                 from fixed_expenses where active`,
             sql`select id, name from accounts`,
         ]);
+        const reglas = await sql`
+            select id, patron, categoria, prioridad from category_rules
+        `;
         const cardMap = new Map(cards.map((c) => [c.last4, { id: c.account_id }]));
 
         // Cuenta por defecto de cada banco, para los avisos que no traen tarjeta.
@@ -148,7 +159,7 @@ export async function runIngest({ sql, credentials, lookbackDays = DEFAULT_LOOKB
                 continue;
             }
 
-            const s = classify(parsed, { cardMap, fixedExpenses: fixed, bankDefaults });
+            const s = classify(parsed, { cardMap, fixedExpenses: fixed, bankDefaults, reglas });
 
             const inserted = await sql`
                 insert into pending_transactions (
@@ -172,8 +183,15 @@ export async function runIngest({ sql, credentials, lookbackDays = DEFAULT_LOOKB
                 returning id
             `;
 
-            if (inserted.length) stats.created += 1;
-            else stats.skipped += 1;
+            if (inserted.length) {
+                stats.created += 1;
+                if (s.reglaId) {
+                    await sql`
+                        update category_rules set veces_aplicada = veces_aplicada + 1
+                        where id = ${s.reglaId}
+                    `;
+                }
+            } else stats.skipped += 1;
         }
 
         await sql`

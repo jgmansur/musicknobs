@@ -242,6 +242,71 @@ if (pendiente) {
     console.log('  (sin pendientes con monto para probar)');
 }
 
+
+console.log('\nREGLAS DE CATEGORÍA (fase 3)\n');
+
+// Se trabaja sobre movimientos propios para no tocar el histórico de Jay.
+const inventados = await sql`
+    insert into transactions (occurred_at, account_id, amount, kind, merchant, description, source)
+    select now() - (n || ' days')::interval, a.id, -50, 'gasto',
+           'PRUEBA CAFETERIA F3', 'PRUEBA F3', 'script'
+    from accounts a, generate_series(1, 4) n where a.name = 'Santander'
+    returning id
+`;
+check('se crearon movimientos de prueba', inventados.length === 4);
+
+const sim = await call('finanzas_crear_regla_categoria', {
+    patron: 'PRUEBA CAFETERIA F3', categoria: 'Cafeterías', dry_run: true,
+});
+check('crear regla en seco reporta el alcance', /categorizaría 4 movimientos/.test(sim));
+const [sinTocar] = await sql`select category from transactions where id = ${inventados[0].id}`;
+check('el dry_run no categorizó nada', sinTocar.category === null);
+
+const creada = await call('finanzas_crear_regla_categoria', {
+    patron: 'PRUEBA CAFETERIA F3', categoria: 'Cafeterías',
+});
+check('la regla se crea y aplica al histórico', /se categorizaron 4 movimientos/.test(creada));
+const categorizados = await sql`
+    select count(*)::int as n from transactions
+    where id in ${sql(inventados.map((r) => r.id))} and category = 'Cafeterías'
+`;
+check('los 4 quedaron categorizados', categorizados[0].n === 4);
+
+const dup = await call('finanzas_crear_regla_categoria', {
+    patron: 'prueba cafeteria f3', categoria: 'Otra',
+});
+check('no permite dos categorías para el mismo patrón', /Ya existe una regla/.test(dup));
+
+const listado = await call('finanzas_reglas_categoria');
+check('la regla aparece listada', /PRUEBA CAFETERIA F3/.test(listado));
+
+// La ingesta usa el mismo matcher: se verifica directo sobre el módulo compartido.
+const { categoriaPara } = await import('../shared/categorias.js');
+const reglasVivas = await sql`select patron, categoria, prioridad from category_rules`;
+const hit = categoriaPara({ merchant: 'compra en PRUEBA CAFETERIA F3 centro' }, reglasVivas);
+check('el matcher de la ingesta encuentra la misma regla', hit?.categoria === 'Cafeterías');
+
+const borrada = await call('finanzas_borrar_regla_categoria', { patron: 'PRUEBA CAFETERIA F3' });
+check('la regla se borra', /Regla borrada/.test(borrada));
+const trasBorrar = await sql`
+    select count(*)::int as n from transactions
+    where id in ${sql(inventados.map((r) => r.id))} and category = 'Cafeterías'
+`;
+check('borrar la regla no descategoriza el histórico', trasBorrar[0].n === 4);
+
+await sql`delete from transactions where description = 'PRUEBA F3'`;
+await sql`delete from category_rules where patron ilike 'PRUEBA%'`;
+
+const propuestas = await call('finanzas_aprender_reglas', { minimo: 3 });
+// Hoy no hay nada categorizado, así que debe decirlo con claridad y sugerir
+// por dónde empezar, no devolver un "no encontré nada" que no explica nada.
+check('aprender reglas explica por qué no propone',
+    /reglas propuestas|No hay nada que aprender|ningún comercio se repite/.test(propuestas));
+
+const vocab = await call('finanzas_categorias', { meses: 12 });
+check('expone el vocabulario de categorías de los fijos',
+    /gastos fijos y aquí no aparecen/.test(vocab));
+
 console.log(`\n${ok ? 'TODO CORRECTO' : 'ALGO FALLÓ'}`);
 await sql.end();
 await client.close();

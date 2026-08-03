@@ -23,6 +23,7 @@ import {
 // Las mismas operaciones que usa el Worker: aprobar y revertir tiene que hacer
 // exactamente lo mismo venga de la app o de un asistente.
 import { aprobarPendiente, borrarMovimiento } from '../../shared/movimientos.js';
+import { categoriaPara, aprenderReglas, normalizar } from '../../shared/categorias.js';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ENV = join(HERE, '..', '..', '.env');
@@ -671,12 +672,26 @@ server.tool(
               and occurred_at >= now() - (${meses} || ' months')::interval
             group by 1 order by n desc
         `;
+        // El vocabulario real de Jay vive en los gastos fijos, que sí están
+        // categorizados. Sin esto, un asistente inventaría categorías nuevas en
+        // vez de reusar las que él ya definió.
+        const vocabulario = await sql`
+            select distinct categoria from fixed_expenses
+            where categoria is not null and trim(categoria) <> '' order by categoria
+        `;
+        const enUso = new Set(rows.map((r) => r.categoria));
+        const sinUsar = vocabulario.map((v) => v.categoria).filter((c) => !enUso.has(c));
+
         if (!rows.length) return texto('No hay movimientos en ese periodo.');
         const sinCat = rows.find((r) => r.categoria === '(sin categoría)');
         return texto(
             `Categorías de los últimos ${meses} meses:\n`
             + rows.map((r) => `  ${String(r.n).padStart(5)}  ${dinero(r.total).padStart(12)}  ${r.categoria}`).join('\n')
-            + (sinCat ? `\n\nHay ${sinCat.n} movimientos sin categorizar.` : ''),
+            + (sinCat ? `\n\nHay ${sinCat.n} movimientos sin categorizar.` : '')
+            + (sinUsar.length
+                ? `\n\nCategorías que Jay ya usa en sus gastos fijos y aquí no aparecen `
+                  + `(reúsalas antes de inventar nuevas):\n  ${sinUsar.join('\n  ')}`
+                : ''),
         );
     },
 );
@@ -732,6 +747,202 @@ server.tool(
             where id in ${sql(afectados.map((r) => r.id))}
         `;
         return texto(`${afectados.length} movimientos de "${comercio}" categorizados como "${categoria}".`);
+    },
+);
+
+
+// ------------------------------------------------ Reglas de categorización
+
+server.tool(
+    'finanzas_reglas_categoria',
+    'Reglas que asignan categoría por comercio. Se aplican en la ingesta, así que '
+    + 'los cargos nuevos llegan ya clasificados.',
+    {},
+    async () => {
+        const rows = await sql`
+            select patron, categoria, prioridad, origen, veces_aplicada
+            from category_rules order by prioridad, patron
+        `;
+        if (!rows.length) {
+            return texto('Sin reglas todavía. Usa finanzas_aprender_reglas para proponer '
+                + 'algunas a partir de lo que ya está categorizado.');
+        }
+        return texto(
+            `${rows.length} reglas:\n` + rows.map((r) =>
+                `  ${String(r.prioridad).padStart(4)}  ${r.patron.slice(0, 28).padEnd(28)} → `
+                + `${r.categoria.padEnd(24)} (${r.origen}, aplicada ${r.veces_aplicada}×)`,
+            ).join('\n'),
+        );
+    },
+);
+
+server.tool(
+    'finanzas_crear_regla_categoria',
+    'Crea una regla comercio → categoría. Con dry_run dice a cuántos movimientos '
+    + 'del histórico afectaría antes de escribir.',
+    {
+        patron: z.string().min(2).describe('Texto a buscar en comercio o concepto, ej. "UBER EATS"'),
+        categoria: z.string(),
+        prioridad: z.number().int().default(100)
+            .describe('Menor gana. Usa un número bajo para reglas específicas.'),
+        aplicar_historico: z.boolean().default(true)
+            .describe('Categoriza también los movimientos ya registrados que no tengan categoría'),
+        dry_run: z.boolean().default(false),
+    },
+    async ({ patron, categoria, prioridad, aplicar_historico, dry_run }) => {
+        const [existente] = await sql`
+            select patron, categoria from category_rules
+            where lower(trim(patron)) = lower(trim(${patron}))
+        `;
+        if (existente && !dry_run) {
+            return texto(
+                `Ya existe una regla para "${existente.patron}" → ${existente.categoria}. `
+                + 'Bórrala primero si quieres cambiarla.',
+            );
+        }
+
+        const alcance = await sql`
+            select id from transactions
+            where (merchant ilike ${'%' + patron + '%'} or description ilike ${'%' + patron + '%'})
+              and kind <> 'transfer' and category is null
+        `;
+        if (dry_run) {
+            return texto(
+                `Simulación: la regla "${patron}" → ${categoria} categorizaría `
+                + `${alcance.length} movimientos del histórico que hoy no tienen categoría.`,
+            );
+        }
+
+        await sql`
+            insert into category_rules (patron, categoria, prioridad, origen)
+            values (${patron.trim()}, ${categoria}, ${prioridad}, 'manual')
+        `;
+        let tocados = 0;
+        if (aplicar_historico && alcance.length) {
+            await sql`
+                update transactions set category = ${categoria}
+                where id in ${sql(alcance.map((r) => r.id))}
+            `;
+            tocados = alcance.length;
+        }
+        return texto(
+            `Regla creada: "${patron}" → ${categoria}.\n`
+            + `Se aplicará a los cargos nuevos durante la ingesta`
+            + (tocados ? `, y se categorizaron ${tocados} movimientos del histórico.` : '.'),
+        );
+    },
+);
+
+server.tool(
+    'finanzas_borrar_regla_categoria',
+    'Elimina una regla. Los movimientos ya categorizados no cambian.',
+    { patron: z.string() },
+    async ({ patron }) => {
+        const [r] = await sql`
+            delete from category_rules
+            where lower(trim(patron)) = lower(trim(${patron}))
+            returning patron, categoria
+        `;
+        return texto(r
+            ? `Regla borrada: "${r.patron}" → ${r.categoria}. Los movimientos ya categorizados se quedan como están.`
+            : `No hay ninguna regla con el patrón "${patron}".`);
+    },
+);
+
+server.tool(
+    'finanzas_aprender_reglas',
+    'Propone reglas mirando el histórico ya categorizado. Solo propone cuando el '
+    + 'comercio siempre cayó en la misma categoría: si hay dudas, no inventa.',
+    {
+        minimo: z.number().int().min(2).default(3).describe('Repeticiones mínimas para proponer'),
+        crear: z.boolean().default(false).describe('Si es true, crea las reglas propuestas'),
+    },
+    async ({ minimo, crear }) => {
+        const movs = await sql`
+            select merchant, description, category from transactions
+            where kind <> 'transfer'
+        `;
+        const existentes = new Set(
+            (await sql`select patron from category_rules`).map((r) => normalizar(r.patron)),
+        );
+        const propuestas = aprenderReglas(movs, { minimo })
+            .filter((p) => !existentes.has(normalizar(p.patron)));
+
+        if (!propuestas.length) {
+            const [{ n: categorizados }] = await sql`
+                select count(*)::int as n from transactions
+                where category is not null and kind <> 'transfer'
+            `;
+            return texto(
+                categorizados === 0
+                    ? 'No hay nada que aprender: ningún movimiento tiene categoría todavía. '
+                      + 'La hoja de Gastos nunca tuvo columna de categoría, así que el histórico '
+                      + 'llegó sin ella.\n\nEmpieza al revés: mira finanzas_sin_categoria para ver '
+                      + 'los comercios más frecuentes y crea reglas con '
+                      + 'finanzas_crear_regla_categoria. En cuanto haya movimientos categorizados, '
+                      + 'esta herramienta empezará a proponer sola.'
+                    : `Hay ${categorizados} movimientos categorizados, pero ningún comercio se `
+                      + 'repite lo suficiente con una sola categoría como para deducir una regla.',
+            );
+        }
+        const lista = propuestas.slice(0, 25).map((p) =>
+            `  ${p.patron.slice(0, 32).padEnd(32)} → ${p.categoria.padEnd(24)}`
+            + `(${p.coincidencias}/${p.apariciones} movimientos)`).join('\n');
+
+        if (!crear) {
+            return texto(
+                `${propuestas.length} reglas propuestas:\n${lista}\n\n`
+                + 'Vuelve a llamar con crear:true para guardarlas.',
+            );
+        }
+        for (const p of propuestas) {
+            await sql`
+                insert into category_rules (patron, categoria, origen)
+                values (${p.patron}, ${p.categoria}, 'aprendida')
+                on conflict do nothing
+            `;
+        }
+        return texto(`${propuestas.length} reglas creadas a partir del histórico:\n${lista}`);
+    },
+);
+
+server.tool(
+    'finanzas_aplicar_reglas_historico',
+    'Pasa las reglas existentes sobre los movimientos sin categoría. Útil después '
+    + 'de crear varias reglas de golpe.',
+    { dry_run: z.boolean().default(false) },
+    async ({ dry_run }) => {
+        const [reglas, sinCat] = await Promise.all([
+            sql`select id, patron, categoria, prioridad from category_rules`,
+            sql`select id, merchant, description from transactions
+                where category is null and kind <> 'transfer'`,
+        ]);
+        if (!reglas.length) return texto('No hay reglas definidas todavía.');
+
+        const porCategoria = new Map();
+        const asignaciones = [];
+        for (const m of sinCat) {
+            const hit = categoriaPara(m, reglas);
+            if (!hit) continue;
+            asignaciones.push({ id: m.id, categoria: hit.categoria });
+            porCategoria.set(hit.categoria, (porCategoria.get(hit.categoria) ?? 0) + 1);
+        }
+        if (!asignaciones.length) {
+            return texto(`Ninguno de los ${sinCat.length} movimientos sin categoría coincide con las reglas.`);
+        }
+        const detalle = [...porCategoria].sort((a, b) => b[1] - a[1])
+            .map(([c, n]) => `  ${String(n).padStart(5)}  ${c}`).join('\n');
+
+        if (dry_run) {
+            return texto(`Simulación: se categorizarían ${asignaciones.length} movimientos.\n${detalle}`);
+        }
+        for (const a of asignaciones) {
+            await sql`update transactions set category = ${a.categoria} where id = ${a.id}`;
+        }
+        return texto(
+            `${asignaciones.length} movimientos categorizados:\n${detalle}\n\n`
+            + `Quedan ${sinCat.length - asignaciones.length} sin categoría.`,
+        );
     },
 );
 
