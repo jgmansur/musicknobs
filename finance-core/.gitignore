@@ -1,5 +1,10 @@
 node_modules/
-token_gmail.json
 .env
 .env.local
 __pycache__/
+
+# Credenciales OAuth — nunca al repo
+client_secret*.json
+token_gmail.json
+token*.json
+*.pickle
