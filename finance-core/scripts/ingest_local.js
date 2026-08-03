@@ -37,13 +37,16 @@ const credentials = {
 
 const sql = postgres(dsn, { prepare: false, max: 3 });
 
-// Solo las terminaciones confirmadas contra correos reales. Las demás quedan sin
-// mapear a propósito: sin cuenta, la bandeja las marca de baja confianza y Jay
-// elige. Es preferible a adivinar y ensuciar una cuenta.
+// Solo las terminaciones confirmadas por Jay. Las demás quedan sin mapear a
+// propósito: sin cuenta, la bandeja las marca de baja confianza y él elige.
+// Es preferible a adivinar y ensuciar una cuenta.
 const CARDS = [
     { last4: '6137', account: 'Santander', instrument: 'debito', label: 'Débito Santander' },
     { last4: '3482', account: 'Santander', instrument: 'cuenta', label: 'Cuenta Santander (SPEI)' },
     { last4: '6240', account: 'BBVA', instrument: 'cuenta', label: 'Cuenta BBVA' },
+    // TDC Santander. Es la LikeU, confirmado por Jay. Al ser cuenta de crédito,
+    // una compra entra negativa (crece la deuda) y la vista la muestra positiva.
+    { last4: '0774', account: 'Tarjeta de Crédito LikeU', instrument: 'credito', label: 'TDC LikeU' },
 ];
 
 async function seedCards() {
@@ -62,6 +65,21 @@ async function seedCards() {
         `;
         console.log(`  ${c.last4} → ${c.account} (${c.instrument})`);
     }
+
+    // Los pendientes que se ingirieron antes de existir el mapeo quedaron sin
+    // cuenta. Se rellenan aquí y se les sube la confianza, que era baja
+    // justamente por no tener cuenta asignada.
+    const fixed = await sql`
+        update pending_transactions p
+        set suggested_account_id = cm.account_id,
+            match_confidence = case when p.merchant is not null then 0.9 else 0.7 end
+        from card_map cm
+        where cm.last4 = p.card_last4
+          and p.suggested_account_id is null
+          and p.status = 'pending'
+        returning p.id
+    `;
+    if (fixed.length) console.log(`  ${fixed.length} pendientes reclasificados`);
 }
 
 async function report() {
