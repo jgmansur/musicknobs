@@ -14,7 +14,10 @@ import { runIngest } from './ingest.js';
 const CORS = {
     'access-control-allow-origin': '*',
     'access-control-allow-headers': 'content-type, x-finance-token',
-    'access-control-allow-methods': 'GET, POST, OPTIONS',
+    // Deben listarse TODOS los métodos que usa la API. El navegador lee esta
+    // cabecera y bloquea cualquier método ausente, aunque el preflight
+    // responda 204 — y el error que ve el usuario no menciona el método.
+    'access-control-allow-methods': 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
     'access-control-max-age': '86400',
 };
 

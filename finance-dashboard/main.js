@@ -3432,7 +3432,9 @@ async function productGroups_reloadRows() {
 window.productGroups_toggleHormiga = async function(encodedGroupName, checked) {
     const groupName = decodeURIComponent(encodedGroupName);
     const catalogGroup = productGroups_buildCatalog().find(group => group.name === groupName);
-    const previousRows = [...productGroupsState.rows];
+    const previousRows = productGroupsState.rows.map(g => ({
+        ...g, aliases: [...(g.aliases || [])],
+    }));
     const existing = productGroups_find(groupName);
     const nextRaw = checked ? 'yes' : 'no';
     const aliases = (catalogGroup?.aliasesList || []).join('|');
@@ -3464,6 +3466,9 @@ window.productGroups_toggleHormiga = async function(encodedGroupName, checked) {
                     notas: existing?.notas || null,
                 }),
             });
+            receiptItems_updateButton();
+            receiptItems_renderPanel();
+            showToast(checked ? '✅ Grupo marcado como hormiga' : '✅ Grupo marcado como no hormiga');
             return;
         }
 
