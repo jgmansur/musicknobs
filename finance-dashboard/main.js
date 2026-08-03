@@ -24,7 +24,7 @@ const DEUDAS_RECIBOS_FOLDER_ID = '157KDn-vbkuHH1L8xbaJBGz-oKmT7p5a9';
 const SPREADSHEET_RSM_ID = '14VsoPHGNTSUSbzMOqGWs2qSL-pGywPgjUoHD3MqIJfo'; // Recibos Salud Mariel
 const SALDOS_SHEET_ID    = '1-cX_qxld3ioSpcO9lEBPg90Db6AyK7SczpJTvj7rw4U'; // Saldos (fuente de verdad — Claude accede vía service account)
 const RSM_FOLDER_ID = '1-ZfeWQ-Rmh-Wm2WMCkULkN6MQWBuxYnj';
-const APP_VERSION  = 'v8.6.1';
+const APP_VERSION  = 'v8.6.2';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -7923,8 +7923,15 @@ async function autos_applyCsvConsistencyPatch() {
     upsertRepairs(koleos?.id || '', AUTOS_CSV_REPAIRS.koleos);
     upsertRepairs(taos?.id || '', AUTOS_CSV_REPAIRS.taos);
 
-    if (changedCars) await autos_saveCarsSheet();
-    if (changedRepairs) await autos_saveRepairsSheet();
+    // Este parche corre al abrir la pestaña. Si falla no debe tumbar la carga:
+    // los datos ya están en pantalla y el parche se reintenta la próxima vez.
+    try {
+        if (changedCars) await autos_saveCarsSheet();
+        if (changedRepairs) await autos_saveRepairsSheet();
+    } catch (e) {
+        console.warn('No se pudo aplicar el parche de consistencia de autos:', e);
+        return false;
+    }
 
     autosState.meta[AUTOS_CSV_PATCH_META_KEY] = AUTOS_CSV_PATCH_VERSION;
     await autos_saveMeta();
@@ -11829,7 +11836,11 @@ async function documentos_upgradeData() {
         docsState.profiles = [...byMember.values()];
     }
 
-    if (docsChanged) await documentos_saveRows();
+    // Corre al cargar la pestaña: si falla no debe impedir ver los documentos.
+    if (docsChanged) {
+        try { await documentos_saveRows(); }
+        catch (e) { console.warn('No se pudo guardar la actualización de documentos:', e); }
+    }
     if (profilesChanged) {
         const letter = autos_colLetter(DOCS_PROFILE_HEADERS.length);
         await sheetsUpdate(SPREADSHEET_AUTOS_ID, `${DOCS_PROFILE_SHEET}!A1:${letter}1`, [DOCS_PROFILE_HEADERS]);
@@ -12318,7 +12329,7 @@ async function documentos_save() {
     const idx = docsState.items.findIndex((x) => x.id === payload.id);
     if (idx === -1) docsState.items.push(payload);
     else docsState.items[idx] = { ...docsState.items[idx], ...payload, createdAt: docsState.items[idx].createdAt || now };
-    await documentos_saveRows();
+    if (!await persistirConAviso(documentos_saveRows, 'el documento')) return;
     documentos_closeSheet();
     documentos_render();
     showToast('✅ Documento guardado');
@@ -12899,7 +12910,7 @@ async function pelo_delete() {
     await pelo_deleteEntryFiles(row);
     await pelo_removeExpenseByMarker(row.expenseMarker || pelo_buildMarker(row.id));
     hairState.items = hairState.items.filter((x) => x.id !== id);
-    await pelo_saveRows();
+    if (!await persistirConAviso(pelo_saveRows, 'la eliminación')) return;
     pelo_closeDetail();
     pelo_closeSheet();
     pelo_render();
@@ -12911,7 +12922,7 @@ async function pelo_setRating(id, rating) {
     if (idx === -1) return;
     hairState.items[idx].rating = Math.max(0, Math.min(5, rating));
     hairState.items[idx].updatedAt = normalizeDateString(new Date().toLocaleDateString('en-CA'));
-    await pelo_saveRows();
+    if (!await persistirConAviso(pelo_saveRows, 'la calificación')) return;
     pelo_render();
 }
 
@@ -12957,7 +12968,7 @@ async function pelo_addMemberPrompt() {
     if (!clean) return;
     if (!hairState.members.includes(clean)) hairState.members.push(clean);
     hairState.selectedMember = clean;
-    await pelo_saveMembersMeta();
+    if (!await persistirConAviso(pelo_saveMembersMeta, 'el nuevo miembro')) return;
     pelo_render();
 }
 
@@ -13165,7 +13176,7 @@ async function prompts_rebuildFavoriteOrder(orderedFavs) {
         if (idx === -1) return { ...item, favoriteRank: 0 };
         return { ...item, favoriteRank: idx + 1 };
     });
-    await prompts_saveRows();
+    if (!await persistirConAviso(prompts_saveRows, 'el orden de favoritos')) return;
     prompts_render();
     prompts_renderFavoritesSheet();
 }
@@ -13386,7 +13397,7 @@ async function prompts_save() {
     if (idx === -1) promptsState.items.push(payload);
     else promptsState.items[idx] = payload;
 
-    await prompts_saveRows();
+    if (!await persistirConAviso(prompts_saveRows, 'el prompt')) return;
     prompts_closeSheet();
     prompts_render();
     showToast('✅ Prompt guardado');
@@ -13402,7 +13413,7 @@ async function prompts_deleteById(id) {
     if (!id) return;
     if (!confirm('¿Eliminar este prompt?')) return;
     promptsState.items = promptsState.items.filter((x) => x.id !== id);
-    await prompts_saveRows();
+    if (!await persistirConAviso(prompts_saveRows, 'la eliminación')) return;
     prompts_closeSheet();
     prompts_render();
     showToast('🗑️ Prompt eliminado');
@@ -13426,7 +13437,7 @@ async function prompts_toggleFavorite(id) {
         promptsState.items[idx].favoriteRank = maxRank + 1;
     }
     promptsState.items[idx].updatedAt = normalizeDateString(new Date().toLocaleDateString('en-CA'));
-    await prompts_saveRows();
+    if (!await persistirConAviso(prompts_saveRows, 'el favorito')) return;
     prompts_render();
 }
 
@@ -13436,7 +13447,7 @@ async function prompts_markUsed(id) {
     promptsState.items[idx].useCount = (promptsState.items[idx].useCount || 0) + 1;
     promptsState.items[idx].lastUsedAt = normalizeDateString(new Date().toLocaleDateString('en-CA'));
     promptsState.items[idx].updatedAt = promptsState.items[idx].lastUsedAt;
-    await prompts_saveRows();
+    if (!await persistirConAviso(prompts_saveRows, 'el uso')) return;
     prompts_render();
 }
 
@@ -15896,6 +15907,25 @@ async function recetas_saveRows() {
 
 /** Los ids de Supabase son UUID; los marcadores viejos eran texto tipo
  *  "[PELO:hair-123]". Así se distingue una entrada ya migrada de una legacy. */
+/**
+ * Envuelve una persistencia para que un fallo AVISE en vez de dejar la interfaz
+ * congelada sin explicación. Ese era el patrón detrás de "el botón no sirve":
+ * la promesa se rechazaba, la función abortaba antes del toast y del cierre del
+ * panel, y no quedaba rastro salvo en la consola.
+ *
+ * Devuelve true si se guardó.
+ */
+async function persistirConAviso(fn, queCosa = 'el cambio') {
+    try {
+        await fn();
+        return true;
+    } catch (e) {
+        console.error(`No se pudo guardar ${queCosa}:`, e);
+        showToast(`⚠️ No se pudo guardar ${queCosa}: ${e.message}`);
+        return false;
+    }
+}
+
 function gastoLigado_esId(valor) {
     return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
         .test((valor || '').toString().trim());
