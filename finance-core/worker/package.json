@@ -2,5 +2,10 @@
   "name": "finance-core-worker",
   "private": true,
   "type": "module",
-  "scripts": { "test": "node --test src/*.test.js" }
+  "scripts": {
+    "test": "node --test src/*.test.js"
+  },
+  "dependencies": {
+    "postgres": "^3.4.9"
+  }
 }

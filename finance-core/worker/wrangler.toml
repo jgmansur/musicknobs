@@ -1,0 +1,22 @@
+name = "finance-core"
+main = "src/index.js"
+compatibility_date = "2025-01-15"
+
+# postgres.js abre un socket TCP contra el pooler de Supabase, y para eso
+# necesita las APIs de Node.
+compatibility_flags = ["nodejs_compat"]
+
+[observability]
+enabled = true
+
+# Cada 15 minutos. Las alertas del banco llegan en segundos, así que este
+# retraso es el techo de cuánto tarda un gasto en aparecer en la bandeja.
+[triggers]
+crons = ["*/15 * * * *"]
+
+# Secretos (nunca en este archivo — se cargan con `wrangler secret put`):
+#   SUPABASE_DB_URL
+#   GMAIL_CLIENT_ID
+#   GMAIL_CLIENT_SECRET
+#   GMAIL_REFRESH_TOKEN
+#   API_TOKEN

@@ -212,24 +212,51 @@ def extract_transactions(svc, account_by_name: dict[str, str]) -> list[dict]:
 
 
 def extract_fixed(svc) -> list[dict]:
+    """Lee la hoja Fijos.
+
+    Cuidado con el encabezado: tiene 6 celdas pero las filas traen 16, así que
+    no sirve para deducir el orden. Los índices reales, confirmados contra el
+    parseo de main.js:2741, son:
+
+        0 Fecha (día)   1 Concepto      2 Gasto        3 Ingreso
+        4 Categoria     5 Pagado        6 pagosMes     7 pagosEstado
+        8 periodicidad  9 inicioMes    10 pagador     11 budgetCategory
+       12 Moneda       13 waived       14 linkGroup   15 fechasPago
+    """
     rows = read(svc, "fijos", "Hoja 1!A2:P")
     out = []
     for i, r in enumerate(rows, start=2):
         r = r + [""] * (16 - len(r))
-        concepto = r[0].strip()
+        concepto = r[1].strip()
         if not concepto:
             continue
+
+        # Un fijo puede ser gasto (col C) o ingreso (col D).
         monto = parse_legacy_amount(r[2], f"Fijos!C{i}")
+        tipo = "gasto"
+        if monto is None or monto == 0:
+            monto = parse_legacy_amount(r[3], f"Fijos!D{i}")
+            tipo = "ingreso"
         if monto is None:
             continue
-        fechas = [int(x) for x in re.findall(r"\d+", r[15] or "") if 1 <= int(x) <= 31]
+
+        # Col P son fechas completas separadas por "|" (ej. "2026-06-05|2026-06-20").
+        # Para emparejar movimientos solo interesa el día del mes.
+        fechas = []
+        for parte in (r[15] or "").split("|"):
+            m = re.search(r"\d{4}-\d{2}-(\d{2})", parte.strip())
+            if m:
+                fechas.append(int(m.group(1)))
+            elif parte.strip().isdigit() and 1 <= int(parte.strip()) <= 31:
+                fechas.append(int(parte.strip()))
+
         out.append({
             "legacy_row": i,
             "concepto": concepto,
-            "categoria": r[1].strip() or None,
+            "categoria": r[4].strip() or None,
             "monto": monto,
-            "moneda": (r[3].strip() or "MXN"),
-            "tipo": r[4].strip() or None,
+            "moneda": (r[12].strip() or "MXN"),
+            "tipo": tipo,
             "pagos_mes": max(1, int(re.sub(r"\D", "", r[6]) or 1)),
             "periodicidad": r[8].strip() or None,
             "pagador": r[10].strip() or None,

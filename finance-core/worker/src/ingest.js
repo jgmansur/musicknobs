@@ -1,0 +1,158 @@
+/**
+ * Ingesta: lee alertas del banco en Gmail y las deja en `pending_transactions`.
+ *
+ * Nunca escribe en `transactions`. Todo movimiento requiere que Jay lo apruebe;
+ * lo único que hace este módulo es proponer cuenta, tipo y posible gasto fijo,
+ * con un nivel de confianza.
+ *
+ * Es idempotente por partida doble: la query de Gmail se acota al último correo
+ * ya visto, y `gmail_message_id` es único en la tabla.
+ */
+
+import { parseBankEmail, TRANSACTIONAL_SENDERS } from './parsers.js';
+import { getAccessToken, listMessageIds, getMessage } from './gmail.js';
+
+const DEFAULT_LOOKBACK_DAYS = 7;
+
+/** Tolerancia al comparar el monto de un movimiento contra un gasto fijo. */
+const AMOUNT_TOLERANCE = 0.02;
+const DAY_WINDOW = 3;
+
+export function buildQuery(sinceDate) {
+    const senders = [...TRANSACTIONAL_SENDERS].map((s) => `from:${s}`).join(' OR ');
+    // Gmail solo filtra por día, así que se resta uno para no perder correos
+    // por la diferencia de zona horaria. Los repetidos los frena el índice único.
+    const epochDay = Math.floor(sinceDate.getTime() / 1000) - 86400;
+    return `(${senders}) after:${epochDay}`;
+}
+
+/**
+ * Propone cuenta, tipo y gasto fijo para un movimiento parseado.
+ * La confianza es deliberadamente conservadora: sin tarjeta mapeada nunca
+ * pasa de 0.35, para que salte a la vista en la bandeja.
+ */
+export function classify(parsed, { cardMap, fixedExpenses }) {
+    const account = parsed.cardLast4 ? cardMap.get(parsed.cardLast4) : null;
+
+    let confidence = 0.35;
+    if (account) confidence = parsed.merchant ? 0.9 : 0.7;
+
+    let fixedMatch = null;
+    if (account && parsed.kind === 'gasto' && Number.isFinite(parsed.amount)) {
+        const when = parsed.occurredAt ?? new Date();
+        const day = when.getDate();
+
+        fixedMatch = fixedExpenses.find((f) => {
+            const perPart = Number(f.monto) / (f.pagos_mes || 1);
+            const near =
+                Math.abs(perPart - parsed.amount) <= Math.max(1, perPart * AMOUNT_TOLERANCE);
+            if (!near) return false;
+            if (!f.fechas_pago?.length) return true;
+            return f.fechas_pago.some((d) => Math.abs(d - day) <= DAY_WINDOW);
+        }) ?? null;
+
+        if (fixedMatch) confidence = Math.min(0.95, confidence + 0.05);
+    }
+
+    return {
+        accountId: account?.id ?? null,
+        // Un movimiento interno (apartado BBVA) no es gasto ni ingreso.
+        kind: parsed.kind === 'internal' ? null : parsed.kind,
+        status: parsed.kind === 'internal' ? 'ignored' : 'pending',
+        fixedExpenseId: fixedMatch?.id ?? null,
+        category: fixedMatch?.categoria ?? null,
+        confidence,
+    };
+}
+
+/** Fecha del correo más reciente ya procesado, o el lookback por defecto. */
+async function resolveSince(sql, lookbackDays) {
+    const [row] = await sql`
+        select max(received_at) as last from pending_transactions
+    `;
+    if (row?.last) return new Date(row.last);
+    const d = new Date();
+    d.setDate(d.getDate() - lookbackDays);
+    return d;
+}
+
+export async function runIngest({ sql, credentials, lookbackDays = DEFAULT_LOOKBACK_DAYS, maxMessages = 200 }) {
+    const [run] = await sql`
+        insert into ingest_runs default values returning id
+    `;
+
+    const stats = { seen: 0, created: 0, skipped: 0, unmatched: 0 };
+
+    try {
+        const [cards, fixed] = await Promise.all([
+            sql`select last4, account_id from card_map`,
+            sql`select id, concepto, categoria, monto, pagos_mes, fechas_pago
+                from fixed_expenses where active`,
+        ]);
+        const cardMap = new Map(cards.map((c) => [c.last4, { id: c.account_id }]));
+
+        const token = await getAccessToken(credentials);
+        const since = await resolveSince(sql, lookbackDays);
+        const ids = await listMessageIds(token, buildQuery(since), maxMessages);
+        stats.seen = ids.length;
+
+        for (const id of ids) {
+            const msg = await getMessage(token, id);
+            const parsed = parseBankEmail(msg);
+
+            if (!parsed.matched) {
+                // Los rechazos y las consultas no son movimientos: se ignoran en
+                // silencio. Lo que sí interesa es un correo de banco cuya forma
+                // no reconocemos, porque delata una plantilla nueva.
+                if (['no_template', 'amount_missing'].includes(parsed.reason)) {
+                    stats.unmatched += 1;
+                }
+                stats.skipped += 1;
+                continue;
+            }
+
+            const s = classify(parsed, { cardMap, fixedExpenses: fixed });
+
+            const inserted = await sql`
+                insert into pending_transactions (
+                    gmail_message_id, gmail_thread_id, received_at,
+                    bank, template, raw_subject, raw_text,
+                    occurred_at, amount, currency, merchant, card_last4, counterparty,
+                    suggested_account_id, suggested_kind, suggested_category,
+                    suggested_fixed_expense_id, match_confidence, status
+                ) values (
+                    ${msg.id}, ${msg.threadId}, ${msg.receivedAt},
+                    ${parsed.bank}, ${parsed.template}, ${msg.subject},
+                    ${(parsed.text ?? '').slice(0, 4000)},
+                    ${parsed.occurredAt ?? msg.receivedAt},
+                    ${parsed.amount ?? null}, ${parsed.currency ?? 'MXN'},
+                    ${parsed.merchant ?? null}, ${parsed.cardLast4 ?? null},
+                    ${parsed.counterparty ?? null},
+                    ${s.accountId}, ${s.kind}, ${s.category},
+                    ${s.fixedExpenseId}, ${s.confidence}, ${s.status}
+                )
+                on conflict (gmail_message_id) do nothing
+                returning id
+            `;
+
+            if (inserted.length) stats.created += 1;
+            else stats.skipped += 1;
+        }
+
+        await sql`
+            update ingest_runs set
+                finished_at = now(), messages_seen = ${stats.seen},
+                created = ${stats.created}, skipped = ${stats.skipped},
+                unmatched = ${stats.unmatched}
+            where id = ${run.id}
+        `;
+        return stats;
+    } catch (err) {
+        await sql`
+            update ingest_runs
+            set finished_at = now(), error = ${String(err.message ?? err).slice(0, 500)}
+            where id = ${run.id}
+        `;
+        throw err;
+    }
+}
