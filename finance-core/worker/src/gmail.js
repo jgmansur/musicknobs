@@ -58,18 +58,16 @@ function decodeBase64Url(data) {
     return new TextDecoder('utf-8').decode(bytes);
 }
 
-/** Recorre las partes MIME y prefiere el HTML. */
-function extractBody(payload) {
-    if (payload?.body?.data && ['text/html', 'text/plain'].includes(payload.mimeType)) {
+/** Devuelve la parte del tipo pedido, recorriendo el árbol MIME. */
+function extractPart(payload, mime) {
+    if (payload?.mimeType === mime && payload?.body?.data) {
         return decodeBase64Url(payload.body.data);
     }
-    let fallback = '';
     for (const part of payload?.parts ?? []) {
-        const got = extractBody(part);
-        if (part.mimeType === 'text/html' && got) return got;
-        fallback ||= got;
+        const got = extractPart(part, mime);
+        if (got) return got;
     }
-    return fallback;
+    return '';
 }
 
 export async function getMessage(token, id) {
@@ -87,6 +85,9 @@ export async function getMessage(token, id) {
             .toLowerCase(),
         subject: headers.subject ?? '',
         receivedAt: new Date(Number(msg.internalDate)),
-        html: extractBody(msg.payload),
+        html: extractPart(msg.payload, 'text/html'),
+        // El text/plain se conserva aparte: los tickets de OXXO traen ahí el
+        // desglose por producto en líneas, y aplanar el HTML lo desordena.
+        plain: extractPart(msg.payload, 'text/plain'),
     };
 }

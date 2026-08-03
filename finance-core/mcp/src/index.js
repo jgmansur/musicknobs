@@ -1059,5 +1059,53 @@ server.tool(
     },
 );
 
+
+server.tool(
+    'finanzas_ligar_articulos',
+    'Amarra los artículos de los tickets con el movimiento del banco que les '
+    + 'corresponde. Se corre después de aprobar pendientes: el ticket llega antes '
+    + 'de que el movimiento exista, así que al ingerirlo todavía no hay a qué ligarlo.',
+    { dry_run: z.boolean().default(false) },
+    async ({ dry_run }) => {
+        const sueltos = await sql`
+            select distinct recibo_id, fecha, sum(total_item) as total, forma_pago
+            from receipt_items
+            where transaction_id is null and recibo_id is not null
+            group by recibo_id, fecha, forma_pago
+        `;
+        if (!sueltos.length) return texto('Todos los artículos ya están ligados.');
+
+        let ligados = 0;
+        const sinPareja = [];
+        for (const r of sueltos) {
+            const [t] = await sql`
+                select id from transactions
+                where abs(abs(amount) - ${r.total}) < 0.01
+                  and occurred_at between ${r.fecha}::timestamptz - interval '3 days'
+                                      and ${r.fecha}::timestamptz + interval '3 days'
+                order by abs(extract(epoch from (occurred_at - ${r.fecha}::timestamptz)))
+                limit 1
+            `;
+            if (!t) { sinPareja.push(`${r.fecha} ${dinero(r.total)}`); continue; }
+            if (!dry_run) {
+                await sql`
+                    update receipt_items set transaction_id = ${t.id}
+                    where recibo_id = ${r.recibo_id}
+                `;
+            }
+            ligados += 1;
+        }
+        return texto(
+            `${dry_run ? 'Simulación: se ligarían' : 'Ligados'} ${ligados} de ${sueltos.length} tickets.`
+            + (sinPareja.length
+                ? `\n\n${sinPareja.length} sin movimiento que les corresponda:\n  `
+                  + sinPareja.slice(0, 12).join('\n  ')
+                  + '\n\nSuelen ser compras con Apple Pay de BBVA: ese banco no manda '
+                  + 'aviso de compra, así que el ticket es el único registro.'
+                : ''),
+        );
+    },
+);
+
 const transport = new StdioServerTransport();
 await server.connect(transport);

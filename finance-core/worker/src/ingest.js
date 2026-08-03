@@ -10,6 +10,7 @@
  */
 
 import { parseBankEmail, TRANSACTIONAL_SENDERS } from './parsers.js';
+import { parseOxxoTicket, TICKET_SENDERS } from './tickets.js';
 import { getAccessToken, listMessageIds, getMessage } from './gmail.js';
 import { categoriaPara } from '../../shared/categorias.js';
 
@@ -45,7 +46,10 @@ async function buscarDuplicado(sql, { accountId, amount, occurredAt }) {
 }
 
 export function buildQuery(sinceDate) {
-    const senders = [...TRANSACTIONAL_SENDERS].map((s) => `from:${s}`).join(' OR ');
+    // Los tickets de comercio entran en la misma consulta: traen el desglose por
+    // producto que el aviso del banco no incluye.
+    const senders = [...TRANSACTIONAL_SENDERS, ...TICKET_SENDERS]
+        .map((s) => `from:${s}`).join(' OR ');
     // Gmail solo filtra por día, así que se resta uno para no perder correos
     // por la diferencia de zona horaria. Los repetidos los frena el índice único.
     const epochDay = Math.floor(sinceDate.getTime() / 1000) - 86400;
@@ -168,12 +172,66 @@ async function resolveSince(sql, lookbackDays) {
     return d;
 }
 
-export async function runIngest({ sql, credentials, lookbackDays = DEFAULT_LOOKBACK_DAYS, maxMessages = 200 }) {
+
+/**
+ * Guarda el desglose de un ticket de comercio.
+ *
+ * NO crea un movimiento: el banco ya reportó esa compra. Lo que hace es
+ * enriquecer el movimiento existente con el detalle por producto, que es lo que
+ * necesita el análisis de gasto hormiga.
+ *
+ * `recibo_id` es el id del correo, así que reprocesarlo no duplica artículos.
+ */
+async function guardarTicket(sql, msg, ticket, cardMap) {
+    const [yaEsta] = await sql`
+        select 1 from receipt_items where recibo_id = ${msg.id} limit 1
+    `;
+    if (yaEsta) return { creados: 0, ligados: 0 };
+
+    // Se busca el movimiento del banco que corresponde a esta compra: misma
+    // cuenta, mismo total, hasta 3 días de diferencia.
+    const cuenta = ticket.cardLast4 ? cardMap.get(ticket.cardLast4) : null;
+    const cuando = ticket.fecha ?? msg.receivedAt;
+    let movimiento = null;
+    if (ticket.total != null) {
+        const [t] = await sql`
+            select id from transactions
+            where abs(abs(amount) - ${ticket.total}) < 0.01
+              and (${cuenta?.id ?? null}::uuid is null or account_id = ${cuenta?.id ?? null})
+              and occurred_at between ${cuando}::timestamptz - interval '3 days'
+                                  and ${cuando}::timestamptz + interval '3 days'
+            order by abs(extract(epoch from (occurred_at - ${cuando}::timestamptz)))
+            limit 1
+        `;
+        movimiento = t?.id ?? null;
+    }
+
+    for (const it of ticket.items) {
+        await sql`
+            insert into receipt_items (fecha, recibo_id, comercio, producto_raw,
+                cantidad, precio_unitario, total_item, forma_pago, confianza,
+                transaction_id)
+            values (${cuando}, ${msg.id}, ${ticket.tienda ?? 'OXXO'}, ${it.producto},
+                    ${it.cantidad}, ${it.unitario}, ${it.total},
+                    ${cuenta ? 'tarjeta ****' + ticket.cardLast4 : null},
+                    'alta', ${movimiento})
+        `;
+    }
+    return { creados: ticket.items.length, ligados: movimiento ? ticket.items.length : 0 };
+}
+
+export async function runIngest({
+    sql, credentials, lookbackDays = DEFAULT_LOOKBACK_DAYS, maxMessages = 200,
+    // Fuerza la ventana completa en vez de arrancar desde el último correo
+    // visto. Solo para rellenos puntuales; la corrida normal es incremental.
+    forzarDesde = null,
+}) {
     const [run] = await sql`
         insert into ingest_runs default values returning id
     `;
 
-    const stats = { seen: 0, created: 0, skipped: 0, unmatched: 0, duplicados: 0 };
+    const stats = { seen: 0, created: 0, skipped: 0, unmatched: 0, duplicados: 0,
+                    articulos: 0, articulosLigados: 0 };
 
     try {
         const [cards, fixed, accounts] = await Promise.all([
@@ -197,12 +255,28 @@ export async function runIngest({ sql, credentials, lookbackDays = DEFAULT_LOOKB
         );
 
         const token = await getAccessToken(credentials);
-        const since = await resolveSince(sql, lookbackDays);
+        const since = forzarDesde ?? await resolveSince(sql, lookbackDays);
         const ids = await listMessageIds(token, buildQuery(since), maxMessages);
         stats.seen = ids.length;
 
         for (const id of ids) {
             const msg = await getMessage(token, id);
+
+            // Un ticket de comercio no genera movimiento: enriquece el que el
+            // banco ya reportó.
+            if (TICKET_SENDERS.has(msg.from)) {
+                const ticket = parseOxxoTicket(msg.plain ?? '');
+                if (ticket) {
+                    const r = await guardarTicket(sql, msg, ticket, cardMap);
+                    stats.articulos += r.creados;
+                    stats.articulosLigados += r.ligados;
+                } else {
+                    stats.unmatched += 1;
+                }
+                stats.skipped += 1;
+                continue;
+            }
+
             const parsed = parseBankEmail(msg);
 
             if (!parsed.matched) {

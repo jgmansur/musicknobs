@@ -10,3 +10,4 @@ token*.json
 *.pickle
 fixtures/
 gmail_secrets.env
+fixtures_tickets/
