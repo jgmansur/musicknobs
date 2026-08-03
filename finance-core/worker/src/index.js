@@ -217,7 +217,9 @@ export default {
                 // Se devuelven en el orden de columnas de la hoja para que el
                 // dashboard aplique su propia clasificación sin cambios.
                 const [items, grupos] = await Promise.all([
-                    sql`select to_char(fecha, 'YYYY-MM-DD') as fecha, recibo_id, comercio,
+                    // El `id` va primero porque el dashboard lo necesita para
+                    // poder corregir el override de un artículo suelto.
+                    sql`select id, to_char(fecha, 'YYYY-MM-DD') as fecha, recibo_id, comercio,
                                producto_raw, producto_normalizado, categoria, subcategoria,
                                cantidad, precio_unitario, total_item, forma_pago, recibo_url,
                                confianza, grupo_producto, hormiga_auto, hormiga_override
@@ -227,6 +229,22 @@ export default {
                         from product_groups order by grupo_producto`,
                 ]);
                 return json({ items, grupos });
+            }
+
+            // Override por artículo suelto. `hormigaOverride` puede ser true,
+            // false o null: null significa "quita mi corrección y deja que
+            // mande el default del grupo".
+            const itemMatch = url.pathname.match(/^\/api\/hormiga\/items\/([\w-]+)$/);
+            if (itemMatch && request.method === 'PATCH') {
+                const b = await request.json().catch(() => ({}));
+                const valor = b.hormigaOverride === null || b.hormigaOverride === undefined
+                    ? null
+                    : !!b.hormigaOverride;
+                const [r] = await sql`
+                    update receipt_items set hormiga_override = ${valor}
+                    where id = ${itemMatch[1]} returning id
+                `;
+                return json(r ? { ok: true } : { error: 'artículo no encontrado' }, r ? 200 : 404);
             }
 
             const grupoMatch = url.pathname.match(/^\/api\/hormiga\/grupos\/(.+)$/);

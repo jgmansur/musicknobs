@@ -24,7 +24,7 @@ const DEUDAS_RECIBOS_FOLDER_ID = '157KDn-vbkuHH1L8xbaJBGz-oKmT7p5a9';
 const SPREADSHEET_RSM_ID = '14VsoPHGNTSUSbzMOqGWs2qSL-pGywPgjUoHD3MqIJfo'; // Recibos Salud Mariel
 const SALDOS_SHEET_ID    = '1-cX_qxld3ioSpcO9lEBPg90Db6AyK7SczpJTvj7rw4U'; // Saldos (fuente de verdad — Claude accede vía service account)
 const RSM_FOLDER_ID = '1-ZfeWQ-Rmh-Wm2WMCkULkN6MQWBuxYnj';
-const APP_VERSION  = 'v8.4.0';
+const APP_VERSION  = 'v8.4.1';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -2762,6 +2762,9 @@ async function dashboard_datosDesdeWorker() {
             i.cantidad ?? '', i.precio_unitario ?? '', i.total_item ?? '',
             i.forma_pago || '', i.recibo_url || '', i.confianza || '',
             i.grupo_producto || '', bool(i.hormiga_auto), bool(i.hormiga_override),
+            // Columna extra: el id real en Supabase. La hoja no la tiene, y por
+            // eso el fallback viejo la deja vacía y sigue escribiendo a la hoja.
+            i.id || '',
         ]);
         const productGroupRows = (hor?.grupos ?? []).map(g => [
             g.grupo_producto, (g.aliases || []).join(','),
@@ -3295,6 +3298,7 @@ function receiptItems_setRows(rows = []) {
             grupoProducto: row[13] || '',
             hormigaAutoRaw: row[14] || '',
             hormigaOverride: (row[15] || '').toString().trim().toLowerCase(),
+            id: (row[16] || '').toString(),
         };
         item.grupoProducto = item.grupoProducto || receiptItems_inferProductGroup(item);
         return item;
@@ -3459,7 +3463,14 @@ async function receiptItems_toggleHormiga(rowNum, checked) {
         hormigaPanelState.prevMonthName
     );
     try {
-        await sheetsUpdate(SPREADSHEET_LOG_ID, `${RECEIPT_ITEMS_SHEET}!P${rowNum}`, [[item.hormigaOverride]]);
+        if (item.id && bandeja_token()) {
+            await bandeja_api(`/api/hormiga/items/${item.id}`, {
+                method: 'PATCH',
+                body: JSON.stringify({ hormigaOverride: checked }),
+            });
+        } else {
+            await sheetsUpdate(SPREADSHEET_LOG_ID, `${RECEIPT_ITEMS_SHEET}!P${rowNum}`, [[item.hormigaOverride]]);
+        }
         showToast(checked ? '✅ Marcado como gasto hormiga' : '✅ Quitado de gasto hormiga');
     } catch (e) {
         item.hormigaOverride = previous;
