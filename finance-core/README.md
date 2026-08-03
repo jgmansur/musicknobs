@@ -37,9 +37,11 @@ scripts/migrate_sheets.py           Sheets → Supabase (con --dry-run)
 | Esquema SQL | **Aplicado** — PostgreSQL 17.6, 7 tablas, 2 vistas, 16 índices |
 | Parsers | **Verificados** — 10/10 tests en verde |
 | Migración | **Aplicada** — 7 cuentas, 504 movimientos, 46 fijos |
-| Worker de ingesta | Pendiente |
-| MCP de finanzas | Pendiente |
-| Pestaña de bandeja | Pendiente |
+| Worker de ingesta | **Desplegado** — cron cada 15 min, verificado en producción |
+| MCP de finanzas | **Listo** — 10 herramientas, 14 verificaciones en verde |
+| Pestaña de bandeja | **Lista** — falta abrirla en el navegador |
+
+Worker: `https://finance-core.musicknobs.workers.dev`
 
 Proyecto Supabase: `isdjwvvojatoiwfuvuod`, región `us-west-2`, pooler `aws-1`.
 La conexión va por **Session pooler** (puerto 5432): la conexión directa de
