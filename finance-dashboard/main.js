@@ -934,6 +934,8 @@ let balanceAccounts   = [];
    el ajuste que la app calculaba sobre la hoja de Gastos sobra. Aplicarlo
    encima duplicaría cada gasto. */
 let balanceDesdeWorker = false;
+/* Igual que arriba, para las deudas. */
+let deudasDesdeWorker = false;
 let balanceEditingId  = null;
 let balancePendingFixed = 0; // Set by dashboard when fixed expenses load
 let balancePendingFixedIncome = 0; // Unpaid fixed ingresos pending this month
@@ -5057,7 +5059,9 @@ window.fijos_togglePagoPart = async function(id, partIndex, options = {}) {
             );
             
             // INTEGRACIÓN: Restar de la Deuda Original
-            if (item.periodicidad === 'Cuota de Deuda') {
+            // Con finance-core, `pagarFijo` ya ajustó la deuda dentro de la misma
+            // transacción. Repetirlo aquí contra la hoja lo descontaría dos veces.
+            if (item.periodicidad === 'Cuota de Deuda' && !deudasDesdeWorker) {
                 const baseConcept = item.concepto.replace(/\s*\(\d+\/\d+\)$/, '').trim();
                 const deuda = deudasState.allItems.find(d => d.concepto === baseConcept);
                 if (deuda) {
@@ -5079,7 +5083,8 @@ window.fijos_togglePagoPart = async function(id, partIndex, options = {}) {
             }
             
             // AUTO-SYNC: Mark cuota as paid (yellow→green) in Deudas card
-            const cuotaMatch = item.concepto.match(/^(.+?)\s*-\s*Cuota\s+(\d+)\/(\d+)$/);
+            const cuotaMatch = deudasDesdeWorker
+                ? null : item.concepto.match(/^(.+?)\s*-\s*Cuota\s+(\d+)\/(\d+)$/);
             if (cuotaMatch) {
                 const debtName = cuotaMatch[1].trim();
                 const cuotaIdx = parseInt(cuotaMatch[2]) - 1; // 0-indexed
@@ -14124,10 +14129,91 @@ function deudas_pedirConfigCuota({ cuotaLabel = '' } = {}) {
     });
 }
 
+
+/**
+ * Carga las deudas desde finance-core.
+ *
+ * Las cuotas dejaron de vivir codificadas en una celda ("3:734.37:1,2,0:...")
+ * y ahora son filas, pero la UI sigue esperando el objeto `cuotas` de siempre,
+ * así que se reconstruye aquí en vez de tocar el render.
+ */
+async function deudas_cargarDesdeWorker() {
+    if (!bandeja_token()) return false;
+    try {
+        const { deudas } = await bandeja_api('/api/deudas');
+        if (!deudas) return false;
+
+        const ESTADO_A_BANDERA = { pendiente: 0, programada: 1, pagada: 2 };
+        deudasState.allItems = deudas.map((d) => {
+            const total = Number(d.cuotas_total) || 0;
+            let cuotas = null;
+            if (total > 0) {
+                const paid = new Array(total).fill(0);
+                for (const c of d.cuotas || []) {
+                    if (c.indice < total) paid[c.indice] = ESTADO_A_BANDERA[c.estado] ?? 0;
+                }
+                cuotas = {
+                    n: total,
+                    perCuota: Number(d.cuota_monto) || 0,
+                    paid,
+                    frequency: d.frecuencia || 'mensual',
+                    startDate: d.fecha_inicio || '',
+                    scope: d.scope || 'self',
+                };
+            }
+            return {
+                id: d.id,
+                concepto: d.concepto || '',
+                monto: Number(d.monto) || 0,
+                hidden: !!d.hidden,
+                cuotas,
+                archivos: d.archivos || '',
+                debtKey: d.debt_key || '',
+                parentKey: d.parent_key || '',
+            };
+        }).filter((i) => i.concepto);
+        deudasDesdeWorker = true;
+
+        const claves = new Set(
+            deudasState.allItems.map((x) => (x.debtKey || '').trim()).filter(Boolean));
+        for (const item of deudasState.allItems) {
+            if (!item.parentKey) continue;
+            if (!claves.has(item.parentKey) || item.parentKey === item.debtKey) item.parentKey = '';
+        }
+        return true;
+    } catch (err) {
+        console.warn('[Deudas] finance-core no respondió:', err.message);
+        return false;
+    }
+}
+
 async function deudas_cargarDatos() {
     const lista = document.getElementById('d-lista');
     lista.innerHTML = '<div class="loading-spinner" style="margin-top: 2rem;">Cargando deudas...</div>';
     try {
+        // Fuente de verdad: finance-core. La hoja queda de respaldo.
+        if (await deudas_cargarDesdeWorker()) {
+            // Mismo cierre que el camino de la hoja: limpiar referencias muertas
+            // de padres colapsados y de archivos expandidos antes de pintar.
+            if (!deudasState.collapseLoaded) {
+                deudasState.collapsedParents = deudas_loadCollapsedParents();
+                deudasState.collapseLoaded = true;
+            }
+            const clavesVivas = new Set(
+                deudasState.allItems.map((x) => (x.debtKey || '').trim()).filter(Boolean));
+            deudasState.collapsedParents = new Set(
+                [...deudasState.collapsedParents].filter((k) => clavesVivas.has(k)));
+
+            const idsVivos = new Set(deudasState.allItems.map((x) => x.id));
+            const previos = deudasState.expandedFiles instanceof Set
+                ? deudasState.expandedFiles : new Set();
+            deudasState.expandedFiles = new Set([...previos].filter((id) => idsVivos.has(id)));
+            deudasState.loaded = true;
+
+            deudas_renderLista();
+            return;
+        }
+
         const sheetName = await deudas_getSheetName();
         const rows = await sheetsGet(SPREADSHEET_DEUDAS_ID, `${sheetName}!A2:G`);
         
@@ -14406,8 +14492,34 @@ async function deudas_swap(idx1, idx2) {
         const dataForRow1 = [[item2.concepto, item2.monto, item2.hidden ? 'TRUE' : 'FALSE', cuotasStr1, (item2.archivos || '').toString().trim(), (item2.debtKey || '').toString().trim(), (item2.parentKey || '').toString().trim()]];
         const dataForRow2 = [[item1.concepto, item1.monto, item1.hidden ? 'TRUE' : 'FALSE', cuotasStr2, (item1.archivos || '').toString().trim(), (item1.debtKey || '').toString().trim(), (item1.parentKey || '').toString().trim()]];
         
-        await sheetsUpdate(SPREADSHEET_DEUDAS_ID, `${sheetName}!A${rowId1}:G${rowId1}`, dataForRow1);
-        await sheetsUpdate(SPREADSHEET_DEUDAS_ID, `${sheetName}!A${rowId2}:G${rowId2}`, dataForRow2);
+        if (deudasDesdeWorker) {
+            // Con finance-core no hay filas que intercambiar: cada deuda se
+            // actualiza por su id, y las cuotas van como filas propias.
+            const aCuotas = (c) => (c
+                ? Array.from({ length: c.n }, (_, i) => ({
+                    indice: i,
+                    estado: ['pendiente', 'programada', 'pagada'][c.paid?.[i] ?? 0] ?? 'pendiente',
+                }))
+                : []);
+            for (const it of [item1, item2]) {
+                await bandeja_api(`/api/deudas/${it.id}`, {
+                    method: 'PATCH',
+                    body: JSON.stringify({
+                        concepto: it.concepto, monto: it.monto, hidden: it.hidden,
+                        archivos: (it.archivos || '').toString().trim() || null,
+                        cuotasTotal: it.cuotas?.n ?? null,
+                        cuotaMonto: it.cuotas?.perCuota ?? null,
+                        frecuencia: it.cuotas?.frequency ?? null,
+                        fechaInicio: it.cuotas?.startDate || null,
+                        scope: it.cuotas?.scope ?? null,
+                        cuotas: aCuotas(it.cuotas),
+                    }),
+                });
+            }
+        } else {
+            await sheetsUpdate(SPREADSHEET_DEUDAS_ID, `${sheetName}!A${rowId1}:G${rowId1}`, dataForRow1);
+            await sheetsUpdate(SPREADSHEET_DEUDAS_ID, `${sheetName}!A${rowId2}:G${rowId2}`, dataForRow2);
+        }
     } catch(e) {
         console.error('Error swapping:', e);
         showToast('⚠️ Error al reordenar');
@@ -14439,6 +14551,14 @@ window.deudas_borrar = async function(id) {
         const urls = toDelete.flatMap((d) => deudas_parseUrls(d.archivos || ''));
         if (urls.length) await deleteDriveFilesFromUrls(urls);
 
+        if (deudasDesdeWorker) {
+            for (const d of toDelete) {
+                await bandeja_api(`/api/deudas/${d.id}`, { method: 'DELETE' });
+            }
+            await deudas_cargarDatos();
+            return;
+        }
+
         const rows = [...new Set(toDelete.map((d) => d.id).filter((v) => Number.isFinite(v)))].sort((a, b) => b - a);
         if (deudasState.sheetId === null) {
             try {
@@ -14469,7 +14589,13 @@ window.deudas_toggleHidden = async function(id) {
         } catch(e) {
             sheetName = 'Hoja 1';
         }
-        await sheetsUpdate(SPREADSHEET_DEUDAS_ID, `${sheetName}!C${id}`, [[newVal ? 'TRUE' : 'FALSE']]);
+        if (deudasDesdeWorker) {
+            await bandeja_api(`/api/deudas/${id}`, {
+                method: 'PATCH', body: JSON.stringify({ hidden: newVal }),
+            });
+        } else {
+            await sheetsUpdate(SPREADSHEET_DEUDAS_ID, `${sheetName}!C${id}`, [[newVal ? 'TRUE' : 'FALSE']]);
+        }
         item.hidden = newVal;
         deudas_renderLista();
         const childrenMap = deudas_getChildrenMap();

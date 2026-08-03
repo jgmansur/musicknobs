@@ -97,6 +97,18 @@ export async function borrarMovimiento(sql, id) {
         const [existe] = await tx`select id from transactions where id = ${id}`;
         if (!existe) return { error: 'movimiento no encontrado' };
 
+        // Si el movimiento abonaba a una deuda, hay que devolverle el monto:
+        // deshacer el pago sin restaurar la deuda la dejaría rebajada sin nada
+        // que lo respalde.
+        const [conFijo] = await tx`
+            select f.periodicidad, f.concepto, t.amount
+            from transactions t join fixed_expenses f on f.id = t.fixed_expense_id
+            where t.id = ${id}
+        `;
+        if (conFijo) {
+            await ajustarDeudaPorCuota(tx, conFijo, Number(conFijo.amount), 1);
+        }
+
         await tx`delete from fixed_expense_payments where transaction_id = ${id}`;
         await tx`
             update pending_transactions
@@ -116,6 +128,57 @@ export async function borrarMovimiento(sql, id) {
         }
         return { ok: true, ligadas };
     });
+}
+
+
+/**
+ * Cadena deuda ↔ cuota.
+ *
+ * Un gasto fijo con periodicidad "Cuota de Deuda" no solo saca dinero: también
+ * abona a la deuda que lo originó. En el sistema viejo esto vivía en el
+ * navegador y se rompió al mover el pago de fijos al servidor — el saldo bajaba
+ * pero la deuda se quedaba igual. Aquí corre dentro de la misma transacción que
+ * crea el movimiento, así que o pasan las dos cosas o no pasa ninguna.
+ *
+ * `signo` es -1 al pagar y +1 al deshacer, para que revertir devuelva la deuda
+ * a su valor anterior.
+ */
+async function ajustarDeudaPorCuota(tx, fijo, monto, signo, transactionId = null) {
+    if (fijo.periodicidad !== 'Cuota de Deuda') return null;
+
+    // "Mercado Libre - Cuota 1/3" → deuda "Mercado Libre", cuota índice 0
+    const m = /^(.+?)\s*-\s*Cuota\s+(\d+)\s*\/\s*(\d+)$/i.exec(fijo.concepto ?? '');
+    const nombreDeuda = (m ? m[1] : fijo.concepto ?? '').trim();
+    if (!nombreDeuda) return null;
+
+    const [deuda] = await tx`
+        select id, concepto, monto, hidden from debts
+        where lower(concepto) = lower(${nombreDeuda}) limit 1
+    `;
+    if (!deuda) return null;
+
+    const nuevo = Math.max(0, Number(deuda.monto) + signo * Math.abs(monto));
+    await tx`
+        update debts set monto = ${nuevo},
+                         hidden = ${nuevo === 0 ? true : deuda.hidden}
+        where id = ${deuda.id}
+    `;
+
+    if (m) {
+        const indice = Number(m[2]) - 1;
+        await tx`
+            insert into debt_installments (debt_id, indice, estado, transaction_id, paid_at)
+            values (${deuda.id}, ${indice},
+                    ${signo < 0 ? 'pagada' : 'programada'},
+                    ${signo < 0 ? transactionId : null},
+                    ${signo < 0 ? new Date() : null})
+            on conflict (debt_id, indice) do update set
+                estado = excluded.estado,
+                transaction_id = excluded.transaction_id,
+                paid_at = excluded.paid_at
+        `;
+    }
+    return { concepto: deuda.concepto, antes: Number(deuda.monto), ahora: nuevo };
 }
 
 /**
@@ -192,7 +255,9 @@ export async function pagarFijo(sql, fixedId, opts = {}) {
             do update set paid = true, waived = false, paid_at = now(),
                           transaction_id = excluded.transaction_id
         `;
+        const deuda = await ajustarDeudaPorCuota(tx, f, perPart, -1, trx.id);
+
         return { ok: true, transactionId: trx.id, amount: signed, concepto: f.concepto,
-                 partes: f.pagos_mes || 1 };
+                 partes: f.pagos_mes || 1, deuda };
     });
 }

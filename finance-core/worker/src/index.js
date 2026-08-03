@@ -353,6 +353,77 @@ export default {
                 return json({ ok: true, undone: true });
             }
 
+            if (url.pathname === '/api/deudas' && request.method === 'GET') {
+                const rows = await sql`
+                    select d.*,
+                           coalesce(
+                               jsonb_agg(jsonb_build_object('indice', i.indice, 'estado', i.estado)
+                                         order by i.indice) filter (where i.id is not null),
+                               '[]'::jsonb
+                           ) as cuotas
+                    from debts d
+                    left join debt_installments i on i.debt_id = d.id
+                    group by d.id order by d.hidden, d.concepto
+                `;
+                return json({ deudas: rows });
+            }
+
+            if (url.pathname === '/api/deudas' && request.method === 'POST') {
+                const b = await request.json().catch(() => ({}));
+                if (!b.concepto) return json({ error: 'falta el concepto' }, 400);
+                const [d] = await sql`
+                    insert into debts (concepto, monto, hidden, debt_key, parent_key,
+                                       archivos, cuotas_total, cuota_monto, frecuencia,
+                                       fecha_inicio, scope)
+                    values (${b.concepto}, ${b.monto ?? 0}, ${!!b.hidden},
+                            ${b.debtKey ?? null}, ${b.parentKey ?? null}, ${b.archivos ?? null},
+                            ${b.cuotasTotal ?? null}, ${b.cuotaMonto ?? null},
+                            ${b.frecuencia ?? 'mensual'}, ${b.fechaInicio ?? null},
+                            ${b.scope ?? 'self'})
+                    returning id
+                `;
+                return json({ ok: true, id: d.id });
+            }
+
+            const deudaMatch = url.pathname.match(/^\/api\/deudas\/([\w-]+)$/);
+            if (deudaMatch && request.method === 'PATCH') {
+                const b = await request.json().catch(() => ({}));
+                const [d] = await sql`
+                    update debts set
+                        concepto     = coalesce(${b.concepto ?? null}, concepto),
+                        monto        = coalesce(${b.monto ?? null}, monto),
+                        hidden       = coalesce(${b.hidden ?? null}, hidden),
+                        archivos     = coalesce(${b.archivos ?? null}, archivos),
+                        cuotas_total = coalesce(${b.cuotasTotal ?? null}, cuotas_total),
+                        cuota_monto  = coalesce(${b.cuotaMonto ?? null}, cuota_monto),
+                        frecuencia   = coalesce(${b.frecuencia ?? null}, frecuencia),
+                        fecha_inicio = coalesce(${b.fechaInicio ?? null}::date, fecha_inicio),
+                        scope        = coalesce(${b.scope ?? null}, scope)
+                    where id = ${deudaMatch[1]} returning id
+                `;
+                if (!d) return json({ error: 'deuda no encontrada' }, 404);
+
+                // Las cuotas se reemplazan completas cuando se manda el arreglo:
+                // dividir una deuda redefine el plan entero, no una cuota suelta.
+                if (Array.isArray(b.cuotas)) {
+                    await sql`delete from debt_installments where debt_id = ${d.id}`;
+                    for (const c of b.cuotas) {
+                        await sql`
+                            insert into debt_installments (debt_id, indice, estado)
+                            values (${d.id}, ${c.indice}, ${c.estado ?? 'pendiente'})
+                        `;
+                    }
+                }
+                return json({ ok: true });
+            }
+
+            if (deudaMatch && request.method === 'DELETE') {
+                const [d] = await sql`
+                    delete from debts where id = ${deudaMatch[1]} returning concepto
+                `;
+                return json(d ? { ok: true } : { error: 'no encontrada' }, d ? 200 : 404);
+            }
+
             const payMatch = url.pathname.match(/^\/api\/fixed\/([\w-]+)\/pay$/);
             if (payMatch && request.method === 'POST') {
                 const body = await request.json().catch(() => ({}));
