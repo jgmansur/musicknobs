@@ -1197,5 +1197,217 @@ server.tool(
     },
 );
 
+/* ==========================================================================
+   CATÁLOGOS: autos, estudio y recetas
+   Migrados de Google Sheets a Supabase. Son inventarios, pero generan gastos:
+   una reparación, un plugin o una consulta terminan en `transactions`, y el
+   vínculo es `transaction_id`. Los archivos siguen en Drive; aquí solo hay URLs.
+   ========================================================================== */
+
+server.tool(
+    'finanzas_autos',
+    'Autos de Jay con kilometraje, seguro, tenencia y cuánto se les ha gastado en reparaciones.',
+    {},
+    async () => {
+        const autos = await sql`
+            select c.marca, c.modelo, c.anio, c.placa, c.kilometraje, c.propietario,
+                   c.tiene_seguro, c.poliza_seguro,
+                   to_char(c.vencimiento_poliza, 'YYYY-MM-DD')   as vence_poliza,
+                   to_char(c.vencimiento_tenencia, 'YYYY-MM-DD') as vence_tenencia,
+                   c.pago_tenencia, c.proxima_revision_km,
+                   coalesce(sum(r.costo), 0) as gastado,
+                   count(r.id)               as reparaciones
+            from cars c
+            left join car_repairs r on r.car_id = c.id
+            group by c.id order by c.marca, c.modelo
+        `;
+        if (!autos.length) return texto('No hay autos registrados.');
+        const lineas = autos.map((a) => {
+            const km = a.kilometraje ? `${Number(a.kilometraje).toLocaleString('es-MX')} km` : 'sin km';
+            const seguro = a.tiene_seguro ? (a.vence_poliza ? `póliza vence ${a.vence_poliza}` : 'con seguro') : 'SIN SEGURO';
+            const ten = a.vence_tenencia ? `tenencia vence ${a.vence_tenencia}` : 'tenencia sin registrar';
+            return `  ${a.marca} ${a.modelo} ${a.anio || ''} · ${a.placa || 'sin placa'}\n`
+                 + `    ${km} · ${seguro} · ${ten}\n`
+                 + `    ${a.reparaciones} reparación(es), $${dinero(a.gastado)} MXN · ${a.propietario || 'sin propietario'}`;
+        });
+        return texto(`${autos.length} auto(s):\n\n${lineas.join('\n\n')}`);
+    },
+);
+
+server.tool(
+    'finanzas_reparaciones',
+    'Reparaciones de los autos, de la más reciente a la más vieja. Se puede filtrar por auto.',
+    {
+        auto: z.string().optional().describe('Filtra por marca, modelo o placa'),
+        limite: z.number().int().min(1).max(100).default(20),
+    },
+    async ({ auto, limite }) => {
+        const filtro = auto ? `%${auto.toLowerCase()}%` : null;
+        const rows = await sql`
+            select r.reparacion, r.costo, r.moneda, r.lugar,
+                   to_char(r.fecha, 'YYYY-MM-DD') as fecha,
+                   r.forma_pago, r.transaction_id,
+                   c.marca, c.modelo, c.placa
+            from car_repairs r join cars c on c.id = r.car_id
+            where ${filtro}::text is null
+               or lower(c.marca) like ${filtro} or lower(c.modelo) like ${filtro}
+               or lower(coalesce(c.placa, '')) like ${filtro}
+            order by r.fecha desc nulls last limit ${limite}
+        `;
+        if (!rows.length) return texto(auto ? `Sin reparaciones para "${auto}".` : 'Sin reparaciones registradas.');
+        const total = rows.reduce((s, r) => s + Number(r.costo || 0), 0);
+        const lineas = rows.map((r) =>
+            `  ${r.fecha || '(sin fecha)'}  ${(r.marca + ' ' + r.modelo).padEnd(18).slice(0, 18)} `
+            + `$${dinero(r.costo).padStart(11)} ${r.moneda}  ${(r.reparacion || '').slice(0, 34)}`
+            + `${r.transaction_id ? '' : '  [sin gasto ligado]'}`);
+        return texto(`${rows.length} reparación(es), total $${dinero(total)}:\n\n${lineas.join('\n')}`);
+    },
+);
+
+server.tool(
+    'finanzas_estudio',
+    'Inventario y plugins del estudio, con el valor total. Equipo y software comparten tabla.',
+    {
+        tipo: z.enum(['equipo', 'plugin', 'todo']).default('todo'),
+        buscar: z.string().optional().describe('Filtra por nombre, marca o categoría'),
+    },
+    async ({ tipo, buscar }) => {
+        const filtroTipo = tipo === 'todo' ? null : tipo;
+        const q = buscar ? `%${buscar.toLowerCase()}%` : null;
+        const rows = await sql`
+            select tipo, name, marca, categoria, cantidad, precio_usd, currency,
+                   to_char(fecha_compra, 'YYYY-MM-DD') as fecha_compra, transaction_id
+            from studio_gear
+            where (${filtroTipo}::text is null or tipo = ${filtroTipo})
+              and (${q}::text is null
+                   or lower(name) like ${q} or lower(coalesce(marca, '')) like ${q}
+                   or lower(coalesce(categoria, '')) like ${q})
+            order by tipo, name
+        `;
+        if (!rows.length) return texto('Nada coincide en el estudio.');
+        const total = rows.reduce((s, r) => s + Number(r.precio_usd || 0) * (r.cantidad || 1), 0);
+        const lineas = rows.map((r) =>
+            `  ${r.tipo === 'plugin' ? '🔌' : '🎛️'} ${(r.name || '').padEnd(30).slice(0, 30)} `
+            + `${String(r.cantidad || 1).padStart(2)}× $${dinero(r.precio_usd || 0).padStart(9)} ${r.currency} `
+            + `${(r.categoria || '').slice(0, 18)}`);
+        return texto(`${rows.length} artículo(s), valor $${dinero(total)} USD:\n\n${lineas.join('\n')}`);
+    },
+);
+
+server.tool(
+    'finanzas_recetas',
+    'Recetas médicas de la familia: doctor, diagnóstico, medicamentos y costo de la consulta.',
+    {
+        miembro: z.string().optional().describe('yo, mariel, roby, hans, romi, papa, mama...'),
+        limite: z.number().int().min(1).max(50).default(15),
+    },
+    async ({ miembro, limite }) => {
+        const m = miembro ? miembro.toLowerCase() : null;
+        const rows = await sql`
+            select member, to_char(fecha, 'YYYY-MM-DD') as fecha, doctor, especialidad,
+                   diagnostico, medicamentos, monto_consulta, forma_pago,
+                   to_char(proxima_cita, 'YYYY-MM-DD')   as proxima_cita,
+                   to_char(vigencia_hasta, 'YYYY-MM-DD') as vigencia_hasta,
+                   (foto_url <> '' or foto_url_2 <> '') as tiene_foto
+            from prescriptions
+            where ${m}::text is null or lower(member) = ${m}
+            order by prescriptions.fecha desc nulls last limit ${limite}
+        `;
+        if (!rows.length) return texto(miembro ? `Sin recetas de ${miembro}.` : 'Sin recetas registradas.');
+        const lineas = rows.map((r) => {
+            const meds = Array.isArray(r.medicamentos) ? r.medicamentos : [];
+            const listaMeds = meds.length
+                ? meds.map((x) => `${x.nombre}${x.dosis ? ` (${x.dosis})` : ''}`).join(', ')
+                : 'sin medicamentos';
+            const costo = r.monto_consulta ? ` · consulta $${dinero(r.monto_consulta)}` : '';
+            const cita = r.proxima_cita ? ` · próxima cita ${r.proxima_cita}` : '';
+            return `  ${r.fecha || '(sin fecha)'} · ${r.member} · ${r.doctor || 'sin doctor'}`
+                 + `${r.especialidad ? ` (${r.especialidad})` : ''}${costo}${cita}\n`
+                 + `    ${r.diagnostico || 'sin diagnóstico'}\n`
+                 + `    💊 ${listaMeds}${r.tiene_foto ? ' · 📎 con foto' : ''}`;
+        });
+        return texto(`${rows.length} receta(s):\n\n${lineas.join('\n\n')}`);
+    },
+);
+
+server.tool(
+    'finanzas_vencimientos',
+    'Qué está por vencer: pólizas de seguro, tenencias, tratamientos médicos y próximas citas. '
+    + 'Pensado para revisarlo sin que Jay tenga que preguntar por cada cosa.',
+    { dias: z.number().int().min(1).max(365).default(45).describe('Ventana hacia adelante') },
+    async ({ dias }) => {
+        const [autos, recetas] = await Promise.all([
+            sql`
+                select marca, modelo, placa,
+                       to_char(vencimiento_poliza, 'YYYY-MM-DD')   as poliza,
+                       to_char(vencimiento_tenencia, 'YYYY-MM-DD') as tenencia,
+                       vencimiento_poliza   - current_date as dias_poliza,
+                       vencimiento_tenencia - current_date as dias_tenencia
+                from cars
+                where vencimiento_poliza   between current_date - 30 and current_date + ${dias}
+                   or vencimiento_tenencia between current_date - 30 and current_date + ${dias}
+            `,
+            sql`
+                select member, doctor,
+                       to_char(proxima_cita, 'YYYY-MM-DD')   as cita,
+                       to_char(vigencia_hasta, 'YYYY-MM-DD') as hasta,
+                       proxima_cita   - current_date as dias_cita,
+                       vigencia_hasta - current_date as dias_trat
+                from prescriptions
+                where proxima_cita   between current_date and current_date + ${dias}
+                   or vigencia_hasta between current_date and current_date + ${dias}
+            `,
+        ]);
+
+        const avisos = [];
+        const etiqueta = (d) => d < 0 ? `venció hace ${Math.abs(d)} d` : d === 0 ? 'HOY' : `en ${d} d`;
+        for (const a of autos) {
+            const quien = `${a.marca} ${a.modelo} (${a.placa || 'sin placa'})`;
+            if (a.poliza)   avisos.push([a.dias_poliza,   `🛡️  Póliza ${quien} — ${a.poliza} · ${etiqueta(a.dias_poliza)}`]);
+            if (a.tenencia) avisos.push([a.dias_tenencia, `🧾 Tenencia ${quien} — ${a.tenencia} · ${etiqueta(a.dias_tenencia)}`]);
+        }
+        for (const r of recetas) {
+            if (r.cita)  avisos.push([r.dias_cita, `🩺 Cita de ${r.member} con ${r.doctor || 'doctor'} — ${r.cita} · ${etiqueta(r.dias_cita)}`]);
+            if (r.hasta) avisos.push([r.dias_trat, `💊 Tratamiento de ${r.member} termina ${r.hasta} · ${etiqueta(r.dias_trat)}`]);
+        }
+        if (!avisos.length) return texto(`Nada por vencer en los próximos ${dias} días.`);
+        avisos.sort((a, b) => a[0] - b[0]);
+        return texto(`${avisos.length} vencimiento(s) en ${dias} días:\n\n${avisos.map((a) => '  ' + a[1]).join('\n')}`);
+    },
+);
+
+server.tool(
+    'finanzas_marcar_hormiga',
+    'Marca o desmarca un artículo suelto de un ticket como gasto hormiga. '
+    + 'Pasar `hormiga: null` borra la corrección y deja mandar al default del grupo.',
+    {
+        buscar: z.string().describe('Parte del nombre del producto'),
+        hormiga: z.boolean().nullable().describe('true, false, o null para quitar la corrección'),
+    },
+    async ({ buscar, hormiga }) => {
+        const q = `%${buscar.toLowerCase()}%`;
+        const items = await sql`
+            select id, producto_normalizado, comercio, total_item,
+                   to_char(fecha, 'YYYY-MM-DD') as fecha, hormiga_override
+            from receipt_items
+            where lower(coalesce(producto_normalizado, producto_raw, '')) like ${q}
+            order by receipt_items.fecha desc limit 12
+        `;
+        if (!items.length) return texto(`Ningún artículo coincide con "${buscar}".`);
+        if (items.length > 1) {
+            const lista = items.map((i, n) =>
+                `  ${n + 1}. ${i.fecha} · ${(i.producto_normalizado || '').slice(0, 34)} · `
+                + `${i.comercio || ''} · $${dinero(i.total_item || 0)}`).join('\n');
+            return texto(
+                `Hay ${items.length} coincidencias; afina la búsqueda para no marcar la equivocada:\n\n${lista}`);
+        }
+        const it = items[0];
+        await sql`update receipt_items set hormiga_override = ${hormiga} where id = ${it.id}`;
+        const estado = hormiga === null ? 'sin corrección (manda el grupo)'
+                     : hormiga ? 'SÍ es hormiga' : 'NO es hormiga';
+        return texto(`"${it.producto_normalizado}" (${it.fecha}, $${dinero(it.total_item || 0)}) → ${estado}.`);
+    },
+);
+
 const transport = new StdioServerTransport();
 await server.connect(transport);

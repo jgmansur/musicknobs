@@ -38,7 +38,7 @@ scripts/migrate_sheets.py           Sheets → Supabase (con --dry-run)
 | Parsers | **Verificados** — 10/10 tests en verde |
 | Migración | **Aplicada** — 7 cuentas, 504 movimientos, 46 fijos |
 | Worker de ingesta | **Desplegado** — cron cada 15 min, verificado en producción |
-| MCP de finanzas | **Listo** — 10 herramientas, 14 verificaciones en verde |
+| MCP de finanzas | **Listo** — 36 herramientas (finanzas, autos, estudio, recetas, vencimientos) |
 | Pestaña de bandeja | **Lista** — falta abrirla en el navegador |
 
 Worker: `https://finance-core.musicknobs.workers.dev`
