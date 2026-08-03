@@ -20,6 +20,9 @@ import {
     montoConSigno, validarMovimiento, detectarTransferencia, ambiguedad,
     BUDGET_BUCKETS,
 } from './reglas.js';
+// Las mismas operaciones que usa el Worker: aprobar y revertir tiene que hacer
+// exactamente lo mismo venga de la app o de un asistente.
+import { aprobarPendiente, borrarMovimiento } from '../../shared/movimientos.js';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ENV = join(HERE, '..', '..', '.env');
@@ -522,6 +525,214 @@ server.tool(
     'Los 6 buckets válidos del planner. Un fijo con otra categoría queda invisible ahí.',
     {},
     async () => texto(`Buckets del planner:\n  ${BUDGET_BUCKETS.join('\n  ')}`),
+);
+
+
+// ------------------------------------------------- Ciclo de vida de un movimiento
+
+server.tool(
+    'finanzas_aprobar_pendiente',
+    'Convierte un pendiente de la bandeja en movimiento real. Los pendientes '
+    + 'anteriores al ancla del saldo llenan el historial pero no mueven saldos.',
+    {
+        id: z.string().describe('id del pendiente; sale de finanzas_pendientes'),
+        monto: z.number().optional()
+            .describe('Obligatorio si el pendiente no traía monto (SPEI de Hey)'),
+        cuenta: z.string().optional().describe('Si hay que corregir la cuenta sugerida'),
+        categoria: z.string().optional(),
+        concepto: z.string().optional(),
+    },
+    async ({ id, monto, cuenta, categoria, concepto }) => {
+        let accountId;
+        if (cuenta) {
+            const r = await buscarCuenta(cuenta);
+            if (r.error) return texto(r.error);
+            accountId = r.cuenta.id;
+        }
+        const res = await aprobarPendiente(sql, id, {
+            amount: monto, accountId, category: categoria, description: concepto,
+        });
+        if (res.error) return texto(`No se aprobó: ${res.error}`);
+
+        const [t] = await sql`
+            select a.name, ab.display_balance, t.amount,
+                   (t.occurred_at < a.opening_balance_at) as historico
+            from transactions t
+            join accounts a on a.id = t.account_id
+            join account_balances ab on ab.id = a.id
+            where t.id = ${res.transactionId}
+        `;
+        return texto(
+            `Aprobado: ${dinero(Math.abs(t.amount))} en ${t.name}.\n`
+            + (t.historico
+                ? 'Es histórico (anterior al ancla), así que completa el historial pero no movió el saldo.'
+                : `Saldo de ${t.name}: ${dinero(t.display_balance)}.`),
+        );
+    },
+);
+
+server.tool(
+    'finanzas_rechazar_pendiente',
+    'Descarta un pendiente de la bandeja sin crear movimiento.',
+    { id: z.string(), motivo: z.string().optional() },
+    async ({ id, motivo }) => {
+        const [p] = await sql`
+            update pending_transactions
+            set status = 'rejected', resolved_at = now()
+            where id = ${id} and status = 'pending'
+            returning merchant, amount
+        `;
+        if (!p) return texto('Ese pendiente no existe o ya se resolvió.');
+        return texto(
+            `Descartado: ${p.merchant ?? 'movimiento'} `
+            + `${p.amount == null ? '(sin monto)' : dinero(Math.abs(p.amount))}.`
+            + (motivo ? `\nMotivo: ${motivo}` : ''),
+        );
+    },
+);
+
+server.tool(
+    'finanzas_editar_movimiento',
+    'Corrige un movimiento existente. Solo cambia los campos que se envían.',
+    {
+        id: z.string(),
+        monto: z.number().optional().describe('Positivo; el signo lo conserva el tipo'),
+        cuenta: z.string().optional(),
+        comercio: z.string().optional(),
+        concepto: z.string().optional(),
+        categoria: z.string().optional(),
+        fecha: z.string().optional().describe('YYYY-MM-DD'),
+    },
+    async ({ id, monto, cuenta, comercio, concepto, categoria, fecha }) => {
+        let accountId = null;
+        if (cuenta) {
+            const r = await buscarCuenta(cuenta);
+            if (r.error) return texto(r.error);
+            accountId = r.cuenta.id;
+        }
+        const [t] = await sql`
+            update transactions set
+                amount = case when ${monto ?? null}::numeric is null then amount
+                              when kind = 'ingreso' then abs(${monto ?? null}::numeric)
+                              else -abs(${monto ?? null}::numeric) end,
+                account_id  = coalesce(${accountId}, account_id),
+                merchant    = coalesce(${comercio ?? null}, merchant),
+                description = coalesce(${concepto ?? null}, description),
+                category    = coalesce(${categoria ?? null}, category),
+                occurred_at = coalesce(${fecha ? `${fecha}T12:00:00-06:00` : null}::timestamptz,
+                                       occurred_at)
+            where id = ${id}
+            returning id, account_id
+        `;
+        if (!t) return texto('No encontré ese movimiento.');
+        const [b] = await sql`
+            select name, display_balance from account_balances where id = ${t.account_id}
+        `;
+        return texto(`Movimiento actualizado. Saldo de ${b.name}: ${dinero(b.display_balance)}.`);
+    },
+);
+
+server.tool(
+    'finanzas_revertir_movimiento',
+    'Borra un movimiento y deshace sus efectos: libera la parte del gasto fijo que '
+    + 'saldaba, devuelve el pendiente a la bandeja, y si era transferencia borra '
+    + 'las dos filas ligadas.',
+    { id: z.string() },
+    async ({ id }) => {
+        const [antes] = await sql`
+            select a.name, t.amount, t.description from transactions t
+            join accounts a on a.id = t.account_id where t.id = ${id}
+        `;
+        if (!antes) return texto('No encontré ese movimiento.');
+
+        const res = await borrarMovimiento(sql, id);
+        if (res.error) return texto(`No se revirtió: ${res.error}`);
+
+        const [b] = await sql`select display_balance from account_balances where name = ${antes.name}`;
+        return texto(
+            `Revertido: ${dinero(Math.abs(antes.amount))} — ${antes.description ?? ''}\n`
+            + `Saldo de ${antes.name}: ${dinero(b.display_balance)}.`
+            + (res.ligadas ? `\nSe borró también la fila ligada de la transferencia.` : ''),
+        );
+    },
+);
+
+server.tool(
+    'finanzas_categorias',
+    'Categorías en uso, con cuántos movimientos y cuánto suman. Sirve para no '
+    + 'inventar categorías nuevas cuando ya existe una equivalente.',
+    { meses: z.number().int().min(1).max(36).default(6) },
+    async ({ meses }) => {
+        const rows = await sql`
+            select coalesce(category, '(sin categoría)') as categoria,
+                   count(*)::int as n, round(sum(abs(amount))) as total
+            from transactions
+            where kind <> 'transfer'
+              and occurred_at >= now() - (${meses} || ' months')::interval
+            group by 1 order by n desc
+        `;
+        if (!rows.length) return texto('No hay movimientos en ese periodo.');
+        const sinCat = rows.find((r) => r.categoria === '(sin categoría)');
+        return texto(
+            `Categorías de los últimos ${meses} meses:\n`
+            + rows.map((r) => `  ${String(r.n).padStart(5)}  ${dinero(r.total).padStart(12)}  ${r.categoria}`).join('\n')
+            + (sinCat ? `\n\nHay ${sinCat.n} movimientos sin categorizar.` : ''),
+        );
+    },
+);
+
+server.tool(
+    'finanzas_sin_categoria',
+    'Movimientos sin categoría, agrupados por comercio para poder clasificarlos en bloque.',
+    { limite: z.number().int().min(1).max(50).default(20) },
+    async ({ limite }) => {
+        const rows = await sql`
+            select coalesce(merchant, description, '(sin nombre)') as comercio,
+                   count(*)::int as n, round(sum(abs(amount))) as total,
+                   to_char(max(occurred_at), 'YYYY-MM-DD') as ultimo
+            from transactions
+            where category is null and kind <> 'transfer'
+            group by 1 order by n desc, total desc limit ${limite}
+        `;
+        if (!rows.length) return texto('Todo está categorizado.');
+        return texto(
+            `Comercios sin categoría:\n`
+            + rows.map((r) => `  ${String(r.n).padStart(4)}× ${dinero(r.total).padStart(11)}  `
+                + `${r.comercio.slice(0, 34).padEnd(34)} último ${r.ultimo}`).join('\n')
+            + '\n\nUsa finanzas_categorizar_comercio para clasificarlos todos de una vez.',
+        );
+    },
+);
+
+server.tool(
+    'finanzas_categorizar_comercio',
+    'Asigna una categoría a TODOS los movimientos de un comercio. Devuelve cuántos '
+    + 'tocaría antes de escribir si se usa dry_run.',
+    {
+        comercio: z.string().describe('Texto a buscar en comercio o concepto'),
+        categoria: z.string(),
+        solo_sin_categoria: z.boolean().default(true)
+            .describe('Si es false, sobrescribe categorías ya asignadas'),
+        dry_run: z.boolean().default(false),
+    },
+    async ({ comercio, categoria, solo_sin_categoria, dry_run }) => {
+        const patron = `%${comercio}%`;
+        const afectados = await sql`
+            select id from transactions
+            where (merchant ilike ${patron} or description ilike ${patron})
+              and kind <> 'transfer'
+              and (${!solo_sin_categoria} or category is null)
+        `;
+        if (!afectados.length) return texto(`Ningún movimiento coincide con "${comercio}".`);
+        if (dry_run) {
+            return texto(`Simulación: ${afectados.length} movimientos quedarían como "${categoria}".`);
+        }
+        await sql`
+            update transactions set category = ${categoria}
+            where id in ${sql(afectados.map((r) => r.id))}
+        `;
+        return texto(`${afectados.length} movimientos de "${comercio}" categorizados como "${categoria}".`);
+    },
 );
 
 const transport = new StdioServerTransport();

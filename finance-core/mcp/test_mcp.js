@@ -179,6 +179,69 @@ check('creó las dos filas ligadas', filas === 2);
 await sql`delete from transactions where description = 'PRUEBA MCP'`;
 check('revertido', Math.abs((await saldoDe('Santander')) - sAntes) < 0.01);
 
+
+console.log('\nCICLO DE VIDA (fase 2)\n');
+
+const catalogo = await call('finanzas_categorias', { meses: 12 });
+check('finanzas_categorias responde', /Categorías de los últimos/.test(catalogo));
+
+const sinCat = await call('finanzas_sin_categoria', { limite: 5 });
+check('finanzas_sin_categoria responde', /Comercios sin categoría|Todo está categorizado/.test(sinCat));
+
+// Categorización masiva sobre un movimiento propio, para no tocar datos reales.
+const [creado] = await sql`
+    insert into transactions (occurred_at, account_id, amount, kind, merchant, description, source)
+    select now(), id, -77, 'gasto', 'PRUEBA COMERCIO F2', 'PRUEBA F2', 'script'
+    from accounts where name = 'Santander' returning id
+`;
+const simCat = await call('finanzas_categorizar_comercio', {
+    comercio: 'PRUEBA COMERCIO F2', categoria: 'Prueba', dry_run: true,
+});
+check('categorizar en seco no escribe', /Simulación: 1 movimientos/.test(simCat));
+const [sigueNull] = await sql`select category from transactions where id = ${creado.id}`;
+check('la categoría sigue vacía tras el dry_run', sigueNull.category === null);
+
+const aplicaCat = await call('finanzas_categorizar_comercio', {
+    comercio: 'PRUEBA COMERCIO F2', categoria: 'Prueba',
+});
+check('categorizar aplica', /1 movimientos.*categorizados/.test(aplicaCat));
+const [conCat] = await sql`select category from transactions where id = ${creado.id}`;
+check('la categoría quedó guardada', conCat.category === 'Prueba');
+
+const editado = await call('finanzas_editar_movimiento', {
+    id: creado.id, monto: 99, concepto: 'PRUEBA F2 EDITADA',
+});
+check('editar responde', /actualizado/.test(editado));
+const [trasEdit] = await sql`select amount, description from transactions where id = ${creado.id}`;
+check('el monto se editó conservando el signo', Math.abs(Number(trasEdit.amount) + 99) < 0.01);
+check('el concepto se editó', trasEdit.description === 'PRUEBA F2 EDITADA');
+
+const revertido = await call('finanzas_revertir_movimiento', { id: creado.id });
+check('revertir responde', /Revertido/.test(revertido));
+const quedan = await sql`select id from transactions where id = ${creado.id}`;
+check('el movimiento ya no existe', quedan.length === 0);
+
+// Aprobar y revertir un pendiente real: debe volver a la bandeja.
+const [pendiente] = await sql`
+    select p.id, p.merchant from pending_transactions p
+    join accounts a on a.id = p.suggested_account_id
+    where p.status = 'pending' and p.amount is not null
+    order by p.occurred_at desc limit 1
+`;
+if (pendiente) {
+    const apr = await call('finanzas_aprobar_pendiente', { id: pendiente.id });
+    check('aprobar pendiente responde', /Aprobado/.test(apr));
+    const [tras] = await sql`select status, transaction_id from pending_transactions where id = ${pendiente.id}`;
+    check('el pendiente quedó aprobado', tras.status === 'approved');
+
+    const rev = await call('finanzas_revertir_movimiento', { id: tras.transaction_id });
+    check('revertir el movimiento del pendiente', /Revertido/.test(rev));
+    const [vuelta] = await sql`select status from pending_transactions where id = ${pendiente.id}`;
+    check('el pendiente regresó a la bandeja', vuelta.status === 'pending');
+} else {
+    console.log('  (sin pendientes con monto para probar)');
+}
+
 console.log(`\n${ok ? 'TODO CORRECTO' : 'ALGO FALLÓ'}`);
 await sql.end();
 await client.close();
