@@ -35,7 +35,12 @@ export function categoriaPara(mov, reglas) {
     const texto = normalizar(`${mov.merchant ?? ''} ${mov.description ?? ''}`);
     if (!texto) return null;
 
+    // Una regla vale para gastos, para ingresos o para ambos. "Mariel" no
+    // significa lo mismo cuando le pagas que cuando ella te transfiere, y sin
+    // esta distinción una sola regla mancharía las dos direcciones del dinero.
+    const kind = mov.kind ?? 'gasto';
     const candidatas = reglas
+        .filter((r) => (r.aplica_a ?? 'gasto') === 'ambos' || (r.aplica_a ?? 'gasto') === kind)
         .filter((r) => texto.includes(normalizar(r.patron)))
         .sort((a, b) => (a.prioridad ?? 100) - (b.prioridad ?? 100)
             || normalizar(b.patron).length - normalizar(a.patron).length);
@@ -53,11 +58,13 @@ export function categoriaPara(mov, reglas) {
  * @param {Array<{merchant?: string, description?: string, category?: string}>} movimientos
  * @param {{minimo?: number}} opts  minimo de repeticiones para proponer
  */
-export function aprenderReglas(movimientos, { minimo = 3 } = {}) {
+export function aprenderReglas(movimientos, opts = {}) {
+    const { minimo = 3 } = opts;
     const porComercio = new Map();
 
     for (const m of movimientos) {
         const clave = normalizar(m.merchant || m.description || '');
+        if ((m.kind ?? 'gasto') !== (opts.kind ?? 'gasto')) continue;
         if (clave.length < 3) continue;
         if (!porComercio.has(clave)) porComercio.set(clave, { total: 0, categorias: new Map() });
         const e = porComercio.get(clave);

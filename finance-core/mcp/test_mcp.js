@@ -183,7 +183,9 @@ check('revertido', Math.abs((await saldoDe('Santander')) - sAntes) < 0.01);
 console.log('\nCICLO DE VIDA (fase 2)\n');
 
 const catalogo = await call('finanzas_categorias', { meses: 12 });
-check('finanzas_categorias responde', /Categorías de los últimos/.test(catalogo));
+// Gasto e ingreso NUNCA se suman juntos: sumarlos daba un total sin significado.
+check('finanzas_categorias separa gastos de ingresos',
+    /GASTOS:/.test(catalogo) && /INGRESOS:/.test(catalogo));
 
 const sinCat = await call('finanzas_sin_categoria', { limite: 5 });
 check('finanzas_sin_categoria responde', /Comercios sin categoría|Todo está categorizado/.test(sinCat));
@@ -306,6 +308,14 @@ check('aprender reglas explica por qué no propone',
 const vocab = await call('finanzas_categorias', { meses: 12 });
 check('expone el vocabulario de categorías de los fijos',
     /gastos fijos y aquí no aparecen/.test(vocab));
+
+// Una regla de gasto no debe tocar los ingresos, y viceversa.
+const { categoriaPara: matcher } = await import('../shared/categorias.js');
+const reglaGasto = [{ patron: 'mariel', categoria: 'Familia', aplica_a: 'gasto' }];
+check('la regla de gasto aplica a un gasto',
+    matcher({ merchant: 'Mariel', kind: 'gasto' }, reglaGasto)?.categoria === 'Familia');
+check('la regla de gasto NO aplica a un ingreso',
+    matcher({ merchant: 'Mariel', kind: 'ingreso' }, reglaGasto) === null);
 
 console.log(`\n${ok ? 'TODO CORRECTO' : 'ALGO FALLÓ'}`);
 await sql.end();

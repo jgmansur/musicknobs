@@ -86,7 +86,7 @@ export function classify(parsed, { cardMap, fixedExpenses, bankDefaults = new Ma
     // El gasto fijo manda sobre la regla de comercio: es más específico y ya
     // trae su propia categoría.
     const porRegla = categoriaPara(
-        { merchant: parsed.merchant, description: parsed.counterparty }, reglas,
+        { merchant: parsed.merchant, description: parsed.counterparty, kind: parsed.kind }, reglas,
     );
 
     return {
@@ -127,7 +127,7 @@ export async function runIngest({ sql, credentials, lookbackDays = DEFAULT_LOOKB
             sql`select id, name from accounts`,
         ]);
         const reglas = await sql`
-            select id, patron, categoria, prioridad from category_rules
+            select id, patron, categoria, prioridad, aplica_a from category_rules
         `;
         const cardMap = new Map(cards.map((c) => [c.last4, { id: c.account_id }]));
 

@@ -664,13 +664,16 @@ server.tool(
     + 'inventar categorías nuevas cuando ya existe una equivalente.',
     { meses: z.number().int().min(1).max(36).default(6) },
     async ({ meses }) => {
+        // Gasto e ingreso se reportan por separado. Sumarlos en un solo total
+        // daría un número sin significado: no es lo mismo el dinero que sale
+        // que el que entra, aunque compartan el nombre de la categoría.
         const rows = await sql`
-            select coalesce(category, '(sin categoría)') as categoria,
+            select coalesce(category, '(sin categoría)') as categoria, kind,
                    count(*)::int as n, round(sum(abs(amount))) as total
             from transactions
             where kind <> 'transfer'
               and occurred_at >= now() - (${meses} || ' months')::interval
-            group by 1 order by n desc
+            group by 1, 2 order by n desc
         `;
         // El vocabulario real de Jay vive en los gastos fijos, que sí están
         // categorizados. Sin esto, un asistente inventaría categorías nuevas en
@@ -683,11 +686,18 @@ server.tool(
         const sinUsar = vocabulario.map((v) => v.categoria).filter((c) => !enUso.has(c));
 
         if (!rows.length) return texto('No hay movimientos en ese periodo.');
-        const sinCat = rows.find((r) => r.categoria === '(sin categoría)');
+        const bloque = (kind, titulo) => {
+            const r = rows.filter((x) => x.kind === kind);
+            if (!r.length) return '';
+            return `\n${titulo}:\n` + r.map((x) =>
+                `  ${String(x.n).padStart(5)}  ${dinero(x.total).padStart(12)}  ${x.categoria}`).join('\n');
+        };
+        const sinCat = rows.filter((r) => r.categoria === '(sin categoría)')
+            .reduce((s2, r) => s2 + r.n, 0);
         return texto(
-            `Categorías de los últimos ${meses} meses:\n`
-            + rows.map((r) => `  ${String(r.n).padStart(5)}  ${dinero(r.total).padStart(12)}  ${r.categoria}`).join('\n')
-            + (sinCat ? `\n\nHay ${sinCat.n} movimientos sin categorizar.` : '')
+            `Últimos ${meses} meses:\n`
+            + bloque('gasto', 'GASTOS') + '\n' + bloque('ingreso', 'INGRESOS')
+            + (sinCat ? `\n\nHay ${sinCat} movimientos sin categorizar.` : '')
             + (sinUsar.length
                 ? `\n\nCategorías que Jay ya usa en sus gastos fijos y aquí no aparecen `
                   + `(reúsalas antes de inventar nuevas):\n  ${sinUsar.join('\n  ')}`
@@ -698,20 +708,24 @@ server.tool(
 
 server.tool(
     'finanzas_sin_categoria',
-    'Movimientos sin categoría, agrupados por comercio para poder clasificarlos en bloque.',
-    { limite: z.number().int().min(1).max(50).default(20) },
-    async ({ limite }) => {
+    'Movimientos sin categoría, agrupados por comercio. Por omisión solo gastos: '
+    + 'los ingresos usan otro vocabulario y mezclarlos lleva a clasificar mal.',
+    {
+        limite: z.number().int().min(1).max(50).default(20),
+        tipo: z.enum(['gasto', 'ingreso']).default('gasto'),
+    },
+    async ({ limite, tipo }) => {
         const rows = await sql`
             select coalesce(merchant, description, '(sin nombre)') as comercio,
                    count(*)::int as n, round(sum(abs(amount))) as total,
                    to_char(max(occurred_at), 'YYYY-MM-DD') as ultimo
             from transactions
-            where category is null and kind <> 'transfer'
+            where category is null and kind = ${tipo}
             group by 1 order by n desc, total desc limit ${limite}
         `;
-        if (!rows.length) return texto('Todo está categorizado.');
+        if (!rows.length) return texto(`Todos los ${tipo}s están categorizados.`);
         return texto(
-            `Comercios sin categoría:\n`
+            `Comercios sin categoría (${tipo}s):\n`
             + rows.map((r) => `  ${String(r.n).padStart(4)}× ${dinero(r.total).padStart(11)}  `
                 + `${r.comercio.slice(0, 34).padEnd(34)} último ${r.ultimo}`).join('\n')
             + '\n\nUsa finanzas_categorizar_comercio para clasificarlos todos de una vez.',
@@ -726,16 +740,17 @@ server.tool(
     {
         comercio: z.string().describe('Texto a buscar en comercio o concepto'),
         categoria: z.string(),
+        tipo: z.enum(['gasto', 'ingreso']).default('gasto'),
         solo_sin_categoria: z.boolean().default(true)
             .describe('Si es false, sobrescribe categorías ya asignadas'),
         dry_run: z.boolean().default(false),
     },
-    async ({ comercio, categoria, solo_sin_categoria, dry_run }) => {
+    async ({ comercio, categoria, tipo, solo_sin_categoria, dry_run }) => {
         const patron = `%${comercio}%`;
         const afectados = await sql`
             select id from transactions
             where (merchant ilike ${patron} or description ilike ${patron})
-              and kind <> 'transfer'
+              and kind = ${tipo}
               and (${!solo_sin_categoria} or category is null)
         `;
         if (!afectados.length) return texto(`Ningún movimiento coincide con "${comercio}".`);
@@ -760,7 +775,7 @@ server.tool(
     {},
     async () => {
         const rows = await sql`
-            select patron, categoria, prioridad, origen, veces_aplicada
+            select patron, categoria, prioridad, origen, veces_aplicada, aplica_a
             from category_rules order by prioridad, patron
         `;
         if (!rows.length) {
@@ -769,8 +784,8 @@ server.tool(
         }
         return texto(
             `${rows.length} reglas:\n` + rows.map((r) =>
-                `  ${String(r.prioridad).padStart(4)}  ${r.patron.slice(0, 28).padEnd(28)} → `
-                + `${r.categoria.padEnd(24)} (${r.origen}, aplicada ${r.veces_aplicada}×)`,
+                `  ${String(r.prioridad).padStart(4)}  ${r.patron.slice(0, 26).padEnd(26)} → `
+                + `${r.categoria.padEnd(20)} [${r.aplica_a}] (${r.origen}, ${r.veces_aplicada}×)`,
             ).join('\n'),
         );
     },
@@ -785,11 +800,13 @@ server.tool(
         categoria: z.string(),
         prioridad: z.number().int().default(100)
             .describe('Menor gana. Usa un número bajo para reglas específicas.'),
+        aplica_a: z.enum(['gasto', 'ingreso', 'ambos']).default('gasto')
+            .describe('"Mariel" no significa lo mismo cuando le pagas que cuando te transfiere'),
         aplicar_historico: z.boolean().default(true)
             .describe('Categoriza también los movimientos ya registrados que no tengan categoría'),
         dry_run: z.boolean().default(false),
     },
-    async ({ patron, categoria, prioridad, aplicar_historico, dry_run }) => {
+    async ({ patron, categoria, prioridad, aplica_a, aplicar_historico, dry_run }) => {
         const [existente] = await sql`
             select patron, categoria from category_rules
             where lower(trim(patron)) = lower(trim(${patron}))
@@ -804,7 +821,8 @@ server.tool(
         const alcance = await sql`
             select id from transactions
             where (merchant ilike ${'%' + patron + '%'} or description ilike ${'%' + patron + '%'})
-              and kind <> 'transfer' and category is null
+              and category is null
+              and (${aplica_a} = 'ambos' or kind = ${aplica_a})
         `;
         if (dry_run) {
             return texto(
@@ -814,8 +832,8 @@ server.tool(
         }
 
         await sql`
-            insert into category_rules (patron, categoria, prioridad, origen)
-            values (${patron.trim()}, ${categoria}, ${prioridad}, 'manual')
+            insert into category_rules (patron, categoria, prioridad, origen, aplica_a)
+            values (${patron.trim()}, ${categoria}, ${prioridad}, 'manual', ${aplica_a})
         `;
         let tocados = 0;
         if (aplicar_historico && alcance.length) {
@@ -859,7 +877,7 @@ server.tool(
     },
     async ({ minimo, crear }) => {
         const movs = await sql`
-            select merchant, description, category from transactions
+            select merchant, description, category, kind from transactions
             where kind <> 'transfer'
         `;
         const existentes = new Set(
@@ -913,8 +931,8 @@ server.tool(
     { dry_run: z.boolean().default(false) },
     async ({ dry_run }) => {
         const [reglas, sinCat] = await Promise.all([
-            sql`select id, patron, categoria, prioridad from category_rules`,
-            sql`select id, merchant, description from transactions
+            sql`select id, patron, categoria, prioridad, aplica_a from category_rules`,
+            sql`select id, merchant, description, kind from transactions
                 where category is null and kind <> 'transfer'`,
         ]);
         if (!reglas.length) return texto('No hay reglas definidas todavía.');
