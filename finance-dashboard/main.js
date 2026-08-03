@@ -24,7 +24,7 @@ const DEUDAS_RECIBOS_FOLDER_ID = '157KDn-vbkuHH1L8xbaJBGz-oKmT7p5a9';
 const SPREADSHEET_RSM_ID = '14VsoPHGNTSUSbzMOqGWs2qSL-pGywPgjUoHD3MqIJfo'; // Recibos Salud Mariel
 const SALDOS_SHEET_ID    = '1-cX_qxld3ioSpcO9lEBPg90Db6AyK7SczpJTvj7rw4U'; // Saldos (fuente de verdad — Claude accede vía service account)
 const RSM_FOLDER_ID = '1-ZfeWQ-Rmh-Wm2WMCkULkN6MQWBuxYnj';
-const APP_VERSION  = 'v8.3.0';
+const APP_VERSION  = 'v8.4.0';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -6329,27 +6329,11 @@ async function autos_deleteCarById(carId) {
 
     if (linkedRepairs.length) {
         try {
-            const markers = new Set(linkedRepairs.map(r => r.logMarker || autos_getLogMarker(r.id)).filter(Boolean));
-            if (markers.size) {
-                const logRows = await sheetsGet(SPREADSHEET_LOG_ID, 'Hoja 1!A2:H').catch(() => []);
-                const deleteRows = [];
-                for (let i = 0; i < logRows.length; i++) {
-                    const concepto = (logRows[i]?.[2] || '').toString();
-                    for (const marker of markers) {
-                        if (concepto.includes(marker)) {
-                            deleteRows.push(i + 1);
-                            break;
-                        }
-                    }
-                }
-                if (deleteRows.length) {
-                    const logSheetId = await getSheetId(SPREADSHEET_LOG_ID, 'Hoja 1');
-                    for (const row0 of deleteRows.sort((a, b) => b - a)) {
-                        await sheetsDeleteRow(SPREADSHEET_LOG_ID, logSheetId, row0);
-                    }
-                    markGastosStale();
-                }
+            // Cada reparación guarda el id de su movimiento; se borran todos.
+            for (const r of linkedRepairs) {
+                await gastoLigado_borrar(r.logMarker);
             }
+            markGastosStale();
         } catch (e) {
             console.warn('No se pudo limpiar sincronizacion de reparaciones eliminadas:', e);
         }
@@ -8524,43 +8508,23 @@ function autos_getLogMarker(repairId) {
 }
 
 async function autos_syncRepairToLog(repair) {
-    const marker = repair.logMarker || autos_getLogMarker(repair.id);
     const car = autosState.cars.find(c => c.id === repair.carId);
     if (!car) return;
-    const logRows = await sheetsGet(SPREADSHEET_LOG_ID, 'Hoja 1!A2:H');
-    let found = -1;
-    for (let i = 0; i < logRows.length; i++) {
-        if (((logRows[i][2] || '').toString()).includes(marker)) {
-            found = i;
-            break;
-        }
-    }
-    const monto = parseSheetValue(repair.costo);
-    if (monto <= 0) {
-        if (found !== -1) {
-            const logSheetId = await getSheetId(SPREADSHEET_LOG_ID, 'Hoja 1');
-            await sheetsDeleteRow(SPREADSHEET_LOG_ID, logSheetId, found + 1);
-        }
-        return;
-    }
     const lugar = repair.lugar || `Auto ${car.placa || `${car.marca} ${car.modelo}`}`;
-    const concepto = `${repair.reparacion} · ${car.marca} ${car.modelo} (${car.placa || 'sin placa'}) [${marker}]`;
-    const row = [
-        repair.fecha,
+    const concepto = `${repair.reparacion} · ${car.marca} ${car.modelo} (${car.placa || 'sin placa'})`;
+    repair.logMarker = await gastoLigado_sync({
+        movimientoId: repair.logMarker,
+        source: 'auto-reparacion',
+        sourceRef: `auto-reparacion:${repair.id}`,
+        fecha: repair.fecha,
         lugar,
         concepto,
-        monto,
-        'Gasto',
-        repair.formaPago || '',
-        repair.recibo || repair.foto || '',
-        repair.moneda || 'MXN',
-    ];
-    if (found !== -1) {
-        const rowNum = found + 2;
-        await sheetsUpdate(SPREADSHEET_LOG_ID, `Hoja 1!A${rowNum}:H${rowNum}`, [row]);
-    } else {
-        await sheetsAppend(SPREADSHEET_LOG_ID, 'Hoja 1!A:H', [row]);
-    }
+        monto: repair.costo,
+        moneda: repair.moneda || 'MXN',
+        formaPago: repair.formaPago,
+        reciboUrl: repair.recibo || repair.foto,
+        categoria: 'Gasolina y Autos',
+    });
 }
 
 window.autos_deleteRepair = async function(repairId) {
@@ -8571,20 +8535,8 @@ window.autos_deleteRepair = async function(repairId) {
     autosState.repairs = autosState.repairs.filter(r => r.id !== repairId);
     await autos_saveRepairsSheet();
     try {
-        const marker = repair.logMarker || autos_getLogMarker(repair.id);
-        const logRows = await sheetsGet(SPREADSHEET_LOG_ID, 'Hoja 1!A2:H');
-        let found = -1;
-        for (let i = 0; i < logRows.length; i++) {
-            if (((logRows[i][2] || '').toString()).includes(marker)) {
-                found = i;
-                break;
-            }
-        }
-        if (found !== -1) {
-            const logSheetId = await getSheetId(SPREADSHEET_LOG_ID, 'Hoja 1');
-            await sheetsDeleteRow(SPREADSHEET_LOG_ID, logSheetId, found + 1);
-            markGastosStale();
-        }
+        await gastoLigado_borrar(repair.logMarker);
+        markGastosStale();
     } catch (e) {
         console.warn('No se pudo borrar sincronizacion en Control de Gastos:', e);
     }
@@ -9209,80 +9161,39 @@ function estudio_getPluginMarker(id) {
 
 async function estudio_syncInventarioToLog(item, options = {}) {
     const allowCreate = options.allowCreate !== false;
-    const marker = (item.logMarker || '').toString().trim();
-    if (!marker) return;
-    const logRows = await sheetsGet(SPREADSHEET_LOG_ID, 'Hoja 1!A2:H');
-    let found = -1;
-    for (let i = 0; i < logRows.length; i++) {
-        if (((logRows[i][2] || '').toString()).includes(marker)) {
-            found = i;
-            break;
-        }
-    }
-    const monto = parseSheetValue(item.precioUsd) * Math.max(1, parseInt(item.cantidad, 10) || 1);
-    if (found === -1 && !allowCreate) return;
-    if (monto <= 0) {
-        if (found !== -1) {
-            const logSheetId = await getSheetId(SPREADSHEET_LOG_ID, 'Hoja 1');
-            await sheetsDeleteRow(SPREADSHEET_LOG_ID, logSheetId, found + 1);
-        }
-        return;
-    }
-    const row = [
-        item.fechaCompra || normalizeDateString(new Date().toLocaleDateString('en-CA')),
-        'Estudio - Inventario',
-        `${item.name} (${item.categoria || 'Equipo'}) [${marker}]`,
-        monto,
-        'Gasto',
-        item.formaPago || '',
-        item.foto || item.site || '',
-        'USD',
-    ];
-    if (found !== -1) {
-        const rowNum = found + 2;
-        await sheetsUpdate(SPREADSHEET_LOG_ID, `Hoja 1!A${rowNum}:H${rowNum}`, [row]);
-    } else {
-        await sheetsAppend(SPREADSHEET_LOG_ID, 'Hoja 1!A:H', [row]);
-    }
+    if (!allowCreate && !gastoLigado_esId(item.logMarker)) return;
+    const cantidad = Math.max(1, parseInt(item.cantidad, 10) || 1);
+    item.logMarker = await gastoLigado_sync({
+        movimientoId: item.logMarker,
+        source: 'estudio-inventario',
+        sourceRef: `estudio-inventario:${item.id}`,
+        fecha: item.fechaCompra || normalizeDateString(new Date().toLocaleDateString('en-CA')),
+        lugar: 'Estudio - Inventario',
+        concepto: `${item.name} (${item.categoria || 'Equipo'})`,
+        monto: parseSheetValue(item.precioUsd) * cantidad,
+        moneda: item.currency || 'USD',
+        formaPago: item.formaPago,
+        reciboUrl: item.foto || item.site,
+        categoria: 'Estudio',
+    });
 }
 
 async function estudio_syncPluginToLog(item, options = {}) {
     const allowCreate = options.allowCreate !== false;
-    const marker = (item.logMarker || '').toString().trim();
-    if (!marker) return;
-    const logRows = await sheetsGet(SPREADSHEET_LOG_ID, 'Hoja 1!A2:H');
-    let found = -1;
-    for (let i = 0; i < logRows.length; i++) {
-        if (((logRows[i][2] || '').toString()).includes(marker)) {
-            found = i;
-            break;
-        }
-    }
-    const monto = parseSheetValue(item.precioUsd);
-    if (found === -1 && !allowCreate) return;
-    if (monto <= 0) {
-        if (found !== -1) {
-            const logSheetId = await getSheetId(SPREADSHEET_LOG_ID, 'Hoja 1');
-            await sheetsDeleteRow(SPREADSHEET_LOG_ID, logSheetId, found + 1);
-        }
-        return;
-    }
-    const row = [
-        item.fechaCompra || normalizeDateString(new Date().toLocaleDateString('en-CA')),
-        'Estudio - Plugins',
-        `${item.name} (${item.marca || 'Plugin'}) [${marker}]`,
-        monto,
-        'Gasto',
-        item.formaPago || '',
-        item.site || item.foto || '',
-        item.currency || 'USD',
-    ];
-    if (found !== -1) {
-        const rowNum = found + 2;
-        await sheetsUpdate(SPREADSHEET_LOG_ID, `Hoja 1!A${rowNum}:H${rowNum}`, [row]);
-    } else {
-        await sheetsAppend(SPREADSHEET_LOG_ID, 'Hoja 1!A:H', [row]);
-    }
+    if (!allowCreate && !gastoLigado_esId(item.logMarker)) return;
+    item.logMarker = await gastoLigado_sync({
+        movimientoId: item.logMarker,
+        source: 'estudio-plugin',
+        sourceRef: `estudio-plugin:${item.id}`,
+        fecha: item.fechaCompra || normalizeDateString(new Date().toLocaleDateString('en-CA')),
+        lugar: 'Estudio - Plugins',
+        concepto: `${item.name}${item.marca ? ` · ${item.marca}` : ''}`,
+        monto: item.precioUsd,
+        moneda: item.currency || 'USD',
+        formaPago: item.formaPago,
+        reciboUrl: item.foto || item.site,
+        categoria: 'Estudio',
+    });
 }
 
 window.estudio_deleteInventario = async function(id) {
@@ -9293,19 +9204,8 @@ window.estudio_deleteInventario = async function(id) {
     estudioState.inventario = estudioState.inventario.filter((x) => x.id !== id);
     await estudio_saveInventarioSheet();
     try {
-        const marker = (item.logMarker || '').toString().trim();
-        if (!marker) {
-            estudio_render();
-            showToast('🗑️ Equipo eliminado');
-            return;
-        }
-        const logRows = await sheetsGet(SPREADSHEET_LOG_ID, 'Hoja 1!A2:H');
-        const idx = logRows.findIndex((row) => ((row[2] || '').toString()).includes(marker));
-        if (idx !== -1) {
-            const logSheetId = await getSheetId(SPREADSHEET_LOG_ID, 'Hoja 1');
-            await sheetsDeleteRow(SPREADSHEET_LOG_ID, logSheetId, idx + 1);
-            markGastosStale();
-        }
+        await gastoLigado_borrar(item.logMarker);
+        markGastosStale();
     } catch (e) {
         console.warn('No se pudo borrar gasto sincronizado de inventario:', e);
     }
@@ -9321,19 +9221,8 @@ window.estudio_deletePlugin = async function(id) {
     estudioState.plugins = estudioState.plugins.filter((x) => x.id !== id);
     await estudio_savePluginsSheet();
     try {
-        const marker = (item.logMarker || '').toString().trim();
-        if (!marker) {
-            estudio_render();
-            showToast('🗑️ Plugin eliminado');
-            return;
-        }
-        const logRows = await sheetsGet(SPREADSHEET_LOG_ID, 'Hoja 1!A2:H');
-        const idx = logRows.findIndex((row) => ((row[2] || '').toString()).includes(marker));
-        if (idx !== -1) {
-            const logSheetId = await getSheetId(SPREADSHEET_LOG_ID, 'Hoja 1');
-            await sheetsDeleteRow(SPREADSHEET_LOG_ID, logSheetId, idx + 1);
-            markGastosStale();
-        }
+        await gastoLigado_borrar(item.logMarker);
+        markGastosStale();
     } catch (e) {
         console.warn('No se pudo borrar gasto sincronizado de plugin:', e);
     }
@@ -12878,47 +12767,25 @@ async function pelo_syncFixed(entry) {
 }
 
 async function pelo_syncExpense(entry) {
-    const marker = entry.expenseMarker || pelo_buildMarker(entry.id);
-    const rows = await sheetsGet(SPREADSHEET_LOG_ID, 'Hoja 1!A2:H').catch(() => []);
-    const idx = rows.findIndex((r) => ((r[2] || '').toString()).includes(marker));
     const conceptoBase = `Corte de Pelo ${entry.stylist ? `- ${entry.stylist}` : ''}`.trim();
-    const values = [[
-        entry.date || normalizeDateString(new Date().toLocaleDateString('en-CA')),
-        `Pelo ${entry.member}`,
-        `${conceptoBase} ${marker}`.trim(),
-        Math.abs(parseSheetValue(entry.amount || 0)),
-        'Gasto',
-        entry.formaPago || '',
-        (entry.receiptUrl || '').trim(),
-        'MXN',
-    ]];
-
-    if (idx !== -1) {
-        const rowNum = idx + 2;
-        await sheetsUpdate(SPREADSHEET_LOG_ID, `Hoja 1!A${rowNum}:H${rowNum}`, values);
-        return { marker, rowNum };
-    }
-
-    const appendRes = await sheetsAppend(SPREADSHEET_LOG_ID, 'Hoja 1!A:H', values);
-    const range = appendRes?.updates?.updatedRange || '';
-    const m = range.match(/![A-Z]+(\d+):/);
-    const rowNum = m ? parseInt(m[1], 10) : 0;
-    return { marker, rowNum };
+    const movimientoId = await gastoLigado_sync({
+        movimientoId: entry.expenseMarker,
+        source: 'pelo',
+        sourceRef: `pelo:${entry.id}`,
+        fecha: entry.date || normalizeDateString(new Date().toLocaleDateString('en-CA')),
+        lugar: `Pelo ${entry.member}`,
+        concepto: conceptoBase,
+        monto: entry.amount,
+        moneda: 'MXN',
+        formaPago: entry.formaPago,
+        reciboUrl: entry.receiptUrl,
+        categoria: 'Cuidado personal',
+    });
+    return { marker: movimientoId, rowNum: 0 };
 }
 
-async function pelo_removeExpenseByMarker(marker) {
-    if (!marker) return;
-    const rows = await sheetsGet(SPREADSHEET_LOG_ID, 'Hoja 1!A2:H').catch(() => []);
-    const indexes = [];
-    for (let i = 0; i < rows.length; i++) {
-        const concepto = (rows[i][2] || '').toString();
-        if (concepto.includes(marker)) indexes.push(i + 1);
-    }
-    if (!indexes.length) return;
-    const sheetId = await getSheetId(SPREADSHEET_LOG_ID, 'Hoja 1');
-    for (let i = indexes.length - 1; i >= 0; i--) {
-        await sheetsDeleteRow(SPREADSHEET_LOG_ID, sheetId, indexes[i]);
-    }
+async function pelo_removeExpenseByMarker(movimientoId) {
+    await gastoLigado_borrar(movimientoId);
 }
 
 async function pelo_save() {
@@ -15998,6 +15865,100 @@ async function recetas_saveRows() {
         await sheetsUpdate(SPREADSHEET_AUTOS_ID, `${RECETAS_SHEET}!A2:${letter}${1 + rows.length}`, rows);
     }
     await sheetsClear(SPREADSHEET_AUTOS_ID, `${RECETAS_SHEET}!A${2 + rows.length}:AZ`);
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// GASTOS LIGADOS A OTROS MÓDULOS
+// Reparaciones de autos, cortes de pelo, equipo de estudio y consultas médicas
+// generan un gasto real. Antes cada módulo lo escribía a mano en la hoja de
+// Control de Gastos y lo volvía a encontrar buscando un marcador de texto
+// dentro del concepto. Esa hoja se migró a Supabase, así que aquí vive la
+// única implementación: el vínculo ya no es un marcador sino el id del
+// movimiento, que cada módulo guarda en la columna donde tenía el marcador.
+// ══════════════════════════════════════════════════════════════════════════
+
+/** Los ids de Supabase son UUID; los marcadores viejos eran texto tipo
+ *  "[PELO:hair-123]". Así se distingue una entrada ya migrada de una legacy. */
+function gastoLigado_esId(valor) {
+    return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+        .test((valor || '').toString().trim());
+}
+
+async function gastoLigado_borrar(movimientoId) {
+    if (!gastoLigado_esId(movimientoId)) return;
+    try {
+        await bandeja_api(`/api/movimientos/${movimientoId}`, { method: 'DELETE' });
+    } catch (e) {
+        console.warn('No se pudo borrar el gasto ligado:', e);
+    }
+}
+
+/**
+ * Crea, actualiza o borra el gasto de una entrada. Devuelve el id del
+ * movimiento, o '' si no debe existir ninguno.
+ *
+ * opts: { movimientoId, source, sourceRef, fecha, lugar, concepto, monto,
+ *         moneda, formaPago, reciboUrl, categoria }
+ */
+async function gastoLigado_sync(opts) {
+    const previo = gastoLigado_esId(opts.movimientoId) ? opts.movimientoId.trim() : '';
+    let monto = Math.abs(parseSheetValue(opts.monto || 0));
+
+    if (!monto) {
+        await gastoLigado_borrar(previo);
+        return '';
+    }
+
+    const cuenta = balanceAccounts.find(a =>
+        balance_getAccountMatchKeys(a).includes(balance_normalizePaymentKey(opts.formaPago)));
+    if (!cuenta) {
+        throw new Error(`"${opts.formaPago || 'sin forma de pago'}" no existe como cuenta`);
+    }
+
+    // El movimiento se guarda en la moneda de la CUENTA. Si la entrada viene en
+    // otra (el inventario de estudio cotiza en USD), se convierte igual que ya
+    // lo hace la app para mostrar totales.
+    const monedaEntrada = parseCurrencyCode(opts.moneda || 'MXN');
+    const monedaCuenta = parseCurrencyCode(cuenta.currency || 'MXN');
+    let notaMoneda = '';
+    if (monedaEntrada !== monedaCuenta) {
+        if (monedaEntrada === 'USD' && monedaCuenta === 'MXN') {
+            await ensureUsdMxnRateForTransactions();
+            monto = balance_convertToMxn(monto, 'USD');
+            notaMoneda = ` (${formatCurrency(Math.abs(parseSheetValue(opts.monto)))} USD)`;
+        } else {
+            throw new Error(`No sé convertir ${monedaEntrada} a ${monedaCuenta} (${opts.formaPago})`);
+        }
+    }
+
+    const cuerpo = {
+        occurredAt: opts.fecha || undefined,
+        accountId: cuenta.id,
+        amount: monto,
+        merchant: opts.lugar || '',
+        description: `${opts.concepto || ''}${notaMoneda}`.trim(),
+        receiptUrl: opts.reciboUrl || null,
+    };
+
+    if (previo) {
+        await bandeja_api(`/api/movimientos/${previo}`, {
+            method: 'PATCH',
+            body: JSON.stringify(cuerpo),
+        });
+        return previo;
+    }
+
+    const creado = await bandeja_api('/api/movimientos', {
+        method: 'POST',
+        body: JSON.stringify({
+            ...cuerpo,
+            kind: 'gasto',
+            category: opts.categoria || null,
+            source: opts.source,
+            sourceRef: opts.sourceRef,
+        }),
+    });
+    return creado?.id || '';
 }
 
 // ── Gasto de la consulta ─────────────────────────────────────────────────
