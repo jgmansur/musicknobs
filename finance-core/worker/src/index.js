@@ -487,6 +487,239 @@ export default {
                 return json(row ? { ok: true } : { error: 'no encontrado' }, row ? 200 : 404);
             }
 
+            // ── Catálogos: autos, estudio y recetas ──────────────────────
+            //
+            // El dashboard venía de hojas, donde guardar significaba reescribir
+            // la pestaña completa. Se conserva esa semántica con un PUT que
+            // recibe el arreglo entero: hace upsert por `legacy_key` y borra lo
+            // que ya no viene. Así el módulo cambia poco y sigue siendo un solo
+            // viaje de red. Los volúmenes son de decenas de filas, no miles.
+            //
+            // `transaction_id` NO se toca en el upsert: el vínculo con el gasto
+            // lo maneja el propio módulo al sincronizarlo, y pisarlo aquí
+            // dejaría movimientos huérfanos.
+
+            if (url.pathname === '/api/cars' && request.method === 'GET') {
+                const [cars, repairs] = await Promise.all([
+                    sql`select *, to_char(vencimiento_poliza, 'YYYY-MM-DD') as vencimiento_poliza,
+                               to_char(vencimiento_tenencia, 'YYYY-MM-DD') as vencimiento_tenencia
+                        from cars order by marca, modelo`,
+                    sql`select r.*, to_char(r.fecha, 'YYYY-MM-DD') as fecha, c.legacy_key as car_key
+                        from car_repairs r join cars c on c.id = r.car_id
+                        order by r.fecha desc nulls last`,
+                ]);
+                return json({ cars, repairs });
+            }
+
+            if (url.pathname === '/api/cars' && request.method === 'PUT') {
+                const b = await request.json().catch(() => ({}));
+                const cars = Array.isArray(b.cars) ? b.cars : [];
+                await sql.begin(async (tx) => {
+                    for (const c of cars) {
+                        if (!c.legacyKey) continue;
+                        await tx`
+                            insert into cars (legacy_key, marca, modelo, anio, valor_factura,
+                                kilometraje, propietario, tiene_seguro, placa, vin, poliza_seguro,
+                                vencimiento_poliza, vencimiento_tenencia, pago_tenencia,
+                                proxima_revision_km, contrato_prestamo, emergencia_interior,
+                                emergencia_metro, reporte_siniestros_1, reporte_siniestros_2,
+                                tipo_llantas, foto_auto, factura_archivo, poliza_archivo,
+                                tarjeta_frente, tarjeta_atras, llantas_foto, certificado_polarizado,
+                                tabla_pagos, tabla_pagos_seguro, extra_doc_1_nombre, extra_doc_1_url,
+                                extra_doc_2_nombre, extra_doc_2_url)
+                            values (${c.legacyKey}, ${c.marca ?? '?'}, ${c.modelo ?? '?'},
+                                ${c.anio ?? null}, ${c.valorFactura ?? null}, ${c.kilometraje ?? null},
+                                ${c.propietario ?? null}, ${!!c.tieneSeguro}, ${c.placa ?? null},
+                                ${c.vin ?? null}, ${c.polizaSeguro ?? null},
+                                ${c.vencimientoPoliza || null}, ${c.vencimientoTenencia || null},
+                                ${c.pagoTenencia ?? null}, ${c.proximaRevisionKm ?? null},
+                                ${c.contratoPrestamo ?? null}, ${c.emergenciaInterior ?? null},
+                                ${c.emergenciaMetro ?? null}, ${c.reporteSiniestros1 ?? null},
+                                ${c.reporteSiniestros2 ?? null}, ${c.tipoLlantas ?? null},
+                                ${c.fotoAuto ?? null}, ${c.facturaArchivo ?? null},
+                                ${c.polizaArchivo ?? null}, ${c.tarjetaFrente ?? null},
+                                ${c.tarjetaAtras ?? null}, ${c.llantasFoto ?? null},
+                                ${c.certificadoPolarizado ?? null}, ${c.tablaPagos ?? null},
+                                ${c.tablaPagosSeguro ?? null}, ${c.extraDoc1Nombre ?? null},
+                                ${c.extraDoc1Url ?? null}, ${c.extraDoc2Nombre ?? null},
+                                ${c.extraDoc2Url ?? null})
+                            on conflict (legacy_key) do update set
+                                marca = excluded.marca, modelo = excluded.modelo,
+                                anio = excluded.anio, valor_factura = excluded.valor_factura,
+                                kilometraje = excluded.kilometraje, propietario = excluded.propietario,
+                                tiene_seguro = excluded.tiene_seguro, placa = excluded.placa,
+                                vin = excluded.vin, poliza_seguro = excluded.poliza_seguro,
+                                vencimiento_poliza = excluded.vencimiento_poliza,
+                                vencimiento_tenencia = excluded.vencimiento_tenencia,
+                                pago_tenencia = excluded.pago_tenencia,
+                                proxima_revision_km = excluded.proxima_revision_km,
+                                contrato_prestamo = excluded.contrato_prestamo,
+                                emergencia_interior = excluded.emergencia_interior,
+                                emergencia_metro = excluded.emergencia_metro,
+                                reporte_siniestros_1 = excluded.reporte_siniestros_1,
+                                reporte_siniestros_2 = excluded.reporte_siniestros_2,
+                                tipo_llantas = excluded.tipo_llantas,
+                                foto_auto = excluded.foto_auto,
+                                factura_archivo = excluded.factura_archivo,
+                                poliza_archivo = excluded.poliza_archivo,
+                                tarjeta_frente = excluded.tarjeta_frente,
+                                tarjeta_atras = excluded.tarjeta_atras,
+                                llantas_foto = excluded.llantas_foto,
+                                certificado_polarizado = excluded.certificado_polarizado,
+                                tabla_pagos = excluded.tabla_pagos,
+                                tabla_pagos_seguro = excluded.tabla_pagos_seguro,
+                                extra_doc_1_nombre = excluded.extra_doc_1_nombre,
+                                extra_doc_1_url = excluded.extra_doc_1_url,
+                                extra_doc_2_nombre = excluded.extra_doc_2_nombre,
+                                extra_doc_2_url = excluded.extra_doc_2_url,
+                                updated_at = now()
+                        `;
+                    }
+                    const vivos = cars.map((c) => c.legacyKey).filter(Boolean);
+                    if (vivos.length) await tx`delete from cars where legacy_key <> all(${vivos})`;
+                    else await tx`delete from cars`;
+                });
+                return json({ ok: true, total: cars.length });
+            }
+
+            if (url.pathname === '/api/repairs' && request.method === 'PUT') {
+                const b = await request.json().catch(() => ({}));
+                const reps = Array.isArray(b.repairs) ? b.repairs : [];
+                await sql.begin(async (tx) => {
+                    for (const r of reps) {
+                        if (!r.legacyKey || !r.carKey) continue;
+                        const [car] = await tx`select id from cars where legacy_key = ${r.carKey}`;
+                        if (!car) continue;   // reparación sin auto padre: se ignora
+                        await tx`
+                            insert into car_repairs (legacy_key, car_id, reparacion, costo, moneda,
+                                lugar, fecha, descripcion, forma_pago, foto, recibo, transaction_id)
+                            values (${r.legacyKey}, ${car.id}, ${r.reparacion ?? '?'},
+                                ${r.costo ?? 0}, ${r.moneda ?? 'MXN'}, ${r.lugar ?? null},
+                                ${r.fecha || null}, ${r.descripcion ?? null}, ${r.formaPago ?? null},
+                                ${r.foto ?? null}, ${r.recibo ?? null}, ${r.transactionId || null})
+                            on conflict (legacy_key) do update set
+                                car_id = excluded.car_id, reparacion = excluded.reparacion,
+                                costo = excluded.costo, moneda = excluded.moneda,
+                                lugar = excluded.lugar, fecha = excluded.fecha,
+                                descripcion = excluded.descripcion, forma_pago = excluded.forma_pago,
+                                foto = excluded.foto, recibo = excluded.recibo,
+                                transaction_id = coalesce(excluded.transaction_id,
+                                                          car_repairs.transaction_id),
+                                updated_at = now()
+                        `;
+                    }
+                    const vivos = reps.map((r) => r.legacyKey).filter(Boolean);
+                    if (vivos.length) await tx`delete from car_repairs where legacy_key <> all(${vivos})`;
+                    else await tx`delete from car_repairs`;
+                });
+                return json({ ok: true, total: reps.length });
+            }
+
+            if (url.pathname === '/api/studio' && request.method === 'GET') {
+                const items = await sql`
+                    select *, to_char(fecha_compra, 'YYYY-MM-DD') as fecha_compra
+                    from studio_gear order by tipo, name
+                `;
+                return json({ items });
+            }
+
+            if (url.pathname === '/api/studio' && request.method === 'PUT') {
+                const b = await request.json().catch(() => ({}));
+                const items = Array.isArray(b.items) ? b.items : [];
+                await sql.begin(async (tx) => {
+                    for (const g of items) {
+                        if (!g.legacyKey || !['equipo', 'plugin'].includes(g.tipo)) continue;
+                        await tx`
+                            insert into studio_gear (legacy_key, tipo, name, marca, modelo,
+                                descripcion, categoria, cantidad, precio_usd, currency, anio_compra,
+                                fecha_compra, site, serial, licencia, account, notas, forma_pago,
+                                foto, transaction_id)
+                            values (${g.legacyKey}, ${g.tipo}, ${g.name ?? '?'}, ${g.marca ?? null},
+                                ${g.modelo ?? null}, ${g.descripcion ?? null}, ${g.categoria ?? null},
+                                ${g.cantidad ?? 1}, ${g.precioUsd ?? null}, ${g.currency ?? 'USD'},
+                                ${g.anioCompra ?? null}, ${g.fechaCompra || null}, ${g.site ?? null},
+                                ${g.serial ?? null}, ${g.licencia ?? null}, ${g.account ?? null},
+                                ${g.notas ?? null}, ${g.formaPago ?? null}, ${g.foto ?? null},
+                                ${g.transactionId || null})
+                            on conflict (legacy_key) do update set
+                                tipo = excluded.tipo, name = excluded.name, marca = excluded.marca,
+                                modelo = excluded.modelo, descripcion = excluded.descripcion,
+                                categoria = excluded.categoria, cantidad = excluded.cantidad,
+                                precio_usd = excluded.precio_usd, currency = excluded.currency,
+                                anio_compra = excluded.anio_compra, fecha_compra = excluded.fecha_compra,
+                                site = excluded.site, serial = excluded.serial,
+                                licencia = excluded.licencia, account = excluded.account,
+                                notas = excluded.notas, forma_pago = excluded.forma_pago,
+                                foto = excluded.foto,
+                                transaction_id = coalesce(excluded.transaction_id,
+                                                          studio_gear.transaction_id),
+                                updated_at = now()
+                        `;
+                    }
+                    const vivos = items.map((g) => g.legacyKey).filter(Boolean);
+                    if (vivos.length) await tx`delete from studio_gear where legacy_key <> all(${vivos})`;
+                    else await tx`delete from studio_gear`;
+                });
+                return json({ ok: true, total: items.length });
+            }
+
+            if (url.pathname === '/api/prescriptions' && request.method === 'GET') {
+                const items = await sql`
+                    select *, to_char(fecha, 'YYYY-MM-DD') as fecha,
+                           to_char(proxima_cita, 'YYYY-MM-DD') as proxima_cita,
+                           to_char(vigencia_hasta, 'YYYY-MM-DD') as vigencia_hasta
+                    from prescriptions
+                    -- Se califica la tabla porque el star ya trae fecha y el
+                    -- alias de to_char crea una segunda con el mismo nombre.
+                    order by prescriptions.fecha desc nulls last
+                `;
+                return json({ items });
+            }
+
+            if (url.pathname === '/api/prescriptions' && request.method === 'PUT') {
+                const b = await request.json().catch(() => ({}));
+                const items = Array.isArray(b.items) ? b.items : [];
+                await sql.begin(async (tx) => {
+                    for (const r of items) {
+                        if (!r.legacyKey) continue;
+                        await tx`
+                            insert into prescriptions (legacy_key, member, fecha, doctor,
+                                especialidad, diagnostico, medicamentos, indicaciones, proxima_cita,
+                                vigencia_hasta, notas, foto_url, foto_url_2, recibo_url,
+                                monto_consulta, forma_pago, transaction_id)
+                            values (${r.legacyKey}, ${r.member ?? 'yo'}, ${r.fecha || null},
+                                ${r.doctor ?? null}, ${r.especialidad ?? null},
+                                ${r.diagnostico ?? null},
+                                ${JSON.stringify(r.medicamentos ?? [])}::jsonb,
+                                ${r.indicaciones ?? null}, ${r.proximaCita || null},
+                                ${r.vigenciaHasta || null}, ${r.notas ?? null},
+                                ${r.fotoUrl ?? null}, ${r.fotoUrl2 ?? null}, ${r.reciboUrl ?? null},
+                                ${r.montoConsulta ?? null}, ${r.formaPago ?? null},
+                                ${r.transactionId || null})
+                            on conflict (legacy_key) do update set
+                                member = excluded.member, fecha = excluded.fecha,
+                                doctor = excluded.doctor, especialidad = excluded.especialidad,
+                                diagnostico = excluded.diagnostico,
+                                medicamentos = excluded.medicamentos,
+                                indicaciones = excluded.indicaciones,
+                                proxima_cita = excluded.proxima_cita,
+                                vigencia_hasta = excluded.vigencia_hasta, notas = excluded.notas,
+                                foto_url = excluded.foto_url, foto_url_2 = excluded.foto_url_2,
+                                recibo_url = excluded.recibo_url,
+                                monto_consulta = excluded.monto_consulta,
+                                forma_pago = excluded.forma_pago,
+                                transaction_id = coalesce(excluded.transaction_id,
+                                                          prescriptions.transaction_id),
+                                updated_at = now()
+                        `;
+                    }
+                    const vivos = items.map((r) => r.legacyKey).filter(Boolean);
+                    if (vivos.length) await tx`delete from prescriptions where legacy_key <> all(${vivos})`;
+                    else await tx`delete from prescriptions`;
+                });
+                return json({ ok: true, total: items.length });
+            }
+
             if (url.pathname === '/api/ingest' && request.method === 'POST') {
                 const stats = await runIngest({ sql, credentials: credentialsOf(env) });
                 return json(stats);

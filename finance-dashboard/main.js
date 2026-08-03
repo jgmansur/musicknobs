@@ -24,7 +24,7 @@ const DEUDAS_RECIBOS_FOLDER_ID = '157KDn-vbkuHH1L8xbaJBGz-oKmT7p5a9';
 const SPREADSHEET_RSM_ID = '14VsoPHGNTSUSbzMOqGWs2qSL-pGywPgjUoHD3MqIJfo'; // Recibos Salud Mariel
 const SALDOS_SHEET_ID    = '1-cX_qxld3ioSpcO9lEBPg90Db6AyK7SczpJTvj7rw4U'; // Saldos (fuente de verdad — Claude accede vía service account)
 const RSM_FOLDER_ID = '1-ZfeWQ-Rmh-Wm2WMCkULkN6MQWBuxYnj';
-const APP_VERSION  = 'v8.4.1';
+const APP_VERSION  = 'v8.5.0';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -7733,8 +7733,8 @@ async function autos_cargarVista() {
 }
 
 async function autos_ensureSheets() {
-    await autos_ensureSheet('Autos', AUTOS_HEADERS);
-    await autos_ensureSheet('Reparaciones', REPAIRS_HEADERS);
+    // Autos y Reparaciones ya viven en Supabase; solo queda AutosMeta, que
+    // guarda un par de llaves de configuración del módulo.
     await autos_ensureSheet('AutosMeta', AUTOS_META_HEADERS);
 }
 
@@ -7932,75 +7932,66 @@ async function autos_applyCsvConsistencyPatch() {
 }
 
 async function autos_loadData() {
-    const headerRow = await sheetsGet(SPREADSHEET_AUTOS_ID, 'Autos!A1:AZ1').catch(() => []);
-    const autosHeaders = (headerRow[0] || []).map(x => (x || '').toString().trim()).filter(Boolean);
-    const effectiveHeaders = autosHeaders.length ? autosHeaders : [...AUTOS_HEADERS];
-    autosState.autosHeaders = effectiveHeaders;
-    const carsLetter = autos_colLetter(effectiveHeaders.length);
-
-    const [carsRows, repairsRows, metaRows] = await Promise.all([
-        sheetsGet(SPREADSHEET_AUTOS_ID, `Autos!A2:${carsLetter}`).catch(() => []),
-        sheetsGet(SPREADSHEET_AUTOS_ID, 'Reparaciones!A2:K').catch(() => []),
+    // Autos y reparaciones viven en Supabase. AutosMeta (la URL de la licencia)
+    // sigue en hoja: son un par de llaves de configuración, no datos de autos.
+    const [{ cars, repairs }, metaRows] = await Promise.all([
+        bandeja_api('/api/cars'),
         sheetsGet(SPREADSHEET_AUTOS_ID, 'AutosMeta!A2:B').catch(() => []),
     ]);
 
-    if (!carsRows.length) {
-        await autos_seedInitialData();
-        return autos_loadData();
-    }
-
-    const map = autos_headersToMap(effectiveHeaders);
-    autosState.cars = carsRows.map(r => ({
+    autosState.autosHeaders = [...AUTOS_HEADERS];
+    autosState.cars = (cars || []).map(c => ({
         rowNum: null,
-        id: (autos_getCell(r, map, 'id', '') || '').toString(),
-        marca: autos_getCell(r, map, 'marca', ''),
-        modelo: autos_getCell(r, map, 'modelo', ''),
-        anio: autos_getCell(r, map, 'anio', ''),
-        valorFactura: autos_getCell(r, map, 'valorFactura', ''),
-        kilometraje: autos_getCell(r, map, 'kilometraje', ''),
-        propietario: autos_getCell(r, map, 'propietario', ''),
-        tieneSeguro: parseBool(autos_getCell(r, map, 'tieneSeguro', false)),
-        placa: autos_getCell(r, map, 'placa', ''),
-        vin: autos_getCell(r, map, 'vin', ''),
-        fotoAuto: autos_getCell(r, map, 'fotoAuto', ''),
-        contratoPrestamo: autos_getCell(r, map, 'contratoPrestamo', ''),
-        polizaSeguro: autos_getCell(r, map, 'polizaSeguro', ''),
-        vencimientoPoliza: autos_getCell(r, map, 'vencimientoPoliza', ''),
-        proximaRevisionKm: autos_getCell(r, map, 'proximaRevisionKm', ''),
-        emergenciaInterior: autos_getCell(r, map, 'emergenciaInterior', ''),
-        emergenciaMetro: autos_getCell(r, map, 'emergenciaMetro', ''),
-        reporteSiniestros1: autos_getCell(r, map, 'reporteSiniestros1', ''),
-        reporteSiniestros2: autos_getCell(r, map, 'reporteSiniestros2', ''),
-        tarjetaCirculacionFrente: autos_getCell(r, map, 'tarjetaCirculacionFrente', ''),
-        tarjetaCirculacionAtras: autos_getCell(r, map, 'tarjetaCirculacionAtras', ''),
-        pagoTenencia: autos_getCell(r, map, 'pagoTenencia', ''),
-        vencimientoTenencia: autos_getCell(r, map, 'vencimientoTenencia', ''),
-        tablaPagos: autos_getCell(r, map, 'tablaPagos', ''),
-        tablaPagosSeguro: autos_getCell(r, map, 'tablaPagosSeguro', ''),
-        tipoLlantas: autos_getCell(r, map, 'tipoLlantas', ''),
-        llantasFoto: autos_getCell(r, map, 'llantasFoto', ''),
-        certificadoPolarizado: autos_getCell(r, map, 'certificadoPolarizado', ''),
-        facturaArchivo: autos_getCell(r, map, 'facturaArchivo', ''),
-        polizaArchivo: autos_getCell(r, map, 'polizaArchivo', ''),
-        extraDoc1Nombre: autos_getCell(r, map, 'extraDoc1Nombre', ''),
-        extraDoc1Url: autos_getCell(r, map, 'extraDoc1Url', ''),
-        extraDoc2Nombre: autos_getCell(r, map, 'extraDoc2Nombre', ''),
-        extraDoc2Url: autos_getCell(r, map, 'extraDoc2Url', ''),
-    })).filter(c => c.id && !/buik/i.test(`${c.marca} ${c.modelo}`));
+        id: c.legacy_key || '',
+        marca: c.marca || '',
+        modelo: c.modelo || '',
+        anio: c.anio || '',
+        valorFactura: c.valor_factura ?? '',
+        kilometraje: c.kilometraje ?? '',
+        propietario: c.propietario || '',
+        tieneSeguro: !!c.tiene_seguro,
+        placa: c.placa || '',
+        vin: c.vin || '',
+        fotoAuto: c.foto_auto || '',
+        contratoPrestamo: c.contrato_prestamo || '',
+        polizaSeguro: c.poliza_seguro || '',
+        vencimientoPoliza: c.vencimiento_poliza || '',
+        proximaRevisionKm: c.proxima_revision_km ?? '',
+        emergenciaInterior: c.emergencia_interior || '',
+        emergenciaMetro: c.emergencia_metro || '',
+        reporteSiniestros1: c.reporte_siniestros_1 || '',
+        reporteSiniestros2: c.reporte_siniestros_2 || '',
+        tarjetaCirculacionFrente: c.tarjeta_frente || '',
+        tarjetaCirculacionAtras: c.tarjeta_atras || '',
+        pagoTenencia: c.pago_tenencia ?? '',
+        vencimientoTenencia: c.vencimiento_tenencia || '',
+        tablaPagos: c.tabla_pagos || '',
+        tablaPagosSeguro: c.tabla_pagos_seguro || '',
+        tipoLlantas: c.tipo_llantas || '',
+        llantasFoto: c.llantas_foto || '',
+        certificadoPolarizado: c.certificado_polarizado || '',
+        facturaArchivo: c.factura_archivo || '',
+        polizaArchivo: c.poliza_archivo || '',
+        extraDoc1Nombre: c.extra_doc_1_nombre || '',
+        extraDoc1Url: c.extra_doc_1_url || '',
+        extraDoc2Nombre: c.extra_doc_2_nombre || '',
+        extraDoc2Url: c.extra_doc_2_url || '',
+    }));
 
-    autosState.repairs = repairsRows.map(r => ({
-        rowNum: null,
-        id: (r[0] || '').toString(),
-        carId: (r[1] || '').toString(),
-        reparacion: r[2] || '',
-        costo: parseSheetValue(r[3]),
-        moneda: parseCurrencyCode(r[4]),
-        lugar: r[5] || '',
-        fecha: normalizeDateString(r[6] || new Date().toLocaleDateString('en-CA')),
-        foto: r[7] || '',
-        recibo: r[8] || '',
-        descripcion: r[9] || '',
-        logMarker: r[10] || '',
+    autosState.repairs = (repairs || []).map(r => ({
+        id: r.legacy_key || '',
+        carId: r.car_key || '',
+        reparacion: r.reparacion || '',
+        costo: parseSheetValue(r.costo),
+        moneda: parseCurrencyCode(r.moneda),
+        lugar: r.lugar || '',
+        fecha: normalizeDateString(r.fecha || new Date().toLocaleDateString('en-CA')),
+        foto: r.foto || '',
+        recibo: r.recibo || '',
+        descripcion: r.descripcion || '',
+        // El vínculo con el gasto ahora es el id del movimiento.
+        logMarker: r.transaction_id || '',
+        formaPago: r.forma_pago || '',
     })).filter(x => x.id && x.carId);
 
     autosState.meta = {};
@@ -8016,26 +8007,8 @@ async function autos_loadData() {
     autosState.loaded = true;
 }
 
-async function autos_seedInitialData() {
-    const cars = AUTOS_SEED;
-    const koleos = cars.find(c => /koleos/i.test(c.modelo));
-    const taos = cars.find(c => /taos/i.test(c.modelo));
-    const repairs = [
-        { id: `rep-${Date.now()}-1`, carId: koleos?.id || '', reparacion: 'Mantenimiento General', costo: 11077, moneda: 'MXN', lugar: 'Clinica Automotriz', fecha: '2023-06-01', foto: 'https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/szp3mFYNwh3181ZkC2gi/pub/5dwETdURu7am5EzkjTmG.jpg', recibo: 'https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/szp3mFYNwh3181ZkC2gi/pub/PZav1SE91pYI3iwt8kbA.jpg', descripcion: 'Varios', logMarker: '' },
-        { id: `rep-${Date.now()}-2`, carId: koleos?.id || '', reparacion: 'Compra de llanta delantera derecha', costo: 2600, moneda: 'MXN', lugar: 'Llamtimax San Miguel', fecha: '2024-11-08', foto: 'https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/szp3mFYNwh3181ZkC2gi/pub/pZngCtrPH3Uo6BfQasJN.jpg', recibo: '', descripcion: '', logMarker: '' },
-        { id: `rep-${Date.now()}-3`, carId: koleos?.id || '', reparacion: 'Cambio aceite y filtro', costo: 1200, moneda: 'MXN', lugar: 'Llantimax San Miguel', fecha: '2024-11-08', foto: 'https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/szp3mFYNwh3181ZkC2gi/pub/5F7jCRQQEgFrXEpkZ59N.jpg', recibo: '', descripcion: '', logMarker: '' },
-        { id: `rep-${Date.now()}-4`, carId: koleos?.id || '', reparacion: 'Cotizacion para cambiar bujes', costo: 0, moneda: 'MXN', lugar: 'Llantimax', fecha: '2024-11-13', foto: 'https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/szp3mFYNwh3181ZkC2gi/pub/nxr0ypGXKlrG1GB6YTKn.jpeg', recibo: '', descripcion: 'Esta es una cotizacion y esta pendiente de hacerse.', logMarker: '' },
-        { id: `rep-${Date.now()}-5`, carId: koleos?.id || '', reparacion: 'Foco y grapas', costo: 350, moneda: 'MXN', lugar: 'Llantimax', fecha: '2024-11-13', foto: 'https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/szp3mFYNwh3181ZkC2gi/pub/sUxGylvznY3dQvCOTZUQ.jpg', recibo: '', descripcion: '', logMarker: '' },
-        { id: `rep-${Date.now()}-6`, carId: taos?.id || '', reparacion: 'Servicio de los 15000 kilometros', costo: 3075.01, moneda: 'MXN', lugar: 'Agencia VW Valle Victoria', fecha: '2026-01-24', foto: 'https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/szp3mFYNwh3181ZkC2gi/pub/soFtdoc1n0sFXUFKuyTq.jpg', recibo: '', descripcion: '', logMarker: '' },
-    ].filter(r => r.carId);
-
-    const headers = autosState.autosHeaders?.length ? autosState.autosHeaders : AUTOS_HEADERS;
-    const letter = autos_colLetter(headers.length);
-    await sheetsUpdate(SPREADSHEET_AUTOS_ID, `Autos!A2:${letter}${1 + cars.length}`, cars.map(c => autos_carToRowByHeaders(c, headers)));
-    await sheetsUpdate(SPREADSHEET_AUTOS_ID, `Reparaciones!A2:K${1 + repairs.length}`, repairs.map(r => [
-        r.id, r.carId, r.reparacion, r.costo, r.moneda, r.lugar, r.fecha, r.foto, r.recibo, r.descripcion, r.logMarker,
-    ]));
-}
+// autos_seedInitialData se eliminó al migrar a Supabase: sembraba los autos
+// iniciales reescribiendo la pestaña, y los datos ya viven en la base.
 
 function autos_render() {
     const total = autosState.repairs.reduce((s, r) => s + convertTransactionAmountToMxn(r.costo, r.moneda), 0);
@@ -8426,11 +8399,35 @@ async function autos_saveCar() {
 }
 
 async function autos_saveCarsSheet() {
-    const headers = autosState.autosHeaders?.length ? autosState.autosHeaders : AUTOS_HEADERS;
-    const letter = autos_colLetter(headers.length);
-    await sheetsClear(SPREADSHEET_AUTOS_ID, `Autos!A2:${letter}`);
-    if (!autosState.cars.length) return;
-    await sheetsUpdate(SPREADSHEET_AUTOS_ID, `Autos!A2:${letter}${1 + autosState.cars.length}`, autosState.cars.map(c => autos_carToRowByHeaders(c, headers)));
+    // El PUT recibe el arreglo completo y borra lo que ya no viene, igual que
+    // hacía el reescribir la pestaña entera. Un solo viaje de red.
+    await bandeja_api('/api/cars', {
+        method: 'PUT',
+        body: JSON.stringify({
+            cars: autosState.cars.map(c => ({
+                legacyKey: c.id,
+                marca: c.marca, modelo: c.modelo, anio: c.anio,
+                valorFactura: parseSheetValue(c.valorFactura) || null,
+                kilometraje: parseSheetValue(c.kilometraje) || null,
+                propietario: c.propietario, tieneSeguro: !!c.tieneSeguro,
+                placa: c.placa, vin: c.vin, polizaSeguro: c.polizaSeguro,
+                vencimientoPoliza: c.vencimientoPoliza || null,
+                vencimientoTenencia: c.vencimientoTenencia || null,
+                pagoTenencia: parseSheetValue(c.pagoTenencia) || null,
+                proximaRevisionKm: parseSheetValue(c.proximaRevisionKm) || null,
+                contratoPrestamo: c.contratoPrestamo,
+                emergenciaInterior: c.emergenciaInterior, emergenciaMetro: c.emergenciaMetro,
+                reporteSiniestros1: c.reporteSiniestros1, reporteSiniestros2: c.reporteSiniestros2,
+                tipoLlantas: c.tipoLlantas, fotoAuto: c.fotoAuto,
+                facturaArchivo: c.facturaArchivo, polizaArchivo: c.polizaArchivo,
+                tarjetaFrente: c.tarjetaCirculacionFrente, tarjetaAtras: c.tarjetaCirculacionAtras,
+                llantasFoto: c.llantasFoto, certificadoPolarizado: c.certificadoPolarizado,
+                tablaPagos: c.tablaPagos, tablaPagosSeguro: c.tablaPagosSeguro,
+                extraDoc1Nombre: c.extraDoc1Nombre, extraDoc1Url: c.extraDoc1Url,
+                extraDoc2Nombre: c.extraDoc2Nombre, extraDoc2Url: c.extraDoc2Url,
+            })),
+        }),
+    });
 }
 
 function autos_openRepairSheet(repairId) {
@@ -8507,11 +8504,25 @@ async function autos_saveRepair() {
 }
 
 async function autos_saveRepairsSheet() {
-    await sheetsClear(SPREADSHEET_AUTOS_ID, 'Reparaciones!A2:L');
-    if (!autosState.repairs.length) return;
-    await sheetsUpdate(SPREADSHEET_AUTOS_ID, `Reparaciones!A2:L${1 + autosState.repairs.length}`, autosState.repairs.map(r => [
-        r.id, r.carId, r.reparacion, r.costo, r.moneda, r.lugar, r.fecha, r.foto, r.recibo, r.descripcion, r.logMarker || autos_getLogMarker(r.id), r.formaPago || '',
-    ]));
+    await bandeja_api('/api/repairs', {
+        method: 'PUT',
+        body: JSON.stringify({
+            repairs: autosState.repairs.map(r => ({
+                legacyKey: r.id,
+                carKey: r.carId,
+                reparacion: r.reparacion,
+                costo: parseSheetValue(r.costo) || 0,
+                moneda: r.moneda || 'MXN',
+                lugar: r.lugar,
+                fecha: r.fecha || null,
+                descripcion: r.descripcion,
+                formaPago: r.formaPago || '',
+                foto: r.foto,
+                recibo: r.recibo,
+                transactionId: gastoLigado_esId(r.logMarker) ? r.logMarker : null,
+            })),
+        }),
+    });
 }
 
 function autos_getLogMarker(repairId) {
