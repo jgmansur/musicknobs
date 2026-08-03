@@ -17,7 +17,20 @@ import postgres from '../worker/node_modules/postgres/src/index.js';
 import { approve, payFixed } from '../worker/src/index.js';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
-const dsn = readFileSync(join(HERE, '..', '.env'), 'utf8').trim().split('=').slice(1).join('=');
+
+/** Lee una clave del .env. Ojo: el archivo tiene varias líneas, así que no
+ *  sirve partir por el primer '=' y quedarse con el resto. */
+function envValue(path, key) {
+    for (const line of readFileSync(path, 'utf8').split('\n')) {
+        const t = line.trim();
+        if (!t || t.startsWith('#')) continue;
+        const i = t.indexOf('=');
+        if (i > 0 && t.slice(0, i).trim() === key) return t.slice(i + 1).trim();
+    }
+    throw new Error(`Falta ${key} en ${path}`);
+}
+
+const dsn = envValue(join(HERE, '..', '.env'), 'SUPABASE_DB_URL');
 const sql = postgres(dsn, { prepare: false, max: 3 });
 
 const money = (n) => Number(n).toFixed(2);
