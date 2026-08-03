@@ -3015,7 +3015,9 @@ function fixed_renderPanel() {
 
 window.dashboard_togglePagoPart = async function(id, partIndex, options = {}) {
     try {
-        await fijos_cargarDatos();
+        // Solo se recargan los fijos si no están en memoria. Recargarlos en cada
+        // click era lo que hacía parpadear la pantalla.
+        if (!fijosState.allItems?.length) await fijos_cargarDatos();
         await window.fijos_togglePagoPart(id, partIndex, options);
         if (currentTab === 'dashboard') {
             await fetchAndProcess();
@@ -4789,6 +4791,43 @@ async function fijos_togglePagoPartWorker(item, partIndex, options = {}) {
     const periodo = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`;
     const condonar = !!(options.waive || options.skipControlLog);
 
+    let cuenta = null;
+    if (!yaPagada && !condonar) {
+        cuenta = balanceAccounts.find(a =>
+            balance_getAccountMatchKeys(a).includes(balance_normalizePaymentKey(item.formaPago)));
+        if (!cuenta) {
+            showToast(`⚠️ "${item.formaPago || 'sin forma de pago'}" no existe como cuenta`);
+            return;
+        }
+    }
+
+    // Actualización optimista: la lista se repinta en el acto y el servidor se
+    // entera después. Volver a cargar todo mostraría el spinner y la pantalla
+    // parpadearía en cada click.
+    const previo = {
+        pagos: [...item.pagosEstado],
+        waived: [...(item.waivedEstado || [])],
+        hechos: item.pagosHechos,
+        pagado: item.isPaid,
+    };
+    if (!item.waivedEstado) item.waivedEstado = new Array(item.pagosMes).fill(false);
+    item.pagosEstado[partIndex]  = !yaPagada && !condonar;
+    item.waivedEstado[partIndex] = !yaPagada && condonar;
+    item.pagosHechos = item.pagosEstado.filter((v, i) => v || item.waivedEstado[i]).length;
+    item.isPaid = item.pagosHechos >= item.pagosMes;
+
+    fijos_aplicarFiltros();
+    fijos_syncDashboardStats();
+
+    const revertir = () => {
+        item.pagosEstado  = previo.pagos;
+        item.waivedEstado = previo.waived;
+        item.pagosHechos  = previo.hechos;
+        item.isPaid       = previo.pagado;
+        fijos_aplicarFiltros();
+        fijos_syncDashboardStats();
+    };
+
     try {
         if (yaPagada) {
             await bandeja_api(`/api/fijos/${item.id}/unpay`, {
@@ -4801,22 +4840,18 @@ async function fijos_togglePagoPartWorker(item, partIndex, options = {}) {
                 body: JSON.stringify({ partIndex, period: periodo }),
             });
         } else {
-            const cuenta = balanceAccounts.find(a =>
-                balance_getAccountMatchKeys(a).includes(balance_normalizePaymentKey(item.formaPago)));
-            if (!cuenta) {
-                showToast(`⚠️ "${item.formaPago || 'sin forma de pago'}" no existe como cuenta`);
-                return;
-            }
             await bandeja_api(`/api/fixed/${item.id}/pay`, {
                 method: 'POST',
                 body: JSON.stringify({ partIndex, accountId: cuenta.id }),
             });
         }
-        await Promise.all([balance_loadFromWorker(), fijos_cargarDatos()]);
+        // El saldo sí se refresca contra el servidor, pero sin tocar la lista.
+        await balance_loadFromWorker();
         balance_updateKpi();
+        planner_refreshIfReady();
     } catch (err) {
+        revertir();
         showToast(`⚠️ ${err.message}`);
-        fijos_cargarDatos();
     }
 }
 
