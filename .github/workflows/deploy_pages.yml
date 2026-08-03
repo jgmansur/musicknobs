@@ -32,10 +32,14 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Build finance dashboard
-        run: npm ci --prefix finance-dashboard && npm run build --prefix finance-dashboard
-      - name: Prepare finance dashboard deploy files
-        run: rm -rf finance-dashboard/assets && cp -r finance-dashboard/dist/* finance-dashboard/ && cp finance-dashboard/dist/.nojekyll finance-dashboard/ || true
+      # El Finance Dashboard NO se publica aquí: vive en Vercel
+      # (finance-dashboard-mocha-rho.vercel.app) y esa es la única versión buena.
+      # Antes se construía y publicaba también en Pages, así que había dos
+      # despliegues del mismo commit y verificar un cambio en el equivocado
+      # llevaba a conclusiones falsas. Se excluye del artefacto porque el upload
+      # toma el repo entero (path: '.') y si no, se serviría el código fuente.
+      - name: Exclude finance dashboard from Pages
+        run: rm -rf finance-dashboard
       - name: Build casa galeria portfolio
         run: npm ci --prefix casa-galeria-portfolio && npm run build --prefix casa-galeria-portfolio
       - name: Prepare casa galeria portfolio deploy files
