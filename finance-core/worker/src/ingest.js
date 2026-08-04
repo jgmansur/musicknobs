@@ -62,6 +62,39 @@ export function buildQuery(sinceDate) {
  * La confianza es deliberadamente conservadora: sin tarjeta mapeada nunca
  * pasa de 0.35, para que salte a la vista en la bandeja.
  */
+const sinAcentos = (t) => (t || '')
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase().replace(/\s+/g, ' ').trim();
+
+/**
+ * Empareja el nombre del beneficiario que trae el aviso contra los registrados.
+ *
+ * Se compara contra `nombre_banco` (como lo escribe el banco) y, como respaldo,
+ * contra `nombre` (como lo llama Jay). El respaldo pide coincidencia por
+ * palabra completa: sin eso, un beneficiario llamado "Rosy" haría match dentro
+ * de cualquier apellido que la contenga y le colgaría el gasto a la persona
+ * equivocada.
+ */
+function buscarPorNombre(beneficiarios, nombreAviso) {
+    const objetivo = sinAcentos(nombreAviso);
+    if (objetivo.length < 3) return null;
+
+    const exacto = beneficiarios.find((b) => b.nombre_banco
+        && sinAcentos(b.nombre_banco) === objetivo);
+    if (exacto) return exacto;
+
+    const contenido = beneficiarios.find((b) => b.nombre_banco
+        && sinAcentos(b.nombre_banco).length >= 3
+        && objetivo.includes(sinAcentos(b.nombre_banco)));
+    if (contenido) return contenido;
+
+    const palabras = new Set(objetivo.split(' '));
+    return beneficiarios.find((b) => {
+        const corto = sinAcentos(b.nombre);
+        return corto.length >= 3 && corto.split(' ').every((p) => palabras.has(p));
+    }) ?? null;
+}
+
 export function classify(parsed, {
     cardMap, fixedExpenses, bankDefaults = new Map(), reglas = [], beneficiarios = [],
     lugares = [],
@@ -81,9 +114,14 @@ export function classify(parsed, {
     // Beneficiario conocido: le pone nombre a una terminación que el banco deja
     // anónima. "transferencia a la cuenta terminación 1791" se vuelve
     // "Javier Tinajero — Mantenimiento Alberca".
-    const payee = parsed.counterpartyLast4
+    // Se busca por terminación y, si no hay, por nombre. BBVA no manda la
+    // terminación en sus avisos de transferencia: solo "Beneficiario: NOMBRE".
+    // Mientras esto exigió last4, toda transferencia salida de BBVA quedaba
+    // anónima aunque el beneficiario estuviera dado de alta.
+    const payee = (parsed.counterpartyLast4
         ? beneficiarios.find((b) => b.last4 === parsed.counterpartyLast4)
-        : null;
+        : null)
+        ?? buscarPorNombre(beneficiarios, parsed.counterparty);
 
     // Una cuenta propia registrada como beneficiario convierte el movimiento en
     // transferencia, aunque esa cuenta no exista todavía en el sistema.
@@ -269,7 +307,7 @@ export async function runIngest({
         ]);
         const [reglas, beneficiarios] = await Promise.all([
             sql`select id, patron, categoria, prioridad, aplica_a from category_rules`,
-            sql`select id, last4, nombre, tipo, fixed_expense_id, categoria from payees`,
+            sql`select id, last4, nombre, nombre_banco, tipo, fixed_expense_id, categoria from payees`,
         ]);
         const lugares = await sql`select id, nombre, aliases, categoria from places`;
         const cardMap = new Map(cards.map((c) => [c.last4, { id: c.account_id }]));

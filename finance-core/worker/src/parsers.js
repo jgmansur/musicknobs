@@ -96,6 +96,21 @@ export function parseSpanishDate(dia, mes, anio, hora) {
 
 const AMOUNT = String.raw`\$\s*([\d,]+(?:\.\d{2})?)`;
 
+/**
+ * Etiquetas que BBVA pone después del beneficiario. Sirven de terminador: el
+ * nombre corre hasta toparse con una de ellas.
+ *
+ * No se puede cortar por MAYÚSCULAS (el regex lleva flag `i`, ahí [A-Z] también
+ * acepta minúsculas) ni por "lo que siga hasta el próximo :" (el nombre tiene
+ * varias palabras y se cortaría en la primera). Si BBVA agrega una etiqueta
+ * nueva, el nombre se alarga hasta el tope de 60 caracteres — se nota enseguida
+ * y se arregla agregándola aquí.
+ */
+const ETIQUETAS_BBVA = [
+    'Banco', 'Fecha', 'Hora', 'Cuenta', 'Clave', 'Concepto', 'Referencia',
+    'Folio', 'Comisi[óo]n', 'N[úu]mero', 'Titular', 'Importe', 'Tipo', 'Estatus',
+].join('|');
+
 const MATCHERS = [
     {
         bank: 'santander',
@@ -291,7 +306,14 @@ const MATCHERS = [
         re: new RegExp(
             String.raw`transferencia\s+a\s+cuenta[\s\S]{0,80}?fue\s+exitosa` +
             String.raw`.*?Importe:\s*${AMOUNT}` +
-            String.raw`(?:.*?Beneficiario:\s*([A-ZÁÉÍÓÚÑ][^:]{2,60}?)\s{2,})?`,
+            // El nombre corre hasta la siguiente etiqueta del correo
+            // ("Banco destino:", "Fecha:"). No se filtra por MAYÚSCULAS porque
+            // el regex lleva flag `i` y ahí [A-Z] también acepta minúsculas.
+            // Antes se terminaba el nombre con \s{2,}, pero htmlToText colapsa
+            // los espacios a uno solo, así que ese grupo NUNCA podía coincidir y
+            // el beneficiario salía null en todas las transferencias de BBVA.
+            String.raw`(?:.*?Beneficiario:\s*([^:]{2,60}?)` +
+            String.raw`(?=\s+(?:${ETIQUETAS_BBVA})\b|\s*$))?`,
             'i',
         ),
         build: (m) => ({
