@@ -24,7 +24,7 @@ const DEUDAS_RECIBOS_FOLDER_ID = '157KDn-vbkuHH1L8xbaJBGz-oKmT7p5a9';
 const SPREADSHEET_RSM_ID = '14VsoPHGNTSUSbzMOqGWs2qSL-pGywPgjUoHD3MqIJfo'; // Recibos Salud Mariel
 const SALDOS_SHEET_ID    = '1-cX_qxld3ioSpcO9lEBPg90Db6AyK7SczpJTvj7rw4U'; // Saldos (fuente de verdad — Claude accede vía service account)
 const RSM_FOLDER_ID = '1-ZfeWQ-Rmh-Wm2WMCkULkN6MQWBuxYnj';
-const APP_VERSION  = 'v8.7.2';
+const APP_VERSION  = 'v8.8.0';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -870,6 +870,10 @@ function balance_normalizeAccount(a = {}) {
             : 'custom',
         customAnnualRate: typeof a.customAnnualRate === 'number' ? a.customAnnualRate : parseSheetValue(a.customAnnualRate),
         bitcoinInitialMxn: typeof a.bitcoinInitialMxn === 'number' ? a.bitcoinInitialMxn : parseSheetValue(a.bitcoinInitialMxn),
+        // Orden elegido por Jay. Se conserva para que sobreviva a la caché de
+        // localStorage y a cualquier guardado; sin él, el PUT lo mandaría vacío
+        // y el worker tendría que adivinarlo.
+        sortOrder: Number.isFinite(a.sortOrder) ? a.sortOrder : 999,
     };
 }
 
@@ -1291,6 +1295,7 @@ async function balance_loadFromWorker() {
             investmentType: b.investment_type,
             customAnnualRate: Number(b.custom_annual_rate),
             bitcoinInitialMxn: Number(b.bitcoin_initial_mxn),
+            sortOrder: b.sort_order,
         }));
         balanceDesdeWorker = true;
         localStorage.setItem('finance_accounts_v1', JSON.stringify(balanceAccounts));
@@ -1487,6 +1492,7 @@ async function balance_saveAccounts() {
                         creditLimit: Math.abs(a.creditLimit || 0),
                         creditLimitVisible: !!a.creditLimitVisible,
                         investmentType: a.investmentType || null,
+                        sortOrder: a.sortOrder,
                         openingBalance: a.balance,   // solo se usa al CREAR
                     })),
                 }),
@@ -5547,7 +5553,7 @@ async function fijos_guardar() {
         }
 
         if (editId) {
-            const current = fijosState.allItems.find(i => i.id === Number(editId));
+            const current = fijosState.allItems.find(i => String(i.id) === String(editId));
             const prevStates = current?.pagosEstado || [];
             const prevWaived = current?.waivedEstado || [];
             const prevFechas = current?.fechasPago || [];
@@ -14511,7 +14517,7 @@ function deudas_renderCuotasHtml(item, displayMonto) {
             bg = 'background:rgba(255,255,255,0.06);color:var(--text-muted);border:1px solid rgba(255,255,255,0.12);';
             label = (idx + 1);
         }
-        return `<button onclick="deudas_toggleCuota(${item.id},${idx})" style="${bg}width:28px;height:28px;border-radius:50%;font-size:0.7rem;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;transition:all .2s;" title="Cuota ${idx + 1}/${item.cuotas.n} — ${formatCurrency(item.cuotas.perCuota)}">${label}</button>`;
+        return `<button onclick="deudas_toggleCuota('${item.id}',${idx})" style="${bg}width:28px;height:28px;border-radius:50%;font-size:0.7rem;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;transition:all .2s;" title="Cuota ${idx + 1}/${item.cuotas.n} — ${formatCurrency(item.cuotas.perCuota)}">${label}</button>`;
     }).join('');
     const statusParts = [];
     if (paidCount > 0) statusParts.push(`${paidCount} pagadas`);
@@ -14558,11 +14564,11 @@ function deudas_renderCard(item, options = {}) {
     const opacity = effectiveHidden ? 'opacity:.45;' : '';
     const strikethrough = effectiveHidden ? 'text-decoration:line-through;' : '';
     const hideTitle = item.hidden ? 'Mostrar en balance' : 'Ocultar del balance';
-    const btnUp = (isChild || isFirst) ? `<div style="width:24px;"></div>` : `<button class="mini-btn icon-btn-sm" onclick="deudas_moveUp(${item.id})" title="Subir" style="font-size:0.95rem; padding:4px;">⬆️</button>`;
-    const btnDown = (isChild || isLast) ? `<div style="width:24px;"></div>` : `<button class="mini-btn icon-btn-sm" onclick="deudas_moveDown(${item.id})" title="Bajar" style="font-size:0.95rem; padding:4px;">⬇️</button>`;
+    const btnUp = (isChild || isFirst) ? `<div style="width:24px;"></div>` : `<button class="mini-btn icon-btn-sm" onclick="deudas_moveUp('${item.id}')" title="Subir" style="font-size:0.95rem; padding:4px;">⬆️</button>`;
+    const btnDown = (isChild || isLast) ? `<div style="width:24px;"></div>` : `<button class="mini-btn icon-btn-sm" onclick="deudas_moveDown('${item.id}')" title="Bajar" style="font-size:0.95rem; padding:4px;">⬇️</button>`;
     const childTag = isChild ? '<span class="diff-label" style="font-size:.7rem;">Deuda hija</span>' : '';
 
-    return `<div class="movimiento-card deuda-layout ${hasFiles ? 'deuda-card-expandable' : ''} ${isChild ? 'deuda-child-card' : ''}" ${hasFiles ? `onclick="deudas_cardClick(event,${item.id})" title="Ver archivos"` : ''} style="${opacity}flex-wrap:wrap;">
+    return `<div class="movimiento-card deuda-layout ${hasFiles ? 'deuda-card-expandable' : ''} ${isChild ? 'deuda-child-card' : ''}" ${hasFiles ? `onclick="deudas_cardClick(event,'${item.id}')" title="Ver archivos"` : ''} style="${opacity}flex-wrap:wrap;">
       <div class="mc-left deuda-layout-left" style="align-items:flex-start;flex-direction:column;gap:0.3rem;">
         <span class="mc-lugar" style="font-size:0.95rem;font-weight:600;${strikethrough}">${item.concepto}</span>
         ${aggregateLabel ? `<span class="diff-label" style="font-size:.7rem;">${aggregateLabel}</span>` : ''}
@@ -14573,10 +14579,10 @@ function deudas_renderCard(item, options = {}) {
       <div class="mc-right deuda-layout-right" style="align-items:flex-end;gap:.3rem;">
         <span class="mc-monto text-danger deuda-layout-monto" style="font-size:0.94rem;font-weight:700;${strikethrough}">-${formatCurrency(displayMonto)}</span>
         <div class="deuda-layout-actions" style="display:flex;gap:.3rem;margin-top:.2rem;">
-          <button class="mini-btn icon-btn-sm" onclick="deudas_toggleHidden(${item.id})" title="${hideTitle}" style="font-size:0.95rem; padding:4px;">${eyeIcon}</button>
-          <button class="mini-btn icon-btn-sm" onclick="deudas_abrirSplit(${item.id})" title="Dividir en Cuotas" style="font-size:0.95rem; padding:4px;">✂️</button>
-          <button class="mini-btn icon-btn-sm" onclick="deudas_editar(${item.id})" style="font-size:0.95rem; padding:4px;">✏️</button>
-          <button class="mini-btn mini-btn-danger icon-btn-sm" onclick="deudas_borrar(${item.id})" style="font-size:0.95rem; padding:4px;">🗑️</button>
+          <button class="mini-btn icon-btn-sm" onclick="deudas_toggleHidden('${item.id}')" title="${hideTitle}" style="font-size:0.95rem; padding:4px;">${eyeIcon}</button>
+          <button class="mini-btn icon-btn-sm" onclick="deudas_abrirSplit('${item.id}')" title="Dividir en Cuotas" style="font-size:0.95rem; padding:4px;">✂️</button>
+          <button class="mini-btn icon-btn-sm" onclick="deudas_editar('${item.id}')" style="font-size:0.95rem; padding:4px;">✏️</button>
+          <button class="mini-btn mini-btn-danger icon-btn-sm" onclick="deudas_borrar('${item.id}')" style="font-size:0.95rem; padding:4px;">🗑️</button>
         </div>
       </div>
       ${cuotasHtml ? `<div style="width:100%;margin-top:0.25rem;">${cuotasHtml}</div>` : ''}
@@ -15180,7 +15186,7 @@ async function deudas_guardar() {
         
         if (editId) {
             // Preserve hidden flag when editing
-            const existing = deudasState.allItems.find(i => i.id === parseInt(editId));
+            const existing = deudasState.allItems.find(i => String(i.id) === String(editId));
             const hiddenVal = existing && existing.hidden ? 'TRUE' : 'FALSE';
             // Preserve cuotas (col D) when editing
             let cuotasForSave = existing?.cuotas || null;

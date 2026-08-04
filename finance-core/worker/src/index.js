@@ -104,11 +104,13 @@ export default {
                 const rows = await sql`
                     select a.id, a.legacy_id, a.name, a.type, a.currency, a.hidden,
                            a.credit_limit, a.credit_limit_visible, a.investment_type,
-                           a.custom_annual_rate, a.bitcoin_initial_mxn,
+                           a.custom_annual_rate, a.bitcoin_initial_mxn, a.sort_order,
                            b.balance, b.display_balance, b.movements, b.last_movement_at
                     from accounts a
                     join account_balances b on b.id = a.id
-                    order by a.name
+                    -- Orden elegido por Jay; las que no tienen uno explícito
+                    -- quedan en 999 y se desempatan alfabéticamente.
+                    order by a.sort_order, a.name
                 `;
                 return json({ balances: rows });
             }
@@ -522,6 +524,7 @@ export default {
                                     credit_limit = ${Math.abs(Number(c.creditLimit ?? 0))},
                                     credit_limit_visible = ${!!c.creditLimitVisible},
                                     investment_type = ${c.investmentType ?? null},
+                                    sort_order = coalesce(${c.sortOrder ?? null}, sort_order),
                                     updated_at = now()
                                 where id = ${existente.id}
                             `;
@@ -566,6 +569,7 @@ export default {
                         credit_limit         = coalesce(${b.creditLimit ?? null}, credit_limit),
                         credit_limit_visible = coalesce(${b.creditLimitVisible ?? null}, credit_limit_visible),
                         investment_type      = coalesce(${b.investmentType ?? null}, investment_type),
+                        sort_order           = coalesce(${b.sortOrder ?? null}, sort_order),
                         updated_at           = now()
                     where id = ${cuentaMatch[1]} returning name
                 `;
