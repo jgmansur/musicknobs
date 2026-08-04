@@ -410,7 +410,10 @@ export default {
                            ) as cuotas
                     from debts d
                     left join debt_installments i on i.debt_id = d.id
-                    group by d.id order by d.hidden, d.concepto
+                    -- El orden lo define sort_order; antes se reordenaba
+                    -- intercambiando el contenido entre registros, que con UUID
+                    -- movía los datos de una deuda al id de otra.
+                    group by d.id order by d.hidden, d.sort_order, d.concepto
                 `;
                 return json({ deudas: rows });
             }
@@ -445,7 +448,8 @@ export default {
                         cuota_monto  = coalesce(${b.cuotaMonto ?? null}, cuota_monto),
                         frecuencia   = coalesce(${b.frecuencia ?? null}, frecuencia),
                         fecha_inicio = coalesce(${b.fechaInicio ?? null}::date, fecha_inicio),
-                        scope        = coalesce(${b.scope ?? null}, scope)
+                        scope        = coalesce(${b.scope ?? null}, scope),
+                        sort_order   = coalesce(${b.sortOrder ?? null}, sort_order)
                     where id = ${deudaMatch[1]} returning id
                 `;
                 if (!d) return json({ error: 'deuda no encontrada' }, 404);

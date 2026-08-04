@@ -24,7 +24,7 @@ const DEUDAS_RECIBOS_FOLDER_ID = '157KDn-vbkuHH1L8xbaJBGz-oKmT7p5a9';
 const SPREADSHEET_RSM_ID = '14VsoPHGNTSUSbzMOqGWs2qSL-pGywPgjUoHD3MqIJfo'; // Recibos Salud Mariel
 const SALDOS_SHEET_ID    = '1-cX_qxld3ioSpcO9lEBPg90Db6AyK7SczpJTvj7rw4U'; // Saldos (fuente de verdad — Claude accede vía service account)
 const RSM_FOLDER_ID = '1-ZfeWQ-Rmh-Wm2WMCkULkN6MQWBuxYnj';
-const APP_VERSION  = 'v8.8.1';
+const APP_VERSION  = 'v8.9.0';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -14392,6 +14392,7 @@ async function deudas_cargarDesdeWorker() {
             }
             return {
                 id: d.id,
+                sortOrder: d.sort_order,
                 concepto: d.concepto || '',
                 monto: Number(d.monto) || 0,
                 hidden: !!d.hidden,
@@ -14694,66 +14695,68 @@ window.deudas_moveDown = async function(id) {
 async function deudas_swap(idx1, idx2) {
     const item1 = deudasState.allItems[idx1];
     const item2 = deudasState.allItems[idx2];
-    
-    // Swap in state array
+    if (!item1 || !item2) return;
+
+    // Antes esto INTERCAMBIABA los ids y reescribía el contenido de cada fila
+    // con el de la otra. Era correcto cuando el id era el número de fila de la
+    // hoja, pero con UUID el id identifica a la ENTIDAD: intercambiar contenido
+    // movía los datos de una deuda al registro de la otra, y las cuotas y las
+    // relaciones padre/hijo (debt_key / parent_key) quedaban apuntando al
+    // registro equivocado. Ahora solo se intercambia el orden.
+    const orden1 = Number.isFinite(item1.sortOrder) ? item1.sortOrder : idx1 + 1;
+    const orden2 = Number.isFinite(item2.sortOrder) ? item2.sortOrder : idx2 + 1;
+    item1.sortOrder = orden2;
+    item2.sortOrder = orden1;
+
+    // Optimista: la lista se reordena en el acto.
     deudasState.allItems[idx1] = item2;
     deudasState.allItems[idx2] = item1;
-    
-    // Swap row IDs to map to the correct rows in Google Sheets
-    const rowId1 = item1.id;
-    const rowId2 = item2.id;
-    item1.id = rowId2;
-    item2.id = rowId1;
-    
-    // UI Feedback is immediate
     deudas_renderLista();
-    
-    try {
-        let sheetName = 'Deudas';
+
+    const revertir = () => {
+        item1.sortOrder = orden1;
+        item2.sortOrder = orden2;
+        deudasState.allItems[idx1] = item1;
+        deudasState.allItems[idx2] = item2;
+        deudas_renderLista();
+    };
+
+    if (!deudasDesdeWorker) {
+        // Camino viejo: la hoja sí necesita intercambiar el contenido, porque
+        // ahí el orden ES la posición de la fila.
         try {
-            await sheetsGet(SPREADSHEET_DEUDAS_ID, 'Deudas!A1:A1');
-        } catch(e) {
-            sheetName = 'Hoja 1';
+            let sheetName = 'Deudas';
+            try { await sheetsGet(SPREADSHEET_DEUDAS_ID, 'Deudas!A1:A1'); }
+            catch (e) { sheetName = 'Hoja 1'; }
+            const fila = (it) => [[
+                it.concepto, it.monto, it.hidden ? 'TRUE' : 'FALSE',
+                it.cuotas ? deudas_buildCuotasCell(it.cuotas) : '',
+                (it.archivos || '').toString().trim(),
+                (it.debtKey || '').toString().trim(),
+                (it.parentKey || '').toString().trim(),
+            ]];
+            await sheetsUpdate(SPREADSHEET_DEUDAS_ID, `${sheetName}!A${item1.id}:G${item1.id}`, fila(item2));
+            await sheetsUpdate(SPREADSHEET_DEUDAS_ID, `${sheetName}!A${item2.id}:G${item2.id}`, fila(item1));
+        } catch (e) {
+            console.error('Error swapping:', e);
+            showToast('\u26a0\ufe0f Error al reordenar');
+            deudas_cargarDatos();
         }
-        
-        const cuotasStr1 = item2.cuotas ? deudas_buildCuotasCell(item2.cuotas) : '';
-        const cuotasStr2 = item1.cuotas ? deudas_buildCuotasCell(item1.cuotas) : '';
-        const dataForRow1 = [[item2.concepto, item2.monto, item2.hidden ? 'TRUE' : 'FALSE', cuotasStr1, (item2.archivos || '').toString().trim(), (item2.debtKey || '').toString().trim(), (item2.parentKey || '').toString().trim()]];
-        const dataForRow2 = [[item1.concepto, item1.monto, item1.hidden ? 'TRUE' : 'FALSE', cuotasStr2, (item1.archivos || '').toString().trim(), (item1.debtKey || '').toString().trim(), (item1.parentKey || '').toString().trim()]];
-        
-        if (deudasDesdeWorker) {
-            // Con finance-core no hay filas que intercambiar: cada deuda se
-            // actualiza por su id, y las cuotas van como filas propias.
-            const aCuotas = (c) => (c
-                ? Array.from({ length: c.n }, (_, i) => ({
-                    indice: i,
-                    estado: ['pendiente', 'programada', 'pagada'][c.paid?.[i] ?? 0] ?? 'pendiente',
-                }))
-                : []);
-            for (const it of [item1, item2]) {
-                await bandeja_api(`/api/deudas/${it.id}`, {
-                    method: 'PATCH',
-                    body: JSON.stringify({
-                        concepto: it.concepto, monto: it.monto, hidden: it.hidden,
-                        archivos: (it.archivos || '').toString().trim() || null,
-                        cuotasTotal: it.cuotas?.n ?? null,
-                        cuotaMonto: it.cuotas?.perCuota ?? null,
-                        frecuencia: it.cuotas?.frequency ?? null,
-                        fechaInicio: it.cuotas?.startDate || null,
-                        scope: it.cuotas?.scope ?? null,
-                        cuotas: aCuotas(it.cuotas),
-                    }),
-                });
-            }
-        } else {
-            await sheetsUpdate(SPREADSHEET_DEUDAS_ID, `${sheetName}!A${rowId1}:G${rowId1}`, dataForRow1);
-            await sheetsUpdate(SPREADSHEET_DEUDAS_ID, `${sheetName}!A${rowId2}:G${rowId2}`, dataForRow2);
-        }
-    } catch(e) {
-        console.error('Error swapping:', e);
-        showToast('⚠️ Error al reordenar');
-        deudas_cargarDatos();
+        return;
     }
+
+    Promise.all([
+        bandeja_api(`/api/deudas/${item1.id}`, {
+            method: 'PATCH', body: JSON.stringify({ sortOrder: item1.sortOrder }),
+        }),
+        bandeja_api(`/api/deudas/${item2.id}`, {
+            method: 'PATCH', body: JSON.stringify({ sortOrder: item2.sortOrder }),
+        }),
+    ]).catch((e) => {
+        console.error('No se pudo guardar el orden de las deudas:', e);
+        revertir();
+        showToast(`\u26a0\ufe0f No se pudo reordenar: ${e.message}`);
+    });
 }
 
 window.deudas_editar = function(id) {
