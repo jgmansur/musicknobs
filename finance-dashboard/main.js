@@ -24,7 +24,7 @@ const DEUDAS_RECIBOS_FOLDER_ID = '157KDn-vbkuHH1L8xbaJBGz-oKmT7p5a9';
 const SPREADSHEET_RSM_ID = '14VsoPHGNTSUSbzMOqGWs2qSL-pGywPgjUoHD3MqIJfo'; // Recibos Salud Mariel
 const SALDOS_SHEET_ID    = '1-cX_qxld3ioSpcO9lEBPg90Db6AyK7SczpJTvj7rw4U'; // Saldos (fuente de verdad — Claude accede vía service account)
 const RSM_FOLDER_ID = '1-ZfeWQ-Rmh-Wm2WMCkULkN6MQWBuxYnj';
-const APP_VERSION  = 'v8.7.1';
+const APP_VERSION  = 'v8.7.2';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -1837,7 +1837,22 @@ function balance_cambioOptimista(id, aplicar, queCambio) {
     balance_renderPanel();
     balance_updateKpi();
 
-    balance_saveAccounts().catch((e) => {
+    // Se manda SOLO esta cuenta. El PUT del arreglo completo tardaba ~3.4 s
+    // porque reescribe las 13; el PATCH puntual es un UPDATE de una fila.
+    const guardar = bandeja_token()
+        ? bandeja_api(`/api/accounts/${id}`, {
+            method: 'PATCH',
+            body: JSON.stringify({
+                hidden: acc.hidden,
+                creditLimitVisible: acc.creditLimitVisible,
+            }),
+        }).then(() => {
+            // La caché local se mantiene al día sin pegarle al worker de nuevo.
+            localStorage.setItem('finance_accounts_v1', JSON.stringify(balanceAccounts));
+        })
+        : balance_saveAccounts();
+
+    guardar.catch((e) => {
         console.error(`No se pudo guardar ${queCambio}:`, e);
         Object.assign(acc, previo);
         balance_renderPanel();

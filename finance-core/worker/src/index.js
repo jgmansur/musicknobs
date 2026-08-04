@@ -550,6 +550,29 @@ export default {
             }
 
             const cuentaMatch = url.pathname.match(/^\/api\/accounts\/([\w-]+)$/);
+            if (cuentaMatch && request.method === 'PATCH') {
+                // Cambio puntual de UNA cuenta. El PUT del arreglo completo hace
+                // 13 SELECT + 13 UPDATE en una transacción y tardaba ~3.4 s, lo
+                // que para voltear un solo bit (ocultar una cuenta) es absurdo.
+                // Como en el PUT, aquí NO se toca `opening_balance`: eso es el
+                // ancla y solo se mueve por /reconcile.
+                const b = await request.json().catch(() => ({}));
+                const [a] = await sql`
+                    update accounts set
+                        name                 = coalesce(${b.name ?? null}, name),
+                        type                 = coalesce(${b.type ?? null}, type),
+                        currency             = coalesce(${b.currency ?? null}, currency),
+                        hidden               = coalesce(${b.hidden ?? null}, hidden),
+                        credit_limit         = coalesce(${b.creditLimit ?? null}, credit_limit),
+                        credit_limit_visible = coalesce(${b.creditLimitVisible ?? null}, credit_limit_visible),
+                        investment_type      = coalesce(${b.investmentType ?? null}, investment_type),
+                        updated_at           = now()
+                    where id = ${cuentaMatch[1]} returning name
+                `;
+                return json(a ? { ok: true, name: a.name } : { error: 'cuenta no encontrada' },
+                            a ? 200 : 404);
+            }
+
             if (cuentaMatch && request.method === 'DELETE') {
                 // Borrar una cuenta con movimientos dejaría el historial huérfano
                 // o lo arrastraría en cascada. Se rechaza y se dice cuántos hay:
