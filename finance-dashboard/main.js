@@ -24,7 +24,7 @@ const DEUDAS_RECIBOS_FOLDER_ID = '157KDn-vbkuHH1L8xbaJBGz-oKmT7p5a9';
 const SPREADSHEET_RSM_ID = '14VsoPHGNTSUSbzMOqGWs2qSL-pGywPgjUoHD3MqIJfo'; // Recibos Salud Mariel
 const SALDOS_SHEET_ID    = '1-cX_qxld3ioSpcO9lEBPg90Db6AyK7SczpJTvj7rw4U'; // Saldos (fuente de verdad — Claude accede vía service account)
 const RSM_FOLDER_ID = '1-ZfeWQ-Rmh-Wm2WMCkULkN6MQWBuxYnj';
-const APP_VERSION  = 'v8.6.7';
+const APP_VERSION  = 'v8.6.8';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -1470,7 +1470,38 @@ async function balance_saveAccounts() {
         debugUpdate({ save: `Solo localStorage (${balanceAccounts.length})`, token: 'No' });
         return;
     }
-    // 2. Saldos Sheet (fuente de verdad)
+    // 2. Fuente de verdad: finance-core. La hoja de Saldos ya no se lee, así
+    //    que escribirle dejaba las cuentas nuevas invisibles para todo el
+    //    sistema. El PUT solo toca metadatos: el saldo se mueve con los
+    //    movimientos o, deliberadamente, con /reconcile.
+    if (bandeja_token()) {
+        try {
+            const r = await bandeja_api('/api/accounts', {
+                method: 'PUT',
+                body: JSON.stringify({
+                    accounts: balanceAccounts.map(a => ({
+                        name: a.name,
+                        type: a.type,
+                        currency: a.currency || 'MXN',
+                        hidden: !!a.hidden,
+                        creditLimit: Math.abs(a.creditLimit || 0),
+                        creditLimitVisible: !!a.creditLimitVisible,
+                        investmentType: a.investmentType || null,
+                        openingBalance: a.balance,   // solo se usa al CREAR
+                    })),
+                }),
+            });
+            if (r?.creadas?.length) showToast(`✅ Cuenta creada: ${r.creadas.join(', ')}`);
+            debugUpdate({ save: `finance-core:OK (${balanceAccounts.length})`, token: 'Si' });
+        } catch (err) {
+            console.error('[Saldos] no se pudo guardar en finance-core:', err);
+            showToast(`⚠️ No se pudieron guardar las cuentas: ${err.message}`);
+            debugUpdate({ save: `finance-core:ERR`, token: 'Si' });
+        }
+        return;
+    }
+
+    // 3. Sin token, camino viejo: la hoja de Saldos.
     try {
         await balance_writeToSheet();
         debugUpdate({ save: `Saldos Sheet:OK (${balanceAccounts.length})`, token: 'Si' });

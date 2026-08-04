@@ -487,6 +487,68 @@ export default {
                 return json(row ? { ok: true } : { error: 'no encontrado' }, row ? 200 : 404);
             }
 
+            // ── Cuentas ─────────────────────────────────────────────────
+            //
+            // El dashboard reescribía la hoja de Saldos entera al guardar; aquí
+            // se conserva esa semántica con un PUT del arreglo completo.
+            //
+            // OJO CON EL SALDO: `opening_balance` es el ANCLA, no el saldo que
+            // se ve. El saldo mostrado sale de sumar los movimientos encima del
+            // ancla. Si este endpoint escribiera el saldo visible en el ancla,
+            // los movimientos se contarían dos veces. Por eso el PUT solo toca
+            // metadatos, y el ancla se mueve únicamente al crear la cuenta o
+            // vía /reconcile, que es una acción deliberada.
+            if (url.pathname === '/api/accounts' && request.method === 'PUT') {
+                const b = await request.json().catch(() => ({}));
+                const cuentas = Array.isArray(b.accounts) ? b.accounts : [];
+                if (!cuentas.length) return json({ error: 'no llegó ninguna cuenta' }, 400);
+
+                const resultado = await sql.begin(async (tx) => {
+                    const vistos = [];
+                    for (const c of cuentas) {
+                        if (!c.name) continue;
+                        const tipo = ['bank', 'cash', 'credit', 'invest', 'other'].includes(c.type)
+                            ? c.type : 'other';
+                        // No hay índice único sobre `name`, así que se busca
+                        // primero en vez de usar ON CONFLICT.
+                        const [existente] = await tx`
+                            select id from accounts where lower(name) = lower(${c.name})
+                        `;
+                        if (existente) {
+                            await tx`
+                                update accounts set
+                                    type = ${tipo}, currency = ${c.currency ?? 'MXN'},
+                                    hidden = ${!!c.hidden},
+                                    credit_limit = ${Math.abs(Number(c.creditLimit ?? 0))},
+                                    credit_limit_visible = ${!!c.creditLimitVisible},
+                                    investment_type = ${c.investmentType ?? null},
+                                    updated_at = now()
+                                where id = ${existente.id}
+                            `;
+                            vistos.push({ name: c.name, creada: false });
+                        } else {
+                            // En crédito la deuda se guarda negativa, como LikeU.
+                            const apertura = tipo === 'credit'
+                                ? -Math.abs(Number(c.openingBalance ?? 0))
+                                : Number(c.openingBalance ?? 0);
+                            await tx`
+                                insert into accounts (name, type, currency, hidden, credit_limit,
+                                    credit_limit_visible, investment_type, opening_balance,
+                                    opening_balance_at)
+                                values (${c.name}, ${tipo}, ${c.currency ?? 'MXN'}, ${!!c.hidden},
+                                    ${Math.abs(Number(c.creditLimit ?? 0))}, ${!!c.creditLimitVisible},
+                                    ${c.investmentType ?? null}, ${apertura}, now())
+                            `;
+                            vistos.push({ name: c.name, creada: true });
+                        }
+                    }
+                    return vistos;
+                });
+
+                const creadas = resultado.filter((r) => r.creada).map((r) => r.name);
+                return json({ ok: true, total: resultado.length, creadas });
+            }
+
             // ── Catálogos: autos, estudio y recetas ──────────────────────
             //
             // El dashboard venía de hojas, donde guardar significaba reescribir
