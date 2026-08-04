@@ -79,20 +79,24 @@ function buscarPorNombre(beneficiarios, nombreAviso) {
     const objetivo = sinAcentos(nombreAviso);
     if (objetivo.length < 3) return null;
 
-    const exacto = beneficiarios.find((b) => b.nombre_banco
-        && sinAcentos(b.nombre_banco) === objetivo);
-    if (exacto) return exacto;
-
-    const contenido = beneficiarios.find((b) => b.nombre_banco
-        && sinAcentos(b.nombre_banco).length >= 3
-        && objetivo.includes(sinAcentos(b.nombre_banco)));
-    if (contenido) return contenido;
-
     const palabras = new Set(objetivo.split(' '));
-    return beneficiarios.find((b) => {
-        const corto = sinAcentos(b.nombre);
-        return corto.length >= 3 && corto.split(' ').every((p) => palabras.has(p));
-    }) ?? null;
+    // Se comparan como CONJUNTOS de palabras, no como cadenas: los bancos
+    // barajan el orden ("MARIEL DE LA ROSA GUAJARDO" vs "DE LA ROSA GUAJARDO
+    // MARIEL") y comparar cadenas fallaría por algo que no significa nada.
+    const todasPresentes = (registrado) => {
+        const partes = sinAcentos(registrado).split(' ').filter(Boolean);
+        return partes.length > 0 && partes.every((p) => palabras.has(p));
+    };
+
+    const porNombreBanco = beneficiarios.find(
+        (b) => b.nombre_banco && todasPresentes(b.nombre_banco));
+    if (porNombreBanco) return porNombreBanco;
+
+    // Respaldo con el nombre corto ("Mariel"). Pide palabra completa a
+    // propósito: por substring, "Rosy" haría match dentro de "ROSYNALDO" y le
+    // colgaría el gasto a la persona equivocada.
+    return beneficiarios.find(
+        (b) => sinAcentos(b.nombre).length >= 3 && todasPresentes(b.nombre)) ?? null;
 }
 
 export function classify(parsed, {
