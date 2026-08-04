@@ -24,7 +24,7 @@ const DEUDAS_RECIBOS_FOLDER_ID = '157KDn-vbkuHH1L8xbaJBGz-oKmT7p5a9';
 const SPREADSHEET_RSM_ID = '14VsoPHGNTSUSbzMOqGWs2qSL-pGywPgjUoHD3MqIJfo'; // Recibos Salud Mariel
 const SALDOS_SHEET_ID    = '1-cX_qxld3ioSpcO9lEBPg90Db6AyK7SczpJTvj7rw4U'; // Saldos (fuente de verdad — Claude accede vía service account)
 const RSM_FOLDER_ID = '1-ZfeWQ-Rmh-Wm2WMCkULkN6MQWBuxYnj';
-const APP_VERSION  = 'v8.9.0';
+const APP_VERSION  = 'v8.9.1';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -54,8 +54,8 @@ const AI_MIRROR_SYNC_MAX_WAIT_MS = 5 * 60_000;
  * Replica un movimiento en finance-core (Supabase), la fuente de verdad de los
  * saldos.
  *
- * A diferencia de engramSync, esto NO es fire-and-forget: si falla, el saldo
- * queda mal y hay que enterarse. Se avisa, no se traga el error.
+ * Esto NO es fire-and-forget: si falla, el saldo queda mal y hay que
+ * enterarse. Se avisa, no se traga el error.
  */
 async function financeCoreSync({ fecha, lugar, concepto, monto, tipo, forma, recibo, source = 'manual' }) {
     if (!balanceDesdeWorker || !bandeja_token()) return;
@@ -157,13 +157,13 @@ document.addEventListener('DOMContentLoaded', () => {
     lugares_cargar();
 });
 
-function engramSync(endpoint, payload) {
-    fetch(`${ENGRAM_API_BASE}${endpoint}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-    }).catch(() => { /* server not running — silently ignored */ });
-}
+// engramSync se eliminó: mandaba cada gasto a http://127.0.0.1:8788, el
+// api-server local. Desde una página servida por HTTPS el navegador bloquea esa
+// petición por contenido mixto, y desde el iPhone 127.0.0.1 es el propio
+// teléfono. O sea, nunca corrió en producción. Los datos financieros ya viven
+// en Supabase, que es la fuente de verdad, así que la copia en Engram sobraba.
+// El api-server SIGUE en pie: lo usan los scripts locales para el catálogo de
+// skills.
 
 // =============================================
 // FIREBASE
@@ -4435,7 +4435,6 @@ async function gastos_guardar() {
             } else {
                 await sheetsAppend(SPREADSHEET_LOG_ID, 'Hoja 1!A:I', [[fecha, lugar, concepto, parseSheetValue(monto), tipo, forma, nuevasUrls.join(','), moneda, fechaCreacionNow]]);
             }
-            engramSync('/api/engram/gasto', { fecha, lugar, concepto, monto: parseSheetValue(monto), tipo, forma_pago: forma, recibo: nuevasUrls.join(','), moneda, fuente: 'dashboard' });
         }
         status.innerText = nuevasUrls.length
             ? '✅ ' + (idFila ? 'Actualizado con recibo' : 'Guardado con recibo')
@@ -4588,7 +4587,12 @@ window.gastos_borrarRecibo = async function(url, idx) {
         const match = url.match(/[-\w]{25,}/);
         if (match) await driveDeleteFile(match[0]).catch(() => {});
         // Refresh receipts area in modal
-        gastosState.allRows = gastosState.allRows.map(r => r.rowNum === row.rowNum ? { ...r, fotos: row.fotos } : r);
+        // Con datos del worker `rowNum` es null en TODAS las filas, así que
+        // comparar por rowNum daba null === null y le ponía estas fotos a cada
+        // movimiento de la lista. Se identifica por id cuando lo hay.
+        const mismaFila = (r) => (row.id ? r.id === row.id
+                                         : r.rowNum != null && r.rowNum === row.rowNum);
+        gastosState.allRows = gastosState.allRows.map(r => mismaFila(r) ? { ...r, fotos: row.fotos } : r);
         showToast('🗑️ Recibo eliminado');
         gastos_abrirModal(row); // re-render modal with updated list
     } catch(e) {
@@ -5602,7 +5606,6 @@ async function fijos_guardar() {
                 linkGroup,
                 '',
             ]]);
-            engramSync('/api/engram/gasto', { fecha, concepto, monto: parseFloat(gasto || ingreso || 0), tipo: gasto ? 'fijo-gasto' : 'fijo-ingreso', forma_pago: formaPagoVal, fuente: 'dashboard' });
         }
         fijos_cerrarSheet();
         fijos_cargarDatos();
@@ -10743,7 +10746,6 @@ async function rsm_guardar() {
             showToast('✅ Recibo actualizado');
         } else {
             await sheetsAppend(SPREADSHEET_RSM_ID, `${RSM_SHEET}!A:C`, [row]);
-            engramSync('/api/engram/gasto', { fecha, monto, recibo: url, tipo: 'rsm', fuente: 'dashboard' });
             showToast('✅ Recibo guardado');
         }
         await rsm_loadData();
@@ -11101,7 +11103,6 @@ async function recuerdos_guardarNuevo() {
         if (files.length) urls = await recuerdos_subirArchivos(files, 'Subiendo archivo');
         const row = [new Date().toISOString(), texto, urls.length ? urls.join(',') : 'Sin imagen'];
         await sheetsAppend(SPREADSHEET_RECUERDOS_ID, `${RECUERDOS_SHEET}!A:C`, [row]);
-        engramSync('/api/engram/recuerdo', { texto, url: urls.join(','), fecha: new Date().toISOString().slice(0, 10), fuente: 'dashboard' });
         textEl.value = '';
         fileEl.value = '';
         const note = document.getElementById('rec-file-note');
@@ -13024,7 +13025,6 @@ async function pelo_save() {
         showToast(`⚠️ No se pudo guardar: ${e.message}`);
         return;
     }
-    engramSync('/api/engram/gasto', { fecha: payload.date, monto: payload.amount, concepto: 'Corte de pelo', tipo: 'pelo', forma_pago: payload.formaPago, fuente: 'dashboard' });
     pelo_closeSheet();
     pelo_render();
     showToast(`✅ Entrada de Pelo guardada${avisoGasto}`);

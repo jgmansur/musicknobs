@@ -249,6 +249,57 @@ export default {
                 return json(r ? { ok: true } : { error: 'artículo no encontrado' }, r ? 200 : 404);
             }
 
+            if (url.pathname === '/api/hormiga/items' && request.method === 'POST') {
+                // Alta manual del desglose por producto de un ticket. Hasta
+                // ahora la ÚNICA vía era el ingest de correos, así que un ticket
+                // en papel se quedaba sin artículos y el análisis de gasto
+                // hormiga solo veía lo que llegaba por Gmail.
+                const b = await request.json().catch(() => ({}));
+                const items = Array.isArray(b.items) ? b.items : [];
+                if (!items.length) return json({ error: 'no llegó ningún artículo' }, 400);
+
+                const insertados = await sql.begin(async (tx) => {
+                    const ids = [];
+                    for (const it of items) {
+                        const nombre = it.productoNormalizado || it.productoRaw;
+                        if (!nombre) continue;
+
+                        // El grupo debe existir antes de referenciarlo: la FK de
+                        // receipt_items apunta a product_groups.
+                        if (it.grupoProducto) {
+                            await tx`
+                                insert into product_groups (grupo_producto)
+                                values (${it.grupoProducto})
+                                on conflict (grupo_producto) do nothing
+                            `;
+                        }
+                        const [fila] = await tx`
+                            insert into receipt_items (fecha, recibo_id, comercio,
+                                producto_raw, producto_normalizado, categoria, subcategoria,
+                                cantidad, precio_unitario, total_item, forma_pago, recibo_url,
+                                confianza, grupo_producto, hormiga_auto, hormiga_override,
+                                transaction_id)
+                            values (${it.fecha ?? b.fecha ?? new Date()},
+                                    ${it.reciboId ?? b.reciboId ?? null},
+                                    ${it.comercio ?? b.comercio ?? null},
+                                    ${it.productoRaw ?? nombre}, ${it.productoNormalizado ?? nombre},
+                                    ${it.categoria ?? null}, ${it.subcategoria ?? null},
+                                    ${it.cantidad ?? 1}, ${it.precioUnitario ?? null},
+                                    ${it.totalItem ?? null},
+                                    ${it.formaPago ?? b.formaPago ?? null},
+                                    ${it.reciboUrl ?? b.reciboUrl ?? null},
+                                    ${it.confianza ?? 'media'}, ${it.grupoProducto ?? null},
+                                    ${it.hormigaAuto ?? null}, ${it.hormigaOverride ?? null},
+                                    ${it.transactionId ?? b.transactionId ?? null})
+                            returning id
+                        `;
+                        ids.push(fila.id);
+                    }
+                    return ids;
+                });
+                return json({ ok: true, insertados: insertados.length, ids: insertados });
+            }
+
             const grupoMatch = url.pathname.match(/^\/api\/hormiga\/grupos\/(.+)$/);
             if (grupoMatch && request.method === 'PUT') {
                 const nombre = decodeURIComponent(grupoMatch[1]);

@@ -403,18 +403,56 @@ def write_receipt_items(service, env_vars, data):
               forma_pago, recibo, confianza, grupo_producto, hormiga_auto,
               hormiga_override
     """
-    # La hoja 'Receipt Items' vivía en Control de Gastos, que se migró y se va a
-    # borrar. En Supabase la tabla receipt_items existe, pero el worker solo la
-    # EXPONE (`GET /api/hormiga`) — no hay endpoint para escribirla: el único que
-    # inserta es el ingest de tickets de Gmail. Escribir a la hoja aquí sería
-    # perder los datos en silencio, así que se falla fuerte a propósito.
-    raise ValueError(
-        'receipt_items ya no se escribe desde aquí: la hoja se migró y el worker '
-        'no expone un endpoint de escritura (solo GET /api/hormiga). Hoy los '
-        'artículos los inserta el ingest de tickets. Si hace falta capturarlos a '
-        'mano, hay que agregar POST /api/hormiga/items al worker primero.'
-    )
+    # Va a Supabase por POST /api/hormiga/items. La hoja 'Receipt Items' vivía
+    # en Control de Gastos y se migró; durante un tiempo esta ruta falló a
+    # propósito porque el worker no exponía escritura y solo el ingest de
+    # correos podía insertar. Ya no es el caso.
+    items = normalize_receipt_items(data)
+    if not items:
+        return 0
 
+    def num(v, por_defecto=None):
+        try:
+            return float(str(v).replace('$', '').replace(',', '').strip())
+        except (TypeError, ValueError):
+            return por_defecto
+
+    payload_items = []
+    for item in items:
+        if not isinstance(item, dict):
+            continue
+        nombre = (item.get('producto_normalizado') or item.get('normalizado')
+                  or item.get('producto_raw') or item.get('producto') or item.get('raw') or '')
+        total = num(item.get('total_item', item.get('total', item.get('monto'))))
+        if not nombre or not total or total <= 0:
+            continue
+        payload_items.append({
+            'fecha': format_date(item.get('fecha') or data.get('fecha')),
+            'reciboId': item.get('recibo_id') or data.get('recibo_id') or data.get('receipt_id'),
+            'comercio': item.get('comercio') or data.get('comercio') or data.get('lugar'),
+            'productoRaw': item.get('producto_raw') or item.get('producto') or nombre,
+            'productoNormalizado': nombre,
+            'categoria': item.get('categoria') or None,
+            'subcategoria': item.get('subcategoria') or None,
+            'cantidad': num(item.get('cantidad'), 1),
+            'precioUnitario': num(item.get('precio_unitario', item.get('unitario'))),
+            'totalItem': total,
+            'formaPago': item.get('forma_pago') or data.get('forma_pago') or None,
+            'reciboUrl': item.get('recibo') or resolve_recibo_value(data) or None,
+            'confianza': item.get('confianza', item.get('confidence')) or 'media',
+            'grupoProducto': item.get('grupo_producto', item.get('product_group')) or None,
+            'hormigaAuto': item.get('hormiga_auto') if item.get('hormiga_auto') != '' else None,
+            'hormigaOverride': item.get('hormiga_override') if item.get('hormiga_override') != '' else None,
+        })
+
+    if not payload_items:
+        return 0
+    r = finance_api.api_post('/api/hormiga/items', {'items': payload_items})
+    return r.get('insertados', 0)
+
+
+def _write_receipt_items_legacy(service, env_vars, data):
+    """Camino viejo a la hoja. Se conserva solo como referencia histórica."""
     spreadsheet_id = env_vars['SPREADSHEET_LOG_ID']
     ensure_headers(service, spreadsheet_id, RECEIPT_ITEMS_SHEET, RECEIPT_ITEMS_HEADERS)
     items = normalize_receipt_items(data)
@@ -468,7 +506,7 @@ SHEET_WRITERS = {
 # Destinos que siguen viviendo en Google Sheets. El resto va al worker.
 # Pelo vive en el workbook de Deudas y Recuerdos/RSM en los suyos: ninguno de
 # esos tres se migró ni se va a borrar.
-SHEET_BACKED = {'recuerdos', 'rsm', 'pelo', 'receipt_items'}
+SHEET_BACKED = {'recuerdos', 'rsm', 'pelo'}
 
 def main():
     parser = argparse.ArgumentParser(description='Escribe datos financieros a Google Sheets')
