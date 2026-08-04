@@ -1409,5 +1409,39 @@ server.tool(
     },
 );
 
+server.tool(
+    'finanzas_recibos_sin_procesar',
+    'Movimientos que tienen recibo pero les falta comercio, concepto o monto. Son los '
+    + 'que Jay sube desde el dashboard adjuntando solo la foto: la idea es leerlos y completarlos.',
+    { limite: z.number().int().min(1).max(50).default(15) },
+    async ({ limite }) => {
+        const rows = await sql`
+            select t.id, to_char(t.occurred_at, 'YYYY-MM-DD') as fecha,
+                   t.merchant, t.description, t.amount, t.receipt_url, a.name as cuenta
+            from transactions t join accounts a on a.id = t.account_id
+            where t.receipt_url is not null and t.receipt_url <> ''
+              and (t.merchant is null or t.merchant = ''
+                   or t.description is null or t.description = ''
+                   or abs(t.amount) = 0)
+            order by t.occurred_at desc limit ${limite}
+        `;
+        if (!rows.length) return texto('No hay recibos pendientes de completar.');
+        const lineas = rows.map((r) => {
+            const falta = [];
+            if (!r.merchant) falta.push('comercio');
+            if (!r.description) falta.push('concepto');
+            if (Math.abs(Number(r.amount)) === 0) falta.push('monto');
+            return `  ${r.fecha} · ${r.cuenta} · $${dinero(Math.abs(r.amount))}\n`
+                 + `    falta: ${falta.join(', ')}\n`
+                 + `    id: ${r.id}\n`
+                 + `    recibo: ${r.receipt_url}`;
+        });
+        return texto(
+            `${rows.length} recibo(s) por completar:\n\n${lineas.join('\n\n')}\n\n`
+            + 'Usa finanzas_editar_movimiento con el id para completarlos. NO registres uno '
+            + 'nuevo: el movimiento ya existe y lo duplicarías.');
+    },
+);
+
 const transport = new StdioServerTransport();
 await server.connect(transport);
