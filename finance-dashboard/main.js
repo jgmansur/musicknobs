@@ -24,7 +24,7 @@ const DEUDAS_RECIBOS_FOLDER_ID = '157KDn-vbkuHH1L8xbaJBGz-oKmT7p5a9';
 const SPREADSHEET_RSM_ID = '14VsoPHGNTSUSbzMOqGWs2qSL-pGywPgjUoHD3MqIJfo'; // Recibos Salud Mariel
 const SALDOS_SHEET_ID    = '1-cX_qxld3ioSpcO9lEBPg90Db6AyK7SczpJTvj7rw4U'; // Saldos (fuente de verdad — Claude accede vía service account)
 const RSM_FOLDER_ID = '1-ZfeWQ-Rmh-Wm2WMCkULkN6MQWBuxYnj';
-const APP_VERSION  = 'v8.8.0';
+const APP_VERSION  = 'v8.8.1';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -14757,7 +14757,7 @@ async function deudas_swap(idx1, idx2) {
 }
 
 window.deudas_editar = function(id) {
-    const item = deudasState.allItems.find(i => i.id === id);
+    const item = deudasState.allItems.find(i => String(i.id) === String(id));
     if (item) deudas_abrirSheet(item);
 };
 
@@ -14807,34 +14807,41 @@ window.deudas_borrar = async function(id) {
     }
 };
 
-window.deudas_toggleHidden = async function(id) {
-    const item = deudasState.allItems.find(i => i.id === id);
+window.deudas_toggleHidden = function(id) {
+    const item = deudasState.allItems.find(i => String(i.id) === String(id));
     if (!item) return;
-    const newVal = !item.hidden;
-    try {
-        let sheetName = 'Deudas';
-        try {
-            await sheetsGet(SPREADSHEET_DEUDAS_ID, 'Deudas!A1:A1');
-        } catch(e) {
-            sheetName = 'Hoja 1';
-        }
-        if (deudasDesdeWorker) {
-            await bandeja_api(`/api/deudas/${id}`, {
-                method: 'PATCH', body: JSON.stringify({ hidden: newVal }),
-            });
-        } else {
-            await sheetsUpdate(SPREADSHEET_DEUDAS_ID, `${sheetName}!C${id}`, [[newVal ? 'TRUE' : 'FALSE']]);
-        }
-        item.hidden = newVal;
+    const previo = item.hidden;
+    const newVal = !previo;
+
+    // Optimista: se repinta en el acto y se guarda en segundo plano.
+    item.hidden = newVal;
+    deudas_renderLista();
+    const childrenMap = deudas_getChildrenMap();
+    const hasChildren = (childrenMap.get((item.debtKey || '').toString().trim()) || []).length > 0;
+    if (newVal && hasChildren) showToast('🙈 Deuda padre oculta: hijas ocultas en esta vista');
+    else showToast(newVal ? '🙈 Deuda oculta del balance' : '👁️ Deuda visible en balance');
+
+    const guardar = deudasDesdeWorker
+        // Antes se hacía SIEMPRE un sheetsGet a Google solo para resolver el
+        // nombre de la pestaña, incluso yendo al worker: un viaje entero
+        // desperdiciado en cada click.
+        ? bandeja_api(`/api/deudas/${id}`, {
+            method: 'PATCH', body: JSON.stringify({ hidden: newVal }),
+        })
+        : (async () => {
+            let sheetName = 'Deudas';
+            try { await sheetsGet(SPREADSHEET_DEUDAS_ID, 'Deudas!A1:A1'); }
+            catch (e) { sheetName = 'Hoja 1'; }
+            await sheetsUpdate(SPREADSHEET_DEUDAS_ID, `${sheetName}!C${id}`,
+                               [[newVal ? 'TRUE' : 'FALSE']]);
+        })();
+
+    guardar.catch((e) => {
+        console.error('No se pudo guardar la visibilidad de la deuda:', e);
+        item.hidden = previo;
         deudas_renderLista();
-        const childrenMap = deudas_getChildrenMap();
-        const hasChildren = (childrenMap.get((item.debtKey || '').toString().trim()) || []).length > 0;
-        if (newVal && hasChildren) showToast('🙈 Deuda padre oculta: hijas ocultas en esta vista');
-        else showToast(newVal ? '🙈 Deuda oculta del balance' : '👁️ Deuda visible en balance');
-    } catch(e) {
-        console.error(e);
-        showToast('❌ Error al actualizar visibilidad');
-    }
+        showToast(`⚠️ No se pudo guardar la visibilidad: ${e.message}`);
+    });
 };
 
 function deudas_renderParentOptions(currentItem = null) {
@@ -14884,7 +14891,7 @@ function deudas_abrirSheet(item) {
 // Dividir Deuda / Cuotas
 // ══════════════════════════════════
 window.deudas_abrirSplit = function(id) {
-    const item = deudasState.allItems.find(i => i.id === id);
+    const item = deudasState.allItems.find(i => String(i.id) === String(id));
     if (!item) return;
     const childrenMap = deudas_getChildrenMap();
     const ownRemaining = deudas_getItemRemaining(item);
@@ -15024,7 +15031,7 @@ window.deudas_generarCuotas = async function() {
 };
 
 window.deudas_toggleCuota = async function(id, idx) {
-    const item = deudasState.allItems.find(i => i.id === id);
+    const item = deudasState.allItems.find(i => String(i.id) === String(id));
     if (!item || !item.cuotas) return;
     
     const currentState = item.cuotas.paid[idx] || 0;
@@ -15038,31 +15045,37 @@ window.deudas_toggleCuota = async function(id, idx) {
         // Create Gasto Fijo row
         const concepto = `${item.concepto} - Cuota ${idx + 1}/${item.cuotas.n}`;
         const monto = item.cuotas.perCuota.toFixed(2);
-        try {
-            // Antes se appendaba una fila a la hoja de Gastos Fijos con las 14
-            // columnas en orden. Ahora es un alta normal en Supabase.
-            await bandeja_api('/api/fijos', {
-                method: 'POST',
-                body: JSON.stringify({
-                    concepto,
-                    monto: Number(monto),
-                    tipo: 'gasto',
-                    categoria: 'Deudas',
-                    moneda: 'MXN',
-                    pagosMes: 1,
-                    periodicidad: 'Cuota de Deuda',
-                    pagador: formaPago,
-                    budgetCategory: 'Muchachas y Pago de Deudas',
-                    diaMes: Number(diaNum),
-                }),
-            });
-            showToast(`✅ Gasto Fijo creado: ${concepto}`);
-        } catch(e) {
-            console.error('Error creating Gasto Fijo:', e);
-            showToast('⚠️ Error al crear Gasto Fijo');
-            return;
-        }
+        // Optimista: la cuota se marca y se repinta en el acto; el alta del
+        // fijo va en segundo plano. Antes se esperaba el POST antes de pintar y
+        // el botón se sentía muerto medio segundo.
         item.cuotas.paid[idx] = 1;
+        deudas_renderLista();
+
+        // Antes se appendaba una fila a la hoja de Gastos Fijos con las 14
+        // columnas en orden. Ahora es un alta normal en Supabase.
+        bandeja_api('/api/fijos', {
+            method: 'POST',
+            body: JSON.stringify({
+                concepto,
+                monto: Number(monto),
+                tipo: 'gasto',
+                categoria: 'Deudas',
+                moneda: 'MXN',
+                pagosMes: 1,
+                periodicidad: 'Cuota de Deuda',
+                pagador: formaPago,
+                budgetCategory: 'Muchachas y Pago de Deudas',
+                diaMes: Number(diaNum),
+            }),
+        }).then(() => {
+            showToast(`✅ Gasto Fijo creado: ${concepto}`);
+        }).catch((e) => {
+            // Sin el fijo la cuota no está realmente programada: se revierte.
+            console.error('Error creating Gasto Fijo:', e);
+            item.cuotas.paid[idx] = 0;
+            deudas_renderLista();
+            showToast(`⚠️ No se pudo crear el Gasto Fijo: ${e.message}`);
+        });
     } else if (currentState === 1) {
         // 1 → 2: Mark as paid
         item.cuotas.paid[idx] = 2;
