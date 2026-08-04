@@ -1,5 +1,5 @@
 {
-  "updated": "2026-04-26",
+  "updated": "2026-08-04",
   "roby": {
     "nombre": "Roberta",
     "grado": "3° de Primaria",
@@ -31,84 +31,91 @@
       }
     ],
     "analysis": {
-      "updated": "2026-04-26",
-      "trimestre": "2do Trimestre 2025-2026",
+      "updated": "2026-08-04",
+      "trimestre": "3er Trimestre 2025-2026",
       "escuela": "Centro Educativo Naciones Unidas",
       "docente_esp": "Lucero López Ortíz",
       "docente_eng": "Itzel S. Puente",
-      "promedio": 7.4,
+      "promedio": 8.1,
       "materias": [
         {
-          "nombre": "Español",
-          "calificacion": 8.3,
-          "detalle": "46.5/56 pts"
+          "nombre": "Matemáticas",
+          "calificacion": 8.5,
+          "detalle": "47/55. Fracciones comparadas correctamente en la mayoría; restas con transformación bien resueltas (3/3)."
         },
         {
-          "nombre": "Reading (Inglés)",
-          "calificacion": 6.5,
-          "detalle": "17/26 pts"
+          "nombre": "Writing (inglés)",
+          "calificacion": 8.5,
+          "detalle": "17/20. Sinónimos y antónimos correctos; falla de concordancia en \"The turtle is no quick\" (debía ser \"is not quick\")."
+        },
+        {
+          "nombre": "Reading (inglés)",
+          "calificacion": 8.0,
+          "detalle": "8/10. Distingue bien hecho de opinión en 2 de 3 pasajes; en \"The Rainy Day\" confundió los dos."
+        },
+        {
+          "nombre": "Grammar (inglés)",
+          "calificacion": 7.3,
+          "detalle": "53/73. La más baja. Antónimos y sinónimos sueltos casi perfectos (19/20), pero pierde puntos en las secciones de mayor extensión."
         }
       ],
       "desarrollo_emocional": [
         {
-          "aspecto": "Expresa emociones adecuadamente",
+          "aspecto": "Expresa sus emociones y busca apoyo cuando lo necesita",
           "nivel": "Siempre"
         },
         {
-          "aspecto": "Muestra empatía y comprensión",
+          "aspecto": "Muestra empatía y comprensión hacia los demás",
           "nivel": "Siempre"
         },
         {
-          "aspecto": "Resuelve conflictos constructivamente",
+          "aspecto": "Resuelve conflictos de manera constructiva",
           "nivel": "Siempre"
         },
         {
-          "aspecto": "Participa cooperativamente en grupo",
-          "nivel": "Casi siempre"
+          "aspecto": "Participa en actividades de grupo de manera cooperativa",
+          "nivel": "Siempre"
         },
         {
-          "aspecto": "Se relaciona respetuosamente",
+          "aspecto": "Se relaciona de manera respetuosa con compañeros y adultos",
           "nivel": "Siempre"
         }
       ],
       "habitos_trabajo": [
         {
-          "aspecto": "Completa tareas oportunamente",
+          "aspecto": "Completa las tareas asignadas de manera oportuna",
           "nivel": "Casi siempre"
         },
         {
-          "aspecto": "Organiza su material escolar",
-          "nivel": "En ocasiones"
-        },
-        {
-          "aspecto": "Participa activamente en clase",
+          "aspecto": "Organiza su material escolar de manera adecuada",
           "nivel": "Casi siempre"
         },
         {
-          "aspecto": "Sigue instrucciones y reglas",
+          "aspecto": "Participa activamente en las actividades de clase",
+          "nivel": "Casi siempre"
+        },
+        {
+          "aspecto": "Sigue las instrucciones y reglas del aula",
           "nivel": "Siempre"
         },
         {
-          "aspecto": "Muestra perseverancia",
-          "nivel": "Casi siempre"
+          "aspecto": "Muestra perseverancia y se esfuerza por mejorar",
+          "nivel": "Siempre"
         }
       ],
-      "conducta": "Excelente — comportamiento respetuoso, responsable y participativo en todas las áreas evaluadas.",
+      "conducta": "Impecable. Las cinco áreas de conducta salieron en \"Siempre\" con las dos docentes: respeto en el aula, normas de convivencia, responsabilidad, participación en extraescolares y comunicación efectiva.",
       "advertencias": [
-        "Reading/Inglés con 6.5 — área más débil, requiere refuerzo en comprensión lectora en inglés.",
-        "Organización de material escolar marcada 'En ocasiones' — trabajar hábitos de orden en casa.",
-        "Terapia sensorial activa — asegurar continuidad semanal sin interrupciones prolongadas para sostener el progreso."
+        "Grammar en inglés (7.3) es la única materia por debajo de 8 y la que más arrastra el promedio.",
+        "Los tres puntos de \"Casi siempre\" están todos en hábitos de trabajo —tareas a tiempo, organización del material y participación activa—, no en lo emocional ni en la conducta.",
+        "Discrepancia entre docentes: la maestra de inglés la evalúa \"Always\" en TODOS los hábitos, la de español marca tres en \"Casi siempre\". Vale la pena preguntar en la junta a qué se debe."
       ],
       "consejos": [
-        "Continuar la terapia de integración sensorial semanalmente — hay progresión documentada clara.",
-        "Reforzar en casa la respiración nasal (objetivo constante de terapia): practicar 5 min antes de dormir.",
-        "La rutina de mochila la noche anterior apoya tanto el objetivo escolar como el de terapia (organización).",
-        "Dedicar 15 minutos diarios a lectura en inglés — área más débil académica (6.5 en Reading).",
-        "Cuando dé una instrucción, pedir que repita lo que entendió antes de actuar — refuerza el objetivo de terapia.",
-        "El español va bien (8.3) — mantener el hábito de lectura en español.",
-        "Reconocerle explícitamente su desarrollo emocional y conducta — es su punto más fuerte."
+        "Atacar Grammar con ejercicios cortos y frecuentes, no sesiones largas: sus errores aparecen en las secciones extensas, no en los reactivos sueltos (sacó 19/20 en sinónimos aislados).",
+        "Trabajar la negación en inglés (\"is not\" vs \"is no\"), que es el error concreto que se repite.",
+        "La organización del material y la entrega puntual se atienden con estructura externa —checklist de mochila, hora fija de tarea—, no con insistencia verbal.",
+        "Reconocerle explícitamente lo emocional y la conducta: son perfectos y sostenidos. Es su terreno más fuerte y conviene que ella lo sepa."
       ],
-      "observaciones": "Roberta muestra un perfil socioemocional muy sólido: empática, respetuosa y perseverante. Está en terapia de integración sensorial semanal (centro Juego) desde agosto 2025, trabajando atención/permanencia, coordinación de fuerza, respiración nasal y estimulación vestibular. Las áreas de oportunidad escolar (organización de material, completar tareas) son consistentes con los objetivos de terapia y muestran trabajo activo. Su fortaleza más clara sigue siendo el área socioemocional y la conducta positiva en el aula."
+      "observaciones": "Roberta SUBIÓ de 7.4 a 8.1 (+0.7) respecto al 2do trimestre. La mejora es real y pareja: ninguna materia quedó reprobada y tres de cuatro están en 8 o más.\n\nLo más notable no es el promedio sino el perfil: los diez indicadores de desarrollo emocional y conducta salieron en \"Siempre\", con las dos docentes. Eso conecta directo con los objetivos de la terapia de integración sensorial —regulación emocional, cooperación en grupo, resolución de conflictos— y sugiere que ese trabajo está rindiendo donde más importa.\n\nLa brecha está en los HÁBITOS de trabajo, no en la capacidad ni en la actitud. Los tres \"Casi siempre\" son tareas a tiempo, organización del material y participación activa. Es un patrón de función ejecutiva, no de esfuerzo: Roberta sí muestra perseverancia y sí sigue instrucciones (\"Siempre\" en ambos). Traducido: sabe y quiere, le falta el andamiaje para sostener la rutina.\n\nGrammar (7.3) merece atención pero no alarma. El desglose muestra 19/20 en reactivos aislados y pérdida de puntos en las secciones largas, lo que apunta otra vez a sostener la atención en tareas extensas, no a que no sepa el contenido."
     },
     "historial": [
       {
@@ -253,7 +260,7 @@
   },
   "hans": {
     "nombre": "Hans",
-    "grado": "3° de Primaria",
+    "grado": "2° de Primaria",
     "escuela": "Vasconcelos",
     "folderId": "1PG71hyEE3dhDGO7Pn02RR-S-LdvKqHDQ",
     "folderUrl": "https://drive.google.com/drive/folders/1PG71hyEE3dhDGO7Pn02RR-S-LdvKqHDQ",
@@ -282,89 +289,101 @@
       }
     ],
     "analysis": {
-      "updated": "2026-04-20",
-      "trimestre": "2do Trimestre 2025-2026",
+      "updated": "2026-08-04",
+      "trimestre": "3er Trimestre 2025-2026",
       "escuela": "Centro Educativo Naciones Unidas",
-      "docente_esp": "Lucero López Ortíz",
-      "docente_eng": "Itzel S. Puente",
-      "promedio": 8.0,
+      "docente_esp": "Rebeca Gómez Arellano",
+      "docente_eng": "—",
+      "promedio": 9.5,
       "materias": [
         {
-          "nombre": "Español",
-          "calificacion": 8.5,
-          "detalle": "Evaluación general"
+          "nombre": "Reading (inglés)",
+          "calificacion": 10.0,
+          "detalle": "33/33, perfecto. La maestra anotó \"Excellent!!!\"."
+        },
+        {
+          "nombre": "Science - Social Studies",
+          "calificacion": 10.0,
+          "detalle": "Proyecto \"The Earth: Day and Night\". Cumplió los ocho criterios de la rúbrica. La maestra anotó \"Congrats!!!\"."
         },
         {
           "nombre": "Matemáticas",
-          "calificacion": 7.8,
-          "detalle": "Resolución de problemas"
+          "calificacion": 9.7,
+          "detalle": "26/27. Medidas de peso y capacidad, millares y multiplicación como suma repetida, casi sin error."
         },
         {
-          "nombre": "Reading (Inglés)",
-          "calificacion": 7.5,
-          "detalle": "Comprensión lectora"
+          "nombre": "Español",
+          "calificacion": 9.1,
+          "detalle": "42/46. Campos semánticos, familia de palabras, sinónimos y antónimos bien resueltos."
         },
         {
-          "nombre": "Grammar (Inglés)",
-          "calificacion": 8.2,
-          "detalle": "Estructuras gramaticales"
+          "nombre": "Grammar (inglés)",
+          "calificacion": 9.0,
+          "detalle": "70/78. Antónimos perfectos (14/14)."
+        },
+        {
+          "nombre": "Writing (inglés)",
+          "calificacion": 8.9,
+          "detalle": "32/36. La más baja aun siendo alta. Produce frases correctas por estación pero cortas."
         }
       ],
       "desarrollo_emocional": [
         {
-          "aspecto": "Expresa emociones adecuadamente",
+          "aspecto": "Expresa sus emociones y busca apoyo cuando lo necesita",
           "nivel": "Casi siempre"
         },
         {
-          "aspecto": "Muestra empatía y comprensión",
-          "nivel": "Siempre"
-        },
-        {
-          "aspecto": "Resuelve conflictos constructivamente",
+          "aspecto": "Muestra empatía y comprensión hacia los demás",
           "nivel": "Casi siempre"
         },
         {
-          "aspecto": "Participa cooperativamente en grupo",
+          "aspecto": "Resuelve conflictos de manera constructiva",
           "nivel": "Siempre"
         },
         {
-          "aspecto": "Se relaciona respetuosamente",
+          "aspecto": "Participa en actividades de grupo de manera cooperativa",
+          "nivel": "Siempre"
+        },
+        {
+          "aspecto": "Se relaciona de manera respetuosa con compañeros y adultos",
           "nivel": "Siempre"
         }
       ],
       "habitos_trabajo": [
         {
-          "aspecto": "Completa tareas oportunamente",
-          "nivel": "En ocasiones"
-        },
-        {
-          "aspecto": "Organiza su material escolar",
-          "nivel": "En ocasiones"
-        },
-        {
-          "aspecto": "Participa activamente en clase",
+          "aspecto": "Completa las tareas asignadas de manera oportuna",
           "nivel": "Siempre"
         },
         {
-          "aspecto": "Sigue instrucciones y reglas",
+          "aspecto": "Organiza su material escolar de manera adecuada",
           "nivel": "Casi siempre"
         },
         {
-          "aspecto": "Muestra perseverancia",
+          "aspecto": "Participa activamente en las actividades de clase",
+          "nivel": "Siempre"
+        },
+        {
+          "aspecto": "Sigue las instrucciones y reglas del aula",
+          "nivel": "Siempre"
+        },
+        {
+          "aspecto": "Muestra perseverancia y se esfuerza por mejorar",
           "nivel": "Siempre"
         }
       ],
-      "conducta": "Buena — participa activamente pero requiere mejorar en la organización personal.",
+      "conducta": "Muy sólida. Cuatro de cinco áreas en \"Siempre\"; solo \"Demuestra responsabilidad en sus acciones\" quedó en \"Casi siempre\". En la evaluación en inglés salió \"Always\" en las cinco.",
       "advertencias": [
-        "Hábitos de organización marcados 'En ocasiones' — requiere supervisión para mantener su material en orden.",
-        "Completar tareas a tiempo requiere refuerzo y rutinas en casa."
+        "Los dos \"Casi siempre\" de lo emocional son expresar sus emociones y mostrar empatía: es su área más blanda, justo al revés que su hermana.",
+        "Writing (8.9) es la única por debajo de 9: produce frases correctas pero muy cortas.",
+        "Organización del material y responsabilidad en sus acciones también quedaron en \"Casi siempre\"."
       ],
       "consejos": [
-        "Crear una lista de chequeo visual para organizar su mochila antes de dormir.",
-        "Establecer horarios fijos y libres de distracciones para las tareas escolares.",
-        "Celebrar su excelente participación en clase y motivación."
+        "Con un 9.5 el riesgo no es académico sino de aburrimiento. Conviene pedirle a la escuela material de mayor complejidad, sobre todo en Reading y Ciencias, donde sacó 10.",
+        "Para Writing: pedirle que extienda: en vez de \"cold snowy\", \"In winter it is cold and snowy\". Tiene el vocabulario, le falta desarrollar la oración.",
+        "Lo emocional se trabaja nombrando emociones en casa —preguntarle cómo se sintió, no solo qué hizo—. Es lo que más se le dificulta y donde menos apoyo formal tiene: a diferencia de Roberta, Hans no lleva terapia.",
+        "El proyecto de Ciencias salió perfecto y con felicitación de la maestra. Vale la pena reconocérselo: los proyectos manuales le lucen."
       ],
-      "observaciones": "Hans es un alumno participativo y entusiasta en clase. Sus interacciones sociales son positivas. Su principal área de oportunidad es la organización personal y la entrega puntual de tareas."
+      "observaciones": "Hans SUBIÓ de 8.0 a 9.5 (+1.5), el salto más grande de los dos hermanos. Dos materias en 10 (Reading perfecto 33/33 y el proyecto de Ciencias) y ninguna por debajo de 8.9. Académicamente el trimestre es sobresaliente.\n\nEl contraste con Roberta es la lectura más útil de este informe, y va justo al revés en cada uno. Hans va arriba en lo académico y tiene sus dos puntos blandos en lo EMOCIONAL —expresar emociones y mostrar empatía, ambos en \"Casi siempre\"—. Roberta tiene los diez indicadores emocionales y de conducta en \"Siempre\" y sus puntos blandos en los HÁBITOS de trabajo. No compiten: necesitan apoyos distintos.\n\nVale la pena subrayar esto porque es fácil que el 9.5 tape lo otro. Hans no lleva terapia y su área de oportunidad es precisamente la que en Roberta se está atendiendo con terapia. No significa que la necesite, pero sí que lo emocional en él conviene trabajarlo en casa a propósito, no darlo por resuelto porque las calificaciones vengan bien.\n\nSobre los hábitos: comparte con su hermana el \"Casi siempre\" en organización del material. Ahí sí hay un patrón de casa que se puede atacar de una vez para los dos."
     },
     "historial": [
       {
