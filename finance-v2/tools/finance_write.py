@@ -37,7 +37,11 @@ RECEIPT_ITEMS_HEADERS = [
     'hormiga_override'
 ]
 
-ALLOWED_FORMAS_PAGO = {
+# Respaldo por si el worker no responde. La lista BUENA son las cuentas reales
+# de Supabase: mantener un duplicado a mano garantizaba que se desfasara, y de
+# hecho pasó — Hey Banco existía como cuenta pero no estaba aquí, así que Ivy
+# no podía registrar gastos de Hey.
+ALLOWED_FORMAS_PAGO_FALLBACK = {
     'Santander',
     'BBVA',
     'Bank of America',
@@ -150,6 +154,15 @@ def get_recibo_source_path(data):
         return recibo
     return (data.get('recibo_path') or data.get('recibo_local_path') or '').strip()
 
+def cuentas_reales():
+    """Nombres de las cuentas que existen HOY en Supabase. Si el worker no
+    responde, se cae al respaldo estático."""
+    try:
+        return {c['name'] for c in finance_api.api_get('/api/balances')['balances']}
+    except Exception:
+        return set(ALLOWED_FORMAS_PAGO_FALLBACK)
+
+
 def normalize_forma_pago(raw):
     raw = (raw or '').strip()
     if not raw:
@@ -157,15 +170,17 @@ def normalize_forma_pago(raw):
 
     normalized_key = raw.lower()
     if normalized_key in FORMA_PAGO_ALIASES:
-        return FORMA_PAGO_ALIASES[normalized_key]
+        raw = FORMA_PAGO_ALIASES[normalized_key]
 
-    for option in ALLOWED_FORMAS_PAGO:
-        if raw.lower() == option.lower():
-            return option
+    # Se resuelve contra las cuentas reales, tolerando acentos y abreviaciones
+    # ("likeu", "hey"). Devuelve el nombre canónico de la cuenta.
+    cuenta = finance_api.buscar_cuenta(raw)
+    if cuenta:
+        return cuenta['name']
 
-    allowed = ', '.join(sorted(ALLOWED_FORMAS_PAGO))
+    permitidas = ', '.join(sorted(cuentas_reales()))
     raise ValueError(
-        f"Forma de pago no permitida: '{raw}'. Usa una existente: {allowed}. "
+        f"Forma de pago no permitida: '{raw}'. Usa una existente: {permitidas}. "
         "Si necesitas una nueva, debe pedirse explícitamente."
     )
 
