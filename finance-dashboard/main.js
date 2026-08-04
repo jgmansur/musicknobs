@@ -24,7 +24,7 @@ const DEUDAS_RECIBOS_FOLDER_ID = '157KDn-vbkuHH1L8xbaJBGz-oKmT7p5a9';
 const SPREADSHEET_RSM_ID = '14VsoPHGNTSUSbzMOqGWs2qSL-pGywPgjUoHD3MqIJfo'; // Recibos Salud Mariel
 const SALDOS_SHEET_ID    = '1-cX_qxld3ioSpcO9lEBPg90Db6AyK7SczpJTvj7rw4U'; // Saldos (fuente de verdad — Claude accede vía service account)
 const RSM_FOLDER_ID = '1-ZfeWQ-Rmh-Wm2WMCkULkN6MQWBuxYnj';
-const APP_VERSION  = 'v8.6.8';
+const APP_VERSION  = 'v8.7.0';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -1676,14 +1676,17 @@ function balance_renderPanel() {
         </div>`;
     }).join('');
 
+    // Los ids de las cuentas son UUID de finance-core desde la migración, no
+    // números. Con parseInt quedaban en NaN, el find no encontraba nada y el
+    // botón no hacía absolutamente nada — sin error ni aviso.
     list.querySelectorAll('.acc-toggle-btn').forEach(btn =>
-        btn.addEventListener('click', () => balance_toggleHidden(parseInt(btn.dataset.id))));
+        btn.addEventListener('click', () => balance_toggleHidden(btn.dataset.id)));
     list.querySelectorAll('.acc-edit-btn').forEach(btn =>
-        btn.addEventListener('click', () => balance_openEdit(parseInt(btn.dataset.id))));
+        btn.addEventListener('click', () => balance_openEdit(btn.dataset.id)));
     list.querySelectorAll('.acc-del-btn').forEach(btn =>
-        btn.addEventListener('click', () => balance_deleteAccount(parseInt(btn.dataset.id))));
+        btn.addEventListener('click', () => balance_deleteAccount(btn.dataset.id)));
     list.querySelectorAll('.acc-credit-limit-btn').forEach(btn =>
-        btn.addEventListener('click', () => balance_toggleCreditLimitVisibility(parseInt(btn.dataset.id))));
+        btn.addEventListener('click', () => balance_toggleCreditLimitVisibility(btn.dataset.id)));
     list.querySelectorAll('.acc-reconcile-btn').forEach(btn =>
         // El id puede ser un UUID de finance-core, así que NO se parsea a número.
         btn.addEventListener('click', () => balance_openReconcile(btn.dataset.id)));
@@ -1948,11 +1951,26 @@ async function balance_saveAccount() {
 }
 
 async function balance_deleteAccount(id) {
-    if (!confirm('\u00bfEliminar esta cuenta?')) return;
+    const acc = balanceAccounts.find(a => a.id === id);
+    if (!acc) return;
+    if (!confirm(`\u00bfEliminar la cuenta "${acc.name}"?`)) return;
+
+    // El borrado va por su propio endpoint: el PUT no borra las cuentas que
+    // faltan del arreglo, a propósito, para que un guardado parcial no destruya
+    // cuentas. El worker rechaza borrar una con movimientos.
+    if (bandeja_token()) {
+        try {
+            await bandeja_api(`/api/accounts/${id}`, { method: 'DELETE' });
+        } catch (e) {
+            showToast(`\u26a0\ufe0f ${e.message}`);
+            return;
+        }
+    }
     balanceAccounts = balanceAccounts.filter(a => a.id !== id);
     await balance_saveAccounts();
     balance_renderPanel();
     balance_updateKpi();
+    showToast(`\ud83d\uddd1\ufe0f Cuenta eliminada: ${acc.name}`);
 }
 
 // ── Init ─────────────────────────────────────────────────
@@ -12850,33 +12868,37 @@ async function pelo_syncFixed(entry) {
     const day = parseInt(date.substring(8, 10)) || 1;
 
     // Search existing in Gastos Fijos
-    await fijos_cargarDatos();
-    const existingIdx = fijosState.allItems.findIndex(f => f.referencia === marker);
+    // La hoja tenía una columna `referencia` con un marcador; en Supabase no
+    // existe. Sin esto `existingIdx` siempre daba -1 y cada guardado creaba un
+    // fijo duplicado. Se identifica por concepto, que es estable por miembro.
+    const conceptoFijo = `Corte de Pelo: ${entry.member}`;
+    const { fijos: fijosActuales = [] } = await bandeja_api('/api/fijos').catch(() => ({ fijos: [] }));
+    const existente = fijosActuales.find(f => (f.concepto || '').trim() === conceptoFijo);
     
-    const rowData = [
-        entry.id,                                     // A: ID
-        `Corte de Pelo: ${entry.member}`,             // B: Concepto
-        entry.amount,                                 // C: Monto
-        'Pelo',                                       // D: Categoria
-        marker,                                       // E: Referencia (marker)
-        'FALSE',                                      // F: Pagado
-        '1',                                          // G: pagosMes
-        'false',                                      // H: pagosEstado
-        'Mensual',                                    // I: periodicidad
-        startOfMonth,                                 // J: inicioMes
-        entry.formaPago || 'Santander',               // K: formaPago
-        'Cuidado Personal',                           // L: budgetCategory
-        'MXN',                                        // M: Moneda
-        'false',                                      // N: waivedEstado
-        day.toString()                                // O: Dia
-    ];
+    const payload = {
+        concepto: conceptoFijo,
+        monto: Number(entry.amount) || 0,
+        tipo: 'gasto',
+        categoria: 'Pelo',
+        moneda: 'MXN',
+        pagosMes: 1,
+        periodicidad: 'Mensual',
+        inicioMes: startOfMonth,
+        pagador: entry.formaPago || 'Santander',
+        budgetCategory: 'Cuidado Personal',
+        diaMes: day,
+    };
 
     try {
-        if (existingIdx !== -1) {
-            const rowNum = fijosState.allItems[existingIdx].rowNum;
-            await sheetsUpdate(SPREADSHEET_FIXED_ID, `Hoja 1!A${rowNum}:O${rowNum}`, [rowData]);
+        // Antes se escribían las 15 columnas de la hoja por posición, y para
+        // actualizar hacía falta el rowNum. Ahora es un alta o un PATCH normal.
+        if (existente?.id) {
+            await bandeja_api(`/api/fijos/${existente.id}`, {
+                method: 'PATCH',
+                body: JSON.stringify(payload),
+            });
         } else {
-            await sheetsAppend(SPREADSHEET_FIXED_ID, 'Hoja 1!A:O', [rowData]);
+            await bandeja_api('/api/fijos', { method: 'POST', body: JSON.stringify(payload) });
         }
     } catch(e) {
         console.error('Error syncing pelo to fixed:', e);
@@ -14087,7 +14109,7 @@ async function deudas_syncPendingFixedRows({ oldConcepto, newConcepto, cuotas })
 
     const paid = Array.isArray(cuotas.paid) ? cuotas.paid : [];
     const perCuota = Number(cuotas.perCuota || 0);
-    const fixedRows = await sheetsGet(SPREADSHEET_FIXED_ID, 'Hoja 1!A2:P').catch(() => []);
+    const { fijos: fixedRows = [] } = await bandeja_api('/api/fijos').catch(() => ({ fijos: [] }));
     let updates = 0;
 
     for (let idx = 0; idx < n; idx++) {
@@ -14095,24 +14117,20 @@ async function deudas_syncPendingFixedRows({ oldConcepto, newConcepto, cuotas })
         const oldLabel = `${oldConcepto} - Cuota ${idx + 1}/${n}`;
         const newLabel = `${newConcepto} - Cuota ${idx + 1}/${n}`;
 
-        let rowNum = -1;
-        for (let i = fixedRows.length - 1; i >= 0; i--) {
-            const row = fixedRows[i] || [];
-            const concepto = (row[1] || '').toString().trim();
-            const periodicidad = (row[8] || '').toString().trim().toLowerCase();
-            if (periodicidad !== 'cuota de deuda') continue;
-            if (concepto === oldLabel || concepto === newLabel) {
-                rowNum = i + 2;
-                break;
-            }
-        }
+        // El worker devuelve objetos, no filas por posición: se busca por
+        // concepto y periodicidad en vez de por índice de columna.
+        const objetivo = fixedRows.find((f) => {
+            const concepto = (f.concepto || '').toString().trim();
+            const periodicidad = (f.periodicidad || '').toString().trim().toLowerCase();
+            return periodicidad === 'cuota de deuda'
+                && (concepto === oldLabel || concepto === newLabel);
+        });
 
-        if (rowNum === -1) continue;
-        await sheetsUpdate(
-            SPREADSHEET_FIXED_ID,
-            `Hoja 1!B${rowNum}:C${rowNum}`,
-            [[newLabel, perCuota.toFixed(2)]]
-        );
+        if (!objetivo) continue;
+        await bandeja_api(`/api/fijos/${objetivo.id}`, {
+            method: 'PATCH',
+            body: JSON.stringify({ concepto: newLabel, monto: Number(perCuota.toFixed(2)) }),
+        });
         updates += 1;
     }
 
@@ -14906,8 +14924,10 @@ function deudas_calcularSplit() {
 
 window.deudas_generarCuotas = async function() {
     const btn = document.getElementById('d-split-btn-convert');
-    const deudaId = parseInt(document.getElementById('d-split-id').value);
-    const deudaObj = deudasState.allItems.find(i => i.id === deudaId);
+    // El id es un UUID de finance-core, NO un número de fila. Con parseInt
+    // quedaba en NaN y la función se salía en silencio.
+    const deudaId = document.getElementById('d-split-id').value;
+    const deudaObj = deudasState.allItems.find(i => String(i.id) === String(deudaId));
     if (!deudaObj) return;
 
     const n = parseInt(document.getElementById('d-split-payments').value) || 1;
@@ -14929,10 +14949,27 @@ window.deudas_generarCuotas = async function() {
         // Update cuotas state in memory
         deudaObj.cuotas = cuotasData;
         
-        // Write col D to sheet
-        let sheetName = 'Deudas';
-        try { await sheetsGet(SPREADSHEET_DEUDAS_ID, 'Deudas!A1:A1'); } catch(e) { sheetName = 'Hoja 1'; }
-        await sheetsUpdate(SPREADSHEET_DEUDAS_ID, `${sheetName}!D${deudaId}`, [[colD]]);
+        // Antes esto escribía la celda D de la hoja usando el id como número
+        // de FILA, y las cuotas iban serializadas en un string
+        // ("3:734.37:1,2,0:mensual:..."). En Supabase cada campo es una columna
+        // y cada cuota una fila, así que se manda estructurado.
+        if (bandeja_token()) {
+            await bandeja_api(`/api/deudas/${deudaId}`, {
+                method: 'PATCH',
+                body: JSON.stringify({
+                    cuotasTotal: n,
+                    cuotaMonto: pagoCalc,
+                    frecuencia: frequency,
+                    fechaInicio: startDate,
+                    scope,
+                    cuotas: Array.from({ length: n }, (_, i) => ({ indice: i, estado: 'pendiente' })),
+                }),
+            });
+        } else {
+            let sheetName = 'Deudas';
+            try { await sheetsGet(SPREADSHEET_DEUDAS_ID, 'Deudas!A1:A1'); } catch(e) { sheetName = 'Hoja 1'; }
+            await sheetsUpdate(SPREADSHEET_DEUDAS_ID, `${sheetName}!D${deudaId}`, [[colD]]);
+        }
         
         showToast(`✅ ${n} cuotas generadas`);
         deudas_cerrarSplit();
@@ -14962,22 +14999,23 @@ window.deudas_toggleCuota = async function(id, idx) {
         const concepto = `${item.concepto} - Cuota ${idx + 1}/${item.cuotas.n}`;
         const monto = item.cuotas.perCuota.toFixed(2);
         try {
-            await sheetsAppend(SPREADSHEET_FIXED_ID, 'Hoja 1!A:N', [[
-                String(diaNum),          // A: fecha (day)
-                concepto,                // B: concepto
-                monto,                   // C: gasto
-                '',                      // D: ingreso
-                'Deudas',                // E: categoría
-                'FALSE',                 // F: pagado
-                '1',                     // G: pagosMes
-                'false',                 // H: pagosEstado
-                'Cuota de Deuda',         // I: periodicidad
-                '',                      // J: inicioMes
-                formaPago,               // K: formaPago
-                'Muchachas y Pago de Deudas', // L: budgetCategory
-                'MXN',                   // M: moneda
-                'false',                 // N: waived
-            ]]);
+            // Antes se appendaba una fila a la hoja de Gastos Fijos con las 14
+            // columnas en orden. Ahora es un alta normal en Supabase.
+            await bandeja_api('/api/fijos', {
+                method: 'POST',
+                body: JSON.stringify({
+                    concepto,
+                    monto: Number(monto),
+                    tipo: 'gasto',
+                    categoria: 'Deudas',
+                    moneda: 'MXN',
+                    pagosMes: 1,
+                    periodicidad: 'Cuota de Deuda',
+                    pagador: formaPago,
+                    budgetCategory: 'Muchachas y Pago de Deudas',
+                    diaMes: Number(diaNum),
+                }),
+            });
             showToast(`✅ Gasto Fijo creado: ${concepto}`);
         } catch(e) {
             console.error('Error creating Gasto Fijo:', e);
@@ -15013,14 +15051,10 @@ window.deudas_toggleCuota = async function(id, idx) {
             // Fallback prompt to delete if not found in memory (e.g. not yet synced or manually changed)
             if (confirm(`✅ Cuota ${idx + 1} pagada.\n\n¿Deseas buscar y borrar la entrada de Gasto Fijo "${cuotaConcepto}"?`)) {
                 try {
-                    const fijoRows = await sheetsGet(SPREADSHEET_FIXED_ID, 'Hoja 1!A2:N').catch(() => []);
-                    let fijoRowIdx = -1;
-                    for (let fi = 0; fi < fijoRows.length; fi++) {
-                        if ((fijoRows[fi][1] || '').trim() === cuotaConcepto) { fijoRowIdx = fi; break; }
-                    }
-                    if (fijoRowIdx >= 0) {
-                        const fixedSheetId = await getSheetId(SPREADSHEET_FIXED_ID, 'Hoja 1');
-                        await sheetsDeleteRow(SPREADSHEET_FIXED_ID, fixedSheetId, fijoRowIdx + 1);
+                    const { fijos } = await bandeja_api('/api/fijos');
+                    const objetivo = (fijos || []).find(f => (f.concepto || '').trim() === cuotaConcepto);
+                    if (objetivo) {
+                        await bandeja_api(`/api/fijos/${objetivo.id}`, { method: 'DELETE' });
                         showToast(`🗑️ Gasto Fijo "${cuotaConcepto}" eliminado`);
                         if (tabInited.fijos) tabInited.fijos = false;
                     } else {
@@ -15040,16 +15074,30 @@ window.deudas_toggleCuota = async function(id, idx) {
     // Re-render immediately
     deudas_renderLista();
     
-    // Build updated col D string
-    const colD = deudas_buildCuotasCell(item.cuotas);
-    
+    // El estado de cada cuota es una fila en debt_installments; antes iba
+    // serializado en la celda D usando el id como número de FILA, cosa que dejó
+    // de tener sentido con los UUID.
+    const ESTADOS = ['pendiente', 'programada', 'pagada'];
     try {
-        let sheetName = 'Deudas';
-        try { await sheetsGet(SPREADSHEET_DEUDAS_ID, 'Deudas!A1:A1'); } catch(e) { sheetName = 'Hoja 1'; }
-        await sheetsUpdate(SPREADSHEET_DEUDAS_ID, `${sheetName}!D${id}`, [[colD]]);
+        if (bandeja_token()) {
+            await bandeja_api(`/api/deudas/${id}`, {
+                method: 'PATCH',
+                body: JSON.stringify({
+                    cuotas: item.cuotas.paid.map((estado, i) => ({
+                        indice: i,
+                        estado: ESTADOS[estado] || 'pendiente',
+                    })),
+                }),
+            });
+        } else {
+            const colD = deudas_buildCuotasCell(item.cuotas);
+            let sheetName = 'Deudas';
+            try { await sheetsGet(SPREADSHEET_DEUDAS_ID, 'Deudas!A1:A1'); } catch(e) { sheetName = 'Hoja 1'; }
+            await sheetsUpdate(SPREADSHEET_DEUDAS_ID, `${sheetName}!D${id}`, [[colD]]);
+        }
     } catch(e) {
         console.error('Error saving cuota toggle:', e);
-        showToast('⚠️ Error al guardar cuota');
+        showToast('⚠️ Error al guardar la cuota');
     }
 };
 

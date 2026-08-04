@@ -549,6 +549,27 @@ export default {
                 return json({ ok: true, total: resultado.length, creadas });
             }
 
+            const cuentaMatch = url.pathname.match(/^\/api\/accounts\/([\w-]+)$/);
+            if (cuentaMatch && request.method === 'DELETE') {
+                // Borrar una cuenta con movimientos dejaría el historial huérfano
+                // o lo arrastraría en cascada. Se rechaza y se dice cuántos hay:
+                // esconderla (hidden) casi siempre es lo que se quiere.
+                const [{ n }] = await sql`
+                    select count(*)::int as n from transactions
+                    where account_id = ${cuentaMatch[1]}
+                `;
+                if (n > 0) {
+                    return json({
+                        error: `esa cuenta tiene ${n} movimiento(s); ocúltala en vez de borrarla`,
+                    }, 409);
+                }
+                const [borrada] = await sql`
+                    delete from accounts where id = ${cuentaMatch[1]} returning name
+                `;
+                return json(borrada ? { ok: true, name: borrada.name } : { error: 'no encontrada' },
+                            borrada ? 200 : 404);
+            }
+
             // ── Catálogos: autos, estudio y recetas ──────────────────────
             //
             // El dashboard venía de hojas, donde guardar significaba reescribir
