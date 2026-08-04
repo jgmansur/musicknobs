@@ -24,7 +24,7 @@ const DEUDAS_RECIBOS_FOLDER_ID = '157KDn-vbkuHH1L8xbaJBGz-oKmT7p5a9';
 const SPREADSHEET_RSM_ID = '14VsoPHGNTSUSbzMOqGWs2qSL-pGywPgjUoHD3MqIJfo'; // Recibos Salud Mariel
 const SALDOS_SHEET_ID    = '1-cX_qxld3ioSpcO9lEBPg90Db6AyK7SczpJTvj7rw4U'; // Saldos (fuente de verdad — Claude accede vía service account)
 const RSM_FOLDER_ID = '1-ZfeWQ-Rmh-Wm2WMCkULkN6MQWBuxYnj';
-const APP_VERSION  = 'v8.7.0';
+const APP_VERSION  = 'v8.7.1';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -1820,22 +1820,41 @@ function balance_openAdd() {
     balance_showForm();
 }
 
-async function balance_toggleHidden(id) {
+/**
+ * Aplica un cambio de cuenta de forma OPTIMISTA: repinta en el acto y guarda en
+ * segundo plano. Antes se esperaba el PUT completo antes de repintar, así que
+ * cada click se sentía lento aunque el cambio fuera de un solo bit.
+ *
+ * Si el guardado falla, se revierte y se avisa: mostrar un estado que el
+ * servidor rechazó es peor que la espera que se quiso evitar.
+ */
+function balance_cambioOptimista(id, aplicar, queCambio) {
     const acc = balanceAccounts.find(a => a.id === id);
     if (!acc) return;
-    acc.hidden = !acc.hidden;
-    await balance_saveAccounts();
+
+    const previo = { hidden: acc.hidden, creditLimitVisible: acc.creditLimitVisible };
+    aplicar(acc);
     balance_renderPanel();
     balance_updateKpi();
+
+    balance_saveAccounts().catch((e) => {
+        console.error(`No se pudo guardar ${queCambio}:`, e);
+        Object.assign(acc, previo);
+        balance_renderPanel();
+        balance_updateKpi();
+        showToast(`⚠️ No se pudo guardar ${queCambio}: ${e.message}`);
+    });
 }
 
-async function balance_toggleCreditLimitVisibility(id) {
+function balance_toggleHidden(id) {
+    balance_cambioOptimista(id, (acc) => { acc.hidden = !acc.hidden; }, 'la visibilidad');
+}
+
+function balance_toggleCreditLimitVisibility(id) {
     const acc = balanceAccounts.find(a => a.id === id);
     if (!acc || acc.type !== 'credit') return;
-    acc.creditLimitVisible = !acc.creditLimitVisible;
-    await balance_saveAccounts();
-    balance_renderPanel();
-    balance_updateKpi();
+    balance_cambioOptimista(id, (a) => { a.creditLimitVisible = !a.creditLimitVisible; },
+                            'el límite de crédito');
 }
 
 async function balance_openReconcile(id) {
