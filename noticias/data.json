@@ -1,23 +1,23 @@
 {
-  "lastUpdated": "2026-08-04T14:28:49.821Z",
+  "lastUpdated": "2026-08-05T02:56:05.870Z",
   "es": {
     "title": "Noticias Diarias: Copyright e Inteligencia Artificial",
     "subtitle": "Lo último en leyes de derechos de autor para músicos, compositores y productores.",
     "sections": [
       {
         "id": "noticia-reciente-1",
-        "title": "La Corte Suprema de los Estados Unidos considera un caso sobre derechos de autor de música generada por IA",
-        "content": "En los últimos días, la Corte Suprema de los Estados Unidos ha aceptado revisar un caso que podría tener un impacto significativo en la industria musical. El caso involucra a un productor que utilizó una herramienta de IA para generar una canción, y ahora se debate sobre quién tiene los derechos de autor de la obra. Empresas como Amper Music y AIVA están siendo mencionadas en el caso."
+        "title": "La Corte Suprema de los Estados Unidos se pronuncia sobre el caso de derechos de autor de AI",
+        "content": "En un fallo reciente, la Corte Suprema de los Estados Unidos ha decidido que las obras creadas con la ayuda de inteligencia artificial no son elegibles para la protección de derechos de autor, lo que ha generado un gran debate en la industria musical. Empresas como Amper Music y AIVA han expresado su preocupación sobre el impacto que esto podría tener en la creación de música asistida por IA."
       },
       {
         "id": "noticia-reciente-2",
-        "title": "Nueva ley de derechos de autor en la Unión Europea podría afectar a productores de música electrónica",
-        "content": "La Unión Europea ha propuesto una nueva ley de derechos de autor que podría tener implicaciones significativas para los productores de música electrónica. La ley busca actualizar las regulaciones de derechos de autor para adaptarse a la era digital y abordar cuestiones como la remuneración de los artistas y la protección de las obras generadas por IA."
+        "title": "Nueva ley de derechos de autor en la Unión Europea",
+        "content": "La Unión Europea ha aprobado una nueva ley de derechos de autor que busca clarificar la situación de las obras creadas con inteligencia artificial. La ley establece que los derechos de autor de las obras creadas con AI serán propiedad de los humanos que las crearon, lo que ha sido visto como un paso positivo para los productores y compositores que trabajan con IA."
       },
       {
         "id": "guia-practica",
-        "title": "Guía del día: Cómo registrar tus obras musicales generadas por IA",
-        "content": "Para proteger tus obras musicales generadas por IA, es importante registrarlas en la oficina de derechos de autor correspondiente. En los Estados Unidos, puedes registrar tus obras en la Oficina de Derechos de Autor de los Estados Unidos. Asegúrate de proporcionar toda la información necesaria, incluyendo el título de la obra, el nombre del autor y la fecha de creación."
+        "title": "Guía del día: Proceso de Registro",
+        "content": "Para proteger tus obras asistidas por IA, es importante registrarlas en la oficina de derechos de autor correspondiente. Asegúrate de documentar el proceso de creación de la obra, incluyendo la contribución de la IA, y de cumplir con los requisitos de registro establecidos por la ley. Es recomendable consultar con un abogado especializado en derechos de autor para asegurarte de que estás cumpliendo con todos los requisitos necesarios."
       }
     ]
   },
@@ -27,18 +27,18 @@
     "sections": [
       {
         "id": "recent-news-1",
-        "title": "US Supreme Court Considers AI-Generated Music Copyright Case",
-        "content": "In recent days, the US Supreme Court has agreed to review a case that could have a significant impact on the music industry. The case involves a producer who used an AI tool to generate a song, and now the question of who owns the copyright is being debated. Companies such as Amper Music and AIVA are being mentioned in the case."
+        "title": "US Supreme Court Rules on AI Copyright Case",
+        "content": "In a recent ruling, the US Supreme Court has decided that works created with the help of artificial intelligence are not eligible for copyright protection, sparking a heated debate in the music industry. Companies such as Amper Music and AIVA have expressed concern over the potential impact on AI-assisted music creation."
       },
       {
         "id": "recent-news-2",
-        "title": "New EU Copyright Law Could Impact Electronic Music Producers",
-        "content": "The European Union has proposed a new copyright law that could have significant implications for electronic music producers. The law aims to update copyright regulations for the digital age and address issues such as artist compensation and protection of AI-generated works."
+        "title": "New EU Copyright Law",
+        "content": "The European Union has passed a new copyright law aimed at clarifying the status of works created with artificial intelligence. The law states that the copyright of AI-created works will belong to the humans who created them, which has been seen as a positive step for producers and composers working with AI."
       },
       {
         "id": "practical-guide",
-        "title": "Today's Guide: Registering Your AI-Generated Musical Works",
-        "content": "To protect your AI-generated musical works, it's essential to register them with the relevant copyright office. In the United States, you can register your works with the US Copyright Office. Make sure to provide all necessary information, including the title of the work, the author's name, and the date of creation."
+        "title": "Today's Guide: Registration Process",
+        "content": "To protect your AI-assisted works, it's essential to register them with the relevant copyright office. Make sure to document the creation process, including the AI's contribution, and comply with the registration requirements set by law. It's recommended to consult with a copyright law specialist to ensure you're meeting all the necessary requirements."
       }
     ]
   }
