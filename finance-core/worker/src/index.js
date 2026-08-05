@@ -11,6 +11,7 @@
 import postgres from 'postgres';
 import { runIngest } from './ingest.js';
 import { aprobarPendiente, borrarMovimiento, pagarFijo } from '../../shared/movimientos.js';
+import { revisarSalud } from '../../shared/salud.js';
 
 const CORS = {
     'access-control-allow-origin': '*',
@@ -95,6 +96,10 @@ export default {
                     limit 200
                 `;
                 return json({ pending: rows });
+            }
+
+            if (url.pathname === '/api/salud' && request.method === 'GET') {
+                return json(await revisarSalud(sql));
             }
 
             if (url.pathname === '/api/balances' && request.method === 'GET') {

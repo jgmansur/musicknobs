@@ -23,6 +23,7 @@ import {
 // Las mismas operaciones que usa el Worker: aprobar y revertir tiene que hacer
 // exactamente lo mismo venga de la app o de un asistente.
 import { aprobarPendiente, borrarMovimiento } from '../../shared/movimientos.js';
+import { revisarSalud, formatearSalud } from '../../shared/salud.js';
 import { categoriaPara, aprenderReglas, normalizar } from '../../shared/categorias.js';
 import { lugarPara, sinCatalogar } from '../../shared/lugares.js';
 
@@ -85,6 +86,15 @@ async function nombresDeCuentas() {
 const server = new McpServer({ name: 'finanzas-jay', version: '1.0.0' });
 
 // ---------------------------------------------------------------- Consultas
+
+server.tool(
+    'finanzas_revision',
+    'Revisión de salud de los datos financieros: traspasos sin contraparte, cuentas de '
+    + 'débito en negativo, fijos cuyo cobro real ya no coincide con el monto guardado y '
+    + 'cuentas propias sin ligar. Correrla al empezar a trabajar con finanzas.',
+    {},
+    async () => texto(formatearSalud(await revisarSalud(sql))),
+);
 
 server.tool(
     'finanzas_saldos',
