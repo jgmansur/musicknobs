@@ -11,6 +11,20 @@
  */
 
 /**
+ * Primer día del mes de una fecha, como 'YYYY-MM-01'.
+ *
+ * Se arma con los componentes locales a propósito. Usar toISOString() aquí es
+ * una trampa: convierte a UTC, y en México (UTC-6) cualquier hora local de las
+ * 18:00 en adelante rueda al día siguiente. Eso metía pagos con period
+ * '2026-07-02' mientras la app consultaba '2026-07-01', así que el pago quedaba
+ * invisible y el fijo reaparecía pendiente.
+ */
+export function primerDiaDelMes(fecha) {
+    const d = fecha instanceof Date ? fecha : new Date(fecha);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-01`;
+}
+
+/**
  * Convierte un pendiente de la bandeja en movimiento real.
  *
  * Todo ocurre en una transacción: o queda el movimiento y el pendiente marcado
@@ -60,13 +74,11 @@ export async function aprobarPendiente(sql, id, overrides = {}) {
         // es justo el palomeo manual que se quería eliminar.
         const fixedId = overrides.fixedExpenseId ?? p.suggested_fixed_expense_id;
         if (fixedId) {
-            const period = new Date(p.occurred_at);
-            period.setDate(1);
             await tx`
                 insert into fixed_expense_payments (
                     fixed_expense_id, period, part_index, paid, paid_at, transaction_id
                 ) values (
-                    ${fixedId}, ${period.toISOString().slice(0, 10)},
+                    ${fixedId}, ${primerDiaDelMes(p.occurred_at)},
                     ${overrides.partIndex ?? 0}, true, now(), ${trx.id}
                 )
                 on conflict (fixed_expense_id, period, part_index)
@@ -203,8 +215,7 @@ export async function pagarFijo(sql, fixedId, opts = {}) {
         }
 
         const when = opts.occurredAt ? new Date(opts.occurredAt) : new Date();
-        const period = new Date(when.getFullYear(), when.getMonth(), 1);
-        const periodStr = period.toISOString().slice(0, 10);
+        const periodStr = primerDiaDelMes(when);
 
         const [already] = await tx`
             select paid, waived from fixed_expense_payments

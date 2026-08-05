@@ -164,18 +164,43 @@ export function classify(parsed, {
         const when = parsed.occurredAt ?? new Date();
         const day = when.getDate();
 
-        fixedMatch = fixedExpenses.find((f) => {
-            // Un fijo en 0 está desactivado; si se dejara pasar, la tolerancia
-            // mínima de $1 lo emparejaría con cualquier gasto de un peso.
-            if (!(Number(f.monto) > 0)) return false;
+        const enFecha = (f) => !f.fechas_pago?.length
+            || f.fechas_pago.some((d) => Math.abs(d - day) <= DAY_WINDOW);
 
-            const perPart = Number(f.monto) / (f.pagos_mes || 1);
-            const near =
-                Math.abs(perPart - parsed.amount) <= Math.max(1, perPart * AMOUNT_TOLERANCE);
-            if (!near) return false;
-            if (!f.fechas_pago?.length) return true;
-            return f.fechas_pago.some((d) => Math.abs(d - day) <= DAY_WINDOW);
+        // 1) Por NOMBRE. Es la vía fuerte: el concepto del fijo ("Starlink")
+        //    aparece dentro del comercio del aviso ("D LOCAL*STARLINK CIUDAD DE
+        //    MEXICO"), y eso no cambia aunque suba el precio.
+        //
+        //    Hacía falta porque el emparejamiento era SOLO por monto con 2% de
+        //    tolerancia: cuando Starlink pasó de $1,305 a $1,405 (+7.7%) dejó de
+        //    coincidir, y desde julio sus cargos se aprobaban como gasto suelto
+        //    en vez de marcar el fijo. Cada aumento de precio rompía su propio
+        //    fijo en silencio.
+        const textoAviso = sinAcentos(`${parsed.merchant ?? ''} ${parsed.description ?? ''}`);
+        fixedMatch = fixedExpenses.find((f) => {
+            if (!(Number(f.monto) > 0)) return false;
+            const concepto = sinAcentos(f.concepto);
+            // Se pide el concepto completo y de 4+ caracteres: con menos, un
+            // fijo llamado "Gas" haría match dentro de "GASOLINERA".
+            if (concepto.length < 4 || !textoAviso.includes(concepto)) return false;
+            return enFecha(f);
         }) ?? null;
+
+        // 2) Por MONTO, como antes, para los fijos cuyo nombre no aparece en el
+        //    aviso (el banco suele mandar la razón social, no el concepto).
+        if (!fixedMatch) {
+            fixedMatch = fixedExpenses.find((f) => {
+                // Un fijo en 0 está desactivado; si se dejara pasar, la tolerancia
+                // mínima de $1 lo emparejaría con cualquier gasto de un peso.
+                if (!(Number(f.monto) > 0)) return false;
+
+                const perPart = Number(f.monto) / (f.pagos_mes || 1);
+                const near =
+                    Math.abs(perPart - parsed.amount) <= Math.max(1, perPart * AMOUNT_TOLERANCE);
+                if (!near) return false;
+                return enFecha(f);
+            }) ?? null;
+        }
 
         if (fixedMatch) confidence = Math.min(0.95, confidence + 0.05);
     }

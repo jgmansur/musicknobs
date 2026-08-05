@@ -24,7 +24,7 @@ const DEUDAS_RECIBOS_FOLDER_ID = '157KDn-vbkuHH1L8xbaJBGz-oKmT7p5a9';
 const SPREADSHEET_RSM_ID = '14VsoPHGNTSUSbzMOqGWs2qSL-pGywPgjUoHD3MqIJfo'; // Recibos Salud Mariel
 const SALDOS_SHEET_ID    = '1-cX_qxld3ioSpcO9lEBPg90Db6AyK7SczpJTvj7rw4U'; // Saldos (fuente de verdad — Claude accede vía service account)
 const RSM_FOLDER_ID = '1-ZfeWQ-Rmh-Wm2WMCkULkN6MQWBuxYnj';
-const APP_VERSION  = 'v8.9.2';
+const APP_VERSION  = 'v8.9.3';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -3308,6 +3308,12 @@ function fixed_paintPartButtons(id, partIndex, { paid, waived, single }) {
 
 window.fixed_partPointerDown = function(id, partIndex, source) {
     if (fixedPressState.timer) clearTimeout(fixedPressState.timer);
+    // Se limpia cualquier suppressKey que haya quedado colgando de una
+    // interacción anterior. El confirm() del waive es modal y a veces se come
+    // el evento `click` que venía después, así que la marca se quedaba puesta y
+    // el SIGUIENTE click sobre esa misma parte se descartaba en silencio: por
+    // eso había que hacerlo dos veces para que respondiera.
+    fixedPressState.suppressKey = null;
     const key = `${source}:${id}:${partIndex}`;
     fixedPressState.timer = setTimeout(async () => {
         fixedPressState.suppressKey = key;
