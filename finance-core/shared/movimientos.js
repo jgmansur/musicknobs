@@ -70,6 +70,42 @@ export async function aprobarPendiente(sql, id, overrides = {}) {
         `;
         if (!trx) return { error: 'ese correo ya había generado un movimiento' };
 
+        // Un traspaso entre cuentas propias tiene DOS patas: sale de una y entra
+        // en la otra. Aquí solo se creaba la de salida, así que la cuenta
+        // destino nunca veía el dinero. Hey Banco acumuló 65 movimientos, todos
+        // cargos y ni un abono, y aparecía en negativo aunque Jay la fondeara
+        // cada mes desde Santander.
+        //
+        // Revertir SÍ borraba las dos filas ligadas por transfer_group_id; la
+        // asimetría estaba en aprobar.
+        if (kind === 'transfer' && p.payee_id) {
+            const [payee] = await tx`
+                select account_id, nombre from payees
+                 where id = ${p.payee_id} and tipo = 'cuenta_propia'
+            `;
+            // Solo si la cuenta destino existe de verdad: sin account_id no hay
+            // dónde abonar, y es preferible dejarlo cojo y visible que inventar.
+            if (payee?.account_id && payee.account_id !== accountId) {
+                const [{ grupo }] = await tx`select gen_random_uuid() as grupo`;
+                await tx`
+                    update transactions set transfer_group_id = ${grupo} where id = ${trx.id}
+                `;
+                await tx`
+                    insert into transactions (
+                        occurred_at, account_id, amount, kind, merchant, description,
+                        source, source_ref, transfer_group_id
+                    ) values (
+                        ${p.occurred_at}, ${payee.account_id}, ${magnitude}, 'transfer',
+                        ${overrides.merchant ?? p.merchant ?? 'Traspaso'},
+                        'Traspaso recibido',
+                        'email', ${`${p.gmail_message_id}:destino`}, ${grupo}
+                    )
+                    on conflict (source, source_ref) where source_ref is not null
+                    do nothing
+                `;
+            }
+        }
+
         // Si el movimiento salda una parte de un gasto fijo, se marca aquí mismo:
         // es justo el palomeo manual que se quería eliminar.
         const fixedId = overrides.fixedExpenseId ?? p.suggested_fixed_expense_id;
