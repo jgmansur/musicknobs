@@ -102,6 +102,22 @@ export default {
                 return json(await revisarSalud(sql));
             }
 
+            // Categorías ya en uso. Existe para que el editor de la bandeja
+            // ofrezca las que Jay YA usa en vez de dejarlo teclear a ciegas:
+            // inventar "Comida" cuando ya existe "Alimentos" parte el histórico
+            // en dos y ningún reporte vuelve a cuadrar.
+            if (url.pathname === '/api/categorias' && request.method === 'GET') {
+                const rows = await sql`
+                    select category, count(*)::int as n
+                    from transactions
+                    where category is not null and category <> ''
+                      and occurred_at >= (current_date - interval '12 months')
+                    group by category
+                    order by n desc
+                `;
+                return json({ categorias: rows.map((r) => r.category) });
+            }
+
             if (url.pathname === '/api/balances' && request.method === 'GET') {
                 // Se devuelven TODOS los campos que el dashboard necesita para
                 // pintar sus tarjetas, no solo el saldo: así puede dejar de leer

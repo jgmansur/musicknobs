@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { debeAutoMarcar } from './ingest.js';
+import { debeAutoMarcar, debeAutoAprobar } from './ingest.js';
 
 /**
  * Contexto de por qué existe este archivo.
@@ -111,4 +111,82 @@ test('NO auto-marca un monto ausente (los SPEI de Hey llegan sin cifra)', () => 
 test('NO auto-marca si el fijo viene en cero o sin monto', () => {
     assert.equal(debeAutoMarcar({ ...base, fijo: { ...fijoCanva, monto: '0' }, amount: 0 }), false);
     assert.equal(debeAutoMarcar({ ...base, fijo: { ...fijoCanva, monto: null } }), false);
+});
+
+/* ═══════════════════════════════════════════════════════════════════════
+   GRUPO VERDE — gastos corrientes que no necesitan criterio humano
+
+   Calibrado contra el histórico real de Jay, no de escritorio. De los
+   pendientes ya resueltos:
+
+     gasto + confianza >= 0.90 + cuenta resuelta →  150 aprobados, 0 rechazados
+     transfer  confianza 0.95                    →    0 aprobados, 1 rechazado
+     ingreso   confianza 0.40                    →    0 aprobados, 38 rechazados
+
+   Por eso el grupo verde son SOLO gastos. Los ingresos de Hey llegan sin
+   monto y los traspasos se confunden con gastos: ahí sí hace falta Jay.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/** Un Oxxo cualquiera: cuenta conocida, monto claro, nada raro. */
+const gastoCorriente = {
+    status: 'pending',
+    kind: 'gasto',
+    accountId: 'a-santander',
+    fixedExpenseId: null,
+    confidence: 0.9,
+    amount: -159,
+    duplicado: null,
+};
+
+test('verde: auto-aprueba un gasto corriente con cuenta y confianza altas', () => {
+    assert.equal(debeAutoAprobar(gastoCorriente), true);
+});
+
+test('verde: no exige categoría — el dinero es cierto aunque falte clasificar', () => {
+    // 91 de los 150 gastos aprobados entraron sin categoría. Registrar el
+    // movimiento es lo urgente; categorizar tiene su propio flujo aparte.
+    assert.equal(debeAutoAprobar({ ...gastoCorriente, category: null }), true);
+});
+
+test('verde: NO toca ingresos ni traspasos', () => {
+    assert.equal(debeAutoAprobar({ ...gastoCorriente, kind: 'ingreso' }), false);
+    assert.equal(debeAutoAprobar({ ...gastoCorriente, kind: 'transfer' }), false);
+});
+
+test('verde: NO auto-aprueba con confianza por debajo de 0.90', () => {
+    assert.equal(debeAutoAprobar({ ...gastoCorriente, confidence: 0.85 }), false);
+    assert.equal(debeAutoAprobar({ ...gastoCorriente, confidence: 0.7 }), false);
+});
+
+/**
+ * Acabamos de arreglar un doble conteo. Auto-aprobar algo ya marcado como
+ * posible duplicado sería reabrir esa herida por otra puerta.
+ */
+test('verde: NO auto-aprueba lo que huele a duplicado', () => {
+    assert.equal(debeAutoAprobar({ ...gastoCorriente, duplicado: 'trx-previa' }), false);
+});
+
+test('verde: NO auto-aprueba sin cuenta ni sin monto', () => {
+    assert.equal(debeAutoAprobar({ ...gastoCorriente, accountId: null }), false);
+    assert.equal(debeAutoAprobar({ ...gastoCorriente, amount: null }), false);
+    assert.equal(debeAutoAprobar({ ...gastoCorriente, amount: 0 }), false);
+});
+
+test('verde: NO auto-aprueba lo que ya no está pendiente', () => {
+    assert.equal(debeAutoAprobar({ ...gastoCorriente, status: 'rejected' }), false);
+});
+
+/**
+ * El cruce entre los dos caminos, y el que protege el límite que puso Jay.
+ *
+ * Si el cargo empareja con un gasto fijo, quien manda es `debeAutoMarcar`. Y
+ * ese dice que NO cuando el monto cambió — Starlink subiendo de $1,305 a
+ * $1,405 tiene que verse en la bandeja.
+ *
+ * Sin esta regla, el grupo verde lo aprobaría por la puerta de atrás: es un
+ * gasto, con cuenta, con confianza alta y sin sospecha de duplicado. El
+ * aumento de precio pasaría en silencio, que es justo lo que no queremos.
+ */
+test('verde: NO auto-aprueba un cargo que pertenece a un gasto fijo', () => {
+    assert.equal(debeAutoAprobar({ ...gastoCorriente, fixedExpenseId: 'f-starlink' }), false);
 });

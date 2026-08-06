@@ -86,6 +86,49 @@ export function debeAutoMarcar({
 
 
 /**
+ * ¿Este gasto corriente puede registrarse solo, sin pasar por la bandeja?
+ *
+ * Es el "grupo verde": un Oxxo, una gasolina, un Uber Eats en una cuenta que ya
+ * conocemos. Nada que Jay pueda decidir mejor que el parser — revisarlos uno por
+ * uno es un peaje que no aporta información.
+ *
+ * El umbral NO es de escritorio, sale del histórico real. De los pendientes ya
+ * resueltos:
+ *
+ *   gasto + confianza >= 0.90 + cuenta resuelta →  150 aprobados,  0 rechazados
+ *   transfer, confianza 0.95                    →    0 aprobados,  1 rechazado
+ *   ingreso,  confianza 0.40                    →    0 aprobados, 38 rechazados
+ *
+ * Por eso solo entran GASTOS. Los ingresos de Hey llegan sin monto y los
+ * traspasos entre cuentas propias se ven idénticos a un gasto: ahí Jay aporta
+ * algo que el parser no tiene.
+ *
+ * No se exige categoría: 91 de esos 150 entraron sin ella. Registrar el
+ * movimiento es lo urgente para que el saldo cuadre; clasificar es otro eje, con
+ * sus propias reglas y su propio flujo.
+ *
+ * Nada de esto es irreversible: el movimiento queda normal, visible y editable
+ * en Gastos, y `finanzas_revertir_movimiento` lo deshace por completo.
+ */
+export function debeAutoAprobar({
+    status, kind, accountId, fixedExpenseId, confidence, amount, duplicado,
+}) {
+    if (status !== 'pending') return false;
+    if (kind !== 'gasto') return false;
+    if (!accountId) return false;
+    if (duplicado) return false;
+    if (!(Number(confidence) >= AUTO_CONFIDENCE)) return false;
+
+    // Si el cargo pertenece a un gasto fijo, manda `debeAutoMarcar` — y ese dice
+    // que NO cuando el monto cambió. Sin esta guarda, el grupo verde aprobaría
+    // por la puerta de atrás justo el aumento de precio que Jay pidió ver.
+    if (fixedExpenseId) return false;
+
+    const monto = Math.abs(Number(amount));
+    return Number.isFinite(monto) && monto > 0;
+}
+
+/**
  * Busca un movimiento ya registrado que se parezca a este.
  *
  * Existe porque Jay a veces captura un pago a mano y después llega el correo del
@@ -388,7 +431,7 @@ export async function runIngest({
     `;
 
     const stats = { seen: 0, created: 0, skipped: 0, unmatched: 0, duplicados: 0,
-                    articulos: 0, articulosLigados: 0, autoMarcados: 0 };
+                    articulos: 0, articulosLigados: 0, autoMarcados: 0, autoAprobados: 0 };
 
     try {
         const [cards, fixed, accounts] = await Promise.all([
@@ -509,11 +552,20 @@ export async function runIngest({
                 // se pagó, que era lo que empujaba a marcarlo a mano y terminaba
                 // duplicando el gasto en otra cuenta.
                 const fijo = fixed.find((f) => f.id === s.fixedExpenseId) ?? null;
-                if (debeAutoMarcar({ ...s, amount: parsed.amount, fijo, duplicado })) {
+                const contexto = { ...s, amount: parsed.amount, fijo, duplicado };
+
+                if (debeAutoMarcar(contexto)) {
                     const r = await aprobarPendiente(sql, inserted[0].id);
                     if (r?.ok) stats.autoMarcados += 1;
                     // Si falla, el pendiente se queda en la bandeja: es
                     // exactamente el comportamiento de antes, no una pérdida.
+
+                // Grupo verde: gasto corriente en cuenta conocida. Se registra
+                // solo para que la bandeja deje de ser una lista de tareas y
+                // quede como lo que debe ser — un buzón de excepciones.
+                } else if (debeAutoAprobar(contexto)) {
+                    const r = await aprobarPendiente(sql, inserted[0].id);
+                    if (r?.ok) stats.autoAprobados += 1;
                 }
             } else stats.skipped += 1;
         }
