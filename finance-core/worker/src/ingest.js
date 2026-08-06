@@ -129,6 +129,54 @@ export function debeAutoAprobar({
 }
 
 /**
+ * Elige el gasto fijo cuyo monto se parece más a este cargo.
+ *
+ * Antes esto era un `.find()` que devolvía el PRIMERO dentro de la tolerancia, y
+ * la consulta de fijos no tiene ORDER BY: quién ganaba dependía del orden en que
+ * Postgres devolviera las filas. Un cargo de Telcel por $703.27 se emparejó con
+ * "Protools" ($700) habiendo un "Telcel Jay" por exactamente $703.27. Y Protools
+ * estaba marcado como saltado ese mes, así que aprobarlo lo habría revivido.
+ *
+ * Dos reglas, en este orden:
+ *
+ * 1. Una coincidencia EXACTA gana aunque su día de pago quede lejos. Un importe
+ *    al centavo y nada redondo ($703.27) es evidencia más fuerte que la cercanía
+ *    de fechas: un cobro se adelanta o se retrasa, pero que dos importes cuadren
+ *    exacto rara vez es casualidad.
+ * 2. Sin coincidencia exacta, se respeta la ventana de días y gana el monto más
+ *    cercano — nunca el primero de la lista.
+ */
+export function elegirFijoPorMonto(fijos, monto, dia) {
+    const importe = Math.abs(Number(monto));
+    if (!Number.isFinite(importe) || importe === 0) return null;
+
+    const enFecha = (f) => !f.fechas_pago?.length
+        || f.fechas_pago.some((d) => Math.abs(d - dia) <= DAY_WINDOW);
+
+    const candidatos = [];
+    for (const f of fijos) {
+        // Un fijo en 0 está desactivado; sin esta guarda, la tolerancia mínima
+        // de $1 lo emparejaría con cualquier gasto de un peso.
+        const porParte = Number(f.monto) / (f.pagos_mes || 1);
+        if (!(porParte > 0)) continue;
+
+        const distancia = Math.abs(porParte - importe);
+        const exacto = distancia <= AUTO_CENTAVOS;
+        if (!exacto && distancia > Math.max(1, porParte * AMOUNT_TOLERANCE)) continue;
+        if (!exacto && !enFecha(f)) continue;
+
+        candidatos.push({ f, distancia, exacto, enFecha: enFecha(f) });
+    }
+    if (!candidatos.length) return null;
+
+    candidatos.sort((a, b) =>
+        (b.exacto - a.exacto)          // primero los exactos
+        || (a.distancia - b.distancia) // luego el más cercano
+        || (b.enFecha - a.enFecha));   // y a igualdad, el que cae en fecha
+    return candidatos[0].f;
+}
+
+/**
  * Busca un movimiento ya registrado que se parezca a este.
  *
  * Existe porque Jay a veces captura un pago a mano y después llega el correo del
@@ -344,20 +392,11 @@ export function classify(parsed, {
             return enFecha(f);
         }) ?? null;
 
-        // 2) Por MONTO, como antes, para los fijos cuyo nombre no aparece en el
-        //    aviso (el banco suele mandar la razón social, no el concepto).
+        // 2) Por MONTO, para los fijos cuyo nombre no aparece en el aviso (el
+        //    banco suele mandar la razón social, no el concepto: "Telcel Jay"
+        //    nunca va a estar dentro de un aviso que solo dice "Telcel").
         if (!fixedMatch) {
-            fixedMatch = fixedExpenses.find((f) => {
-                // Un fijo en 0 está desactivado; si se dejara pasar, la tolerancia
-                // mínima de $1 lo emparejaría con cualquier gasto de un peso.
-                if (!(Number(f.monto) > 0)) return false;
-
-                const perPart = Number(f.monto) / (f.pagos_mes || 1);
-                const near =
-                    Math.abs(perPart - parsed.amount) <= Math.max(1, perPart * AMOUNT_TOLERANCE);
-                if (!near) return false;
-                return enFecha(f);
-            }) ?? null;
+            fixedMatch = elegirFijoPorMonto(fixedExpenses, parsed.amount, day);
         }
 
         if (fixedMatch) confidence = Math.min(0.95, confidence + 0.05);

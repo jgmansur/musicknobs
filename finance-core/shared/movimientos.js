@@ -13,6 +13,24 @@
 import { reglaDesdeCorreccion } from './categorias.js';
 
 /**
+ * Qué gasto fijo salda este movimiento al aprobarlo.
+ *
+ * Existe para distinguir "no opiné" de "opiné que ninguno". Antes esto era
+ * `overrides.fixedExpenseId ?? p.suggested_fixed_expense_id`, y ese `??` hacía
+ * imposible QUITAR el fijo: elegir "ninguno" mandaba `null`, y `null` volvía a
+ * caer en el que sugirió el parser — justo el equivocado que se estaba
+ * corrigiendo.
+ *
+ * La presencia de la clave es la señal, no su valor.
+ */
+export function fijoParaAprobar(overrides, pendiente) {
+    if (Object.hasOwn(overrides ?? {}, 'fixedExpenseId')) {
+        return overrides.fixedExpenseId || null;
+    }
+    return pendiente?.suggested_fixed_expense_id ?? null;
+}
+
+/**
  * Primer día del mes de una fecha, como 'YYYY-MM-01'.
  *
  * Se arma con los componentes locales a propósito. Usar toISOString() aquí es
@@ -54,6 +72,10 @@ export async function aprobarPendiente(sql, id, overrides = {}) {
         const magnitude = Math.abs(Number(monto));
         const amount = kind === 'ingreso' ? magnitude : -magnitude;
 
+        // Se resuelve una sola vez: el movimiento y la marca del fijo tienen que
+        // apuntar al MISMO gasto fijo, sí o sí.
+        const fixedId = fijoParaAprobar(overrides, p);
+
         const [trx] = await tx`
             insert into transactions (
                 occurred_at, account_id, amount, kind, merchant, description,
@@ -64,7 +86,7 @@ export async function aprobarPendiente(sql, id, overrides = {}) {
                 ${overrides.description ?? p.counterparty ?? p.raw_subject},
                 ${overrides.category ?? p.suggested_category},
                 'email', ${p.gmail_message_id},
-                ${overrides.fixedExpenseId ?? p.suggested_fixed_expense_id}
+                ${fixedId}
             )
             on conflict (source, source_ref) where source_ref is not null
             do nothing
@@ -110,7 +132,6 @@ export async function aprobarPendiente(sql, id, overrides = {}) {
 
         // Si el movimiento salda una parte de un gasto fijo, se marca aquí mismo:
         // es justo el palomeo manual que se quería eliminar.
-        const fixedId = overrides.fixedExpenseId ?? p.suggested_fixed_expense_id;
         if (fixedId) {
             await tx`
                 insert into fixed_expense_payments (
