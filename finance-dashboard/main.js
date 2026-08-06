@@ -1,3 +1,13 @@
+// ── Lógica compartida con finance-core ──────────────────────────────────────
+// Los archivos de ./shared/ los GENERA `node finance-core/scripts/sync_shared.mjs`
+// desde `finance-core/shared/`. No los edites aquí: la prueba
+// `worker/src/shared-sync.test.js` falla si esta copia se separa del original.
+//
+// Se copian, y no se importan de ../finance-core, porque Vercel despliega esta
+// carpeta como raíz y nada de afuera viaja al build.
+import { esIdDeWorker } from './shared/ids.js';
+import { PERIODICIDADES, normalizarPeriodicidad, tocaEsteMes } from './shared/periodicidad.js';
+
 import { createIcons, RefreshCw, AlertTriangle, CalendarCheck, TrendingUp, LogOut, CreditCard, CarFront, Wrench, Home, Scissors } from 'lucide';
 import ApexCharts from 'apexcharts';
 import { initializeApp } from 'firebase/app';
@@ -24,7 +34,7 @@ const DEUDAS_RECIBOS_FOLDER_ID = '157KDn-vbkuHH1L8xbaJBGz-oKmT7p5a9';
 const SPREADSHEET_RSM_ID = '14VsoPHGNTSUSbzMOqGWs2qSL-pGywPgjUoHD3MqIJfo'; // Recibos Salud Mariel
 const SALDOS_SHEET_ID    = '1-cX_qxld3ioSpcO9lEBPg90Db6AyK7SczpJTvj7rw4U'; // Saldos (fuente de verdad — Claude accede vía service account)
 const RSM_FOLDER_ID = '1-ZfeWQ-Rmh-Wm2WMCkULkN6MQWBuxYnj';
-const APP_VERSION  = 'v8.9.8';
+const APP_VERSION  = 'v8.9.9';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -4199,27 +4209,7 @@ function _renderChartWithMode(data, mode) {
 // =============================================
 const gastosState = { allRows: [], offset: 0, search: '', detailRow: null, editRow: null, logSheetId: null };
 
-/** UUID v4 canónico: lo que genera `gen_random_uuid()` en Postgres. */
-const RE_UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
-/**
- * ¿Este id es de finance-core (UUID) o de la hoja vieja (número de fila)?
- *
- * La decisión sale del id MISMO y no de un estado paralelo. Antes se preguntaba
- * por `gastosState.detailRow?.id`, pero `gastos_cerrarModal()` lo ponía en null
- * justo antes de guardar: el id seguía bien en el formulario, la variable
- * consultada no. Todo caía en la rama de Sheets y armaba `Hoja 1!B<uuid>:I<uuid>`,
- * que la API rechaza con "Unable to parse range".
- *
- * Se exige el formato completo, no "que traiga un guion": `2026-08-06` también
- * lo trae y no es un UUID.
- *
- * Duplicado a propósito en `finance-core/shared/ids.js` — Vercel despliega esta
- * carpeta como raíz y no puede importar de allá. Si tocas una, toca la otra.
- */
-function esIdDeWorker(id) {
-    return RE_UUID.test(String(id ?? '').trim());
-}
+// `esIdDeWorker` vive en ./shared/ids.js, generado desde finance-core.
 
 function gastos_bindEvents() {
     document.getElementById('g-btn-save').addEventListener('click', gastos_guardar);
@@ -13800,25 +13790,9 @@ function parseDayOfMonth(val) {
 }
 
 /**
- * Cada cuántos meses toca pagar. `null` = no sigue el calendario.
- *
- * Se declara en tabla y no con ifs encadenados: agregar "trimestral" mañana es
- * una línea aquí y una opción en el <select>.
- *
- * OJO: esto está DUPLICADO a propósito en `finance-core/shared/periodicidad.js`.
- * Vercel despliega `finance-dashboard/` como raíz, así que un import a
- * `../finance-core/` quedaría fuera del paquete y rompería el build. Si tocas
- * una copia, toca la otra.
+ * Etiquetas para mostrar. Se quedan aquí y NO en el módulo compartido: son
+ * decisión de interfaz, y el backend no las necesita.
  */
-const PERIODICIDADES = {
-    mensual: 1,
-    bimestral: 2,
-    trimestral: 3,
-    semestral: 6,
-    anual: 12,
-    'Cuota de Deuda': null,
-};
-
 const ETIQUETA_PERIODICIDAD = {
     mensual: 'Mensual',
     bimestral: 'Bimestral',
@@ -13828,15 +13802,16 @@ const ETIQUETA_PERIODICIDAD = {
     'Cuota de Deuda': 'Cuota de Deuda',
 };
 
-/**
- * Cae en 'mensual' ante lo desconocido a propósito: mostrar de más un fijo es
- * molesto, pero esconderlo hace que no se pague. El error debe doler del lado
- * seguro.
- */
-function parseFixedPeriodicity(val) {
-    const raw = (val || '').toString().trim().toLowerCase();
-    if (raw === 'cuota de deuda') return 'Cuota de Deuda';
-    return Object.hasOwn(PERIODICIDADES, raw) ? raw : 'mensual';
+// Los nombres de siempre, apoyados en la lógica compartida. Se conservan porque
+// los usan decenas de llamadas en este archivo; lo que dejó de existir es una
+// SEGUNDA implementación que podía divergir del backend.
+//
+// Van como `function` y no como `const` a propósito: así siguen izadas, igual
+// que antes. Un `const` aquí las dejaría en zona muerta para cualquier llamada
+// que ocurriera durante la carga del módulo.
+function parseFixedPeriodicity(val) { return normalizarPeriodicidad(val); }
+function isFixedDueThisMonth(periodicidad, mesInicio, mesActual) {
+    return tocaEsteMes(periodicidad, mesInicio, mesActual);
 }
 
 function parseStartMonth(val, fallback = null) {
@@ -13844,28 +13819,6 @@ function parseStartMonth(val, fallback = null) {
     if (/^\d{4}-\d{2}$/.test(raw)) return raw;
     const ref = fallback || `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`;
     return ref;
-}
-
-function monthDiff(fromYm, toYm) {
-    const [fy, fm] = fromYm.split('-').map(Number);
-    const [ty, tm] = toYm.split('-').map(Number);
-    return (ty - fy) * 12 + (tm - fm);
-}
-
-function isFixedDueThisMonth(periodicity, startMonth, nowMonth) {
-    const p = parseFixedPeriodicity(periodicity);
-    const diff = monthDiff(startMonth, nowMonth);
-
-    // Una cuota de deuda no sigue el calendario: se paga hasta liquidarla.
-    if (p === 'Cuota de Deuda') return !Number.isFinite(diff) || diff >= 0;
-
-    const cada = PERIODICIDADES[p];
-    if (cada === 1) return true;
-    // Sin mes de inicio no hay ciclo que contar: mejor mostrarlo y que Jay lo
-    // salte, a esconderlo y que se le pase el pago.
-    if (!Number.isFinite(diff)) return true;
-    if (diff < 0) return false;
-    return diff % cada === 0;
 }
 
 function parseFixedPayer(val) {
