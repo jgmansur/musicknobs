@@ -34,7 +34,7 @@ const DEUDAS_RECIBOS_FOLDER_ID = '157KDn-vbkuHH1L8xbaJBGz-oKmT7p5a9';
 const SPREADSHEET_RSM_ID = '14VsoPHGNTSUSbzMOqGWs2qSL-pGywPgjUoHD3MqIJfo'; // Recibos Salud Mariel
 const SALDOS_SHEET_ID    = '1-cX_qxld3ioSpcO9lEBPg90Db6AyK7SczpJTvj7rw4U'; // Saldos (fuente de verdad — Claude accede vía service account)
 const RSM_FOLDER_ID = '1-ZfeWQ-Rmh-Wm2WMCkULkN6MQWBuxYnj';
-const APP_VERSION  = 'v8.9.9';
+const APP_VERSION  = 'v8.10.0';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -15793,6 +15793,7 @@ let bandejaPendientes = [];
 /** Cuentas y categorías para el editor de la bandeja. Se cargan una vez. */
 let bandejaCuentas = [];
 let bandejaCategorias = [];
+let bandejaFijos = [];
 let bandejaFiltro = 'nuevos';
 
 const bandeja_token = () => localStorage.getItem(BANDEJA_TOKEN_KEY) || '';
@@ -15834,13 +15835,17 @@ function bandeja_cargarVista() {
 async function bandeja_cargarCatalogos() {
     if (bandejaCuentas.length) return;
     try {
-        const [bal, cat] = await Promise.all([
+        const [bal, cat, fij] = await Promise.all([
             bandeja_api('/api/balances'),
             bandeja_api('/api/categorias').catch(() => ({ categorias: [] })),
+            bandeja_api('/api/fijos').catch(() => ({ fijos: [] })),
         ]);
         bandejaCuentas = (bal.balances || []).filter(c => !c.hidden)
             .map(c => ({ id: c.id, name: c.name }));
         bandejaCategorias = cat.categorias || [];
+        bandejaFijos = (fij.fijos || [])
+            .map(f => ({ id: f.id, concepto: f.concepto }))
+            .sort((a, b) => a.concepto.localeCompare(b.concepto, 'es'));
         const dl = document.getElementById('bandeja-categorias');
         if (dl) dl.innerHTML = bandejaCategorias.map(c => `<option value="${c}">`).join('');
     } catch {
@@ -15989,6 +15994,14 @@ function bandeja_editorHTML(p, monto) {
         `<option value="${t}" ${t === p.suggested_kind ? 'selected' : ''}>${t}</option>`,
     ).join('');
 
+    // El emparejamiento con un gasto fijo es lo que más se equivoca: el banco
+    // manda "Telcel" y hay varios fijos por montos parecidos. Sin poder
+    // corregirlo aquí, la única salida era aprobar mal o descartar el gasto.
+    const fijos = bandejaFijos.map(f =>
+        `<option value="${f.id}" ${f.concepto === p.suggested_fixed ? 'selected' : ''}>`
+        + `${f.concepto}</option>`,
+    ).join('');
+
     return `
       <div class="bandeja-editor" id="editor-${p.id}" hidden>
         <div class="bandeja-editor-grid">
@@ -16013,6 +16026,12 @@ function bandeja_editorHTML(p, monto) {
           <label>Categoría
             <input type="text" class="field-input" id="ed-categoria-${p.id}"
                    list="bandeja-categorias" placeholder="Sin categoría">
+          </label>
+          <label>Gasto fijo
+            <select class="field-input" id="ed-fijo-${p.id}">
+              <option value="">— ninguno —</option>
+              ${fijos}
+            </select>
           </label>
         </div>
         <p class="bandeja-editor-nota">
@@ -16054,6 +16073,14 @@ function bandeja_overridesDelEditor(p) {
 
     const categoria = val('categoria');
     if (categoria) overrides.category = categoria;
+
+    // El fijo se manda SIEMPRE que el editor esté abierto, incluso vacío: dejar
+    // el movimiento sin fijo es una decisión tan válida como cambiarlo, y con
+    // `??` en el backend un null se confundiría con "no dije nada" y volvería a
+    // caer en el fijo equivocado que sugirió el parser.
+    const fijoElegido = bandejaFijos.find(f => f.concepto === p.suggested_fixed);
+    const fijo = val('fijo');
+    if (fijo !== (fijoElegido?.id ?? '')) overrides.fixedExpenseId = fijo || null;
 
     return overrides;
 }
