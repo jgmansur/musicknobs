@@ -24,7 +24,7 @@ const DEUDAS_RECIBOS_FOLDER_ID = '157KDn-vbkuHH1L8xbaJBGz-oKmT7p5a9';
 const SPREADSHEET_RSM_ID = '14VsoPHGNTSUSbzMOqGWs2qSL-pGywPgjUoHD3MqIJfo'; // Recibos Salud Mariel
 const SALDOS_SHEET_ID    = '1-cX_qxld3ioSpcO9lEBPg90Db6AyK7SczpJTvj7rw4U'; // Saldos (fuente de verdad — Claude accede vía service account)
 const RSM_FOLDER_ID = '1-ZfeWQ-Rmh-Wm2WMCkULkN6MQWBuxYnj';
-const APP_VERSION  = 'v8.9.6';
+const APP_VERSION  = 'v8.9.7';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -5011,7 +5011,7 @@ function fijos_renderCard(item, fmt) {
           <div class="mc-left">
             <span class="mc-fecha">${item.fecha}</span>
             <span class="mc-lugar">${item.concepto}</span>
-            <span class="mc-concepto">${item.categoria} · ${item.periodicidad === 'bimestral' ? 'Bimestral' : 'Mensual'} · ${item.pagador === 'esposa' ? 'Paga esposa' : 'Pago propio'}${item.pagosMes > 1 ? ` · ${item.pagosHechos}/${item.pagosMes} pagos · ${sign}${fmt.format(montoParcial)} c/u` : ''}${currencyHint}</span>
+            <span class="mc-concepto">${item.categoria} · ${ETIQUETA_PERIODICIDAD[parseFixedPeriodicity(item.periodicidad)]} · ${item.pagador === 'esposa' ? 'Paga esposa' : 'Pago propio'}${item.pagosMes > 1 ? ` · ${item.pagosHechos}/${item.pagosMes} pagos · ${sign}${fmt.format(montoParcial)} c/u` : ''}${currencyHint}</span>
             ${linkGroupUi}
           </div>
           <div class="mc-right" style="align-items:flex-end;gap:.5rem">
@@ -5459,11 +5459,16 @@ function fijos_abrirSheet(item) {
     sheet.classList.remove('hidden');
 }
 
+/**
+ * El mes de inicio se pide para TODA periodicidad que no sea mensual, no solo
+ * para bimestral: sin él no hay desde dónde contar el ciclo, y un semestral o
+ * un anual sin ancla acabarían mostrándose todos los meses.
+ */
 function fijos_togglePeriodicityFields() {
-    const periodicidad = document.getElementById('f-periodicidad').value;
+    const periodicidad = parseFixedPeriodicity(document.getElementById('f-periodicidad').value);
     const wrap = document.getElementById('f-inicio-mes-wrap');
     if (!wrap) return;
-    wrap.classList.toggle('hidden', periodicidad !== 'bimestral');
+    wrap.classList.toggle('hidden', PERIODICIDADES[periodicidad] === 1);
 }
 
 function fijos_cerrarSheet() { document.getElementById('f-sheet').classList.add('hidden'); }
@@ -13757,10 +13762,44 @@ function parseDayOfMonth(val) {
     return Math.min(31, Math.max(1, day || 1));
 }
 
+/**
+ * Cada cuántos meses toca pagar. `null` = no sigue el calendario.
+ *
+ * Se declara en tabla y no con ifs encadenados: agregar "trimestral" mañana es
+ * una línea aquí y una opción en el <select>.
+ *
+ * OJO: esto está DUPLICADO a propósito en `finance-core/shared/periodicidad.js`.
+ * Vercel despliega `finance-dashboard/` como raíz, así que un import a
+ * `../finance-core/` quedaría fuera del paquete y rompería el build. Si tocas
+ * una copia, toca la otra.
+ */
+const PERIODICIDADES = {
+    mensual: 1,
+    bimestral: 2,
+    trimestral: 3,
+    semestral: 6,
+    anual: 12,
+    'Cuota de Deuda': null,
+};
+
+const ETIQUETA_PERIODICIDAD = {
+    mensual: 'Mensual',
+    bimestral: 'Bimestral',
+    trimestral: 'Trimestral',
+    semestral: 'Semestral',
+    anual: 'Anual',
+    'Cuota de Deuda': 'Cuota de Deuda',
+};
+
+/**
+ * Cae en 'mensual' ante lo desconocido a propósito: mostrar de más un fijo es
+ * molesto, pero esconderlo hace que no se pague. El error debe doler del lado
+ * seguro.
+ */
 function parseFixedPeriodicity(val) {
     const raw = (val || '').toString().trim().toLowerCase();
     if (raw === 'cuota de deuda') return 'Cuota de Deuda';
-    return raw === 'bimestral' ? 'bimestral' : 'mensual';
+    return Object.hasOwn(PERIODICIDADES, raw) ? raw : 'mensual';
 }
 
 function parseStartMonth(val, fallback = null) {
@@ -13777,13 +13816,19 @@ function monthDiff(fromYm, toYm) {
 }
 
 function isFixedDueThisMonth(periodicity, startMonth, nowMonth) {
+    const p = parseFixedPeriodicity(periodicity);
     const diff = monthDiff(startMonth, nowMonth);
-    if (periodicity === 'Cuota de Deuda') {
-        return diff >= 0;
-    }
-    if (periodicity !== 'bimestral') return true;
+
+    // Una cuota de deuda no sigue el calendario: se paga hasta liquidarla.
+    if (p === 'Cuota de Deuda') return !Number.isFinite(diff) || diff >= 0;
+
+    const cada = PERIODICIDADES[p];
+    if (cada === 1) return true;
+    // Sin mes de inicio no hay ciclo que contar: mejor mostrarlo y que Jay lo
+    // salte, a esconderlo y que se le pase el pago.
+    if (!Number.isFinite(diff)) return true;
     if (diff < 0) return false;
-    return diff % 2 === 0;
+    return diff % cada === 0;
 }
 
 function parseFixedPayer(val) {

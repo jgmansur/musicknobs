@@ -26,6 +26,7 @@ import { aprobarPendiente, borrarMovimiento } from '../../shared/movimientos.js'
 import { revisarSalud, formatearSalud } from '../../shared/salud.js';
 import { categoriaPara, aprenderReglas, normalizar } from '../../shared/categorias.js';
 import { lugarPara, sinCatalogar } from '../../shared/lugares.js';
+import { tocaEsteMes } from '../../shared/periodicidad.js';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ENV = join(HERE, '..', '..', '.env');
@@ -389,8 +390,9 @@ server.tool(
     { mes: z.string().regex(/^\d{4}-\d{2}$/).optional() },
     async ({ mes }) => {
         const periodo = (mes ?? new Date().toISOString().slice(0, 7)) + '-01';
-        const rows = await sql`
+        const todos = await sql`
             select f.id, f.concepto, f.monto, f.pagos_mes, f.forma_pago, f.fechas_pago,
+                   f.periodicidad, f.inicio_mes,
                    coalesce(count(p.id) filter (where p.paid or p.waived), 0) as pagadas
             from fixed_expenses f
             left join fixed_expense_payments p
@@ -400,6 +402,14 @@ server.tool(
             having coalesce(count(p.id) filter (where p.paid or p.waived), 0) < f.pagos_mes
             order by f.monto desc
         `;
+
+        // Un fijo que no toca este mes NO está pendiente. Esto se ignoraba por
+        // completo: la lista devolvía todos los activos, así que Luz Casa
+        // Galería (bimestral desde 2026-03) inflaba agosto con $3,000 que no
+        // tocaban. Con semestrales y anuales el error sería mucho peor.
+        const rows = todos.filter(
+            (f) => tocaEsteMes(f.periodicidad, f.inicio_mes, periodo.slice(0, 7)),
+        );
         if (!rows.length) return texto(`Todos los fijos de ${periodo.slice(0, 7)} están cubiertos.`);
 
         const total = rows.reduce(
