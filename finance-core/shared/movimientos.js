@@ -76,6 +76,24 @@ export async function aprobarPendiente(sql, id, overrides = {}) {
         // apuntar al MISMO gasto fijo, sí o sí.
         const fixedId = fijoParaAprobar(overrides, p);
 
+        // Si se corrigió el fijo, la categoría lo sigue.
+        //
+        // `suggested_category` se calculó en la ingesta a partir del fijo que el
+        // parser creyó. Al corregirlo a mano, esa categoría queda huérfana del
+        // fijo nuevo: un cargo de Telcel movido de "Protools" a "Telcel Jay"
+        // conservaba "Suscripción" cuando el fijo dice "Trabajo". El movimiento
+        // quedaba bien contado y mal clasificado, que es peor que evidente —
+        // no se nota hasta que un reporte por categoría sale torcido.
+        //
+        // Una categoría escrita a mano SIEMPRE gana: si Jay la tecleó, sabe algo
+        // que el catálogo no.
+        let categoriaDelFijo = null;
+        if (fixedId && fixedId !== p.suggested_fixed_expense_id && !overrides.category) {
+            const [f] = await tx`select categoria from fixed_expenses where id = ${fixedId}`;
+            categoriaDelFijo = f?.categoria ?? null;
+        }
+        const categoria = overrides.category ?? categoriaDelFijo ?? p.suggested_category;
+
         const [trx] = await tx`
             insert into transactions (
                 occurred_at, account_id, amount, kind, merchant, description,
@@ -84,7 +102,7 @@ export async function aprobarPendiente(sql, id, overrides = {}) {
                 ${p.occurred_at}, ${accountId}, ${amount}, ${kind},
                 ${overrides.merchant ?? p.merchant},
                 ${overrides.description ?? p.counterparty ?? p.raw_subject},
-                ${overrides.category ?? p.suggested_category},
+                ${categoria},
                 'email', ${p.gmail_message_id},
                 ${fixedId}
             )
