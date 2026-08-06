@@ -2161,6 +2161,29 @@ select.field-input { background-image: url("data:image/svg+xml,%3Csvg xmlns='htt
   .tab.tiene-pendientes:not(.active) .bandeja-badge { animation: none; }
 }
 
+/* Editor de un pendiente antes de aprobarlo. Nace plegado: la mayoría de los
+   movimientos están bien detectados y el formulario solo estorbaría. */
+.bandeja-editor {
+  margin: .75rem 0 .25rem;
+  padding: .85rem;
+  border: 1px solid var(--glass-border);
+  border-radius: .6rem;
+  background: rgba(255,255,255,.04);
+}
+.bandeja-editor-grid {
+  display: grid; gap: .7rem;
+  grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr));
+}
+.bandeja-editor-grid label {
+  display: flex; flex-direction: column; gap: .25rem;
+  font-size: .68rem; color: var(--text-soft);
+  text-transform: uppercase; letter-spacing: .04em;
+}
+.bandeja-editor-grid .field-input { font-size: .85rem; padding: .45rem .6rem; }
+.bandeja-editor-nota {
+  margin: .7rem 0 0; font-size: .72rem; color: var(--text-muted);
+}
+
 .bandeja-resumen { display: flex; align-items: center; gap: 1.5rem; padding: 1rem 1.25rem; }
 .bandeja-stat { display: flex; flex-direction: column; }
 .bandeja-stat-num { font-size: 1.6rem; font-weight: 700; color: var(--text-main); line-height: 1; }

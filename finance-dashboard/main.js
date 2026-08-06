@@ -24,7 +24,7 @@ const DEUDAS_RECIBOS_FOLDER_ID = '157KDn-vbkuHH1L8xbaJBGz-oKmT7p5a9';
 const SPREADSHEET_RSM_ID = '14VsoPHGNTSUSbzMOqGWs2qSL-pGywPgjUoHD3MqIJfo'; // Recibos Salud Mariel
 const SALDOS_SHEET_ID    = '1-cX_qxld3ioSpcO9lEBPg90Db6AyK7SczpJTvj7rw4U'; // Saldos (fuente de verdad — Claude accede vía service account)
 const RSM_FOLDER_ID = '1-ZfeWQ-Rmh-Wm2WMCkULkN6MQWBuxYnj';
-const APP_VERSION  = 'v8.9.4';
+const APP_VERSION  = 'v8.9.5';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -15755,6 +15755,9 @@ const BANDEJA_API = 'https://finance-core.musicknobs.workers.dev';
 const BANDEJA_TOKEN_KEY = 'finance_core_token_v1';
 
 let bandejaPendientes = [];
+/** Cuentas y categorías para el editor de la bandeja. Se cargan una vez. */
+let bandejaCuentas = [];
+let bandejaCategorias = [];
 let bandejaFiltro = 'nuevos';
 
 const bandeja_token = () => localStorage.getItem(BANDEJA_TOKEN_KEY) || '';
@@ -15787,10 +15790,34 @@ function bandeja_cargarVista() {
     bandeja_cargarPendientes();
 }
 
+/**
+ * Cuentas y categorías que alimentan el editor.
+ *
+ * Se piden una sola vez y no bloquean: si fallan, el editor sigue abriéndose
+ * con los campos de texto libres. Vale más un editor incompleto que ninguno.
+ */
+async function bandeja_cargarCatalogos() {
+    if (bandejaCuentas.length) return;
+    try {
+        const [bal, cat] = await Promise.all([
+            bandeja_api('/api/balances'),
+            bandeja_api('/api/categorias').catch(() => ({ categorias: [] })),
+        ]);
+        bandejaCuentas = (bal.balances || []).filter(c => !c.hidden)
+            .map(c => ({ id: c.id, name: c.name }));
+        bandejaCategorias = cat.categorias || [];
+        const dl = document.getElementById('bandeja-categorias');
+        if (dl) dl.innerHTML = bandejaCategorias.map(c => `<option value="${c}">`).join('');
+    } catch {
+        /* el editor funciona igual, solo sin listas sugeridas */
+    }
+}
+
 async function bandeja_cargarPendientes() {
     const lista = document.getElementById('bandeja-lista');
     lista.innerHTML = '<div class="bandeja-vacio">Cargando…</div>';
     try {
+        await bandeja_cargarCatalogos();
         const { pending } = await bandeja_api('/api/pending');
         bandejaPendientes = pending || [];
         bandeja_render();
@@ -15897,25 +15924,120 @@ function bandeja_render() {
               </div>
               ${campoMonto}
             </div>
+            ${bandeja_editorHTML(p, monto)}
             <div class="bandeja-acciones">
               <button class="btn-primary bandeja-aprobar" data-id="${p.id}">Aprobar</button>
+              <button class="btn-secondary bandeja-editar" data-id="${p.id}">Editar</button>
               <button class="btn-secondary bandeja-rechazar" data-id="${p.id}">Descartar</button>
             </div>
           </div>`;
     }).join('');
 }
 
+/**
+ * Formulario para corregir un movimiento ANTES de aprobarlo.
+ *
+ * El backend siempre aceptó correcciones (`aprobarPendiente` recibe overrides
+ * de cuenta, monto, tipo, comercio, concepto y categoría), pero la app solo
+ * mandaba el monto, y únicamente cuando venía vacío. Así que si el parser se
+ * equivocaba de cuenta o de tipo, las dos únicas salidas eran aprobar algo mal
+ * y corregirlo después en Gastos, o descartarlo y perder el movimiento.
+ *
+ * Nace plegado: la mayoría de los pendientes están bien y no hay que estorbar.
+ */
+function bandeja_editorHTML(p, monto) {
+    const cuentas = bandejaCuentas.map(c =>
+        `<option value="${c.id}" ${c.name === p.suggested_account ? 'selected' : ''}>${c.name}</option>`,
+    ).join('');
+
+    const tipos = ['gasto', 'ingreso', 'transfer'].map(t =>
+        `<option value="${t}" ${t === p.suggested_kind ? 'selected' : ''}>${t}</option>`,
+    ).join('');
+
+    return `
+      <div class="bandeja-editor" id="editor-${p.id}" hidden>
+        <div class="bandeja-editor-grid">
+          <label>Cuenta
+            <select class="field-input" id="ed-cuenta-${p.id}">${cuentas}</select>
+          </label>
+          <label>Tipo
+            <select class="field-input" id="ed-tipo-${p.id}">${tipos}</select>
+          </label>
+          <label>Monto
+            <input type="number" step="0.01" class="field-input" id="ed-monto-${p.id}"
+                   value="${monto == null ? '' : monto}" placeholder="0.00">
+          </label>
+          <label>Comercio
+            <input type="text" class="field-input" id="ed-comercio-${p.id}"
+                   value="${(p.merchant || '').replace(/"/g, '&quot;')}">
+          </label>
+          <label>Concepto
+            <input type="text" class="field-input" id="ed-concepto-${p.id}"
+                   value="${(p.counterparty || '').replace(/"/g, '&quot;')}">
+          </label>
+          <label>Categoría
+            <input type="text" class="field-input" id="ed-categoria-${p.id}"
+                   list="bandeja-categorias" placeholder="Sin categoría">
+          </label>
+        </div>
+        <p class="bandeja-editor-nota">
+          Se guarda al aprobar. Lo que no toques se queda como está.
+        </p>
+      </div>`;
+}
+
+/**
+ * Lee el editor y arma solo los campos que Jay REALMENTE cambió.
+ *
+ * Mandar el formulario completo sobrescribiría con lo que el parser adivinó
+ * campos que quizá estaban bien; enviando solo lo modificado, el backend
+ * conserva su propia sugerencia en todo lo demás.
+ */
+function bandeja_overridesDelEditor(p) {
+    const editor = document.getElementById(`editor-${p.id}`);
+    if (!editor || editor.hidden) return {};
+
+    const val = (campo) => document.getElementById(`ed-${campo}-${p.id}`)?.value?.trim() ?? '';
+    const overrides = {};
+
+    const cuenta = val('cuenta');
+    const cuentaActual = bandejaCuentas.find(c => c.name === p.suggested_account);
+    if (cuenta && cuenta !== cuentaActual?.id) overrides.accountId = cuenta;
+
+    const tipo = val('tipo');
+    if (tipo && tipo !== p.suggested_kind) overrides.kind = tipo;
+
+    const monto = Number(val('monto'));
+    const montoActual = p.amount == null ? null : Math.abs(Number(p.amount));
+    if (Number.isFinite(monto) && monto > 0 && monto !== montoActual) overrides.amount = monto;
+
+    const comercio = val('comercio');
+    if (comercio && comercio !== (p.merchant || '')) overrides.merchant = comercio;
+
+    const concepto = val('concepto');
+    if (concepto && concepto !== (p.counterparty || '')) overrides.description = concepto;
+
+    const categoria = val('categoria');
+    if (categoria) overrides.category = categoria;
+
+    return overrides;
+}
+
 async function bandeja_aprobar(id, boton) {
     const item = bandejaPendientes.find(p => p.id === id);
     const input = document.getElementById(`monto-${id}`);
 
-    if (item && item.amount == null) {
+    // Lo que Jay haya corregido en el editor manda sobre lo que adivinó el
+    // parser. Si no lo abrió, esto viene vacío y todo sigue igual que antes.
+    const overrides = item ? bandeja_overridesDelEditor(item) : {};
+
+    if (item && item.amount == null && overrides.amount == null) {
         const tecleado = Number(input?.value);
         if (!Number.isFinite(tecleado) || tecleado <= 0) {
             input?.focus();
             return bandeja_aviso('Ese movimiento no traía monto: tecléalo para aprobarlo.');
         }
-        var overrides = { amount: tecleado };
+        overrides.amount = tecleado;
     }
 
     boton.disabled = true;
@@ -15936,7 +16058,34 @@ async function bandeja_aprobar(id, boton) {
     }
 }
 
+/**
+ * Descartar NO es "lo veo luego": el pendiente queda en `rejected` y nunca se
+ * convierte en movimiento. Ese gasto deja de existir para la app — no suma al
+ * mes, no baja el saldo, no aparece en ningún reporte.
+ *
+ * Y desde aquí no hay vuelta atrás: no existe endpoint para des-rechazar.
+ *
+ * Iba sin ninguna confirmación, a un clic de distancia del botón de aprobar.
+ * Descartar por error un cargo real es la forma más silenciosa de descuadrar
+ * las finanzas: no deja rastro que revisar después.
+ */
 async function bandeja_rechazar(id, boton) {
+    const p = bandejaPendientes.find(x => x.id === id);
+    const qué = p?.merchant || p?.counterparty || 'este movimiento';
+    const cuánto = p?.amount == null
+        ? ''
+        : ` de $${Math.abs(Number(p.amount)).toLocaleString('es-MX', { minimumFractionDigits: 2 })}`;
+
+    const ok = confirm(
+        `¿Descartar ${qué}${cuánto}?\n\n`
+        + 'No se va a registrar como movimiento: no contará en tus gastos del mes '
+        + 'ni afectará el saldo, y no se puede deshacer desde la app.\n\n'
+        + 'Descarta solo si NO es un movimiento real (publicidad, aviso duplicado, '
+        + 'un cargo que el banco revirtió). Si es real pero está mal detectado, '
+        + 'usa Editar y apruébalo corregido.',
+    );
+    if (!ok) return;
+
     boton.disabled = true;
     try {
         await bandeja_api(`/api/pending/${id}/reject`, { method: 'POST' });
@@ -15993,6 +16142,14 @@ document.addEventListener('DOMContentLoaded', () => {
         if (aprobar) return bandeja_aprobar(aprobar.dataset.id, aprobar);
         const rechazar = e.target.closest('.bandeja-rechazar');
         if (rechazar) return bandeja_rechazar(rechazar.dataset.id, rechazar);
+
+        const editar = e.target.closest('.bandeja-editar');
+        if (editar) {
+            const editor = document.getElementById(`editor-${editar.dataset.id}`);
+            if (!editor) return;
+            editor.hidden = !editor.hidden;
+            editar.textContent = editor.hidden ? 'Editar' : 'Cerrar';
+        }
     });
 });
 
