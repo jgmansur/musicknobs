@@ -1,9 +1,14 @@
 /**
  * Ingesta: lee alertas del banco en Gmail y las deja en `pending_transactions`.
  *
- * Nunca escribe en `transactions`. Todo movimiento requiere que Jay lo apruebe;
- * lo único que hace este módulo es proponer cuenta, tipo y posible gasto fijo,
- * con un nivel de confianza.
+ * Por regla general propone y no decide: deja cuenta, tipo y posible gasto fijo
+ * con un nivel de confianza, y Jay aprueba desde la bandeja.
+ *
+ * La ÚNICA excepción es un cargo que cuadra exacto con un gasto fijo ya
+ * emparejado (ver `debeAutoMarcar`): ese se aprueba solo y marca el fijo pagado.
+ * No es una comodidad, es una corrección: dejarlo en la bandeja hacía que el
+ * fijo se viera pendiente aunque ya estuviera pagado, y palomearlo a mano creaba
+ * un segundo movimiento en otra cuenta. Ver el historial de Canva en mayo/junio.
  *
  * Es idempotente por partida doble: la query de Gmail se acota al último correo
  * ya visto, y `gmail_message_id` es único en la tabla.
@@ -14,12 +19,70 @@ import { parseOxxoTicket, TICKET_SENDERS } from './tickets.js';
 import { getAccessToken, listMessageIds, getMessage } from './gmail.js';
 import { categoriaPara } from '../../shared/categorias.js';
 import { lugarPara } from '../../shared/lugares.js';
+import { aprobarPendiente } from '../../shared/movimientos.js';
 
 const DEFAULT_LOOKBACK_DAYS = 7;
 
 /** Tolerancia al comparar el monto de un movimiento contra un gasto fijo. */
 const AMOUNT_TOLERANCE = 0.02;
 const DAY_WINDOW = 3;
+
+/**
+ * Confianza mínima para marcar un fijo sin preguntar.
+ *
+ * 0.9 es lo que da un aviso con cuenta resuelta y comercio legible. Por debajo
+ * de eso hay algo sin resolver y la bandeja es el lugar correcto.
+ */
+const AUTO_CONFIDENCE = 0.9;
+
+/**
+ * Cuánto puede diferir el cargo del monto del fijo para seguir considerándose
+ * "el mismo".
+ *
+ * Es medio centavo, no un centavo: solo absorbe el ruido de coma flotante que
+ * deja dividir un fijo en partes ($2,550 / 4). Una diferencia de un centavo REAL
+ * ya es otro precio y tiene que pasar por la bandeja — "exacto" quiere decir
+ * exacto, que es justo lo que evita que un aumento se cuele sin que Jay lo vea.
+ */
+const AUTO_CENTAVOS = 0.005;
+
+/**
+ * ¿Este cargo puede marcar su gasto fijo solo, sin pasar por la bandeja?
+ *
+ * Existe porque la bandeja obligatoria CAUSABA un bug de contabilidad, no solo
+ * fricción. El cargo real entraba a la bandeja, el fijo seguía viéndose
+ * pendiente, Jay le picaba al botón de marcarlo pagado, y ese botón creaba un
+ * movimiento propio en la cuenta por defecto mientras el cargo real ya estaba
+ * registrado en la cuenta verdadera. Canva se contó dos veces en mayo y junio,
+ * $149 cada vez, en Santander y en Hey Banco.
+ *
+ * Quitando el paso manual desaparece la clase entera de duplicados.
+ *
+ * Se exige que TODO cuadre: fijo emparejado, confianza alta, cuenta resuelta,
+ * sin sospecha de duplicado y monto idéntico al del fijo. Si el monto DIFIERE,
+ * no se auto-marca a propósito: un aumento de precio (Starlink, $1,305 → $1,405)
+ * es una decisión de Jay, y tiene que verlo en la bandeja para decidir si
+ * actualiza el fijo. Ese fue el límite que pidió explícitamente.
+ */
+export function debeAutoMarcar({
+    status, kind, accountId, fixedExpenseId, confidence, amount, fijo, duplicado,
+}) {
+    if (status !== 'pending') return false;
+    if (kind !== 'gasto') return false;
+    if (!accountId || !fixedExpenseId || !fijo) return false;
+    if (duplicado) return false;
+    if (!(Number(confidence) >= AUTO_CONFIDENCE)) return false;
+
+    const monto = Math.abs(Number(amount));
+    if (!Number.isFinite(monto) || monto === 0) return false;
+
+    // El fijo puede pagarse en partes (Muchachas: $2,550 en 4). El cargo real
+    // corresponde a UNA parte, no al total del mes.
+    const porParte = Number(fijo.monto) / (fijo.pagos_mes || 1);
+    if (!(porParte > 0)) return false;
+
+    return Math.abs(porParte - monto) <= AUTO_CENTAVOS;
+}
 
 
 /**
@@ -325,7 +388,7 @@ export async function runIngest({
     `;
 
     const stats = { seen: 0, created: 0, skipped: 0, unmatched: 0, duplicados: 0,
-                    articulos: 0, articulosLigados: 0 };
+                    articulos: 0, articulosLigados: 0, autoMarcados: 0 };
 
     try {
         const [cards, fixed, accounts] = await Promise.all([
@@ -435,6 +498,22 @@ export async function runIngest({
                         update category_rules set veces_aplicada = veces_aplicada + 1
                         where id = ${s.reglaId}
                     `;
+                }
+
+                // Un cargo que cuadra exacto con su gasto fijo no necesita que
+                // Jay lo palomee: se aprueba solo y marca el fijo pagado. El
+                // movimiento queda normal y editable, así que si algo salió mal
+                // se corrige encima como cualquier otro.
+                //
+                // Esto es lo que impide que el fijo se vea "pendiente" cuando ya
+                // se pagó, que era lo que empujaba a marcarlo a mano y terminaba
+                // duplicando el gasto en otra cuenta.
+                const fijo = fixed.find((f) => f.id === s.fixedExpenseId) ?? null;
+                if (debeAutoMarcar({ ...s, amount: parsed.amount, fijo, duplicado })) {
+                    const r = await aprobarPendiente(sql, inserted[0].id);
+                    if (r?.ok) stats.autoMarcados += 1;
+                    // Si falla, el pendiente se queda en la bandeja: es
+                    // exactamente el comportamiento de antes, no una pérdida.
                 }
             } else stats.skipped += 1;
         }
