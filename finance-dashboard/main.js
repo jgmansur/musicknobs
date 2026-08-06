@@ -24,7 +24,7 @@ const DEUDAS_RECIBOS_FOLDER_ID = '157KDn-vbkuHH1L8xbaJBGz-oKmT7p5a9';
 const SPREADSHEET_RSM_ID = '14VsoPHGNTSUSbzMOqGWs2qSL-pGywPgjUoHD3MqIJfo'; // Recibos Salud Mariel
 const SALDOS_SHEET_ID    = '1-cX_qxld3ioSpcO9lEBPg90Db6AyK7SczpJTvj7rw4U'; // Saldos (fuente de verdad — Claude accede vía service account)
 const RSM_FOLDER_ID = '1-ZfeWQ-Rmh-Wm2WMCkULkN6MQWBuxYnj';
-const APP_VERSION  = 'v8.9.5';
+const APP_VERSION  = 'v8.9.6';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -16043,12 +16043,22 @@ async function bandeja_aprobar(id, boton) {
     boton.disabled = true;
     boton.textContent = 'Aprobando…';
     try {
-        await bandeja_api(`/api/pending/${id}/approve`, {
+        const r = await bandeja_api(`/api/pending/${id}/approve`, {
             method: 'POST',
             body: JSON.stringify(overrides || {}),
         });
         bandejaPendientes = bandejaPendientes.filter(p => p.id !== id);
         bandeja_render();
+
+        // El aprendizaje se avisa. Una regla que se crea en silencio no se
+        // puede auditar ni corregir, y Jay tiene que saber qué acaba de
+        // enseñarle a la app — sobre todo si se equivocó al escribirla.
+        if (r?.reglaAprendida) {
+            bandeja_aviso(
+                `Aprendido: "${r.reglaAprendida.patron}" → ${r.reglaAprendida.categoria}. `
+                + 'Se aplicará solo de aquí en adelante.',
+            );
+        }
         // El saldo cambió si el movimiento es posterior al ancla.
         if (!item?.historico) refreshCurrentTab?.();
     } catch (err) {
@@ -16118,8 +16128,18 @@ document.addEventListener('DOMContentLoaded', () => {
         e.target.disabled = true;
         e.target.textContent = 'Buscando…';
         try {
-            await bandeja_api('/api/ingest', { method: 'POST' });
+            const r = await bandeja_api('/api/ingest', { method: 'POST' });
             await bandeja_cargarPendientes();
+
+            // Lo que la app hizo sola tiene que ser visible. Si registra gastos
+            // y aprende reglas sin decirlo, Jay no tiene forma de detectar que
+            // se equivocó hasta que el mes ya salió mal.
+            const hechos = [
+                r?.autoAprobados ? `${r.autoAprobados} gasto(s) registrados solos` : '',
+                r?.autoMarcados ? `${r.autoMarcados} fijo(s) marcados` : '',
+                r?.reglasAprendidas ? `${r.reglasAprendidas} regla(s) aprendidas` : '',
+            ].filter(Boolean);
+            if (hechos.length) bandeja_aviso(hechos.join(' · '));
         } catch (err) {
             bandeja_aviso(err.message);
         } finally {
