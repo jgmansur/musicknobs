@@ -12,6 +12,9 @@
   --text-muted: #64748b;
   --text-soft: #94a3b8;
   --accent-orange: #f97316;
+  /* Amarillo de atención. Ya se usaba suelto en los avisos de escolaridad;
+     ahora tiene nombre porque la pestaña Bandeja también lo necesita. */
+  --accent-yellow: #fbbf24;
   --accent-blue: #3b82f6;
   --accent-green: #22c55e;
   --font-family: 'Inter', sans-serif;
@@ -2129,6 +2132,33 @@ select.field-input { background-image: url("data:image/svg+xml,%3Csvg xmlns='htt
   min-width: 1.15rem; padding: 0 .3rem; margin-left: .35rem;
   border-radius: 999px; background: var(--accent-orange); color: #0b1120;
   font-size: .68rem; font-weight: 700; line-height: 1.15rem; text-align: center;
+}
+
+/* La pestaña ENTERA en amarillo cuando hay algo esperando aprobación.
+   El badge con el número solo no alcanzaba: es un chip chico y se pasaba por
+   alto días enteros. Esto sí se ve de reojo desde cualquier otra pestaña.
+
+   `:not(.active)` a propósito: si Jay ya está parado en la bandeja, no hace
+   falta llamarle la atención — ahí manda el color de pestaña activa. */
+.tab.tiene-pendientes:not(.active) {
+  color: var(--accent-yellow);
+}
+.tab.tiene-pendientes:not(.active) .tab-label { font-weight: 700; }
+.tab.tiene-pendientes:not(.active) .bandeja-badge {
+  background: var(--accent-yellow);
+  animation: bandeja-latido 2.4s ease-in-out infinite;
+}
+
+/* Un latido lento, no un parpadeo: llama la atención sin volverse molesto
+   cuando la app se queda abierta. */
+@keyframes bandeja-latido {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(251, 191, 36, .55); }
+  50%      { box-shadow: 0 0 0 .28rem rgba(251, 191, 36, 0); }
+}
+
+/* Quien prefiere no ver movimiento igual recibe el aviso: queda el color. */
+@media (prefers-reduced-motion: reduce) {
+  .tab.tiene-pendientes:not(.active) .bandeja-badge { animation: none; }
 }
 
 .bandeja-resumen { display: flex; align-items: center; gap: 1.5rem; padding: 1rem 1.25rem; }

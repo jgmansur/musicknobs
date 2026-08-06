@@ -24,7 +24,7 @@ const DEUDAS_RECIBOS_FOLDER_ID = '157KDn-vbkuHH1L8xbaJBGz-oKmT7p5a9';
 const SPREADSHEET_RSM_ID = '14VsoPHGNTSUSbzMOqGWs2qSL-pGywPgjUoHD3MqIJfo'; // Recibos Salud Mariel
 const SALDOS_SHEET_ID    = '1-cX_qxld3ioSpcO9lEBPg90Db6AyK7SczpJTvj7rw4U'; // Saldos (fuente de verdad — Claude accede vía service account)
 const RSM_FOLDER_ID = '1-ZfeWQ-Rmh-Wm2WMCkULkN6MQWBuxYnj';
-const APP_VERSION  = 'v8.9.3';
+const APP_VERSION  = 'v8.9.4';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -15800,6 +15800,47 @@ async function bandeja_cargarPendientes() {
     }
 }
 
+/**
+ * Pinta la pestaña Bandeja según cuántos movimientos esperan aprobación.
+ *
+ * El badge con el número ya existía, pero es un chip chico y se pasaba por alto:
+ * Jay podía estar días sin entrar a la pestaña sin enterarse de que había algo.
+ * Ahora se pinta la pestaña ENTERA de amarillo, que sí se ve de reojo.
+ *
+ * Si Jay ya está parado en la bandeja no tiene caso gritarle: en ese caso manda
+ * el color de pestaña activa (lo resuelve el CSS con `:not(.active)`).
+ */
+function bandeja_pintarTab(nuevos) {
+    const badge = document.getElementById('bandeja-badge');
+    if (badge) {
+        badge.textContent = nuevos;
+        badge.hidden = nuevos === 0;
+    }
+    document.getElementById('tab-bandeja')
+        ?.classList.toggle('tiene-pendientes', nuevos > 0);
+}
+
+/**
+ * Consulta cuántos pendientes hay SIN abrir la pestaña.
+ *
+ * Hace falta porque los pendientes solo se cargaban al entrar a la bandeja, así
+ * que el aviso aparecía cuando ya estabas adentro — justo cuando ya no sirve.
+ *
+ * Es deliberadamente silencioso: no toca la lista, no muestra errores y no
+ * reintenta. Es un adorno de la pestaña; si falla, la bandeja sigue funcionando
+ * igual al abrirla.
+ */
+async function bandeja_sondearTab() {
+    if (!bandeja_token()) return;
+    try {
+        const { pending } = await bandeja_api('/api/pending');
+        bandejaPendientes = pending || [];
+        bandeja_pintarTab(bandejaPendientes.filter(p => !p.historico).length);
+    } catch {
+        /* sin ruido: el sondeo es opcional */
+    }
+}
+
 function bandeja_visibles() {
     if (bandejaFiltro === 'nuevos')     return bandejaPendientes.filter(p => !p.historico);
     if (bandejaFiltro === 'historicos') return bandejaPendientes.filter(p => p.historico);
@@ -15812,9 +15853,7 @@ function bandeja_render() {
     document.getElementById('bandeja-num-nuevos').textContent = nuevos;
     document.getElementById('bandeja-num-historicos').textContent = historicos;
 
-    const badge = document.getElementById('bandeja-badge');
-    badge.textContent = nuevos;
-    badge.hidden = nuevos === 0;
+    bandeja_pintarTab(nuevos);
 
     const visibles = bandeja_visibles();
     const lista = document.getElementById('bandeja-lista');
@@ -15915,6 +15954,9 @@ function bandeja_aviso(msg) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+    // Pinta la pestaña al arrancar, sin esperar a que Jay entre a la bandeja.
+    bandeja_sondearTab();
+
     document.getElementById('bandeja-guardar-token')?.addEventListener('click', () => {
         const val = document.getElementById('bandeja-token').value.trim();
         if (!val) return;
