@@ -83,3 +83,83 @@ export function aprenderReglas(movimientos, opts = {}) {
     }
     return propuestas.sort((a, b) => b.apariciones - a.apariciones);
 }
+
+/**
+ * Prioridad de las reglas nacidas de una corrección de Jay.
+ *
+ * Por debajo de la default (100) a propósito: si él dice que "UBER EATS" es
+ * Comida, eso tiene que ganarle a una regla general "UBER" → Transporte sin
+ * depender de en qué orden se insertaron.
+ */
+const PRIORIDAD_CORRECCION = 50;
+
+/** Palabras que solo describen la sucursal o la plaza, nunca el negocio. */
+const RUIDO_DE_SUCURSAL = new Set([
+    'sa', 'de', 'cv', 'sab', 'sapi', 'mexico', 'mx', 'cdmx', 'qrf', 'qro',
+    'suc', 'sucursal', 'plaza', 'centro', 'norte', 'sur', 'nte', 'pva',
+]);
+
+/**
+ * Procesadoras de pago que se anteponen al comercio real.
+ *
+ * "DLO*UBER EATS" es dLocal cobrando por Uber Eats; "STR*TELCEL" es Stripe
+ * cobrando por Telcel. Quedarse con la procesadora aprende justo al revés:
+ * agruparía Uber Eats con Telcel por compartir intermediario, y no reconocería
+ * a Uber Eats el día que cobre por otra vía.
+ */
+const PROCESADORAS = new Set([
+    'dlo', 'dlocal', 'str', 'stripe', 'paypal', 'ebanx', 'sq', 'square',
+    'mercadopago', 'mp', 'clip', 'openpay', 'conekta', 'recurrente',
+]);
+
+/**
+ * Convierte una corrección explícita de Jay en una regla comercio → categoría.
+ *
+ * Aprobar en la bandeja no dejaba ninguna huella: Jay podía categorizar el
+ * mismo comercio cincuenta veces y a la cincuentaiuna la app seguía sin saber
+ * qué era. Cada clic era trabajo que no se capitalizaba en nada.
+ *
+ * Una corrección vale MÁS que una inferencia sobre el histórico: no es una
+ * estadística, es una persona diciendo "esto es esto". Por eso basta una sola,
+ * mientras que `aprenderReglas` exige varias repeticiones sin contradicción.
+ *
+ * Lo delicado es el patrón. El banco manda ruido de sucursal —"OXXOGRAND PVA",
+ * "OXXO ZAVALA QRF"— y guardar el comercio completo daría una regla que solo
+ * sirve para esa tienda. Se recorta a las primeras palabras con significado.
+ *
+ * Devuelve `null` cuando no hay nada que aprender, en vez de una regla mala:
+ * una regla equivocada mal-categoriza en silencio todo lo que venga después.
+ */
+export function reglaDesdeCorreccion({ merchant, categoria, kind = 'gasto' }) {
+    // Un traspaso entre cuentas propias no tiene categoría de consumo: mover
+    // dinero de Santander a Hey no es un concepto de gasto.
+    if (kind === 'transfer') return null;
+    if (!categoria || !String(categoria).trim()) return null;
+
+    const limpio = normalizar(merchant);
+    if (limpio.length < 3) return null;
+
+    // Se conservan las primeras dos palabras útiles: suficiente para
+    // identificar el negocio ("uber eats", "farmacia guadalajara") y corto
+    // como para valer en todas sus sucursales.
+    const palabras = limpio
+        .split(/[^a-z0-9]+/)
+        .filter((p) => p.length >= 2 && !RUIDO_DE_SUCURSAL.has(p) && !/^\d+$/.test(p));
+
+    // Se quita la procesadora solo si detrás queda un comercio de verdad. Si es
+    // lo único que hay ("PAYPAL" a secas), vale más un patrón mediocre que
+    // ninguno.
+    const sinProcesadora = palabras.filter((p) => !PROCESADORAS.has(p));
+    const utiles = sinProcesadora.length ? sinProcesadora : palabras;
+
+    const patron = (utiles.slice(0, 2).join(' ') || limpio).trim();
+    if (patron.length < 3) return null;
+
+    return {
+        patron,
+        categoria: String(categoria).trim(),
+        prioridad: PRIORIDAD_CORRECCION,
+        aplica_a: kind === 'ingreso' ? 'ingreso' : 'gasto',
+        origen: 'correccion',
+    };
+}

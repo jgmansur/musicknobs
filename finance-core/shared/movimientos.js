@@ -10,6 +10,8 @@
  * Cloudflare Workers y en Node.
  */
 
+import { reglaDesdeCorreccion } from './categorias.js';
+
 /**
  * Primer día del mes de una fecha, como 'YYYY-MM-01'.
  *
@@ -122,12 +124,49 @@ export async function aprobarPendiente(sql, id, overrides = {}) {
             `;
         }
 
+        // Si Jay corrigió la categoría al aprobar, eso se APRENDE.
+        //
+        // Antes, aprobar no dejaba ninguna huella: podía clasificar el mismo
+        // comercio cincuenta veces y a la cincuentaiuna la app seguía sin saber
+        // qué era. Cada clic era trabajo que no se capitalizaba.
+        //
+        // Una corrección explícita vale más que cualquier inferencia sobre el
+        // histórico: no es una estadística, es él diciendo "esto es esto". Por
+        // eso basta UNA para crear la regla.
+        //
+        // Va después del movimiento y dentro de la misma transacción: si algo
+        // falla, no queda una regla aprendida de un movimiento que no existe.
+        let reglaAprendida = null;
+        if (overrides.category) {
+            const regla = reglaDesdeCorreccion({
+                merchant: overrides.merchant ?? p.merchant,
+                categoria: overrides.category,
+                kind,
+            });
+            if (regla) {
+                // `do update` y no `do nothing`: si Jay corrige DE NUEVO el
+                // mismo comercio es porque la regla anterior estaba mal. La
+                // última palabra suya es la que vale.
+                const [r] = await tx`
+                    insert into category_rules (patron, categoria, prioridad, aplica_a, origen)
+                    values (${regla.patron}, ${regla.categoria}, ${regla.prioridad},
+                            ${regla.aplica_a}, ${regla.origen})
+                    on conflict (lower(trim(patron)), aplica_a)
+                    do update set categoria = excluded.categoria,
+                                  prioridad = least(category_rules.prioridad, excluded.prioridad),
+                                  origen = excluded.origen
+                    returning patron, categoria
+                `;
+                reglaAprendida = r ?? null;
+            }
+        }
+
         await tx`
             update pending_transactions
             set status = 'approved', transaction_id = ${trx.id}, resolved_at = now()
             where id = ${id}
         `;
-        return { ok: true, transactionId: trx.id, amount };
+        return { ok: true, transactionId: trx.id, amount, reglaAprendida };
     });
 }
 

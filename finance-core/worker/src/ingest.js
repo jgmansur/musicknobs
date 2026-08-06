@@ -17,7 +17,7 @@
 import { parseBankEmail, TRANSACTIONAL_SENDERS } from './parsers.js';
 import { parseOxxoTicket, TICKET_SENDERS } from './tickets.js';
 import { getAccessToken, listMessageIds, getMessage } from './gmail.js';
-import { categoriaPara } from '../../shared/categorias.js';
+import { categoriaPara, aprenderReglas, normalizar } from '../../shared/categorias.js';
 import { lugarPara } from '../../shared/lugares.js';
 import { aprobarPendiente } from '../../shared/movimientos.js';
 
@@ -136,8 +136,14 @@ export function debeAutoAprobar({
  *
  * Se MARCA la sospecha, no se descarta. Dos compras de $50 en el OXXO el mismo
  * día son perfectamente posibles, y descartar automáticamente perdería una.
+ *
+ * NUNCA se señala a sí mismo. Un correo cuyo movimiento ya existe no es un
+ * duplicado: es el mismo hecho visto dos veces. Sin esta guarda, un re-ingest
+ * sobre correos ya aprobados marca en falso todo lo que toca — pasó el
+ * 2026-08-03 y ensució 147 pendientes de una sentada. Hoy además bloquearía la
+ * auto-aprobación, así que el ruido ya no sería solo cosmético.
  */
-async function buscarDuplicado(sql, { accountId, amount, occurredAt }) {
+async function buscarDuplicado(sql, { accountId, amount, occurredAt, gmailMessageId }) {
     if (!accountId || !Number.isFinite(amount)) return null;
     const magnitud = Math.abs(amount);
     const [dup] = await sql`
@@ -146,10 +152,56 @@ async function buscarDuplicado(sql, { accountId, amount, occurredAt }) {
           and abs(abs(amount) - ${magnitud}) < 0.01
           and occurred_at between ${occurredAt}::timestamptz - interval '3 days'
                               and ${occurredAt}::timestamptz + interval '3 days'
+          and (source_ref is null or source_ref <> ${gmailMessageId ?? ''})
         order by abs(extract(epoch from (occurred_at - ${occurredAt}::timestamptz)))
         limit 1
     `;
     return dup?.id ?? null;
+}
+
+/**
+ * Repeticiones mínimas para deducir una regla del histórico.
+ *
+ * Cuatro y no tres: una regla mala mal-categoriza en silencio todo lo que venga
+ * después, y aquí nadie está mirando cuando se crea. Como el aprendizaje corre
+ * en cada ingest, lo que hoy no alcanza el umbral lo alcanzará solo mañana —
+ * esperar no cuesta nada, equivocarse sí.
+ */
+const MINIMO_APRENDIZAJE = 4;
+
+/**
+ * Crea reglas de categoría deduciéndolas de los movimientos ya clasificados.
+ *
+ * Solo escribe lo que NO existe: una corrección de Jay siempre le gana a una
+ * inferencia, así que si ya hay regla para ese patrón, no se toca.
+ *
+ * Devuelve cuántas creó, para que se vea en las estadísticas del ingest. Un
+ * aprendizaje invisible no se puede auditar ni corregir.
+ */
+async function aprenderDelHistorico(sql) {
+    const [movs, reglas] = await Promise.all([
+        sql`select merchant, description, category, kind from transactions
+            where category is not null and kind <> 'transfer'`,
+        sql`select patron from category_rules`,
+    ]);
+    if (!movs.length) return 0;
+
+    const existentes = new Set(reglas.map((r) => normalizar(r.patron)));
+    const nuevas = aprenderReglas(movs, { minimo: MINIMO_APRENDIZAJE })
+        .filter((p) => !existentes.has(normalizar(p.patron)));
+    if (!nuevas.length) return 0;
+
+    let creadas = 0;
+    for (const n of nuevas) {
+        const [r] = await sql`
+            insert into category_rules (patron, categoria, prioridad, aplica_a, origen)
+            values (${n.patron}, ${n.categoria}, 100, 'gasto', 'aprendida')
+            on conflict (lower(trim(patron)), aplica_a) do nothing
+            returning id
+        `;
+        if (r) creadas += 1;
+    }
+    return creadas;
 }
 
 export function buildQuery(sinceDate) {
@@ -431,7 +483,8 @@ export async function runIngest({
     `;
 
     const stats = { seen: 0, created: 0, skipped: 0, unmatched: 0, duplicados: 0,
-                    articulos: 0, articulosLigados: 0, autoMarcados: 0, autoAprobados: 0 };
+                    articulos: 0, articulosLigados: 0, autoMarcados: 0, autoAprobados: 0,
+                    reglasAprendidas: 0 };
 
     try {
         const [cards, fixed, accounts] = await Promise.all([
@@ -506,6 +559,7 @@ export async function runIngest({
                     accountId: s.accountId,
                     amount: parsed.amount,
                     occurredAt: parsed.occurredAt ?? msg.receivedAt,
+                    gmailMessageId: msg.id,
                 })
                 : null;
 
@@ -568,6 +622,22 @@ export async function runIngest({
                     if (r?.ok) stats.autoAprobados += 1;
                 }
             } else stats.skipped += 1;
+        }
+
+        // Aprendizaje pasivo: cada movimiento aprobado deja evidencia, y cuando
+        // un comercio se repite SIEMPRE con la misma categoría, eso ya es una
+        // regla — no hace falta que Jay la escriba.
+        //
+        // Complementa a las correcciones: esas se aprenden de una, porque son
+        // explícitas; esto necesita repetición sin contradicción, porque es una
+        // inferencia. `aprenderReglas` no propone nada si hay ambigüedad.
+        //
+        // Va al final y aparte del bucle: si falla, el ingest ya hizo su trabajo
+        // y sería absurdo perderlo por no haber podido aprender.
+        try {
+            stats.reglasAprendidas = await aprenderDelHistorico(sql);
+        } catch {
+            /* aprender es un extra, nunca puede tumbar la ingesta */
         }
 
         await sql`
