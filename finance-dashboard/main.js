@@ -24,7 +24,7 @@ const DEUDAS_RECIBOS_FOLDER_ID = '157KDn-vbkuHH1L8xbaJBGz-oKmT7p5a9';
 const SPREADSHEET_RSM_ID = '14VsoPHGNTSUSbzMOqGWs2qSL-pGywPgjUoHD3MqIJfo'; // Recibos Salud Mariel
 const SALDOS_SHEET_ID    = '1-cX_qxld3ioSpcO9lEBPg90Db6AyK7SczpJTvj7rw4U'; // Saldos (fuente de verdad — Claude accede vía service account)
 const RSM_FOLDER_ID = '1-ZfeWQ-Rmh-Wm2WMCkULkN6MQWBuxYnj';
-const APP_VERSION  = 'v8.9.7';
+const APP_VERSION  = 'v8.9.8';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -4197,7 +4197,29 @@ function _renderChartWithMode(data, mode) {
 // =============================================
 // CONTROL DE GASTOS MODULE
 // =============================================
-const gastosState = { allRows: [], offset: 0, search: '', detailRow: null, logSheetId: null };
+const gastosState = { allRows: [], offset: 0, search: '', detailRow: null, editRow: null, logSheetId: null };
+
+/** UUID v4 canónico: lo que genera `gen_random_uuid()` en Postgres. */
+const RE_UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/**
+ * ¿Este id es de finance-core (UUID) o de la hoja vieja (número de fila)?
+ *
+ * La decisión sale del id MISMO y no de un estado paralelo. Antes se preguntaba
+ * por `gastosState.detailRow?.id`, pero `gastos_cerrarModal()` lo ponía en null
+ * justo antes de guardar: el id seguía bien en el formulario, la variable
+ * consultada no. Todo caía en la rama de Sheets y armaba `Hoja 1!B<uuid>:I<uuid>`,
+ * que la API rechaza con "Unable to parse range".
+ *
+ * Se exige el formato completo, no "que traiga un guion": `2026-08-06` también
+ * lo trae y no es un UUID.
+ *
+ * Duplicado a propósito en `finance-core/shared/ids.js` — Vercel despliega esta
+ * carpeta como raíz y no puede importar de allá. Si tocas una, toca la otra.
+ */
+function esIdDeWorker(id) {
+    return RE_UUID.test(String(id ?? '').trim());
+}
 
 function gastos_bindEvents() {
     document.getElementById('g-btn-save').addEventListener('click', gastos_guardar);
@@ -4406,13 +4428,18 @@ async function gastos_guardar() {
     // ── Save to Sheets ──────────────────────────────────
     try {
         if (idFila) {
-            const existing = gastosState.detailRow?.fotos || '';
+            // `editRow` y no `detailRow`: el segundo lo pone en null
+            // `gastos_cerrarModal()`, que corre al entrar a modo edición. Leer
+            // de ahí perdía los recibos ya adjuntos y mandaba el guardado a la
+            // rama equivocada.
+            const filaEditada = gastosState.editRow || gastosState.detailRow;
+            const existing = filaEditada?.fotos || '';
             const allUrls  = [existing, ...nuevasUrls].filter(Boolean).join(',');
-            const fechaCreacionEdit = document.getElementById('g-fecha-creacion')?.value || gastosState.detailRow?.fechaCreacion || '';
+            const fechaCreacionEdit = document.getElementById('g-fecha-creacion')?.value || filaEditada?.fechaCreacion || '';
             const fechaCreacionISO = fechaCreacionEdit ? new Date(fechaCreacionEdit).toISOString() : '';
 
             // Los ids de finance-core son UUID; los de la hoja, números de fila.
-            if (gastosState.detailRow?.id) {
+            if (esIdDeWorker(idFila)) {
                 const cuenta = balanceAccounts.find(a =>
                     balance_getAccountMatchKeys(a).includes(balance_normalizePaymentKey(forma)));
                 await bandeja_api(`/api/movimientos/${idFila}`, {
@@ -4457,6 +4484,9 @@ async function gastos_guardar() {
 }
 
 function gastos_cancelar() {
+    // Si no se limpia, la siguiente edición arrastraría los recibos y la fecha
+    // de la anterior.
+    gastosState.editRow = null;
     document.getElementById('g-id-fila').value = '';
     document.getElementById('g-lugar').value = '';
     document.getElementById('g-concepto').value = '';
@@ -4521,6 +4551,10 @@ function gastos_editarDesdeModal() {
     document.getElementById('g-tipo').value      = row.tipo;
     document.getElementById('g-forma-pago').value= row.formaPago;
     document.getElementById('g-id-fila').value   = row.id || row.rowNum;
+    // Se conserva la fila mientras dure la edición. `detailRow` no sirve: el
+    // `gastos_cerrarModal()` de más abajo lo pone en null, y con él se perdían
+    // los recibos ya adjuntos y la fecha de creación al guardar.
+    gastosState.editRow = row;
     // Show and pre-fill the date field for editing
     const fechaField = document.getElementById('g-fecha-creacion-field');
     const fechaInput = document.getElementById('g-fecha-creacion');
@@ -5544,9 +5578,12 @@ async function fijos_guardar() {
     try {
         // Fuente de verdad: finance-core. La hoja solo se toca si el fijo
         // todavía viene de ahí (id numérico de fila).
+        // Al editar, decide el id mismo. Antes bastaba con que trajera un
+        // guion, y eso da por bueno cualquier texto: `2026-08-06` también lo
+        // trae. Mismo criterio que en gastos, para que no haya dos reglas.
         const esWorker = !editId
-            ? bandeja_token() && fijosState.allItems.some(i => typeof i.id === 'string')
-            : typeof editId === 'string' && editId.includes('-');
+            ? bandeja_token() && fijosState.allItems.some(i => esIdDeWorker(i.id))
+            : esIdDeWorker(editId);
 
         if (esWorker) {
             const cuerpo = {
