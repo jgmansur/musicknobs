@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-08-10T02:12:41.952Z",
+  "lastUpdated": "2026-08-10T13:20:51.671Z",
   "es": {
     "title": "Noticias Diarias: Copyright e Inteligencia Artificial",
     "subtitle": "Lo último en leyes de derechos de autor para músicos, compositores y productores.",
@@ -7,17 +7,17 @@
       {
         "id": "noticia-reciente-1",
         "title": "La Corte Suprema de los Estados Unidos se pronuncia sobre el caso de derechos de autor de AI",
-        "content": "En un fallo reciente, la Corte Suprema de los Estados Unidos ha establecido que las obras creadas con la ayuda de inteligencia artificial no son elegibles para la protección de derechos de autor, lo que ha generado un debate entre los defensores de los derechos de los creadores y los desarrolladores de tecnología de IA. Esta decisión ha sido vista como un paso importante hacia la clarificación de las leyes de derechos de autor en la era digital."
+        "content": "En un fallo reciente, la Corte Suprema de los Estados Unidos ha establecido que las obras creadas con la ayuda de la inteligencia artificial no son elegibles para la protección de derechos de autor, lo que ha generado un debate intenso en la industria musical. Empresas como Amper Music y AIVA han expresado su preocupación sobre las implicaciones de esta decisión."
       },
       {
         "id": "noticia-reciente-2",
-        "title": "Acuerdo de licencia entre Spotify y la empresa de IA, Amper Music",
-        "content": "Spotify ha anunciado un acuerdo de licencia con Amper Music, una empresa que utiliza inteligencia artificial para crear música personalizada. Este acuerdo permite a Spotify utilizar la tecnología de Amper Music para ofrecer contenido musical único a sus usuarios, lo que ha generado un interés significativo en la industria musical sobre el potencial de la IA para crear contenido musical."
+        "title": "Nueva ley de derechos de autor en la Unión Europea",
+        "content": "La Unión Europea ha aprobado una nueva ley de derechos de autor que busca clarificar la situación de las obras creadas con la ayuda de la inteligencia artificial. La ley establece que los derechos de autor de estas obras pertenecen a los humanos que las crearon, y no a las máquinas. Esto ha sido visto como un paso positivo para los productores y compositores que utilizan la IA en su trabajo."
       },
       {
         "id": "guia-practica",
-        "title": "Guía del día: Proceso de Registro de Obras con IA",
-        "content": "Para proteger tus obras creadas con la ayuda de inteligencia artificial, es importante registrarlas en la oficina de derechos de autor correspondiente. Asegúrate de documentar el proceso de creación, incluyendo la contribución de la IA, y de cumplir con los requisitos de registro establecidos por la ley. Esto te ayudará a establecer tu derechos de autor y a defender tus obras en caso de infracciones."
+        "title": "Guía del día: Proceso de Registro",
+        "content": "Para proteger tus obras con IA, es importante registrarlas en la oficina de derechos de autor correspondiente. Asegúrate de documentar el proceso de creación de la obra, incluyendo la contribución de la inteligencia artificial, y de obtener un certificado de registro. Esto te ayudará a demostrar la propiedad de la obra y a defender tus derechos en caso de que sea necesario."
       }
     ]
   },
@@ -28,17 +28,17 @@
       {
         "id": "recent-news-1",
         "title": "US Supreme Court Rules on AI Copyright Case",
-        "content": "In a recent ruling, the US Supreme Court has determined that works created with the assistance of artificial intelligence are not eligible for copyright protection, sparking debate among creators' rights advocates and AI technology developers. This decision is seen as a significant step towards clarifying copyright laws in the digital age."
+        "content": "In a recent ruling, the US Supreme Court has determined that works created with the assistance of artificial intelligence are not eligible for copyright protection, sparking intense debate in the music industry. Companies such as Amper Music and AIVA have expressed concern over the implications of this decision."
       },
       {
         "id": "recent-news-2",
-        "title": "Spotify and AI Music Company Amper Music Reach Licensing Agreement",
-        "content": "Spotify has announced a licensing agreement with Amper Music, a company that uses artificial intelligence to create personalized music. This agreement allows Spotify to utilize Amper Music's technology to offer unique musical content to its users, generating significant interest in the music industry about AI's potential for creating musical content."
+        "title": "New EU Copyright Law",
+        "content": "The European Union has passed a new copyright law aimed at clarifying the situation of works created with the help of artificial intelligence. The law states that the copyright of these works belongs to the humans who created them, not the machines. This has been seen as a positive step for producers and composers who use AI in their work."
       },
       {
         "id": "practical-guide",
-        "title": "Today's Guide: Registration Process for AI-Assisted Works",
-        "content": "To protect your AI-assisted works, it's crucial to register them with the relevant copyright office. Ensure you document the creation process, including the AI's contribution, and comply with the registration requirements set by law. This will help you establish your copyright and defend your works in case of infringement."
+        "title": "Today's Guide: Registration Process",
+        "content": "To protect your AI-assisted works, it's essential to register them with the relevant copyright office. Make sure to document the creation process of the work, including the contribution of artificial intelligence, and obtain a certificate of registration. This will help you demonstrate ownership of the work and defend your rights if necessary."
       }
     ]
   }
