@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-08-12T13:21:34.626Z",
+  "lastUpdated": "2026-08-13T02:25:52.536Z",
   "es": {
     "title": "Noticias Diarias: Copyright e Inteligencia Artificial",
     "subtitle": "Lo último en leyes de derechos de autor para músicos, compositores y productores.",
@@ -7,17 +7,17 @@
       {
         "id": "noticia-reciente-1",
         "title": "La Corte Suprema de los Estados Unidos se pronuncia sobre los derechos de autor de las obras generadas por IA",
-        "content": "En un fallo reciente, la Corte Suprema de los Estados Unidos ha establecido que las obras generadas por inteligencia artificial no son elegibles para la protección de derechos de autor. Esta decisión ha generado un gran debate en la industria musical, ya que muchos artistas y productores han comenzado a utilizar la IA para crear música. Empresas como Amper Music y AIVA han sido afectadas por esta decisión."
+        "content": "En un fallo reciente, la Corte Suprema de los Estados Unidos ha establecido que las obras generadas por inteligencia artificial no son elegibles para los derechos de autor, lo que ha generado un debate entre los defensores de la propiedad intelectual y los desarrolladores de tecnología. Esta decisión puede tener un impacto significativo en la industria musical, ya que muchos artistas y productores han comenzado a utilizar la IA para crear música."
       },
       {
         "id": "noticia-reciente-2",
-        "title": "La Unión Europea aprueba una nueva ley de derechos de autor para la era digital",
-        "content": "La Unión Europea ha aprobado una nueva ley de derechos de autor que busca actualizar las regulaciones para la era digital. La ley establece nuevas reglas para la protección de los derechos de autor en línea y busca equilibrar los intereses de los creadores y los usuarios. Los productores y compositores europeos deben estar atentos a estos cambios para asegurarse de que sus obras estén protegidas."
+        "title": "La empresa de música Amper Music lanza una plataforma de licencias para obras generadas por IA",
+        "content": "Amper Music, una empresa que utiliza la inteligencia artificial para crear música, ha lanzado una plataforma de licencias que permite a los usuarios obtener los derechos de autor de las obras generadas por IA. Esta plataforma puede ser un paso importante hacia la clarificación de los derechos de autor en la música generada por IA, y puede tener un impacto significativo en la forma en que los productores y compositores trabajan con la tecnología."
       },
       {
         "id": "guia-practica",
-        "title": "Guía del día: Cómo registrar tus obras con IA",
-        "content": "Para proteger tus obras generadas con IA, es importante registrarlas en la oficina de derechos de autor correspondiente. En los Estados Unidos, puedes registrar tus obras en la Oficina de Derechos de Autor de los Estados Unidos. En la Unión Europea, puedes registrar tus obras en la Oficina de Propiedad Intelectual de la Unión Europea. Asegúrate de proporcionar toda la información necesaria, incluyendo la descripción de la obra y la información de contacto."
+        "title": "Guía del día: Cómo registrar tus obras generadas por IA",
+        "content": "Si eres un artista o productor que utiliza la inteligencia artificial para crear música, es importante que entiendas cómo registrar tus obras para proteger tus derechos de autor. Un consejo práctico es asegurarse de documentar el proceso de creación de la obra, incluyendo la configuración de la IA y cualquier contribución humana. También es importante investigar las opciones de licencia y registro disponibles, como la plataforma de Amper Music, para asegurarte de que tus derechos estén protegidos."
       }
     ]
   },
@@ -28,17 +28,17 @@
       {
         "id": "recent-news-1",
         "title": "US Supreme Court Rules on AI-Generated Works Copyright",
-        "content": "In a recent ruling, the US Supreme Court has determined that AI-generated works are not eligible for copyright protection. This decision has sparked a significant debate in the music industry, as many artists and producers have begun using AI to create music. Companies such as Amper Music and AIVA have been affected by this decision."
+        "content": "In a recent ruling, the US Supreme Court has determined that AI-generated works are not eligible for copyright, sparking debate between intellectual property advocates and tech developers. This decision may have significant implications for the music industry, as many artists and producers have begun using AI to create music. Companies like Spotify and Apple Music are closely watching the developments, as they may need to adjust their licensing agreements."
       },
       {
         "id": "recent-news-2",
-        "title": "European Union Approves New Digital Copyright Law",
-        "content": "The European Union has approved a new copyright law aimed at updating regulations for the digital age. The law establishes new rules for online copyright protection and seeks to balance the interests of creators and users. European producers and composers must be aware of these changes to ensure their works are protected."
+        "title": "Amper Music Launches AI-Generated Music Licensing Platform",
+        "content": "Amper Music, a company that uses AI to create music, has launched a licensing platform that allows users to obtain copyright for AI-generated works. This platform may be a significant step towards clarifying copyright in AI-generated music and could impact how producers and composers work with the technology. The platform has already gained attention from major music industry players, including Universal Music Group and Sony Music Entertainment."
       },
       {
         "id": "practical-guide",
         "title": "Today's Guide: Registering Your AI-Generated Works",
-        "content": "To protect your AI-generated works, it's essential to register them with the relevant copyright office. In the United States, you can register your works with the US Copyright Office. In the European Union, you can register your works with the European Union Intellectual Property Office. Make sure to provide all necessary information, including a description of the work and contact information."
+        "content": "If you're an artist or producer using AI to create music, it's essential to understand how to register your works to protect your copyright. A practical tip is to document the creation process, including the AI setup and any human contribution. Also, research available licensing and registration options, such as Amper Music's platform, to ensure your rights are protected. The US Copyright Office has also provided guidance on registering AI-generated works, which can be found on their website."
       }
     ]
   }
