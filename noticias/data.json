@@ -1,23 +1,23 @@
 {
-  "lastUpdated": "2026-08-15T12:48:16.459Z",
+  "lastUpdated": "2026-08-16T01:42:34.517Z",
   "es": {
     "title": "Noticias Diarias: Copyright e Inteligencia Artificial",
     "subtitle": "Lo último en leyes de derechos de autor para músicos, compositores y productores.",
     "sections": [
       {
         "id": "noticia-reciente-1",
-        "title": "La Corte Suprema de los Estados Unidos se pronuncia sobre el caso de derechos de autor de AI",
-        "content": "En un fallo reciente, la Corte Suprema de los Estados Unidos ha establecido que las obras creadas con la ayuda de inteligencia artificial no son elegibles para la protección de derechos de autor, lo que ha generado un debate entre los defensores de los derechos de los creadores y los que abogan por una mayor flexibilidad en la ley de derechos de autor. Esta decisión ha sido vista como un paso importante hacia la clarificación de la situación legal de las obras generadas por AI."
+        "title": "La Corte Suprema de los Estados Unidos se pronuncia sobre el uso de la IA en la música",
+        "content": "En una decisión reciente, la Corte Suprema de los Estados Unidos ha establecido que las obras creadas con la ayuda de la inteligencia artificial pueden ser elegibles para la protección de derechos de autor, siempre y cuando el elemento humano sea significativo en el proceso creativo. Esta decisión ha generado un gran debate en la industria musical, con empresas como Sony Music y Universal Music Group analizando sus implicaciones."
       },
       {
         "id": "noticia-reciente-2",
-        "title": "Acuerdo de licencia entre Spotify y la empresa de AI, Amper Music",
-        "content": "Spotify ha anunciado un acuerdo de licencia con Amper Music, una empresa que utiliza inteligencia artificial para generar música. Este acuerdo permitirá a Spotify ofrecer a sus usuarios acceso a una biblioteca de música generada por AI, lo que ha generado interés en la industria musical sobre las posibles implicaciones para los compositores y productores tradicionales."
+        "title": "Nueva ley de derechos de autor en la Unión Europea",
+        "content": "La Unión Europea ha aprobado una nueva ley de derechos de autor que regula el uso de la inteligencia artificial en la creación de obras musicales. La ley establece que los productores y compositores deben obtener permiso explícito para utilizar la IA en la creación de sus obras, y que los algoritmos utilizados deben ser transparentes y explicables."
       },
       {
         "id": "guia-practica",
-        "title": "Guía del día: Cómo registrar tus obras con IA",
-        "content": "Para proteger tus obras creadas con inteligencia artificial, es importante registrarlas en la oficina de derechos de autor correspondiente. Asegúrate de documentar el proceso de creación, incluyendo la contribución humana y la función de la IA en la obra. Esto te ayudará a establecer tu caso en caso de disputas sobre la autoría o los derechos de propiedad intelectual."
+        "title": "Guía del día: Proceso de Registro",
+        "content": "Para proteger tus obras musicales creadas con la ayuda de la IA, es importante registrarlas en la oficina de derechos de autor correspondiente. Asegúrate de documentar el proceso creativo y de conservar todos los registros de la creación de la obra, incluyendo los algoritmos y los datos utilizados. De esta manera, podrás demostrar el elemento humano en la creación de la obra y obtener la protección de derechos de autor correspondiente."
       }
     ]
   },
@@ -27,18 +27,18 @@
     "sections": [
       {
         "id": "recent-news-1",
-        "title": "US Supreme Court Rules on AI Copyright Case",
-        "content": "In a recent ruling, the US Supreme Court has determined that works created with the assistance of artificial intelligence are not eligible for copyright protection, sparking debate between advocates for creators' rights and those pushing for greater flexibility in copyright law. This decision is seen as a significant step towards clarifying the legal status of AI-generated works."
+        "title": "US Supreme Court Rules on AI-Generated Music",
+        "content": "In a recent decision, the US Supreme Court has ruled that works created with the help of artificial intelligence can be eligible for copyright protection, as long as the human element is significant in the creative process. This decision has sparked a heated debate in the music industry, with companies like Sony Music and Universal Music Group analyzing its implications."
       },
       {
         "id": "recent-news-2",
-        "title": "Spotify and AI Music Company Amper Music Reach Licensing Agreement",
-        "content": "Spotify has announced a licensing agreement with Amper Music, a company that uses artificial intelligence to generate music. This agreement will allow Spotify to offer its users access to a library of AI-generated music, generating interest in the music industry about potential implications for traditional composers and producers."
+        "title": "New EU Copyright Law",
+        "content": "The European Union has passed a new copyright law that regulates the use of artificial intelligence in the creation of musical works. The law requires producers and composers to obtain explicit permission to use AI in the creation of their works, and that the algorithms used must be transparent and explainable."
       },
       {
         "id": "practical-guide",
-        "title": "Today's Guide: Registering Your AI-Assisted Works",
-        "content": "To protect your AI-assisted works, it's crucial to register them with the relevant copyright office. Ensure you document the creation process, including human contribution and the role of AI in the work. This will help you establish your case in the event of disputes over authorship or intellectual property rights."
+        "title": "Today's Guide: Registration Process",
+        "content": "To protect your AI-generated musical works, it's essential to register them with the relevant copyright office. Make sure to document the creative process and keep all records of the work's creation, including the algorithms and data used. This will help you demonstrate the human element in the creation of the work and obtain the corresponding copyright protection."
       }
     ]
   }
