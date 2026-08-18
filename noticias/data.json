@@ -1,16 +1,17 @@
 {
-  "lastUpdated": "2026-08-18T17:15:18.791Z",
+  "lastUpdated": "2026-08-18T17:29:38.512Z",
   "meta": {
     "method": "rss-retrieval + link-verification + ai-translation",
-    "itemCount": 9,
+    "itemCount": 10,
     "sources": [
       "Billboard",
       "Digital Music News",
       "Music Business Worldwide",
+      "Raw Law",
       "Urgente24",
       "musictimes.com"
     ],
-    "verifiedLinks": 9,
+    "verifiedLinks": 10,
     "aiTranslated": 0,
     "note": "Los hechos provienen de los artículos originales enlazados. La IA solo traduce y resume; no genera noticias."
   },
@@ -65,6 +66,21 @@
       },
       {
         "id": "noticia-4",
+        "title": "Calcutta High Court Holds Hotels Need Separate Copyright Licence for Music Played Through In-Room TVs; Cable Subscription Does Not Authorise Commercial Exploitation of Works",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMimwJBVV95cUxQUkxxSUtoTEFPSjdQZXNSUFRVMGI2WTFhb1ltTXJpWEs1UU83Z0Y1MVdEOGYwUVBtQ1RiTGxMXzNmbkFUcVpNX056dTB4WkJWR0lvV1FITWlvS3FnS2lUMGNueElpVjBDQmxfWkNjQWNjWjZsN1dnemdpRERvT0lIUFVuMHlkLTYzNWxWTzFVWFZxTkp5dWU5b29lLVFUSktMdGJoZncyM0N2cDltRWRvdHJITnR4dGo3NUkza1lrblNqQkF2dVRkZ3RDSDYwMUZXb2xfeEx6Z2JlY2Q2QTVOU0o5NlRBcXFheWZPdlVtZkVJbFZPd0FIV1JZN0FPRDRVSVU2U216UWJzREk1V1RsdmdnRmJUa1lGTDBr?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "Raw Law",
+        "domain": "news.google.com",
+        "publishedAt": "2026-08-17T07:57:45.000Z",
+        "tags": [
+          "lawsuit",
+          "licensing"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-5",
         "title": "Robert Kyncl justifies Suno deal, as UMG and Sony press on with lawsuit: ‘In my opinion, you embrace it.’",
         "summary": "Kyncl appeared on Semafor's Mixed Signals podcast on Friday (August 14), where he discussed Suno – and why he'd start a music service at Netflix. Source",
         "url": "https://www.musicbusinessworldwide.com/robert-kyncl-justifies-suno-deal-as-umg-and-sony-press-on-with-lawsuit-in-my-opinion-you-embrace-it/",
@@ -80,7 +96,7 @@
         "via": null
       },
       {
-        "id": "noticia-5",
+        "id": "noticia-6",
         "title": "Alibaba launches AI song generator HappyShrimp 1.0 in beta, with China’s Taihe Music signed up for artist co-creation",
         "summary": "Prompts can specify instrumentation, vocal style and the way a track's energy shifts across its running time, Alibaba said. Source",
         "url": "https://www.musicbusinessworldwide.com/alibaba-launches-ai-song-generator-happyshrimp-1-0-in-beta-with-chinas-taihe-music-signed-up-for-artist-co-creation/",
@@ -94,7 +110,7 @@
         "via": null
       },
       {
-        "id": "noticia-6",
+        "id": "noticia-7",
         "title": "Johnny McDaid to receive BMI President’s Award at 2026 BMI London Awards",
         "summary": "McDaid has written songs recorded by Ed Sheeran, BTS, P!nk, Robbie Williams, Alicia Keys, Lewis Capaldi, Jung Kook, Weezer, Shawn Mendes, David Guetta and Kelly Clarkson. Source",
         "url": "https://www.musicbusinessworldwide.com/johnny-mcdaid-to-receive-bmi-presidents-award-at-2026-bmi-london-awards/",
@@ -106,7 +122,7 @@
         "via": null
       },
       {
-        "id": "noticia-7",
+        "id": "noticia-8",
         "title": "Chinese Tech Giant Alibaba Launches New AI Music Generator Called ‘Happy Shrimp’",
         "summary": "Partnering with Chinese major TAIHE MUSIC GROUP, Happy Shrimp users can create songs from prompts like \"happily single mandopop ballad.\"",
         "url": "https://www.billboard.com/pro/alibaba-launched-ai-music-generator-happy-shrimp/",
@@ -120,10 +136,10 @@
         "via": null
       },
       {
-        "id": "noticia-8",
+        "id": "noticia-9",
         "title": "De un texto a una canción: la nueva IA de Alibaba genera letra, música y voz",
         "summary": "",
-        "url": "https://news.google.com/rss/articles/CBMirgFBVV95cUxPWjFiXzdaSEZ6LWV1S1ZhT0l1bERYclR2RzVObFNhTEJ0VTRTNUllVjRucW5pMldLR2VZRXRPUXZNMzJMS1dsb0gxWno1UFItMHlFV1FBUHJLZDlHMl9Qd1BDY01CeEV2UERscTFnbG54OGs1WkVuWmZBYzFEM0dYd0I5OU9uUFdpSTg4V3FaV3cxclltdVBUYmhxemlOLW1tRkdEVHRzcGJOM0xUN3fSAa4BQVVfeXFMT1oxYl83WkhGei1ldUtWYU9JdWxEWHJUdkc1TmxTYUxCdFU0UzVJZVY0bnFuaTJXS0dlWUV0T1F2TTMyTEtXbG9IMVp6NVBSLTB5RVdRQVByS2Q5RzJfUHdQQ2NNQnhFdlBEbHExZ2xueDhrNVpFblpmQWMxRDNHWHdCOTlPblBXaUk4OFdxWld3MXJZbXVQVGJocXppTi1tbUZHRFR0c3BiTjNMVDd3?oc=5&hl=es-419&gl=MX&ceid=MX:es-419",
+        "url": "https://news.google.com/rss/articles/CBMirgFBVV95cUxPWjFiXzdaSEZ6LWV1S1ZhT0l1bERYclR2RzVObFNhTEJ0VTRTNUllVjRucW5pMldLR2VZRXRPUXZNMzJMS1dsb0gxWno1UFItMHlFV1FBUHJLZDlHMl9Qd1BDY01CeEV2UERscTFnbG54OGs1WkVuWmZBYzFEM0dYd0I5OU9uUFdpSTg4V3FaV3cxclltdVBUYmhxemlOLW1tRkdEVHRzcGJOM0xUN3fSAa4BQVVfeXFMT1oxYl83WkhGei1ldUtWYU9JdWxEWHJUdkc1TmxTYUxCdFU0UzVJZVY0bnFuaTJXS0dlWUV0T1F2TTMyTEtXbG9IMVp6NVBSLTB5RVdRQVByS2Q5RzJfUHdQQ2NNQnhFdlBEbHExZ2xueDhrNVpFblpmQWMxRDNHWHdCOTlPblBXaUk4OFdxWld3MXJZbXVQVGJocXppTi1tbUZHRFR0c3BiTjNMVDd3?oc=5&hl=es-419&gl=US&ceid=US:es-419",
         "source": "Urgente24",
         "domain": "news.google.com",
         "publishedAt": "2026-08-18T11:43:00.000Z",
@@ -134,10 +150,10 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-9",
+        "id": "noticia-10",
         "title": "Suno Signs BMG Licensing Deal 12 Days After German Court Ruled Against Its AI Training",
         "summary": "",
-        "url": "https://news.google.com/rss/articles/CBMi2gFBVV95cUxOajZtNG9VNkRKckpLUHduUnhhM1NFaTJwWm9uX2J0WTdsdXFYVmM3Q1cwWTdES0lBY3hqalhCS0tQSm05MjduVEpsZzV0MU5BYUNnQ2tkS0Fndzc0SG5CRjQxTEdreGlHT0NGVUZ2MGNrRG1jbTV3OEhzMWxvUjg3Qm5CeVpTMjRDUVpsOU02UEJ1MlVGWHZwazh0c1hBN2VHYVhWRi03YnpHN2FST1dfbjEtbDlZdUlvVkROLWE5RWd3dnJtTWZUUlRYVXBRdDhRbWQ4dnZWUGMyQQ?oc=5&hl=es-419&gl=MX&ceid=MX:es-419",
+        "url": "https://news.google.com/rss/articles/CBMi2gFBVV95cUxOajZtNG9VNkRKckpLUHduUnhhM1NFaTJwWm9uX2J0WTdsdXFYVmM3Q1cwWTdES0lBY3hqalhCS0tQSm05MjduVEpsZzV0MU5BYUNnQ2tkS0Fndzc0SG5CRjQxTEdreGlHT0NGVUZ2MGNrRG1jbTV3OEhzMWxvUjg3Qm5CeVpTMjRDUVpsOU02UEJ1MlVGWHZwazh0c1hBN2VHYVhWRi03YnpHN2FST1dfbjEtbDlZdUlvVkROLWE5RWd3dnJtTWZUUlRYVXBRdDhRbWQ4dnZWUGMyQQ?oc=5&hl=es-419&gl=US&ceid=US:es-419",
         "source": "musictimes.com",
         "domain": "news.google.com",
         "publishedAt": "2026-08-13T23:47:10.000Z",
@@ -206,6 +222,21 @@
       },
       {
         "id": "noticia-4",
+        "title": "Calcutta High Court Holds Hotels Need Separate Copyright Licence for Music Played Through In-Room TVs; Cable Subscription Does Not Authorise Commercial Exploitation of Works",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMimwJBVV95cUxQUkxxSUtoTEFPSjdQZXNSUFRVMGI2WTFhb1ltTXJpWEs1UU83Z0Y1MVdEOGYwUVBtQ1RiTGxMXzNmbkFUcVpNX056dTB4WkJWR0lvV1FITWlvS3FnS2lUMGNueElpVjBDQmxfWkNjQWNjWjZsN1dnemdpRERvT0lIUFVuMHlkLTYzNWxWTzFVWFZxTkp5dWU5b29lLVFUSktMdGJoZncyM0N2cDltRWRvdHJITnR4dGo3NUkza1lrblNqQkF2dVRkZ3RDSDYwMUZXb2xfeEx6Z2JlY2Q2QTVOU0o5NlRBcXFheWZPdlVtZkVJbFZPd0FIV1JZN0FPRDRVSVU2U216UWJzREk1V1RsdmdnRmJUa1lGTDBr?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "Raw Law",
+        "domain": "news.google.com",
+        "publishedAt": "2026-08-17T07:57:45.000Z",
+        "tags": [
+          "lawsuit",
+          "licensing"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-5",
         "title": "Robert Kyncl justifies Suno deal, as UMG and Sony press on with lawsuit: ‘In my opinion, you embrace it.’",
         "summary": "Kyncl appeared on Semafor's Mixed Signals podcast on Friday (August 14), where he discussed Suno – and why he'd start a music service at Netflix. Source",
         "url": "https://www.musicbusinessworldwide.com/robert-kyncl-justifies-suno-deal-as-umg-and-sony-press-on-with-lawsuit-in-my-opinion-you-embrace-it/",
@@ -221,7 +252,7 @@
         "via": null
       },
       {
-        "id": "noticia-5",
+        "id": "noticia-6",
         "title": "Alibaba launches AI song generator HappyShrimp 1.0 in beta, with China’s Taihe Music signed up for artist co-creation",
         "summary": "Prompts can specify instrumentation, vocal style and the way a track's energy shifts across its running time, Alibaba said. Source",
         "url": "https://www.musicbusinessworldwide.com/alibaba-launches-ai-song-generator-happyshrimp-1-0-in-beta-with-chinas-taihe-music-signed-up-for-artist-co-creation/",
@@ -235,7 +266,7 @@
         "via": null
       },
       {
-        "id": "noticia-6",
+        "id": "noticia-7",
         "title": "Johnny McDaid to receive BMI President’s Award at 2026 BMI London Awards",
         "summary": "McDaid has written songs recorded by Ed Sheeran, BTS, P!nk, Robbie Williams, Alicia Keys, Lewis Capaldi, Jung Kook, Weezer, Shawn Mendes, David Guetta and Kelly Clarkson. Source",
         "url": "https://www.musicbusinessworldwide.com/johnny-mcdaid-to-receive-bmi-presidents-award-at-2026-bmi-london-awards/",
@@ -247,7 +278,7 @@
         "via": null
       },
       {
-        "id": "noticia-7",
+        "id": "noticia-8",
         "title": "Chinese Tech Giant Alibaba Launches New AI Music Generator Called ‘Happy Shrimp’",
         "summary": "Partnering with Chinese major TAIHE MUSIC GROUP, Happy Shrimp users can create songs from prompts like \"happily single mandopop ballad.\"",
         "url": "https://www.billboard.com/pro/alibaba-launched-ai-music-generator-happy-shrimp/",
@@ -261,10 +292,10 @@
         "via": null
       },
       {
-        "id": "noticia-8",
+        "id": "noticia-9",
         "title": "De un texto a una canción: la nueva IA de Alibaba genera letra, música y voz",
         "summary": "",
-        "url": "https://news.google.com/rss/articles/CBMirgFBVV95cUxPWjFiXzdaSEZ6LWV1S1ZhT0l1bERYclR2RzVObFNhTEJ0VTRTNUllVjRucW5pMldLR2VZRXRPUXZNMzJMS1dsb0gxWno1UFItMHlFV1FBUHJLZDlHMl9Qd1BDY01CeEV2UERscTFnbG54OGs1WkVuWmZBYzFEM0dYd0I5OU9uUFdpSTg4V3FaV3cxclltdVBUYmhxemlOLW1tRkdEVHRzcGJOM0xUN3fSAa4BQVVfeXFMT1oxYl83WkhGei1ldUtWYU9JdWxEWHJUdkc1TmxTYUxCdFU0UzVJZVY0bnFuaTJXS0dlWUV0T1F2TTMyTEtXbG9IMVp6NVBSLTB5RVdRQVByS2Q5RzJfUHdQQ2NNQnhFdlBEbHExZ2xueDhrNVpFblpmQWMxRDNHWHdCOTlPblBXaUk4OFdxWld3MXJZbXVQVGJocXppTi1tbUZHRFR0c3BiTjNMVDd3?oc=5&hl=es-419&gl=MX&ceid=MX:es-419",
+        "url": "https://news.google.com/rss/articles/CBMirgFBVV95cUxPWjFiXzdaSEZ6LWV1S1ZhT0l1bERYclR2RzVObFNhTEJ0VTRTNUllVjRucW5pMldLR2VZRXRPUXZNMzJMS1dsb0gxWno1UFItMHlFV1FBUHJLZDlHMl9Qd1BDY01CeEV2UERscTFnbG54OGs1WkVuWmZBYzFEM0dYd0I5OU9uUFdpSTg4V3FaV3cxclltdVBUYmhxemlOLW1tRkdEVHRzcGJOM0xUN3fSAa4BQVVfeXFMT1oxYl83WkhGei1ldUtWYU9JdWxEWHJUdkc1TmxTYUxCdFU0UzVJZVY0bnFuaTJXS0dlWUV0T1F2TTMyTEtXbG9IMVp6NVBSLTB5RVdRQVByS2Q5RzJfUHdQQ2NNQnhFdlBEbHExZ2xueDhrNVpFblpmQWMxRDNHWHdCOTlPblBXaUk4OFdxWld3MXJZbXVQVGJocXppTi1tbUZHRFR0c3BiTjNMVDd3?oc=5&hl=es-419&gl=US&ceid=US:es-419",
         "source": "Urgente24",
         "domain": "news.google.com",
         "publishedAt": "2026-08-18T11:43:00.000Z",
@@ -275,10 +306,10 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-9",
+        "id": "noticia-10",
         "title": "Suno Signs BMG Licensing Deal 12 Days After German Court Ruled Against Its AI Training",
         "summary": "",
-        "url": "https://news.google.com/rss/articles/CBMi2gFBVV95cUxOajZtNG9VNkRKckpLUHduUnhhM1NFaTJwWm9uX2J0WTdsdXFYVmM3Q1cwWTdES0lBY3hqalhCS0tQSm05MjduVEpsZzV0MU5BYUNnQ2tkS0Fndzc0SG5CRjQxTEdreGlHT0NGVUZ2MGNrRG1jbTV3OEhzMWxvUjg3Qm5CeVpTMjRDUVpsOU02UEJ1MlVGWHZwazh0c1hBN2VHYVhWRi03YnpHN2FST1dfbjEtbDlZdUlvVkROLWE5RWd3dnJtTWZUUlRYVXBRdDhRbWQ4dnZWUGMyQQ?oc=5&hl=es-419&gl=MX&ceid=MX:es-419",
+        "url": "https://news.google.com/rss/articles/CBMi2gFBVV95cUxOajZtNG9VNkRKckpLUHduUnhhM1NFaTJwWm9uX2J0WTdsdXFYVmM3Q1cwWTdES0lBY3hqalhCS0tQSm05MjduVEpsZzV0MU5BYUNnQ2tkS0Fndzc0SG5CRjQxTEdreGlHT0NGVUZ2MGNrRG1jbTV3OEhzMWxvUjg3Qm5CeVpTMjRDUVpsOU02UEJ1MlVGWHZwazh0c1hBN2VHYVhWRi03YnpHN2FST1dfbjEtbDlZdUlvVkROLWE5RWd3dnJtTWZUUlRYVXBRdDhRbWQ4dnZWUGMyQQ?oc=5&hl=es-419&gl=US&ceid=US:es-419",
         "source": "musictimes.com",
         "domain": "news.google.com",
         "publishedAt": "2026-08-13T23:47:10.000Z",
