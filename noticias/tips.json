@@ -1,0 +1,142 @@
+[
+  {
+    "es": {
+      "title": "Registra antes de publicar, no después",
+      "body": "El registro de tu obra no crea el derecho de autor —ese nace con la creación— pero sí te da la prueba con fecha cierta que vale en un juicio. Regístrala antes de subirla a plataformas, no cuando ya tengas el problema."
+    },
+    "en": {
+      "title": "Register before you release, not after",
+      "body": "Registration doesn't create your copyright —that exists from the moment of creation— but it gives you dated proof that holds up in court. Register before uploading to platforms, not after trouble shows up."
+    }
+  },
+  {
+    "es": {
+      "title": "Guarda los proyectos, no solo el master",
+      "body": "En una disputa de autoría, el archivo de sesión de tu DAW con fecha, stems y versiones intermedias pesa más que el WAV final. Respalda el proyecto completo, no nada más el bounce."
+    },
+    "en": {
+      "title": "Keep the project files, not just the master",
+      "body": "In an authorship dispute, your dated DAW session with stems and work-in-progress versions carries more weight than the final WAV. Back up the whole project, not just the bounce."
+    }
+  },
+  {
+    "es": {
+      "title": "Sample sin licencia no se arregla con 'menos de 7 segundos'",
+      "body": "No existe una cantidad de segundos legalmente segura. Cualquier fragmento reconocible puede ser infracción, y necesitas dos permisos: el de la grabación (sello) y el de la composición (editorial)."
+    },
+    "en": {
+      "title": "There is no safe 'under 7 seconds' rule for samples",
+      "body": "No number of seconds is legally safe. Any recognizable fragment can infringe, and you need two clearances: the master recording (label) and the composition (publisher)."
+    }
+  },
+  {
+    "es": {
+      "title": "Split sheet firmado el mismo día de la sesión",
+      "body": "Los porcentajes de autoría se pelean cuando la canción pega, no cuando se escribe. Firma el split sheet con todos los presentes antes de salir del estudio, aunque sean amigos."
+    },
+    "en": {
+      "title": "Sign the split sheet the day of the session",
+      "body": "Songwriting splits get disputed when the song blows up, not when it's written. Sign a split sheet with everyone in the room before you leave the studio —even with friends."
+    }
+  },
+  {
+    "es": {
+      "title": "Trabajo por encargo: quién queda como autor se pacta por escrito",
+      "body": "Si produces para un cliente, define por contrato si cedes derechos, si conservas puntos de producción y si tu nombre aparece en los créditos. Sin contrato, la interpretación depende de la ley de cada país."
+    },
+    "en": {
+      "title": "Work for hire: put authorship in writing",
+      "body": "If you produce for a client, spell out in the contract whether you assign rights, keep producer points, and get credited. Without a contract, the outcome depends on each country's law."
+    }
+  },
+  {
+    "es": {
+      "title": "Content ID no es lo mismo que ser dueño",
+      "body": "Que YouTube reclame un video a tu favor no prueba titularidad, y que no lo reclame no significa que puedas usar la obra. Content ID es un sistema privado de la plataforma, no una autoridad legal."
+    },
+    "en": {
+      "title": "Content ID is not proof of ownership",
+      "body": "A YouTube claim in your favor doesn't prove you own the work, and the absence of a claim doesn't mean you're cleared. Content ID is a private platform system, not a legal authority."
+    }
+  },
+  {
+    "es": {
+      "title": "Voz clonada: el derecho en juego suele no ser el copyright",
+      "body": "Imitar la voz de un artista con IA rara vez es infracción de copyright de la canción; el reclamo típico va por derechos de imagen, voz y publicidad, que varían mucho entre jurisdicciones."
+    },
+    "en": {
+      "title": "Cloned vocals: copyright is usually not the issue",
+      "body": "Mimicking an artist's voice with AI is rarely a copyright infringement of the song itself; claims typically run through name, image, voice and publicity rights, which vary widely by jurisdiction."
+    }
+  },
+  {
+    "es": {
+      "title": "Documenta tu aporte humano cuando uses IA",
+      "body": "Las oficinas de derechos de autor protegen la parte creada por una persona. Guarda prompts, versiones, ediciones y decisiones de mezcla: eso es lo que sostiene tu autoría sobre el resultado."
+    },
+    "en": {
+      "title": "Document your human contribution when using AI",
+      "body": "Copyright offices protect the human-created portion. Keep prompts, versions, edits and mix decisions —that record is what supports your authorship over the final result."
+    }
+  },
+  {
+    "es": {
+      "title": "Lee los términos del generador de IA que usas",
+      "body": "Cada plataforma decide por contrato qué puedes hacer comercialmente con lo que generas y qué derechos se reserva. Dos herramientas parecidas pueden darte licencias completamente distintas."
+    },
+    "en": {
+      "title": "Read the terms of the AI generator you use",
+      "body": "Each platform decides by contract what you may do commercially with your outputs and what rights it keeps. Two similar tools can grant completely different licenses."
+    }
+  },
+  {
+    "es": {
+      "title": "Registra tu catálogo también en la sociedad de gestión",
+      "body": "El registro de autoría y la recaudación son trámites distintos. Si tu obra no está dada de alta en la sociedad correspondiente, las regalías de ejecución pública simplemente no te llegan."
+    },
+    "en": {
+      "title": "Register with your collecting society too",
+      "body": "Copyright registration and royalty collection are separate steps. If your work isn't registered with the right society, public performance royalties simply never reach you."
+    }
+  },
+  {
+    "es": {
+      "title": "Los covers necesitan licencia aunque des crédito",
+      "body": "Acreditar al autor no sustituye la licencia. Para publicar un cover en plataformas necesitas la licencia mecánica correspondiente, y para usarlo en video, además, la sincronización."
+    },
+    "en": {
+      "title": "Covers need a license even if you give credit",
+      "body": "Crediting the songwriter is not a license. Releasing a cover on platforms requires a mechanical license, and using it in a video also requires a sync license."
+    }
+  },
+  {
+    "es": {
+      "title": "Metadata incompleta es dinero que se queda en el limbo",
+      "body": "ISRC, ISWC, nombres legales completos y porcentajes correctos determinan a quién le pagan. Un solo campo mal escrito manda tus regalías a la bolsa de no identificados."
+    },
+    "en": {
+      "title": "Incomplete metadata means money left unclaimed",
+      "body": "ISRC, ISWC, full legal names and correct splits decide who gets paid. A single mistyped field sends your royalties into the unidentified pool."
+    }
+  },
+  {
+    "es": {
+      "title": "Guarda evidencia de la fecha de creación",
+      "body": "Un correo a ti mismo con el archivo adjunto, un repositorio con historial o un servicio de sellado de tiempo cuestan poco y construyen una línea de tiempo defendible."
+    },
+    "en": {
+      "title": "Keep evidence of your creation date",
+      "body": "An email to yourself with the file attached, a repository with history, or a timestamping service cost little and build a defensible timeline."
+    }
+  },
+  {
+    "es": {
+      "title": "Antes de firmar, revisa la reversión de derechos",
+      "body": "La pregunta clave de cualquier contrato no es cuánto te dan hoy, sino cuándo y cómo recuperas tu obra. Si no hay cláusula de reversión, estás cediendo por el plazo completo."
+    },
+    "en": {
+      "title": "Before signing, check the reversion clause",
+      "body": "The key question in any deal isn't what you get today —it's when and how you get your work back. With no reversion clause, you're assigning for the full term."
+    }
+  }
+]

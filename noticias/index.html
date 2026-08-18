@@ -4,31 +4,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Copyright Diarió AI | MusicKnobs</title>
-    <!-- Google Fonts -->
+    <title>Copyright Diario AI | Music Knobs</title>
+    <meta name="description"
+        content="Noticias diarias verificadas sobre derechos de autor e inteligencia artificial para músicos, compositores y productores. Cada nota enlaza a su artículo original.">
+    <meta name="author" content="Music Knobs">
+    <link rel="canonical" href="https://jgmansur.github.io/musicknobs/noticias/">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Copyright Diario AI | Music Knobs">
+    <meta property="og:description"
+        content="Noticias verificadas de copyright e IA para músicos y productores. Cada nota con liga a su fuente original.">
+    <meta property="og:url" content="https://jgmansur.github.io/musicknobs/noticias/">
+    <meta property="og:image" content="https://jgmansur.github.io/musicknobs/LogoBlancoTransparente.png">
+    <meta name="twitter:card" content="summary_large_image">
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;800&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;800;900&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="style.css">
-    <!-- Font Awesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 
 <body>
-    <!-- Background Elements -->
     <div class="glow glow-1"></div>
     <div class="glow glow-2"></div>
 
     <header class="header">
         <div class="container header-container">
             <a href="../" class="logo-link">
-                <img src="../LogoBlancoTransparente.png" alt="MusicKnobs Logo" class="logo">
+                <img src="../LogoBlancoTransparente.png" alt="Music Knobs" class="logo">
             </a>
-            <div class="language-toggle">
-                <button id="lang-es" class="lang-btn active">ES</button>
-                <button id="lang-en" class="lang-btn">EN</button>
+            <div class="language-toggle" role="group" aria-label="Idioma / Language">
+                <button id="lang-es" class="lang-btn active" type="button">ES</button>
+                <button id="lang-en" class="lang-btn" type="button">EN</button>
             </div>
         </div>
     </header>
@@ -36,43 +47,107 @@
     <main class="container">
         <section class="hero-section">
             <div class="badge">
-                <i class="fa-solid fa-bolt"></i> <span id="ui-live-updates">Actualizaciones Diarias</span>
+                <i class="fa-solid fa-bolt" aria-hidden="true"></i> <span id="ui-live-updates">Actualización
+                    diaria</span>
             </div>
-            <h1 id="page-title" class="gradient-text">Cargando...</h1>
-            <p id="page-subtitle" class="subtitle">Obteniendo la información más reciente...</p>
-            <div class="last-updated">
-                <i class="fa-regular fa-clock"></i> <span id="ui-updated-text">Actualizado:</span> <strong
-                    id="date-display">...</strong>
+            <h1 id="page-title" class="gradient-text">Cargando…</h1>
+            <p id="page-subtitle" class="subtitle">Obteniendo las notas más recientes…</p>
+
+            <div class="hero-meta">
+                <span class="meta-chip">
+                    <i class="fa-regular fa-clock" aria-hidden="true"></i>
+                    <span id="ui-updated-text">Actualizado:</span>&nbsp;<strong id="date-display">…</strong>
+                </span>
+                <span class="meta-chip" id="sources-chip" hidden>
+                    <i class="fa-regular fa-newspaper" aria-hidden="true"></i>
+                    <span id="sources-count"></span>
+                </span>
+            </div>
+
+            <!-- Sello de verificación -->
+            <div class="verified-banner">
+                <button class="verified-toggle" id="verified-toggle" type="button" aria-expanded="false"
+                    aria-controls="verified-details">
+                    <span class="verified-seal">
+                        <i class="fa-solid fa-circle-check" aria-hidden="true"></i>
+                    </span>
+                    <span class="verified-text">
+                        <strong id="ui-verified-title">Noticias verificadas</strong>
+                        <span id="ui-verified-sub">Cada nota proviene de un medio real y enlaza a su artículo
+                            original.</span>
+                    </span>
+                    <i class="fa-solid fa-chevron-down verified-chevron" aria-hidden="true"></i>
+                </button>
+
+                <div class="verified-details" id="verified-details" hidden>
+                    <p id="ui-verified-intro">Así se arma esta página, todos los días y de forma automática:</p>
+                    <ol class="verified-steps">
+                        <li id="ui-verified-step1">Se leen los feeds de medios reales de la industria musical y legal,
+                            más búsquedas de prensa en español e inglés.</li>
+                        <li id="ui-verified-step2">Se filtran solo las notas de copyright, IA y derechos musicales
+                            publicadas en los últimos días.</li>
+                        <li id="ui-verified-step3">Se comprueba que la liga de cada artículo responda de verdad. La que
+                            no responde, se descarta.</li>
+                        <li id="ui-verified-step4">La inteligencia artificial <strong>solo traduce y resume</strong> el
+                            texto del artículo original. No genera noticias ni agrega datos.</li>
+                    </ol>
+                    <p class="verified-note" id="ui-verified-note">
+                        <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
+                        Este resumen no es asesoría legal. Haz clic en cada tarjeta para leer la fuente completa y
+                        consulta a un abogado antes de tomar decisiones.
+                    </p>
+                </div>
+            </div>
+
+            <div class="stale-warning" id="stale-warning" hidden>
+                <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
+                <span id="ui-stale-text"></span>
             </div>
         </section>
 
-        <section id="news-container" class="news-grid">
-            <!-- News cards will be injected here by JS -->
+        <section id="news-container" class="news-grid" aria-live="polite">
+            <div class="skeleton-card"></div>
+            <div class="skeleton-card"></div>
+            <div class="skeleton-card"></div>
             <div class="skeleton-card"></div>
             <div class="skeleton-card"></div>
             <div class="skeleton-card"></div>
         </section>
 
-        <!-- YouTube Section -->
+        <!-- Tip del día -->
+        <section class="tip-section glass-panel" id="tip-section" hidden>
+            <div class="tip-icon"><i class="fa-solid fa-lightbulb" aria-hidden="true"></i></div>
+            <div class="tip-body">
+                <span class="tip-label" id="ui-tip-label">Guía del día</span>
+                <h3 id="tip-title"></h3>
+                <p id="tip-body-text"></p>
+            </div>
+        </section>
+
+        <!-- Ediciones anteriores -->
+        <section class="archive-section" id="archive-section" hidden>
+            <h2 class="section-heading" id="ui-archive-title">Ediciones anteriores</h2>
+            <div class="archive-list" id="archive-list"></div>
+        </section>
+
         <section class="youtube-section">
             <div class="youtube-container">
                 <div class="youtube-info">
                     <div class="youtube-icon">
-                        <i class="fa-brands fa-youtube"></i>
+                        <i class="fa-brands fa-youtube" aria-hidden="true"></i>
                     </div>
                     <h3 id="ui-yt-title">¿Te sirvió esta información?</h3>
-                    <p id="ui-yt-desc" class="youtube-desc">La mejor forma de agradecer y apoyar la creación de esta
-                        herramienta gratuita es suscribiéndote al canal de YouTube. ¡Aprende más sobre producción
-                        musical!</p>
+                    <p id="ui-yt-desc" class="youtube-desc">La mejor forma de agradecer y apoyar esta herramienta
+                        gratuita es suscribiéndote al canal de YouTube. ¡Aprende más sobre producción musical!</p>
                     <a href="https://www.youtube.com/@MusicKnobs?sub_confirmation=1" target="_blank"
                         rel="noopener noreferrer" class="yt-subscribe-btn">
-                        <i class="fa-brands fa-youtube"></i> <span id="ui-yt-btn">Suscribirme al Canal</span>
+                        <i class="fa-brands fa-youtube" aria-hidden="true"></i> <span id="ui-yt-btn">Suscribirme al
+                            canal</span>
                     </a>
                 </div>
-                <!-- YouTube latest video embed -->
                 <div class="youtube-video-wrapper">
                     <iframe class="youtube-iframe" width="100%" height="100%"
-                        src="https://www.youtube.com/embed/Ahhc5X6hTJE" title="Siguiente video de MusicKnobs"
+                        src="https://www.youtube.com/embed/Ahhc5X6hTJE" title="Video de Music Knobs" loading="lazy"
                         frameborder="0"
                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                         referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
@@ -83,16 +158,15 @@
         <section class="newsletter-section glass-panel">
             <div class="newsletter-content">
                 <div class="newsletter-icon">
-                    <i class="fa-solid fa-envelope-open-text"></i>
+                    <i class="fa-solid fa-envelope-open-text" aria-hidden="true"></i>
                 </div>
                 <h2 id="ui-newsletter-title">No te pierdas de nada</h2>
-                <p id="ui-newsletter-desc">Únete a nuestra lista para recibir alertas exclusivas sobre grandes cambios
-                    en copyright para músicos y creadores usando IA.</p>
+                <p id="ui-newsletter-desc">Únete a la lista para recibir alertas sobre cambios grandes de copyright para
+                    músicos y creadores que usan IA.</p>
 
-                <!-- Formulario de suscripción conectado a Formspree -->
                 <form action="https://formspree.io/f/xyknkkaj" method="POST" class="subscribe-form" id="subscribe-form">
                     <input type="email" name="email" id="email-input" placeholder="Tu correo electrónico" required
-                        class="email-input">
+                        class="email-input" aria-label="Correo electrónico">
                     <button type="submit" class="submit-btn" id="ui-newsletter-btn">Suscribirse</button>
                 </form>
                 <p class="form-disclaimer" id="ui-newsletter-disclaimer">No enviamos spam. Date de baja cuando quieras.
@@ -103,9 +177,13 @@
 
     <footer class="footer">
         <div class="container">
-            <p>&copy; 2026 MusicKnobs Labs. Todos los derechos reservados.</p>
+            <p class="footer-legal" id="ui-footer-legal">
+                Los titulares y resúmenes pertenecen a sus medios originales, enlazados en cada tarjeta. Contenido
+                informativo, no asesoría legal.
+            </p>
+            <p>&copy; <span id="footer-year">2026</span> Music Knobs. Todos los derechos reservados.</p>
             <p class="footer-links">
-                <a href="../">Volver al Inicio</a>
+                <a href="../">Volver al inicio</a>
             </p>
         </div>
     </footer>

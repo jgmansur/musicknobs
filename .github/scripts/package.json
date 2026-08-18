@@ -1,6 +1,13 @@
 {
-  "dependencies": {
-    "groq-sdk": "^1.1.1",
-    "node-fetch": "^3.3.2"
+  "name": "musicknobs-news-fetcher",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Recolector de noticias verificadas de copyright e IA para musicknobs/noticias. Sin dependencias: usa fetch nativo de Node >= 20.",
+  "main": "fetch_news.js",
+  "scripts": {
+    "fetch": "node fetch_news.js"
+  },
+  "engines": {
+    "node": ">=20"
   }
 }
