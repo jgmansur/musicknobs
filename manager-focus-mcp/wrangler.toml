@@ -1,0 +1,20 @@
+name = "manager-focus-mcp"
+main = "src/index.js"
+compatibility_date = "2025-01-15"
+
+[observability]
+enabled = true
+
+# Cloudflare bloquea (error 1042) que un Worker haga fetch a otro Worker de la
+# misma cuenta por su URL workers.dev. El service binding es la vía correcta:
+# va directo, sin salir a internet.
+[[services]]
+binding = "PROXY"
+service = "manager-app-proxy"
+
+[vars]
+PROXY_URL = "https://manager-app-proxy.musicknobs.workers.dev"
+VIEWER_EMAIL = "jgmansur2@gmail.com"
+
+# MCP_TOKEN va como secret, no como var:
+#   wrangler secret put MCP_TOKEN

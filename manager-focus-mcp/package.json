@@ -1,0 +1,15 @@
+{
+  "name": "manager-focus-mcp",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Servidor MCP remoto para la pestaña Focus de Manager App",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "test": "node --test \"test/*.test.js\""
+  },
+  "devDependencies": {
+    "wrangler": "^4.0.0"
+  }
+}
