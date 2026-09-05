@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-09-05T18:43:33.572Z",
+  "lastUpdated": "2026-09-05T21:08:56.228Z",
   "meta": {
     "method": "rss-retrieval + link-verification + ai-translation",
     "itemCount": 12,
@@ -8,6 +8,7 @@
       "Complete Music Update",
       "Digital Music News",
       "Fast Company",
+      "Law Commentary",
       "Music Business Worldwide",
       "TorrentFreak"
     ],
@@ -156,21 +157,6 @@
       },
       {
         "id": "noticia-10",
-        "title": "YouTube Terms of Service Allow AI Music Training, Google Says in Copyright Lawsuit",
-        "summary": "",
-        "url": "https://news.google.com/rss/articles/CBMikgFBVV95cUxOQWVXVGdVSHVXQ3VvSUJ0TWxyMUhVbXh4Ynd5U0dJOVJYb3NvRWcxWXZfUUc4ZWtycUF5YmpjUjE0TDNWU3VlNkNuWm80Yl9yNVlXYUlHQklFNndQNGFaOTZETktiZkVrSHZvRDJWWHhpZHQ2bUtqOVF6Y1lvMjEtZm9HdFNqbHgwUXdPTi1waVZTUQ?oc=5&hl=es-419&gl=US&ceid=US:es-419",
-        "source": "Billboard",
-        "domain": "news.google.com",
-        "publishedAt": "2026-09-04T21:53:11.000Z",
-        "tags": [
-          "lawsuit",
-          "ai"
-        ],
-        "translated": false,
-        "via": "Google News"
-      },
-      {
-        "id": "noticia-11",
         "title": "Jason Isbell’s Suno lawsuit takes aim beyond AI copyright",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMimAFBVV95cUxOMnB1UkdMSGdwTTFfRDBRbjFnWXY1ZEh1N0FwaGt3RXFQU1Z5LXhOaDJvbGlHTUY2ck5jeUdQaG8wSExRVFV6VFVQTHg1bFVNMmFya2dSbkRvbUlNS0hNamFJcG1QbWllNzN6Z0Q4dVdpY3RWT0JOTWI4NV9DZmtFQmtmbUpyYlgtLXQxMGhFX09BUFFjemJVdg?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -185,7 +171,7 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-12",
+        "id": "noticia-11",
         "title": "Donald Trump’s administration just sided with OpenAI in a key ‘fair use’ case. Here’s what it means for music’s fight with Anthropic and Suno.",
         "summary": "It appears to be the first time Washington has intervened in any of the copyright cases now stacked up against AI companies Source",
         "url": "https://www.musicbusinessworldwide.com/donald-trumps-administration-just-sided-with-openai-in-a-key-fair-use-case-heres-what-it-means-for-musics-fight-with-anthropic-and-suno/",
@@ -197,6 +183,21 @@
         ],
         "translated": false,
         "via": null
+      },
+      {
+        "id": "noticia-12",
+        "title": "Suno Licensing Deals Raise New Issue in AI Copyright Fight With Universal, Sony",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMijwFBVV95cUxOUmstZGJ6NXJ1Nk04ZENqRXE5dHZGeDQ5SDdPVVFMVnpLelVyNzhJajI5WE5UVU9tVkhKbjJuX3VhN1lwVm8wRUtjMXR4emU3ZEU5TC1idENkd3JDN2ptY252V2JoM1RfTlNYdl9nZHJpNGVCb09TcGRTNHZkdVVVZ1Z2X2hlNlFHYjV5cVZKMA?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "Law Commentary",
+        "domain": "news.google.com",
+        "publishedAt": "2026-09-01T14:02:50.000Z",
+        "tags": [
+          "ai",
+          "licensing"
+        ],
+        "translated": false,
+        "via": "Google News"
       }
     ],
     "tip": {
@@ -345,21 +346,6 @@
       },
       {
         "id": "noticia-10",
-        "title": "YouTube Terms of Service Allow AI Music Training, Google Says in Copyright Lawsuit",
-        "summary": "",
-        "url": "https://news.google.com/rss/articles/CBMikgFBVV95cUxOQWVXVGdVSHVXQ3VvSUJ0TWxyMUhVbXh4Ynd5U0dJOVJYb3NvRWcxWXZfUUc4ZWtycUF5YmpjUjE0TDNWU3VlNkNuWm80Yl9yNVlXYUlHQklFNndQNGFaOTZETktiZkVrSHZvRDJWWHhpZHQ2bUtqOVF6Y1lvMjEtZm9HdFNqbHgwUXdPTi1waVZTUQ?oc=5&hl=es-419&gl=US&ceid=US:es-419",
-        "source": "Billboard",
-        "domain": "news.google.com",
-        "publishedAt": "2026-09-04T21:53:11.000Z",
-        "tags": [
-          "lawsuit",
-          "ai"
-        ],
-        "translated": false,
-        "via": "Google News"
-      },
-      {
-        "id": "noticia-11",
         "title": "Jason Isbell’s Suno lawsuit takes aim beyond AI copyright",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMimAFBVV95cUxOMnB1UkdMSGdwTTFfRDBRbjFnWXY1ZEh1N0FwaGt3RXFQU1Z5LXhOaDJvbGlHTUY2ck5jeUdQaG8wSExRVFV6VFVQTHg1bFVNMmFya2dSbkRvbUlNS0hNamFJcG1QbWllNzN6Z0Q4dVdpY3RWT0JOTWI4NV9DZmtFQmtmbUpyYlgtLXQxMGhFX09BUFFjemJVdg?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -374,7 +360,7 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-12",
+        "id": "noticia-11",
         "title": "Donald Trump’s administration just sided with OpenAI in a key ‘fair use’ case. Here’s what it means for music’s fight with Anthropic and Suno.",
         "summary": "It appears to be the first time Washington has intervened in any of the copyright cases now stacked up against AI companies Source",
         "url": "https://www.musicbusinessworldwide.com/donald-trumps-administration-just-sided-with-openai-in-a-key-fair-use-case-heres-what-it-means-for-musics-fight-with-anthropic-and-suno/",
@@ -386,6 +372,21 @@
         ],
         "translated": false,
         "via": null
+      },
+      {
+        "id": "noticia-12",
+        "title": "Suno Licensing Deals Raise New Issue in AI Copyright Fight With Universal, Sony",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMijwFBVV95cUxOUmstZGJ6NXJ1Nk04ZENqRXE5dHZGeDQ5SDdPVVFMVnpLelVyNzhJajI5WE5UVU9tVkhKbjJuX3VhN1lwVm8wRUtjMXR4emU3ZEU5TC1idENkd3JDN2ptY252V2JoM1RfTlNYdl9nZHJpNGVCb09TcGRTNHZkdVVVZ1Z2X2hlNlFHYjV5cVZKMA?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "Law Commentary",
+        "domain": "news.google.com",
+        "publishedAt": "2026-09-01T14:02:50.000Z",
+        "tags": [
+          "ai",
+          "licensing"
+        ],
+        "translated": false,
+        "via": "Google News"
       }
     ],
     "tip": {
