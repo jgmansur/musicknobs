@@ -1,18 +1,15 @@
 {
-  "lastUpdated": "2026-09-07T13:28:17.456Z",
+  "lastUpdated": "2026-09-07T21:58:45.037Z",
   "meta": {
     "method": "rss-retrieval + link-verification + ai-translation",
     "itemCount": 12,
     "sources": [
-      "CBC",
       "Complete Music Update",
       "Digital Music News",
       "Fast Company",
-      "InterSpace Music Distribution",
-      "International Business Times",
       "Music Business Worldwide",
       "TorrentFreak",
-      "lawcommentary.com"
+      "billboard.com"
     ],
     "verifiedLinks": 12,
     "aiTranslated": 0,
@@ -39,6 +36,36 @@
       },
       {
         "id": "noticia-2",
+        "title": "When It Rains, It Pours: SOCAN Sues Suno for Allegedly ‘Engaging in Rampant Copyright Infringement on a Massive Scale’",
+        "summary": "When it rains, it pours: SOCAN has filed a Suno copyright lawsuit of its own, accusing the platform of unlawfully training on protected works and then generating infringing outputs. SOCAN submitted the straightforward complaint to Canada’s Federal Court today, moments after activist artist David Lowery as well as Latin…",
+        "url": "https://www.digitalmusicnews.com/2026/09/02/socan-suno-copyright-lawsuit/",
+        "source": "Digital Music News",
+        "domain": "digitalmusicnews.com",
+        "publishedAt": "2026-09-03T04:30:39.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-3",
+        "title": "Suno Faces Yet Another Multimillion-Dollar Copyright Lawsuit — This Time from Latin and Regional Mexican Label Gerencia",
+        "summary": "Another day, another high-stakes copyright lawsuit against Suno – this time from Latin label and publisher Gerencia 360, which is accusing the AI music platform of infringing on hundreds of compositions and recordings. Founded by Luis del Villar 13 years back, Burbank-headquartered Gerencia submitted its straightforwar…",
+        "url": "https://www.digitalmusicnews.com/2026/09/01/gerencia-suno-lawsuit/",
+        "source": "Digital Music News",
+        "domain": "digitalmusicnews.com",
+        "publishedAt": "2026-09-02T01:00:31.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-4",
         "title": "Latest Suno lawsuit accuses AI company of violating the publicity rights of musicians rather than infringing their copyrights",
         "summary": "Suno is facing another lawsuit from the music industry. But this time it’s not a copyright lawsuit. A group of musicians claim Suno has violated their US publicity rights by “encoding musicians’ identities into its AI model” and then “exploiting those identities by publicly using musicians’ names”",
         "url": "https://completemusicupdate.com/latest-suno-lawsuit-accuses-ai-company-of-violating-the-publicity-rights-of-musicians-rather-than-infringing-their-copyrights/",
@@ -53,7 +80,7 @@
         "via": null
       },
       {
-        "id": "noticia-3",
+        "id": "noticia-5",
         "title": "The Sony and Warner music publishers finally get round to suing Anthropic",
         "summary": "The Sony and Warner music publishing companies are the latest publishers to sue AI firm Anthropic for copyright infringement. They also name Anthropic founders Ben Mann and Dario Amodei as defendants, arguing they were personally involved in the illegal downloading of pirated sheet music and lyrics",
         "url": "https://completemusicupdate.com/the-sony-and-warner-music-publishers-finally-get-round-to-suing-anthropic/",
@@ -68,7 +95,7 @@
         "via": null
       },
       {
-        "id": "noticia-4",
+        "id": "noticia-6",
         "title": "Donald Trump’s DoJ says OpenAI should be able to do whatever it wants with copyright protected works",
         "summary": "The US Department Of Justice has intervened in a legal battle between the New York Times and OpenAI, arguing that AI training is ‘fair use’ under American copyright law. Whether or not AI training is fair use is at the centre of dozens of AI lawsuits, including those filed by the music industry",
         "url": "https://completemusicupdate.com/donald-trumps-doj-says-openai-should-be-able-to-do-whatever-it-wants-with-copyright-protected-works/",
@@ -83,22 +110,21 @@
         "via": null
       },
       {
-        "id": "noticia-5",
-        "title": "SOCAN sues AI music company Suno, alleging copyright infringement",
-        "summary": "",
-        "url": "https://news.google.com/rss/articles/CBMiZ0FVX3lxTFBBV3EyTk5MOXlmSW9xeEhlU3JTN0NwQ2h5Tk9JbTBOUGVRZDgwc0N2bjBFQVVWVTdoVU9QYWhsSk5lZU5wTUdmeXdFV1BXVHR4ZEw0LUxYY3NGc3BobXlGaFMxR0ZHR0E?oc=5&hl=es-419&gl=US&ceid=US:es-419",
-        "source": "CBC",
-        "domain": "news.google.com",
-        "publishedAt": "2026-09-02T17:12:18.000Z",
+        "id": "noticia-7",
+        "title": "Udio Fires Back Against Supersized Sony Music Suit, Emphasizing Its Fair Use Defense and Acknowledging ‘That It Acquired Some of Its Training Data by Utilizing YT-DLP’",
+        "summary": "Udio has fired back against Sony Music’s supersized copyright suit – including by doubling down on its fair use argument and by accusing the major of engaging “in anticompetitive activities that extend an unlawful monopoly over the production and commercialization of music.” The AI music platform just recently offered…",
+        "url": "https://www.digitalmusicnews.com/2026/08/31/sony-music-udio-lawsuit-answer/",
+        "source": "Digital Music News",
+        "domain": "digitalmusicnews.com",
+        "publishedAt": "2026-09-01T01:00:37.000Z",
         "tags": [
-          "lawsuit",
           "ai"
         ],
         "translated": false,
-        "via": "Google News"
+        "via": null
       },
       {
-        "id": "noticia-6",
+        "id": "noticia-8",
         "title": "Adult Film Producer Unmasks Prolific ‘John Doe’ Torrent Pirate as Meta Executive",
         "summary": "A routine John Doe lawsuit could become part of Strike 3 Holdings' $446 million AI training case against Meta. The adult film producer wants to link the two lawsuits, arguing that a Reality Labs executive downloaded nearly 20,000 files at his home for work purposes, not for personal use. Meta counters that the alleged…",
         "url": "https://torrentfreak.com/adult-film-producer-unmasks-prolific-john-doe-torrent-pirate-as-meta-executive/",
@@ -113,7 +139,37 @@
         "via": null
       },
       {
-        "id": "noticia-7",
+        "id": "noticia-9",
+        "title": "Suno Sued by Canadian Music Rights Organization SOCAN for Copyright Infringement",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMihgFBVV95cUxORmJMS1c2SkZHaGR0R3ctclJ0eG83cHhpeVBfQUtYZDBEVnFCclhSeTJySTQtMFp3bHdPVzdwdTdweUJEZ1VHMXpfX1JFUlFaWnFrOWtsMFllclo2djRTY21BOE1CTWllNXR2Q2lmYXM0SFJhRUxHSTlWNnlJM2s4Nng5ODZGUQ?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "billboard.com",
+        "domain": "news.google.com",
+        "publishedAt": "2026-09-02T23:19:09.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-10",
+        "title": "YouTube Terms of Service Allow AI Music Training, Google Says in Copyright Lawsuit",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMikgFBVV95cUxOQWVXVGdVSHVXQ3VvSUJ0TWxyMUhVbXh4Ynd5U0dJOVJYb3NvRWcxWXZfUUc4ZWtycUF5YmpjUjE0TDNWU3VlNkNuWm80Yl9yNVlXYUlHQklFNndQNGFaOTZETktiZkVrSHZvRDJWWHhpZHQ2bUtqOVF6Y1lvMjEtZm9HdFNqbHgwUXdPTi1waVZTUQ?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "billboard.com",
+        "domain": "news.google.com",
+        "publishedAt": "2026-09-06T07:00:00.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-11",
         "title": "Jason Isbell’s Suno lawsuit takes aim beyond AI copyright",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMimAFBVV95cUxOMnB1UkdMSGdwTTFfRDBRbjFnWXY1ZEh1N0FwaGt3RXFQU1Z5LXhOaDJvbGlHTUY2ck5jeUdQaG8wSExRVFV6VFVQTHg1bFVNMmFya2dSbkRvbUlNS0hNamFJcG1QbWllNzN6Z0Q4dVdpY3RWT0JOTWI4NV9DZmtFQmtmbUpyYlgtLXQxMGhFX09BUFFjemJVdg?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -128,7 +184,7 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-8",
+        "id": "noticia-12",
         "title": "Donald Trump’s administration just sided with OpenAI in a key ‘fair use’ case. Here’s what it means for music’s fight with Anthropic and Suno.",
         "summary": "It appears to be the first time Washington has intervened in any of the copyright cases now stacked up against AI companies Source",
         "url": "https://www.musicbusinessworldwide.com/donald-trumps-administration-just-sided-with-openai-in-a-key-fair-use-case-heres-what-it-means-for-musics-fight-with-anthropic-and-suno/",
@@ -140,66 +196,6 @@
         ],
         "translated": false,
         "via": null
-      },
-      {
-        "id": "noticia-9",
-        "title": "Suno Licensing Deals Raise New Issue in AI Copyright Fight With Universal, Sony",
-        "summary": "",
-        "url": "https://news.google.com/rss/articles/CBMijwFBVV95cUxOUmstZGJ6NXJ1Nk04ZENqRXE5dHZGeDQ5SDdPVVFMVnpLelVyNzhJajI5WE5UVU9tVkhKbjJuX3VhN1lwVm8wRUtjMXR4emU3ZEU5TC1idENkd3JDN2ptY252V2JoM1RfTlNYdl9nZHJpNGVCb09TcGRTNHZkdVVVZ1Z2X2hlNlFHYjV5cVZKMA?oc=5&hl=es-419&gl=US&ceid=US:es-419",
-        "source": "lawcommentary.com",
-        "domain": "news.google.com",
-        "publishedAt": "2026-09-01T14:02:50.000Z",
-        "tags": [
-          "ai",
-          "licensing"
-        ],
-        "translated": false,
-        "via": "Google News"
-      },
-      {
-        "id": "noticia-10",
-        "title": "Udio Fires Back Against Supersized Sony Music Copyright Lawsuit",
-        "summary": "",
-        "url": "https://news.google.com/rss/articles/CBMigAFBVV95cUxNMFBBekJTZ1dtU045RmtIY0VPT056UHN2LW9lRm03VVdiSVJKZE02M1l4MUNpbU90U3pJRU1vZWtpaC0yM3F3ZTJyV3Z2cUs2dHRDaTc1NDVkYlBhNVY4aHJBSWVhNVRlM3c0VFR2S0pMSmlIeWNzQnZyS0pIQ3JLXw?oc=5&hl=es-419&gl=US&ceid=US:es-419",
-        "source": "Digital Music News",
-        "domain": "news.google.com",
-        "publishedAt": "2026-08-31T20:20:13.000Z",
-        "tags": [
-          "lawsuit",
-          "ai"
-        ],
-        "translated": false,
-        "via": "Google News"
-      },
-      {
-        "id": "noticia-11",
-        "title": "Music Publishers Sue Anthropic, Claim The Company Pirated Copyrighted Material To Train AI Models",
-        "summary": "",
-        "url": "https://news.google.com/rss/articles/CBMivgFBVV95cUxQRVFSREZ5RDlDWHdReGw0WkpGUFRCbWJjeGV0YzQ2N0NXZ194ZjNXWGVReENFUWhqUG42MFNLbnBVZWFVdUMzOGx3R1FjaE9hb0E0eDNQNWpNa04zQzUtcGZpcEtfT3RGNmZuNms2VTJKOGZpTEQyd2FMQWhWUldMZDlEekFpUjk1X3NPZ1UtaExsMlBaMFdmdGh1M2N5YURnMzdUQkQtR245VWthNjBUVXA3T0FhYlVJeTlDMlNR?oc=5&hl=es-419&gl=US&ceid=US:es-419",
-        "source": "International Business Times",
-        "domain": "news.google.com",
-        "publishedAt": "2026-08-31T14:57:24.000Z",
-        "tags": [
-          "lawsuit",
-          "ai"
-        ],
-        "translated": false,
-        "via": "Google News"
-      },
-      {
-        "id": "noticia-12",
-        "title": "Maldivas tiene 182 resorts y ninguna entidad de licencias musicales. Su ley de derechos de autor indica que el establecimiento debe pagarle directamente al productor.",
-        "summary": "",
-        "url": "https://news.google.com/rss/articles/CBMiqAJBVV95cUxPX04zYng3LTcxV2JPcV9DM3lya3ZfS0JrVTV5LXI4TWM2ZzZSNWxobGVMVk41VjQ0WXVCcFlOQjY4dk50cmFPQm1PdHc3cUNFVjA5dmZNb3ZCa08xUUlZQWUwVFNuOVh1M0lpdWc4bUJIU2Qxazgyd3lHQm5yQmx2aG1lTWpIbTJhQXZmNGNwSTJaN2IwblYtTjIzekJrbTJQaGlBeVI5SW1xZUs3bFVtYm94eE5QT2pUbjAxOGtHQzZqZTVIUXJPN1lYaVIzWkFLbFcybWtzOFJtNFQweGprdGVhX3lyODQ5QWJqZlkwanFJWEY1X3dvd01jYjJtM1pzT3djOURHNU5SSk9fcG9rWHk3b1RQN0I0dnA0eGRwMjFlZDlDRG1FMA?oc=5&hl=es-419&gl=US&ceid=US:es-419",
-        "source": "InterSpace Music Distribution",
-        "domain": "news.google.com",
-        "publishedAt": "2026-09-01T18:24:57.000Z",
-        "tags": [
-          "licensing",
-          "legislation"
-        ],
-        "translated": false,
-        "via": "Google News"
       }
     ],
     "tip": {
@@ -228,6 +224,36 @@
       },
       {
         "id": "noticia-2",
+        "title": "When It Rains, It Pours: SOCAN Sues Suno for Allegedly ‘Engaging in Rampant Copyright Infringement on a Massive Scale’",
+        "summary": "When it rains, it pours: SOCAN has filed a Suno copyright lawsuit of its own, accusing the platform of unlawfully training on protected works and then generating infringing outputs. SOCAN submitted the straightforward complaint to Canada’s Federal Court today, moments after activist artist David Lowery as well as Latin…",
+        "url": "https://www.digitalmusicnews.com/2026/09/02/socan-suno-copyright-lawsuit/",
+        "source": "Digital Music News",
+        "domain": "digitalmusicnews.com",
+        "publishedAt": "2026-09-03T04:30:39.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-3",
+        "title": "Suno Faces Yet Another Multimillion-Dollar Copyright Lawsuit — This Time from Latin and Regional Mexican Label Gerencia",
+        "summary": "Another day, another high-stakes copyright lawsuit against Suno – this time from Latin label and publisher Gerencia 360, which is accusing the AI music platform of infringing on hundreds of compositions and recordings. Founded by Luis del Villar 13 years back, Burbank-headquartered Gerencia submitted its straightforwar…",
+        "url": "https://www.digitalmusicnews.com/2026/09/01/gerencia-suno-lawsuit/",
+        "source": "Digital Music News",
+        "domain": "digitalmusicnews.com",
+        "publishedAt": "2026-09-02T01:00:31.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-4",
         "title": "Latest Suno lawsuit accuses AI company of violating the publicity rights of musicians rather than infringing their copyrights",
         "summary": "Suno is facing another lawsuit from the music industry. But this time it’s not a copyright lawsuit. A group of musicians claim Suno has violated their US publicity rights by “encoding musicians’ identities into its AI model” and then “exploiting those identities by publicly using musicians’ names”",
         "url": "https://completemusicupdate.com/latest-suno-lawsuit-accuses-ai-company-of-violating-the-publicity-rights-of-musicians-rather-than-infringing-their-copyrights/",
@@ -242,7 +268,7 @@
         "via": null
       },
       {
-        "id": "noticia-3",
+        "id": "noticia-5",
         "title": "The Sony and Warner music publishers finally get round to suing Anthropic",
         "summary": "The Sony and Warner music publishing companies are the latest publishers to sue AI firm Anthropic for copyright infringement. They also name Anthropic founders Ben Mann and Dario Amodei as defendants, arguing they were personally involved in the illegal downloading of pirated sheet music and lyrics",
         "url": "https://completemusicupdate.com/the-sony-and-warner-music-publishers-finally-get-round-to-suing-anthropic/",
@@ -257,7 +283,7 @@
         "via": null
       },
       {
-        "id": "noticia-4",
+        "id": "noticia-6",
         "title": "Donald Trump’s DoJ says OpenAI should be able to do whatever it wants with copyright protected works",
         "summary": "The US Department Of Justice has intervened in a legal battle between the New York Times and OpenAI, arguing that AI training is ‘fair use’ under American copyright law. Whether or not AI training is fair use is at the centre of dozens of AI lawsuits, including those filed by the music industry",
         "url": "https://completemusicupdate.com/donald-trumps-doj-says-openai-should-be-able-to-do-whatever-it-wants-with-copyright-protected-works/",
@@ -272,22 +298,21 @@
         "via": null
       },
       {
-        "id": "noticia-5",
-        "title": "SOCAN sues AI music company Suno, alleging copyright infringement",
-        "summary": "",
-        "url": "https://news.google.com/rss/articles/CBMiZ0FVX3lxTFBBV3EyTk5MOXlmSW9xeEhlU3JTN0NwQ2h5Tk9JbTBOUGVRZDgwc0N2bjBFQVVWVTdoVU9QYWhsSk5lZU5wTUdmeXdFV1BXVHR4ZEw0LUxYY3NGc3BobXlGaFMxR0ZHR0E?oc=5&hl=es-419&gl=US&ceid=US:es-419",
-        "source": "CBC",
-        "domain": "news.google.com",
-        "publishedAt": "2026-09-02T17:12:18.000Z",
+        "id": "noticia-7",
+        "title": "Udio Fires Back Against Supersized Sony Music Suit, Emphasizing Its Fair Use Defense and Acknowledging ‘That It Acquired Some of Its Training Data by Utilizing YT-DLP’",
+        "summary": "Udio has fired back against Sony Music’s supersized copyright suit – including by doubling down on its fair use argument and by accusing the major of engaging “in anticompetitive activities that extend an unlawful monopoly over the production and commercialization of music.” The AI music platform just recently offered…",
+        "url": "https://www.digitalmusicnews.com/2026/08/31/sony-music-udio-lawsuit-answer/",
+        "source": "Digital Music News",
+        "domain": "digitalmusicnews.com",
+        "publishedAt": "2026-09-01T01:00:37.000Z",
         "tags": [
-          "lawsuit",
           "ai"
         ],
         "translated": false,
-        "via": "Google News"
+        "via": null
       },
       {
-        "id": "noticia-6",
+        "id": "noticia-8",
         "title": "Adult Film Producer Unmasks Prolific ‘John Doe’ Torrent Pirate as Meta Executive",
         "summary": "A routine John Doe lawsuit could become part of Strike 3 Holdings' $446 million AI training case against Meta. The adult film producer wants to link the two lawsuits, arguing that a Reality Labs executive downloaded nearly 20,000 files at his home for work purposes, not for personal use. Meta counters that the alleged…",
         "url": "https://torrentfreak.com/adult-film-producer-unmasks-prolific-john-doe-torrent-pirate-as-meta-executive/",
@@ -302,7 +327,37 @@
         "via": null
       },
       {
-        "id": "noticia-7",
+        "id": "noticia-9",
+        "title": "Suno Sued by Canadian Music Rights Organization SOCAN for Copyright Infringement",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMihgFBVV95cUxORmJMS1c2SkZHaGR0R3ctclJ0eG83cHhpeVBfQUtYZDBEVnFCclhSeTJySTQtMFp3bHdPVzdwdTdweUJEZ1VHMXpfX1JFUlFaWnFrOWtsMFllclo2djRTY21BOE1CTWllNXR2Q2lmYXM0SFJhRUxHSTlWNnlJM2s4Nng5ODZGUQ?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "billboard.com",
+        "domain": "news.google.com",
+        "publishedAt": "2026-09-02T23:19:09.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-10",
+        "title": "YouTube Terms of Service Allow AI Music Training, Google Says in Copyright Lawsuit",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMikgFBVV95cUxOQWVXVGdVSHVXQ3VvSUJ0TWxyMUhVbXh4Ynd5U0dJOVJYb3NvRWcxWXZfUUc4ZWtycUF5YmpjUjE0TDNWU3VlNkNuWm80Yl9yNVlXYUlHQklFNndQNGFaOTZETktiZkVrSHZvRDJWWHhpZHQ2bUtqOVF6Y1lvMjEtZm9HdFNqbHgwUXdPTi1waVZTUQ?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "billboard.com",
+        "domain": "news.google.com",
+        "publishedAt": "2026-09-06T07:00:00.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-11",
         "title": "Jason Isbell’s Suno lawsuit takes aim beyond AI copyright",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMimAFBVV95cUxOMnB1UkdMSGdwTTFfRDBRbjFnWXY1ZEh1N0FwaGt3RXFQU1Z5LXhOaDJvbGlHTUY2ck5jeUdQaG8wSExRVFV6VFVQTHg1bFVNMmFya2dSbkRvbUlNS0hNamFJcG1QbWllNzN6Z0Q4dVdpY3RWT0JOTWI4NV9DZmtFQmtmbUpyYlgtLXQxMGhFX09BUFFjemJVdg?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -317,7 +372,7 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-8",
+        "id": "noticia-12",
         "title": "Donald Trump’s administration just sided with OpenAI in a key ‘fair use’ case. Here’s what it means for music’s fight with Anthropic and Suno.",
         "summary": "It appears to be the first time Washington has intervened in any of the copyright cases now stacked up against AI companies Source",
         "url": "https://www.musicbusinessworldwide.com/donald-trumps-administration-just-sided-with-openai-in-a-key-fair-use-case-heres-what-it-means-for-musics-fight-with-anthropic-and-suno/",
@@ -329,66 +384,6 @@
         ],
         "translated": false,
         "via": null
-      },
-      {
-        "id": "noticia-9",
-        "title": "Suno Licensing Deals Raise New Issue in AI Copyright Fight With Universal, Sony",
-        "summary": "",
-        "url": "https://news.google.com/rss/articles/CBMijwFBVV95cUxOUmstZGJ6NXJ1Nk04ZENqRXE5dHZGeDQ5SDdPVVFMVnpLelVyNzhJajI5WE5UVU9tVkhKbjJuX3VhN1lwVm8wRUtjMXR4emU3ZEU5TC1idENkd3JDN2ptY252V2JoM1RfTlNYdl9nZHJpNGVCb09TcGRTNHZkdVVVZ1Z2X2hlNlFHYjV5cVZKMA?oc=5&hl=es-419&gl=US&ceid=US:es-419",
-        "source": "lawcommentary.com",
-        "domain": "news.google.com",
-        "publishedAt": "2026-09-01T14:02:50.000Z",
-        "tags": [
-          "ai",
-          "licensing"
-        ],
-        "translated": false,
-        "via": "Google News"
-      },
-      {
-        "id": "noticia-10",
-        "title": "Udio Fires Back Against Supersized Sony Music Copyright Lawsuit",
-        "summary": "",
-        "url": "https://news.google.com/rss/articles/CBMigAFBVV95cUxNMFBBekJTZ1dtU045RmtIY0VPT056UHN2LW9lRm03VVdiSVJKZE02M1l4MUNpbU90U3pJRU1vZWtpaC0yM3F3ZTJyV3Z2cUs2dHRDaTc1NDVkYlBhNVY4aHJBSWVhNVRlM3c0VFR2S0pMSmlIeWNzQnZyS0pIQ3JLXw?oc=5&hl=es-419&gl=US&ceid=US:es-419",
-        "source": "Digital Music News",
-        "domain": "news.google.com",
-        "publishedAt": "2026-08-31T20:20:13.000Z",
-        "tags": [
-          "lawsuit",
-          "ai"
-        ],
-        "translated": false,
-        "via": "Google News"
-      },
-      {
-        "id": "noticia-11",
-        "title": "Music Publishers Sue Anthropic, Claim The Company Pirated Copyrighted Material To Train AI Models",
-        "summary": "",
-        "url": "https://news.google.com/rss/articles/CBMivgFBVV95cUxQRVFSREZ5RDlDWHdReGw0WkpGUFRCbWJjeGV0YzQ2N0NXZ194ZjNXWGVReENFUWhqUG42MFNLbnBVZWFVdUMzOGx3R1FjaE9hb0E0eDNQNWpNa04zQzUtcGZpcEtfT3RGNmZuNms2VTJKOGZpTEQyd2FMQWhWUldMZDlEekFpUjk1X3NPZ1UtaExsMlBaMFdmdGh1M2N5YURnMzdUQkQtR245VWthNjBUVXA3T0FhYlVJeTlDMlNR?oc=5&hl=es-419&gl=US&ceid=US:es-419",
-        "source": "International Business Times",
-        "domain": "news.google.com",
-        "publishedAt": "2026-08-31T14:57:24.000Z",
-        "tags": [
-          "lawsuit",
-          "ai"
-        ],
-        "translated": false,
-        "via": "Google News"
-      },
-      {
-        "id": "noticia-12",
-        "title": "Maldivas tiene 182 resorts y ninguna entidad de licencias musicales. Su ley de derechos de autor indica que el establecimiento debe pagarle directamente al productor.",
-        "summary": "",
-        "url": "https://news.google.com/rss/articles/CBMiqAJBVV95cUxPX04zYng3LTcxV2JPcV9DM3lya3ZfS0JrVTV5LXI4TWM2ZzZSNWxobGVMVk41VjQ0WXVCcFlOQjY4dk50cmFPQm1PdHc3cUNFVjA5dmZNb3ZCa08xUUlZQWUwVFNuOVh1M0lpdWc4bUJIU2Qxazgyd3lHQm5yQmx2aG1lTWpIbTJhQXZmNGNwSTJaN2IwblYtTjIzekJrbTJQaGlBeVI5SW1xZUs3bFVtYm94eE5QT2pUbjAxOGtHQzZqZTVIUXJPN1lYaVIzWkFLbFcybWtzOFJtNFQweGprdGVhX3lyODQ5QWJqZlkwanFJWEY1X3dvd01jYjJtM1pzT3djOURHNU5SSk9fcG9rWHk3b1RQN0I0dnA0eGRwMjFlZDlDRG1FMA?oc=5&hl=es-419&gl=US&ceid=US:es-419",
-        "source": "InterSpace Music Distribution",
-        "domain": "news.google.com",
-        "publishedAt": "2026-09-01T18:24:57.000Z",
-        "tags": [
-          "licensing",
-          "legislation"
-        ],
-        "translated": false,
-        "via": "Google News"
       }
     ],
     "tip": {
