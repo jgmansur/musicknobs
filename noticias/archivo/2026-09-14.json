@@ -1,20 +1,20 @@
 {
-  "lastUpdated": "2026-09-14T13:55:33.305Z",
+  "lastUpdated": "2026-09-14T22:26:18.796Z",
   "meta": {
     "method": "rss-retrieval + link-verification + ai-translation",
     "itemCount": 12,
     "sources": [
+      "Beat 100.9",
       "Cadena 3 Argentina",
       "Complete Music Update",
+      "Digital Music News",
       "El Sol de México",
-      "Infobae",
+      "Industria Musical",
       "Music Ally",
-      "Music Business Worldwide",
-      "Rhode Island Lawyers Weekly",
-      "TorrentFreak"
+      "infobae.com"
     ],
     "verifiedLinks": 12,
-    "aiTranslated": 1,
+    "aiTranslated": 0,
     "note": "Los hechos provienen de los artículos originales enlazados. La IA solo traduce y resume; no genera noticias."
   },
   "es": {
@@ -23,8 +23,53 @@
     "items": [
       {
         "id": "noticia-1",
+        "title": "Suno estrena sus modelos v6 con Warner, BMG y Believe",
+        "summary": "Suno, una de las principales plataformas de música con inteligencia artificial y objeto de demandas por derechos de autor en varios frentes, ha lanzado su suite de modelos v6, la primera que la compañía desarrolla con socios de la industria: Warner Music Group, BMG y Believe. Con este estreno, la firma retira simultáne…",
+        "url": "https://industriamusical.com/suno-v6-modelos-ia-warner-bmg-believe/?utm_source=rss&utm_medium=rss&utm_campaign=suno-v6-modelos-ia-warner-bmg-believe",
+        "source": "Industria Musical",
+        "domain": "industriamusical.com",
+        "publishedAt": "2026-09-12T11:10:12.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-2",
+        "title": "Tribunal alemán falla contra Suno por derechos de autor",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMikAFBVV95cUxPY3ZnMVI0QUQ2Vk1ZRC1FdXBHTWVfdzRHM01GZnVNVEdWclQ3V0wzcWRCeUVYcjhuaWQ1N1hGcV85U1lkRnY5SWh2aTJsVEFKdVkwRXlXQnhPeGZESElTbHd1Z1NiSGkwVWRXcnpKQnV3cUpKVmRvMlVpaEVTMy1GcVktRDVvYnhTaWx4RjBwNU4?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "Beat 100.9",
+        "domain": "news.google.com",
+        "publishedAt": "2026-09-14T14:00:28.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-3",
+        "title": "UMG firma un acuerdo global de IA con ElevenLabs",
+        "summary": "Universal Music Group (UMG) ha firmado un acuerdo de licencia plurianual con ElevenLabs, la compañía de inteligencia artificial de audio valorada en 11.000 millones de dólares. Es el primer pacto de ElevenLabs con una gran discográfica y contempla el lanzamiento de una nueva plataforma de música con IA para fans, ademá…",
+        "url": "https://industriamusical.com/umg-acuerdo-global-ia-elevenlabs/?utm_source=rss&utm_medium=rss&utm_campaign=umg-acuerdo-global-ia-elevenlabs",
+        "source": "Industria Musical",
+        "domain": "industriamusical.com",
+        "publishedAt": "2026-09-12T11:09:19.000Z",
+        "tags": [
+          "ai",
+          "licensing"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-4",
         "title": "Suno lanza un nuevo modelo de IA para música tras múltiples demandas por derechos de autor",
-        "summary": "Suno ha presentado un nuevo modelo de inteligencia artificial para la creación musical, actualmente en medio de varias demandas relacionadas con derechos de autor que la empresa enfrenta en la industria.",
+        "summary": "",
         "url": "https://news.google.com/rss/articles/CBMi1wFBVV95cUxOWmdNNllLakllSDBVRW05dHFPdEdZbmRoR3ZrSnNpWHIzeVl0d1haTmtqUUFrNnYzMEMtcDdiMkg5NWhGVVpWV3hiVkxwSE1oT1dITkdXSjdyN0x6bUFGeWhQMHh3OUdiNnktaGpZblE3UExTZUVTVWZuVEo4NUViMl9obXdaWVNOLUNUVXBnTTVIb043bWhiN3hnM1lKakRtdzJuSjhZTkJNbnRpWVRCN1BWQk83OVB5dXA0QVlIWkxKM2RDX1lOeGpaZVFTRTdpWkZfVGR3d9IB3AFBVV95cUxQOTN4V2Z5UjlvWXFmLWJzWnZscy1fdVYtR1p0a2tyd3IxZXgwLWI3d1dUNGRQU2h0SU8ya0IwMjNyd2lxRzV4aGE3R2FOTUZpV1lnbVI1dlBnSFh2UzNheEJiUkZPd19BdV9oeDJGSVNkNF9weXY2VWR5Q2xCQ3ZNaTNGUDdBS3YyZXRSQVlKLV94ZnotUV9sTzhFZXFwR1pZNFVlVnVwellzWkhJS3RUQ053M3Q3T1Q4T2FrYlpvYVhLVjlNVUluZTBrQUhrSlE1LUdzcnk3UzlsZEJB?oc=5&hl=es-419&gl=US&ceid=US:es-419",
         "source": "Cadena 3 Argentina",
         "domain": "news.google.com",
@@ -33,11 +78,11 @@
           "lawsuit",
           "ai"
         ],
-        "translated": true,
+        "translated": false,
         "via": "Google News"
       },
       {
-        "id": "noticia-2",
+        "id": "noticia-5",
         "title": "ElevenLabs unveils ‘Music v2.5’ – but UMG wasn’t involved",
         "summary": "Fresh from announcing a licensing deal with Universal Music Group, ElevenLabs has unveiled the latest version of its ElevenMusic AI-music service… while stressing that UMG is not involved in the latter. The post is from Music Ally .",
         "url": "https://musically.com/2026/09/14/elevenlabs-unveils-music-v2-5-but-umg-wasnt-involved/",
@@ -52,7 +97,22 @@
         "via": null
       },
       {
-        "id": "noticia-3",
+        "id": "noticia-6",
+        "title": "Will You Please Stop Suing Us Now? Suno Turns a Legit Leaf With ‘v6’ as Warner Music’s Kyncl Leads the Licensed AI Pep Rally",
+        "summary": "Moments after announcing a Believe partnership deal, Suno is now rolling out its Warner Music- and BMG-backed v6 models – with an eye on expanding into “opt-in experiences built around individual artists.” The sudden shift marks a big departure from earlier, non-licensed content grabs, but is it too late for Suno to sh…",
+        "url": "https://www.digitalmusicnews.com/2026/09/09/suno-v6-launch/",
+        "source": "Digital Music News",
+        "domain": "digitalmusicnews.com",
+        "publishedAt": "2026-09-10T04:30:21.000Z",
+        "tags": [
+          "ai",
+          "licensing"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-7",
         "title": "Canciones creadas con IA abren un nuevo debate sobre derechos de autor",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMi6AFBVV95cUxQcldYeGJUMmNxZEk5blk1X2t0VmlYSHZxYTQwd3czR0J0cHZiLVdzQlZhdVlITzdRa3FCRTVmT0RiRmtDTlJBcE80YXBlMUQwSC0yM1pHU2ZfZ1k4MHFpQXBRT1pNalFiYUR1NE1hMnlyVFVOZDF0d1FaNDF2RWZjRl9IajZCSlVRLXJlS0M3NWduRkFoTE5tTGpmZkZ6Z01SUG9jVXZDMzJUbDFxX21lRmR0VGZZTFpUVXM4QlpHMmwtYzJRemxJcVFuUWxyRmlOZzR6MTk1STFZaWp4UHBnNDctcUlLVmZX?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -66,29 +126,13 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-4",
-        "title": "US musicians’ union files opposition to Universal and Warner motions to dismiss, saying members’ recordings were ‘fed into AI systems for commercial exploitation’",
-        "summary": "The American Federation of Musicians has filed its opposition to the motions to dismiss brought by Universal Music Group, Inc., Warner Records, Inc., and Atlantic Recording Corp. in its lawsuit over the labels’ licensing deals with AI companies. In the filing, submitted to a New York federal court on Friday (September…",
-        "url": "https://www.musicbusinessworldwide.com/us-musicians-union-files-opposition-to-universal-and-warner-motions-to-dismiss-saying-members-recordings-were-fed-into-ai-systems-for-commercial-exploitation/",
-        "source": "Music Business Worldwide",
-        "domain": "musicbusinessworldwide.com",
-        "publishedAt": "2026-09-10T19:33:31.000Z",
-        "tags": [
-          "lawsuit",
-          "ai",
-          "licensing"
-        ],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-5",
-        "title": "ElevenLabs’ $11B valuation is more than twice the size of Suno’s. It just struck a global AI music deal with UMG.",
-        "summary": "ElevenLabs will launch an AI-powered music platform for fans under the deal, with the two companies also jointly developing AI audio products for artists and songwriters Source",
-        "url": "https://www.musicbusinessworldwide.com/elevenlabss-11b-valuation-is-more-than-twice-the-size-of-sunos-its-just-struck-a-global-ai-music-deal-with-umg/",
-        "source": "Music Business Worldwide",
-        "domain": "musicbusinessworldwide.com",
-        "publishedAt": "2026-09-10T19:25:50.000Z",
+        "id": "noticia-8",
+        "title": "Universal Music and ElevenLabs Ink Multi-Year Partnership Deal, Say They’re Already Developing ‘A New AI-Powered Music Creation Platform’",
+        "summary": "Another day, another high-profile AI licensing deal: Universal Music Group (UMG) and ElevenLabs are now collaborating to develop a “platform built on licensed music and artist participation.” The major label and the well-funded AI developer, which has been aggressively expanding into music since August 2025, formally d…",
+        "url": "https://www.digitalmusicnews.com/2026/09/10/universal-music-elevenlabs-deal/",
+        "source": "Digital Music News",
+        "domain": "digitalmusicnews.com",
+        "publishedAt": "2026-09-10T17:23:02.000Z",
         "tags": [
           "ai",
           "licensing"
@@ -97,7 +141,21 @@
         "via": null
       },
       {
-        "id": "noticia-6",
+        "id": "noticia-9",
+        "title": "ElevenLabs Launches Its ‘Best Music Model Yet’ in v2.5 — While Emphasizing That Universal Music’s Walled Garden ‘Deal Is Separate’",
+        "summary": "ElevenLabs has officially launched ElevenMusic v2.5 – but not with its newest partner, Universal Music Group (UMG), which is collaborating on the development of a different product. ElevenLabs rolled out v2.5 on Friday, emphasizing in the corresponding announcement that the model “is now the default for prompted and re…",
+        "url": "https://www.digitalmusicnews.com/2026/09/14/elevenmusic-v25-launch/",
+        "source": "Digital Music News",
+        "domain": "digitalmusicnews.com",
+        "publishedAt": "2026-09-14T22:06:25.000Z",
+        "tags": [
+          "licensing"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-10",
         "title": "Suno unveils upgrade developed with “music industry partners”, while continuing to battle the music industry in court",
         "summary": "Suno has unveiled v6 of its music AI platform, which has been developed with its industry partners like Warner Music, BMG and Believe. However, even as it starts to work with some labels and publishers on new AI products, it continues to fight other music companies in the courts",
         "url": "https://completemusicupdate.com/suno-unveils-upgrade-developed-with-music-industry-partners-while-continuing-to-battle-the-music-industry-in-court/",
@@ -112,13 +170,13 @@
         "via": null
       },
       {
-        "id": "noticia-7",
+        "id": "noticia-11",
         "title": "Crear música con IA basada en artistas reales no será un problema por este acuerdo de Suno con Warner Music y BMG",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMi6wFBVV95cUxPN2k1alBSU3hnX3luU09VN3JrRFlkNXpILURIcVE5bUY2cm9WdlE5bUN2WkhmSUhuZDFNc3JfM2lkaER2R3NVZ2hleXFodEFFMVMwbkZodS1XOEpUTGhKR3Y0NWdnTXl3bEN3OE5nbExMeTZrdXpfcEF5SW9vMU93MnNacWpuQ0VleGF4bjBka21DV244WjIzR0w5NVlDSTdDd0ZKM3dVaU9JRnVGRm9pU0wxUWNicVV2NUY5VTNwem94MENLbG1zSXlCQWJuSk10cGhLZUxEMFIwMTZ4R2N6Vm9ieXM4YjgtMUZr0gGGAkFVX3lxTE5IcEZUdDRwS2J3bUNLd1hCbTU5WVE2WmNKcjRDZUNiUWRGUWJIbl9jQXVINkxIcVlnbUlZLWh4SDlEenllTk94Yk9ZRGlRVXgyblpkcVZ1M3h4RVA3R1hIVUotVGo0cFdTcjVHY1NRbmdmV3QtZndoOHIwUGRXQmNsM3V5X190MkZlQ19OSWhxSzFhaXJkRlhDNnhfLUpZWTV6Z3ZyZVFXcF9KZ0ktb0l3SmpBbjB4NmZ5dDUzSmZZQmgycFJsOEFTQ2tPMTVURU94Mm5zbjVkdUVKTFo0NjVHVEk1SllQX1VVMW5yeGM2R3BWM2RhMjBSX0h1TkRCaF9oSHBiYWc?oc=5&hl=es-419&gl=US&ceid=US:es-419",
-        "source": "Infobae",
+        "source": "infobae.com",
         "domain": "news.google.com",
-        "publishedAt": "2026-09-09T14:27:43.000Z",
+        "publishedAt": "2026-09-09T15:01:00.000Z",
         "tags": [
           "ai",
           "licensing"
@@ -127,7 +185,7 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-8",
+        "id": "noticia-12",
         "title": "UMG’s ElevenLabs deal is latest move to AI remix experiences",
         "summary": "Another day, another AI-music deal for Universal Music Group. This time it’s ElevenLabs signing on the dotted line – its first agreement with a major following Kobalt and Merlin. The post is from Music Ally .",
         "url": "https://musically.com/2026/09/11/umgs-elevenlabs-deal-is-latest-move-to-ai-remix-experiences/",
@@ -140,63 +198,6 @@
         ],
         "translated": false,
         "via": null
-      },
-      {
-        "id": "noticia-9",
-        "title": "Stray Kids Label Hits Music Distributor With DMCA Subpoena Over Bootleg Track",
-        "summary": "Stray Kids is one of the biggest bands in today's music industry. Because of that massive reach, a solo track from member Han went from a YouTube exclusive to bootleg releases on Apple Music and TikTok in days. Label JYP Entertainment now wants to identify the bootlegger. Instead of subpoenaing the platforms, it target…",
-        "url": "https://torrentfreak.com/stray-kids-label-hits-music-distributor-with-dmca-subpoena-over-bootleg-track/",
-        "source": "TorrentFreak",
-        "domain": "torrentfreak.com",
-        "publishedAt": "2026-09-08T09:02:41.000Z",
-        "tags": [
-          "streaming"
-        ],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-10",
-        "title": "“Tengo una visión del futuro”: el director de Suno defiende su modelo de IA musical en medio de la desconfianza de la industria",
-        "summary": "",
-        "url": "https://news.google.com/rss/articles/CBMi_AFBVV95cUxOQ3hHMzRJN3QzRUFpS29aX2Zmc0R0VTRyUHk0SUFudHQ1dmdQcjlpLW9PU2FDbU5BaHFMVVZqSF9LUGlzdTFKS1p4VHFnaVlJN1NobE53NjVqMEo2bGZuM01nQWp3dnZGSDZBVW1Ed2pTYm5kRkFRcG1rT3pncjFXYVlsNW5yaW9WUkFJNVhxQ0JlTG84UHJzVG5UeXhQN0l6dHpjZm9oTHAxc19uT2kxeVlzY2xBNTl3QzVJTFE5bGwzbGwzVXcybjJtWWkyNndtdmIxNXhVU2h2N09QeDJPa2Rmc0hyaWkwNUQ1dDVnMXRNTk9DVkNPQUFkOVnSAZcCQVVfeXFMTnBfcWhXSE81ejVfU0RSaTk1ZVBaU1RSeUdWWW9nSWFEc3U3aHVNM2twVHdnYVNkdzlGeTI4VGZ1aTU3NWpqc2JvVlhYRzUtSzRISE1YOTlBLXE0WWNLMTBkcUVWM2lXTjJwRG1pZDdGX1dzVTBGSkVQaUlGMVE5aEREbHJoNnVMdzBxLUhrSTdLVkZXNXMzNzZfR2IzTFdwUVVPU2dqSWZ5THpFamw0ZVZOMDh6QlVNV0ltel9Nc3FQRF90aF9qd3QxbXBjbC02bGpPb1hrNE8wamdpSGxXVjliZEFQOF9QQTc3T0VWVkhsZ2w1Z1Z3NVJDSnVXeTJTVzUzek5VMWFMbGlucUpVNlhBeFpUeEhr?oc=5&hl=es-419&gl=US&ceid=US:es-419",
-        "source": "Infobae",
-        "domain": "news.google.com",
-        "publishedAt": "2026-09-12T04:30:00.000Z",
-        "tags": [
-          "ai"
-        ],
-        "translated": false,
-        "via": "Google News"
-      },
-      {
-        "id": "noticia-11",
-        "title": "IFPI urges EU countries to fully implement AI Act’s new rules",
-        "summary": "Yesterday was clearly the day for giving governments a kick up the backside when it comes to AI regulation. While AIM boss Gee Davy was addressing the UK government in London, global labels body the IFPI was holding an event in Brussels to launch the 2026 edition of its ‘Music in the EU’ report. The post is from Music…",
-        "url": "https://musically.com/2026/09/11/ifpi-urges-eu-countries-to-fully-implement-ai-acts-new-rules/",
-        "source": "Music Ally",
-        "domain": "musically.com",
-        "publishedAt": "2026-09-11T12:30:00.000Z",
-        "tags": [
-          "ai",
-          "legislation"
-        ],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-12",
-        "title": "Operator of AI music generator can’t escape copyright suit",
-        "summary": "",
-        "url": "https://news.google.com/rss/articles/CBMif0FVX3lxTE1yQWdJMWhESjNzSkdleWg2QnVYUm5XenE1SHZqTjdKc0JoVS1YbTlTaWY0dkloS0JCdnp2TThNNkRzQjk2Y3VYVThMRTAzYkZCWnFaN3VPSnd6ME85OC1EdzNRVlJYSkYxaHNhMS1uUVcyWVc2TU8tTGljb1ZQRlk?oc=5&hl=es-419&gl=US&ceid=US:es-419",
-        "source": "Rhode Island Lawyers Weekly",
-        "domain": "news.google.com",
-        "publishedAt": "2026-09-07T13:40:56.000Z",
-        "tags": [
-          "ai"
-        ],
-        "translated": false,
-        "via": "Google News"
       }
     ],
     "tip": {
@@ -210,8 +211,53 @@
     "items": [
       {
         "id": "noticia-1",
-        "title": "Suno launches new AI music model amid multiple copyright lawsuits",
-        "summary": "Suno has launched a new artificial‑intelligence model for music creation, while it is currently confronting multiple copyright lawsuits and its ongoing legal battles that challenge its operations within the music industry.",
+        "title": "Suno estrena sus modelos v6 con Warner, BMG y Believe",
+        "summary": "Suno, una de las principales plataformas de música con inteligencia artificial y objeto de demandas por derechos de autor en varios frentes, ha lanzado su suite de modelos v6, la primera que la compañía desarrolla con socios de la industria: Warner Music Group, BMG y Believe. Con este estreno, la firma retira simultáne…",
+        "url": "https://industriamusical.com/suno-v6-modelos-ia-warner-bmg-believe/?utm_source=rss&utm_medium=rss&utm_campaign=suno-v6-modelos-ia-warner-bmg-believe",
+        "source": "Industria Musical",
+        "domain": "industriamusical.com",
+        "publishedAt": "2026-09-12T11:10:12.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-2",
+        "title": "Tribunal alemán falla contra Suno por derechos de autor",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMikAFBVV95cUxPY3ZnMVI0QUQ2Vk1ZRC1FdXBHTWVfdzRHM01GZnVNVEdWclQ3V0wzcWRCeUVYcjhuaWQ1N1hGcV85U1lkRnY5SWh2aTJsVEFKdVkwRXlXQnhPeGZESElTbHd1Z1NiSGkwVWRXcnpKQnV3cUpKVmRvMlVpaEVTMy1GcVktRDVvYnhTaWx4RjBwNU4?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "Beat 100.9",
+        "domain": "news.google.com",
+        "publishedAt": "2026-09-14T14:00:28.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-3",
+        "title": "UMG firma un acuerdo global de IA con ElevenLabs",
+        "summary": "Universal Music Group (UMG) ha firmado un acuerdo de licencia plurianual con ElevenLabs, la compañía de inteligencia artificial de audio valorada en 11.000 millones de dólares. Es el primer pacto de ElevenLabs con una gran discográfica y contempla el lanzamiento de una nueva plataforma de música con IA para fans, ademá…",
+        "url": "https://industriamusical.com/umg-acuerdo-global-ia-elevenlabs/?utm_source=rss&utm_medium=rss&utm_campaign=umg-acuerdo-global-ia-elevenlabs",
+        "source": "Industria Musical",
+        "domain": "industriamusical.com",
+        "publishedAt": "2026-09-12T11:09:19.000Z",
+        "tags": [
+          "ai",
+          "licensing"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-4",
+        "title": "Suno lanza un nuevo modelo de IA para música tras múltiples demandas por derechos de autor",
+        "summary": "",
         "url": "https://news.google.com/rss/articles/CBMi1wFBVV95cUxOWmdNNllLakllSDBVRW05dHFPdEdZbmRoR3ZrSnNpWHIzeVl0d1haTmtqUUFrNnYzMEMtcDdiMkg5NWhGVVpWV3hiVkxwSE1oT1dITkdXSjdyN0x6bUFGeWhQMHh3OUdiNnktaGpZblE3UExTZUVTVWZuVEo4NUViMl9obXdaWVNOLUNUVXBnTTVIb043bWhiN3hnM1lKakRtdzJuSjhZTkJNbnRpWVRCN1BWQk83OVB5dXA0QVlIWkxKM2RDX1lOeGpaZVFTRTdpWkZfVGR3d9IB3AFBVV95cUxQOTN4V2Z5UjlvWXFmLWJzWnZscy1fdVYtR1p0a2tyd3IxZXgwLWI3d1dUNGRQU2h0SU8ya0IwMjNyd2lxRzV4aGE3R2FOTUZpV1lnbVI1dlBnSFh2UzNheEJiUkZPd19BdV9oeDJGSVNkNF9weXY2VWR5Q2xCQ3ZNaTNGUDdBS3YyZXRSQVlKLV94ZnotUV9sTzhFZXFwR1pZNFVlVnVwellzWkhJS3RUQ053M3Q3T1Q4T2FrYlpvYVhLVjlNVUluZTBrQUhrSlE1LUdzcnk3UzlsZEJB?oc=5&hl=es-419&gl=US&ceid=US:es-419",
         "source": "Cadena 3 Argentina",
         "domain": "news.google.com",
@@ -220,11 +266,11 @@
           "lawsuit",
           "ai"
         ],
-        "translated": true,
+        "translated": false,
         "via": "Google News"
       },
       {
-        "id": "noticia-2",
+        "id": "noticia-5",
         "title": "ElevenLabs unveils ‘Music v2.5’ – but UMG wasn’t involved",
         "summary": "Fresh from announcing a licensing deal with Universal Music Group, ElevenLabs has unveiled the latest version of its ElevenMusic AI-music service… while stressing that UMG is not involved in the latter. The post is from Music Ally .",
         "url": "https://musically.com/2026/09/14/elevenlabs-unveils-music-v2-5-but-umg-wasnt-involved/",
@@ -239,7 +285,22 @@
         "via": null
       },
       {
-        "id": "noticia-3",
+        "id": "noticia-6",
+        "title": "Will You Please Stop Suing Us Now? Suno Turns a Legit Leaf With ‘v6’ as Warner Music’s Kyncl Leads the Licensed AI Pep Rally",
+        "summary": "Moments after announcing a Believe partnership deal, Suno is now rolling out its Warner Music- and BMG-backed v6 models – with an eye on expanding into “opt-in experiences built around individual artists.” The sudden shift marks a big departure from earlier, non-licensed content grabs, but is it too late for Suno to sh…",
+        "url": "https://www.digitalmusicnews.com/2026/09/09/suno-v6-launch/",
+        "source": "Digital Music News",
+        "domain": "digitalmusicnews.com",
+        "publishedAt": "2026-09-10T04:30:21.000Z",
+        "tags": [
+          "ai",
+          "licensing"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-7",
         "title": "Canciones creadas con IA abren un nuevo debate sobre derechos de autor",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMi6AFBVV95cUxQcldYeGJUMmNxZEk5blk1X2t0VmlYSHZxYTQwd3czR0J0cHZiLVdzQlZhdVlITzdRa3FCRTVmT0RiRmtDTlJBcE80YXBlMUQwSC0yM1pHU2ZfZ1k4MHFpQXBRT1pNalFiYUR1NE1hMnlyVFVOZDF0d1FaNDF2RWZjRl9IajZCSlVRLXJlS0M3NWduRkFoTE5tTGpmZkZ6Z01SUG9jVXZDMzJUbDFxX21lRmR0VGZZTFpUVXM4QlpHMmwtYzJRemxJcVFuUWxyRmlOZzR6MTk1STFZaWp4UHBnNDctcUlLVmZX?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -253,29 +314,13 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-4",
-        "title": "US musicians’ union files opposition to Universal and Warner motions to dismiss, saying members’ recordings were ‘fed into AI systems for commercial exploitation’",
-        "summary": "The American Federation of Musicians has filed its opposition to the motions to dismiss brought by Universal Music Group, Inc., Warner Records, Inc., and Atlantic Recording Corp. in its lawsuit over the labels’ licensing deals with AI companies. In the filing, submitted to a New York federal court on Friday (September…",
-        "url": "https://www.musicbusinessworldwide.com/us-musicians-union-files-opposition-to-universal-and-warner-motions-to-dismiss-saying-members-recordings-were-fed-into-ai-systems-for-commercial-exploitation/",
-        "source": "Music Business Worldwide",
-        "domain": "musicbusinessworldwide.com",
-        "publishedAt": "2026-09-10T19:33:31.000Z",
-        "tags": [
-          "lawsuit",
-          "ai",
-          "licensing"
-        ],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-5",
-        "title": "ElevenLabs’ $11B valuation is more than twice the size of Suno’s. It just struck a global AI music deal with UMG.",
-        "summary": "ElevenLabs will launch an AI-powered music platform for fans under the deal, with the two companies also jointly developing AI audio products for artists and songwriters Source",
-        "url": "https://www.musicbusinessworldwide.com/elevenlabss-11b-valuation-is-more-than-twice-the-size-of-sunos-its-just-struck-a-global-ai-music-deal-with-umg/",
-        "source": "Music Business Worldwide",
-        "domain": "musicbusinessworldwide.com",
-        "publishedAt": "2026-09-10T19:25:50.000Z",
+        "id": "noticia-8",
+        "title": "Universal Music and ElevenLabs Ink Multi-Year Partnership Deal, Say They’re Already Developing ‘A New AI-Powered Music Creation Platform’",
+        "summary": "Another day, another high-profile AI licensing deal: Universal Music Group (UMG) and ElevenLabs are now collaborating to develop a “platform built on licensed music and artist participation.” The major label and the well-funded AI developer, which has been aggressively expanding into music since August 2025, formally d…",
+        "url": "https://www.digitalmusicnews.com/2026/09/10/universal-music-elevenlabs-deal/",
+        "source": "Digital Music News",
+        "domain": "digitalmusicnews.com",
+        "publishedAt": "2026-09-10T17:23:02.000Z",
         "tags": [
           "ai",
           "licensing"
@@ -284,7 +329,21 @@
         "via": null
       },
       {
-        "id": "noticia-6",
+        "id": "noticia-9",
+        "title": "ElevenLabs Launches Its ‘Best Music Model Yet’ in v2.5 — While Emphasizing That Universal Music’s Walled Garden ‘Deal Is Separate’",
+        "summary": "ElevenLabs has officially launched ElevenMusic v2.5 – but not with its newest partner, Universal Music Group (UMG), which is collaborating on the development of a different product. ElevenLabs rolled out v2.5 on Friday, emphasizing in the corresponding announcement that the model “is now the default for prompted and re…",
+        "url": "https://www.digitalmusicnews.com/2026/09/14/elevenmusic-v25-launch/",
+        "source": "Digital Music News",
+        "domain": "digitalmusicnews.com",
+        "publishedAt": "2026-09-14T22:06:25.000Z",
+        "tags": [
+          "licensing"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-10",
         "title": "Suno unveils upgrade developed with “music industry partners”, while continuing to battle the music industry in court",
         "summary": "Suno has unveiled v6 of its music AI platform, which has been developed with its industry partners like Warner Music, BMG and Believe. However, even as it starts to work with some labels and publishers on new AI products, it continues to fight other music companies in the courts",
         "url": "https://completemusicupdate.com/suno-unveils-upgrade-developed-with-music-industry-partners-while-continuing-to-battle-the-music-industry-in-court/",
@@ -299,13 +358,13 @@
         "via": null
       },
       {
-        "id": "noticia-7",
+        "id": "noticia-11",
         "title": "Crear música con IA basada en artistas reales no será un problema por este acuerdo de Suno con Warner Music y BMG",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMi6wFBVV95cUxPN2k1alBSU3hnX3luU09VN3JrRFlkNXpILURIcVE5bUY2cm9WdlE5bUN2WkhmSUhuZDFNc3JfM2lkaER2R3NVZ2hleXFodEFFMVMwbkZodS1XOEpUTGhKR3Y0NWdnTXl3bEN3OE5nbExMeTZrdXpfcEF5SW9vMU93MnNacWpuQ0VleGF4bjBka21DV244WjIzR0w5NVlDSTdDd0ZKM3dVaU9JRnVGRm9pU0wxUWNicVV2NUY5VTNwem94MENLbG1zSXlCQWJuSk10cGhLZUxEMFIwMTZ4R2N6Vm9ieXM4YjgtMUZr0gGGAkFVX3lxTE5IcEZUdDRwS2J3bUNLd1hCbTU5WVE2WmNKcjRDZUNiUWRGUWJIbl9jQXVINkxIcVlnbUlZLWh4SDlEenllTk94Yk9ZRGlRVXgyblpkcVZ1M3h4RVA3R1hIVUotVGo0cFdTcjVHY1NRbmdmV3QtZndoOHIwUGRXQmNsM3V5X190MkZlQ19OSWhxSzFhaXJkRlhDNnhfLUpZWTV6Z3ZyZVFXcF9KZ0ktb0l3SmpBbjB4NmZ5dDUzSmZZQmgycFJsOEFTQ2tPMTVURU94Mm5zbjVkdUVKTFo0NjVHVEk1SllQX1VVMW5yeGM2R3BWM2RhMjBSX0h1TkRCaF9oSHBiYWc?oc=5&hl=es-419&gl=US&ceid=US:es-419",
-        "source": "Infobae",
+        "source": "infobae.com",
         "domain": "news.google.com",
-        "publishedAt": "2026-09-09T14:27:43.000Z",
+        "publishedAt": "2026-09-09T15:01:00.000Z",
         "tags": [
           "ai",
           "licensing"
@@ -314,7 +373,7 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-8",
+        "id": "noticia-12",
         "title": "UMG’s ElevenLabs deal is latest move to AI remix experiences",
         "summary": "Another day, another AI-music deal for Universal Music Group. This time it’s ElevenLabs signing on the dotted line – its first agreement with a major following Kobalt and Merlin. The post is from Music Ally .",
         "url": "https://musically.com/2026/09/11/umgs-elevenlabs-deal-is-latest-move-to-ai-remix-experiences/",
@@ -327,63 +386,6 @@
         ],
         "translated": false,
         "via": null
-      },
-      {
-        "id": "noticia-9",
-        "title": "Stray Kids Label Hits Music Distributor With DMCA Subpoena Over Bootleg Track",
-        "summary": "Stray Kids is one of the biggest bands in today's music industry. Because of that massive reach, a solo track from member Han went from a YouTube exclusive to bootleg releases on Apple Music and TikTok in days. Label JYP Entertainment now wants to identify the bootlegger. Instead of subpoenaing the platforms, it target…",
-        "url": "https://torrentfreak.com/stray-kids-label-hits-music-distributor-with-dmca-subpoena-over-bootleg-track/",
-        "source": "TorrentFreak",
-        "domain": "torrentfreak.com",
-        "publishedAt": "2026-09-08T09:02:41.000Z",
-        "tags": [
-          "streaming"
-        ],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-10",
-        "title": "“Tengo una visión del futuro”: el director de Suno defiende su modelo de IA musical en medio de la desconfianza de la industria",
-        "summary": "",
-        "url": "https://news.google.com/rss/articles/CBMi_AFBVV95cUxOQ3hHMzRJN3QzRUFpS29aX2Zmc0R0VTRyUHk0SUFudHQ1dmdQcjlpLW9PU2FDbU5BaHFMVVZqSF9LUGlzdTFKS1p4VHFnaVlJN1NobE53NjVqMEo2bGZuM01nQWp3dnZGSDZBVW1Ed2pTYm5kRkFRcG1rT3pncjFXYVlsNW5yaW9WUkFJNVhxQ0JlTG84UHJzVG5UeXhQN0l6dHpjZm9oTHAxc19uT2kxeVlzY2xBNTl3QzVJTFE5bGwzbGwzVXcybjJtWWkyNndtdmIxNXhVU2h2N09QeDJPa2Rmc0hyaWkwNUQ1dDVnMXRNTk9DVkNPQUFkOVnSAZcCQVVfeXFMTnBfcWhXSE81ejVfU0RSaTk1ZVBaU1RSeUdWWW9nSWFEc3U3aHVNM2twVHdnYVNkdzlGeTI4VGZ1aTU3NWpqc2JvVlhYRzUtSzRISE1YOTlBLXE0WWNLMTBkcUVWM2lXTjJwRG1pZDdGX1dzVTBGSkVQaUlGMVE5aEREbHJoNnVMdzBxLUhrSTdLVkZXNXMzNzZfR2IzTFdwUVVPU2dqSWZ5THpFamw0ZVZOMDh6QlVNV0ltel9Nc3FQRF90aF9qd3QxbXBjbC02bGpPb1hrNE8wamdpSGxXVjliZEFQOF9QQTc3T0VWVkhsZ2w1Z1Z3NVJDSnVXeTJTVzUzek5VMWFMbGlucUpVNlhBeFpUeEhr?oc=5&hl=es-419&gl=US&ceid=US:es-419",
-        "source": "Infobae",
-        "domain": "news.google.com",
-        "publishedAt": "2026-09-12T04:30:00.000Z",
-        "tags": [
-          "ai"
-        ],
-        "translated": false,
-        "via": "Google News"
-      },
-      {
-        "id": "noticia-11",
-        "title": "IFPI urges EU countries to fully implement AI Act’s new rules",
-        "summary": "Yesterday was clearly the day for giving governments a kick up the backside when it comes to AI regulation. While AIM boss Gee Davy was addressing the UK government in London, global labels body the IFPI was holding an event in Brussels to launch the 2026 edition of its ‘Music in the EU’ report. The post is from Music…",
-        "url": "https://musically.com/2026/09/11/ifpi-urges-eu-countries-to-fully-implement-ai-acts-new-rules/",
-        "source": "Music Ally",
-        "domain": "musically.com",
-        "publishedAt": "2026-09-11T12:30:00.000Z",
-        "tags": [
-          "ai",
-          "legislation"
-        ],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-12",
-        "title": "Operator of AI music generator can’t escape copyright suit",
-        "summary": "",
-        "url": "https://news.google.com/rss/articles/CBMif0FVX3lxTE1yQWdJMWhESjNzSkdleWg2QnVYUm5XenE1SHZqTjdKc0JoVS1YbTlTaWY0dkloS0JCdnp2TThNNkRzQjk2Y3VYVThMRTAzYkZCWnFaN3VPSnd6ME85OC1EdzNRVlJYSkYxaHNhMS1uUVcyWVc2TU8tTGljb1ZQRlk?oc=5&hl=es-419&gl=US&ceid=US:es-419",
-        "source": "Rhode Island Lawyers Weekly",
-        "domain": "news.google.com",
-        "publishedAt": "2026-09-07T13:40:56.000Z",
-        "tags": [
-          "ai"
-        ],
-        "translated": false,
-        "via": "Google News"
       }
     ],
     "tip": {
