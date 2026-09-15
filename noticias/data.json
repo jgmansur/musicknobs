@@ -1,16 +1,18 @@
 {
-  "lastUpdated": "2026-09-15T12:37:49.869Z",
+  "lastUpdated": "2026-09-15T22:08:29.558Z",
   "meta": {
     "method": "rss-retrieval + link-verification + ai-translation",
     "itemCount": 12,
     "sources": [
+      "Aristegui Noticias",
       "Cadena 3 Argentina",
-      "Complete Music Update",
       "Digital Music News",
       "El Sol de México",
       "Industria Musical",
       "Music Ally",
-      "Music Business Worldwide"
+      "Music Business Worldwide",
+      "Unite.AI",
+      "Variety"
     ],
     "verifiedLinks": 12,
     "aiTranslated": 0,
@@ -22,6 +24,21 @@
     "items": [
       {
         "id": "noticia-1",
+        "title": "Universal Music Group Sues DistroKid for Deceptive Trade Practices and Building an ‘AI-Slop Pipeline’",
+        "summary": "Universal Music Group sued the distribution service DistroKid on Tuesday, claiming in a federal lawsuit that the service infringed on the label’s copyright by pumping out “AI-generated ‘slop’ that siphons revenue and listeners from the legitimate artists and rightsholders.” In the 52-page lawsuit, filed in the U.S. Dis…",
+        "url": "https://variety.com/2026/music/news/universal-music-group-sues-distrokid-ai-slop-pipeline-1236863076/",
+        "source": "Variety",
+        "domain": "variety.com",
+        "publishedAt": "2026-09-15T16:16:48.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-2",
         "title": "Suno estrena sus modelos v6 con Warner, BMG y Believe",
         "summary": "Suno, una de las principales plataformas de música con inteligencia artificial y objeto de demandas por derechos de autor en varios frentes, ha lanzado su suite de modelos v6, la primera que la compañía desarrolla con socios de la industria: Warner Music Group, BMG y Believe. Con este estreno, la firma retira simultáne…",
         "url": "https://industriamusical.com/suno-v6-modelos-ia-warner-bmg-believe/?utm_source=rss&utm_medium=rss&utm_campaign=suno-v6-modelos-ia-warner-bmg-believe",
@@ -36,7 +53,37 @@
         "via": null
       },
       {
-        "id": "noticia-2",
+        "id": "noticia-3",
+        "title": "Universal Music demanda a DistroKid por copyright y música creada con IA",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMitgFBVV95cUxNZ01DRVJVTHlNSk5rdF8xV1pkWkRaVE1nQWU1eDZPTG1saU9WVDQxOXZzdU9GNUtNaUNMbUpwblVCY2E4RDE1Y3BEUHJIckh2cEpyN1RXZ3FBUkNXQjRNY3hPUU00S1AwUlU0bGR3SFVTUGRNUG5wLVh2ejhtU2J4c0hJQUtsckw4OFRPQVMxN084b3d4NmRRdDBBdVl4aEZsdHN4dVpVWlNEY2JVTkM3cGpLNk9OUQ?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "Aristegui Noticias",
+        "domain": "news.google.com",
+        "publishedAt": "2026-09-15T20:38:00.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-4",
+        "title": "UMG demanda a DistroKid por ‘slop’ de IA y violación de derechos de autor",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMiiwFBVV95cUxNdUduWjM2TkdtY3JZUzg1aTZfeVhVbEt0UzRvUUlDTjYwNGR2ekFjWUlia2c2UDFsaWFRSVJ5STRUZFBnMldMN0JiZ1RQZ0JqYU5oZTVRRS1IaWNUdHRpN1phQVFoZG1qLXdGOERJeWlGOXBGamhFOGVnaXpGQno2bHVLQ0xrVzZzdldV?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "Unite.AI",
+        "domain": "news.google.com",
+        "publishedAt": "2026-09-15T17:09:33.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-5",
         "title": "UMG firma un acuerdo global de IA con ElevenLabs",
         "summary": "Universal Music Group (UMG) ha firmado un acuerdo de licencia plurianual con ElevenLabs, la compañía de inteligencia artificial de audio valorada en 11.000 millones de dólares. Es el primer pacto de ElevenLabs con una gran discográfica y contempla el lanzamiento de una nueva plataforma de música con IA para fans, ademá…",
         "url": "https://industriamusical.com/umg-acuerdo-global-ia-elevenlabs/?utm_source=rss&utm_medium=rss&utm_campaign=umg-acuerdo-global-ia-elevenlabs",
@@ -51,7 +98,7 @@
         "via": null
       },
       {
-        "id": "noticia-3",
+        "id": "noticia-6",
         "title": "Suno lanza un nuevo modelo de IA para música tras múltiples demandas por derechos de autor",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMi1wFBVV95cUxOWmdNNllLakllSDBVRW05dHFPdEdZbmRoR3ZrSnNpWHIzeVl0d1haTmtqUUFrNnYzMEMtcDdiMkg5NWhGVVpWV3hiVkxwSE1oT1dITkdXSjdyN0x6bUFGeWhQMHh3OUdiNnktaGpZblE3UExTZUVTVWZuVEo4NUViMl9obXdaWVNOLUNUVXBnTTVIb043bWhiN3hnM1lKakRtdzJuSjhZTkJNbnRpWVRCN1BWQk83OVB5dXA0QVlIWkxKM2RDX1lOeGpaZVFTRTdpWkZfVGR3d9IB3AFBVV95cUxQOTN4V2Z5UjlvWXFmLWJzWnZscy1fdVYtR1p0a2tyd3IxZXgwLWI3d1dUNGRQU2h0SU8ya0IwMjNyd2lxRzV4aGE3R2FOTUZpV1lnbVI1dlBnSFh2UzNheEJiUkZPd19BdV9oeDJGSVNkNF9weXY2VWR5Q2xCQ3ZNaTNGUDdBS3YyZXRSQVlKLV94ZnotUV9sTzhFZXFwR1pZNFVlVnVwellzWkhJS3RUQ053M3Q3T1Q4T2FrYlpvYVhLVjlNVUluZTBrQUhrSlE1LUdzcnk3UzlsZEJB?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -66,7 +113,7 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-4",
+        "id": "noticia-7",
         "title": "5 things You Need to Know About ElevenLabs, the UMG AI partner with an $11B valuation – and big ambitions in music.",
         "summary": "UMG and ElevenLabs announced a licensing agreement, which will see the latter build a fan platform for remixes, mashups, and \"new track interpretations.\" Source",
         "url": "https://www.musicbusinessworldwide.com/5-things-you-need-to-know-about-elevenlabs-the-umg-ai-partner-with-an-11b-valuation-and-big-ambitions-in-music/",
@@ -81,7 +128,7 @@
         "via": null
       },
       {
-        "id": "noticia-5",
+        "id": "noticia-8",
         "title": "ElevenLabs unveils ‘Music v2.5’ – but UMG wasn’t involved",
         "summary": "Fresh from announcing a licensing deal with Universal Music Group, ElevenLabs has unveiled the latest version of its ElevenMusic AI-music service… while stressing that UMG is not involved in the latter. The post is from Music Ally .",
         "url": "https://musically.com/2026/09/14/elevenlabs-unveils-music-v2-5-but-umg-wasnt-involved/",
@@ -96,7 +143,7 @@
         "via": null
       },
       {
-        "id": "noticia-6",
+        "id": "noticia-9",
         "title": "Will You Please Stop Suing Us Now? Suno Turns a Legit Leaf With ‘v6’ as Warner Music’s Kyncl Leads the Licensed AI Pep Rally",
         "summary": "Moments after announcing a Believe partnership deal, Suno is now rolling out its Warner Music- and BMG-backed v6 models – with an eye on expanding into “opt-in experiences built around individual artists.” The sudden shift marks a big departure from earlier, non-licensed content grabs, but is it too late for Suno to sh…",
         "url": "https://www.digitalmusicnews.com/2026/09/09/suno-v6-launch/",
@@ -111,7 +158,19 @@
         "via": null
       },
       {
-        "id": "noticia-7",
+        "id": "noticia-10",
+        "title": "Sheryl Crow Serenaded by Olivia Rodrigo, Chris Stapleton, Jason Isbell and Other Stars at BMI Troubadour Tribute in Nashville",
+        "summary": "The lure of paying tribute to Sheryl Crow in speech and song brought out the big guns at an event honoring the singer-songwriter in Nashville Monday night, as Olivia Rodrigo, Chris Stapleton, Jason Isbell, Lauren Daigle, Eric Church and Melissa Etheridge all turned out to turn in stellar covers of Crow’s songs as part…",
+        "url": "https://variety.com/2026/music/news/sheryl-crow-bmi-tribute-olivia-rodrigo-cover-troubadour-1236862947/",
+        "source": "Variety",
+        "domain": "variety.com",
+        "publishedAt": "2026-09-15T15:21:35.000Z",
+        "tags": [],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-11",
         "title": "EU Kids Act set to restrict social media, video, games and AI",
         "summary": "There have been rumours recently of imminent legislation introducing a social-media ban for children in the European Union. It seems the bill will now debut on Thursday (17 September). The post is from Music Ally .",
         "url": "https://musically.com/2026/09/15/eu-kids-act-set-to-restrict-social-media-video-games-and-ai/",
@@ -126,7 +185,7 @@
         "via": null
       },
       {
-        "id": "noticia-8",
+        "id": "noticia-12",
         "title": "Canciones creadas con IA abren un nuevo debate sobre derechos de autor",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMi6AFBVV95cUxQcldYeGJUMmNxZEk5blk1X2t0VmlYSHZxYTQwd3czR0J0cHZiLVdzQlZhdVlITzdRa3FCRTVmT0RiRmtDTlJBcE80YXBlMUQwSC0yM1pHU2ZfZ1k4MHFpQXBRT1pNalFiYUR1NE1hMnlyVFVOZDF0d1FaNDF2RWZjRl9IajZCSlVRLXJlS0M3NWduRkFoTE5tTGpmZkZ6Z01SUG9jVXZDMzJUbDFxX21lRmR0VGZZTFpUVXM4QlpHMmwtYzJRemxJcVFuUWxyRmlOZzR6MTk1STFZaWp4UHBnNDctcUlLVmZX?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -138,64 +197,6 @@
         ],
         "translated": false,
         "via": "Google News"
-      },
-      {
-        "id": "noticia-9",
-        "title": "ElevenLabs launched Music v2.5 – shortly after announcing its UMG licensing deal.",
-        "summary": "The model went live on September 11 and is now the default “for prompted and reference generation” in ElevenMusic, the company said. Source",
-        "url": "https://www.musicbusinessworldwide.com/elevenlabs-launched-music-v2-5-shortly-after-announcing-its-umg-licensing-deal/",
-        "source": "Music Business Worldwide",
-        "domain": "musicbusinessworldwide.com",
-        "publishedAt": "2026-09-15T08:36:19.000Z",
-        "tags": [
-          "licensing"
-        ],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-10",
-        "title": "Universal Music and ElevenLabs Ink Multi-Year Partnership Deal, Say They’re Already Developing ‘A New AI-Powered Music Creation Platform’",
-        "summary": "Another day, another high-profile AI licensing deal: Universal Music Group (UMG) and ElevenLabs are now collaborating to develop a “platform built on licensed music and artist participation.” The major label and the well-funded AI developer, which has been aggressively expanding into music since August 2025, formally d…",
-        "url": "https://www.digitalmusicnews.com/2026/09/10/universal-music-elevenlabs-deal/",
-        "source": "Digital Music News",
-        "domain": "digitalmusicnews.com",
-        "publishedAt": "2026-09-10T17:23:02.000Z",
-        "tags": [
-          "ai",
-          "licensing"
-        ],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-11",
-        "title": "ElevenLabs Launches Its ‘Best Music Model Yet’ in v2.5 — While Emphasizing That Universal Music’s Walled Garden ‘Deal Is Separate’",
-        "summary": "ElevenLabs has officially launched ElevenMusic v2.5 – but not with its newest partner, Universal Music Group (UMG), which is collaborating on the development of a different product. ElevenLabs rolled out v2.5 on Friday, emphasizing in the corresponding announcement that the model “is now the default for prompted and re…",
-        "url": "https://www.digitalmusicnews.com/2026/09/14/elevenmusic-v25-launch/",
-        "source": "Digital Music News",
-        "domain": "digitalmusicnews.com",
-        "publishedAt": "2026-09-14T22:06:25.000Z",
-        "tags": [
-          "licensing"
-        ],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-12",
-        "title": "Suno unveils upgrade developed with “music industry partners”, while continuing to battle the music industry in court",
-        "summary": "Suno has unveiled v6 of its music AI platform, which has been developed with its industry partners like Warner Music, BMG and Believe. However, even as it starts to work with some labels and publishers on new AI products, it continues to fight other music companies in the courts",
-        "url": "https://completemusicupdate.com/suno-unveils-upgrade-developed-with-music-industry-partners-while-continuing-to-battle-the-music-industry-in-court/",
-        "source": "Complete Music Update",
-        "domain": "completemusicupdate.com",
-        "publishedAt": "2026-09-09T13:47:53.000Z",
-        "tags": [
-          "lawsuit",
-          "ai"
-        ],
-        "translated": false,
-        "via": null
       }
     ],
     "tip": {
@@ -209,6 +210,21 @@
     "items": [
       {
         "id": "noticia-1",
+        "title": "Universal Music Group Sues DistroKid for Deceptive Trade Practices and Building an ‘AI-Slop Pipeline’",
+        "summary": "Universal Music Group sued the distribution service DistroKid on Tuesday, claiming in a federal lawsuit that the service infringed on the label’s copyright by pumping out “AI-generated ‘slop’ that siphons revenue and listeners from the legitimate artists and rightsholders.” In the 52-page lawsuit, filed in the U.S. Dis…",
+        "url": "https://variety.com/2026/music/news/universal-music-group-sues-distrokid-ai-slop-pipeline-1236863076/",
+        "source": "Variety",
+        "domain": "variety.com",
+        "publishedAt": "2026-09-15T16:16:48.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-2",
         "title": "Suno estrena sus modelos v6 con Warner, BMG y Believe",
         "summary": "Suno, una de las principales plataformas de música con inteligencia artificial y objeto de demandas por derechos de autor en varios frentes, ha lanzado su suite de modelos v6, la primera que la compañía desarrolla con socios de la industria: Warner Music Group, BMG y Believe. Con este estreno, la firma retira simultáne…",
         "url": "https://industriamusical.com/suno-v6-modelos-ia-warner-bmg-believe/?utm_source=rss&utm_medium=rss&utm_campaign=suno-v6-modelos-ia-warner-bmg-believe",
@@ -223,7 +239,37 @@
         "via": null
       },
       {
-        "id": "noticia-2",
+        "id": "noticia-3",
+        "title": "Universal Music demanda a DistroKid por copyright y música creada con IA",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMitgFBVV95cUxNZ01DRVJVTHlNSk5rdF8xV1pkWkRaVE1nQWU1eDZPTG1saU9WVDQxOXZzdU9GNUtNaUNMbUpwblVCY2E4RDE1Y3BEUHJIckh2cEpyN1RXZ3FBUkNXQjRNY3hPUU00S1AwUlU0bGR3SFVTUGRNUG5wLVh2ejhtU2J4c0hJQUtsckw4OFRPQVMxN084b3d4NmRRdDBBdVl4aEZsdHN4dVpVWlNEY2JVTkM3cGpLNk9OUQ?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "Aristegui Noticias",
+        "domain": "news.google.com",
+        "publishedAt": "2026-09-15T20:38:00.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-4",
+        "title": "UMG demanda a DistroKid por ‘slop’ de IA y violación de derechos de autor",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMiiwFBVV95cUxNdUduWjM2TkdtY3JZUzg1aTZfeVhVbEt0UzRvUUlDTjYwNGR2ekFjWUlia2c2UDFsaWFRSVJ5STRUZFBnMldMN0JiZ1RQZ0JqYU5oZTVRRS1IaWNUdHRpN1phQVFoZG1qLXdGOERJeWlGOXBGamhFOGVnaXpGQno2bHVLQ0xrVzZzdldV?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "Unite.AI",
+        "domain": "news.google.com",
+        "publishedAt": "2026-09-15T17:09:33.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-5",
         "title": "UMG firma un acuerdo global de IA con ElevenLabs",
         "summary": "Universal Music Group (UMG) ha firmado un acuerdo de licencia plurianual con ElevenLabs, la compañía de inteligencia artificial de audio valorada en 11.000 millones de dólares. Es el primer pacto de ElevenLabs con una gran discográfica y contempla el lanzamiento de una nueva plataforma de música con IA para fans, ademá…",
         "url": "https://industriamusical.com/umg-acuerdo-global-ia-elevenlabs/?utm_source=rss&utm_medium=rss&utm_campaign=umg-acuerdo-global-ia-elevenlabs",
@@ -238,7 +284,7 @@
         "via": null
       },
       {
-        "id": "noticia-3",
+        "id": "noticia-6",
         "title": "Suno lanza un nuevo modelo de IA para música tras múltiples demandas por derechos de autor",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMi1wFBVV95cUxOWmdNNllLakllSDBVRW05dHFPdEdZbmRoR3ZrSnNpWHIzeVl0d1haTmtqUUFrNnYzMEMtcDdiMkg5NWhGVVpWV3hiVkxwSE1oT1dITkdXSjdyN0x6bUFGeWhQMHh3OUdiNnktaGpZblE3UExTZUVTVWZuVEo4NUViMl9obXdaWVNOLUNUVXBnTTVIb043bWhiN3hnM1lKakRtdzJuSjhZTkJNbnRpWVRCN1BWQk83OVB5dXA0QVlIWkxKM2RDX1lOeGpaZVFTRTdpWkZfVGR3d9IB3AFBVV95cUxQOTN4V2Z5UjlvWXFmLWJzWnZscy1fdVYtR1p0a2tyd3IxZXgwLWI3d1dUNGRQU2h0SU8ya0IwMjNyd2lxRzV4aGE3R2FOTUZpV1lnbVI1dlBnSFh2UzNheEJiUkZPd19BdV9oeDJGSVNkNF9weXY2VWR5Q2xCQ3ZNaTNGUDdBS3YyZXRSQVlKLV94ZnotUV9sTzhFZXFwR1pZNFVlVnVwellzWkhJS3RUQ053M3Q3T1Q4T2FrYlpvYVhLVjlNVUluZTBrQUhrSlE1LUdzcnk3UzlsZEJB?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -253,7 +299,7 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-4",
+        "id": "noticia-7",
         "title": "5 things You Need to Know About ElevenLabs, the UMG AI partner with an $11B valuation – and big ambitions in music.",
         "summary": "UMG and ElevenLabs announced a licensing agreement, which will see the latter build a fan platform for remixes, mashups, and \"new track interpretations.\" Source",
         "url": "https://www.musicbusinessworldwide.com/5-things-you-need-to-know-about-elevenlabs-the-umg-ai-partner-with-an-11b-valuation-and-big-ambitions-in-music/",
@@ -268,7 +314,7 @@
         "via": null
       },
       {
-        "id": "noticia-5",
+        "id": "noticia-8",
         "title": "ElevenLabs unveils ‘Music v2.5’ – but UMG wasn’t involved",
         "summary": "Fresh from announcing a licensing deal with Universal Music Group, ElevenLabs has unveiled the latest version of its ElevenMusic AI-music service… while stressing that UMG is not involved in the latter. The post is from Music Ally .",
         "url": "https://musically.com/2026/09/14/elevenlabs-unveils-music-v2-5-but-umg-wasnt-involved/",
@@ -283,7 +329,7 @@
         "via": null
       },
       {
-        "id": "noticia-6",
+        "id": "noticia-9",
         "title": "Will You Please Stop Suing Us Now? Suno Turns a Legit Leaf With ‘v6’ as Warner Music’s Kyncl Leads the Licensed AI Pep Rally",
         "summary": "Moments after announcing a Believe partnership deal, Suno is now rolling out its Warner Music- and BMG-backed v6 models – with an eye on expanding into “opt-in experiences built around individual artists.” The sudden shift marks a big departure from earlier, non-licensed content grabs, but is it too late for Suno to sh…",
         "url": "https://www.digitalmusicnews.com/2026/09/09/suno-v6-launch/",
@@ -298,7 +344,19 @@
         "via": null
       },
       {
-        "id": "noticia-7",
+        "id": "noticia-10",
+        "title": "Sheryl Crow Serenaded by Olivia Rodrigo, Chris Stapleton, Jason Isbell and Other Stars at BMI Troubadour Tribute in Nashville",
+        "summary": "The lure of paying tribute to Sheryl Crow in speech and song brought out the big guns at an event honoring the singer-songwriter in Nashville Monday night, as Olivia Rodrigo, Chris Stapleton, Jason Isbell, Lauren Daigle, Eric Church and Melissa Etheridge all turned out to turn in stellar covers of Crow’s songs as part…",
+        "url": "https://variety.com/2026/music/news/sheryl-crow-bmi-tribute-olivia-rodrigo-cover-troubadour-1236862947/",
+        "source": "Variety",
+        "domain": "variety.com",
+        "publishedAt": "2026-09-15T15:21:35.000Z",
+        "tags": [],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-11",
         "title": "EU Kids Act set to restrict social media, video, games and AI",
         "summary": "There have been rumours recently of imminent legislation introducing a social-media ban for children in the European Union. It seems the bill will now debut on Thursday (17 September). The post is from Music Ally .",
         "url": "https://musically.com/2026/09/15/eu-kids-act-set-to-restrict-social-media-video-games-and-ai/",
@@ -313,7 +371,7 @@
         "via": null
       },
       {
-        "id": "noticia-8",
+        "id": "noticia-12",
         "title": "Canciones creadas con IA abren un nuevo debate sobre derechos de autor",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMi6AFBVV95cUxQcldYeGJUMmNxZEk5blk1X2t0VmlYSHZxYTQwd3czR0J0cHZiLVdzQlZhdVlITzdRa3FCRTVmT0RiRmtDTlJBcE80YXBlMUQwSC0yM1pHU2ZfZ1k4MHFpQXBRT1pNalFiYUR1NE1hMnlyVFVOZDF0d1FaNDF2RWZjRl9IajZCSlVRLXJlS0M3NWduRkFoTE5tTGpmZkZ6Z01SUG9jVXZDMzJUbDFxX21lRmR0VGZZTFpUVXM4QlpHMmwtYzJRemxJcVFuUWxyRmlOZzR6MTk1STFZaWp4UHBnNDctcUlLVmZX?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -325,64 +383,6 @@
         ],
         "translated": false,
         "via": "Google News"
-      },
-      {
-        "id": "noticia-9",
-        "title": "ElevenLabs launched Music v2.5 – shortly after announcing its UMG licensing deal.",
-        "summary": "The model went live on September 11 and is now the default “for prompted and reference generation” in ElevenMusic, the company said. Source",
-        "url": "https://www.musicbusinessworldwide.com/elevenlabs-launched-music-v2-5-shortly-after-announcing-its-umg-licensing-deal/",
-        "source": "Music Business Worldwide",
-        "domain": "musicbusinessworldwide.com",
-        "publishedAt": "2026-09-15T08:36:19.000Z",
-        "tags": [
-          "licensing"
-        ],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-10",
-        "title": "Universal Music and ElevenLabs Ink Multi-Year Partnership Deal, Say They’re Already Developing ‘A New AI-Powered Music Creation Platform’",
-        "summary": "Another day, another high-profile AI licensing deal: Universal Music Group (UMG) and ElevenLabs are now collaborating to develop a “platform built on licensed music and artist participation.” The major label and the well-funded AI developer, which has been aggressively expanding into music since August 2025, formally d…",
-        "url": "https://www.digitalmusicnews.com/2026/09/10/universal-music-elevenlabs-deal/",
-        "source": "Digital Music News",
-        "domain": "digitalmusicnews.com",
-        "publishedAt": "2026-09-10T17:23:02.000Z",
-        "tags": [
-          "ai",
-          "licensing"
-        ],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-11",
-        "title": "ElevenLabs Launches Its ‘Best Music Model Yet’ in v2.5 — While Emphasizing That Universal Music’s Walled Garden ‘Deal Is Separate’",
-        "summary": "ElevenLabs has officially launched ElevenMusic v2.5 – but not with its newest partner, Universal Music Group (UMG), which is collaborating on the development of a different product. ElevenLabs rolled out v2.5 on Friday, emphasizing in the corresponding announcement that the model “is now the default for prompted and re…",
-        "url": "https://www.digitalmusicnews.com/2026/09/14/elevenmusic-v25-launch/",
-        "source": "Digital Music News",
-        "domain": "digitalmusicnews.com",
-        "publishedAt": "2026-09-14T22:06:25.000Z",
-        "tags": [
-          "licensing"
-        ],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-12",
-        "title": "Suno unveils upgrade developed with “music industry partners”, while continuing to battle the music industry in court",
-        "summary": "Suno has unveiled v6 of its music AI platform, which has been developed with its industry partners like Warner Music, BMG and Believe. However, even as it starts to work with some labels and publishers on new AI products, it continues to fight other music companies in the courts",
-        "url": "https://completemusicupdate.com/suno-unveils-upgrade-developed-with-music-industry-partners-while-continuing-to-battle-the-music-industry-in-court/",
-        "source": "Complete Music Update",
-        "domain": "completemusicupdate.com",
-        "publishedAt": "2026-09-09T13:47:53.000Z",
-        "tags": [
-          "lawsuit",
-          "ai"
-        ],
-        "translated": false,
-        "via": null
       }
     ],
     "tip": {
