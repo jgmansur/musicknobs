@@ -2057,7 +2057,8 @@ async function listManagerFocusTasks(env, options = {}) {
 }
 
 // ─── AUTO-ROLLOVER ───────────────────────────────────────────────────────────
-// Mueve las tasks de HOY que no se completaron al día siguiente 09:00.
+// Mueve al día siguiente las tasks de HOY que no se completaron, y de paso rescata
+// las que quedaron atrasadas en el backlog.
 // Vive acá y NO en el cliente: un setTimeout en la PWA no dispara con el teléfono
 // dormido, y al reanudar disparaba tarde calculando "mañana" contra el día
 // equivocado (movía 2 días). El Cron Trigger corre en Cloudflare pase lo que pase.
@@ -2083,29 +2084,130 @@ function rolloverDueDate(originalDueDate, targetDateIso) {
   return t === -1 ? `${targetDateIso}T09:00:00.000-06:00` : `${targetDateIso}${raw.slice(t)}`;
 }
 
+// Candidatas del rollover, con una consulta liviana en vez de listManagerFocusTasks().
+// Esa función pide los bloques hijos de CADA task para armar los subtasks — acá no se
+// usan, y era un request de Notion por task que hacía la corrida más larga y frágil
+// conforme crecía el Focus. Ahora la lectura completa cuesta 1 request por cada 100.
+async function listRolloverCandidates(env, todayIso) {
+  const notionVersion = env.NOTION_VERSION || "2022-06-28";
+  const notionToken = env.NOTION_TOKEN;
+  const dbId = env.MANAGER_TASKS_DB_ID || DEFAULT_MANAGER_TASKS_DB_ID;
+
+  // Mismo alcance que tenía el rollover cuando leía con scope "mine": solo las tasks
+  // sin asignar o asignadas a Jay. Una task de alguien más no se reagenda sola.
+  const allUsers = parseManagerUsers(env);
+  const out = [];
+  let cursor = undefined;
+  let guard = 0;
+
+  while (guard < 20) {
+    const payload = await notionQueryAdvanced(dbId, notionToken, notionVersion, {
+      filter: {
+        and: [
+          { property: "Estatus", select: { equals: "Empezó" } },
+          { property: "Prioridad", select: { equals: "Alta" } },
+          { property: TASK_SHOW_IN_MANAGER_PROPERTY, checkbox: { equals: true } },
+          // La fecha se compara acá abajo: on_or_before incluye el día completo en
+          // la zona de Notion, y el corte que importa es el día calendario de México.
+          { property: "Date (ToDo)", date: { is_not_empty: true } },
+        ],
+      },
+      pageSize: 100,
+      startCursor: cursor,
+    });
+
+    for (const page of payload.results || []) {
+      const props = page.properties || {};
+      const dueDate = props?.["Date (ToDo)"]?.date?.start || "";
+      // Hoy Y atrasadas. Las futuras no se tocan: son citas con fecha elegida.
+      if (!dueDate || toIsoDateOnly(dueDate) > todayIso) continue;
+
+      const emails = parseAssigneesFromProperty(props, allUsers).emails || [];
+      if (emails.length && !emails.includes(OWNER_EMAIL)) continue;
+
+      out.push({
+        id: page.id,
+        dueDate,
+        title: normalizeTaskTitle(readNotionTitle(props)),
+        notificar: Boolean(props?.[TASK_NOTIFY_PROPERTY]?.checkbox),
+        notionUrl: String(page.url || ""),
+      });
+    }
+
+    if (!payload.has_more || !payload.next_cursor) break;
+    cursor = payload.next_cursor;
+    guard += 1;
+  }
+
+  return out;
+}
+
+// PATCH directo de la fecha. updateManagerTask() sirve para el modal de edición —
+// relee la página entera antes de escribir y resincroniza Calendar — pero acá solo
+// cambia un campo, así que ese GET extra era puro peso. Reintenta en 429 y 5xx: un
+// rate limit de Notion a mitad de la corrida era justo lo que dejaba tasks huérfanas.
+async function patchTaskDueDate(env, taskId, dueDate) {
+  const notionVersion = env.NOTION_VERSION || "2022-06-28";
+
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    const resp = await fetch(`https://api.notion.com/v1/pages/${taskId}`, {
+      method: "PATCH",
+      headers: {
+        Authorization: `Bearer ${env.NOTION_TOKEN}`,
+        "Notion-Version": notionVersion,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ properties: { "Date (ToDo)": { date: { start: dueDate } } } }),
+    });
+
+    if (resp.ok) return { ok: true };
+    if (resp.status !== 429 && resp.status < 500) {
+      return { error: `Notion ${resp.status}`, details: (await resp.text()).slice(0, 200) };
+    }
+    await new Promise((r) => setTimeout(r, 400 * (attempt + 1)));
+  }
+
+  return { error: "Notion sigue rechazando tras 3 intentos" };
+}
+
 async function rolloverTodayTasks(env) {
   if (!env.NOTION_TOKEN) return { error: "NOTION_TOKEN no configurado" };
 
   const fromIso = mxDateOnly();
   const toIso = mxDatePlusDays(fromIso, 1);
 
-  // Estado fresco: el caché de 45s podría traer buckets de antes de la última mutación.
-  clearFocusTasksCache();
-  const buckets = await listManagerFocusTasks(env, { scope: "mine", viewerEmail: OWNER_EMAIL });
-  if (buckets?.error) return { error: "No se pudo leer focus tasks", details: buckets.error };
-
-  const tasks = Array.isArray(buckets?.today) ? buckets.today : [];
+  // Se mueven las de HOY y también las ATRASADAS. Antes solo miraba el bucket de hoy,
+  // así que una task que se escapaba de una corrida caía al backlog y ya nadie la
+  // volvía a mirar nunca: quedaba huérfana ahí para siempre. Incluir las atrasadas
+  // hace el job auto-reparable — lo que una noche falle, la siguiente lo rescata.
+  const tasks = await listRolloverCandidates(env, fromIso);
   const moved = [];
   const failed = [];
 
   for (const task of tasks) {
     const dueDate = rolloverDueDate(task.dueDate, toIso);
-    const res = await updateManagerTask(env, task.id, { dueDate });
+    const res = task.notificar
+      // Con 🔔 prendido el evento de Calendar tiene que moverse junto con la task,
+      // y de eso se encarga updateManagerTask.
+      ? await updateManagerTask(env, task.id, { dueDate })
+      : await patchTaskDueDate(env, task.id, dueDate);
+
     if (res?.error) failed.push({ title: task.title, details: res.error });
     else moved.push({ title: task.title, from: task.dueDate, to: dueDate });
   }
 
   clearFocusTasksCache();
+
+  // Un fallo silencioso fue lo que dejó el backlog podrirse cuatro meses sin que
+  // nadie se enterara. Si algo no se movió, Ivy avisa.
+  if (failed.length) {
+    await sendIvyMessage(
+      env,
+      `⚠️ <b>Rollover incompleto</b>\n\n${failed.length} task(s) no se movieron al ${toIso}:\n` +
+        failed.map((f) => `• ${f.title} — ${f.details}`).join("\n")
+    );
+  }
+
   return { ok: true, from: fromIso, to: toIso, movedCount: moved.length, moved, failed };
 }
 
@@ -2191,6 +2293,11 @@ async function notifyDueTasks(env) {
 // dispara Calendar, que es lo que hace que la notificación de iOS sea nativa y
 // confiable (y aparece en Notion Calendar, que lee Google Calendar).
 
+// Los recordatorios de Google Calendar son POR USUARIO: un service account no
+// puede escribir los de Jay (haría falta domain-wide delegation, que es solo
+// Workspace). Por eso los eventos van a un calendario DEDICADO cuyos defaults
+// Jay configuró en 30 min y a la hora — los defaults de calendario sí aplican a
+// su vista. De ahí `useDefault: true` en vez de overrides.
 const CALENDAR_REMINDER_MINUTES = [30, 0];
 
 // Google exige que el id del evento sea base32hex (0-9, a-v). El page id de Notion
@@ -2231,10 +2338,12 @@ async function upsertTaskCalendarEvent(env, { taskId, title, dueDate, notionUrl 
     description: notionUrl ? `Task de Manager App\n${notionUrl}` : "Task de Manager App",
     start: { dateTime: dueDate, timeZone: "America/Mexico_City" },
     end: { dateTime: isoPlusMinutes(dueDate, 30), timeZone: "America/Mexico_City" },
-    reminders: {
-      useDefault: false,
-      overrides: CALENDAR_REMINDER_MINUTES.map((minutes) => ({ method: "popup", minutes })),
-    },
+    // En el calendario dedicado se heredan sus defaults (30 min y a la hora), que
+    // sí llegan a Jay. En el calendario principal se mandan overrides como último
+    // recurso, aunque ahí solo aplican a la vista del service account.
+    reminders: env.CALENDAR_ID
+      ? { useDefault: true }
+      : { useDefault: false, overrides: CALENDAR_REMINDER_MINUTES.map((minutes) => ({ method: "popup", minutes })) },
   };
 
   const base = `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events`;
@@ -2567,6 +2676,7 @@ async function createManagerTask(env, body) {
   const dueDate = String(body?.dueDate || "").trim();
   const tipoRaw = String(body?.tipo || "").trim();
   const focusOnly = Boolean(body?.focusOnly);
+  const notificar = Boolean(body?.notificar);
   const subtasks = normalizeSubtasks(Array.isArray(body?.subtasks)
     ? body.subtasks.map((s) => ({ title: String(s?.title || "").trim(), done: Boolean(s?.done) }))
     : []);
@@ -2596,6 +2706,7 @@ async function createManagerTask(env, body) {
     Tipo: { select: { name: tipoRaw || "Music Knobs" } },
     [TASK_SHOW_IN_MANAGER_PROPERTY]: { checkbox: true },
     [TASK_FOCUS_ONLY_PROPERTY]: { checkbox: focusOnly },
+    [TASK_NOTIFY_PROPERTY]: { checkbox: notificar },
   };
   if (dueDate) properties["Date (ToDo)"] = { date: { start: dueDate } };
   if (assignee && assigneePropertyKey) {
@@ -2625,8 +2736,21 @@ async function createManagerTask(env, body) {
           return { error: "Task create failed", details: String(e?.message || e) };
         }
       }
+      // Sin esto el checkbox 🔔 quedaba puesto en Notion pero el evento de Calendar
+      // nunca se creaba: la task nacía "con recordatorio" y no avisaba nada.
+      let reminderResult = null;
+      if (notificar) {
+        reminderResult = await syncTaskReminder(env, {
+          taskId: page.id,
+          notificar: true,
+          title,
+          dueDate,
+          notionUrl: String(page.url || ""),
+        });
+      }
+
       clearFocusTasksCache();
-      return { ok: true, id: page.id };
+      return reminderResult ? { ok: true, id: page.id, reminder: reminderResult } : { ok: true, id: page.id };
     }
 
     lastError = await resp.text();
@@ -4614,15 +4738,14 @@ export default {
     if (request.method === "POST" && url.pathname === "/api/manager/tasks/rollover") {
       const dry = url.searchParams.get("dry") === "1";
       if (dry) {
-        clearFocusTasksCache();
-        const buckets = await listManagerFocusTasks(env, { scope: "mine", viewerEmail: OWNER_EMAIL });
         const fromIso = mxDateOnly();
         const toIso = mxDatePlusDays(fromIso, 1);
+        const candidates = await listRolloverCandidates(env, fromIso);
         return json({
           dryRun: true,
           from: fromIso,
           to: toIso,
-          wouldMove: (buckets?.today || []).map((t) => ({
+          wouldMove: candidates.map((t) => ({
             title: t.title,
             from: t.dueDate,
             to: rolloverDueDate(t.dueDate, toIso),

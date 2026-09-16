@@ -3968,14 +3968,19 @@ function sendCurrentTaskToBacklog() {
 
 // Resalta la fila del recordatorio cuando está prendido, y avisa si la task no
 // tiene hora: sin hora el recordatorio no tiene a qué momento dispararse.
-function syncFocusNotifyRow() {
-  const check = document.getElementById('focus-edit-notificar');
+// El mismo bloque de 🔔 vive en el modal de edición y en el de creación, así que la
+// lógica se parametriza por prefijo en vez de duplicarse.
+function syncNotifyRow(prefix) {
+  const check = document.getElementById(`${prefix}-notificar`);
   if (!check) return;
   check.closest('.focus-edit-notify-row')?.classList.toggle('is-on', check.checked);
-  const hasTime = Boolean(document.getElementById('focus-edit-time')?.value);
-  document.getElementById('focus-edit-notify-warning')
+  const hasTime = Boolean(document.getElementById(`${prefix}-time`)?.value);
+  document.getElementById(`${prefix}-notify-warning`)
     ?.classList.toggle('hidden', !(check.checked && !hasTime));
 }
+
+function syncFocusNotifyRow() { syncNotifyRow('focus-edit'); }
+function syncFocusNewTaskNotifyRow() { syncNotifyRow('focus-new-task'); }
 
 async function openFocusEditModal() {
   const current = getCurrentFocusTask();
@@ -4119,6 +4124,10 @@ async function openFocusNewTaskModal() {
   dateInput.value = todayMx;
   timeInput.value = '09:00';
 
+  const notifyEl = document.getElementById('focus-new-task-notificar');
+  if (notifyEl) notifyEl.checked = false;
+  syncFocusNewTaskNotifyRow();
+
   tipoSelect.innerHTML = '<option value="">Cargando...</option>';
   modal.classList.add('active');
   nameInput.focus();
@@ -4153,6 +4162,7 @@ async function createFocusTask() {
   const tipo = String(tipoSelect?.value || '').trim();
   const time = timeInput?.value || '09:00';
   const dueDate = dateInput?.value ? `${dateInput.value}T${time}:00.000-06:00` : '';
+  const notificar = document.getElementById('focus-new-task-notificar')?.checked ?? false;
 
   const saveBtn = document.getElementById('focus-new-task-save');
   if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = 'Creando...'; }
@@ -4161,7 +4171,7 @@ async function createFocusTask() {
     const r = await fetch(`${API_BASE}/api/manager/tasks`, {
       method: 'POST',
       headers: apiHeaders(),
-      body: JSON.stringify({ title, tipo, dueDate, assignee: 'jgmansur2@gmail.com', focusOnly: tipo !== 'Hnos. Mansur' })
+      body: JSON.stringify({ title, tipo, dueDate, assignee: 'jgmansur2@gmail.com', focusOnly: tipo !== 'Hnos. Mansur', notificar })
     });
     if (!r.ok) throw new Error(`HTTP ${r.status}`);
     closeFocusNewTaskModal();
@@ -5955,6 +5965,8 @@ function setupActions() {
   bindClick('focus-new-task-trigger', openFocusNewTaskModal);
   bindClick('focus-new-task-save', createFocusTask);
   bindClick('focus-new-task-cancel', closeFocusNewTaskModal);
+  document.getElementById('focus-new-task-notificar')?.addEventListener('change', syncFocusNewTaskNotifyRow);
+  document.getElementById('focus-new-task-time')?.addEventListener('change', syncFocusNewTaskNotifyRow);
   bindClick('focus-reschedule-trigger', openFocusRescheduleModal);
   bindClick('focus-reschedule-save', rescheduleCurrentFocusTask);
   bindClick('focus-reschedule-cancel', closeFocusRescheduleModal);
