@@ -1,17 +1,16 @@
 {
-  "lastUpdated": "2026-09-16T12:33:57.571Z",
+  "lastUpdated": "2026-09-16T22:04:49.765Z",
   "meta": {
     "method": "rss-retrieval + link-verification + ai-translation",
     "itemCount": 12,
     "sources": [
-      "Aristegui Noticias",
-      "El Sol de México",
+      "Cadena 3 Argentina",
+      "Complete Music Update",
+      "Digital Music News",
       "Industria Musical",
       "Music Ally",
       "Music Business Worldwide",
-      "Unite.AI",
-      "Variety",
-      "cadena3.com"
+      "unite.ai"
     ],
     "verifiedLinks": 12,
     "aiTranslated": 0,
@@ -23,12 +22,12 @@
     "items": [
       {
         "id": "noticia-1",
-        "title": "Universal Music Group Sues DistroKid for Deceptive Trade Practices and Building an ‘AI-Slop Pipeline’",
-        "summary": "Universal Music Group sued the distribution service DistroKid on Tuesday, claiming in a federal lawsuit that the service infringed on the label’s copyright by pumping out “AI-generated ‘slop’ that siphons revenue and listeners from the legitimate artists and rightsholders.” In the 52-page lawsuit, filed in the U.S. Dis…",
-        "url": "https://variety.com/2026/music/news/universal-music-group-sues-distrokid-ai-slop-pipeline-1236863076/",
-        "source": "Variety",
-        "domain": "variety.com",
-        "publishedAt": "2026-09-15T16:16:48.000Z",
+        "title": "Universal Music Sues DistroKid for Copyright Infringement and Deceptive Trade Practices, Says the Distributor ‘Is Flooding Platforms With AI-Generated Slop’",
+        "summary": "Today in high-profile industry litigation: A firmly worded complaint filed by Universal Music Group (UMG) against DistroKid, which the major label says “is engaged in both deceptive trade practices and blatant copyright infringement.” UMG submitted the 52-page action to a Delaware federal court today, and as many will…",
+        "url": "https://www.digitalmusicnews.com/2026/09/15/universal-music-distrokid-lawsuit/",
+        "source": "Digital Music News",
+        "domain": "digitalmusicnews.com",
+        "publishedAt": "2026-09-15T17:17:45.000Z",
         "tags": [
           "lawsuit",
           "ai"
@@ -53,25 +52,24 @@
       },
       {
         "id": "noticia-3",
-        "title": "Universal Music demanda a DistroKid por copyright y música creada con IA",
-        "summary": "",
-        "url": "https://news.google.com/rss/articles/CBMitgFBVV95cUxNZ01DRVJVTHlNSk5rdF8xV1pkWkRaVE1nQWU1eDZPTG1saU9WVDQxOXZzdU9GNUtNaUNMbUpwblVCY2E4RDE1Y3BEUHJIckh2cEpyN1RXZ3FBUkNXQjRNY3hPUU00S1AwUlU0bGR3SFVTUGRNUG5wLVh2ejhtU2J4c0hJQUtsckw4OFRPQVMxN084b3d4NmRRdDBBdVl4aEZsdHN4dVpVWlNEY2JVTkM3cGpLNk9OUQ?oc=5&hl=es-419&gl=US&ceid=US:es-419",
-        "source": "Aristegui Noticias",
-        "domain": "news.google.com",
-        "publishedAt": "2026-09-15T20:38:00.000Z",
+        "title": "Landmark termination rights ruling not the “copyright emergency” music publishers claim, songwriter tells US Supreme Court",
+        "summary": "When America’s Fifth Circuit Appeals Court backed a songwriter-friendly interpretation of the termination right in US copyright law, the majors bought the song that prompted that ruling and asked the Supreme Court to intervene. The writer of that song has now urged the top court to not get involved",
+        "url": "https://completemusicupdate.com/landmark-termination-rights-ruling-not-the-copyright-emergency-music-publishers-claim-songwriter-tells-us-supreme-court/",
+        "source": "Complete Music Update",
+        "domain": "completemusicupdate.com",
+        "publishedAt": "2026-09-16T16:53:42.000Z",
         "tags": [
-          "lawsuit",
-          "ai"
+          "lawsuit"
         ],
         "translated": false,
-        "via": "Google News"
+        "via": null
       },
       {
         "id": "noticia-4",
         "title": "UMG demanda a DistroKid por ‘slop’ de IA y violación de derechos de autor",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMiiwFBVV95cUxNdUduWjM2TkdtY3JZUzg1aTZfeVhVbEt0UzRvUUlDTjYwNGR2ekFjWUlia2c2UDFsaWFRSVJ5STRUZFBnMldMN0JiZ1RQZ0JqYU5oZTVRRS1IaWNUdHRpN1phQVFoZG1qLXdGOERJeWlGOXBGamhFOGVnaXpGQno2bHVLQ0xrVzZzdldV?oc=5&hl=es-419&gl=US&ceid=US:es-419",
-        "source": "Unite.AI",
+        "source": "unite.ai",
         "domain": "news.google.com",
         "publishedAt": "2026-09-15T17:09:33.000Z",
         "tags": [
@@ -101,7 +99,7 @@
         "title": "Suno lanza un nuevo modelo de IA para música tras múltiples demandas por derechos de autor",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMi1wFBVV95cUxOWmdNNllLakllSDBVRW05dHFPdEdZbmRoR3ZrSnNpWHIzeVl0d1haTmtqUUFrNnYzMEMtcDdiMkg5NWhGVVpWV3hiVkxwSE1oT1dITkdXSjdyN0x6bUFGeWhQMHh3OUdiNnktaGpZblE3UExTZUVTVWZuVEo4NUViMl9obXdaWVNOLUNUVXBnTTVIb043bWhiN3hnM1lKakRtdzJuSjhZTkJNbnRpWVRCN1BWQk83OVB5dXA0QVlIWkxKM2RDX1lOeGpaZVFTRTdpWkZfVGR3d9IB3AFBVV95cUxQOTN4V2Z5UjlvWXFmLWJzWnZscy1fdVYtR1p0a2tyd3IxZXgwLWI3d1dUNGRQU2h0SU8ya0IwMjNyd2lxRzV4aGE3R2FOTUZpV1lnbVI1dlBnSFh2UzNheEJiUkZPd19BdV9oeDJGSVNkNF9weXY2VWR5Q2xCQ3ZNaTNGUDdBS3YyZXRSQVlKLV94ZnotUV9sTzhFZXFwR1pZNFVlVnVwellzWkhJS3RUQ053M3Q3T1Q4T2FrYlpvYVhLVjlNVUluZTBrQUhrSlE1LUdzcnk3UzlsZEJB?oc=5&hl=es-419&gl=US&ceid=US:es-419",
-        "source": "cadena3.com",
+        "source": "Cadena 3 Argentina",
         "domain": "news.google.com",
         "publishedAt": "2026-09-09T13:10:24.000Z",
         "tags": [
@@ -113,15 +111,14 @@
       },
       {
         "id": "noticia-7",
-        "title": "5 things You Need to Know About ElevenLabs, the UMG AI partner with an $11B valuation – and big ambitions in music.",
-        "summary": "UMG and ElevenLabs announced a licensing agreement, which will see the latter build a fan platform for remixes, mashups, and \"new track interpretations.\" Source",
-        "url": "https://www.musicbusinessworldwide.com/5-things-you-need-to-know-about-elevenlabs-the-umg-ai-partner-with-an-11b-valuation-and-big-ambitions-in-music/",
+        "title": "Cyril Vetter asks US Supreme Court to reject challenge by majors and BMG to ruling that lets songwriters reclaim copyrights worldwide",
+        "summary": "Songwriter's lawyers filed a brief in opposition on Monday, September 14 Source",
+        "url": "https://www.musicbusinessworldwide.com/cyril-vetter-asks-us-supreme-court-to-reject-challenge-by-majors-and-bmg-to-ruling-that-lets-songwriters-reclaim-copyrights-worldwide/",
         "source": "Music Business Worldwide",
         "domain": "musicbusinessworldwide.com",
-        "publishedAt": "2026-09-15T10:19:44.000Z",
+        "publishedAt": "2026-09-16T14:57:05.000Z",
         "tags": [
-          "ai",
-          "licensing"
+          "lawsuit"
         ],
         "translated": false,
         "via": null
@@ -143,18 +140,45 @@
       },
       {
         "id": "noticia-9",
-        "title": "Sheryl Crow Serenaded by Olivia Rodrigo, Chris Stapleton, Jason Isbell and Other Stars at BMI Troubadour Tribute in Nashville",
-        "summary": "The lure of paying tribute to Sheryl Crow in speech and song brought out the big guns at an event honoring the singer-songwriter in Nashville Monday night, as Olivia Rodrigo, Chris Stapleton, Jason Isbell, Lauren Daigle, Eric Church and Melissa Etheridge all turned out to turn in stellar covers of Crow’s songs as part…",
-        "url": "https://variety.com/2026/music/news/sheryl-crow-bmi-tribute-olivia-rodrigo-cover-troubadour-1236862947/",
-        "source": "Variety",
-        "domain": "variety.com",
-        "publishedAt": "2026-09-15T15:21:35.000Z",
-        "tags": [],
+        "title": "Will You Please Stop Suing Us Now? Suno Turns a Legit Leaf With ‘v6’ as Warner Music’s Kyncl Leads the Licensed AI Pep Rally",
+        "summary": "Moments after announcing a Believe partnership deal, Suno is now rolling out its Warner Music- and BMG-backed v6 models – with an eye on expanding into “opt-in experiences built around individual artists.” The sudden shift marks a big departure from earlier, non-licensed content grabs, but is it too late for Suno to sh…",
+        "url": "https://www.digitalmusicnews.com/2026/09/09/suno-v6-launch/",
+        "source": "Digital Music News",
+        "domain": "digitalmusicnews.com",
+        "publishedAt": "2026-09-10T04:30:21.000Z",
+        "tags": [
+          "ai",
+          "licensing"
+        ],
         "translated": false,
         "via": null
       },
       {
         "id": "noticia-10",
+        "title": "BMI Addresses the Serious Healthcare Challenges Faced by Songwriters and Composers",
+        "summary": "In collaboration with Gallagher Alternative Health Solutions, BMI announces BMI Health Connect to provide US affiliates with personalized guidance. BMI has announced the launch of BMI Health Connect, a free service available exclusively for its U.S.-based songwriters and composers that makes it easier to find the right…",
+        "url": "https://www.digitalmusicnews.com/2026/09/16/bmi-health-care-challenges-songwriters-composers/",
+        "source": "Digital Music News",
+        "domain": "digitalmusicnews.com",
+        "publishedAt": "2026-09-16T19:43:49.000Z",
+        "tags": [],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-11",
+        "title": "BMI launches free service to help US songwriters and composers find healthcare coverage",
+        "summary": "Called BMI Health Connect, the service has been created in collaboration with Gallagher Alternative Health Solutions, an insurance brokerage. Source",
+        "url": "https://www.musicbusinessworldwide.com/bmi-launches-free-service-to-help-us-songwriters-and-composers-find-healthcare-coverage/",
+        "source": "Music Business Worldwide",
+        "domain": "musicbusinessworldwide.com",
+        "publishedAt": "2026-09-16T16:50:19.000Z",
+        "tags": [],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-12",
         "title": "EU Kids Act set to restrict social media, video, games and AI",
         "summary": "There have been rumours recently of imminent legislation introducing a social-media ban for children in the European Union. It seems the bill will now debut on Thursday (17 September). The post is from Music Ally .",
         "url": "https://musically.com/2026/09/15/eu-kids-act-set-to-restrict-social-media-video-games-and-ai/",
@@ -164,34 +188,6 @@
         "tags": [
           "ai",
           "legislation"
-        ],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-11",
-        "title": "Canciones creadas con IA abren un nuevo debate sobre derechos de autor",
-        "summary": "",
-        "url": "https://news.google.com/rss/articles/CBMi6AFBVV95cUxQcldYeGJUMmNxZEk5blk1X2t0VmlYSHZxYTQwd3czR0J0cHZiLVdzQlZhdVlITzdRa3FCRTVmT0RiRmtDTlJBcE80YXBlMUQwSC0yM1pHU2ZfZ1k4MHFpQXBRT1pNalFiYUR1NE1hMnlyVFVOZDF0d1FaNDF2RWZjRl9IajZCSlVRLXJlS0M3NWduRkFoTE5tTGpmZkZ6Z01SUG9jVXZDMzJUbDFxX21lRmR0VGZZTFpUVXM4QlpHMmwtYzJRemxJcVFuUWxyRmlOZzR6MTk1STFZaWp4UHBnNDctcUlLVmZX?oc=5&hl=es-419&gl=US&ceid=US:es-419",
-        "source": "El Sol de México",
-        "domain": "news.google.com",
-        "publishedAt": "2026-09-10T21:29:54.000Z",
-        "tags": [
-          "ai"
-        ],
-        "translated": false,
-        "via": "Google News"
-      },
-      {
-        "id": "noticia-12",
-        "title": "ElevenLabs launched Music v2.5 – shortly after announcing its UMG licensing deal.",
-        "summary": "The model went live on September 11 and is now the default “for prompted and reference generation” in ElevenMusic, the company said. Source",
-        "url": "https://www.musicbusinessworldwide.com/elevenlabs-launched-music-v2-5-shortly-after-announcing-its-umg-licensing-deal/",
-        "source": "Music Business Worldwide",
-        "domain": "musicbusinessworldwide.com",
-        "publishedAt": "2026-09-15T08:36:19.000Z",
-        "tags": [
-          "licensing"
         ],
         "translated": false,
         "via": null
@@ -208,12 +204,12 @@
     "items": [
       {
         "id": "noticia-1",
-        "title": "Universal Music Group Sues DistroKid for Deceptive Trade Practices and Building an ‘AI-Slop Pipeline’",
-        "summary": "Universal Music Group sued the distribution service DistroKid on Tuesday, claiming in a federal lawsuit that the service infringed on the label’s copyright by pumping out “AI-generated ‘slop’ that siphons revenue and listeners from the legitimate artists and rightsholders.” In the 52-page lawsuit, filed in the U.S. Dis…",
-        "url": "https://variety.com/2026/music/news/universal-music-group-sues-distrokid-ai-slop-pipeline-1236863076/",
-        "source": "Variety",
-        "domain": "variety.com",
-        "publishedAt": "2026-09-15T16:16:48.000Z",
+        "title": "Universal Music Sues DistroKid for Copyright Infringement and Deceptive Trade Practices, Says the Distributor ‘Is Flooding Platforms With AI-Generated Slop’",
+        "summary": "Today in high-profile industry litigation: A firmly worded complaint filed by Universal Music Group (UMG) against DistroKid, which the major label says “is engaged in both deceptive trade practices and blatant copyright infringement.” UMG submitted the 52-page action to a Delaware federal court today, and as many will…",
+        "url": "https://www.digitalmusicnews.com/2026/09/15/universal-music-distrokid-lawsuit/",
+        "source": "Digital Music News",
+        "domain": "digitalmusicnews.com",
+        "publishedAt": "2026-09-15T17:17:45.000Z",
         "tags": [
           "lawsuit",
           "ai"
@@ -238,25 +234,24 @@
       },
       {
         "id": "noticia-3",
-        "title": "Universal Music demanda a DistroKid por copyright y música creada con IA",
-        "summary": "",
-        "url": "https://news.google.com/rss/articles/CBMitgFBVV95cUxNZ01DRVJVTHlNSk5rdF8xV1pkWkRaVE1nQWU1eDZPTG1saU9WVDQxOXZzdU9GNUtNaUNMbUpwblVCY2E4RDE1Y3BEUHJIckh2cEpyN1RXZ3FBUkNXQjRNY3hPUU00S1AwUlU0bGR3SFVTUGRNUG5wLVh2ejhtU2J4c0hJQUtsckw4OFRPQVMxN084b3d4NmRRdDBBdVl4aEZsdHN4dVpVWlNEY2JVTkM3cGpLNk9OUQ?oc=5&hl=es-419&gl=US&ceid=US:es-419",
-        "source": "Aristegui Noticias",
-        "domain": "news.google.com",
-        "publishedAt": "2026-09-15T20:38:00.000Z",
+        "title": "Landmark termination rights ruling not the “copyright emergency” music publishers claim, songwriter tells US Supreme Court",
+        "summary": "When America’s Fifth Circuit Appeals Court backed a songwriter-friendly interpretation of the termination right in US copyright law, the majors bought the song that prompted that ruling and asked the Supreme Court to intervene. The writer of that song has now urged the top court to not get involved",
+        "url": "https://completemusicupdate.com/landmark-termination-rights-ruling-not-the-copyright-emergency-music-publishers-claim-songwriter-tells-us-supreme-court/",
+        "source": "Complete Music Update",
+        "domain": "completemusicupdate.com",
+        "publishedAt": "2026-09-16T16:53:42.000Z",
         "tags": [
-          "lawsuit",
-          "ai"
+          "lawsuit"
         ],
         "translated": false,
-        "via": "Google News"
+        "via": null
       },
       {
         "id": "noticia-4",
         "title": "UMG demanda a DistroKid por ‘slop’ de IA y violación de derechos de autor",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMiiwFBVV95cUxNdUduWjM2TkdtY3JZUzg1aTZfeVhVbEt0UzRvUUlDTjYwNGR2ekFjWUlia2c2UDFsaWFRSVJ5STRUZFBnMldMN0JiZ1RQZ0JqYU5oZTVRRS1IaWNUdHRpN1phQVFoZG1qLXdGOERJeWlGOXBGamhFOGVnaXpGQno2bHVLQ0xrVzZzdldV?oc=5&hl=es-419&gl=US&ceid=US:es-419",
-        "source": "Unite.AI",
+        "source": "unite.ai",
         "domain": "news.google.com",
         "publishedAt": "2026-09-15T17:09:33.000Z",
         "tags": [
@@ -286,7 +281,7 @@
         "title": "Suno lanza un nuevo modelo de IA para música tras múltiples demandas por derechos de autor",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMi1wFBVV95cUxOWmdNNllLakllSDBVRW05dHFPdEdZbmRoR3ZrSnNpWHIzeVl0d1haTmtqUUFrNnYzMEMtcDdiMkg5NWhGVVpWV3hiVkxwSE1oT1dITkdXSjdyN0x6bUFGeWhQMHh3OUdiNnktaGpZblE3UExTZUVTVWZuVEo4NUViMl9obXdaWVNOLUNUVXBnTTVIb043bWhiN3hnM1lKakRtdzJuSjhZTkJNbnRpWVRCN1BWQk83OVB5dXA0QVlIWkxKM2RDX1lOeGpaZVFTRTdpWkZfVGR3d9IB3AFBVV95cUxQOTN4V2Z5UjlvWXFmLWJzWnZscy1fdVYtR1p0a2tyd3IxZXgwLWI3d1dUNGRQU2h0SU8ya0IwMjNyd2lxRzV4aGE3R2FOTUZpV1lnbVI1dlBnSFh2UzNheEJiUkZPd19BdV9oeDJGSVNkNF9weXY2VWR5Q2xCQ3ZNaTNGUDdBS3YyZXRSQVlKLV94ZnotUV9sTzhFZXFwR1pZNFVlVnVwellzWkhJS3RUQ053M3Q3T1Q4T2FrYlpvYVhLVjlNVUluZTBrQUhrSlE1LUdzcnk3UzlsZEJB?oc=5&hl=es-419&gl=US&ceid=US:es-419",
-        "source": "cadena3.com",
+        "source": "Cadena 3 Argentina",
         "domain": "news.google.com",
         "publishedAt": "2026-09-09T13:10:24.000Z",
         "tags": [
@@ -298,15 +293,14 @@
       },
       {
         "id": "noticia-7",
-        "title": "5 things You Need to Know About ElevenLabs, the UMG AI partner with an $11B valuation – and big ambitions in music.",
-        "summary": "UMG and ElevenLabs announced a licensing agreement, which will see the latter build a fan platform for remixes, mashups, and \"new track interpretations.\" Source",
-        "url": "https://www.musicbusinessworldwide.com/5-things-you-need-to-know-about-elevenlabs-the-umg-ai-partner-with-an-11b-valuation-and-big-ambitions-in-music/",
+        "title": "Cyril Vetter asks US Supreme Court to reject challenge by majors and BMG to ruling that lets songwriters reclaim copyrights worldwide",
+        "summary": "Songwriter's lawyers filed a brief in opposition on Monday, September 14 Source",
+        "url": "https://www.musicbusinessworldwide.com/cyril-vetter-asks-us-supreme-court-to-reject-challenge-by-majors-and-bmg-to-ruling-that-lets-songwriters-reclaim-copyrights-worldwide/",
         "source": "Music Business Worldwide",
         "domain": "musicbusinessworldwide.com",
-        "publishedAt": "2026-09-15T10:19:44.000Z",
+        "publishedAt": "2026-09-16T14:57:05.000Z",
         "tags": [
-          "ai",
-          "licensing"
+          "lawsuit"
         ],
         "translated": false,
         "via": null
@@ -328,18 +322,45 @@
       },
       {
         "id": "noticia-9",
-        "title": "Sheryl Crow Serenaded by Olivia Rodrigo, Chris Stapleton, Jason Isbell and Other Stars at BMI Troubadour Tribute in Nashville",
-        "summary": "The lure of paying tribute to Sheryl Crow in speech and song brought out the big guns at an event honoring the singer-songwriter in Nashville Monday night, as Olivia Rodrigo, Chris Stapleton, Jason Isbell, Lauren Daigle, Eric Church and Melissa Etheridge all turned out to turn in stellar covers of Crow’s songs as part…",
-        "url": "https://variety.com/2026/music/news/sheryl-crow-bmi-tribute-olivia-rodrigo-cover-troubadour-1236862947/",
-        "source": "Variety",
-        "domain": "variety.com",
-        "publishedAt": "2026-09-15T15:21:35.000Z",
-        "tags": [],
+        "title": "Will You Please Stop Suing Us Now? Suno Turns a Legit Leaf With ‘v6’ as Warner Music’s Kyncl Leads the Licensed AI Pep Rally",
+        "summary": "Moments after announcing a Believe partnership deal, Suno is now rolling out its Warner Music- and BMG-backed v6 models – with an eye on expanding into “opt-in experiences built around individual artists.” The sudden shift marks a big departure from earlier, non-licensed content grabs, but is it too late for Suno to sh…",
+        "url": "https://www.digitalmusicnews.com/2026/09/09/suno-v6-launch/",
+        "source": "Digital Music News",
+        "domain": "digitalmusicnews.com",
+        "publishedAt": "2026-09-10T04:30:21.000Z",
+        "tags": [
+          "ai",
+          "licensing"
+        ],
         "translated": false,
         "via": null
       },
       {
         "id": "noticia-10",
+        "title": "BMI Addresses the Serious Healthcare Challenges Faced by Songwriters and Composers",
+        "summary": "In collaboration with Gallagher Alternative Health Solutions, BMI announces BMI Health Connect to provide US affiliates with personalized guidance. BMI has announced the launch of BMI Health Connect, a free service available exclusively for its U.S.-based songwriters and composers that makes it easier to find the right…",
+        "url": "https://www.digitalmusicnews.com/2026/09/16/bmi-health-care-challenges-songwriters-composers/",
+        "source": "Digital Music News",
+        "domain": "digitalmusicnews.com",
+        "publishedAt": "2026-09-16T19:43:49.000Z",
+        "tags": [],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-11",
+        "title": "BMI launches free service to help US songwriters and composers find healthcare coverage",
+        "summary": "Called BMI Health Connect, the service has been created in collaboration with Gallagher Alternative Health Solutions, an insurance brokerage. Source",
+        "url": "https://www.musicbusinessworldwide.com/bmi-launches-free-service-to-help-us-songwriters-and-composers-find-healthcare-coverage/",
+        "source": "Music Business Worldwide",
+        "domain": "musicbusinessworldwide.com",
+        "publishedAt": "2026-09-16T16:50:19.000Z",
+        "tags": [],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-12",
         "title": "EU Kids Act set to restrict social media, video, games and AI",
         "summary": "There have been rumours recently of imminent legislation introducing a social-media ban for children in the European Union. It seems the bill will now debut on Thursday (17 September). The post is from Music Ally .",
         "url": "https://musically.com/2026/09/15/eu-kids-act-set-to-restrict-social-media-video-games-and-ai/",
@@ -349,34 +370,6 @@
         "tags": [
           "ai",
           "legislation"
-        ],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-11",
-        "title": "Canciones creadas con IA abren un nuevo debate sobre derechos de autor",
-        "summary": "",
-        "url": "https://news.google.com/rss/articles/CBMi6AFBVV95cUxQcldYeGJUMmNxZEk5blk1X2t0VmlYSHZxYTQwd3czR0J0cHZiLVdzQlZhdVlITzdRa3FCRTVmT0RiRmtDTlJBcE80YXBlMUQwSC0yM1pHU2ZfZ1k4MHFpQXBRT1pNalFiYUR1NE1hMnlyVFVOZDF0d1FaNDF2RWZjRl9IajZCSlVRLXJlS0M3NWduRkFoTE5tTGpmZkZ6Z01SUG9jVXZDMzJUbDFxX21lRmR0VGZZTFpUVXM4QlpHMmwtYzJRemxJcVFuUWxyRmlOZzR6MTk1STFZaWp4UHBnNDctcUlLVmZX?oc=5&hl=es-419&gl=US&ceid=US:es-419",
-        "source": "El Sol de México",
-        "domain": "news.google.com",
-        "publishedAt": "2026-09-10T21:29:54.000Z",
-        "tags": [
-          "ai"
-        ],
-        "translated": false,
-        "via": "Google News"
-      },
-      {
-        "id": "noticia-12",
-        "title": "ElevenLabs launched Music v2.5 – shortly after announcing its UMG licensing deal.",
-        "summary": "The model went live on September 11 and is now the default “for prompted and reference generation” in ElevenMusic, the company said. Source",
-        "url": "https://www.musicbusinessworldwide.com/elevenlabs-launched-music-v2-5-shortly-after-announcing-its-umg-licensing-deal/",
-        "source": "Music Business Worldwide",
-        "domain": "musicbusinessworldwide.com",
-        "publishedAt": "2026-09-15T08:36:19.000Z",
-        "tags": [
-          "licensing"
         ],
         "translated": false,
         "via": null
