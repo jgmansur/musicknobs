@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-09-17T12:34:06.350Z",
+  "lastUpdated": "2026-09-17T22:06:18.561Z",
   "meta": {
     "method": "rss-retrieval + link-verification + ai-translation",
     "itemCount": 12,
@@ -7,6 +7,7 @@
       "Cadena 3 Argentina",
       "Complete Music Update",
       "Digital Music News",
+      "El Sol de México",
       "Industria Musical",
       "Music Ally",
       "Music Business Worldwide",
@@ -95,12 +96,12 @@
       },
       {
         "id": "noticia-6",
-        "title": "Universal and Warner press court to end US musicians’ lawsuit over Udio, Suno deals",
-        "summary": "The case rests on Article 21(a) of the Sound Recording Labor Agreement, the union's collective bargaining agreement with the record companies. Source",
-        "url": "https://www.musicbusinessworldwide.com/universal-and-warner-press-court-to-end-us-musicians-lawsuit-over-udio-suno-deals/",
-        "source": "Music Business Worldwide",
-        "domain": "musicbusinessworldwide.com",
-        "publishedAt": "2026-09-17T08:55:23.000Z",
+        "title": "Suno Faces Yet Another Class Action Lawsuit Over Alleged November 2025 Data Breach — Plus a Separate Complaint for Allegedly Violating the Americans with Disabilities Act",
+        "summary": "Another day, yet another Suno class action lawsuit, filed, like at least two others before it, over the AI music platform’s alleged November 2025 data breach. A South Dakota-based Suno user named Michael Beckham submitted the straightforward suit to a Massachusetts federal court closer to September’s beginning. Naming…",
+        "url": "https://www.digitalmusicnews.com/2026/09/17/suno-data-breach-lawsuit/",
+        "source": "Digital Music News",
+        "domain": "digitalmusicnews.com",
+        "publishedAt": "2026-09-17T21:45:50.000Z",
         "tags": [
           "lawsuit",
           "ai"
@@ -140,39 +141,12 @@
       },
       {
         "id": "noticia-9",
-        "title": "Will You Please Stop Suing Us Now? Suno Turns a Legit Leaf With ‘v6’ as Warner Music’s Kyncl Leads the Licensed AI Pep Rally",
-        "summary": "Moments after announcing a Believe partnership deal, Suno is now rolling out its Warner Music- and BMG-backed v6 models – with an eye on expanding into “opt-in experiences built around individual artists.” The sudden shift marks a big departure from earlier, non-licensed content grabs, but is it too late for Suno to sh…",
-        "url": "https://www.digitalmusicnews.com/2026/09/09/suno-v6-launch/",
-        "source": "Digital Music News",
-        "domain": "digitalmusicnews.com",
-        "publishedAt": "2026-09-10T04:30:21.000Z",
-        "tags": [
-          "ai",
-          "licensing"
-        ],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-10",
-        "title": "BMI launches free service to help US songwriters and composers find healthcare coverage",
-        "summary": "Called BMI Health Connect, the service has been created in collaboration with Gallagher Alternative Health Solutions, an insurance brokerage. Source",
-        "url": "https://www.musicbusinessworldwide.com/bmi-launches-free-service-to-help-us-songwriters-and-composers-find-healthcare-coverage/",
+        "title": "AI artists will somehow play ‘live’ at their own awards ceremony in November",
+        "summary": "AI-generated 'artists' including Xania Monet will 'perform' live on stage at the first AI Music Awards in Los Angeles in November. Source",
+        "url": "https://www.musicbusinessworldwide.com/ai-artists-will-somehow-play-live-at-their-own-awards-ceremony-in-november/",
         "source": "Music Business Worldwide",
         "domain": "musicbusinessworldwide.com",
-        "publishedAt": "2026-09-16T16:50:19.000Z",
-        "tags": [],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-11",
-        "title": "Believe and TuneCore won’t feed music to Suno without giving artists choice to opt in: ‘The artist must consent first, period.’",
-        "summary": "Denis Ladegaillerie details two-stage opt-in process for artists who want (and don't want) to have their music provided to Suno Source",
-        "url": "https://www.musicbusinessworldwide.com/believe-and-tunecore-suno-consent/",
-        "source": "Music Business Worldwide",
-        "domain": "musicbusinessworldwide.com",
-        "publishedAt": "2026-09-16T18:24:40.000Z",
+        "publishedAt": "2026-09-17T18:36:39.000Z",
         "tags": [
           "ai"
         ],
@@ -180,7 +154,7 @@
         "via": null
       },
       {
-        "id": "noticia-12",
+        "id": "noticia-10",
         "title": "SubmitHub bans AI-generated music from its promotion services",
         "summary": "Earlier this year, music-promo platform SubmitHub revealed research suggesting that 23.2% of the tracks being submitted were fully AI-generated. The post is from Music Ally .",
         "url": "https://musically.com/2026/09/17/submithub-bans-ai-generated-music-from-its-promotion-services/",
@@ -188,6 +162,35 @@
         "domain": "musically.com",
         "publishedAt": "2026-09-17T12:30:00.000Z",
         "tags": [
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-11",
+        "title": "Canciones creadas con IA abren un nuevo debate sobre derechos de autor",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMi6AFBVV95cUxQcldYeGJUMmNxZEk5blk1X2t0VmlYSHZxYTQwd3czR0J0cHZiLVdzQlZhdVlITzdRa3FCRTVmT0RiRmtDTlJBcE80YXBlMUQwSC0yM1pHU2ZfZ1k4MHFpQXBRT1pNalFiYUR1NE1hMnlyVFVOZDF0d1FaNDF2RWZjRl9IajZCSlVRLXJlS0M3NWduRkFoTE5tTGpmZkZ6Z01SUG9jVXZDMzJUbDFxX21lRmR0VGZZTFpUVXM4QlpHMmwtYzJRemxJcVFuUWxyRmlOZzR6MTk1STFZaWp4UHBnNDctcUlLVmZX?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "El Sol de México",
+        "domain": "news.google.com",
+        "publishedAt": "2026-09-10T21:29:54.000Z",
+        "tags": [
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-12",
+        "title": "Suno unveils upgrade developed with “music industry partners”, while continuing to battle the music industry in court",
+        "summary": "Suno has unveiled v6 of its music AI platform, which has been developed with its industry partners like Warner Music, BMG and Believe. However, even as it starts to work with some labels and publishers on new AI products, it continues to fight other music companies in the courts",
+        "url": "https://completemusicupdate.com/suno-unveils-upgrade-developed-with-music-industry-partners-while-continuing-to-battle-the-music-industry-in-court/",
+        "source": "Complete Music Update",
+        "domain": "completemusicupdate.com",
+        "publishedAt": "2026-09-09T13:47:53.000Z",
+        "tags": [
+          "lawsuit",
           "ai"
         ],
         "translated": false,
@@ -278,12 +281,12 @@
       },
       {
         "id": "noticia-6",
-        "title": "Universal and Warner press court to end US musicians’ lawsuit over Udio, Suno deals",
-        "summary": "The case rests on Article 21(a) of the Sound Recording Labor Agreement, the union's collective bargaining agreement with the record companies. Source",
-        "url": "https://www.musicbusinessworldwide.com/universal-and-warner-press-court-to-end-us-musicians-lawsuit-over-udio-suno-deals/",
-        "source": "Music Business Worldwide",
-        "domain": "musicbusinessworldwide.com",
-        "publishedAt": "2026-09-17T08:55:23.000Z",
+        "title": "Suno Faces Yet Another Class Action Lawsuit Over Alleged November 2025 Data Breach — Plus a Separate Complaint for Allegedly Violating the Americans with Disabilities Act",
+        "summary": "Another day, yet another Suno class action lawsuit, filed, like at least two others before it, over the AI music platform’s alleged November 2025 data breach. A South Dakota-based Suno user named Michael Beckham submitted the straightforward suit to a Massachusetts federal court closer to September’s beginning. Naming…",
+        "url": "https://www.digitalmusicnews.com/2026/09/17/suno-data-breach-lawsuit/",
+        "source": "Digital Music News",
+        "domain": "digitalmusicnews.com",
+        "publishedAt": "2026-09-17T21:45:50.000Z",
         "tags": [
           "lawsuit",
           "ai"
@@ -323,39 +326,12 @@
       },
       {
         "id": "noticia-9",
-        "title": "Will You Please Stop Suing Us Now? Suno Turns a Legit Leaf With ‘v6’ as Warner Music’s Kyncl Leads the Licensed AI Pep Rally",
-        "summary": "Moments after announcing a Believe partnership deal, Suno is now rolling out its Warner Music- and BMG-backed v6 models – with an eye on expanding into “opt-in experiences built around individual artists.” The sudden shift marks a big departure from earlier, non-licensed content grabs, but is it too late for Suno to sh…",
-        "url": "https://www.digitalmusicnews.com/2026/09/09/suno-v6-launch/",
-        "source": "Digital Music News",
-        "domain": "digitalmusicnews.com",
-        "publishedAt": "2026-09-10T04:30:21.000Z",
-        "tags": [
-          "ai",
-          "licensing"
-        ],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-10",
-        "title": "BMI launches free service to help US songwriters and composers find healthcare coverage",
-        "summary": "Called BMI Health Connect, the service has been created in collaboration with Gallagher Alternative Health Solutions, an insurance brokerage. Source",
-        "url": "https://www.musicbusinessworldwide.com/bmi-launches-free-service-to-help-us-songwriters-and-composers-find-healthcare-coverage/",
+        "title": "AI artists will somehow play ‘live’ at their own awards ceremony in November",
+        "summary": "AI-generated 'artists' including Xania Monet will 'perform' live on stage at the first AI Music Awards in Los Angeles in November. Source",
+        "url": "https://www.musicbusinessworldwide.com/ai-artists-will-somehow-play-live-at-their-own-awards-ceremony-in-november/",
         "source": "Music Business Worldwide",
         "domain": "musicbusinessworldwide.com",
-        "publishedAt": "2026-09-16T16:50:19.000Z",
-        "tags": [],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-11",
-        "title": "Believe and TuneCore won’t feed music to Suno without giving artists choice to opt in: ‘The artist must consent first, period.’",
-        "summary": "Denis Ladegaillerie details two-stage opt-in process for artists who want (and don't want) to have their music provided to Suno Source",
-        "url": "https://www.musicbusinessworldwide.com/believe-and-tunecore-suno-consent/",
-        "source": "Music Business Worldwide",
-        "domain": "musicbusinessworldwide.com",
-        "publishedAt": "2026-09-16T18:24:40.000Z",
+        "publishedAt": "2026-09-17T18:36:39.000Z",
         "tags": [
           "ai"
         ],
@@ -363,7 +339,7 @@
         "via": null
       },
       {
-        "id": "noticia-12",
+        "id": "noticia-10",
         "title": "SubmitHub bans AI-generated music from its promotion services",
         "summary": "Earlier this year, music-promo platform SubmitHub revealed research suggesting that 23.2% of the tracks being submitted were fully AI-generated. The post is from Music Ally .",
         "url": "https://musically.com/2026/09/17/submithub-bans-ai-generated-music-from-its-promotion-services/",
@@ -371,6 +347,35 @@
         "domain": "musically.com",
         "publishedAt": "2026-09-17T12:30:00.000Z",
         "tags": [
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-11",
+        "title": "Canciones creadas con IA abren un nuevo debate sobre derechos de autor",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMi6AFBVV95cUxQcldYeGJUMmNxZEk5blk1X2t0VmlYSHZxYTQwd3czR0J0cHZiLVdzQlZhdVlITzdRa3FCRTVmT0RiRmtDTlJBcE80YXBlMUQwSC0yM1pHU2ZfZ1k4MHFpQXBRT1pNalFiYUR1NE1hMnlyVFVOZDF0d1FaNDF2RWZjRl9IajZCSlVRLXJlS0M3NWduRkFoTE5tTGpmZkZ6Z01SUG9jVXZDMzJUbDFxX21lRmR0VGZZTFpUVXM4QlpHMmwtYzJRemxJcVFuUWxyRmlOZzR6MTk1STFZaWp4UHBnNDctcUlLVmZX?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "El Sol de México",
+        "domain": "news.google.com",
+        "publishedAt": "2026-09-10T21:29:54.000Z",
+        "tags": [
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-12",
+        "title": "Suno unveils upgrade developed with “music industry partners”, while continuing to battle the music industry in court",
+        "summary": "Suno has unveiled v6 of its music AI platform, which has been developed with its industry partners like Warner Music, BMG and Believe. However, even as it starts to work with some labels and publishers on new AI products, it continues to fight other music companies in the courts",
+        "url": "https://completemusicupdate.com/suno-unveils-upgrade-developed-with-music-industry-partners-while-continuing-to-battle-the-music-industry-in-court/",
+        "source": "Complete Music Update",
+        "domain": "completemusicupdate.com",
+        "publishedAt": "2026-09-09T13:47:53.000Z",
+        "tags": [
+          "lawsuit",
           "ai"
         ],
         "translated": false,
