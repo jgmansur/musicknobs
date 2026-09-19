@@ -1,20 +1,20 @@
 {
-  "lastUpdated": "2026-09-19T11:54:34.470Z",
+  "lastUpdated": "2026-09-19T21:26:33.643Z",
   "meta": {
     "method": "rss-retrieval + link-verification + ai-translation",
     "itemCount": 12,
     "sources": [
-      "Aristegui Noticias",
-      "Beat 100.9",
       "Complete Music Update",
       "Digital Music News",
       "IMDb",
       "Industria Musical",
       "Maya Comunicación",
-      "Unite.AI"
+      "Music Business Worldwide",
+      "Unite.AI",
+      "aristeguinoticias.com"
     ],
     "verifiedLinks": 12,
-    "aiTranslated": 12,
+    "aiTranslated": 0,
     "note": "Los hechos provienen de los artículos originales enlazados. La IA solo traduce y resume; no genera noticias."
   },
   "es": {
@@ -23,8 +23,8 @@
     "items": [
       {
         "id": "noticia-1",
-        "title": "Suno enfrenta otra demanda por derechos de autor de Universal Music y Sony Music a pesar de sus recientes acuerdos de licencia: ‘v6 no es un nuevo comienzo; es el fruto del mismo árbol envenenado’",
-        "summary": "Universal Music y Sony Music han presentado una nueva demanda por infracción de derechos de autor en un tribunal federal de Massachusetts, alegando que Suno entrenó su IA con una enorme cantidad de grabaciones sonoras protegidas sin autorización, sumándose a la acción judicial ya en curso.",
+        "title": "Suno Faces Another Copyright Suit from Universal Music and Sony Music Despite Its Recent Licensing Deals: ‘v6 Is Not a Fresh Start; It Is the Fruit of the Same Poisoned Tree’",
+        "summary": "How many lawsuits is that now? Universal Music and Sony Music have fired off another complaint against Suno for allegedly training on an “enormous number of copyrighted sound recordings” without authorization. With their original Suno copyright suit still in motion, the non-Warner majors submitted the supersized infrin…",
         "url": "https://www.digitalmusicnews.com/2026/09/18/universal-music-suno-lawsuit-second/",
         "source": "Digital Music News",
         "domain": "digitalmusicnews.com",
@@ -34,13 +34,13 @@
           "ai",
           "licensing"
         ],
-        "translated": true,
+        "translated": false,
         "via": null
       },
       {
         "id": "noticia-2",
-        "title": "Universal Music demanda a DistroKid por infracción de derechos de autor y prácticas comerciales engañosas, dice el distribuidor ‘inunda plataformas con material de IA de baja calidad’",
-        "summary": "Universal Music Group ha presentado una demanda de 52 páginas en un tribunal federal de Delaware acusando a DistroKid de prácticas comerciales engañosas e infracción flagrante de derechos de autor, alegando que el distribuidor está saturando plataformas con música generada por IA que vulnera los derechos.",
+        "title": "Universal Music Sues DistroKid for Copyright Infringement and Deceptive Trade Practices, Says the Distributor ‘Is Flooding Platforms With AI-Generated Slop’",
+        "summary": "Today in high-profile industry litigation: A firmly worded complaint filed by Universal Music Group (UMG) against DistroKid, which the major label says “is engaged in both deceptive trade practices and blatant copyright infringement.” UMG submitted the 52-page action to a Delaware federal court today, and as many will…",
         "url": "https://www.digitalmusicnews.com/2026/09/15/universal-music-distrokid-lawsuit/",
         "source": "Digital Music News",
         "domain": "digitalmusicnews.com",
@@ -49,13 +49,13 @@
           "lawsuit",
           "ai"
         ],
-        "translated": true,
+        "translated": false,
         "via": null
       },
       {
         "id": "noticia-3",
         "title": "Suno estrena sus modelos v6 con Warner, BMG y Believe",
-        "summary": "Suno, plataforma de música con IA involucrada en varias demandas, ha lanzado su suite de modelos v6 desarrollada conjuntamente con Warner Music Group, BMG y Believe, marcando su primera línea de modelos creada con socios de la industria mientras retira versiones anteriores.",
+        "summary": "Suno, una de las principales plataformas de música con inteligencia artificial y objeto de demandas por derechos de autor en varios frentes, ha lanzado su suite de modelos v6, la primera que la compañía desarrolla con socios de la industria: Warner Music Group, BMG y Believe. Con este estreno, la firma retira simultáne…",
         "url": "https://industriamusical.com/suno-v6-modelos-ia-warner-bmg-believe/?utm_source=rss&utm_medium=rss&utm_campaign=suno-v6-modelos-ia-warner-bmg-believe",
         "source": "Industria Musical",
         "domain": "industriamusical.com",
@@ -64,13 +64,13 @@
           "lawsuit",
           "ai"
         ],
-        "translated": true,
+        "translated": false,
         "via": null
       },
       {
         "id": "noticia-4",
-        "title": "Sentencia histórica sobre derechos de terminación no es la “emergencia de derechos de autor” que los editores reclaman, dice compositor al Tribunal Supremo de EE. UU.",
-        "summary": "Una decisión del Tribunal de Apelaciones del Quinto Circuito que interpreta a favor del compositor llevó a los grandes sellos a comprar la canción y solicitar revisión de la Corte Suprema; el autor ahora insta al máximo tribunal a declinar su intervención, argumentando que el caso no constituye una emergencia de derechos de autor.",
+        "title": "Landmark termination rights ruling not the “copyright emergency” music publishers claim, songwriter tells US Supreme Court",
+        "summary": "When America’s Fifth Circuit Appeals Court backed a songwriter-friendly interpretation of the termination right in US copyright law, the majors bought the song that prompted that ruling and asked the Supreme Court to intervene. The writer of that song has now urged the top court to not get involved",
         "url": "https://completemusicupdate.com/landmark-termination-rights-ruling-not-the-copyright-emergency-music-publishers-claim-songwriter-tells-us-supreme-court/",
         "source": "Complete Music Update",
         "domain": "completemusicupdate.com",
@@ -78,13 +78,13 @@
         "tags": [
           "lawsuit"
         ],
-        "translated": true,
+        "translated": false,
         "via": null
       },
       {
         "id": "noticia-5",
-        "title": "Universal y Warner dicen al juez que la cláusula de ‘nuevo uso’ en el acuerdo AFM es “clara y sin ambigüedades” y no se aplica a sus acuerdos de IA",
-        "summary": "En respuesta a una demanda de la Federación Americana de Músicos que alega que Universal y Warner deben compartir ingresos de IA bajo el Acuerdo Laboral de Grabación, ambos sellos presentaron mociones afirmando que la cláusula de ‘nuevo uso’ del acuerdo es clara, sin ambigüedades y no cubre sus acuerdos de IA.",
+        "title": "Universal and Warner tell judge ‘new use’ clause in AFM agreement is “clear and unambiguous” and does not apply to their AI deals",
+        "summary": "In June the American Federation Of Musicians sued Universal and Warner over their AI deals, insisting the majors should be sharing their AI money with the union’s members under its Sound Recording Labor Agreement. Both sides have made new court filings as the majors try to get the lawsuit dismissed",
         "url": "https://completemusicupdate.com/universal-and-warner-tell-judge-new-use-clause-in-afm-agreement-is-clear-and-unambiguous-and-does-not-apply-to-their-ai-deals/",
         "source": "Complete Music Update",
         "domain": "completemusicupdate.com",
@@ -93,13 +93,13 @@
           "lawsuit",
           "ai"
         ],
-        "translated": true,
+        "translated": false,
         "via": null
       },
       {
         "id": "noticia-6",
         "title": "UMG demanda a DistroKid por ‘slop’ de IA y violación de derechos de autor",
-        "summary": "Universal Music Group ha presentado una demanda contra DistroKid, alegando que el distribuidor ofrece música generada por IA que constituye infracción de derechos de autor y es de baja calidad, lo que la compañía describe como ‘slop’.",
+        "summary": "",
         "url": "https://news.google.com/rss/articles/CBMiiwFBVV95cUxNdUduWjM2TkdtY3JZUzg1aTZfeVhVbEt0UzRvUUlDTjYwNGR2ekFjWUlia2c2UDFsaWFRSVJ5STRUZFBnMldMN0JiZ1RQZ0JqYU5oZTVRRS1IaWNUdHRpN1phQVFoZG1qLXdGOERJeWlGOXBGamhFOGVnaXpGQno2bHVLQ0xrVzZzdldV?oc=5&hl=es-419&gl=US&ceid=US:es-419",
         "source": "Unite.AI",
         "domain": "news.google.com",
@@ -108,13 +108,13 @@
           "lawsuit",
           "ai"
         ],
-        "translated": true,
+        "translated": false,
         "via": "Google News"
       },
       {
         "id": "noticia-7",
-        "title": "Cyril Vetter se opone formalmente a la apelación de la Corte Suprema de los grandes sellos por ‘fuera de base’ en medio de una disputa de recaptura de derechos de autor de alto riesgo",
-        "summary": "El compositor Cyril Vetter ha presentado una oposición de 37 páginas a la petición de los grandes sellos para llevar su caso de recaptura de derechos de autor ante la Corte Suprema, argumentando que su intento de presentar la disputa de alto riesgo ante el máximo tribunal es infundado.",
+        "title": "Cyril Vetter Formally Opposes the Major Labels’ ‘Off Base’ Supreme Court Appeal Amid High-Stakes Copyright Recapture Showdown",
+        "summary": "Songwriter Cyril Vetter is firing back against the major labels’ aggressive push to bring their high-stakes copyright recapture case before the Supreme Court. The Louisiana-born “Double Shot (Of My Baby’s Love)” co-writer Vetter just recently laid out his opposition arguments across 37 detailed pages, after the majors…",
         "url": "https://www.digitalmusicnews.com/2026/09/16/bmg-v-vetter-opposition/",
         "source": "Digital Music News",
         "domain": "digitalmusicnews.com",
@@ -122,28 +122,13 @@
         "tags": [
           "lawsuit"
         ],
-        "translated": true,
+        "translated": false,
         "via": null
       },
       {
         "id": "noticia-8",
-        "title": "Tribunal alemán falla contra Suno por derechos de autor",
-        "summary": "Un tribunal alemán ha emitido una sentencia contra Suno, encontrando a la empresa responsable de infracción de derechos de autor en un caso presentado ante el tribunal. La decisión se refiere al presunto uso no autorizado de obras protegidas en los procesos de entrenamiento de IA de Suno.",
-        "url": "https://news.google.com/rss/articles/CBMikAFBVV95cUxPY3ZnMVI0QUQ2Vk1ZRC1FdXBHTWVfdzRHM01GZnVNVEdWclQ3V0wzcWRCeUVYcjhuaWQ1N1hGcV85U1lkRnY5SWh2aTJsVEFKdVkwRXlXQnhPeGZESElTbHd1Z1NiSGkwVWRXcnpKQnV3cUpKVmRvMlVpaEVTMy1GcVktRDVvYnhTaWx4RjBwNU4?oc=5&hl=es-419&gl=US&ceid=US:es-419",
-        "source": "Beat 100.9",
-        "domain": "news.google.com",
-        "publishedAt": "2026-09-14T14:00:28.000Z",
-        "tags": [
-          "lawsuit",
-          "ai"
-        ],
-        "translated": true,
-        "via": "Google News"
-      },
-      {
-        "id": "noticia-9",
         "title": "UMG firma un acuerdo global de IA con ElevenLabs",
-        "summary": "Universal Music Group ha firmado un acuerdo de licencia plurianual con ElevenLabs, empresa de IA de audio valorada en 11 mil millones de dólares, estableciendo la primera asociación de este tipo para una gran discográfica y planificando una nueva plataforma musical impulsada por IA para fans, además de proyectos de desarrollo conjunto.",
+        "summary": "Universal Music Group (UMG) ha firmado un acuerdo de licencia plurianual con ElevenLabs, la compañía de inteligencia artificial de audio valorada en 11.000 millones de dólares. Es el primer pacto de ElevenLabs con una gran discográfica y contempla el lanzamiento de una nueva plataforma de música con IA para fans, ademá…",
         "url": "https://industriamusical.com/umg-acuerdo-global-ia-elevenlabs/?utm_source=rss&utm_medium=rss&utm_campaign=umg-acuerdo-global-ia-elevenlabs",
         "source": "Industria Musical",
         "domain": "industriamusical.com",
@@ -152,13 +137,13 @@
           "ai",
           "licensing"
         ],
-        "translated": true,
+        "translated": false,
         "via": null
       },
       {
-        "id": "noticia-10",
+        "id": "noticia-9",
         "title": "Universal y Sony llevan a Suno ante los tribunales por el uso de miles de canciones para entrenar su IA",
-        "summary": "Universal y Sony han iniciado acciones legales contra Suno, alegando que el generador de música IA se entrenó usando miles de canciones sin permiso, lo que genera preocupaciones de derechos de autor sobre el uso no autorizado de material protegido por la compañía.",
+        "summary": "",
         "url": "https://news.google.com/rss/articles/CBMi0gFBVV95cUxNaWM1N1pmVG0tNHYtd3VpSlhtQlFPMUFURWxVOU9RMHIwQTB5RjBONTZscGV0TmpyU0dmWFczSHFteWpld0hXSGJTNlo1b2F3UFdZRE03MnUxZEU1UE9qenBjSm1ZeXZNX3FsQkhTT0pPb2VDdXpJTkZ3OER6NlplYW1LeHBpUG1FRWo3dnNCVVBFcHFZM0xST1ltY3p4aThaMUxpTGY0bEdDNHp3dVJ1aDFoLXNhNzZCd3J6RmFWY196cnVldzFTRGdFeUhPQlJpaGc?oc=5&hl=es-419&gl=US&ceid=US:es-419",
         "source": "Maya Comunicación",
         "domain": "news.google.com",
@@ -167,13 +152,13 @@
           "lawsuit",
           "ai"
         ],
-        "translated": true,
+        "translated": false,
         "via": "Google News"
       },
       {
-        "id": "noticia-11",
-        "title": "UMG y Sony Music presentan segunda demanda contra Suno por el nuevo modelo del generador de música IA",
-        "summary": "Universal Music Group y Sony Music han presentado una segunda demanda contra Suno, alegando que el nuevo modelo de su generador de música IA infringe derechos de autor al emplear grabaciones no autorizadas en sus datos de entrenamiento.",
+        "id": "noticia-10",
+        "title": "Umg, Sony Music File Second Lawsuit Against Suno Over AI Music Generator’s New Model",
+        "summary": "",
         "url": "https://news.google.com/rss/articles/CBMiZkFVX3lxTE1nWVcxNl9zdkloODh3dUF4SEFhcmc5SVdJbTIzQWltbnZxT2NEU2RUaXczVENheDFZZnExNDIxLXpaTlBuVXJJUWlaWVFKaFJ6Y293VUt6R0tscXpWb05CLTFjYjBEdw?oc=5&hl=es-419&gl=US&ceid=US:es-419",
         "source": "IMDb",
         "domain": "news.google.com",
@@ -182,23 +167,37 @@
           "lawsuit",
           "ai"
         ],
-        "translated": true,
+        "translated": false,
         "via": "Google News"
       },
       {
-        "id": "noticia-12",
+        "id": "noticia-11",
         "title": "Universal y Sony vuelven a demandar a Suno por música creada con IA",
-        "summary": "Universal y Sony han vuelto a demandar a Suno, acusando al servicio de IA de crear música que viola la legislación de derechos de autor al usar obras protegidas sin la licencia adecuada; la demanda sostiene que el sistema generó canciones derivadas de grabaciones existentes, constituyendo un uso ilícito del material protegido.",
+        "summary": "",
         "url": "https://news.google.com/rss/articles/CBMirwFBVV95cUxNUGR5YnpZTVpnUUZfczhIYW5xNmJFVmhJd1JMWXlYVVN0REdBQTEtcjhXMS1KckV5Y1hoQ3U2NDFKOTFjZTRWdDEyYncwYnBrV3M5VFNOSnVSdmIwOHV0Q0dlMHR1YXp6YjVxM01NSUFtMG1LVDIwTVVOTGd3cTZjeFk2bTc2Q2JRT0h4YjRVdDRKVHpHdVBCSmxuZzluOUxoaGVtZUJoVHRzXzdNY3Bz?oc=5&hl=es-419&gl=US&ceid=US:es-419",
-        "source": "Aristegui Noticias",
+        "source": "aristeguinoticias.com",
         "domain": "news.google.com",
         "publishedAt": "2026-09-18T19:43:00.000Z",
         "tags": [
           "lawsuit",
           "ai"
         ],
-        "translated": true,
+        "translated": false,
         "via": "Google News"
+      },
+      {
+        "id": "noticia-12",
+        "title": "From Universal suing DistroKid (for the first time) to UMG and Sony suing Suno (again)… it’s MBW’s Weekly Round-Up",
+        "summary": "The biggest headlines from the past few days... Source",
+        "url": "https://www.musicbusinessworldwide.com/from-universal-suing-distrokid-for-the-first-time-to-umg-and-sony-suing-suno-again-its-mbws-weekly-round-up/",
+        "source": "Music Business Worldwide",
+        "domain": "musicbusinessworldwide.com",
+        "publishedAt": "2026-09-18T17:18:10.000Z",
+        "tags": [
+          "ai"
+        ],
+        "translated": false,
+        "via": null
       }
     ],
     "tip": {
@@ -213,7 +212,7 @@
       {
         "id": "noticia-1",
         "title": "Suno Faces Another Copyright Suit from Universal Music and Sony Music Despite Its Recent Licensing Deals: ‘v6 Is Not a Fresh Start; It Is the Fruit of the Same Poisoned Tree’",
-        "summary": "Universal Music and Sony Music have filed a new copyright infringement complaint in a Massachusetts federal court, alleging Suno trained its AI on a massive number of copyrighted sound recordings without permission, adding to an existing lawsuit.",
+        "summary": "How many lawsuits is that now? Universal Music and Sony Music have fired off another complaint against Suno for allegedly training on an “enormous number of copyrighted sound recordings” without authorization. With their original Suno copyright suit still in motion, the non-Warner majors submitted the supersized infrin…",
         "url": "https://www.digitalmusicnews.com/2026/09/18/universal-music-suno-lawsuit-second/",
         "source": "Digital Music News",
         "domain": "digitalmusicnews.com",
@@ -223,13 +222,13 @@
           "ai",
           "licensing"
         ],
-        "translated": true,
+        "translated": false,
         "via": null
       },
       {
         "id": "noticia-2",
         "title": "Universal Music Sues DistroKid for Copyright Infringement and Deceptive Trade Practices, Says the Distributor ‘Is Flooding Platforms With AI-Generated Slop’",
-        "summary": "Universal Music Group has lodged a 52‑page complaint in a Delaware federal court accusing DistroKid of deceptive trade practices and blatant copyright infringement, claiming the distributor is flooding platforms with AI‑generated music that violates rights.",
+        "summary": "Today in high-profile industry litigation: A firmly worded complaint filed by Universal Music Group (UMG) against DistroKid, which the major label says “is engaged in both deceptive trade practices and blatant copyright infringement.” UMG submitted the 52-page action to a Delaware federal court today, and as many will…",
         "url": "https://www.digitalmusicnews.com/2026/09/15/universal-music-distrokid-lawsuit/",
         "source": "Digital Music News",
         "domain": "digitalmusicnews.com",
@@ -238,13 +237,13 @@
           "lawsuit",
           "ai"
         ],
-        "translated": true,
+        "translated": false,
         "via": null
       },
       {
         "id": "noticia-3",
-        "title": "Suno launches its v6 models with Warner, BMG and Believe",
-        "summary": "Suno, an AI‑driven music platform facing multiple copyright lawsuits, has released its v6 model suite developed jointly with Warner Music Group, BMG and Believe, marking its first set of models created with major‑label partners while withdrawing earlier versions.",
+        "title": "Suno estrena sus modelos v6 con Warner, BMG y Believe",
+        "summary": "Suno, una de las principales plataformas de música con inteligencia artificial y objeto de demandas por derechos de autor en varios frentes, ha lanzado su suite de modelos v6, la primera que la compañía desarrolla con socios de la industria: Warner Music Group, BMG y Believe. Con este estreno, la firma retira simultáne…",
         "url": "https://industriamusical.com/suno-v6-modelos-ia-warner-bmg-believe/?utm_source=rss&utm_medium=rss&utm_campaign=suno-v6-modelos-ia-warner-bmg-believe",
         "source": "Industria Musical",
         "domain": "industriamusical.com",
@@ -253,13 +252,13 @@
           "lawsuit",
           "ai"
         ],
-        "translated": true,
+        "translated": false,
         "via": null
       },
       {
         "id": "noticia-4",
         "title": "Landmark termination rights ruling not the “copyright emergency” music publishers claim, songwriter tells US Supreme Court",
-        "summary": "A Fifth Circuit Appeals Court decision interpreting termination rights in favor of a songwriter prompted major labels to purchase the song and request Supreme Court review; the songwriter now urges the high court to decline involvement, arguing the case is not a copyright emergency.",
+        "summary": "When America’s Fifth Circuit Appeals Court backed a songwriter-friendly interpretation of the termination right in US copyright law, the majors bought the song that prompted that ruling and asked the Supreme Court to intervene. The writer of that song has now urged the top court to not get involved",
         "url": "https://completemusicupdate.com/landmark-termination-rights-ruling-not-the-copyright-emergency-music-publishers-claim-songwriter-tells-us-supreme-court/",
         "source": "Complete Music Update",
         "domain": "completemusicupdate.com",
@@ -267,13 +266,13 @@
         "tags": [
           "lawsuit"
         ],
-        "translated": true,
+        "translated": false,
         "via": null
       },
       {
         "id": "noticia-5",
         "title": "Universal and Warner tell judge ‘new use’ clause in AFM agreement is “clear and unambiguous” and does not apply to their AI deals",
-        "summary": "In response to an American Federation of Musicians lawsuit alleging Universal and Warner should share AI‑generated revenue under the Sound Recording Labor Agreement, both majors filed motions asserting the agreement’s ‘new use’ clause is clear, unambiguous and does not cover their AI deals.",
+        "summary": "In June the American Federation Of Musicians sued Universal and Warner over their AI deals, insisting the majors should be sharing their AI money with the union’s members under its Sound Recording Labor Agreement. Both sides have made new court filings as the majors try to get the lawsuit dismissed",
         "url": "https://completemusicupdate.com/universal-and-warner-tell-judge-new-use-clause-in-afm-agreement-is-clear-and-unambiguous-and-does-not-apply-to-their-ai-deals/",
         "source": "Complete Music Update",
         "domain": "completemusicupdate.com",
@@ -282,13 +281,13 @@
           "lawsuit",
           "ai"
         ],
-        "translated": true,
+        "translated": false,
         "via": null
       },
       {
         "id": "noticia-6",
-        "title": "UMG sues DistroKid for AI ‘slop’ and copyright infringement",
-        "summary": "Universal Music Group has filed a lawsuit against DistroKid, alleging the distributor provides AI‑generated music that constitutes copyright infringement and is of low quality, which the label describes as ‘slop.’",
+        "title": "UMG demanda a DistroKid por ‘slop’ de IA y violación de derechos de autor",
+        "summary": "",
         "url": "https://news.google.com/rss/articles/CBMiiwFBVV95cUxNdUduWjM2TkdtY3JZUzg1aTZfeVhVbEt0UzRvUUlDTjYwNGR2ekFjWUlia2c2UDFsaWFRSVJ5STRUZFBnMldMN0JiZ1RQZ0JqYU5oZTVRRS1IaWNUdHRpN1phQVFoZG1qLXdGOERJeWlGOXBGamhFOGVnaXpGQno2bHVLQ0xrVzZzdldV?oc=5&hl=es-419&gl=US&ceid=US:es-419",
         "source": "Unite.AI",
         "domain": "news.google.com",
@@ -297,13 +296,13 @@
           "lawsuit",
           "ai"
         ],
-        "translated": true,
+        "translated": false,
         "via": "Google News"
       },
       {
         "id": "noticia-7",
         "title": "Cyril Vetter Formally Opposes the Major Labels’ ‘Off Base’ Supreme Court Appeal Amid High-Stakes Copyright Recapture Showdown",
-        "summary": "Songwriter Cyril Vetter has submitted a 37‑page opposition to the major labels’ petition to the Supreme Court, arguing their attempt to bring a high‑stakes copyright recapture case before the nation’s highest court is unfounded.",
+        "summary": "Songwriter Cyril Vetter is firing back against the major labels’ aggressive push to bring their high-stakes copyright recapture case before the Supreme Court. The Louisiana-born “Double Shot (Of My Baby’s Love)” co-writer Vetter just recently laid out his opposition arguments across 37 detailed pages, after the majors…",
         "url": "https://www.digitalmusicnews.com/2026/09/16/bmg-v-vetter-opposition/",
         "source": "Digital Music News",
         "domain": "digitalmusicnews.com",
@@ -311,28 +310,13 @@
         "tags": [
           "lawsuit"
         ],
-        "translated": true,
+        "translated": false,
         "via": null
       },
       {
         "id": "noticia-8",
-        "title": "German court rules against Suno for copyright infringement",
-        "summary": "A German court has issued a ruling against Suno, finding the company liable for copyright infringement in a case brought before the tribunal. The decision concerns alleged unauthorized use of copyrighted works in Suno’s AI training processes.",
-        "url": "https://news.google.com/rss/articles/CBMikAFBVV95cUxPY3ZnMVI0QUQ2Vk1ZRC1FdXBHTWVfdzRHM01GZnVNVEdWclQ3V0wzcWRCeUVYcjhuaWQ1N1hGcV85U1lkRnY5SWh2aTJsVEFKdVkwRXlXQnhPeGZESElTbHd1Z1NiSGkwVWRXcnpKQnV3cUpKVmRvMlVpaEVTMy1GcVktRDVvYnhTaWx4RjBwNU4?oc=5&hl=es-419&gl=US&ceid=US:es-419",
-        "source": "Beat 100.9",
-        "domain": "news.google.com",
-        "publishedAt": "2026-09-14T14:00:28.000Z",
-        "tags": [
-          "lawsuit",
-          "ai"
-        ],
-        "translated": true,
-        "via": "Google News"
-      },
-      {
-        "id": "noticia-9",
-        "title": "UMG signs global AI agreement with ElevenLabs",
-        "summary": "Universal Music Group has signed a multi‑year licensing agreement with ElevenLabs, an AI audio company valued at $11 billion, establishing the first partnership of its kind for a major label and planning a new AI‑powered music platform for fans along with joint development projects.",
+        "title": "UMG firma un acuerdo global de IA con ElevenLabs",
+        "summary": "Universal Music Group (UMG) ha firmado un acuerdo de licencia plurianual con ElevenLabs, la compañía de inteligencia artificial de audio valorada en 11.000 millones de dólares. Es el primer pacto de ElevenLabs con una gran discográfica y contempla el lanzamiento de una nueva plataforma de música con IA para fans, ademá…",
         "url": "https://industriamusical.com/umg-acuerdo-global-ia-elevenlabs/?utm_source=rss&utm_medium=rss&utm_campaign=umg-acuerdo-global-ia-elevenlabs",
         "source": "Industria Musical",
         "domain": "industriamusical.com",
@@ -341,13 +325,13 @@
           "ai",
           "licensing"
         ],
-        "translated": true,
+        "translated": false,
         "via": null
       },
       {
-        "id": "noticia-10",
-        "title": "Universal and Sony take Suno to court over use of thousands of songs to train its AI",
-        "summary": "Universal and Sony have taken legal action against Suno, alleging that the AI music generator was trained using thousands of songs without permission, raising copyright concerns over the company’s use of copyrighted material.",
+        "id": "noticia-9",
+        "title": "Universal y Sony llevan a Suno ante los tribunales por el uso de miles de canciones para entrenar su IA",
+        "summary": "",
         "url": "https://news.google.com/rss/articles/CBMi0gFBVV95cUxNaWM1N1pmVG0tNHYtd3VpSlhtQlFPMUFURWxVOU9RMHIwQTB5RjBONTZscGV0TmpyU0dmWFczSHFteWpld0hXSGJTNlo1b2F3UFdZRE03MnUxZEU1UE9qenBjSm1ZeXZNX3FsQkhTT0pPb2VDdXpJTkZ3OER6NlplYW1LeHBpUG1FRWo3dnNCVVBFcHFZM0xST1ltY3p4aThaMUxpTGY0bEdDNHp3dVJ1aDFoLXNhNzZCd3J6RmFWY196cnVldzFTRGdFeUhPQlJpaGc?oc=5&hl=es-419&gl=US&ceid=US:es-419",
         "source": "Maya Comunicación",
         "domain": "news.google.com",
@@ -356,13 +340,13 @@
           "lawsuit",
           "ai"
         ],
-        "translated": true,
+        "translated": false,
         "via": "Google News"
       },
       {
-        "id": "noticia-11",
+        "id": "noticia-10",
         "title": "Umg, Sony Music File Second Lawsuit Against Suno Over AI Music Generator’s New Model",
-        "summary": "Universal Music Group and Sony Music have filed a second lawsuit against Suno, claiming the company’s new AI music model infringes copyrights by employing unauthorized recordings in its training data.",
+        "summary": "",
         "url": "https://news.google.com/rss/articles/CBMiZkFVX3lxTE1nWVcxNl9zdkloODh3dUF4SEFhcmc5SVdJbTIzQWltbnZxT2NEU2RUaXczVENheDFZZnExNDIxLXpaTlBuVXJJUWlaWVFKaFJ6Y293VUt6R0tscXpWb05CLTFjYjBEdw?oc=5&hl=es-419&gl=US&ceid=US:es-419",
         "source": "IMDb",
         "domain": "news.google.com",
@@ -371,23 +355,37 @@
           "lawsuit",
           "ai"
         ],
-        "translated": true,
+        "translated": false,
         "via": "Google News"
       },
       {
-        "id": "noticia-12",
-        "title": "Universal and Sony sue Suno again over AI‑generated music",
-        "summary": "Universal and Sony have again sued Suno, accusing the AI service of creating music that violates copyright law by using protected works without proper licensing. The complaint asserts that Suno’s system generated songs derived from existing recordings, constituting unlawful use of copyrighted material.",
+        "id": "noticia-11",
+        "title": "Universal y Sony vuelven a demandar a Suno por música creada con IA",
+        "summary": "",
         "url": "https://news.google.com/rss/articles/CBMirwFBVV95cUxNUGR5YnpZTVpnUUZfczhIYW5xNmJFVmhJd1JMWXlYVVN0REdBQTEtcjhXMS1KckV5Y1hoQ3U2NDFKOTFjZTRWdDEyYncwYnBrV3M5VFNOSnVSdmIwOHV0Q0dlMHR1YXp6YjVxM01NSUFtMG1LVDIwTVVOTGd3cTZjeFk2bTc2Q2JRT0h4YjRVdDRKVHpHdVBCSmxuZzluOUxoaGVtZUJoVHRzXzdNY3Bz?oc=5&hl=es-419&gl=US&ceid=US:es-419",
-        "source": "Aristegui Noticias",
+        "source": "aristeguinoticias.com",
         "domain": "news.google.com",
         "publishedAt": "2026-09-18T19:43:00.000Z",
         "tags": [
           "lawsuit",
           "ai"
         ],
-        "translated": true,
+        "translated": false,
         "via": "Google News"
+      },
+      {
+        "id": "noticia-12",
+        "title": "From Universal suing DistroKid (for the first time) to UMG and Sony suing Suno (again)… it’s MBW’s Weekly Round-Up",
+        "summary": "The biggest headlines from the past few days... Source",
+        "url": "https://www.musicbusinessworldwide.com/from-universal-suing-distrokid-for-the-first-time-to-umg-and-sony-suing-suno-again-its-mbws-weekly-round-up/",
+        "source": "Music Business Worldwide",
+        "domain": "musicbusinessworldwide.com",
+        "publishedAt": "2026-09-18T17:18:10.000Z",
+        "tags": [
+          "ai"
+        ],
+        "translated": false,
+        "via": null
       }
     ],
     "tip": {
