@@ -3723,6 +3723,7 @@ function mapTaskApiItem(item = {}) {
     focusOnly: Boolean(item.focusOnly),
     showInManager: item.showInManager !== undefined ? Boolean(item.showInManager) : true,
     notificar: Boolean(item.notificar),
+    backlog: Boolean(item.backlog),
     notionUrl: item.notionUrl || '',
     hasExtraInfo: Boolean(item.hasExtraInfo),
     taskPreview: item.taskPreview || '',
@@ -3781,7 +3782,7 @@ async function fetchFocusBucketsFallback({ scope = 'all', viewerEmail = '' } = {
   return splitFocusBuckets(rows);
 }
 
-async function loadFocusTasks({ keepMode = true, silent = false } = {}) {
+async function loadFocusTasks({ keepMode = true, silent = false, fresh = false } = {}) {
   if (!isAuthenticated) {
     focusTodayTasks = [];
     focusOverdueTasks = [];
@@ -3802,6 +3803,7 @@ async function loadFocusTasks({ keepMode = true, silent = false } = {}) {
 
     try {
       const params = new URLSearchParams({ scope, viewer: viewerEmail });
+      if (fresh) params.set('fresh', '1');
       const res = await fetchJson(`${API_BASE}/api/manager/tasks/focus?${params.toString()}`);
       focusTodayTasks = (res.today || []).map(mapTaskApiItem);
       focusOverdueTasks = (res.overdue || []).map(mapTaskApiItem);
@@ -3853,7 +3855,7 @@ async function manualSyncFocusTasks() {
   setStatus('focus-status', 'Sincronizando focus tasks con Notion...');
   overviewTasksDirty = false;
   await Promise.all([
-    loadFocusTasks({ keepMode: true }),
+    loadFocusTasks({ keepMode: true, fresh: true }),
     loadTasksFromApi()
   ]);
 }
@@ -3882,7 +3884,10 @@ function scheduleSilentFocusReconcile(delayMs = 2500) {
       scheduleSilentFocusReconcile(1500);
       return;
     }
-    void loadFocusTasks({ keepMode: true, silent: true });
+    // fresh: viene justo después de una escritura, así que el caché del worker es
+    // exactamente lo que NO queremos leer — nos devolvería la task en su bucket viejo
+    // y la tarjeta rebotaría sola a donde estaba.
+    void loadFocusTasks({ keepMode: true, silent: true, fresh: true });
   }, delayMs);
 }
 
@@ -3952,8 +3957,11 @@ function sendCurrentTaskToBacklog() {
   const dateStr = mxNow.toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' });
   const targetIso = `${dateStr}T09:00:00.000-06:00`;
 
+  // El checkbox Backlog va junto con la fecha, y es lo que de verdad la mantiene
+  // aparcada: el rollover nocturno respeta lo marcado y solo empuja lo de hoy.
+  // Con la fecha sola no alcanzaba — una task aparcada y una atrasada se veían igual.
   return runOptimisticFocusMutation({
-    patch: { dueDate: targetIso },
+    patch: { dueDate: targetIso, backlog: !movingToToday },
     moveTo: movingToToday ? 'today' : 'overdue',
     newDueDate: targetIso,
     okMessage: movingToToday ? 'Task movida a hoy.' : 'Task movida al backlog.',
@@ -4174,10 +4182,36 @@ async function createFocusTask() {
       body: JSON.stringify({ title, tipo, dueDate, assignee: 'jgmansur2@gmail.com', focusOnly: tipo !== 'Hnos. Mansur', notificar })
     });
     if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    const created = await r.json().catch(() => ({}));
     closeFocusNewTaskModal();
+
+    // La task se pinta ya, en el bucket que le toca por su fecha, y el board salta
+    // ahí para que Jay la vea. Antes solo se recargaba, y la recarga podía traer la
+    // foto vieja del caché del worker: la task existía en Notion pero no aparecía
+    // hasta darle "Sincronizar Notion".
+    const bucket = focusBucketForDate(dueDate);
+    if (created?.id && bucket) {
+      insertFocusTask(bucket, mapTaskApiItem({
+        id: created.id,
+        title,
+        tipo,
+        dueDate,
+        status: 'Empezó',
+        priority: 'Alta',
+        assignee: 'Jay Mansur',
+        assigneeEmail: 'jgmansur2@gmail.com',
+        focusOnly: tipo !== 'Hnos. Mansur',
+        showInManager: true,
+        notificar
+      }));
+      setFocusMode(bucket);
+      setFocusIndex(bucket, Math.max(0, getFocusBucket(bucket).findIndex((t) => t.id === created.id)));
+      renderFocusTaskBoard();
+    }
+
     setStatus('focus-status', `Task "${title}" creada.`);
     overviewTasksDirty = true;
-    await loadFocusTasks({ keepMode: true, silent: true });
+    await loadFocusTasks({ keepMode: true, silent: true, fresh: true });
   } catch (e) {
     const reason = e instanceof Error ? e.message : String(e);
     setStatus('focus-status', `No se pudo crear la task: ${reason}`, true);

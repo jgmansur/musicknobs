@@ -30,6 +30,10 @@ const TASK_ASSIGNEES_PROPERTY_LEGACY = "Asignar Usuario";
 const TASK_SHOW_IN_MANAGER_PROPERTY = "Mostrar en Manager App";
 const TASK_FOCUS_ONLY_PROPERTY = "Focus Only";
 const TASK_NOTIFY_PROPERTY = "Notificar";
+// Marca de "yo aparqué esto a propósito". Sin este checkbox, una task del backlog es
+// indistinguible de una que se le escapó al rollover: las dos son solo "fecha pasada".
+// Esa ambigüedad fue justo lo que hizo que el rollover se trajera el backlog entero a hoy.
+const TASK_BACKLOG_PROPERTY = "Backlog";
 const ADMIN_EMAILS = ["jgmansur2@gmail.com"];
 const CLEAR_LOG_PASSWORD = "9776";
 const OWNER_EMAIL = "jgmansur2@gmail.com";
@@ -295,6 +299,9 @@ function json(data, status = 200) {
     status,
     headers: {
       "Content-Type": "application/json; charset=utf-8",
+      // Estado mutable: ni el browser ni el edge deben servir una copia. Sin esto,
+      // un GET repetido tras una escritura puede devolver la foto anterior.
+      "Cache-Control": "no-store",
       ...CORS_HEADERS,
     },
   });
@@ -1882,6 +1889,7 @@ async function listManagerTasks(env, options = {}) {
       const focusOnly = Boolean(props?.[TASK_FOCUS_ONLY_PROPERTY]?.checkbox);
       const showInManager = Boolean(props?.[TASK_SHOW_IN_MANAGER_PROPERTY]?.checkbox);
       const notificar = Boolean(props?.[TASK_NOTIFY_PROPERTY]?.checkbox);
+      const backlog = Boolean(props?.[TASK_BACKLOG_PROPERTY]?.checkbox);
       const assignees = parseAssigneesFromProperty(props, allUsers);
       const subtaskBlocks = await notionGetPageChildren(page.id, notionToken, notionVersion);
       const subtasks = parseSubtasksFromBlocks(subtaskBlocks);
@@ -1902,6 +1910,7 @@ async function listManagerTasks(env, options = {}) {
         focusOnly,
         showInManager,
         notificar,
+        backlog,
         notionUrl: String(page.url || ""),
         hasExtraInfo,
         taskPreview,
@@ -1947,7 +1956,11 @@ async function listManagerFocusTasks(env, options = {}) {
   try {
     const viewerEmail = String(options.viewerEmail || "").trim().toLowerCase();
     const scope = String(options.scope || "all").toLowerCase();
-    const cached = getCachedFocusTasks({ scope, viewerEmail });
+    // fresh salta el caché. Hace falta porque el Map vive en la memoria de UN isolate:
+    // clearFocusTasksCache() tras crear una task limpia el isolate que atendió el POST,
+    // pero la lectura siguiente puede caer en otro que todavía tiene la respuesta vieja
+    // — por eso una task recién creada no aparecía hasta pasados los 45s del TTL.
+    const cached = options.fresh ? null : getCachedFocusTasks({ scope, viewerEmail });
     if (cached) return cached;
     const allUsers = parseManagerUsers(env);
     const todayIso = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' });
@@ -1990,6 +2003,7 @@ async function listManagerFocusTasks(env, options = {}) {
       const focusOnly = Boolean(props?.[TASK_FOCUS_ONLY_PROPERTY]?.checkbox);
       const showInManager = Boolean(props?.[TASK_SHOW_IN_MANAGER_PROPERTY]?.checkbox);
       const notificar = Boolean(props?.[TASK_NOTIFY_PROPERTY]?.checkbox);
+      const backlog = Boolean(props?.[TASK_BACKLOG_PROPERTY]?.checkbox);
       const assignees = parseAssigneesFromProperty(props, allUsers);
       const subtaskBlocks = await notionGetPageChildren(page.id, notionToken, notionVersion);
       const subtasks = parseSubtasksFromBlocks(subtaskBlocks);
@@ -2010,6 +2024,7 @@ async function listManagerFocusTasks(env, options = {}) {
         focusOnly,
         showInManager,
         notificar,
+        backlog,
         notionUrl: String(page.url || ""),
         hasExtraInfo,
         taskPreview,
@@ -2057,8 +2072,15 @@ async function listManagerFocusTasks(env, options = {}) {
 }
 
 // ─── AUTO-ROLLOVER ───────────────────────────────────────────────────────────
-// Mueve al día siguiente las tasks de HOY que no se completaron, y de paso rescata
-// las que quedaron atrasadas en el backlog.
+// Mueve al día siguiente las tasks de HOY que no se completaron. Lo que está en el
+// backlog NO se toca: si Jay lo aparcó, se queda aparcado hasta que él lo saque.
+//
+// La única excepción es el auto-reparo: si una corrida no se ejecutó (worker caído,
+// cron perdido), las tasks de ese día quedaron varadas con fecha pasada sin que nadie
+// lo decidiera. Esas sí se rescatan — pero solo las de los días exactos que se
+// perdieron (ver rolloverGapDays) y solo si NO tienen el checkbox Backlog.
+// Sin esas dos condiciones el rescate se lleva puesto el backlog entero, que es
+// exactamente el bug que esta versión corrige.
 // Vive acá y NO en el cliente: un setTimeout en la PWA no dispara con el teléfono
 // dormido, y al reanudar disparaba tarde calculando "mañana" contra el día
 // equivocado (movía 2 días). El Cron Trigger corre en Cloudflare pase lo que pase.
@@ -2084,11 +2106,45 @@ function rolloverDueDate(originalDueDate, targetDateIso) {
   return t === -1 ? `${targetDateIso}T09:00:00.000-06:00` : `${targetDateIso}${raw.slice(t)}`;
 }
 
+// Qué hacer con UNA task, dado su día, el día de hoy, si está aparcada y qué días
+// quedaron sin procesar. Vive separada del recorrido de Notion para poder probarla
+// sola: es la regla que se equivocó dos veces y la que define todo el comportamiento.
+// Devuelve "" cuando la task no se toca.
+function rolloverDecision(due, todayIso, backlog, gapDays = []) {
+  if (!due) return "";
+  if (due === todayIso) return "hoy";           // sigue en curso → mañana sigue en hoy
+  if (due > todayIso) return "";                // cita futura → no se toca
+  if (backlog) return "";                       // aparcada por Jay → se queda aparcada
+  return gapDays.includes(due) ? "rescate" : ""; // varada por una corrida perdida
+}
+
+// Días que el rollover NO pudo procesar. Se apoya en la marca que deja cada corrida
+// exitosa en KV: si la última fue el día D y hoy es D+3, los días D+1 y D+2 quedaron
+// sin procesar y sus tasks están varadas.
+// Sin KV (o sin marca previa) devuelve [] — preferimos no rescatar nada antes que
+// arrastrar tasks que Jay aparcó a mano.
+const ROLLOVER_LAST_RUN_KEY = "rollover:lastRun";
+const ROLLOVER_MAX_GAP_DAYS = 14;
+
+async function rolloverGapDays(env, todayIso) {
+  if (!env.REMINDERS) return [];
+  const lastRun = String((await env.REMINDERS.get(ROLLOVER_LAST_RUN_KEY)) || "").trim();
+  if (!lastRun || lastRun >= todayIso) return [];
+
+  const gap = [];
+  let cursor = mxDatePlusDays(lastRun, 1);
+  while (cursor < todayIso && gap.length < ROLLOVER_MAX_GAP_DAYS) {
+    gap.push(cursor);
+    cursor = mxDatePlusDays(cursor, 1);
+  }
+  return gap;
+}
+
 // Candidatas del rollover, con una consulta liviana en vez de listManagerFocusTasks().
 // Esa función pide los bloques hijos de CADA task para armar los subtasks — acá no se
 // usan, y era un request de Notion por task que hacía la corrida más larga y frágil
 // conforme crecía el Focus. Ahora la lectura completa cuesta 1 request por cada 100.
-async function listRolloverCandidates(env, todayIso) {
+async function listRolloverCandidates(env, todayIso, gapDays = []) {
   const notionVersion = env.NOTION_VERSION || "2022-06-28";
   const notionToken = env.NOTION_TOKEN;
   const dbId = env.MANAGER_TASKS_DB_ID || DEFAULT_MANAGER_TASKS_DB_ID;
@@ -2119,8 +2175,11 @@ async function listRolloverCandidates(env, todayIso) {
     for (const page of payload.results || []) {
       const props = page.properties || {};
       const dueDate = props?.["Date (ToDo)"]?.date?.start || "";
-      // Hoy Y atrasadas. Las futuras no se tocan: son citas con fecha elegida.
-      if (!dueDate || toIsoDateOnly(dueDate) > todayIso) continue;
+      if (!dueDate) continue;
+
+      const backlog = Boolean(props?.[TASK_BACKLOG_PROPERTY]?.checkbox);
+      const reason = rolloverDecision(toIsoDateOnly(dueDate), todayIso, backlog, gapDays);
+      if (!reason) continue;
 
       const emails = parseAssigneesFromProperty(props, allUsers).emails || [];
       if (emails.length && !emails.includes(OWNER_EMAIL)) continue;
@@ -2128,6 +2187,7 @@ async function listRolloverCandidates(env, todayIso) {
       out.push({
         id: page.id,
         dueDate,
+        reason,
         title: normalizeTaskTitle(readNotionTitle(props)),
         notificar: Boolean(props?.[TASK_NOTIFY_PROPERTY]?.checkbox),
         notionUrl: String(page.url || ""),
@@ -2176,11 +2236,8 @@ async function rolloverTodayTasks(env) {
   const fromIso = mxDateOnly();
   const toIso = mxDatePlusDays(fromIso, 1);
 
-  // Se mueven las de HOY y también las ATRASADAS. Antes solo miraba el bucket de hoy,
-  // así que una task que se escapaba de una corrida caía al backlog y ya nadie la
-  // volvía a mirar nunca: quedaba huérfana ahí para siempre. Incluir las atrasadas
-  // hace el job auto-reparable — lo que una noche falle, la siguiente lo rescata.
-  const tasks = await listRolloverCandidates(env, fromIso);
+  const gapDays = await rolloverGapDays(env, fromIso);
+  const tasks = await listRolloverCandidates(env, fromIso, gapDays);
   const moved = [];
   const failed = [];
 
@@ -2193,10 +2250,16 @@ async function rolloverTodayTasks(env) {
       : await patchTaskDueDate(env, task.id, dueDate);
 
     if (res?.error) failed.push({ title: task.title, details: res.error });
-    else moved.push({ title: task.title, from: task.dueDate, to: dueDate });
+    else moved.push({ title: task.title, reason: task.reason, from: task.dueDate, to: dueDate });
   }
 
   clearFocusTasksCache();
+
+  // La marca del día se guarda aunque alguna task haya fallado: el día SÍ se procesó,
+  // y lo que falló ya se avisa por Telegram abajo. Marcarlo solo en el caso perfecto
+  // haría que un único 429 convirtiera el día en "hueco" y disparara un rescate
+  // masivo la noche siguiente.
+  if (env.REMINDERS) await env.REMINDERS.put(ROLLOVER_LAST_RUN_KEY, fromIso);
 
   // Un fallo silencioso fue lo que dejó el backlog podrirse cuatro meses sin que
   // nadie se enterara. Si algo no se movió, Ivy avisa.
@@ -2208,7 +2271,7 @@ async function rolloverTodayTasks(env) {
     );
   }
 
-  return { ok: true, from: fromIso, to: toIso, movedCount: moved.length, moved, failed };
+  return { ok: true, from: fromIso, to: toIso, gapDays, movedCount: moved.length, moved, failed };
 }
 
 // ─── RECORDATORIOS: IVY (TELEGRAM) ──────────────────────────────────────────
@@ -2677,6 +2740,11 @@ async function createManagerTask(env, body) {
   const tipoRaw = String(body?.tipo || "").trim();
   const focusOnly = Boolean(body?.focusOnly);
   const notificar = Boolean(body?.notificar);
+  // Una task que nace con fecha pasada nace aparcada: Jay eligió esa fecha, así que
+  // es backlog deliberado y el rollover no debe tocarla.
+  const backlog = "backlog" in (body || {})
+    ? Boolean(body.backlog)
+    : Boolean(dueDate) && toIsoDateOnly(dueDate) < mxDateOnly();
   const subtasks = normalizeSubtasks(Array.isArray(body?.subtasks)
     ? body.subtasks.map((s) => ({ title: String(s?.title || "").trim(), done: Boolean(s?.done) }))
     : []);
@@ -2707,6 +2775,7 @@ async function createManagerTask(env, body) {
     [TASK_SHOW_IN_MANAGER_PROPERTY]: { checkbox: true },
     [TASK_FOCUS_ONLY_PROPERTY]: { checkbox: focusOnly },
     [TASK_NOTIFY_PROPERTY]: { checkbox: notificar },
+    [TASK_BACKLOG_PROPERTY]: { checkbox: backlog },
   };
   if (dueDate) properties["Date (ToDo)"] = { date: { start: dueDate } };
   if (assignee && assigneePropertyKey) {
@@ -2773,6 +2842,7 @@ async function updateManagerTask(env, taskId, body) {
   const hasFocusOnly = "focusOnly" in (body || {});
   const hasShowInManager = "showInManager" in (body || {});
   const hasNotificar = "notificar" in (body || {});
+  const hasBacklog = "backlog" in (body || {});
   const hasSubtasks = Array.isArray(body?.subtasks);
   let reminderResult = null;
   const subtasks = hasSubtasks
@@ -2804,6 +2874,16 @@ async function updateManagerTask(env, taskId, body) {
 
   if (dueDate !== null) {
     properties["Date (ToDo)"] = dueDate ? { date: { start: dueDate } } : { date: null };
+  }
+
+  // El flag de backlog se deriva de la fecha salvo que el caller lo mande explícito.
+  // Así cualquier reagendado — modal de edición, reagendar, Ivy — queda coherente sin
+  // que cada llamada tenga que acordarse: fecha pasada = aparcado, hoy o futuro = no.
+  // El rollover siempre escribe mañana, así que nunca marca nada como backlog.
+  if (hasBacklog) {
+    properties[TASK_BACKLOG_PROPERTY] = { checkbox: Boolean(body.backlog) };
+  } else if (dueDate) {
+    properties[TASK_BACKLOG_PROPERTY] = { checkbox: toIsoDateOnly(dueDate) < mxDateOnly() };
   }
 
   if (assigneeRaw || body?.assignee === "") {
@@ -4729,6 +4809,7 @@ export default {
       const result = await listManagerFocusTasks(env, {
         scope: url.searchParams.get("scope") || "all",
         viewerEmail: url.searchParams.get("viewer") || "",
+        fresh: url.searchParams.get("fresh") === "1",
       });
       return json(result, result.error ? 502 : 200);
     }
@@ -4740,13 +4821,16 @@ export default {
       if (dry) {
         const fromIso = mxDateOnly();
         const toIso = mxDatePlusDays(fromIso, 1);
-        const candidates = await listRolloverCandidates(env, fromIso);
+        const gapDays = await rolloverGapDays(env, fromIso);
+        const candidates = await listRolloverCandidates(env, fromIso, gapDays);
         return json({
           dryRun: true,
           from: fromIso,
           to: toIso,
+          gapDays,
           wouldMove: candidates.map((t) => ({
             title: t.title,
+            reason: t.reason,
             from: t.dueDate,
             to: rolloverDueDate(t.dueDate, toIso),
           })),
