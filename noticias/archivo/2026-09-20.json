@@ -1,17 +1,17 @@
 {
-  "lastUpdated": "2026-09-20T12:15:01.637Z",
+  "lastUpdated": "2026-09-20T21:29:02.130Z",
   "meta": {
     "method": "rss-retrieval + link-verification + ai-translation",
     "itemCount": 12,
     "sources": [
-      "Beat 100.9",
       "Complete Music Update",
       "Digital Music News",
+      "IMDb",
       "Industria Musical",
       "Maya Comunicación",
       "RTVE.es",
       "Unite.AI",
-      "vitallaw.com"
+      "aristeguinoticias.com"
     ],
     "verifiedLinks": 12,
     "aiTranslated": 0,
@@ -141,35 +141,6 @@
       },
       {
         "id": "noticia-9",
-        "title": "COPYRIGHT NEWS—Universal Music takes aim at DistroKid over distribution of AI-created works",
-        "summary": "",
-        "url": "https://news.google.com/rss/articles/CBMi8AFBVV95cUxQeVpPeGczeW9xNzNvTE52c1YwazI1dFl5LUs0ZTE3cU5SNTFGZ2QxTUptLXFmeWVfdE5lT3hjWURza0tFQnhvQkI2NDVIVVJpSGlRWDU1Vk43N1VwUE13TEw2RjdvTTRxcFJYa3lVX3Z1dWdFQmdRRzdlZWtLM01ORExteFlWdWlPRmpxQm1IRlBONXdEZkRIbUdHM2FBa0t2MkoxOTBLNjl6Q3o4ZVRjV3EyZHpwN3pyMDg3VWRoXzVqa1A5dE1jM0RFNVJfUkp2QS1ZTjJid2Jud2ZKUmRyX0twRWtXell3MDQ2R0NOcjA?oc=5&hl=es-419&gl=US&ceid=US:es-419",
-        "source": "vitallaw.com",
-        "domain": "news.google.com",
-        "publishedAt": "2026-09-18T21:43:37.000Z",
-        "tags": [
-          "ai"
-        ],
-        "translated": false,
-        "via": "Google News"
-      },
-      {
-        "id": "noticia-10",
-        "title": "Tribunal alemán falla contra Suno por derechos de autor",
-        "summary": "",
-        "url": "https://news.google.com/rss/articles/CBMikAFBVV95cUxPY3ZnMVI0QUQ2Vk1ZRC1FdXBHTWVfdzRHM01GZnVNVEdWclQ3V0wzcWRCeUVYcjhuaWQ1N1hGcV85U1lkRnY5SWh2aTJsVEFKdVkwRXlXQnhPeGZESElTbHd1Z1NiSGkwVWRXcnpKQnV3cUpKVmRvMlVpaEVTMy1GcVktRDVvYnhTaWx4RjBwNU4?oc=5&hl=es-419&gl=US&ceid=US:es-419",
-        "source": "Beat 100.9",
-        "domain": "news.google.com",
-        "publishedAt": "2026-09-14T14:00:28.000Z",
-        "tags": [
-          "lawsuit",
-          "ai"
-        ],
-        "translated": false,
-        "via": "Google News"
-      },
-      {
-        "id": "noticia-11",
         "title": "UMG firma un acuerdo global de IA con ElevenLabs",
         "summary": "Universal Music Group (UMG) ha firmado un acuerdo de licencia plurianual con ElevenLabs, la compañía de inteligencia artificial de audio valorada en 11.000 millones de dólares. Es el primer pacto de ElevenLabs con una gran discográfica y contempla el lanzamiento de una nueva plataforma de música con IA para fans, ademá…",
         "url": "https://industriamusical.com/umg-acuerdo-global-ia-elevenlabs/?utm_source=rss&utm_medium=rss&utm_campaign=umg-acuerdo-global-ia-elevenlabs",
@@ -184,13 +155,43 @@
         "via": null
       },
       {
-        "id": "noticia-12",
+        "id": "noticia-10",
         "title": "Universal y Sony llevan a Suno ante los tribunales por el uso de miles de canciones para entrenar su IA",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMi0gFBVV95cUxNaWM1N1pmVG0tNHYtd3VpSlhtQlFPMUFURWxVOU9RMHIwQTB5RjBONTZscGV0TmpyU0dmWFczSHFteWpld0hXSGJTNlo1b2F3UFdZRE03MnUxZEU1UE9qenBjSm1ZeXZNX3FsQkhTT0pPb2VDdXpJTkZ3OER6NlplYW1LeHBpUG1FRWo3dnNCVVBFcHFZM0xST1ltY3p4aThaMUxpTGY0bEdDNHp3dVJ1aDFoLXNhNzZCd3J6RmFWY196cnVldzFTRGdFeUhPQlJpaGc?oc=5&hl=es-419&gl=US&ceid=US:es-419",
         "source": "Maya Comunicación",
         "domain": "news.google.com",
         "publishedAt": "2026-09-18T23:44:43.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-11",
+        "title": "Umg, Sony Music File Second Lawsuit Against Suno Over AI Music Generator’s New Model",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMiZkFVX3lxTE1nWVcxNl9zdkloODh3dUF4SEFhcmc5SVdJbTIzQWltbnZxT2NEU2RUaXczVENheDFZZnExNDIxLXpaTlBuVXJJUWlaWVFKaFJ6Y293VUt6R0tscXpWb05CLTFjYjBEdw?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "IMDb",
+        "domain": "news.google.com",
+        "publishedAt": "2026-09-18T17:38:11.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-12",
+        "title": "Universal y Sony vuelven a demandar a Suno por música creada con IA",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMirwFBVV95cUxNUGR5YnpZTVpnUUZfczhIYW5xNmJFVmhJd1JMWXlYVVN0REdBQTEtcjhXMS1KckV5Y1hoQ3U2NDFKOTFjZTRWdDEyYncwYnBrV3M5VFNOSnVSdmIwOHV0Q0dlMHR1YXp6YjVxM01NSUFtMG1LVDIwTVVOTGd3cTZjeFk2bTc2Q2JRT0h4YjRVdDRKVHpHdVBCSmxuZzluOUxoaGVtZUJoVHRzXzdNY3Bz?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "aristeguinoticias.com",
+        "domain": "news.google.com",
+        "publishedAt": "2026-09-18T19:43:00.000Z",
         "tags": [
           "lawsuit",
           "ai"
@@ -328,35 +329,6 @@
       },
       {
         "id": "noticia-9",
-        "title": "COPYRIGHT NEWS—Universal Music takes aim at DistroKid over distribution of AI-created works",
-        "summary": "",
-        "url": "https://news.google.com/rss/articles/CBMi8AFBVV95cUxQeVpPeGczeW9xNzNvTE52c1YwazI1dFl5LUs0ZTE3cU5SNTFGZ2QxTUptLXFmeWVfdE5lT3hjWURza0tFQnhvQkI2NDVIVVJpSGlRWDU1Vk43N1VwUE13TEw2RjdvTTRxcFJYa3lVX3Z1dWdFQmdRRzdlZWtLM01ORExteFlWdWlPRmpxQm1IRlBONXdEZkRIbUdHM2FBa0t2MkoxOTBLNjl6Q3o4ZVRjV3EyZHpwN3pyMDg3VWRoXzVqa1A5dE1jM0RFNVJfUkp2QS1ZTjJid2Jud2ZKUmRyX0twRWtXell3MDQ2R0NOcjA?oc=5&hl=es-419&gl=US&ceid=US:es-419",
-        "source": "vitallaw.com",
-        "domain": "news.google.com",
-        "publishedAt": "2026-09-18T21:43:37.000Z",
-        "tags": [
-          "ai"
-        ],
-        "translated": false,
-        "via": "Google News"
-      },
-      {
-        "id": "noticia-10",
-        "title": "Tribunal alemán falla contra Suno por derechos de autor",
-        "summary": "",
-        "url": "https://news.google.com/rss/articles/CBMikAFBVV95cUxPY3ZnMVI0QUQ2Vk1ZRC1FdXBHTWVfdzRHM01GZnVNVEdWclQ3V0wzcWRCeUVYcjhuaWQ1N1hGcV85U1lkRnY5SWh2aTJsVEFKdVkwRXlXQnhPeGZESElTbHd1Z1NiSGkwVWRXcnpKQnV3cUpKVmRvMlVpaEVTMy1GcVktRDVvYnhTaWx4RjBwNU4?oc=5&hl=es-419&gl=US&ceid=US:es-419",
-        "source": "Beat 100.9",
-        "domain": "news.google.com",
-        "publishedAt": "2026-09-14T14:00:28.000Z",
-        "tags": [
-          "lawsuit",
-          "ai"
-        ],
-        "translated": false,
-        "via": "Google News"
-      },
-      {
-        "id": "noticia-11",
         "title": "UMG firma un acuerdo global de IA con ElevenLabs",
         "summary": "Universal Music Group (UMG) ha firmado un acuerdo de licencia plurianual con ElevenLabs, la compañía de inteligencia artificial de audio valorada en 11.000 millones de dólares. Es el primer pacto de ElevenLabs con una gran discográfica y contempla el lanzamiento de una nueva plataforma de música con IA para fans, ademá…",
         "url": "https://industriamusical.com/umg-acuerdo-global-ia-elevenlabs/?utm_source=rss&utm_medium=rss&utm_campaign=umg-acuerdo-global-ia-elevenlabs",
@@ -371,13 +343,43 @@
         "via": null
       },
       {
-        "id": "noticia-12",
+        "id": "noticia-10",
         "title": "Universal y Sony llevan a Suno ante los tribunales por el uso de miles de canciones para entrenar su IA",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMi0gFBVV95cUxNaWM1N1pmVG0tNHYtd3VpSlhtQlFPMUFURWxVOU9RMHIwQTB5RjBONTZscGV0TmpyU0dmWFczSHFteWpld0hXSGJTNlo1b2F3UFdZRE03MnUxZEU1UE9qenBjSm1ZeXZNX3FsQkhTT0pPb2VDdXpJTkZ3OER6NlplYW1LeHBpUG1FRWo3dnNCVVBFcHFZM0xST1ltY3p4aThaMUxpTGY0bEdDNHp3dVJ1aDFoLXNhNzZCd3J6RmFWY196cnVldzFTRGdFeUhPQlJpaGc?oc=5&hl=es-419&gl=US&ceid=US:es-419",
         "source": "Maya Comunicación",
         "domain": "news.google.com",
         "publishedAt": "2026-09-18T23:44:43.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-11",
+        "title": "Umg, Sony Music File Second Lawsuit Against Suno Over AI Music Generator’s New Model",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMiZkFVX3lxTE1nWVcxNl9zdkloODh3dUF4SEFhcmc5SVdJbTIzQWltbnZxT2NEU2RUaXczVENheDFZZnExNDIxLXpaTlBuVXJJUWlaWVFKaFJ6Y293VUt6R0tscXpWb05CLTFjYjBEdw?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "IMDb",
+        "domain": "news.google.com",
+        "publishedAt": "2026-09-18T17:38:11.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-12",
+        "title": "Universal y Sony vuelven a demandar a Suno por música creada con IA",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMirwFBVV95cUxNUGR5YnpZTVpnUUZfczhIYW5xNmJFVmhJd1JMWXlYVVN0REdBQTEtcjhXMS1KckV5Y1hoQ3U2NDFKOTFjZTRWdDEyYncwYnBrV3M5VFNOSnVSdmIwOHV0Q0dlMHR1YXp6YjVxM01NSUFtMG1LVDIwTVVOTGd3cTZjeFk2bTc2Q2JRT0h4YjRVdDRKVHpHdVBCSmxuZzluOUxoaGVtZUJoVHRzXzdNY3Bz?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "aristeguinoticias.com",
+        "domain": "news.google.com",
+        "publishedAt": "2026-09-18T19:43:00.000Z",
         "tags": [
           "lawsuit",
           "ai"
