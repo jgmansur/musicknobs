@@ -38,7 +38,7 @@ const DEUDAS_RECIBOS_FOLDER_ID = '157KDn-vbkuHH1L8xbaJBGz-oKmT7p5a9';
 const SPREADSHEET_RSM_ID = '14VsoPHGNTSUSbzMOqGWs2qSL-pGywPgjUoHD3MqIJfo'; // Recibos Salud Mariel
 const SALDOS_SHEET_ID    = '1-cX_qxld3ioSpcO9lEBPg90Db6AyK7SczpJTvj7rw4U'; // Saldos (fuente de verdad — Claude accede vía service account)
 const RSM_FOLDER_ID = '1-ZfeWQ-Rmh-Wm2WMCkULkN6MQWBuxYnj';
-const APP_VERSION  = 'v8.10.3';
+const APP_VERSION  = 'v8.10.4';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -4260,6 +4260,7 @@ function gastos_bindEvents() {
     document.getElementById('g-btn-mas').addEventListener('click', () => {
         gastosState.offset += 10; gastos_renderLista(true);
     });
+    document.getElementById('g-btn-export-pdf')?.addEventListener('click', gastos_exportarPdf);
     document.getElementById('g-modal-close').addEventListener('click', gastos_cerrarModal);
     document.getElementById('g-modal-backdrop').addEventListener('click', gastos_cerrarModal);
     document.getElementById('g-modal-btn-editar').addEventListener('click', gastos_editarDesdeModal);
@@ -4270,6 +4271,31 @@ function gastos_bindEvents() {
         const fb  = document.getElementById('g-fotos-feedback');
         fb.innerText = inp.files.length ? `✅ ${inp.files.length} archivo(s) seleccionado(s)` : '';
     });
+}
+
+async function gastos_exportarPdf() {
+    const button = document.getElementById('g-btn-export-pdf');
+    if (button) { button.disabled = true; button.textContent = 'Generando...'; }
+    try {
+        // Recarga ambas fuentes para que el PDF use los movimientos y la
+        // clasificación hormiga más recientes, no lo que quedó en memoria.
+        await gastos_cargarHistorial();
+        await fetchAndProcess();
+        const hormigaItems = hormiga_getReceiptHormigaRows();
+        const { downloadMonthlyExpensesPdf } = await import('./pdf-reports.js');
+        downloadMonthlyExpensesPdf({
+            rows: gastosState.allRows,
+            hormigaEntries: hormigaPanelState.gastos,
+            hormigaItems,
+            reportDate: new Date(),
+        });
+        showToast('PDF mensual descargado');
+    } catch (error) {
+        console.error('[PDF Gastos]', error);
+        showToast('No se pudo generar el PDF');
+    } finally {
+        if (button) { button.disabled = false; button.textContent = 'Descargar PDF'; }
+    }
 }
 
 
@@ -4688,6 +4714,7 @@ function fijos_bindEvents() {
     if (sortEl) sortEl.value = 'fechaAsc';
     document.getElementById('f-btn-add').addEventListener('click', () => fijos_abrirSheet(null));
     document.getElementById('f-btn-guardar').addEventListener('click', fijos_guardar);
+    document.getElementById('f-btn-export-pdf')?.addEventListener('click', fijos_exportarPdf);
     const fSearchEl = document.getElementById('f-search');
     const fClearBtn = document.getElementById('f-search-clear');
     fSearchEl.addEventListener('input', () => {
@@ -4727,6 +4754,22 @@ function fijos_bindEvents() {
 
     const resetBtn = document.getElementById('f-btn-reset');
     if (resetBtn) resetBtn.addEventListener('click', fijos_resetManual);
+}
+
+async function fijos_exportarPdf() {
+    const button = document.getElementById('f-btn-export-pdf');
+    if (button) { button.disabled = true; button.textContent = '...'; }
+    try {
+        await fijos_cargarDatos();
+        const { downloadFixedExpensesPdf } = await import('./pdf-reports.js');
+        downloadFixedExpensesPdf({ items: fijosState.allItems, reportDate: new Date() });
+        showToast('PDF de fijos descargado');
+    } catch (error) {
+        console.error('[PDF Fijos]', error);
+        showToast('No se pudo generar el PDF');
+    } finally {
+        if (button) { button.disabled = false; button.textContent = 'PDF'; }
+    }
 }
 
 function planner_refreshIfReady() {

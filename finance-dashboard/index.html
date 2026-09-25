@@ -315,8 +315,9 @@
 
         <!-- History -->
         <div class="glass historial-card">
-          <div class="section-header">
+          <div class="section-header report-section-header">
             <h3>📋 Últimos Movimientos</h3>
+            <button id="g-btn-export-pdf" type="button" class="secondary-btn report-download-btn">Descargar PDF</button>
           </div>
           <input type="text" id="g-search" class="search-input" placeholder="🔍 Buscar lugar, concepto...">
           <div id="g-lista"></div>
@@ -402,6 +403,7 @@
             <option value="fechaDesc">📅 ↓</option>
             <option value="alphaAsc">A–Z</option>
           </select>
+          <button id="f-btn-export-pdf" type="button" class="report-toolbar-btn" title="Descargar ingresos y gastos fijos en PDF">PDF</button>
           <button id="f-btn-reset" class="icon-btn" title="Resetear pagos del mes">🔄</button>
         </div>
 
