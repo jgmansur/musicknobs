@@ -34,7 +34,7 @@ const DEUDAS_RECIBOS_FOLDER_ID = '157KDn-vbkuHH1L8xbaJBGz-oKmT7p5a9';
 const SPREADSHEET_RSM_ID = '14VsoPHGNTSUSbzMOqGWs2qSL-pGywPgjUoHD3MqIJfo'; // Recibos Salud Mariel
 const SALDOS_SHEET_ID    = '1-cX_qxld3ioSpcO9lEBPg90Db6AyK7SczpJTvj7rw4U'; // Saldos (fuente de verdad — Claude accede vía service account)
 const RSM_FOLDER_ID = '1-ZfeWQ-Rmh-Wm2WMCkULkN6MQWBuxYnj';
-const APP_VERSION  = 'v8.10.0';
+const APP_VERSION  = 'v8.10.1';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -1956,9 +1956,18 @@ async function balance_saveAccount() {
     const btn = document.getElementById('acc-save-btn');
     btn.disabled = true; btn.innerText = 'Guardando...';
 
+    // En finance-core el saldo visible es derivado: editar la cuenta guarda
+    // metadatos con PUT /api/accounts, pero ese endpoint deliberadamente no
+    // mueve `opening_balance`. Si el usuario cambió el saldo desde este mismo
+    // formulario, hay que reconciliarlo explícitamente o el valor solo vive en
+    // memoria y desaparece al recargar.
+    let reconcileAfterSave = null;
+
     if (balanceEditingId !== null) {
         const acc = balanceAccounts.find(a => a.id === balanceEditingId);
         if (acc) {
+            const previousBalance = Math.abs(Number(acc.balance) || 0);
+            const previousType = acc.type;
             acc.name = name;
             acc.balance = balance;
             acc.type = type;
@@ -1972,6 +1981,11 @@ async function balance_saveAccount() {
             const idKey = String(acc.id);
             balanceAccountLogAnchor[idKey] = Number(balanceAccountLogTotals[idKey] || 0);
             localStorage.setItem(ACCOUNT_LOG_ANCHOR_KEY, JSON.stringify(balanceAccountLogAnchor));
+
+            if (balanceDesdeWorker
+                && (Math.abs(previousBalance - balance) > 0.005 || previousType !== type)) {
+                reconcileAfterSave = { id: acc.id, balance };
+            }
         }
     } else {
         balanceAccounts.push(balance_normalizeAccount({
@@ -1988,16 +2002,36 @@ async function balance_saveAccount() {
             bitcoinInitialMxn: (type === 'invest' && investmentType === 'bitcoin') ? bitcoinInitialMxn : 0,
         }));
     }
-    await balance_saveAccounts({ deferBackup: true });
-    balance_refreshUsdMxnRate();
-    balance_refreshBtcMxnRate();
-    balance_refreshInvestmentRates();
-    balance_renderPanel();
-    balance_updateKpi();
-    document.getElementById('add-account-form').classList.add('hidden');
-    document.getElementById('acc-add-btn').classList.remove('hidden');
-    balanceEditingId = null;
-    btn.disabled = false; btn.innerText = 'Guardar';
+    try {
+        await balance_saveAccounts({ deferBackup: true });
+        if (reconcileAfterSave) {
+            await bandeja_api(`/api/accounts/${reconcileAfterSave.id}/reconcile`, {
+                method: 'POST',
+                body: JSON.stringify({ balance: reconcileAfterSave.balance }),
+            });
+            // Leer de nuevo evita mostrar como persistido un valor distinto al
+            // que realmente calculó finance-core.
+            await balance_loadFromWorker();
+        }
+        balance_refreshUsdMxnRate();
+        balance_refreshBtcMxnRate();
+        balance_refreshInvestmentRates();
+        balance_renderPanel();
+        balance_updateKpi();
+        document.getElementById('add-account-form').classList.add('hidden');
+        document.getElementById('acc-add-btn').classList.remove('hidden');
+        balanceEditingId = null;
+    } catch (err) {
+        console.error('[Saldos] no se pudo guardar el saldo editado:', err);
+        showToast(`⚠️ No se pudo guardar el saldo: ${err.message}`);
+        if (balanceDesdeWorker) {
+            await balance_loadFromWorker().catch(console.warn);
+            balance_renderPanel();
+            balance_updateKpi();
+        }
+    } finally {
+        btn.disabled = false; btn.innerText = 'Guardar';
+    }
 }
 
 async function balance_deleteAccount(id) {
