@@ -7,6 +7,7 @@
 // carpeta como raíz y nada de afuera viaja al build.
 import { esIdDeWorker } from './shared/ids.js';
 import { PERIODICIDADES, normalizarPeriodicidad, tocaEsteMes } from './shared/periodicidad.js';
+import { estaPagadoHasta, fechaLocal, normalizarFecha } from './shared/paid-through.js';
 
 import { createIcons, RefreshCw, AlertTriangle, CalendarCheck, TrendingUp, LogOut, CreditCard, CarFront, Wrench, Home, Scissors } from 'lucide';
 import ApexCharts from 'apexcharts';
@@ -34,7 +35,7 @@ const DEUDAS_RECIBOS_FOLDER_ID = '157KDn-vbkuHH1L8xbaJBGz-oKmT7p5a9';
 const SPREADSHEET_RSM_ID = '14VsoPHGNTSUSbzMOqGWs2qSL-pGywPgjUoHD3MqIJfo'; // Recibos Salud Mariel
 const SALDOS_SHEET_ID    = '1-cX_qxld3ioSpcO9lEBPg90Db6AyK7SczpJTvj7rw4U'; // Saldos (fuente de verdad — Claude accede vía service account)
 const RSM_FOLDER_ID = '1-ZfeWQ-Rmh-Wm2WMCkULkN6MQWBuxYnj';
-const APP_VERSION  = 'v8.10.1';
+const APP_VERSION  = 'v8.10.2';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -2887,7 +2888,7 @@ async function dashboard_datosDesdeWorker() {
                 f.periodicidad || 'mensual', f.inicio_mes || '',
                 f.pagador || '', f.budget_category || '', f.moneda || 'MXN',
                 serializePaymentStates(waived), f.link_group || '',
-                (f.fechas_pago || []).join('|'),
+                (f.fechas_pago || []).join('|'), f.paid_through || '',
             ];
         });
         // El clasificador de hormiga de la app espera booleanos como texto y los
@@ -3159,12 +3160,14 @@ function processAndRender(logRows, fixedRows, receiptItemRows = [], productGroup
         const isPaid   = pagosHechos >= pagosMes;
         const periodicidad = parseFixedPeriodicity(row[8]);
         const inicioMes = parseStartMonth(row[9], `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}`);
-        const isDueThisMonth = isFixedDueThisMonth(periodicidad, inicioMes, `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}`);
+        const paidThrough = normalizarFecha(row[16]);
+        const isDueThisMonth = isFixedDueThisMonth(periodicidad, inicioMes, `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}`)
+            && !estaPagadoHasta(paidThrough, fechaLocal());
         const partAmount = Math.abs(monto) / (pagosMes || 1);
         const paidAmount = partAmount * Math.max(0, pagosHechos);
         const pendingAmount = partAmount * Math.max(0, pagosMes - pagosHechos);
         const formaPago = parseFixedFormaPago(row[10]);
-        return { id: fixedIds[i] ?? (i + 2), rowNum: i + 2, concepto, categoria, monto, montoOriginal, moneda, tipo, isPaid, pagosMes, pagosEstado, waivedEstado, pagosHechos, paidAmount, pendingAmount, periodicidad, inicioMes, isDueThisMonth, pagador: parseFixedPayer(row[10]), formaPago, budgetCategory: parseBudgetCategory(row[11]), linkGroup: (row[14] || '').toString().trim(), fechasPago: parseFechasPago(row[15], pagosMes) };
+        return { id: fixedIds[i] ?? (i + 2), rowNum: i + 2, concepto, categoria, monto, montoOriginal, moneda, tipo, isPaid, pagosMes, pagosEstado, waivedEstado, pagosHechos, paidAmount, pendingAmount, periodicidad, inicioMes, paidThrough, isDueThisMonth, pagador: parseFixedPayer(row[10]), formaPago, budgetCategory: parseBudgetCategory(row[11]), linkGroup: (row[14] || '').toString().trim(), fechasPago: parseFechasPago(row[15], pagosMes) };
     }).filter(e => e.concepto);
 
     // KPI: count partial progress for fixed expenses
@@ -4751,6 +4754,7 @@ async function fijos_cargarDesdeWorker(nowMonth) {
             const montoOriginal = Number(f.monto);
             const dia = Number(f.dia_mes) || 1;
             const periodicidad = parseFixedPeriodicity(f.periodicidad);
+            const paidThrough = normalizarFecha(f.paid_through);
 
             return {
                 id: f.id,
@@ -4770,7 +4774,9 @@ async function fijos_cargarDesdeWorker(nowMonth) {
                 pagosHechos,
                 periodicidad,
                 inicioMes: f.inicio_mes || nowMonth,
-                isDueThisMonth: isFixedDueThisMonth(periodicidad, f.inicio_mes || nowMonth, nowMonth),
+                paidThrough,
+                isDueThisMonth: isFixedDueThisMonth(periodicidad, f.inicio_mes || nowMonth, nowMonth)
+                    && !estaPagadoHasta(paidThrough, fechaLocal()),
                 pagador: parseFixedPayer(f.pagador),
                 formaPago: parseFixedFormaPago(f.pagador),
                 budgetCategory: parseBudgetCategory(f.budget_category),
@@ -5493,6 +5499,8 @@ function fijos_abrirSheet(item) {
     document.getElementById('f-currency').value = 'MXN';
     document.getElementById('f-budget-cat').value = BUDGET_BUCKETS[0];
     document.getElementById('f-link-group').value = '';
+    document.getElementById('f-paid-through').value = '';
+    document.getElementById('f-paid-through-wrap').classList.add('hidden');
     document.getElementById('f-fecha').value = String(hoy.getDate());
     document.querySelectorAll('.f-cat-chk').forEach(cb => cb.checked = false);
     const def = document.querySelector('.f-cat-chk[value="General"]');
@@ -5511,6 +5519,10 @@ function fijos_abrirSheet(item) {
         document.getElementById('f-currency').value = item.moneda || 'MXN';
         document.getElementById('f-budget-cat').value = parseBudgetCategory(item.budgetCategory);
         document.getElementById('f-link-group').value = item.linkGroup || '';
+        if (esIdDeWorker(item.id)) {
+            document.getElementById('f-paid-through').value = item.paidThrough || '';
+            document.getElementById('f-paid-through-wrap').classList.remove('hidden');
+        }
         item.categoria.split(', ').forEach(c => { const cb = document.querySelector(`.f-cat-chk[value="${c}"]`); if (cb) cb.checked = true; });
     }
     fijos_togglePeriodicityFields();
@@ -5593,6 +5605,9 @@ async function fijos_guardar() {
     const budgetCategory = parseBudgetCategory(document.getElementById('f-budget-cat').value);
     const linkGroup = (document.getElementById('f-link-group')?.value || '').trim();
     const editId  = document.getElementById('f-edit-id').value;
+    const paidThrough = editId && esIdDeWorker(editId)
+        ? (document.getElementById('f-paid-through')?.value || null)
+        : undefined;
     if (!concepto || !monto) return;
     const cats   = [...document.querySelectorAll('.f-cat-chk:checked')].map(cb => cb.value);
     const catStr = cats.length ? cats.join(', ') : 'General';
@@ -5617,6 +5632,7 @@ async function fijos_guardar() {
                 pagosMes, periodicidad, inicioMes,
                 pagador: formaPagoVal, budgetCategory, linkGroup,
                 diaMes: parseDayOfMonth(fecha),
+                ...(editId ? { paidThrough } : {}),
             };
             await bandeja_api(editId ? `/api/fijos/${editId}` : '/api/fijos', {
                 method: editId ? 'PATCH' : 'POST',

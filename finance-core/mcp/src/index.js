@@ -27,6 +27,7 @@ import { revisarSalud, formatearSalud } from '../../shared/salud.js';
 import { categoriaPara, aprenderReglas, normalizar } from '../../shared/categorias.js';
 import { lugarPara, sinCatalogar } from '../../shared/lugares.js';
 import { tocaEsteMes } from '../../shared/periodicidad.js';
+import { estaPagadoHasta, fechaLocal, ultimoDiaDelMes } from '../../shared/paid-through.js';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ENV = join(HERE, '..', '..', '.env');
@@ -392,7 +393,7 @@ server.tool(
         const periodo = (mes ?? new Date().toISOString().slice(0, 7)) + '-01';
         const todos = await sql`
             select f.id, f.concepto, f.monto, f.pagos_mes, f.forma_pago, f.fechas_pago,
-                   f.periodicidad, f.inicio_mes,
+                   f.periodicidad, f.inicio_mes, f.paid_through,
                    coalesce(count(p.id) filter (where p.paid or p.waived), 0) as pagadas
             from fixed_expenses f
             left join fixed_expense_payments p
@@ -407,8 +408,14 @@ server.tool(
         // completo: la lista devolvía todos los activos, así que Luz Casa
         // Galería (bimestral desde 2026-03) inflaba agosto con $3,000 que no
         // tocaban. Con semestrales y anuales el error sería mucho peor.
-        const rows = todos.filter(
-            (f) => tocaEsteMes(f.periodicidad, f.inicio_mes, periodo.slice(0, 7)),
+        const mesConsultado = periodo.slice(0, 7);
+        const hoy = fechaLocal();
+        const referencia = mesConsultado === hoy.slice(0, 7)
+            ? hoy
+            : ultimoDiaDelMes(mesConsultado);
+        const rows = todos.filter((f) =>
+            tocaEsteMes(f.periodicidad, f.inicio_mes, mesConsultado)
+            && !estaPagadoHasta(f.paid_through, referencia),
         );
         if (!rows.length) return texto(`Todos los fijos de ${periodo.slice(0, 7)} están cubiertos.`);
 

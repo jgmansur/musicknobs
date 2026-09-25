@@ -39,7 +39,7 @@ const CANONICO = join(RAIZ, 'finance-core', 'shared');
 const COPIA = join(RAIZ, 'finance-dashboard', 'shared');
 
 /** Módulos que el dashboard necesita. Puros, sin imports entre ellos. */
-export const MODULOS_COMPARTIDOS = ['ids.js', 'periodicidad.js'];
+export const MODULOS_COMPARTIDOS = ['ids.js', 'periodicidad.js', 'paid-through.js'];
 
 /**
  * El contenido exacto que debe tener la copia.

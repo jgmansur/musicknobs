@@ -428,6 +428,11 @@
                 <input type="number" id="f-monto" class="field-input" step="0.01" inputmode="decimal" placeholder="0.00">
               </div>
             </div>
+            <div class="form-field hidden" id="f-paid-through-wrap">
+              <label class="field-label">Pagado hasta (opcional)</label>
+              <input type="date" id="f-paid-through" class="field-input">
+              <small style="color:var(--text-muted);font-size:.72rem">El gasto volverá a aparecer como pendiente después de esta fecha.</small>
+            </div>
             <div class="form-field">
               <label class="field-label">Pagos por mes</label>
               <select id="f-pagos-mes" class="field-input">

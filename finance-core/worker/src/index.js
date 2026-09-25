@@ -375,6 +375,8 @@ export default {
 
             if (fijoMatch && request.method === 'PATCH') {
                 const b = await request.json().catch(() => ({}));
+                const cambiaPaidThrough = Object.prototype.hasOwnProperty.call(b, 'paidThrough');
+                const paidThrough = b.paidThrough || null;
                 const [f] = await sql`
                     update fixed_expenses set
                         concepto        = coalesce(${b.concepto ?? null}, concepto),
@@ -388,7 +390,11 @@ export default {
                         pagador         = coalesce(${b.pagador ?? null}, pagador),
                         budget_category = coalesce(${b.budgetCategory ?? null}, budget_category),
                         link_group      = ${b.linkGroup ?? null},
-                        dia_mes         = coalesce(${b.diaMes ?? null}, dia_mes)
+                        dia_mes         = coalesce(${b.diaMes ?? null}, dia_mes),
+                        paid_through    = case
+                            when ${cambiaPaidThrough} then ${paidThrough}::date
+                            else paid_through
+                        end
                     where id = ${fijoMatch[1]} returning id
                 `;
                 return json(f ? { ok: true } : { error: 'no encontrado' }, f ? 200 : 404);
