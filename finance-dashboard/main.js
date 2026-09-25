@@ -8,6 +8,9 @@
 import { esIdDeWorker } from './shared/ids.js';
 import { PERIODICIDADES, normalizarPeriodicidad, tocaEsteMes } from './shared/periodicidad.js';
 import { estaPagadoHasta, fechaLocal, normalizarFecha } from './shared/paid-through.js';
+import {
+    SIN_CATEGORIA, categoriaPrincipalFijo, resumenGastosFijosPorCategoria,
+} from './fixed-categories.js';
 
 import { createIcons, RefreshCw, AlertTriangle, CalendarCheck, TrendingUp, LogOut, CreditCard, CarFront, Wrench, Home, Scissors } from 'lucide';
 import ApexCharts from 'apexcharts';
@@ -35,7 +38,7 @@ const DEUDAS_RECIBOS_FOLDER_ID = '157KDn-vbkuHH1L8xbaJBGz-oKmT7p5a9';
 const SPREADSHEET_RSM_ID = '14VsoPHGNTSUSbzMOqGWs2qSL-pGywPgjUoHD3MqIJfo'; // Recibos Salud Mariel
 const SALDOS_SHEET_ID    = '1-cX_qxld3ioSpcO9lEBPg90Db6AyK7SczpJTvj7rw4U'; // Saldos (fuente de verdad — Claude accede vía service account)
 const RSM_FOLDER_ID = '1-ZfeWQ-Rmh-Wm2WMCkULkN6MQWBuxYnj';
-const APP_VERSION  = 'v8.10.2';
+const APP_VERSION  = 'v8.10.3';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -4674,6 +4677,7 @@ const fijosState = {
     allItems: [],
     categorias: [],
     filtrosActivos: [],
+    categoriaSeleccionada: '',
     sheetId: null,
     lastResetMonth: null,  // tracks month of last reset check
 };
@@ -4698,9 +4702,15 @@ function fijos_bindEvents() {
     });
     document.getElementById('f-sort').addEventListener('change', fijos_aplicarFiltros);
     document.getElementById('f-btn-filtro').addEventListener('click', fijos_abrirFiltro);
-    document.getElementById('f-filter-clear').addEventListener('click', () => { fijosState.filtrosActivos = []; fijos_cerrarFiltro(); fijos_aplicarFiltros(); });
+    document.getElementById('f-filter-clear').addEventListener('click', () => {
+        fijosState.filtrosActivos = [];
+        fijosState.categoriaSeleccionada = '';
+        fijos_cerrarFiltro();
+        fijos_aplicarFiltros();
+    });
     document.getElementById('f-filter-apply').addEventListener('click', () => {
         fijosState.filtrosActivos = [...document.querySelectorAll('.f-filter-chk:checked')].map(cb => cb.value);
+        fijosState.categoriaSeleccionada = '';
         fijos_cerrarFiltro(); fijos_aplicarFiltros();
     });
     document.getElementById('f-sheet-overlay').addEventListener('click', fijos_cerrarSheet);
@@ -4947,6 +4957,39 @@ function fijos_syncDashboardStats() {
     balancePaidFixedTotal = paidFixed;
 }
 
+function fijos_renderCategorySummary() {
+    const container = document.getElementById('f-category-summary');
+    if (!container) return;
+    const resumen = resumenGastosFijosPorCategoria(fijosState.allItems);
+    if (!resumen.length) {
+        container.innerHTML = '<span class="fixed-category-summary__empty">Sin gastos fijos para este mes.</span>';
+        return;
+    }
+    const fmt = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' });
+    container.innerHTML = resumen.map(({ categoria, monto, cantidad }) => {
+        const activa = fijosState.categoriaSeleccionada === categoria;
+        const nombre = fijos_escapeHtml(categoria);
+        const detalle = `${cantidad} ${cantidad === 1 ? 'fijo' : 'fijos'}`;
+        return `<button type="button" class="fixed-category-row${activa ? ' is-active' : ''}" data-fixed-category="${nombre}" aria-pressed="${activa}">
+          <span class="fixed-category-row__name">${nombre} <span class="fixed-category-row__count">· ${detalle}</span></span>
+          <span class="fixed-category-row__amount">${fmt.format(monto)}</span>
+        </button>`;
+    }).join('');
+    container.querySelectorAll('[data-fixed-category]').forEach((button) => {
+        button.addEventListener('click', () => {
+            const categoria = button.dataset.fixedCategory || SIN_CATEGORIA;
+            fijosState.categoriaSeleccionada = fijosState.categoriaSeleccionada === categoria ? '' : categoria;
+            fijosState.filtrosActivos = [];
+            const search = document.getElementById('f-search');
+            const clear = document.getElementById('f-search-clear');
+            if (search) search.value = '';
+            if (clear) clear.style.display = 'none';
+            fijos_aplicarFiltros();
+            document.getElementById('f-lista')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+    });
+}
+
 function fijos_aplicarFiltros() {
     const q    = document.getElementById('f-search').value.toLowerCase();
     const sort = document.getElementById('f-sort').value;
@@ -4968,7 +5011,10 @@ function fijos_aplicarFiltros() {
             || (statusActivos.includes('__status_pagado') && item.isPaid);
         const catOk = !catActivos.length
             || catActivos.some(f => item.categoria.split(', ').includes(f));
-        return t && tipoOk && payerOk && statusOk && catOk && item.isDueThisMonth;
+        const categorySummaryOk = !fijosState.categoriaSeleccionada
+            || (item.tipo === 'gasto'
+                && categoriaPrincipalFijo(item.categoria) === fijosState.categoriaSeleccionada);
+        return t && tipoOk && payerOk && statusOk && catOk && categorySummaryOk && item.isDueThisMonth;
     });
     lista.sort((a,b) => {
         if (sort==='fechaDesc') return b.fechaValue.localeCompare(a.fechaValue);
@@ -4994,8 +5040,10 @@ function fijos_aplicarFiltros() {
     document.getElementById('f-ingresos').innerText     = fmt.format(ingresoT);
     document.getElementById('f-gastos-total').innerText = fmt.format(gastoT);
     const badge = document.getElementById('f-filtro-badge');
-    badge.textContent = fijosState.filtrosActivos.length || '';
-    badge.style.display = fijosState.filtrosActivos.length ? 'flex' : 'none';
+    const filtrosTotal = fijosState.filtrosActivos.length + (fijosState.categoriaSeleccionada ? 1 : 0);
+    badge.textContent = filtrosTotal || '';
+    badge.style.display = filtrosTotal ? 'flex' : 'none';
+    fijos_renderCategorySummary();
     fijos_renderLista(lista);
 }
 

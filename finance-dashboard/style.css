@@ -511,6 +511,52 @@ select.field-input { background-image: url("data:image/svg+xml,%3Csvg xmlns='htt
 .balance-stat { display: flex; flex-direction: column; gap: .15rem; }
 .stat-label { font-size: .72rem; font-weight: 600; }
 .stat-value { font-size: 1rem; font-weight: 700; }
+.fixed-category-summary {
+  margin-top: 1rem;
+  padding-top: .85rem;
+  border-top: 1px solid rgba(255,255,255,.12);
+}
+.fixed-category-summary__heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: .55rem;
+  color: rgba(255,255,255,.62);
+  font-size: .68rem;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+.fixed-category-summary__list { display: grid; gap: .35rem; }
+.fixed-category-row {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: .48rem .6rem;
+  border: 1px solid transparent;
+  border-radius: .65rem;
+  background: rgba(255,255,255,.045);
+  color: var(--text-main);
+  cursor: pointer;
+  text-align: left;
+  transition: background .15s, border-color .15s, transform .15s;
+}
+.fixed-category-row:hover {
+  background: rgba(255,255,255,.09);
+  border-color: rgba(255,255,255,.14);
+  transform: translateY(-1px);
+}
+.fixed-category-row.is-active {
+  background: rgba(251,191,36,.14);
+  border-color: rgba(251,191,36,.42);
+}
+.fixed-category-row__name { min-width: 0; font-size: .8rem; font-weight: 650; }
+.fixed-category-row__count { color: rgba(255,255,255,.48); font-size: .68rem; font-weight: 500; }
+.fixed-category-row__amount { flex-shrink: 0; font-size: .82rem; font-weight: 800; }
+.fixed-category-summary__empty { color: rgba(255,255,255,.48); font-size: .76rem; }
 
 /* =============================================
    GASTOS FIJOS — Toolbar
