@@ -12,6 +12,7 @@ import {
     SIN_CATEGORIA, categoriaPrincipalFijo, resumenGastosFijosPorCategoria,
 } from './fixed-categories.js';
 import { parseMoneyInput, validateFixedForm } from './fixed-form.js';
+import { shouldShowFixedItem } from './fixed-list.js';
 import {
     partnerEmails, projectPropertyFixedExpense, propertySharePercent,
 } from './property-fixed.js';
@@ -42,7 +43,7 @@ const DEUDAS_RECIBOS_FOLDER_ID = '157KDn-vbkuHH1L8xbaJBGz-oKmT7p5a9';
 const SPREADSHEET_RSM_ID = '14VsoPHGNTSUSbzMOqGWs2qSL-pGywPgjUoHD3MqIJfo'; // Recibos Salud Mariel
 const SALDOS_SHEET_ID    = '1-cX_qxld3ioSpcO9lEBPg90Db6AyK7SczpJTvj7rw4U'; // Saldos (fuente de verdad — Claude accede vía service account)
 const RSM_FOLDER_ID = '1-ZfeWQ-Rmh-Wm2WMCkULkN6MQWBuxYnj';
-const APP_VERSION  = 'v8.12.1';
+const APP_VERSION  = 'v8.12.2';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -5089,11 +5090,11 @@ function fijos_renderCategorySummary() {
 }
 
 function fijos_aplicarFiltros() {
-    const q    = document.getElementById('f-search').value.toLowerCase();
+    const q    = document.getElementById('f-search').value;
     const sort = document.getElementById('f-sort').value;
     const fmt  = new Intl.NumberFormat('es-MX', { style:'currency', currency:'MXN' });
     let lista  = fijosState.allItems.filter(item => {
-        const t = item.concepto.toLowerCase().includes(q) || item.categoria.toLowerCase().includes(q);
+        const searchAndMonthOk = shouldShowFixedItem(item, q);
         const tipoActivos = fijosState.filtrosActivos.filter(f => f === '__tipo_gasto' || f === '__tipo_ingreso');
         const payerActivos = fijosState.filtrosActivos.filter(f => f === '__payer_yo' || f === '__payer_esposa');
         const statusActivos = fijosState.filtrosActivos.filter(f => f === '__status_pendiente' || f === '__status_pagado');
@@ -5112,7 +5113,7 @@ function fijos_aplicarFiltros() {
         const categorySummaryOk = !fijosState.categoriaSeleccionada
             || (item.tipo === 'gasto'
                 && categoriaPrincipalFijo(item.categoria) === fijosState.categoriaSeleccionada);
-        return t && tipoOk && payerOk && statusOk && catOk && categorySummaryOk && item.isDueThisMonth;
+        return searchAndMonthOk && tipoOk && payerOk && statusOk && catOk && categorySummaryOk;
     });
     lista.sort((a,b) => {
         if (sort==='fechaDesc') return b.fechaValue.localeCompare(a.fechaValue);
@@ -5120,7 +5121,7 @@ function fijos_aplicarFiltros() {
         return a.concepto.localeCompare(b.concepto);
     });
     let gastoPendiente = 0, gastoTotal = 0, ingresoPendiente = 0, ingresoTotal = 0, ingresoRecibido = 0;
-    lista.forEach(i => {
+    lista.filter((item) => item.isDueThisMonth).forEach(i => {
         const totalParts = i.pagosMes || 1;
         const unpaidParts = Math.max(0, totalParts - (i.pagosHechos || 0));
         const partAmount = Math.abs(i.monto || 0) / totalParts;
@@ -5194,7 +5195,9 @@ function fijos_renderCard(item, fmt) {
         const currencyHint = item.moneda === 'USD' ? ` · USD ${Number(item.montoOriginal || 0).toFixed(2)}` : '';
         const pendingParts = Math.max(0, (item.pagosMes || 1) - (item.pagosHechos || 0));
         const pendingAmount = (Math.abs(item.monto || 0) / (item.pagosMes || 1)) * pendingParts;
-        const botonesPagos = item.pagosMes === 1
+        const botonesPagos = !item.isDueThisMonth
+            ? '<span class="kpi-inline-note">No corresponde a este mes</span>'
+            : item.pagosMes === 1
             ? (() => {
                 const clsPart = item.isPaid ? 'pagado-btn pagado-btn--paid' : 'pagado-btn pagado-btn--pending';
                 const isWaived = !!(item.waivedEstado && item.waivedEstado[0]);
@@ -5229,7 +5232,7 @@ function fijos_renderCard(item, fmt) {
           <div class="mc-left">
             <span class="mc-fecha">${item.fecha}</span>
             <span class="mc-lugar">${item.concepto}</span>
-            <span class="mc-concepto">${item.categoria} · ${ETIQUETA_PERIODICIDAD[parseFixedPeriodicity(item.periodicidad)]} · ${item.pagador === 'esposa' ? 'Paga esposa' : 'Pago propio'}${item.pagosMes > 1 ? ` · ${item.pagosHechos}/${item.pagosMes} pagos · ${sign}${fmt.format(montoParcial)} c/u` : ''}${currencyHint}</span>
+            <span class="mc-concepto">${item.categoria} · ${ETIQUETA_PERIODICIDAD[parseFixedPeriodicity(item.periodicidad)]} · ${item.pagador === 'esposa' ? 'Paga esposa' : 'Pago propio'}${item.pagosMes > 1 ? ` · ${item.pagosHechos}/${item.pagosMes} pagos · ${sign}${fmt.format(montoParcial)} c/u` : ''}${currencyHint}${item.isDueThisMonth ? '' : ' · Solo catálogo'}</span>
             ${linkGroupUi}
           </div>
           <div class="mc-right" style="align-items:flex-end;gap:.5rem">
