@@ -93,6 +93,14 @@ body {
   font-size: .7rem; font-weight: 600; white-space: nowrap;
 }
 
+#refresh-btn[aria-busy="true"] svg {
+  animation: refresh-spin .8s linear infinite;
+}
+
+@keyframes refresh-spin {
+  to { transform: rotate(360deg); }
+}
+
 /* =============================================
    TAB BAR — iOS style
    ============================================= */

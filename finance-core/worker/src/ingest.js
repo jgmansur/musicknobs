@@ -10,8 +10,8 @@
  * fijo se viera pendiente aunque ya estuviera pagado, y palomearlo a mano creaba
  * un segundo movimiento en otra cuenta. Ver el historial de Canva en mayo/junio.
  *
- * Es idempotente por partida doble: la query de Gmail se acota al último correo
- * ya visto, y `gmail_message_id` es único en la tabla.
+ * Es idempotente por partida doble: la query de Gmail se acota a la última
+ * corrida exitosa y `gmail_message_id` es único en la tabla.
  */
 
 import { parseBankEmail, TRANSACTIONAL_SENDERS } from './parsers.js';
@@ -22,6 +22,7 @@ import { lugarPara } from '../../shared/lugares.js';
 import { aprobarPendiente } from '../../shared/movimientos.js';
 
 const DEFAULT_LOOKBACK_DAYS = 7;
+const QUERY_OVERLAP_SECONDS = 15 * 60;
 
 /** Tolerancia al comparar el monto de un movimiento contra un gasto fijo. */
 const AMOUNT_TOLERANCE = 0.02;
@@ -257,10 +258,11 @@ export function buildQuery(sinceDate) {
     // producto que el aviso del banco no incluye.
     const senders = [...TRANSACTIONAL_SENDERS, ...TICKET_SENDERS]
         .map((s) => `from:${s}`).join(' OR ');
-    // Gmail solo filtra por día, así que se resta uno para no perder correos
-    // por la diferencia de zona horaria. Los repetidos los frena el índice único.
-    const epochDay = Math.floor(sinceDate.getTime() / 1000) - 86400;
-    return `(${senders}) after:${epochDay}`;
+    // Gmail acepta epoch seconds. Un traslape corto cubre mensajes que llegaron
+    // mientras corría el lote anterior sin volver a descargar un día entero de
+    // HTML cada 15 minutos (eso agotaba el CPU del Worker).
+    const epoch = Math.floor(sinceDate.getTime() / 1000) - QUERY_OVERLAP_SECONDS;
+    return `(${senders}) after:${epoch}`;
 }
 
 /**
@@ -434,10 +436,14 @@ export function classify(parsed, {
     };
 }
 
-/** Fecha del correo más reciente ya procesado, o el lookback por defecto. */
+/** Último punto seguro conocido, o el lookback por defecto. */
 async function resolveSince(sql, lookbackDays) {
     const [row] = await sql`
-        select max(received_at) as last from pending_transactions
+        select greatest(
+            (select max(finished_at) from ingest_runs
+             where finished_at is not null and error is null),
+            (select max(received_at) from pending_transactions)
+        ) as last
     `;
     if (row?.last) return new Date(row.last);
     const d = new Date();
@@ -449,23 +455,26 @@ async function resolveSince(sql, lookbackDays) {
 /**
  * Guarda el desglose de un ticket de comercio.
  *
- * NO crea un movimiento: el banco ya reportó esa compra. Lo que hace es
- * enriquecer el movimiento existente con el detalle por producto, que es lo que
- * necesita el análisis de gasto hormiga.
+ * Primero intenta enriquecer el movimiento que reportó el banco. Cuando el
+ * banco no manda aviso (por ejemplo, una compra con Apple Pay), el ticket es la
+ * única evidencia y crea el movimiento si la tarjeta ya está mapeada.
  *
  * `recibo_id` es el id del correo, así que reprocesarlo no duplica artículos.
  */
-async function guardarTicket(sql, msg, ticket, cardMap) {
-    const [yaEsta] = await sql`
-        select 1 from receipt_items where recibo_id = ${msg.id} limit 1
+export async function guardarTicket(sql, msg, ticket, cardMap) {
+    const existentes = await sql`
+        select id, transaction_id from receipt_items where recibo_id = ${msg.id}
     `;
-    if (yaEsta) return { creados: 0, ligados: 0 };
+    if (existentes.length && existentes.every((item) => item.transaction_id)) {
+        return { creados: 0, ligados: 0, movimientoCreado: false };
+    }
 
     // Se busca el movimiento del banco que corresponde a esta compra: misma
     // cuenta, mismo total, hasta 3 días de diferencia.
     const cuenta = ticket.cardLast4 ? cardMap.get(ticket.cardLast4) : null;
     const cuando = ticket.fecha ?? msg.receivedAt;
     let movimiento = null;
+    let movimientoNuevo = false;
     if (ticket.total != null) {
         const [t] = await sql`
             select id from transactions
@@ -494,6 +503,32 @@ async function guardarTicket(sql, msg, ticket, cardMap) {
             returning id
         `;
         movimiento = creado?.id ?? null;
+        movimientoNuevo = Boolean(creado?.id);
+        // Si otra corrida alcanzó a crear el movimiento, el índice idempotente
+        // evita el duplicado y aquí recuperamos el id para poder ligar artículos.
+        if (!movimiento) {
+            const [previo] = await sql`
+                select id from transactions
+                where source = 'receipt' and source_ref = ${'ticket:' + msg.id}
+                limit 1
+            `;
+            movimiento = previo?.id ?? null;
+        }
+    }
+
+    // Una corrida anterior pudo guardar los artículos antes de que la tarjeta
+    // estuviera mapeada. No se vuelven a insertar: se reparan en sitio cuando ya
+    // existe una cuenta y, por tanto, un movimiento seguro al cual ligarlos.
+    if (existentes.length) {
+        if (!movimiento) return { creados: 0, ligados: 0, movimientoCreado: false };
+        const ligados = await sql`
+            update receipt_items
+            set transaction_id = ${movimiento},
+                forma_pago = coalesce(forma_pago, ${cuenta ? 'tarjeta ****' + ticket.cardLast4 : null})
+            where recibo_id = ${msg.id} and transaction_id is null
+            returning id
+        `;
+        return { creados: 0, ligados: ligados.length, movimientoCreado: movimientoNuevo };
     }
 
     for (const it of ticket.items) {
@@ -508,11 +543,11 @@ async function guardarTicket(sql, msg, ticket, cardMap) {
         `;
     }
     return { creados: ticket.items.length, ligados: movimiento ? ticket.items.length : 0,
-             movimientoCreado: Boolean(movimiento) };
+             movimientoCreado: movimientoNuevo };
 }
 
 export async function runIngest({
-    sql, credentials, lookbackDays = DEFAULT_LOOKBACK_DAYS, maxMessages = 200,
+    sql, credentials, lookbackDays = DEFAULT_LOOKBACK_DAYS, maxMessages = 50,
     // Fuerza la ventana completa en vez de arrancar desde el último correo
     // visto. Solo para rellenos puntuales; la corrida normal es incremental.
     forzarDesde = null,
@@ -523,7 +558,7 @@ export async function runIngest({
 
     const stats = { seen: 0, created: 0, skipped: 0, unmatched: 0, duplicados: 0,
                     articulos: 0, articulosLigados: 0, autoMarcados: 0, autoAprobados: 0,
-                    reglasAprendidas: 0 };
+                    ticketsRegistrados: 0, reglasAprendidas: 0 };
 
     try {
         const [cards, fixed, accounts] = await Promise.all([
@@ -552,17 +587,39 @@ export async function runIngest({
         const ids = await listMessageIds(token, buildQuery(since), maxMessages);
         stats.seen = ids.length;
 
+        // La lista de Gmail solo trae ids y es barata. Descargar y decodificar
+        // otra vez el HTML completo de mensajes ya resueltos era lo que agotaba
+        // el CPU del cron. Los tickets huérfanos NO se saltan: deben volver a
+        // pasar para poder ligarse cuando aparezca el mapeo de su tarjeta.
+        const procesados = ids.length ? await sql`
+            select gmail_message_id as id
+            from pending_transactions
+            where gmail_message_id = any(${ids})
+            union
+            select recibo_id as id
+            from receipt_items
+            where recibo_id = any(${ids})
+            group by recibo_id
+            having bool_and(transaction_id is not null)
+        ` : [];
+        const idsProcesados = new Set(procesados.map((row) => row.id));
+
         for (const id of ids) {
+            if (idsProcesados.has(id)) {
+                stats.skipped += 1;
+                continue;
+            }
             const msg = await getMessage(token, id);
 
-            // Un ticket de comercio no genera movimiento: enriquece el que el
-            // banco ya reportó.
+            // El ticket enriquece el movimiento que reportó el banco o, si ese
+            // aviso no existe, crea el gasto desde el propio ticket.
             if (TICKET_SENDERS.has(msg.from)) {
                 const ticket = parseOxxoTicket(msg.plain ?? '');
                 if (ticket) {
                     const r = await guardarTicket(sql, msg, ticket, cardMap);
                     stats.articulos += r.creados;
                     stats.articulosLigados += r.ligados;
+                    if (r.movimientoCreado) stats.ticketsRegistrados += 1;
                 } else {
                     stats.unmatched += 1;
                 }
@@ -673,10 +730,15 @@ export async function runIngest({
         //
         // Va al final y aparte del bucle: si falla, el ingest ya hizo su trabajo
         // y sería absurdo perderlo por no haber podido aprender.
-        try {
-            stats.reglasAprendidas = await aprenderDelHistorico(sql);
-        } catch {
-            /* aprender es un extra, nunca puede tumbar la ingesta */
+        const huboMovimientosNuevos = stats.autoMarcados > 0
+            || stats.autoAprobados > 0
+            || stats.ticketsRegistrados > 0;
+        if (huboMovimientosNuevos) {
+            try {
+                stats.reglasAprendidas = await aprenderDelHistorico(sql);
+            } catch {
+                /* aprender es un extra, nunca puede tumbar la ingesta */
+            }
         }
 
         await sql`

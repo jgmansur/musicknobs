@@ -43,7 +43,7 @@ const DEUDAS_RECIBOS_FOLDER_ID = '157KDn-vbkuHH1L8xbaJBGz-oKmT7p5a9';
 const SPREADSHEET_RSM_ID = '14VsoPHGNTSUSbzMOqGWs2qSL-pGywPgjUoHD3MqIJfo'; // Recibos Salud Mariel
 const SALDOS_SHEET_ID    = '1-cX_qxld3ioSpcO9lEBPg90Db6AyK7SczpJTvj7rw4U'; // Saldos (fuente de verdad — Claude accede vía service account)
 const RSM_FOLDER_ID = '1-ZfeWQ-Rmh-Wm2WMCkULkN6MQWBuxYnj';
-const APP_VERSION  = 'v8.12.2';
+const APP_VERSION  = 'v8.12.3';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -703,15 +703,23 @@ document.addEventListener('DOMContentLoaded', () => {
     );
 
     // Refresh
-    document.getElementById('refresh-btn').addEventListener('click', async () => {
-        if (!accessToken) { showLoginModal(); return; }
-        if (currentTab === 'documentos') {
-            const added = await documentos_syncNewFromDrive();
-            if (typeof added === 'number') {
-                showToast(added > 0 ? `✅ ${added} documento${added !== 1 ? 's' : ''} nuevo${added !== 1 ? 's' : ''} agregado${added !== 1 ? 's' : ''}` : '✅ Documentos al día, nada nuevo');
+    document.getElementById('refresh-btn').addEventListener('click', async (event) => {
+        try {
+            // Este botón es el disparador manual general: primero revisa Gmail
+            // y después refresca la pestaña visible con los movimientos nuevos.
+            await bandeja_buscarAhora({ button: event.currentTarget });
+
+            if (currentTab === 'documentos') {
+                if (!accessToken) { showLoginModal(); return; }
+                const added = await documentos_syncNewFromDrive();
+                if (typeof added === 'number') {
+                    showToast(added > 0 ? `✅ ${added} documento${added !== 1 ? 's' : ''} nuevo${added !== 1 ? 's' : ''} agregado${added !== 1 ? 's' : ''}` : '✅ Documentos al día, nada nuevo');
+                }
             }
+            refreshCurrentTab();
+        } catch (err) {
+            bandeja_aviso(err.message);
         }
-        refreshCurrentTab();
     });
 
     // Login/Logout
@@ -16228,6 +16236,7 @@ let bandejaCuentas = [];
 let bandejaCategorias = [];
 let bandejaFijos = [];
 let bandejaFiltro = 'nuevos';
+let bandejaIngestPromise = null;
 
 const bandeja_token = () => localStorage.getItem(BANDEJA_TOKEN_KEY) || '';
 
@@ -16264,6 +16273,62 @@ async function bandeja_api(path, options = {}) {
     const data = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(data.error || `Error ${res.status}`);
     return data;
+}
+
+/**
+ * Disparador único de ingesta manual para el header y la pestaña Bandeja.
+ *
+ * Compartir la misma promesa evita dos corridas simultáneas si se hace doble
+ * clic o si ambos controles se usan mientras la primera búsqueda sigue viva.
+ */
+async function bandeja_buscarAhora({ button = null } = {}) {
+    if (bandejaIngestPromise) return bandejaIngestPromise;
+
+    const status = document.getElementById('sync-status');
+    const esBotonTexto = button?.id === 'bandeja-refrescar';
+    const textoAnterior = esBotonTexto ? button.textContent : '';
+    if (button) {
+        button.disabled = true;
+        button.setAttribute('aria-busy', 'true');
+        if (esBotonTexto) button.textContent = 'Buscando…';
+    }
+    if (status) {
+        status.innerText = 'Buscando gastos…';
+        status.style.color = 'var(--primary)';
+    }
+
+    bandejaIngestPromise = (async () => {
+        const result = await bandeja_api('/api/ingest', { method: 'POST' });
+        if (currentTab === 'bandeja') await bandeja_cargarPendientes();
+        else await bandeja_sondearTab();
+
+        const hechos = [
+            result?.ticketsRegistrados ? `${result.ticketsRegistrados} gasto(s) de ticket registrados` : '',
+            result?.autoAprobados ? `${result.autoAprobados} gasto(s) registrados solos` : '',
+            result?.autoMarcados ? `${result.autoMarcados} fijo(s) marcados` : '',
+            result?.reglasAprendidas ? `${result.reglasAprendidas} regla(s) aprendidas` : '',
+        ].filter(Boolean);
+        bandeja_aviso(hechos.length ? hechos.join(' · ') : '✅ Correo revisado, sin gastos nuevos');
+        return result;
+    })();
+
+    let completado = false;
+    try {
+        const result = await bandejaIngestPromise;
+        completado = true;
+        return result;
+    } finally {
+        bandejaIngestPromise = null;
+        if (button) {
+            button.disabled = false;
+            button.removeAttribute('aria-busy');
+            if (esBotonTexto) button.textContent = textoAnterior || 'Buscar ahora';
+        }
+        if (status) {
+            status.innerText = completado ? 'Sincronizado ✓' : 'Error al sincronizar';
+            status.style.color = completado ? 'var(--accent-green)' : '#ef4444';
+        }
+    }
 }
 
 function bandeja_cargarVista() {
@@ -16352,7 +16417,8 @@ function bandeja_pintarTab(nuevos) {
  * igual al abrirla.
  */
 async function bandeja_sondearTab() {
-    if (!bandeja_token()) return;
+    await _fbAuth.authStateReady?.();
+    if (!bandeja_token() && !_fbAuth.currentUser) return;
     try {
         const { pending } = await bandeja_api('/api/pending');
         bandejaPendientes = pending || [];
@@ -16641,26 +16707,10 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     document.getElementById('bandeja-refrescar')?.addEventListener('click', async (e) => {
-        e.target.disabled = true;
-        e.target.textContent = 'Buscando…';
         try {
-            const r = await bandeja_api('/api/ingest', { method: 'POST' });
-            await bandeja_cargarPendientes();
-
-            // Lo que la app hizo sola tiene que ser visible. Si registra gastos
-            // y aprende reglas sin decirlo, Jay no tiene forma de detectar que
-            // se equivocó hasta que el mes ya salió mal.
-            const hechos = [
-                r?.autoAprobados ? `${r.autoAprobados} gasto(s) registrados solos` : '',
-                r?.autoMarcados ? `${r.autoMarcados} fijo(s) marcados` : '',
-                r?.reglasAprendidas ? `${r.reglasAprendidas} regla(s) aprendidas` : '',
-            ].filter(Boolean);
-            if (hechos.length) bandeja_aviso(hechos.join(' · '));
+            await bandeja_buscarAhora({ button: e.currentTarget });
         } catch (err) {
             bandeja_aviso(err.message);
-        } finally {
-            e.target.disabled = false;
-            e.target.textContent = 'Buscar ahora';
         }
     });
 
