@@ -39,7 +39,7 @@ const DEUDAS_RECIBOS_FOLDER_ID = '157KDn-vbkuHH1L8xbaJBGz-oKmT7p5a9';
 const SPREADSHEET_RSM_ID = '14VsoPHGNTSUSbzMOqGWs2qSL-pGywPgjUoHD3MqIJfo'; // Recibos Salud Mariel
 const SALDOS_SHEET_ID    = '1-cX_qxld3ioSpcO9lEBPg90Db6AyK7SczpJTvj7rw4U'; // Saldos (fuente de verdad — Claude accede vía service account)
 const RSM_FOLDER_ID = '1-ZfeWQ-Rmh-Wm2WMCkULkN6MQWBuxYnj';
-const APP_VERSION  = 'v8.11.2';
+const APP_VERSION  = 'v8.11.3';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -16065,20 +16065,31 @@ const bandeja_token = () => localStorage.getItem(BANDEJA_TOKEN_KEY) || '';
 async function bandeja_api(path, options = {}) {
     await _fbAuth.authStateReady?.();
     const legacyToken = bandeja_token();
-    const firebaseToken = legacyToken ? '' : await _fbAuth.currentUser?.getIdToken();
+    let firebaseToken = legacyToken ? '' : await _fbAuth.currentUser?.getIdToken();
     if (!legacyToken && !firebaseToken) {
         throw new Error('Tu sesión venció. Cierra sesión y vuelve a entrar con Google.');
     }
-    const res = await fetch(BANDEJA_API + path, {
+    const request = (authHeaders) => fetch(BANDEJA_API + path, {
         ...options,
         headers: {
             'content-type': 'application/json',
-            ...(legacyToken ? { 'x-finance-token': legacyToken } : { authorization: `Bearer ${firebaseToken}` }),
+            ...authHeaders,
             ...(options.headers || {}),
         },
     });
+    let res = await request(legacyToken
+        ? { 'x-finance-token': legacyToken }
+        : { authorization: `Bearer ${firebaseToken}` });
+    // Una credencial antigua no debe bloquear al usuario: se elimina y se
+    // reintenta una sola vez con la sesión de Google/Firebase ya activa.
+    if (res.status === 401 && legacyToken) {
+        localStorage.removeItem(BANDEJA_TOKEN_KEY);
+        firebaseToken = await _fbAuth.currentUser?.getIdToken(true);
+        if (firebaseToken) {
+            res = await request({ authorization: `Bearer ${firebaseToken}` });
+        }
+    }
     if (res.status === 401) {
-        if (legacyToken) localStorage.removeItem(BANDEJA_TOKEN_KEY);
         throw new Error('Tu sesión financiera venció. Cierra sesión y vuelve a entrar con Google.');
     }
     const data = await res.json().catch(() => ({}));
