@@ -514,6 +514,14 @@ select.field-input { background-image: url("data:image/svg+xml,%3Csvg xmlns='htt
 .balance-amount { font-size: 2.2rem; font-weight: 800; }
 .balance-stats { display: flex; gap: 1.5rem; margin-top: 1rem; }
 .balance-stat { display: flex; flex-direction: column; gap: .15rem; }
+.balance-stat--button { background:none; border:0; padding:0; text-align:left; cursor:pointer; font:inherit; }
+.balance-stat--button:hover .stat-label, .balance-stat--button:focus-visible .stat-label { text-decoration:underline; }
+.field-help { color:var(--text-muted); font-size:.72rem; display:block; margin-top:.3rem; }
+.email-chip-list { display:flex; flex-wrap:wrap; gap:.4rem; margin-bottom:.55rem; }
+.email-chip { display:inline-flex; align-items:center; gap:.35rem; background:rgba(148,163,184,.16); border:1px solid rgba(148,163,184,.25); border-radius:999px; padding:.3rem .55rem; font-size:.74rem; }
+.email-chip button { border:0; background:none; color:var(--text-muted); cursor:pointer; padding:0; }
+.email-add-row { display:flex; gap:.5rem; align-items:center; }
+.email-add-row .field-input { flex:1; }
 .stat-label { font-size: .72rem; font-weight: 600; }
 .stat-value { font-size: 1rem; font-weight: 700; }
 .fixed-category-summary {

@@ -20,6 +20,18 @@ test('fixed report lists the full catalog but totals only entries due this month
     assert.equal(model.ingresos.length, 1);
     assert.equal(model.gastos.length, 2);
     assert.deepEqual(model.summary, { incomeTotal: 10000, expenseTotal: 3000, pendingTotal: 3000, net: 7000 });
+    assert.deepEqual(model.categoryTotals, [{ category: 'Educación', amount: 3000, count: 1 }]);
+});
+
+test('fixed report groups expenses by clean category and keeps uncategorized totals', () => {
+    const model = buildFixedReportModel([
+        { concepto: 'Seguro', categoria: '__tipo_gasto, Seguros', tipo: 'gasto', monto: 1200, isDueThisMonth: true },
+        { concepto: 'Otro', categoria: 'General', tipo: 'gasto', monto: 300, isDueThisMonth: true },
+    ], reportDate);
+    assert.deepEqual(model.categoryTotals, [
+        { category: 'Seguros', amount: 1200, count: 1 },
+        { category: 'Sin categoría', amount: 300, count: 1 },
+    ]);
 });
 
 test('monthly expenses report excludes ingresos and other months', () => {

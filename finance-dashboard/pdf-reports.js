@@ -59,6 +59,10 @@ const pendingAmount = (item) => {
     return Math.abs(Number(item.monto) || 0) / parts * Math.max(0, parts - paid);
 };
 
+const fixedCategory = (value) => String(value || '').split(',')
+    .map((part) => part.trim())
+    .find((part) => part && !part.startsWith('__') && part.toLowerCase() !== 'general') || 'Sin categoría';
+
 const fixedStatus = (item) => {
     if (!item.isDueThisMonth) {
         return item.paidThrough ? `Pagado hasta ${shortDate(item.paidThrough)}` : 'No aplica este mes';
@@ -81,11 +85,19 @@ export function buildFixedReportModel(items = [], reportDate = new Date()) {
     const incomeTotal = dueIncome.reduce((sum, item) => sum + Math.abs(Number(item.monto) || 0), 0);
     const expenseTotal = dueExpenses.reduce((sum, item) => sum + Math.abs(Number(item.monto) || 0), 0);
     const pendingTotal = dueExpenses.reduce((sum, item) => sum + pendingAmount(item), 0);
+    const categoryTotals = Object.values(dueExpenses.reduce((groups, item) => {
+        const category = fixedCategory(item.categoria);
+        groups[category] ||= { category, amount: 0, count: 0 };
+        groups[category].amount += Math.abs(Number(item.monto) || 0);
+        groups[category].count += 1;
+        return groups;
+    }, {})).sort((a, b) => b.amount - a.amount || a.category.localeCompare(b.category, 'es'));
     return {
         title: 'Ingresos y gastos fijos',
         period: monthLabel(reportDate),
         ingresos,
         gastos,
+        categoryTotals,
         summary: { incomeTotal, expenseTotal, pendingTotal, net: incomeTotal - expenseTotal },
     };
 }
@@ -206,6 +218,16 @@ export function createFixedExpensesPdf({ items = [], reportDate = new Date() } =
         { label: 'Balance fijo', value: money(model.summary.net), color: model.summary.net >= 0 ? COLORS.green : COLORS.red, fill: model.summary.net >= 0 ? COLORS.softGreen : COLORS.softRed },
     ]);
 
+    y = addSectionTitle(doc, 'Gastos por categoría', `${model.categoryTotals.length} categorías`, y);
+    autoTable(doc, {
+        ...tableStyles,
+        startY: y,
+        head: [['Categoría', 'Gastos fijos', 'Total mensual']],
+        body: model.categoryTotals.map((row) => [row.category, String(row.count), money(row.amount)]),
+        columnStyles: { 0: { cellWidth: 102 }, 1: { cellWidth: 35, halign: 'center' }, 2: { cellWidth: 45, halign: 'right' } },
+    });
+    y = (doc.lastAutoTable?.finalY || y) + 9;
+    if (y > 253) { doc.addPage(); y = 18; }
     y = addSectionTitle(doc, 'Ingresos fijos', `${model.ingresos.length} registros`, y);
     autoTable(doc, {
         ...tableStyles,

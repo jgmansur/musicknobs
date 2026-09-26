@@ -38,7 +38,7 @@ const DEUDAS_RECIBOS_FOLDER_ID = '157KDn-vbkuHH1L8xbaJBGz-oKmT7p5a9';
 const SPREADSHEET_RSM_ID = '14VsoPHGNTSUSbzMOqGWs2qSL-pGywPgjUoHD3MqIJfo'; // Recibos Salud Mariel
 const SALDOS_SHEET_ID    = '1-cX_qxld3ioSpcO9lEBPg90Db6AyK7SczpJTvj7rw4U'; // Saldos (fuente de verdad — Claude accede vía service account)
 const RSM_FOLDER_ID = '1-ZfeWQ-Rmh-Wm2WMCkULkN6MQWBuxYnj';
-const APP_VERSION  = 'v8.10.4';
+const APP_VERSION  = 'v8.11.0';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -4327,6 +4327,7 @@ async function gastos_cargarDesdeWorker() {
                     tipo:     m.kind === 'ingreso' ? 'Ingreso' : 'Gasto',
                     formaPago: m.cuenta || '',
                     fotos:    m.receipt_url || '',
+                    fixedExpenseId: m.fixed_expense_id || '',
                     fechaCreacion: m.created_at || '',
                 };
             });
@@ -4506,6 +4507,7 @@ async function gastos_guardar() {
                         accountId: cuenta?.id ?? null,
                         occurredAt: fecha ? `${fecha}T12:00:00-06:00` : null,
                         receiptUrl: allUrls || null,
+                        fixedExpenseId: document.getElementById('g-fixed-expense')?.value || null,
                     }),
                 });
                 await balance_loadFromWorker();
@@ -4560,6 +4562,10 @@ function gastos_cancelar() {
     if (fechaField) fechaField.classList.add('hidden');
     const fechaInput = document.getElementById('g-fecha-creacion');
     if (fechaInput) fechaInput.value = '';
+    const fixedField = document.getElementById('g-fixed-expense-field');
+    if (fixedField) fixedField.classList.add('hidden');
+    const fixedSelect = document.getElementById('g-fixed-expense');
+    if (fixedSelect) fixedSelect.value = '';
     setTimeout(() => { document.getElementById('g-status').innerText = ''; }, 2500);
 }
 
@@ -4598,7 +4604,7 @@ function gastos_cerrarModal() {
     gastosState.detailRow = null;
 }
 
-function gastos_editarDesdeModal() {
+async function gastos_editarDesdeModal() {
     const row = gastosState.detailRow; if (!row) return;
     lugares_pintarSelect(row.lugar || '');
     document.getElementById('g-concepto').value  = row.concepto;
@@ -4607,6 +4613,10 @@ function gastos_editarDesdeModal() {
     document.getElementById('g-tipo').value      = row.tipo;
     document.getElementById('g-forma-pago').value= row.formaPago;
     document.getElementById('g-id-fila').value   = row.id || row.rowNum;
+    if (esIdDeWorker(row.id)) {
+        await gastos_cargarFijosSelect(row.fixedExpenseId || '');
+        document.getElementById('g-fixed-expense-field')?.classList.remove('hidden');
+    }
     // Se conserva la fila mientras dure la edición. `detailRow` no sirve: el
     // `gastos_cerrarModal()` de más abajo lo pone en null, y con él se perdían
     // los recibos ya adjuntos y la fecha de creación al guardar.
@@ -4632,6 +4642,23 @@ function gastos_editarDesdeModal() {
     document.getElementById('g-btn-cancel').classList.remove('hidden');
     gastos_cerrarModal();
     window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+async function gastos_cargarFijosSelect(selected = '') {
+    const select = document.getElementById('g-fixed-expense');
+    if (!select || !bandeja_token()) return;
+    try {
+        const periodo = new Date().toISOString().slice(0, 7);
+        const { fijos = [] } = await bandeja_api(`/api/fijos?period=${periodo}`);
+        select.innerHTML = '<option value="">— Sin asociar —</option>' + fijos
+            .filter((fixed) => fixed.tipo !== 'ingreso')
+            .sort((a, b) => String(a.concepto).localeCompare(String(b.concepto), 'es'))
+            .map((fixed) => `<option value="${fijos_escapeHtml(fixed.id)}">${fijos_escapeHtml(fixed.concepto)}</option>`)
+            .join('');
+        select.value = selected || '';
+    } catch (error) {
+        console.warn('[Gastos] No se pudo cargar el catálogo de fijos:', error.message);
+    }
 }
 
 async function gastos_borrarDesdeModal() {
@@ -4706,7 +4733,12 @@ const fijosState = {
     categoriaSeleccionada: '',
     sheetId: null,
     lastResetMonth: null,  // tracks month of last reset check
+    alertEmails: [],
+    notificationContacts: [],
+    incomeStatMode: 'total',
+    expenseStatMode: 'pending',
 };
+const DEFAULT_ALERT_EMAIL = 'jgmansur2@gmail.com';
 const RESET_MONTH_KEY = 'fijos_last_reset_month';
 
 function fijos_bindEvents() {
@@ -4743,6 +4775,18 @@ function fijos_bindEvents() {
     document.getElementById('f-sheet-overlay').addEventListener('click', fijos_cerrarSheet);
     document.getElementById('f-filter-overlay').addEventListener('click', fijos_cerrarFiltro);
     document.getElementById('f-periodicidad').addEventListener('change', fijos_togglePeriodicityFields);
+    document.getElementById('f-income-stat')?.addEventListener('click', () => {
+        fijosState.incomeStatMode = fijosState.incomeStatMode === 'total' ? 'received' : 'total';
+        fijos_aplicarFiltros();
+    });
+    document.getElementById('f-expense-stat')?.addEventListener('click', () => {
+        fijosState.expenseStatMode = fijosState.expenseStatMode === 'pending' ? 'total' : 'pending';
+        fijos_aplicarFiltros();
+    });
+    document.getElementById('f-alert-email-add')?.addEventListener('click', fijos_agregarAlertEmail);
+    document.getElementById('f-alert-email-input')?.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter') { event.preventDefault(); fijos_agregarAlertEmail(); }
+    });
     
     // PIN Modal events
     const pinSubmit = document.getElementById('pin-submit-btn');
@@ -4819,7 +4863,7 @@ async function fijos_cargarDesdeWorker(nowMonth) {
                 montoOriginal,
                 moneda,
                 tipo: f.tipo === 'ingreso' ? 'ingreso' : 'gasto',
-                categoria: f.categoria || 'General',
+                categoria: fijos_limpiarCategoria(f.categoria),
                 isPaid: pagosHechos >= pagosMes,
                 pagosMes,
                 pagosEstado,
@@ -4835,6 +4879,7 @@ async function fijos_cargarDesdeWorker(nowMonth) {
                 budgetCategory: parseBudgetCategory(f.budget_category),
                 linkGroup: (f.link_group || '').toString().trim(),
                 fechasPago: f.fechas_pago || [],
+                alertEmails: Array.isArray(f.alert_emails) ? f.alert_emails : [],
             };
         }).filter(i => i.concepto).sort((a, b) => a.diaMes - b.diaMes);
 
@@ -4853,7 +4898,7 @@ async function fijos_cargarDatos() {
             sheetsGet(SPREADSHEET_FIXED_ID, 'Hoja 1!A2:P').catch(() => []),  // I=periodicidad, J=inicio, K=pagador, L=budget, M=moneda, N=waive, O=linkGroup, P=fechasPago
             sheetsGet(SPREADSHEET_FIXED_ID, 'Categorias!A:A').catch(() => [])
         ]);
-        fijosState.categorias = catRows.map(r => r[0]).filter(Boolean);
+        fijosState.categorias = [...new Set(catRows.map(r => r[0]).filter((c) => c && !String(c).startsWith('__')))];
         if (!fijosState.categorias.length) fijosState.categorias = ['General'];
 
         // Fuente de verdad: finance-core. La hoja queda de respaldo.
@@ -4919,7 +4964,7 @@ async function fijos_cargarDatos() {
                 montoOriginal: gRaw || nRaw,
                 moneda,
                 tipo:       g > 0 ? 'gasto' : 'ingreso',
-                categoria:  row[4] || 'General',
+                categoria:  fijos_limpiarCategoria(row[4]),
                 isPaid,
                 pagosMes,
                 pagosEstado,
@@ -4944,10 +4989,13 @@ async function fijos_cargarDatos() {
 }
 
 function fijos_generarPills() {
-    const pills = cat => {
+    const categoryPills = (cat) => fijosState.categorias
+        .map(c => `<label class="cat-check-label"><input type="checkbox" class="${cat}" value="${c}" id="${cat}_${c}">${c}</label>`)
+        .join('');
+    const filterPills = cat => {
         const typePills = [
-            `<label class="cat-check-label"><input type="checkbox" class="${cat}" value="__tipo_gasto" id="${cat}___tipo_gasto">🔴 Gastos</label>`,
-            `<label class="cat-check-label"><input type="checkbox" class="${cat}" value="__tipo_ingreso" id="${cat}___tipo_ingreso">🟢 Ingresos</label>`,
+            `<label class="cat-check-label"><input type="checkbox" class="${cat}" value="__tipo_gasto" id="${cat}___tipo_gasto">🔴 Gasto</label>`,
+            `<label class="cat-check-label"><input type="checkbox" class="${cat}" value="__tipo_ingreso" id="${cat}___tipo_ingreso">🟢 Ingreso</label>`,
             `<label class="cat-check-label"><input type="checkbox" class="${cat}" value="__payer_yo" id="${cat}___payer_yo">👤 Pago propio</label>`,
             `<label class="cat-check-label"><input type="checkbox" class="${cat}" value="__payer_esposa" id="${cat}___payer_esposa">👩 Pago esposa</label>`,
         ].join('');
@@ -4955,14 +5003,17 @@ function fijos_generarPills() {
             `<label class="cat-check-label"><input type="checkbox" class="${cat}" value="__status_pendiente" id="${cat}___status_pendiente">⏳ Pendientes</label>`,
             `<label class="cat-check-label"><input type="checkbox" class="${cat}" value="__status_pagado" id="${cat}___status_pagado">✅ Pagados</label>`,
         ].join('');
-        const categoryPills = fijosState.categorias
-            .map(c => `<label class="cat-check-label"><input type="checkbox" class="${cat}" value="${c}" id="${cat}_${c}">${c}</label>`)
-            .join('');
-        return typePills + paymentStatusPills + categoryPills;
+        return typePills + paymentStatusPills + categoryPills(cat);
     };
-    document.getElementById('f-cat-checks').innerHTML = pills('f-cat-chk');
-    document.getElementById('f-filter-checks').innerHTML = pills('f-filter-chk');
+    document.getElementById('f-cat-checks').innerHTML = categoryPills('f-cat-chk');
+    document.getElementById('f-filter-checks').innerHTML = filterPills('f-filter-chk');
     fijosState.filtrosActivos.forEach(c => { const el = document.querySelector(`.f-filter-chk[value="${c}"]`); if (el) el.checked = true; });
+}
+
+function fijos_limpiarCategoria(value) {
+    const clean = String(value || '').split(',').map((part) => part.trim())
+        .filter((part) => part && !part.startsWith('__'));
+    return clean.join(', ') || 'General';
 }
 
 function fijos_syncDashboardStats() {
@@ -5064,24 +5115,32 @@ function fijos_aplicarFiltros() {
         if (sort==='fechaAsc')  return a.fechaValue.localeCompare(b.fechaValue);
         return a.concepto.localeCompare(b.concepto);
     });
-    let gastoT = 0, ingresoT = 0;
+    let gastoPendiente = 0, gastoTotal = 0, ingresoPendiente = 0, ingresoTotal = 0, ingresoRecibido = 0;
     lista.forEach(i => {
         const totalParts = i.pagosMes || 1;
         const unpaidParts = Math.max(0, totalParts - (i.pagosHechos || 0));
         const partAmount = Math.abs(i.monto || 0) / totalParts;
         const pendingAmount = unpaidParts * partAmount;
-        if (i.tipo === 'gasto') gastoT += pendingAmount;
-        else ingresoT += pendingAmount;
+        const totalAmount = Math.abs(i.monto || 0);
+        const paidAmount = totalAmount - pendingAmount;
+        if (i.tipo === 'gasto') { gastoPendiente += pendingAmount; gastoTotal += totalAmount; }
+        else { ingresoPendiente += pendingAmount; ingresoTotal += totalAmount; ingresoRecibido += paidAmount; }
     });
     const fBalanceEl = document.getElementById('f-balance');
-    const fixedNet = ingresoT - gastoT;
+    const fixedNet = ingresoPendiente - gastoPendiente;
     const fixedWithAvailableBalance = fixedNet + balance_getTotal();
     if (fBalanceEl) {
         fBalanceEl.innerText = fmt.format(fixedWithAvailableBalance);
         fBalanceEl.classList.toggle('text-danger', fixedWithAvailableBalance < 0);
     }
-    document.getElementById('f-ingresos').innerText     = fmt.format(ingresoT);
-    document.getElementById('f-gastos-total').innerText = fmt.format(gastoT);
+    const incomeReceived = fijosState.incomeStatMode === 'received';
+    const expenseTotalMode = fijosState.expenseStatMode === 'total';
+    document.getElementById('f-ingresos').innerText = fmt.format(incomeReceived ? ingresoRecibido : ingresoTotal);
+    document.getElementById('f-gastos-total').innerText = fmt.format(expenseTotalMode ? gastoTotal : gastoPendiente);
+    document.getElementById('f-income-label').innerText = incomeReceived ? '↑ Ingresos recibidos este mes' : '↑ Ingresos fijos totales';
+    document.getElementById('f-expense-label').innerText = expenseTotalMode ? '↓ Gastos fijos totales' : '↓ Gastos pendientes';
+    document.getElementById('f-income-stat').setAttribute('aria-pressed', String(incomeReceived));
+    document.getElementById('f-expense-stat').setAttribute('aria-pressed', String(expenseTotalMode));
     const badge = document.getElementById('f-filtro-badge');
     const filtrosTotal = fijosState.filtrosActivos.length + (fijosState.categoriaSeleccionada ? 1 : 0);
     badge.textContent = filtrosTotal || '';
@@ -5592,6 +5651,9 @@ function fijos_abrirSheet(item) {
     document.getElementById('f-link-group').value = '';
     document.getElementById('f-paid-through').value = '';
     document.getElementById('f-paid-through-wrap').classList.add('hidden');
+    document.getElementById('f-alert-emails-wrap').classList.add('hidden');
+    fijosState.alertEmails = [];
+    fijos_renderAlertEmails();
     document.getElementById('f-fecha').value = String(hoy.getDate());
     document.querySelectorAll('.f-cat-chk').forEach(cb => cb.checked = false);
     const def = document.querySelector('.f-cat-chk[value="General"]');
@@ -5613,11 +5675,52 @@ function fijos_abrirSheet(item) {
         if (esIdDeWorker(item.id)) {
             document.getElementById('f-paid-through').value = item.paidThrough || '';
             document.getElementById('f-paid-through-wrap').classList.remove('hidden');
+            document.getElementById('f-alert-emails-wrap').classList.remove('hidden');
+            fijosState.alertEmails = [...new Set([DEFAULT_ALERT_EMAIL, ...(item.alertEmails || [])].map((email) => email.toLowerCase()))];
+            fijos_renderAlertEmails();
+            fijos_cargarContactosNotificacion();
         }
         item.categoria.split(', ').forEach(c => { const cb = document.querySelector(`.f-cat-chk[value="${c}"]`); if (cb) cb.checked = true; });
     }
     fijos_togglePeriodicityFields();
     sheet.classList.remove('hidden');
+}
+
+async function fijos_cargarContactosNotificacion() {
+    try {
+        const { emails = [] } = await bandeja_api('/api/notification-contacts');
+        fijosState.notificationContacts = [...new Set([DEFAULT_ALERT_EMAIL, ...emails])];
+        const list = document.getElementById('f-alert-email-suggestions');
+        if (list) list.innerHTML = fijosState.notificationContacts
+            .map((email) => `<option value="${fijos_escapeHtml(email)}"></option>`).join('');
+    } catch (error) {
+        console.warn('[Fijos] No se pudieron cargar contactos:', error.message);
+    }
+}
+
+function fijos_renderAlertEmails() {
+    const container = document.getElementById('f-alert-email-chips');
+    if (!container) return;
+    container.innerHTML = fijosState.alertEmails.map((email) => {
+        const locked = email === DEFAULT_ALERT_EMAIL;
+        return `<span class="email-chip">${fijos_escapeHtml(email)}${locked ? '' : `<button type="button" data-remove-email="${fijos_escapeHtml(email)}" aria-label="Quitar ${fijos_escapeHtml(email)}">✕</button>`}</span>`;
+    }).join('');
+    container.querySelectorAll('[data-remove-email]').forEach((button) => button.addEventListener('click', () => {
+        fijosState.alertEmails = fijosState.alertEmails.filter((email) => email !== button.dataset.removeEmail);
+        fijos_renderAlertEmails();
+    }));
+}
+
+function fijos_agregarAlertEmail() {
+    const input = document.getElementById('f-alert-email-input');
+    const email = String(input?.value || '').trim().toLowerCase();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        showToast('Escribe un email válido');
+        return;
+    }
+    fijosState.alertEmails = [...new Set([...fijosState.alertEmails, email])];
+    input.value = '';
+    fijos_renderAlertEmails();
 }
 
 /**
@@ -5711,9 +5814,7 @@ async function fijos_guardar() {
         // Al editar, decide el id mismo. Antes bastaba con que trajera un
         // guion, y eso da por bueno cualquier texto: `2026-08-06` también lo
         // trae. Mismo criterio que en gastos, para que no haya dos reglas.
-        const esWorker = !editId
-            ? bandeja_token() && fijosState.allItems.some(i => esIdDeWorker(i.id))
-            : esIdDeWorker(editId);
+        const esWorker = !editId ? !!bandeja_token() : esIdDeWorker(editId);
 
         if (esWorker) {
             const cuerpo = {
@@ -5723,7 +5824,7 @@ async function fijos_guardar() {
                 pagosMes, periodicidad, inicioMes,
                 pagador: formaPagoVal, budgetCategory, linkGroup,
                 diaMes: parseDayOfMonth(fecha),
-                ...(editId ? { paidThrough } : {}),
+                ...(editId ? { paidThrough, alertEmails: fijosState.alertEmails } : {}),
             };
             await bandeja_api(editId ? `/api/fijos/${editId}` : '/api/fijos', {
                 method: editId ? 'PATCH' : 'POST',

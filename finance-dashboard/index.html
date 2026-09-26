@@ -300,6 +300,13 @@
             <label class="field-label">📅 Fecha del Gasto</label>
             <input type="datetime-local" id="g-fecha-creacion" class="field-input">
           </div>
+          <div class="form-field hidden" id="g-fixed-expense-field">
+            <label class="field-label">Asociar con gasto fijo (opcional)</label>
+            <select id="g-fixed-expense" class="field-input">
+              <option value="">— Sin asociar —</option>
+            </select>
+            <small class="field-help">Al asociarlo, este movimiento marca como pagada la siguiente parte pendiente del fijo.</small>
+          </div>
           <div class="form-field">
             <label class="field-label">Foto / Recibo</label>
             <input type="file" id="g-fotos-input" multiple accept="image/*,application/pdf" style="display:none">
@@ -365,14 +372,14 @@
           <p id="f-balance-label" class="balance-label">Disponible (Libertad Financiera)</p>
           <h2 id="f-balance" class="balance-amount">$0.00</h2>
           <div class="balance-stats">
-            <div class="balance-stat">
-              <span class="stat-label text-success">↑ Ingresos</span>
+            <button type="button" id="f-income-stat" class="balance-stat balance-stat--button" aria-pressed="false">
+              <span id="f-income-label" class="stat-label text-success">↑ Ingresos fijos totales</span>
               <span id="f-ingresos" class="stat-value text-success">$0.00</span>
-            </div>
-            <div class="balance-stat">
-              <span class="stat-label text-danger">↓ Gastos</span>
+            </button>
+            <button type="button" id="f-expense-stat" class="balance-stat balance-stat--button" aria-pressed="false">
+              <span id="f-expense-label" class="stat-label text-danger">↓ Gastos pendientes</span>
               <span id="f-gastos-total" class="stat-value text-danger">$0.00</span>
-            </div>
+            </button>
           </div>
           <div class="fixed-category-summary">
             <div class="fixed-category-summary__heading">
@@ -441,6 +448,16 @@
               <label class="field-label">Pagado hasta (opcional)</label>
               <input type="date" id="f-paid-through" class="field-input">
               <small style="color:var(--text-muted);font-size:.72rem">El gasto volverá a aparecer como pendiente después de esta fecha.</small>
+            </div>
+            <div class="form-field hidden" id="f-alert-emails-wrap">
+              <label class="field-label">Alertas por email</label>
+              <div id="f-alert-email-chips" class="email-chip-list"></div>
+              <div class="email-add-row">
+                <input type="email" id="f-alert-email-input" class="field-input" list="f-alert-email-suggestions" placeholder="correo@ejemplo.com">
+                <button type="button" id="f-alert-email-add" class="secondary-btn">Agregar</button>
+              </div>
+              <datalist id="f-alert-email-suggestions"></datalist>
+              <small class="field-help">Se enviará un aviso 3 días antes y el día del vencimiento.</small>
             </div>
             <div class="form-field">
               <label class="field-label">Pagos por mes</label>

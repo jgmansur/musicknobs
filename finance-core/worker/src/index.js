@@ -12,6 +12,7 @@ import postgres from 'postgres';
 import { runIngest } from './ingest.js';
 import { aprobarPendiente, borrarMovimiento, pagarFijo } from '../../shared/movimientos.js';
 import { revisarSalud } from '../../shared/salud.js';
+import { normalizeEmails, sendFixedExpenseReminders } from './fixed-reminders.js';
 
 const CORS = {
     'access-control-allow-origin': '*',
@@ -54,8 +55,14 @@ export default {
     async scheduled(event, env, ctx) {
         const sql = connect(env);
         try {
-            const stats = await runIngest({ sql, credentials: credentialsOf(env) });
-            console.log('ingesta', JSON.stringify(stats));
+            const [ingest, reminders] = await Promise.allSettled([
+                runIngest({ sql, credentials: credentialsOf(env) }),
+                sendFixedExpenseReminders({ sql, env }),
+            ]);
+            if (ingest.status === 'fulfilled') console.log('ingesta', JSON.stringify(ingest.value));
+            else console.error('ingesta', ingest.reason);
+            if (reminders.status === 'fulfilled') console.log('recordatorios', JSON.stringify(reminders.value));
+            else console.error('recordatorios', reminders.reason);
         } finally {
             ctx.waitUntil(sql.end());
         }
@@ -184,7 +191,12 @@ export default {
 
             if (movMatch && request.method === 'PATCH') {
                 const b = await request.json().catch(() => ({}));
-                const [t] = await sql`
+                const cambiaFijo = Object.prototype.hasOwnProperty.call(b, 'fixedExpenseId');
+                const fixedExpenseId = b.fixedExpenseId || null;
+                const t = await sql.begin(async (tx) => {
+                    const [current] = await tx`select fixed_expense_id from transactions where id = ${movMatch[1]}`;
+                    if (!current) return null;
+                    const [updated] = await tx`
                     update transactions set
                         occurred_at = coalesce(${b.occurredAt ?? null}, occurred_at),
                         account_id  = coalesce(${b.accountId ?? null}, account_id),
@@ -193,10 +205,27 @@ export default {
                                            else -abs(${b.amount ?? null}::numeric) end,
                         merchant    = coalesce(${b.merchant ?? null}, merchant),
                         description = coalesce(${b.description ?? null}, description),
-                        receipt_url = coalesce(${b.receiptUrl ?? null}, receipt_url)
+                        receipt_url = coalesce(${b.receiptUrl ?? null}, receipt_url),
+                        fixed_expense_id = case when ${cambiaFijo} then ${fixedExpenseId}::uuid else fixed_expense_id end
                     where id = ${movMatch[1]}
-                    returning id
-                `;
+                    returning id, occurred_at, fixed_expense_id`;
+                    if (cambiaFijo) {
+                        await tx`delete from fixed_expense_payments where transaction_id = ${movMatch[1]}`;
+                        if (updated.fixed_expense_id) {
+                            const [fixed] = await tx`select pagos_mes from fixed_expenses where id = ${updated.fixed_expense_id}`;
+                            const period = `${new Date(updated.occurred_at).toISOString().slice(0, 7)}-01`;
+                            const used = await tx`select part_index from fixed_expense_payments where fixed_expense_id = ${updated.fixed_expense_id} and period = ${period}::date`;
+                            const occupied = new Set(used.map((row) => Number(row.part_index)));
+                            let partIndex = 0;
+                            while (occupied.has(partIndex) && partIndex < Number(fixed?.pagos_mes || 1)) partIndex += 1;
+                            if (partIndex < Number(fixed?.pagos_mes || 1)) await tx`
+                                insert into fixed_expense_payments (fixed_expense_id, period, part_index, paid, paid_at, transaction_id)
+                                values (${updated.fixed_expense_id}, ${period}::date, ${partIndex}, true, ${updated.occurred_at}, ${updated.id})
+                            `;
+                        }
+                    }
+                    return updated;
+                });
                 return json(t ? { ok: true } : { error: 'no encontrado' }, t ? 200 : 404);
             }
 
@@ -361,6 +390,11 @@ export default {
                 return json({ periodo, fijos: rows });
             }
 
+            if (url.pathname === '/api/notification-contacts' && request.method === 'GET') {
+                const rows = await sql`select email from notification_contacts order by email`;
+                return json({ emails: rows.map((row) => row.email) });
+            }
+
             const fijoMatch = url.pathname.match(/^\/api\/fijos\/([\w-]+)$/);
             if (fijoMatch && request.method === 'DELETE') {
                 // Baja lógica: los movimientos históricos siguen apuntando a este
@@ -377,6 +411,8 @@ export default {
                 const b = await request.json().catch(() => ({}));
                 const cambiaPaidThrough = Object.prototype.hasOwnProperty.call(b, 'paidThrough');
                 const paidThrough = b.paidThrough || null;
+                const cambiaAlertEmails = Object.prototype.hasOwnProperty.call(b, 'alertEmails');
+                const alertEmails = normalizeEmails(b.alertEmails);
                 const [f] = await sql`
                     update fixed_expenses set
                         concepto        = coalesce(${b.concepto ?? null}, concepto),
@@ -394,8 +430,16 @@ export default {
                         paid_through    = case
                             when ${cambiaPaidThrough} then ${paidThrough}::date
                             else paid_through
+                        end,
+                        alert_emails    = case
+                            when ${cambiaAlertEmails} then ${alertEmails}::text[]
+                            else alert_emails
                         end
                     where id = ${fijoMatch[1]} returning id
+                `;
+                if (f && cambiaAlertEmails && alertEmails.length) await sql`
+                    insert into notification_contacts (email)
+                    select unnest(${alertEmails}::text[]) on conflict do nothing
                 `;
                 return json(f ? { ok: true } : { error: 'no encontrado' }, f ? 200 : 404);
             }
@@ -405,16 +449,21 @@ export default {
                 if (!b.concepto || !Number.isFinite(Number(b.monto))) {
                     return json({ error: 'falta concepto o monto' }, 400);
                 }
+                const alertEmails = normalizeEmails(b.alertEmails);
                 const [f] = await sql`
                     insert into fixed_expenses (concepto, categoria, monto, moneda, tipo,
                         pagos_mes, periodicidad, inicio_mes, pagador, budget_category,
-                        link_group, dia_mes, fechas_pago)
+                        link_group, dia_mes, fechas_pago, alert_emails)
                     values (${b.concepto}, ${b.categoria ?? null}, ${b.monto},
                         ${b.moneda ?? 'MXN'}, ${b.tipo ?? 'gasto'}, ${b.pagosMes ?? 1},
                         ${b.periodicidad ?? 'mensual'}, ${b.inicioMes ?? null},
                         ${b.pagador ?? null}, ${b.budgetCategory ?? null},
-                        ${b.linkGroup ?? null}, ${b.diaMes ?? null}, ${b.fechasPago ?? []})
+                        ${b.linkGroup ?? null}, ${b.diaMes ?? null}, ${b.fechasPago ?? []}, ${alertEmails})
                     returning id
+                `;
+                if (alertEmails.length) await sql`
+                    insert into notification_contacts (email)
+                    select unnest(${alertEmails}::text[]) on conflict do nothing
                 `;
                 return json({ ok: true, id: f.id });
             }
