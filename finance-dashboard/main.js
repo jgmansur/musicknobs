@@ -11,6 +11,7 @@ import { estaPagadoHasta, fechaLocal, normalizarFecha } from './shared/paid-thro
 import {
     SIN_CATEGORIA, categoriaPrincipalFijo, resumenGastosFijosPorCategoria,
 } from './fixed-categories.js';
+import { parseMoneyInput, validateFixedForm } from './fixed-form.js';
 
 import { createIcons, RefreshCw, AlertTriangle, CalendarCheck, TrendingUp, LogOut, CreditCard, CarFront, Wrench, Home, Scissors } from 'lucide';
 import ApexCharts from 'apexcharts';
@@ -38,7 +39,7 @@ const DEUDAS_RECIBOS_FOLDER_ID = '157KDn-vbkuHH1L8xbaJBGz-oKmT7p5a9';
 const SPREADSHEET_RSM_ID = '14VsoPHGNTSUSbzMOqGWs2qSL-pGywPgjUoHD3MqIJfo'; // Recibos Salud Mariel
 const SALDOS_SHEET_ID    = '1-cX_qxld3ioSpcO9lEBPg90Db6AyK7SczpJTvj7rw4U'; // Saldos (fuente de verdad — Claude accede vía service account)
 const RSM_FOLDER_ID = '1-ZfeWQ-Rmh-Wm2WMCkULkN6MQWBuxYnj';
-const APP_VERSION  = 'v8.11.0';
+const APP_VERSION  = 'v8.11.1';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -5651,6 +5652,8 @@ function fijos_abrirSheet(item) {
     document.getElementById('f-link-group').value = '';
     document.getElementById('f-paid-through').value = '';
     document.getElementById('f-paid-through-wrap').classList.add('hidden');
+    const formStatus = document.getElementById('f-status');
+    if (formStatus) formStatus.textContent = '';
     document.getElementById('f-alert-emails-wrap').classList.add('hidden');
     fijosState.alertEmails = [];
     fijos_renderAlertEmails();
@@ -5789,10 +5792,11 @@ async function fijos_guardar() {
     const fecha   = String(parseDayOfMonth(document.getElementById('f-fecha').value));
     const tipo    = document.getElementById('f-tipo').value;
     const concepto= document.getElementById('f-concepto').value.trim();
-    const monto   = parseSheetValue(document.getElementById('f-monto').value);
+    const monto   = parseMoneyInput(document.getElementById('f-monto').value);
     const pagosMes = parsePaymentsTotal(document.getElementById('f-pagos-mes').value);
     const periodicidad = parseFixedPeriodicity(document.getElementById('f-periodicidad').value);
-    const inicioMes = parseStartMonth(document.getElementById('f-inicio-mes').value);
+    const inicioMesRaw = document.getElementById('f-inicio-mes').value;
+    const inicioMes = parseStartMonth(inicioMesRaw);
     const formaPagoVal = document.getElementById('f-forma-pago').value;
     const pagador = parseFixedPayer(formaPagoVal);
     const moneda = parseCurrencyCode(document.getElementById('f-currency').value);
@@ -5802,7 +5806,15 @@ async function fijos_guardar() {
     const paidThrough = editId && esIdDeWorker(editId)
         ? (document.getElementById('f-paid-through')?.value || null)
         : undefined;
-    if (!concepto || !monto) return;
+    const validation = validateFixedForm({ concept: concepto, amount: monto, periodicity, startMonth: inicioMesRaw });
+    if (!validation.ok) {
+        const fieldIds = { concept: 'f-concepto', amount: 'f-monto', startMonth: 'f-inicio-mes' };
+        const status = document.getElementById('f-status');
+        if (status) { status.textContent = `⚠️ ${validation.message}`; status.style.color = 'var(--accent-orange)'; }
+        showToast(`⚠️ ${validation.message}`);
+        document.getElementById(fieldIds[validation.field])?.focus();
+        return;
+    }
     const cats   = [...document.querySelectorAll('.f-cat-chk:checked')].map(cb => cb.value);
     const catStr = cats.length ? cats.join(', ') : 'General';
     const gasto  = tipo === 'gasto'   ? monto : '';
@@ -5833,6 +5845,8 @@ async function fijos_guardar() {
             fijos_cerrarSheet?.();
             await fijos_cargarDatos();
             planner_refreshIfReady();
+            const dueNow = periodicidad === 'mensual' || isFixedDueThisMonth(periodicidad, inicioMes, `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`);
+            showToast(dueNow ? '✅ Gasto fijo guardado' : '✅ Guardado. Aparecerá en el mes que le corresponde.');
             return;
         }
 
@@ -5890,7 +5904,11 @@ async function fijos_guardar() {
         fijos_cerrarSheet();
         fijos_cargarDatos();
     } catch(e) {
-        console.error(e); alert('❌ Error al guardar');
+        console.error(e);
+        const message = e?.message || 'Error desconocido';
+        const status = document.getElementById('f-status');
+        if (status) { status.textContent = `❌ No se pudo guardar: ${message}`; status.style.color = '#f87171'; }
+        showToast(`❌ No se pudo guardar: ${message}`);
     } finally {
         btn.disabled = false; btn.innerText = 'Guardar';
     }
