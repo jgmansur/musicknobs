@@ -12,6 +12,9 @@ import {
     SIN_CATEGORIA, categoriaPrincipalFijo, resumenGastosFijosPorCategoria,
 } from './fixed-categories.js';
 import { parseMoneyInput, validateFixedForm } from './fixed-form.js';
+import {
+    partnerEmails, projectPropertyFixedExpense, propertySharePercent,
+} from './property-fixed.js';
 
 import { createIcons, RefreshCw, AlertTriangle, CalendarCheck, TrendingUp, LogOut, CreditCard, CarFront, Wrench, Home, Scissors } from 'lucide';
 import ApexCharts from 'apexcharts';
@@ -39,7 +42,7 @@ const DEUDAS_RECIBOS_FOLDER_ID = '157KDn-vbkuHH1L8xbaJBGz-oKmT7p5a9';
 const SPREADSHEET_RSM_ID = '14VsoPHGNTSUSbzMOqGWs2qSL-pGywPgjUoHD3MqIJfo'; // Recibos Salud Mariel
 const SALDOS_SHEET_ID    = '1-cX_qxld3ioSpcO9lEBPg90Db6AyK7SczpJTvj7rw4U'; // Saldos (fuente de verdad — Claude accede vía service account)
 const RSM_FOLDER_ID = '1-ZfeWQ-Rmh-Wm2WMCkULkN6MQWBuxYnj';
-const APP_VERSION  = 'v8.11.3';
+const APP_VERSION  = 'v8.12.0';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -9723,7 +9726,7 @@ const PROPIEDADES_HEADERS = [
     'docExtra1Nombre', 'docExtra1Url',
     'docExtra2Nombre', 'docExtra2Url',
     'docExtra3Nombre', 'docExtra3Url',
-    'ownersJson', 'deudasJson', 'ingresosJson',
+    'ownersJson', 'deudasJson', 'ingresosJson', 'gastosFijosJson',
     'updatedAt',
 ];
 
@@ -9784,6 +9787,7 @@ function propiedades_bindEvents() {
     });
     document.getElementById('prop-add-deuda')?.addEventListener('click', () => propiedades_addMoneyRow('deuda'));
     document.getElementById('prop-add-ingreso')?.addEventListener('click', () => propiedades_addMoneyRow('ingreso'));
+    document.getElementById('prop-add-fijo')?.addEventListener('click', () => propiedades_addFixedExpenseRow());
 
     document.getElementById('prop-owners-list')?.addEventListener('click', (e) => {
         const btn = e.target.closest('[data-remove-owner]');
@@ -9800,6 +9804,11 @@ function propiedades_bindEvents() {
         const btn = e.target.closest('[data-remove-ingreso]');
         if (!btn) return;
         btn.closest('.prop-dyn-row')?.remove();
+    });
+    document.getElementById('prop-fijos-list')?.addEventListener('click', (e) => {
+        const btn = e.target.closest('[data-remove-fijo]');
+        if (!btn) return;
+        btn.closest('.prop-fixed-row')?.remove();
     });
 
     document.getElementById('prop-owners-list')?.addEventListener('input', (e) => {
@@ -9875,6 +9884,7 @@ async function propiedades_seedInitialData() {
         ownersJson: JSON.stringify([{ name: 'Yo', percent: 100 }]),
         deudasJson: JSON.stringify([]),
         ingresosJson: JSON.stringify([]),
+        gastosFijosJson: JSON.stringify([]),
         updatedAt: now,
     }));
     const letter = autos_colLetter(PROPIEDADES_HEADERS.length);
@@ -9929,6 +9939,7 @@ function propiedades_rowToItem(row, map) {
         owners: parseJson(propiedades_getCell(row, map, 'ownersJson', '[]'), []),
         deudas: parseJson(propiedades_getCell(row, map, 'deudasJson', '[]'), []),
         ingresos: parseJson(propiedades_getCell(row, map, 'ingresosJson', '[]'), []),
+        gastosFijos: parseJson(propiedades_getCell(row, map, 'gastosFijosJson', '[]'), []),
         updatedAt: (propiedades_getCell(row, map, 'updatedAt', '') || '').toString(),
         formaPago: (propiedades_getCell(row, map, 'formaPago', 'Santander') || 'Santander').toString(),
     };
@@ -9964,6 +9975,7 @@ function propiedades_itemToRow(item, headers) {
         ownersJson: JSON.stringify(item.owners || []),
         deudasJson: JSON.stringify(item.deudas || []),
         ingresosJson: JSON.stringify(item.ingresos || []),
+        gastosFijosJson: JSON.stringify(item.gastosFijos || []),
         updatedAt: item.updatedAt || '',
         formaPago: item.formaPago || 'Santander',
     };
@@ -9989,7 +10001,12 @@ function propiedades_render() {
     const totalValorMiParte = propiedadesState.items.reduce((sum, p) => sum + (propiedades_valorComercialCalculado(p) * (propiedades_miParticipacionPct(p) / 100)), 0);
     const totalDeuda = propiedadesState.items.reduce((sum, p) => sum + propiedades_totalDeuda(p), 0);
     const totalDeudaMiParte = propiedadesState.items.reduce((sum, p) => sum + propiedades_deudaMiParte(p), 0);
-    const totalFijos = propiedadesState.items.reduce((sum, p) => sum + Math.max(0, parseSheetValue(p.predialMensual)) + Math.max(0, parseSheetValue(p.mantenimientoMensual)), 0);
+    const totalFijos = propiedadesState.items.reduce((sum, p) => {
+        const pct = propiedades_miParticipacionPct(p) / 100;
+        const legacy = Math.max(0, parseSheetValue(p.predialMensual)) + Math.max(0, parseSheetValue(p.mantenimientoMensual));
+        const custom = (p.gastosFijos || []).reduce((subtotal, expense) => subtotal + Math.max(0, parseSheetValue(expense.monto)), 0);
+        return sum + ((legacy + custom) * pct);
+    }, 0);
     const totalIngresos = propiedadesState.items.reduce((sum, p) => sum + propiedades_ingresoMiParte(p), 0);
     if (totalEl) totalEl.innerText = formatCurrency(totalValorMiParte);
     if (totalGlobalEl) totalGlobalEl.innerText = `Total global: ${formatCurrency(totalValor)}`;
@@ -10036,6 +10053,16 @@ function propiedades_render() {
             return `<div class="plan-expense-row"><div><div class="plan-expense-title">${d.concepto || 'Ingreso'}</div><div class="diff-label">Total: ${formatCurrency(total)}</div></div><div class="plan-expense-amount text-success">+${formatCurrency(mine)}</div></div>`;
         }).join('')
         : '<div class="empty-state" style="padding:.6rem 0;">Sin ingresos de propiedad</div>';
+    const fixedExpenseRows = (selected.gastosFijos || []).length
+        ? selected.gastosFijos.map((expense) => {
+            const projected = projectPropertyFixedExpense(selected, expense);
+            const periodicidad = parseFixedPeriodicity(expense.periodicidad);
+            const recipients = projected.alertEmails.length
+                ? ` · Avisos: ${projected.alertEmails.join(', ')}`
+                : '';
+            return `<div class="plan-expense-row"><div><div class="plan-expense-title">${fijos_escapeHtml(expense.concepto || 'Gasto fijo')}</div><div class="diff-label">Total: ${formatCurrency(projected.totalAmount)} · ${periodicidad}${recipients}</div></div><div class="plan-expense-amount text-danger">-${formatCurrency(projected.myAmount)}</div></div>`;
+        }).join('')
+        : '<div class="empty-state" style="padding:.6rem 0;">Sin gastos fijos de propiedad</div>';
 
     const docs = [
         { name: selected.escrituraNombre || 'Escrituras', url: selected.escrituraUrl || '' },
@@ -10090,6 +10117,11 @@ function propiedades_render() {
           <div class="plan-expenses-list">${incomeRows}</div>
         </div>
 
+        <div class="prop-detail-block" data-prop-edit-section="fijos">
+          <div class="section-header prop-detail-head"><h3>🧾 Gastos Fijos de la Propiedad</h3></div>
+          <div class="plan-expenses-list">${fixedExpenseRows}</div>
+        </div>
+
         <div class="prop-detail-block" data-prop-edit-section="docs">
           <div class="section-header prop-detail-head"><h3>📁 Documentos y Enlaces</h3></div>
           ${selected.fotoUrl ? `<a href="${selected.fotoUrl}" target="_blank" rel="noopener">${propiedades_docPreview(selected.fotoUrl, selected.nombre)}</a>` : '<div class="empty-state" style="padding:.6rem 0;">Sin foto de propiedad</div>'}
@@ -10118,12 +10150,13 @@ function propiedades_docPreview(url, label) {
     return `<img src="${img}" alt="${label}" style="width:100%;max-height:220px;object-fit:cover;border-radius:.65rem;background:rgba(255,255,255,.05);" />`;
 }
 
-function propiedades_renderOwnerRow(owner = { name: '', percent: '' }) {
+function propiedades_renderOwnerRow(owner = { name: '', percent: '', email: '' }) {
     const row = document.createElement('div');
     row.className = 'prop-dyn-row prop-owner-row';
     row.innerHTML = `
       <input class="field-input" data-role="owner-name" placeholder="Nombre dueño" value="${(owner.name || '').toString().replace(/"/g, '&quot;')}">
       <input class="field-input" data-role="owner-percent" type="number" step="0.01" placeholder="%" value="${owner.percent ?? ''}">
+      <input class="field-input" data-role="owner-email" type="email" placeholder="Correo para avisos" value="${(owner.email || '').toString().replace(/"/g, '&quot;')}">
       <button type="button" class="mini-btn mini-btn-danger" data-remove-owner>🗑</button>
     `;
     return row;
@@ -10173,11 +10206,89 @@ function propiedades_addMoneyRow(kind, item = { concepto: '', monto: '' }) {
     list.appendChild(propiedades_renderMoneyRow(kind, item));
 }
 
+function propiedades_option(value, selected, label = value) {
+    return `<option value="${fijos_escapeHtml(value)}"${String(value) === String(selected) ? ' selected' : ''}>${fijos_escapeHtml(label)}</option>`;
+}
+
+function propiedades_renderFixedExpenseRow(expense = {}) {
+    const row = document.createElement('div');
+    row.className = 'prop-fixed-row';
+    const nowMonth = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`;
+    const id = expense.id || `pf-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+    const periodicidad = parseFixedPeriodicity(expense.periodicidad || 'mensual');
+    const notifyPartners = expense.notifyPartners !== false;
+    row.innerHTML = `
+      <input type="hidden" data-role="fixed-id" value="${fijos_escapeHtml(id)}">
+      <div class="prop-fixed-row__head">
+        <strong>Gasto fijo</strong>
+        <button type="button" class="mini-btn mini-btn-danger" data-remove-fijo>🗑</button>
+      </div>
+      <div class="prop-fixed-grid">
+        <input class="field-input" data-role="fixed-concepto" placeholder="Concepto" value="${fijos_escapeHtml(expense.concepto || '')}">
+        <input class="field-input" data-role="fixed-monto" type="number" min="0" step="0.01" placeholder="Monto total de la propiedad" value="${expense.monto ?? ''}">
+        <input class="field-input" data-role="fixed-dia" type="number" min="1" max="31" placeholder="Día de pago" value="${expense.diaMes ?? 1}">
+        <select class="field-input" data-role="fixed-pagos-mes">
+          ${[1, 2, 3, 4, 5].map((value) => propiedades_option(value, expense.pagosMes || 1, `${value} ${value === 1 ? 'pago' : 'pagos'} por mes`)).join('')}
+        </select>
+        <select class="field-input" data-role="fixed-periodicidad">
+          ${propiedades_option('mensual', periodicidad, 'Mensual')}
+          ${propiedades_option('bimestral', periodicidad, 'Bimestral')}
+          ${propiedades_option('trimestral', periodicidad, 'Trimestral')}
+          ${propiedades_option('semestral', periodicidad, 'Semestral')}
+          ${propiedades_option('anual', periodicidad, 'Anual')}
+        </select>
+        <input class="field-input" data-role="fixed-inicio-mes" type="month" value="${fijos_escapeHtml(expense.inicioMes || nowMonth)}">
+        <select class="field-input" data-role="fixed-forma-pago">
+          ${['Santander', 'BBVA', 'Bank of America', 'Tarjeta de Crédito LikeU', 'Cuenta Mariel', 'Efectivo', 'Hey Banco', 'Cetes', 'MiFel', 'Bitcoin', 'Transferencia'].map((value) => propiedades_option(value, expense.formaPago || 'Santander')).join('')}
+        </select>
+        <select class="field-input" data-role="fixed-moneda">
+          ${propiedades_option('MXN', expense.moneda || 'MXN', 'Pesos (MXN)')}
+          ${propiedades_option('USD', expense.moneda || 'MXN', 'Dólares (USD)')}
+        </select>
+        <select class="field-input" data-role="fixed-budget-category">
+          ${['Seguros', 'Gasolina y Autos', 'Super', 'Mantenimiento y Pago de Servicios', 'Muchachas y Pago de Deudas', 'Suscripciones (Hey)'].map((value) => propiedades_option(value, expense.budgetCategory || 'Mantenimiento y Pago de Servicios')).join('')}
+        </select>
+        <input class="field-input" data-role="fixed-categorias" placeholder="Categorías separadas por coma" value="${fijos_escapeHtml(expense.categorias || 'Propiedades')}">
+        <input class="field-input" data-role="fixed-paid-through" type="date" title="Pagado hasta" value="${fijos_escapeHtml(expense.paidThrough || '')}">
+        <input class="field-input" data-role="fixed-link-group" placeholder="Grupo vinculado (opcional)" value="${fijos_escapeHtml(expense.linkGroup || '')}">
+      </div>
+      <label class="cat-check-label prop-fixed-notify"><input type="checkbox" data-role="fixed-notify-partners"${notifyPartners ? ' checked' : ''}> Avisar por correo a los socios con email</label>
+      <input class="field-input" data-role="fixed-alert-emails" placeholder="Otros correos para avisos, separados por coma" value="${fijos_escapeHtml(expense.alertEmails || '')}">
+      <div class="diff-label">Se sincronizará a Gastos Fijos únicamente por tu porcentaje de participación.</div>
+    `;
+    return row;
+}
+
+function propiedades_addFixedExpenseRow(expense = {}) {
+    document.getElementById('prop-fijos-list')?.appendChild(propiedades_renderFixedExpenseRow(expense));
+}
+
 function propiedades_clearDynamicRows() {
-    ['prop-owners-list', 'prop-deudas-list', 'prop-ingresos-list'].forEach((id) => {
+    ['prop-owners-list', 'prop-deudas-list', 'prop-ingresos-list', 'prop-fijos-list'].forEach((id) => {
         const el = document.getElementById(id);
         if (el) el.innerHTML = '';
     });
+}
+
+function propiedades_collectFixedExpensesFromUI() {
+    const rows = [...(document.getElementById('prop-fijos-list')?.querySelectorAll('.prop-fixed-row') || [])];
+    return rows.map((row) => ({
+        id: (row.querySelector('[data-role="fixed-id"]')?.value || '').trim(),
+        concepto: (row.querySelector('[data-role="fixed-concepto"]')?.value || '').trim(),
+        monto: Math.max(0, parseSheetValue(row.querySelector('[data-role="fixed-monto"]')?.value || 0)),
+        diaMes: Math.max(1, Math.min(31, parseDayOfMonth(row.querySelector('[data-role="fixed-dia"]')?.value || 1))),
+        pagosMes: parsePaymentsTotal(row.querySelector('[data-role="fixed-pagos-mes"]')?.value || 1),
+        periodicidad: parseFixedPeriodicity(row.querySelector('[data-role="fixed-periodicidad"]')?.value || 'mensual'),
+        inicioMes: parseStartMonth(row.querySelector('[data-role="fixed-inicio-mes"]')?.value || ''),
+        formaPago: (row.querySelector('[data-role="fixed-forma-pago"]')?.value || 'Santander').trim(),
+        moneda: parseCurrencyCode(row.querySelector('[data-role="fixed-moneda"]')?.value || 'MXN'),
+        budgetCategory: parseBudgetCategory(row.querySelector('[data-role="fixed-budget-category"]')?.value || 'Mantenimiento y Pago de Servicios'),
+        categorias: (row.querySelector('[data-role="fixed-categorias"]')?.value || 'Propiedades').trim(),
+        paidThrough: (row.querySelector('[data-role="fixed-paid-through"]')?.value || '').trim(),
+        linkGroup: (row.querySelector('[data-role="fixed-link-group"]')?.value || '').trim(),
+        notifyPartners: !!row.querySelector('[data-role="fixed-notify-partners"]')?.checked,
+        alertEmails: (row.querySelector('[data-role="fixed-alert-emails"]')?.value || '').trim(),
+    })).filter((expense) => expense.concepto && expense.monto > 0);
 }
 
 function propiedades_updateOwnersTotal() {
@@ -10200,7 +10311,8 @@ function propiedades_collectOwnersFromUI() {
     const owners = rows.map((row) => {
         const name = (row.querySelector('[data-role="owner-name"]')?.value || '').trim();
         const percent = Math.max(0, parseSheetValue(row.querySelector('[data-role="owner-percent"]')?.value || 0));
-        return { name, percent };
+        const email = (row.querySelector('[data-role="owner-email"]')?.value || '').trim();
+        return { name, percent, email };
     }).filter((x) => x.name);
     if (!owners.length) return [{ name: 'Yo', percent: 100 }];
     return owners;
@@ -10241,6 +10353,7 @@ function propiedades_openSheet(id, section = 'all') {
         owners: 'Dueños y porcentajes',
         deudas: 'Deudas',
         ingresos: 'Ingresos',
+        fijos: 'Gastos fijos',
     };
     const titlePrefix = item ? 'Editar' : 'Nueva';
     document.getElementById('prop-sheet-title').innerText = `${titlePrefix} ${sectionLabel[section] || 'Propiedad'}`;
@@ -10271,9 +10384,10 @@ function propiedades_openSheet(id, section = 'all') {
 
     propiedades_clearDynamicRows();
     const owners = (item?.owners || []).length ? item.owners : [{ name: 'Yo', percent: 100 }];
-    owners.forEach((x) => propiedades_addOwnerRow({ name: x.name || '', percent: parseSheetValue(x.percent) }));
+    owners.forEach((x) => propiedades_addOwnerRow({ name: x.name || '', percent: parseSheetValue(x.percent), email: x.email || '' }));
     (item?.deudas || []).forEach((x) => propiedades_addMoneyRow('deuda', { concepto: x.concepto || '', monto: parseSheetValue(x.monto) }));
     (item?.ingresos || []).forEach((x) => propiedades_addMoneyRow('ingreso', { concepto: x.concepto || '', monto: parseSheetValue(x.monto) }));
+    (item?.gastosFijos || []).forEach((x) => propiedades_addFixedExpenseRow(x));
     if (!(item?.deudas || []).length) propiedades_addMoneyRow('deuda');
     if (!(item?.ingresos || []).length) propiedades_addMoneyRow('ingreso');
     propiedades_updateOwnersTotal();
@@ -10345,21 +10459,8 @@ function propiedades_estimarValorComercial(input) {
     return Math.round((m2c * precioM2c) + (m2t * precioM2t));
 }
 
-function propiedades_isYoOwnerName(name) {
-    const normalized = (name || '').toString().trim().toLowerCase();
-    return normalized === 'yo' || normalized === 'mi' || normalized === 'mio' || normalized === 'mía' || normalized === 'mia';
-}
-
 function propiedades_miParticipacionPct(item) {
-    const owners = Array.isArray(item?.owners) ? item.owners : [];
-    const yoOwner = owners.find((o) => propiedades_isYoOwnerName(o?.name));
-    if (yoOwner) {
-        return Math.max(0, Math.min(100, parseSheetValue(yoOwner.percent || 0)));
-    }
-    if (owners.length) {
-        return Math.max(0, Math.min(100, parseSheetValue(owners[0]?.percent || 0)));
-    }
-    return Math.max(0, Math.min(100, parseSheetValue(item?.miPorcentaje || 100)));
+    return propertySharePercent(item);
 }
 
 function propiedades_valorComercialCalculado(item) {
@@ -10406,6 +10507,7 @@ async function propiedades_save() {
         }
         const deudas = propiedades_collectMoneyFromUI('deuda');
         const ingresos = propiedades_collectMoneyFromUI('ingreso');
+        const gastosFijos = propiedades_collectFixedExpensesFromUI();
         const existing = propiedadesState.items.find((x) => x.id === editId);
         const payload = {
             id: editId || `prop-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
@@ -10437,6 +10539,7 @@ async function propiedades_save() {
             owners,
             deudas,
             ingresos,
+            gastosFijos,
             updatedAt: normalizeDateString(new Date().toLocaleDateString('en-CA')),
         };
 
@@ -10458,7 +10561,7 @@ async function propiedades_save() {
         showToast('✅ Propiedad guardada y sincronizada');
     } catch (e) {
         console.error('propiedades_save:', e);
-        alert('❌ Error al guardar propiedad');
+        alert(`❌ Error al guardar propiedad: ${e?.message || 'Error desconocido'}`);
     } finally {
         btn.disabled = false;
         btn.innerText = 'Guardar propiedad';
@@ -10524,35 +10627,40 @@ async function propiedades_syncPropertyRemotes(item) {
     const day = Math.max(1, Math.min(31, new Date().getDate()));
     const monthStart = parseStartMonth(document.getElementById('prop-sync-month')?.value || '');
     const formaPago = item.formaPago || 'Santander';
+    const miPct = propiedades_miParticipacionPct(item);
+    const reminders = partnerEmails(item);
+    const remoteFijos = await propiedades_getWorkerFijos();
     await propiedades_upsertFijoByMarker(item, 'predial', {
-        monto: Math.max(0, parseSheetValue(item.predialMensual)),
+        monto: Math.max(0, parseSheetValue(item.predialMensual)) * (miPct / 100),
         tipo: 'gasto',
-        concepto: `Propiedad: ${item.nombre} - Predial`,
+        concepto: `Propiedad: ${item.nombre} - Predial (mi parte)`,
         categoria: 'Propiedades, Predial',
         budgetCategory: 'Mantenimiento y Pago de Servicios',
         day,
         monthStart,
         formaPago,
-    });
+        alertEmails: reminders,
+    }, remoteFijos);
     await propiedades_upsertFijoByMarker(item, 'mantenimiento', {
-        monto: Math.max(0, parseSheetValue(item.mantenimientoMensual)),
+        monto: Math.max(0, parseSheetValue(item.mantenimientoMensual)) * (miPct / 100),
         tipo: 'gasto',
-        concepto: `Propiedad: ${item.nombre} - Mantenimiento`,
+        concepto: `Propiedad: ${item.nombre} - Mantenimiento (mi parte)`,
         categoria: 'Propiedades, Mantenimiento',
         budgetCategory: 'Mantenimiento y Pago de Servicios',
         day,
         monthStart,
         formaPago,
-    });
+        alertEmails: reminders,
+    }, remoteFijos);
 
-    const miPct = propiedades_miParticipacionPct(item);
     const ingresos = (item.ingresos || []).filter((x) => (x.concepto || '').trim() && parseSheetValue(x.monto) > 0);
-    await propiedades_removeFijosByPrefix(`[PROP-FIX:${item.id}:ingreso`);
+    const keptIncomeMarkers = new Set();
     for (let i = 0; i < ingresos.length; i++) {
         const ingreso = ingresos[i];
         const conceptoLimpio = (ingreso.concepto || '').toString().trim() || `Ingreso ${i + 1}`;
         const miParte = Math.max(0, parseSheetValue(ingreso.monto)) * (miPct / 100);
         const formaPago = item.formaPago || 'Santander';
+        keptIncomeMarkers.add(`[PROP-FIX:${item.id}:ingreso:${i + 1}]`);
         await propiedades_upsertFijoByMarker(item, `ingreso:${i + 1}`, {
             monto: miParte,
             tipo: 'ingreso',
@@ -10562,8 +10670,57 @@ async function propiedades_syncPropertyRemotes(item) {
             day,
             monthStart,
             formaPago,
-        });
+        }, remoteFijos);
     }
+    if (remoteFijos) {
+        const prefix = `[PROP-FIX:${item.id}:ingreso`;
+        for (const fixed of remoteFijos.filter((entry) => (entry.concepto || '').includes(prefix))) {
+            if (![...keptIncomeMarkers].some((marker) => (fixed.concepto || '').includes(marker))) {
+                await bandeja_api(`/api/fijos/${fixed.id}`, { method: 'DELETE' });
+            }
+        }
+    }
+
+    const expenses = (item.gastosFijos || []).filter((expense) => expense.id && expense.concepto && parseSheetValue(expense.monto) > 0);
+    const keptMarkers = new Set();
+    for (const expense of expenses) {
+        const key = `gasto:${expense.id}`;
+        keptMarkers.add(`[PROP-FIX:${item.id}:${key}]`);
+        const projected = projectPropertyFixedExpense(item, expense);
+        await propiedades_upsertFijoByMarker(item, key, {
+            monto: projected.myAmount,
+            tipo: 'gasto',
+            concepto: `Propiedad: ${item.nombre} - ${expense.concepto} (mi parte)`,
+            categoria: expense.categorias || 'Propiedades',
+            budgetCategory: expense.budgetCategory || 'Mantenimiento y Pago de Servicios',
+            day: expense.diaMes,
+            monthStart: expense.inicioMes,
+            formaPago: expense.formaPago || formaPago,
+            moneda: expense.moneda || 'MXN',
+            periodicidad: expense.periodicidad || 'mensual',
+            pagosMes: expense.pagosMes || 1,
+            paidThrough: expense.paidThrough || null,
+            linkGroup: expense.linkGroup || '',
+            alertEmails: projected.alertEmails,
+        }, remoteFijos);
+    }
+    if (remoteFijos) {
+        const prefix = `[PROP-FIX:${item.id}:gasto:`;
+        for (const fixed of remoteFijos.filter((entry) => (entry.concepto || '').includes(prefix))) {
+            if (![...keptMarkers].some((marker) => (fixed.concepto || '').includes(marker))) {
+                await bandeja_api(`/api/fijos/${fixed.id}`, { method: 'DELETE' });
+            }
+        }
+    }
+}
+
+async function propiedades_getWorkerFijos() {
+    await _fbAuth.authStateReady?.();
+    if (!bandeja_token() && !_fbAuth.currentUser) {
+        throw new Error('Tu sesión financiera venció. Cierra sesión y vuelve a entrar con Google.');
+    }
+    const { fijos } = await bandeja_api('/api/fijos');
+    return Array.isArray(fijos) ? fijos : [];
 }
 
 async function propiedades_removePropertyRemotes(propertyId) {
@@ -10626,15 +10783,15 @@ async function propiedades_removeDeudasByPrefix(prefix) {
     }
 }
 
-async function propiedades_upsertFijoByMarker(item, key, config) {
+async function propiedades_upsertFijoByMarker(item, key, config, remoteFijos = null) {
     const marker = `[PROP-FIX:${item.id}:${key}]`;
 
     // Con finance-core el fijo se busca por su marcador dentro del concepto y
     // se crea, actualiza o borra por id. Un monto en cero significa que esa
     // parte de la propiedad ya no genera gasto: el fijo se da de baja.
-    if (bandeja_token() && fijosState.allItems?.some((f) => typeof f.id === 'string')) {
+    if (Array.isArray(remoteFijos)) {
         const monto = Math.max(0, parseSheetValue(config.monto));
-        const existente = fijosState.allItems.find((f) => (f.concepto || '').includes(marker));
+        const existente = remoteFijos.find((f) => (f.concepto || '').includes(marker));
         if (monto <= 0) {
             if (existente) await bandeja_api(`/api/fijos/${existente.id}`, { method: 'DELETE' });
             return;
@@ -10644,13 +10801,16 @@ async function propiedades_upsertFijoByMarker(item, key, config) {
             monto,
             categoria: config.categoria || 'Propiedades',
             tipo: config.tipo === 'ingreso' ? 'ingreso' : 'gasto',
-            pagosMes: 1,
-            periodicidad: 'mensual',
+            pagosMes: parsePaymentsTotal(config.pagosMes || 1),
+            periodicidad: parseFixedPeriodicity(config.periodicidad || 'mensual'),
             inicioMes: config.monthStart || parseStartMonth(''),
             pagador: config.formaPago || 'Santander',
             budgetCategory: config.budgetCategory || 'Mantenimiento y Pago de Servicios',
-            moneda: 'MXN',
+            moneda: parseCurrencyCode(config.moneda || 'MXN'),
             diaMes: Math.max(1, Math.min(31, parseDayOfMonth(config.day))),
+            paidThrough: config.paidThrough || null,
+            alertEmails: config.alertEmails || [],
+            linkGroup: config.linkGroup || '',
         };
         await bandeja_api(existente ? `/api/fijos/${existente.id}` : '/api/fijos', {
             method: existente ? 'PATCH' : 'POST',
@@ -10669,14 +10829,14 @@ async function propiedades_upsertFijoByMarker(item, key, config) {
         config.tipo === 'ingreso' ? monto : '',
         config.categoria || 'Propiedades',
         'FALSE',
-        1,
-        serializePaymentStates([false]),
-        'mensual',
+        parsePaymentsTotal(config.pagosMes || 1),
+        serializePaymentStates(new Array(parsePaymentsTotal(config.pagosMes || 1)).fill(false)),
+        parseFixedPeriodicity(config.periodicidad || 'mensual'),
         config.monthStart || parseStartMonth(''),
         config.formaPago || 'Santander',
         config.budgetCategory || 'Mantenimiento y Pago de Servicios',
-        'MXN',
-        serializePaymentStates([false]),
+        parseCurrencyCode(config.moneda || 'MXN'),
+        serializePaymentStates(new Array(parsePaymentsTotal(config.pagosMes || 1)).fill(false)),
     ];
     if (monto <= 0) {
         if (foundIdx !== -1) {
@@ -10694,8 +10854,9 @@ async function propiedades_upsertFijoByMarker(item, key, config) {
 }
 
 async function propiedades_removeFijosByPrefix(prefix) {
-    if (bandeja_token() && fijosState.allItems?.some((f) => typeof f.id === 'string')) {
-        for (const f of fijosState.allItems.filter((x) => (x.concepto || '').includes(prefix))) {
+    const remoteFijos = await propiedades_getWorkerFijos();
+    if (remoteFijos) {
+        for (const f of remoteFijos.filter((x) => (x.concepto || '').includes(prefix))) {
             await bandeja_api(`/api/fijos/${f.id}`, { method: 'DELETE' });
         }
         return;

@@ -483,15 +483,16 @@ export default {
                     return json({ error: 'falta concepto o monto' }, 400);
                 }
                 const alertEmails = normalizeEmails(b.alertEmails);
+                const paidThrough = b.paidThrough || null;
                 const [f] = await sql`
                     insert into fixed_expenses (concepto, categoria, monto, moneda, tipo,
                         pagos_mes, periodicidad, inicio_mes, pagador, budget_category,
-                        link_group, dia_mes, fechas_pago, alert_emails)
+                        link_group, dia_mes, fechas_pago, alert_emails, paid_through)
                     values (${b.concepto}, ${b.categoria ?? null}, ${b.monto},
                         ${b.moneda ?? 'MXN'}, ${b.tipo ?? 'gasto'}, ${b.pagosMes ?? 1},
                         ${b.periodicidad ?? 'mensual'}, ${b.inicioMes ?? null},
                         ${b.pagador ?? null}, ${b.budgetCategory ?? null},
-                        ${b.linkGroup ?? null}, ${b.diaMes ?? null}, ${b.fechasPago ?? []}, ${alertEmails})
+                        ${b.linkGroup ?? null}, ${b.diaMes ?? null}, ${b.fechasPago ?? []}, ${alertEmails}, ${paidThrough}::date)
                     returning id
                 `;
                 if (alertEmails.length) await sql`

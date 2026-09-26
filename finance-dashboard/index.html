@@ -1007,9 +1007,9 @@
             <div class="kpi-card glass">
               <div class="kpi-icon" style="background:rgba(14,165,233,.14);color:#0ea5e9"><i data-lucide="calendar-check"></i></div>
               <div class="kpi-data">
-                <span class="label">Fijos Propiedades</span>
+                <span class="label">Gastos Fijos Propiedades (Mi Parte)</span>
                 <h2 id="prop-total-fijos" class="text-danger">$0.00</h2>
-                <span class="diff-label">Predial + mantenimiento</span>
+                <span class="diff-label">Sincronizados con Gastos Fijos</span>
               </div>
             </div>
             <div class="kpi-card glass">
@@ -1141,6 +1141,13 @@
               <label class="field-label">💵 Ingresos de la Propiedad (mensual)</label>
               <div id="prop-ingresos-list" class="prop-dyn-list prop-dyn-list-money"></div>
               <button id="prop-add-ingreso" type="button" class="mini-btn" style="margin-top:.35rem;">+ Agregar ingreso</button>
+            </div>
+
+            <div class="prop-sheet-card" data-section="fijos">
+              <label class="field-label">🧾 Gastos Fijos de la Propiedad</label>
+              <p class="diff-label" style="margin:.25rem 0 .55rem;">Captura el monto total. A tus Gastos Fijos se enviará solamente tu parte según el porcentaje de dueños.</p>
+              <div id="prop-fijos-list" class="prop-dyn-list"></div>
+              <button id="prop-add-fijo" type="button" class="mini-btn" style="margin-top:.35rem;">+ Agregar gasto fijo</button>
             </div>
 
             <div id="prop-file-feedback" class="diff-label" style="margin-top:.5rem;"></div>
