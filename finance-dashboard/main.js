@@ -42,7 +42,7 @@ const DEUDAS_RECIBOS_FOLDER_ID = '157KDn-vbkuHH1L8xbaJBGz-oKmT7p5a9';
 const SPREADSHEET_RSM_ID = '14VsoPHGNTSUSbzMOqGWs2qSL-pGywPgjUoHD3MqIJfo'; // Recibos Salud Mariel
 const SALDOS_SHEET_ID    = '1-cX_qxld3ioSpcO9lEBPg90Db6AyK7SczpJTvj7rw4U'; // Saldos (fuente de verdad — Claude accede vía service account)
 const RSM_FOLDER_ID = '1-ZfeWQ-Rmh-Wm2WMCkULkN6MQWBuxYnj';
-const APP_VERSION  = 'v8.12.0';
+const APP_VERSION  = 'v8.12.1';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -5809,7 +5809,12 @@ async function fijos_guardar() {
     const paidThrough = editId && esIdDeWorker(editId)
         ? (document.getElementById('f-paid-through')?.value || null)
         : undefined;
-    const validation = validateFixedForm({ concept: concepto, amount: monto, periodicity, startMonth: inicioMesRaw });
+    const validation = validateFixedForm({
+        concept: concepto,
+        amount: monto,
+        periodicity: periodicidad,
+        startMonth: inicioMesRaw,
+    });
     if (!validation.ok) {
         const fieldIds = { concept: 'f-concepto', amount: 'f-monto', startMonth: 'f-inicio-mes' };
         const status = document.getElementById('f-status');
