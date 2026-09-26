@@ -39,7 +39,7 @@ const DEUDAS_RECIBOS_FOLDER_ID = '157KDn-vbkuHH1L8xbaJBGz-oKmT7p5a9';
 const SPREADSHEET_RSM_ID = '14VsoPHGNTSUSbzMOqGWs2qSL-pGywPgjUoHD3MqIJfo'; // Recibos Salud Mariel
 const SALDOS_SHEET_ID    = '1-cX_qxld3ioSpcO9lEBPg90Db6AyK7SczpJTvj7rw4U'; // Saldos (fuente de verdad — Claude accede vía service account)
 const RSM_FOLDER_ID = '1-ZfeWQ-Rmh-Wm2WMCkULkN6MQWBuxYnj';
-const APP_VERSION  = 'v8.11.1';
+const APP_VERSION  = 'v8.11.2';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -4835,7 +4835,7 @@ function planner_refreshIfReady() {
  * un mes nuevo simplemente todavía no tiene filas.
  */
 async function fijos_cargarDesdeWorker(nowMonth) {
-    if (!bandeja_token()) return false;
+    if (!bandeja_token() && !_fbAuth.currentUser) return false;
     try {
         const periodo = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`;
         const { fijos } = await bandeja_api(`/api/fijos?period=${periodo}`);
@@ -5821,12 +5821,16 @@ async function fijos_guardar() {
     const ingreso= tipo === 'ingreso' ? monto : '';
     btn.disabled = true; btn.innerText = 'Guardando...';
     try {
+        await _fbAuth.authStateReady?.();
+        if (!editId && !bandeja_token() && !_fbAuth.currentUser) {
+            throw new Error('Tu sesión venció. Cierra sesión y vuelve a entrar con Google.');
+        }
         // Fuente de verdad: finance-core. La hoja solo se toca si el fijo
         // todavía viene de ahí (id numérico de fila).
         // Al editar, decide el id mismo. Antes bastaba con que trajera un
         // guion, y eso da por bueno cualquier texto: `2026-08-06` también lo
         // trae. Mismo criterio que en gastos, para que no haya dos reglas.
-        const esWorker = !editId ? !!bandeja_token() : esIdDeWorker(editId);
+        const esWorker = !editId || esIdDeWorker(editId);
 
         if (esWorker) {
             const cuerpo = {
@@ -16059,13 +16063,23 @@ let bandejaFiltro = 'nuevos';
 const bandeja_token = () => localStorage.getItem(BANDEJA_TOKEN_KEY) || '';
 
 async function bandeja_api(path, options = {}) {
+    await _fbAuth.authStateReady?.();
+    const legacyToken = bandeja_token();
+    const firebaseToken = legacyToken ? '' : await _fbAuth.currentUser?.getIdToken();
+    if (!legacyToken && !firebaseToken) {
+        throw new Error('Tu sesión venció. Cierra sesión y vuelve a entrar con Google.');
+    }
     const res = await fetch(BANDEJA_API + path, {
         ...options,
-        headers: { 'content-type': 'application/json', 'x-finance-token': bandeja_token() },
+        headers: {
+            'content-type': 'application/json',
+            ...(legacyToken ? { 'x-finance-token': legacyToken } : { authorization: `Bearer ${firebaseToken}` }),
+            ...(options.headers || {}),
+        },
     });
     if (res.status === 401) {
-        localStorage.removeItem(BANDEJA_TOKEN_KEY);
-        throw new Error('El token no es válido. Vuelve a conectarlo.');
+        if (legacyToken) localStorage.removeItem(BANDEJA_TOKEN_KEY);
+        throw new Error('Tu sesión financiera venció. Cierra sesión y vuelve a entrar con Google.');
     }
     const data = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(data.error || `Error ${res.status}`);
@@ -16076,7 +16090,7 @@ function bandeja_cargarVista() {
     const setup = document.getElementById('bandeja-setup');
     const contenido = document.getElementById('bandeja-contenido');
 
-    if (!bandeja_token()) {
+    if (!bandeja_token() && !_fbAuth.currentUser) {
         setup.hidden = false;
         contenido.hidden = true;
         return;

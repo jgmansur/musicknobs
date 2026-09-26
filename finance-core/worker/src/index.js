@@ -16,7 +16,7 @@ import { normalizeEmails, sendFixedExpenseReminders } from './fixed-reminders.js
 
 const CORS = {
     'access-control-allow-origin': '*',
-    'access-control-allow-headers': 'content-type, x-finance-token',
+    'access-control-allow-headers': 'authorization, content-type, x-finance-token',
     // Deben listarse TODOS los métodos que usa la API. El navegador lee esta
     // cabecera y bloquea cualquier método ausente, aunque el preflight
     // responda 204 — y el error que ve el usuario no menciona el método.
@@ -36,6 +36,39 @@ const json = (data, status = 200) =>
  * es un genérico "Load failed" que no dice nada de la causa real.
  */
 const preflight = () => new Response(null, { status: 204, headers: CORS });
+
+const FIREBASE_API_KEY = 'AIzaSyCvYPZLCQdfuGLD4WDVnMUSerhPVutThy8';
+
+export async function isAuthorizedRequest(request, env, fetchImpl = fetch) {
+    if (request.headers.get('x-finance-token') === env.API_TOKEN) return true;
+
+    const authorization = request.headers.get('authorization') || '';
+    const idToken = authorization.startsWith('Bearer ') ? authorization.slice(7).trim() : '';
+    if (!idToken) return false;
+
+    try {
+        const response = await fetchImpl(
+            `https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=${FIREBASE_API_KEY}`,
+            {
+                method: 'POST',
+                headers: { 'content-type': 'application/json' },
+                body: JSON.stringify({ idToken }),
+            },
+        );
+        if (!response.ok) return false;
+        const data = await response.json();
+        const user = data.users?.[0];
+        const allowedEmails = String(env.FINANCE_ALLOWED_EMAILS || '')
+            .split(',')
+            .map((email) => email.trim().toLowerCase())
+            .filter(Boolean);
+        return user?.emailVerified === true
+            && allowedEmails.includes(String(user.email || '').toLowerCase());
+    } catch (error) {
+        console.warn('Firebase token verification failed:', error?.message || error);
+        return false;
+    }
+}
 
 const connect = (env) =>
     postgres(env.SUPABASE_DB_URL, {
@@ -74,7 +107,7 @@ export default {
         const url = new URL(request.url);
         if (url.pathname === '/health') return json({ ok: true });
 
-        if (request.headers.get('x-finance-token') !== env.API_TOKEN) {
+        if (!await isAuthorizedRequest(request, env)) {
             return json({ error: 'no autorizado' }, 401);
         }
 

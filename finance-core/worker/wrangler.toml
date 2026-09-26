@@ -13,6 +13,9 @@ compatibility_flags = ["nodejs_compat"]
 workers_dev = true
 preview_urls = false
 
+[vars]
+FINANCE_ALLOWED_EMAILS = "jgmansur2@gmail.com"
+
 [observability]
 enabled = true
 
