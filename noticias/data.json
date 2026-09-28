@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-09-28T15:20:32.102Z",
+  "lastUpdated": "2026-09-28T23:48:24.750Z",
   "meta": {
     "method": "rss-retrieval + link-verification + ai-translation",
     "itemCount": 12,
@@ -13,7 +13,7 @@
       "Music Business Worldwide"
     ],
     "verifiedLinks": 12,
-    "aiTranslated": 3,
+    "aiTranslated": 12,
     "note": "Los hechos provienen de los artículos originales enlazados. La IA solo traduce y resume; no genera noticias."
   },
   "es": {
@@ -22,24 +22,8 @@
     "items": [
       {
         "id": "noticia-1",
-        "title": "Suno Faces Another Copyright Suit from Universal Music and Sony Music Despite Its Recent Licensing Deals: ‘v6 Is Not a Fresh Start; It Is the Fruit of the Same Poisoned Tree’",
-        "summary": "Universal Music y Sony Music presentaron una nueva demanda contra Suno, alegando que la empresa entrenó su modelo con un gran número de grabaciones sonoras protegidas sin autorización. La acción se presentó en un tribunal federal de Massachusetts mientras continúa el proceso original.",
-        "url": "https://www.digitalmusicnews.com/2026/09/18/universal-music-suno-lawsuit-second/",
-        "source": "Digital Music News",
-        "domain": "digitalmusicnews.com",
-        "publishedAt": "2026-09-18T23:27:45.000Z",
-        "tags": [
-          "lawsuit",
-          "ai",
-          "licensing"
-        ],
-        "translated": true,
-        "via": null
-      },
-      {
-        "id": "noticia-2",
-        "title": "Suno Blasts Latest UMG/Sony Lawsuit As ‘Fundamentally Flawed on Both the Facts and the Law’",
-        "summary": "Universal Music Group y Sony Music presentaron una nueva demanda de derechos de autor contra Suno; la empresa respondió calificando la acción como fundamentalmente defectuosa tanto en hechos como en la legislación aplicable.",
+        "title": "Suno califica la última demanda de UMG/Sony como \"Fundamentalmente defectuosa en los hechos y la ley\"",
+        "summary": "Suno respondió a una nueva demanda de derechos de autor presentada por Universal Music Group y Sony Music Entertainment, afirmando que el caso es fundamentalmente defectuoso tanto en su base factual como en su razonamiento legal, y defendiendo su plataforma de música IA contra las reclamaciones.",
         "url": "https://www.digitalmusicnews.com/2026/09/22/suno-comments-umg-sony-lawsuit/",
         "source": "Digital Music News",
         "domain": "digitalmusicnews.com",
@@ -52,9 +36,9 @@
         "via": null
       },
       {
-        "id": "noticia-3",
-        "title": "Musixmatch: ‘Lyrics are becoming the LLM of the music industry’",
-        "summary": "Max Ciociola convirtió a Musixmatch en la mayor empresa de letras del mundo. Con el respaldo de TPG y un acuerdo con Suno para la herramienta de detección de derechos Sentinel, la compañía busca expandirse más allá de las letras.",
+        "id": "noticia-2",
+        "title": "Musixmatch: \"Las letras se están convirtiendo en el LLM de la industria musical\"",
+        "summary": "Max Ciociola expandió Musixmatch hasta convertirla en la mayor proveedora mundial de letras, obtuvo inversión de TPG y se asoció con Suno para lanzar la herramienta Sentinel de detección de derechos de autor, posicionando a la empresa para evolucionar hacia una plataforma más amplia dentro de la industria musical.",
         "url": "https://www.musicbusinessworldwide.com/musixmatch-lyrics-are-becoming-the-llm-of-the-music-industry/",
         "source": "Music Business Worldwide",
         "domain": "musicbusinessworldwide.com",
@@ -67,9 +51,9 @@
         "via": null
       },
       {
-        "id": "noticia-4",
-        "title": "Universal Music Group sues DistroKid over AI music, copyright claims",
-        "summary": "",
+        "id": "noticia-3",
+        "title": "Universal Music Group demanda a DistroKid por música IA y reclamaciones de derechos de autor",
+        "summary": "Universal Music Group ha iniciado acción legal contra DistroKid, alegando que el servicio de distribución es responsable de violaciones de derechos de autor relacionadas con música generada por IA, y busca remedios bajo la ley de propiedad intelectual y para hacer cumplir sus derechos.",
         "url": "https://news.google.com/rss/articles/CBMirgFBVV95cUxPM01MaEk0UEU1UU1Ta0k3U0pldGhnT0k0VnpZUTVXdFhTRExGNVZlcVlpTEloSm1ubEZ5MkJva3A5dXV4QmdleC1uZGxGMHN1elp4TDRkbHdtbF9XeHRwdDhrV3dOUkI1NlpCa0N5cnR6NHZfdEdubmtBTkZESG9QNERuQUNXM1hiWlNnU3l2a3NteGwxLUlnVG9KaG5WdjBwY3djUTZsc1MtQWt6dUE?oc=5&hl=es-419&gl=US&ceid=US:es-419",
         "source": "Business News Nigeria",
         "domain": "news.google.com",
@@ -78,13 +62,13 @@
           "lawsuit",
           "ai"
         ],
-        "translated": false,
+        "translated": true,
         "via": "Google News"
       },
       {
-        "id": "noticia-5",
-        "title": "Engram groovebox blends traditional sampling with generative AI",
-        "summary": "Its creator Evan King is well on the way to his $10.6k Kickstarter goal for this “generative audio sampler and groovebox” The post is from Music Ally .",
+        "id": "noticia-4",
+        "title": "Engram groovebox combina muestreo tradicional con IA generativa",
+        "summary": "Evan King’s Engram groovebox combina técnicas de muestreo convencionales con IA generativa, ofreciendo un sampler de audio híbrido. El proyecto busca 10.600 USD en Kickstarter para financiar el desarrollo de este instrumento de audio generativo para músicos y productores.",
         "url": "https://musically.com/2026/09/28/engram-groovebox-blends-traditional-sampling-with-generative-ai/",
         "source": "Music Ally",
         "domain": "musically.com",
@@ -92,13 +76,13 @@
         "tags": [
           "ai"
         ],
-        "translated": false,
+        "translated": true,
         "via": null
       },
       {
-        "id": "noticia-6",
-        "title": "Suno confirms v6 is trained on user-generated interactions as new copyright lawsuits surface",
-        "summary": "",
+        "id": "noticia-5",
+        "title": "Suno confirma que la versión 6 se entrena con interacciones generadas por usuarios mientras surgen nuevas demandas de derechos de autor",
+        "summary": "Suno anunció que su modelo de IA versión 6 se entrena usando datos derivados de interacciones generadas por usuarios, un detalle revelado mientras la compañía enfrenta demandas adicionales de derechos de autor relacionadas con su tecnología de generación musical.",
         "url": "https://news.google.com/rss/articles/CBMiaEFVX3lxTE5rRUlBeHdNZXloZXBaRjBqbWxKTnJrMy1Da0VwMHZtcU5iY0w3bDV1MUVjaEhWYndNa1EwMVZ4Qmd5M194TnRHRGhQM09iQmhaeTI5b2h6Y0s5LUJTT1UzN2xzZ3BJNGFr?oc=5&hl=es-419&gl=US&ceid=US:es-419",
         "source": "Bedroom Producers Blog",
         "domain": "news.google.com",
@@ -107,13 +91,13 @@
           "lawsuit",
           "ai"
         ],
-        "translated": false,
+        "translated": true,
         "via": "Google News"
       },
       {
-        "id": "noticia-7",
-        "title": "UMG, Sony Hit Suno With New Copyright Lawsuit Days After AI Model Launch",
-        "summary": "",
+        "id": "noticia-6",
+        "title": "UMG y Sony presentan nueva demanda de derechos de autor contra Suno días después del lanzamiento del modelo de IA",
+        "summary": "Universal Music Group y Sony Music Entertainment presentaron una nueva demanda de derechos de autor contra Suno poco después del lanzamiento del último modelo de IA de la compañía, alegando infracción de sus obras musicales.",
         "url": "https://news.google.com/rss/articles/CBMiggFBVV95cUxNOENpelhHd1JhT1BwU1dwX29vcHg5RURtN1Z3REgtcXp2aGlETktRVFVyNGJIU0dkaHNreU96U2thNEFReXpFbFp5OHZOT2FIdEZTcG9FSzJpNU5qanJUWHhTc2kyOTRCRjFwRndwd0xzSWQyOXFSSUdXeUJuUnRxaHVn?oc=5&hl=es-419&gl=US&ceid=US:es-419",
         "source": "Law Commentary",
         "domain": "news.google.com",
@@ -122,13 +106,13 @@
           "lawsuit",
           "ai"
         ],
-        "translated": false,
+        "translated": true,
         "via": "Google News"
       },
       {
-        "id": "noticia-8",
-        "title": "Outkast Sues Rapper ‘Ovrkast’ for Trademark Infringement As NIL Protections Get Serious",
-        "summary": "As NIL protections become a critical focus for IP, hip-hop duo Outkast sue rapper Ovrkast for allegedly using a “nearly identical” name on purpose. Hip-hop duo Outkast has filed a lawsuit against rapper and producer Ovrkast for trademark infringement, alleging his “nearly identical” name was chosen maliciously in an at…",
+        "id": "noticia-7",
+        "title": "Outkast demanda al rapero \"Ovrkast\" por infracción de marca registrada mientras las protecciones NIL se vuelven serias",
+        "summary": "El dúo de hip‑hop Outkast ha presentado una demanda por infracción de marca registrada contra el rapero y productor Ovrkast, alegando que el artista adoptó deliberadamente un nombre casi idéntico para explotar la marca del grupo y beneficiarse de las protecciones de similitud de nombres.",
         "url": "https://www.digitalmusicnews.com/2026/09/22/outkast-sues-rapper-ovrkast-trademark-infringement/",
         "source": "Digital Music News",
         "domain": "digitalmusicnews.com",
@@ -136,13 +120,13 @@
         "tags": [
           "lawsuit"
         ],
-        "translated": false,
+        "translated": true,
         "via": null
       },
       {
-        "id": "noticia-9",
-        "title": "Outkast sue Ovrkast after he reneges on commitment to change performer name to something less confusingly similar",
-        "summary": "Outkast have sued Ovrkast for trademark infringement. Rapper and producer Ovrkast admitted himself in a Rolling Stone interview last year that lots of people confuse the two artist brands. A company that manages Outkast’s trademarks says Ovrkast agreed to change his name by July, but then didn’t",
+        "id": "noticia-8",
+        "title": "Outkast demanda a Ovrkast después de que incumpliera el compromiso de cambiar su nombre artístico a algo menos confuso",
+        "summary": "Outkast demandó al rapero Ovrkast por infracción de marca después de que éste no cumpliera un acuerdo previo para modificar su nombre artístico, el cual había generado confusión pública con el dúo establecido, pese a su reconocimiento previo del problema.",
         "url": "https://completemusicupdate.com/outkast-sues-ovrkast-after-he-reneges-on-commitment-to-change-performer-name-to-something-less-confusingly-similar/",
         "source": "Complete Music Update",
         "domain": "completemusicupdate.com",
@@ -150,13 +134,43 @@
         "tags": [
           "lawsuit"
         ],
-        "translated": false,
+        "translated": true,
+        "via": null
+      },
+      {
+        "id": "noticia-9",
+        "title": "Universal Music Group nombra a Òscar Celma, quien ayudó a desarrollar el AI DJ de Spotify, como vicepresidente senior de IA aplicada y aprendizaje automático",
+        "summary": "Universal Music Group nombró a Òscar Celma, exlíder del proyecto AI DJ de Spotify, como vicepresidente senior de IA aplicada y aprendizaje automático, donde reportará a la directora de datos Hannah Poferl.",
+        "url": "https://www.musicbusinessworldwide.com/universal-music-group-appoints-oscar-celma-who-helped-lead-development-of-spotifys-ai-dj-as-svp-of-applied-ai-and-machine-learning/",
+        "source": "Music Business Worldwide",
+        "domain": "musicbusinessworldwide.com",
+        "publishedAt": "2026-09-28T18:37:29.000Z",
+        "tags": [
+          "ai",
+          "streaming"
+        ],
+        "translated": true,
         "via": null
       },
       {
         "id": "noticia-10",
-        "title": "Qobuz starts tagging AI-generated music in its app – and says 60% of streams on AI tracks are fraudulent",
-        "summary": "The tag appears at release level, flagging albums that include content Qobuz has identified as AI-generated. Source",
+        "title": "CRB solicita \"información adicional\" sobre el acuerdo propuesto Phono V — preguntas sobre datos de inflación faltantes, propiedad superpuesta de sello‑editor y más",
+        "summary": "La Copyright Royalty Board ordenó a los principales sellos, A2IM, la Music Artists Coalition y otras partes que presenten información adicional extensa sobre el acuerdo propuesto Phonorecords V, tras objeciones sustantivas relacionadas con datos de inflación y superposiciones de propiedad entre sello y editorial.",
+        "url": "https://www.digitalmusicnews.com/2026/09/21/phonorecords-v-additional-info/",
+        "source": "Digital Music News",
+        "domain": "digitalmusicnews.com",
+        "publishedAt": "2026-09-21T14:25:24.000Z",
+        "tags": [
+          "lawsuit",
+          "royalties"
+        ],
+        "translated": true,
+        "via": null
+      },
+      {
+        "id": "noticia-11",
+        "title": "Qobuz comienza a etiquetar música generada por IA en su app y afirma que el 60 % de las reproducciones de pistas IA son fraudulentas",
+        "summary": "Qobuz introdujo una etiqueta que marca los lanzamientos con contenido generado por IA, señalando que aproximadamente el 60 % de las reproducciones de esas pistas se consideran fraudulentas, y muestra la etiqueta a nivel de álbum dentro de su aplicación.",
         "url": "https://www.musicbusinessworldwide.com/qobuz-starts-tagging-ai-generated-music-in-its-app-and-says-60-of-streams-on-ai-tracks-are-fraudulent/",
         "source": "Music Business Worldwide",
         "domain": "musicbusinessworldwide.com",
@@ -164,13 +178,13 @@
         "tags": [
           "ai"
         ],
-        "translated": false,
+        "translated": true,
         "via": null
       },
       {
-        "id": "noticia-11",
-        "title": "ClassicalBot uses AI to track classical-music concerts globally",
-        "summary": "ClassicalBot started as a way to map classical-music concerts in the developer’s home country, before expanding to the world. The post is from Music Ally .",
+        "id": "noticia-12",
+        "title": "ClassicalBot usa IA para rastrear conciertos de música clásica a nivel mundial",
+        "summary": "ClassicalBot emplea inteligencia artificial para monitorizar y mapear conciertos de música clásica en todo el mundo, inicialmente centrado en el país de origen del desarrollador antes de expandir su cobertura a una escala global para la industria y investigadores.",
         "url": "https://musically.com/2026/09/28/classicalbot-uses-ai-to-track-classical-music-concerts-globally/",
         "source": "Music Ally",
         "domain": "musically.com",
@@ -178,22 +192,7 @@
         "tags": [
           "ai"
         ],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-12",
-        "title": "Universal and Warner tell judge ‘new use’ clause in AFM agreement is “clear and unambiguous” and does not apply to their AI deals",
-        "summary": "In June the American Federation Of Musicians sued Universal and Warner over their AI deals, insisting the majors should be sharing their AI money with the union’s members under its Sound Recording Labor Agreement. Both sides have made new court filings as the majors try to get the lawsuit dismissed",
-        "url": "https://completemusicupdate.com/universal-and-warner-tell-judge-new-use-clause-in-afm-agreement-is-clear-and-unambiguous-and-does-not-apply-to-their-ai-deals/",
-        "source": "Complete Music Update",
-        "domain": "completemusicupdate.com",
-        "publishedAt": "2026-09-18T15:52:33.000Z",
-        "tags": [
-          "lawsuit",
-          "ai"
-        ],
-        "translated": false,
+        "translated": true,
         "via": null
       }
     ],
@@ -208,24 +207,8 @@
     "items": [
       {
         "id": "noticia-1",
-        "title": "Suno Faces Another Copyright Suit from Universal Music and Sony Music Despite Its Recent Licensing Deals: ‘v6 Is Not a Fresh Start; It Is the Fruit of the Same Poisoned Tree’",
-        "summary": "Universal Music and Sony Music filed another lawsuit against Suno, claiming the AI platform trained on a massive number of copyrighted sound recordings without permission. The complaint was lodged in a Massachusetts federal court while the original suit remains pending.",
-        "url": "https://www.digitalmusicnews.com/2026/09/18/universal-music-suno-lawsuit-second/",
-        "source": "Digital Music News",
-        "domain": "digitalmusicnews.com",
-        "publishedAt": "2026-09-18T23:27:45.000Z",
-        "tags": [
-          "lawsuit",
-          "ai",
-          "licensing"
-        ],
-        "translated": true,
-        "via": null
-      },
-      {
-        "id": "noticia-2",
         "title": "Suno Blasts Latest UMG/Sony Lawsuit As ‘Fundamentally Flawed on Both the Facts and the Law’",
-        "summary": "Universal Music Group and Sony Music filed an additional copyright lawsuit against Suno, and the AI company responded that the suit is fundamentally flawed on both factual and legal grounds.",
+        "summary": "Suno responded to a fresh copyright lawsuit filed by Universal Music Group and Sony Music Entertainment, stating the case is fundamentally flawed both in its factual basis and legal reasoning, and defending its AI music platform against the claims.",
         "url": "https://www.digitalmusicnews.com/2026/09/22/suno-comments-umg-sony-lawsuit/",
         "source": "Digital Music News",
         "domain": "digitalmusicnews.com",
@@ -238,9 +221,9 @@
         "via": null
       },
       {
-        "id": "noticia-3",
+        "id": "noticia-2",
         "title": "Musixmatch: ‘Lyrics are becoming the LLM of the music industry’",
-        "summary": "Max Ciociola turned Musixmatch into the world’s largest lyrics company. Backed by TPG and partnered with Suno on a copyright‑detection tool called Sentinel, the firm is positioned to grow beyond its current lyric‑focused services.",
+        "summary": "Max Ciociola expanded Musixmatch into the world’s largest lyrics provider, secured investment from TPG, and partnered with Suno to launch the Sentinel copyright‑detection tool, positioning the company to evolve into a broader platform within the music industry.",
         "url": "https://www.musicbusinessworldwide.com/musixmatch-lyrics-are-becoming-the-llm-of-the-music-industry/",
         "source": "Music Business Worldwide",
         "domain": "musicbusinessworldwide.com",
@@ -253,9 +236,9 @@
         "via": null
       },
       {
-        "id": "noticia-4",
+        "id": "noticia-3",
         "title": "Universal Music Group sues DistroKid over AI music, copyright claims",
-        "summary": "",
+        "summary": "Universal Music Group has initiated legal action against DistroKid, claiming the distribution service is responsible for copyright violations involving AI‑generated music, and seeking remedies under intellectual property law and to enforce its rights.",
         "url": "https://news.google.com/rss/articles/CBMirgFBVV95cUxPM01MaEk0UEU1UU1Ta0k3U0pldGhnT0k0VnpZUTVXdFhTRExGNVZlcVlpTEloSm1ubEZ5MkJva3A5dXV4QmdleC1uZGxGMHN1elp4TDRkbHdtbF9XeHRwdDhrV3dOUkI1NlpCa0N5cnR6NHZfdEdubmtBTkZESG9QNERuQUNXM1hiWlNnU3l2a3NteGwxLUlnVG9KaG5WdjBwY3djUTZsc1MtQWt6dUE?oc=5&hl=es-419&gl=US&ceid=US:es-419",
         "source": "Business News Nigeria",
         "domain": "news.google.com",
@@ -264,13 +247,13 @@
           "lawsuit",
           "ai"
         ],
-        "translated": false,
+        "translated": true,
         "via": "Google News"
       },
       {
-        "id": "noticia-5",
+        "id": "noticia-4",
         "title": "Engram groovebox blends traditional sampling with generative AI",
-        "summary": "Its creator Evan King is well on the way to his $10.6k Kickstarter goal for this “generative audio sampler and groovebox” The post is from Music Ally .",
+        "summary": "Evan King’s Engram groovebox combines conventional sampling techniques with generative AI, offering a hybrid audio sampler. The project is currently seeking $10,600 on Kickstarter, aiming to fund development of this generative audio instrument for musicians and producers.",
         "url": "https://musically.com/2026/09/28/engram-groovebox-blends-traditional-sampling-with-generative-ai/",
         "source": "Music Ally",
         "domain": "musically.com",
@@ -278,13 +261,13 @@
         "tags": [
           "ai"
         ],
-        "translated": false,
+        "translated": true,
         "via": null
       },
       {
-        "id": "noticia-6",
+        "id": "noticia-5",
         "title": "Suno confirms v6 is trained on user-generated interactions as new copyright lawsuits surface",
-        "summary": "",
+        "summary": "Suno announced that its version 6 AI model is trained using data derived from user‑generated interactions, a detail revealed while the company faces additional copyright lawsuits concerning its music‑generation technology.",
         "url": "https://news.google.com/rss/articles/CBMiaEFVX3lxTE5rRUlBeHdNZXloZXBaRjBqbWxKTnJrMy1Da0VwMHZtcU5iY0w3bDV1MUVjaEhWYndNa1EwMVZ4Qmd5M194TnRHRGhQM09iQmhaeTI5b2h6Y0s5LUJTT1UzN2xzZ3BJNGFr?oc=5&hl=es-419&gl=US&ceid=US:es-419",
         "source": "Bedroom Producers Blog",
         "domain": "news.google.com",
@@ -293,13 +276,13 @@
           "lawsuit",
           "ai"
         ],
-        "translated": false,
+        "translated": true,
         "via": "Google News"
       },
       {
-        "id": "noticia-7",
+        "id": "noticia-6",
         "title": "UMG, Sony Hit Suno With New Copyright Lawsuit Days After AI Model Launch",
-        "summary": "",
+        "summary": "Universal Music Group and Sony Music Entertainment filed a new copyright lawsuit against Suno shortly after the launch of the company’s latest AI model, alleging infringement of their musical works.",
         "url": "https://news.google.com/rss/articles/CBMiggFBVV95cUxNOENpelhHd1JhT1BwU1dwX29vcHg5RURtN1Z3REgtcXp2aGlETktRVFVyNGJIU0dkaHNreU96U2thNEFReXpFbFp5OHZOT2FIdEZTcG9FSzJpNU5qanJUWHhTc2kyOTRCRjFwRndwd0xzSWQyOXFSSUdXeUJuUnRxaHVn?oc=5&hl=es-419&gl=US&ceid=US:es-419",
         "source": "Law Commentary",
         "domain": "news.google.com",
@@ -308,13 +291,13 @@
           "lawsuit",
           "ai"
         ],
-        "translated": false,
+        "translated": true,
         "via": "Google News"
       },
       {
-        "id": "noticia-8",
+        "id": "noticia-7",
         "title": "Outkast Sues Rapper ‘Ovrkast’ for Trademark Infringement As NIL Protections Get Serious",
-        "summary": "As NIL protections become a critical focus for IP, hip-hop duo Outkast sue rapper Ovrkast for allegedly using a “nearly identical” name on purpose. Hip-hop duo Outkast has filed a lawsuit against rapper and producer Ovrkast for trademark infringement, alleging his “nearly identical” name was chosen maliciously in an at…",
+        "summary": "Hip‑hop duo Outkast has filed a trademark infringement lawsuit against rapper and producer Ovrkast, claiming the artist deliberately adopted a nearly identical name to exploit the group’s brand and benefit from name‑likeness protections.",
         "url": "https://www.digitalmusicnews.com/2026/09/22/outkast-sues-rapper-ovrkast-trademark-infringement/",
         "source": "Digital Music News",
         "domain": "digitalmusicnews.com",
@@ -322,13 +305,13 @@
         "tags": [
           "lawsuit"
         ],
-        "translated": false,
+        "translated": true,
         "via": null
       },
       {
-        "id": "noticia-9",
+        "id": "noticia-8",
         "title": "Outkast sue Ovrkast after he reneges on commitment to change performer name to something less confusingly similar",
-        "summary": "Outkast have sued Ovrkast for trademark infringement. Rapper and producer Ovrkast admitted himself in a Rolling Stone interview last year that lots of people confuse the two artist brands. A company that manages Outkast’s trademarks says Ovrkast agreed to change his name by July, but then didn’t",
+        "summary": "Outkast sued rapper Ovrkast for trademark infringement after he failed to honor a prior agreement to modify his stage name, which had caused public confusion with the established duo despite his earlier acknowledgment of the issue.",
         "url": "https://completemusicupdate.com/outkast-sues-ovrkast-after-he-reneges-on-commitment-to-change-performer-name-to-something-less-confusingly-similar/",
         "source": "Complete Music Update",
         "domain": "completemusicupdate.com",
@@ -336,13 +319,43 @@
         "tags": [
           "lawsuit"
         ],
-        "translated": false,
+        "translated": true,
+        "via": null
+      },
+      {
+        "id": "noticia-9",
+        "title": "Universal Music Group appoints Òscar Celma, who helped lead development of Spotify’s AI DJ, as SVP of Applied AI and Machine Learning",
+        "summary": "Universal Music Group named Òscar Celma, a former leader of Spotify’s AI DJ project, as senior vice president of Applied AI and Machine Learning, where he will report to Chief Data Officer Hannah Poferl.",
+        "url": "https://www.musicbusinessworldwide.com/universal-music-group-appoints-oscar-celma-who-helped-lead-development-of-spotifys-ai-dj-as-svp-of-applied-ai-and-machine-learning/",
+        "source": "Music Business Worldwide",
+        "domain": "musicbusinessworldwide.com",
+        "publishedAt": "2026-09-28T18:37:29.000Z",
+        "tags": [
+          "ai",
+          "streaming"
+        ],
+        "translated": true,
         "via": null
       },
       {
         "id": "noticia-10",
+        "title": "CRB Requests ‘Additional Information’ About the Proposed Phono V Settlement — Questions Cover ‘Missing Inflation Data,’ ‘Overlapping’ Label-Publisher Ownership, and More",
+        "summary": "The Copyright Royalty Board ordered major labels, A2IM, the Music Artists Coalition and other parties to submit extensive additional information regarding the proposed Phonorecords V settlement, following substantive objections concerning inflation data and label‑publisher ownership overlaps.",
+        "url": "https://www.digitalmusicnews.com/2026/09/21/phonorecords-v-additional-info/",
+        "source": "Digital Music News",
+        "domain": "digitalmusicnews.com",
+        "publishedAt": "2026-09-21T14:25:24.000Z",
+        "tags": [
+          "lawsuit",
+          "royalties"
+        ],
+        "translated": true,
+        "via": null
+      },
+      {
+        "id": "noticia-11",
         "title": "Qobuz starts tagging AI-generated music in its app – and says 60% of streams on AI tracks are fraudulent",
-        "summary": "The tag appears at release level, flagging albums that include content Qobuz has identified as AI-generated. Source",
+        "summary": "Qobuz introduced a label that marks releases containing AI‑generated content, noting that approximately 60 % of streams for such tracks are considered fraudulent, and displays the tag at the album level within its app.",
         "url": "https://www.musicbusinessworldwide.com/qobuz-starts-tagging-ai-generated-music-in-its-app-and-says-60-of-streams-on-ai-tracks-are-fraudulent/",
         "source": "Music Business Worldwide",
         "domain": "musicbusinessworldwide.com",
@@ -350,13 +363,13 @@
         "tags": [
           "ai"
         ],
-        "translated": false,
+        "translated": true,
         "via": null
       },
       {
-        "id": "noticia-11",
+        "id": "noticia-12",
         "title": "ClassicalBot uses AI to track classical-music concerts globally",
-        "summary": "ClassicalBot started as a way to map classical-music concerts in the developer’s home country, before expanding to the world. The post is from Music Ally .",
+        "summary": "ClassicalBot employs artificial intelligence to monitor and map classical‑music concerts worldwide, initially focusing on the developer’s home country before expanding its coverage to a global scale for industry stakeholders and researchers.",
         "url": "https://musically.com/2026/09/28/classicalbot-uses-ai-to-track-classical-music-concerts-globally/",
         "source": "Music Ally",
         "domain": "musically.com",
@@ -364,22 +377,7 @@
         "tags": [
           "ai"
         ],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-12",
-        "title": "Universal and Warner tell judge ‘new use’ clause in AFM agreement is “clear and unambiguous” and does not apply to their AI deals",
-        "summary": "In June the American Federation Of Musicians sued Universal and Warner over their AI deals, insisting the majors should be sharing their AI money with the union’s members under its Sound Recording Labor Agreement. Both sides have made new court filings as the majors try to get the lawsuit dismissed",
-        "url": "https://completemusicupdate.com/universal-and-warner-tell-judge-new-use-clause-in-afm-agreement-is-clear-and-unambiguous-and-does-not-apply-to-their-ai-deals/",
-        "source": "Complete Music Update",
-        "domain": "completemusicupdate.com",
-        "publishedAt": "2026-09-18T15:52:33.000Z",
-        "tags": [
-          "lawsuit",
-          "ai"
-        ],
-        "translated": false,
+        "translated": true,
         "via": null
       }
     ],
