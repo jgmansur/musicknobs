@@ -1,19 +1,20 @@
 {
-  "lastUpdated": "2026-09-29T14:00:07.538Z",
+  "lastUpdated": "2026-09-29T22:55:52.866Z",
   "meta": {
     "method": "rss-retrieval + link-verification + ai-translation",
-    "itemCount": 12,
+    "itemCount": 11,
     "sources": [
       "Bedroom Producers Blog",
+      "Billboard",
       "Business News Nigeria",
       "Complete Music Update",
-      "Digital Music News",
+      "Law Commentary",
       "Music Ally",
       "Music Business Worldwide",
       "TorrentFreak",
-      "lawcommentary.com"
+      "rtve.es"
     ],
-    "verifiedLinks": 12,
+    "verifiedLinks": 11,
     "aiTranslated": 0,
     "note": "Los hechos provienen de los artículos originales enlazados. La IA solo traduce y resume; no genera noticias."
   },
@@ -23,35 +24,20 @@
     "items": [
       {
         "id": "noticia-1",
-        "title": "Jermaine Dupri, Jacquees, and Mass Appeal Face ‘Pick It Up’ Infringement Suit from 90s Duo Home Team",
-        "summary": "One month after dropping his multimillion-dollar Sony Music infringement lawsuit, Jermaine Dupri is staring down a copyright complaint for allegedly lifting from a decades-old work to create 2023’s “Pick It Up.” The members of hip-hop duo Home Team, brothers Patrick Watler and Van J. Watler, just recently submitted the…",
-        "url": "https://www.digitalmusicnews.com/2026/09/28/jermaine-dupri-pick-it-up-lawsuit/",
-        "source": "Digital Music News",
-        "domain": "digitalmusicnews.com",
-        "publishedAt": "2026-09-29T06:00:48.000Z",
+        "title": "Trump’s DoJ was biased and wrong about ‘fair use’, say news orgs in OpenAI dispute",
+        "summary": "Many of the music industry’s AI legal battles swing on whether or not AI training is ‘fair use’ under US copyright law. Donald Trump’s DoJ recently intervened in a dispute between newspapers and OpenAI insisting AI training is fair use. The newspapers have responded, explaining why the DoJ is wrong",
+        "url": "https://completemusicupdate.com/trumps-doj-was-biased-and-wrong-about-fair-use-say-news-orgs-in-openai-dispute/",
+        "source": "Complete Music Update",
+        "domain": "completemusicupdate.com",
+        "publishedAt": "2026-09-29T14:08:34.000Z",
         "tags": [
-          "lawsuit"
-        ],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-2",
-        "title": "Suno Blasts Latest UMG/Sony Lawsuit As ‘Fundamentally Flawed on Both the Facts and the Law’",
-        "summary": "UMG and Sony file another copyright lawsuit against Suno, and the AI company claps back with a statement that the suit is “fundamentally flawed.” Universal Music Group and Sony Music Entertainment continue to heat things up in their ongoing legal battle against the AI music platform Suno. The majors have filed another…",
-        "url": "https://www.digitalmusicnews.com/2026/09/22/suno-comments-umg-sony-lawsuit/",
-        "source": "Digital Music News",
-        "domain": "digitalmusicnews.com",
-        "publishedAt": "2026-09-22T16:00:31.000Z",
-        "tags": [
-          "lawsuit",
           "ai"
         ],
         "translated": false,
         "via": null
       },
       {
-        "id": "noticia-3",
+        "id": "noticia-2",
         "title": "Universal Music Group sues DistroKid over AI music, copyright claims",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMiSEFVX3lxTE0yQUNMZnhJMDdBZmNoYnNpSGtKZy11YXVLWGV6dndIaFE5WmdMMFRwZzV6WjJ2RFJtZVpTNEJ4YnVUVUZvSUs3Xw?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -66,7 +52,7 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-4",
+        "id": "noticia-3",
         "title": "Engram groovebox blends traditional sampling with generative AI",
         "summary": "Its creator Evan King is well on the way to his $10.6k Kickstarter goal for this “generative audio sampler and groovebox” The post is from Music Ally .",
         "url": "https://musically.com/2026/09/28/engram-groovebox-blends-traditional-sampling-with-generative-ai/",
@@ -80,7 +66,7 @@
         "via": null
       },
       {
-        "id": "noticia-5",
+        "id": "noticia-4",
         "title": "Suno confirms v6 is trained on user-generated interactions as new copyright lawsuits surface",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMiaEFVX3lxTE5rRUlBeHdNZXloZXBaRjBqbWxKTnJrMy1Da0VwMHZtcU5iY0w3bDV1MUVjaEhWYndNa1EwMVZ4Qmd5M194TnRHRGhQM09iQmhaeTI5b2h6Y0s5LUJTT1UzN2xzZ3BJNGFr?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -95,11 +81,11 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-6",
+        "id": "noticia-5",
         "title": "UMG, Sony Hit Suno With New Copyright Lawsuit Days After AI Model Launch",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMiggFBVV95cUxNOENpelhHd1JhT1BwU1dwX29vcHg5RURtN1Z3REgtcXp2aGlETktRVFVyNGJIU0dkaHNreU96U2thNEFReXpFbFp5OHZOT2FIdEZTcG9FSzJpNU5qanJUWHhTc2kyOTRCRjFwRndwd0xzSWQyOXFSSUdXeUJuUnRxaHVn?oc=5&hl=es-419&gl=US&ceid=US:es-419",
-        "source": "lawcommentary.com",
+        "source": "Law Commentary",
         "domain": "news.google.com",
         "publishedAt": "2026-09-20T07:00:00.000Z",
         "tags": [
@@ -110,21 +96,7 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-7",
-        "title": "Outkast Sues Rapper ‘Ovrkast’ for Trademark Infringement As NIL Protections Get Serious",
-        "summary": "As NIL protections become a critical focus for IP, hip-hop duo Outkast sue rapper Ovrkast for allegedly using a “nearly identical” name on purpose. Hip-hop duo Outkast has filed a lawsuit against rapper and producer Ovrkast for trademark infringement, alleging his “nearly identical” name was chosen maliciously in an at…",
-        "url": "https://www.digitalmusicnews.com/2026/09/22/outkast-sues-rapper-ovrkast-trademark-infringement/",
-        "source": "Digital Music News",
-        "domain": "digitalmusicnews.com",
-        "publishedAt": "2026-09-23T05:20:45.000Z",
-        "tags": [
-          "lawsuit"
-        ],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-8",
+        "id": "noticia-6",
         "title": "Outkast sue Ovrkast after he reneges on commitment to change performer name to something less confusingly similar",
         "summary": "Outkast have sued Ovrkast for trademark infringement. Rapper and producer Ovrkast admitted himself in a Rolling Stone interview last year that lots of people confuse the two artist brands. A company that manages Outkast’s trademarks says Ovrkast agreed to change his name by July, but then didn’t",
         "url": "https://completemusicupdate.com/outkast-sues-ovrkast-after-he-reneges-on-commitment-to-change-performer-name-to-something-less-confusingly-similar/",
@@ -138,22 +110,23 @@
         "via": null
       },
       {
-        "id": "noticia-9",
-        "title": "Universal Music Group appoints Òscar Celma, who helped lead development of Spotify’s AI DJ, as SVP of Applied AI and Machine Learning",
-        "summary": "Celma will report to Hannah Poferl, UMG's Chief Data Officer Source",
-        "url": "https://www.musicbusinessworldwide.com/universal-music-group-appoints-oscar-celma-who-helped-lead-development-of-spotifys-ai-dj-as-svp-of-applied-ai-and-machine-learning/",
-        "source": "Music Business Worldwide",
-        "domain": "musicbusinessworldwide.com",
-        "publishedAt": "2026-09-28T18:37:29.000Z",
+        "id": "noticia-7",
+        "title": "Feds Say AI Music Fraudster Deserves Prison For Stealing Royalties From ‘Hard-Working Songwriters’",
+        "summary": "Michael Smith claims his $8 million streaming fraud didn't actually hurt anybody, but prosecutors say he took that money from \"underpaid\" musicians.",
+        "url": "https://www.billboard.com/pro/ai-music-fraud-case-feds-prison-stealing-songwriters/",
+        "source": "Billboard",
+        "domain": "billboard.com",
+        "publishedAt": "2026-09-29T21:21:10.000Z",
         "tags": [
           "ai",
+          "royalties",
           "streaming"
         ],
         "translated": false,
         "via": null
       },
       {
-        "id": "noticia-10",
+        "id": "noticia-8",
         "title": "Johnny McDaid receives BMI President’s Award at 2026 BMI London Awards",
         "summary": "The event was hosted by BMI CEO Mike O'Neill and EVP, Chief Revenue & Creative Officer Mike Steinberg. Source",
         "url": "https://www.musicbusinessworldwide.com/johnny-mcdaid-receives-bmi-presidents-award-at-2026-bmi-london-awards/",
@@ -165,7 +138,7 @@
         "via": null
       },
       {
-        "id": "noticia-11",
+        "id": "noticia-9",
         "title": "IFPI Wants Open Source YouTube Downloader yt-dlp on EU Piracy Watch List",
         "summary": "Music industry group IFPI has asked the European Commission to add the popular open source YouTube download tool yt-dlp to its Counterfeit and Piracy Watch List. The submission names four of the project's developers by their GitHub handles and describes the software as a major problem for the music industry. What IFPI…",
         "url": "https://torrentfreak.com/ifpi-wants-open-source-youtube-downloader-yt-dlp-on-eu-piracy-watch-list/",
@@ -177,7 +150,7 @@
         "via": null
       },
       {
-        "id": "noticia-12",
+        "id": "noticia-10",
         "title": "ClassicalBot uses AI to track classical-music concerts globally",
         "summary": "ClassicalBot started as a way to map classical-music concerts in the developer’s home country, before expanding to the world. The post is from Music Ally .",
         "url": "https://musically.com/2026/09/28/classicalbot-uses-ai-to-track-classical-music-concerts-globally/",
@@ -189,6 +162,20 @@
         ],
         "translated": false,
         "via": null
+      },
+      {
+        "id": "noticia-11",
+        "title": "¿De quién es la música? Derechos de autor en la era de la inteligencia artificial",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMisgFBVV95cUxQRElEaXFTOGlmZVJHamtHcUdmcHoyZ3pRYmk4d0ZTOGpYVE1nLXRsOUZMdWpYdVhsendIVmVaeGljWWo4X0IyUkpXX3ByXzRES1VCNC16U0FMQ0tYWUNJRHVHbWlVMnhjQkh5QWZkcENUX1V2cU44T2o3eU14OVpFTjVCTzFxdUlwMUJ2aHhxYnJQRnlObF9DNGpOLW5xSk9abG1LSEt2WmdiXy1qZEpwYUhn?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "rtve.es",
+        "domain": "news.google.com",
+        "publishedAt": "2026-09-20T07:00:00.000Z",
+        "tags": [
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
       }
     ],
     "tip": {
@@ -202,35 +189,20 @@
     "items": [
       {
         "id": "noticia-1",
-        "title": "Jermaine Dupri, Jacquees, and Mass Appeal Face ‘Pick It Up’ Infringement Suit from 90s Duo Home Team",
-        "summary": "One month after dropping his multimillion-dollar Sony Music infringement lawsuit, Jermaine Dupri is staring down a copyright complaint for allegedly lifting from a decades-old work to create 2023’s “Pick It Up.” The members of hip-hop duo Home Team, brothers Patrick Watler and Van J. Watler, just recently submitted the…",
-        "url": "https://www.digitalmusicnews.com/2026/09/28/jermaine-dupri-pick-it-up-lawsuit/",
-        "source": "Digital Music News",
-        "domain": "digitalmusicnews.com",
-        "publishedAt": "2026-09-29T06:00:48.000Z",
+        "title": "Trump’s DoJ was biased and wrong about ‘fair use’, say news orgs in OpenAI dispute",
+        "summary": "Many of the music industry’s AI legal battles swing on whether or not AI training is ‘fair use’ under US copyright law. Donald Trump’s DoJ recently intervened in a dispute between newspapers and OpenAI insisting AI training is fair use. The newspapers have responded, explaining why the DoJ is wrong",
+        "url": "https://completemusicupdate.com/trumps-doj-was-biased-and-wrong-about-fair-use-say-news-orgs-in-openai-dispute/",
+        "source": "Complete Music Update",
+        "domain": "completemusicupdate.com",
+        "publishedAt": "2026-09-29T14:08:34.000Z",
         "tags": [
-          "lawsuit"
-        ],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-2",
-        "title": "Suno Blasts Latest UMG/Sony Lawsuit As ‘Fundamentally Flawed on Both the Facts and the Law’",
-        "summary": "UMG and Sony file another copyright lawsuit against Suno, and the AI company claps back with a statement that the suit is “fundamentally flawed.” Universal Music Group and Sony Music Entertainment continue to heat things up in their ongoing legal battle against the AI music platform Suno. The majors have filed another…",
-        "url": "https://www.digitalmusicnews.com/2026/09/22/suno-comments-umg-sony-lawsuit/",
-        "source": "Digital Music News",
-        "domain": "digitalmusicnews.com",
-        "publishedAt": "2026-09-22T16:00:31.000Z",
-        "tags": [
-          "lawsuit",
           "ai"
         ],
         "translated": false,
         "via": null
       },
       {
-        "id": "noticia-3",
+        "id": "noticia-2",
         "title": "Universal Music Group sues DistroKid over AI music, copyright claims",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMiSEFVX3lxTE0yQUNMZnhJMDdBZmNoYnNpSGtKZy11YXVLWGV6dndIaFE5WmdMMFRwZzV6WjJ2RFJtZVpTNEJ4YnVUVUZvSUs3Xw?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -245,7 +217,7 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-4",
+        "id": "noticia-3",
         "title": "Engram groovebox blends traditional sampling with generative AI",
         "summary": "Its creator Evan King is well on the way to his $10.6k Kickstarter goal for this “generative audio sampler and groovebox” The post is from Music Ally .",
         "url": "https://musically.com/2026/09/28/engram-groovebox-blends-traditional-sampling-with-generative-ai/",
@@ -259,7 +231,7 @@
         "via": null
       },
       {
-        "id": "noticia-5",
+        "id": "noticia-4",
         "title": "Suno confirms v6 is trained on user-generated interactions as new copyright lawsuits surface",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMiaEFVX3lxTE5rRUlBeHdNZXloZXBaRjBqbWxKTnJrMy1Da0VwMHZtcU5iY0w3bDV1MUVjaEhWYndNa1EwMVZ4Qmd5M194TnRHRGhQM09iQmhaeTI5b2h6Y0s5LUJTT1UzN2xzZ3BJNGFr?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -274,11 +246,11 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-6",
+        "id": "noticia-5",
         "title": "UMG, Sony Hit Suno With New Copyright Lawsuit Days After AI Model Launch",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMiggFBVV95cUxNOENpelhHd1JhT1BwU1dwX29vcHg5RURtN1Z3REgtcXp2aGlETktRVFVyNGJIU0dkaHNreU96U2thNEFReXpFbFp5OHZOT2FIdEZTcG9FSzJpNU5qanJUWHhTc2kyOTRCRjFwRndwd0xzSWQyOXFSSUdXeUJuUnRxaHVn?oc=5&hl=es-419&gl=US&ceid=US:es-419",
-        "source": "lawcommentary.com",
+        "source": "Law Commentary",
         "domain": "news.google.com",
         "publishedAt": "2026-09-20T07:00:00.000Z",
         "tags": [
@@ -289,21 +261,7 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-7",
-        "title": "Outkast Sues Rapper ‘Ovrkast’ for Trademark Infringement As NIL Protections Get Serious",
-        "summary": "As NIL protections become a critical focus for IP, hip-hop duo Outkast sue rapper Ovrkast for allegedly using a “nearly identical” name on purpose. Hip-hop duo Outkast has filed a lawsuit against rapper and producer Ovrkast for trademark infringement, alleging his “nearly identical” name was chosen maliciously in an at…",
-        "url": "https://www.digitalmusicnews.com/2026/09/22/outkast-sues-rapper-ovrkast-trademark-infringement/",
-        "source": "Digital Music News",
-        "domain": "digitalmusicnews.com",
-        "publishedAt": "2026-09-23T05:20:45.000Z",
-        "tags": [
-          "lawsuit"
-        ],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-8",
+        "id": "noticia-6",
         "title": "Outkast sue Ovrkast after he reneges on commitment to change performer name to something less confusingly similar",
         "summary": "Outkast have sued Ovrkast for trademark infringement. Rapper and producer Ovrkast admitted himself in a Rolling Stone interview last year that lots of people confuse the two artist brands. A company that manages Outkast’s trademarks says Ovrkast agreed to change his name by July, but then didn’t",
         "url": "https://completemusicupdate.com/outkast-sues-ovrkast-after-he-reneges-on-commitment-to-change-performer-name-to-something-less-confusingly-similar/",
@@ -317,22 +275,23 @@
         "via": null
       },
       {
-        "id": "noticia-9",
-        "title": "Universal Music Group appoints Òscar Celma, who helped lead development of Spotify’s AI DJ, as SVP of Applied AI and Machine Learning",
-        "summary": "Celma will report to Hannah Poferl, UMG's Chief Data Officer Source",
-        "url": "https://www.musicbusinessworldwide.com/universal-music-group-appoints-oscar-celma-who-helped-lead-development-of-spotifys-ai-dj-as-svp-of-applied-ai-and-machine-learning/",
-        "source": "Music Business Worldwide",
-        "domain": "musicbusinessworldwide.com",
-        "publishedAt": "2026-09-28T18:37:29.000Z",
+        "id": "noticia-7",
+        "title": "Feds Say AI Music Fraudster Deserves Prison For Stealing Royalties From ‘Hard-Working Songwriters’",
+        "summary": "Michael Smith claims his $8 million streaming fraud didn't actually hurt anybody, but prosecutors say he took that money from \"underpaid\" musicians.",
+        "url": "https://www.billboard.com/pro/ai-music-fraud-case-feds-prison-stealing-songwriters/",
+        "source": "Billboard",
+        "domain": "billboard.com",
+        "publishedAt": "2026-09-29T21:21:10.000Z",
         "tags": [
           "ai",
+          "royalties",
           "streaming"
         ],
         "translated": false,
         "via": null
       },
       {
-        "id": "noticia-10",
+        "id": "noticia-8",
         "title": "Johnny McDaid receives BMI President’s Award at 2026 BMI London Awards",
         "summary": "The event was hosted by BMI CEO Mike O'Neill and EVP, Chief Revenue & Creative Officer Mike Steinberg. Source",
         "url": "https://www.musicbusinessworldwide.com/johnny-mcdaid-receives-bmi-presidents-award-at-2026-bmi-london-awards/",
@@ -344,7 +303,7 @@
         "via": null
       },
       {
-        "id": "noticia-11",
+        "id": "noticia-9",
         "title": "IFPI Wants Open Source YouTube Downloader yt-dlp on EU Piracy Watch List",
         "summary": "Music industry group IFPI has asked the European Commission to add the popular open source YouTube download tool yt-dlp to its Counterfeit and Piracy Watch List. The submission names four of the project's developers by their GitHub handles and describes the software as a major problem for the music industry. What IFPI…",
         "url": "https://torrentfreak.com/ifpi-wants-open-source-youtube-downloader-yt-dlp-on-eu-piracy-watch-list/",
@@ -356,7 +315,7 @@
         "via": null
       },
       {
-        "id": "noticia-12",
+        "id": "noticia-10",
         "title": "ClassicalBot uses AI to track classical-music concerts globally",
         "summary": "ClassicalBot started as a way to map classical-music concerts in the developer’s home country, before expanding to the world. The post is from Music Ally .",
         "url": "https://musically.com/2026/09/28/classicalbot-uses-ai-to-track-classical-music-concerts-globally/",
@@ -368,6 +327,20 @@
         ],
         "translated": false,
         "via": null
+      },
+      {
+        "id": "noticia-11",
+        "title": "¿De quién es la música? Derechos de autor en la era de la inteligencia artificial",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMisgFBVV95cUxQRElEaXFTOGlmZVJHamtHcUdmcHoyZ3pRYmk4d0ZTOGpYVE1nLXRsOUZMdWpYdVhsendIVmVaeGljWWo4X0IyUkpXX3ByXzRES1VCNC16U0FMQ0tYWUNJRHVHbWlVMnhjQkh5QWZkcENUX1V2cU44T2o3eU14OVpFTjVCTzFxdUlwMUJ2aHhxYnJQRnlObF9DNGpOLW5xSk9abG1LSEt2WmdiXy1qZEpwYUhn?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "rtve.es",
+        "domain": "news.google.com",
+        "publishedAt": "2026-09-20T07:00:00.000Z",
+        "tags": [
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
       }
     ],
     "tip": {
