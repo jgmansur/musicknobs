@@ -1,18 +1,21 @@
 {
-  "lastUpdated": "2026-10-01T14:25:00.581Z",
+  "lastUpdated": "2026-10-01T23:06:59.202Z",
   "meta": {
     "method": "rss-retrieval + link-verification + ai-translation",
-    "itemCount": 9,
+    "itemCount": 12,
     "sources": [
       "Business News Nigeria",
       "Complete Music Update",
+      "Digital Music News",
+      "Forbes",
+      "LexLatin",
       "Music Ally",
+      "Music Business Worldwide",
       "Rockum",
-      "TorrentFreak",
       "Variety"
     ],
-    "verifiedLinks": 9,
-    "aiTranslated": 9,
+    "verifiedLinks": 12,
+    "aiTranslated": 0,
     "note": "Los hechos provienen de los artículos originales enlazados. La IA solo traduce y resume; no genera noticias."
   },
   "es": {
@@ -21,8 +24,95 @@
     "items": [
       {
         "id": "noticia-1",
-        "title": "El Departamento de Justicia de Trump estuvo sesgado y equivocado sobre el 'uso justo', dicen organizaciones de noticias en disputa con OpenAI",
-        "summary": "Los litigios de IA en la música dependen del concepto de ‘uso justo’. El Departamento de Justicia bajo Trump intervino en una disputa entre periódicos y OpenAI, afirmando que el entrenamiento de IA es uso justo; los periódicos contestan que esa interpretación es incorrecta.",
+        "title": "Japanese court says voice is protected by publicity rights; US appeals court says AI training is not fair use",
+        "summary": "There have been two judgments this week of relevance to the ongoing AI debates in the music industry. A Japanese court ruled that publicity rights allow performers to stop unapproved AI voice clones. Meanwhile a US appeals court ruled against an AI company that used the good old fair use defence",
+        "url": "https://completemusicupdate.com/japanese-court-says-voice-is-protected-by-publicity-rights-us-appeals-court-says-ai-training-is-not-fair-use/",
+        "source": "Complete Music Update",
+        "domain": "completemusicupdate.com",
+        "publishedAt": "2026-10-01T15:46:23.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-2",
+        "title": "‘The Song Is Non-Negotiable’: Indie Music Giants Unite to Force a Fair Licensing Framework",
+        "summary": "Indie publishing orgs IMPF and IMPEL have outlined a licensing framework for generative AI to create a fair and sustainable market for the future. Independent music publishing organizations IMPEL and IMPF have now issued a licensing framework for generative AI based on several key principles that will ensure song copyr…",
+        "url": "https://www.digitalmusicnews.com/2026/09/29/impf-and-impel-unite-generative-ai-licensing/",
+        "source": "Digital Music News",
+        "domain": "digitalmusicnews.com",
+        "publishedAt": "2026-09-30T05:00:04.000Z",
+        "tags": [
+          "ai",
+          "licensing"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-3",
+        "title": "Suno Blasts Latest UMG/Sony Lawsuit As ‘Fundamentally Flawed on Both the Facts and the Law’",
+        "summary": "UMG and Sony file another copyright lawsuit against Suno, and the AI company claps back with a statement that the suit is “fundamentally flawed.” Universal Music Group and Sony Music Entertainment continue to heat things up in their ongoing legal battle against the AI music platform Suno. The majors have filed another…",
+        "url": "https://www.digitalmusicnews.com/2026/09/22/suno-comments-umg-sony-lawsuit/",
+        "source": "Digital Music News",
+        "domain": "digitalmusicnews.com",
+        "publishedAt": "2026-09-22T16:00:31.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-4",
+        "title": "AI Lost Its First Fair Use Appeal. Suno Should Be Worried.",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMitwFBVV95cUxOMW4wT3pmbjFGaUdaYmJWRl9RX1dLQ2JpWXc1MnB3UHNMY3FyamstX1pCdmxyNlVHdkl2dF9JWDUtV1hLc2dDZ1BlUnpzTUkxSGhTZ1drZUREUDBaNHNxaFV3RXJrZ2RKRUxfZVVkek16RW9PU0NfQTEwUkd5MGRHTF9ZQU1tU0ZFeE9JYXVaVUxMNDYwRjh2QVhsel9OcGJwc1AtN0VQQllWcDNrNS02MTBnOUcxN00?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "Forbes",
+        "domain": "news.google.com",
+        "publishedAt": "2026-09-30T22:57:31.000Z",
+        "tags": [
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-5",
+        "title": "Suno AI y GEMA: la batalla por los derechos de autor que puede redefinir el negocio de la música para la IA",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMiwwFBVV95cUxPTngyX3RYREpPYnRTSjU4TkxLSkVrX0tmWGt1TjdHNzJZRkxuYjBFMXptdWc0SUJjaW41akJHWGRJRVdjQjUyNmlLWE54RkJfZ1hLUUpFTWl1bzd3dzdzaVNzTGl5cnBBT1VObklkclI0NXdzRnZjMGhmR0JIMDJsaFRhTTlPZGszWnNqS1k1anhFRHdoaUlFbG1kTGJIeEdRWnV1RTF1YVlBYU00RWcyMVRzQ2NxT3h6NUJmSkFIMjFtVU0?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "LexLatin",
+        "domain": "news.google.com",
+        "publishedAt": "2026-10-01T18:22:30.000Z",
+        "tags": [
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-6",
+        "title": "Jermaine Dupri, Jacquees, and Mass Appeal Face ‘Pick It Up’ Infringement Suit from 90s Duo Home Team",
+        "summary": "One month after dropping his multimillion-dollar Sony Music infringement lawsuit, Jermaine Dupri is staring down a copyright complaint for allegedly lifting from a decades-old work to create 2023’s “Pick It Up.” The members of hip-hop duo Home Team, brothers Patrick Watler and Van J. Watler, just recently submitted the…",
+        "url": "https://www.digitalmusicnews.com/2026/09/28/jermaine-dupri-pick-it-up-lawsuit/",
+        "source": "Digital Music News",
+        "domain": "digitalmusicnews.com",
+        "publishedAt": "2026-09-29T06:00:48.000Z",
+        "tags": [
+          "lawsuit"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-7",
+        "title": "Trump’s DoJ was biased and wrong about ‘fair use’, say news orgs in OpenAI dispute",
+        "summary": "Many of the music industry’s AI legal battles swing on whether or not AI training is ‘fair use’ under US copyright law. Donald Trump’s DoJ recently intervened in a dispute between newspapers and OpenAI insisting AI training is fair use. The newspapers have responded, explaining why the DoJ is wrong",
         "url": "https://completemusicupdate.com/trumps-doj-was-biased-and-wrong-about-fair-use-say-news-orgs-in-openai-dispute/",
         "source": "Complete Music Update",
         "domain": "completemusicupdate.com",
@@ -30,13 +120,13 @@
         "tags": [
           "ai"
         ],
-        "translated": true,
+        "translated": false,
         "via": null
       },
       {
-        "id": "noticia-2",
-        "title": "Universal Music Group demanda a DistroKid por música de IA y reclamaciones de derechos de autor",
-        "summary": "Universal Music Group ha presentado una demanda contra DistroKid alegando que la plataforma distribuye música generada por inteligencia artificial sin respetar los derechos de autor, y reclama compensación por dichas infracciones.",
+        "id": "noticia-8",
+        "title": "Universal Music Group sues DistroKid over AI music, copyright claims",
+        "summary": "",
         "url": "https://news.google.com/rss/articles/CBMirgFBVV95cUxPM01MaEk0UEU1UU1Ta0k3U0pldGhnT0k0VnpZUTVXdFhTRExGNVZlcVlpTEloSm1ubEZ5MkJva3A5dXV4QmdleC1uZGxGMHN1elp4TDRkbHdtbF9XeHRwdDhrV3dOUkI1NlpCa0N5cnR6NHZfdEdubmtBTkZESG9QNERuQUNXM1hiWlNnU3l2a3NteGwxLUlnVG9KaG5WdjBwY3djUTZsc1MtQWt6dUE?oc=5&hl=es-419&gl=US&ceid=US:es-419",
         "source": "Business News Nigeria",
         "domain": "news.google.com",
@@ -45,27 +135,13 @@
           "lawsuit",
           "ai"
         ],
-        "translated": true,
+        "translated": false,
         "via": "Google News"
       },
       {
-        "id": "noticia-3",
-        "title": "Las empresas de IA recaudan millones de música que tomaron sin permiso (Publicación invitada)",
-        "summary": "En una publicación invitada, Jamie Njoku‑Goodwin advierte que la falta de una aplicación firme del derecho de autor puede generar una epidemia de “lavado de música”. Señala que empresas de IA están obteniendo millones al usar obras sin permiso.",
-        "url": "https://variety.com/2026/music/opinion/ai-companies-raising-millions-from-music-without-permission-1236878697/",
-        "source": "Variety",
-        "domain": "variety.com",
-        "publishedAt": "2026-09-30T14:00:00.000Z",
-        "tags": [
-          "ai"
-        ],
-        "translated": true,
-        "via": null
-      },
-      {
-        "id": "noticia-4",
-        "title": "IFPI considera a X como una preocupación significativa para la industria musical",
-        "summary": "El organismo global IFPI presentó al comité de la UE una lista de fuentes de infracción previstas para 2026, señalando servicios de extracción de streams, cyberlockers, torrents, además de IA, fraude en streaming y la plataforma X como problemas relevantes para la industria musical.",
+        "id": "noticia-9",
+        "title": "IFPI sees X as ‘a significant concern for the music industry’",
+        "summary": "Global recorded-music body the IFPI has made its latest submission to the EU Counterfeit and Piracy Watchlist consultation: a document listing the biggest sources of infringement it sees in 2026. Published by TorrentFreak, the filing ranges across stream-ripping services, cyberlockers and torrent services, but also giv…",
         "url": "https://musically.com/2026/09/30/ifpi-sees-x-as-a-significant-concern-for-the-music-industry/",
         "source": "Music Ally",
         "domain": "musically.com",
@@ -74,13 +150,13 @@
           "ai",
           "streaming"
         ],
-        "translated": true,
+        "translated": false,
         "via": null
       },
       {
-        "id": "noticia-5",
-        "title": "Suno confirma que el modelo de IA musical V6 se entrenó con creaciones de usuarios mientras Sony y Universal presentan una nueva demanda por derechos de autor",
-        "summary": "Suno ha admitido que su modelo de IA musical V6 utilizó obras creadas por usuarios para su entrenamiento, mientras Sony y Universal presentan una nueva demanda por presuntas infracciones de derechos de autor relacionadas con esa práctica.",
+        "id": "noticia-10",
+        "title": "Suno Confirms V6 AI Music Model Was Trained on User Creations as Sony and Universal File New Copyright Lawsuit",
+        "summary": "",
         "url": "https://news.google.com/rss/articles/CBMi5AFBVV95cUxPU0lJcWUxZTU1R2F3NmRwWUFQZHVPbEV2NTE5Sms1eG1KRG5rbEpQWHJXOVptcE1xaFpRdTVJX2YyNFZtYzVPYXRsMlhYVVBHWkJUNmtaUnZTU0VNWjJaZV9saklTSkZydXpSVmt1c1JjTzdrZUtlWEZ1QU5ybmJsdlRXUmMtMkZhTFV1Y0Rjd2ppZ1FGRTRzdGYyQWR1SFpTWjJoLW5tMEpKOFR1bGw1bEdMemRZSXMwWHBZei1udVpZUTJBUnE2NnUtZzZDei1OS2NSV28zZUpqdXhSckx2eExmN3E?oc=5&hl=es-419&gl=US&ceid=US:es-419",
         "source": "Rockum",
         "domain": "news.google.com",
@@ -89,63 +165,35 @@
           "lawsuit",
           "ai"
         ],
-        "translated": true,
+        "translated": false,
         "via": "Google News"
       },
       {
-        "id": "noticia-6",
-        "title": "IMPF e IMPEL publican principios de licenciamiento de IA, insistiendo que canciones y grabaciones deben valorarse por igual",
-        "summary": "La comunidad editorial independiente, a través de IMPF e IMPEL, ha lanzado un marco de licenciamiento de IA que establece como principio no negociable que los derechos de canción y de grabación deben recibir el mismo valor, a diferencia de la práctica habitual en streaming.",
-        "url": "https://completemusicupdate.com/impf-and-impel-publish-ai-licensing-principles-insisting-songs-and-recordings-must-be-valued-equally/",
-        "source": "Complete Music Update",
-        "domain": "completemusicupdate.com",
-        "publishedAt": "2026-09-30T15:45:04.000Z",
-        "tags": [
-          "ai",
-          "licensing",
-          "streaming"
-        ],
-        "translated": true,
-        "via": null
-      },
-      {
-        "id": "noticia-7",
-        "title": "ElevenLabs duplica su valoración a 22 000 millones de dólares desde febrero",
-        "summary": "ElevenLabs, la empresa detrás de Eleven Music y colaboradora de Universal Music Group en un proyecto separado, ha visto su valoración pasar de febrero a 22 000 millones de dólares, pese a rumores de una posible explosión de la burbuja de IA.",
-        "url": "https://musically.com/2026/10/01/elevenlabs-has-doubled-its-valuation-to-22bn-since-february/",
-        "source": "Music Ally",
-        "domain": "musically.com",
-        "publishedAt": "2026-10-01T12:00:00.000Z",
+        "id": "noticia-11",
+        "title": "ElevenLabs valuation doubles to $22B – four times that of AI music rival Suno",
+        "summary": "ElevenLabs completed a USD $300 million employee tender offer at a valuation of $22 billion. Source",
+        "url": "https://www.musicbusinessworldwide.com/elevenlabs-valuation-doubles-to-22b-four-times-that-of-ai-music-rival-suno/",
+        "source": "Music Business Worldwide",
+        "domain": "musicbusinessworldwide.com",
+        "publishedAt": "2026-10-01T18:04:43.000Z",
         "tags": [
           "ai"
         ],
-        "translated": true,
+        "translated": false,
         "via": null
       },
       {
-        "id": "noticia-8",
-        "title": "Outkast demanda a Ovrkast tras incumplir el compromiso de cambiar su nombre artístico por uno menos similar",
-        "summary": "Outkast ha presentado una demanda por infracción de marca contra Ovrkast, quien reconoció que su nombre genera confusión con el grupo. A pesar de haber acordado cambiarlo antes de julio, Ovrkast no cumplió el compromiso.",
-        "url": "https://completemusicupdate.com/outkast-sues-ovrkast-after-he-reneges-on-commitment-to-change-performer-name-to-something-less-confusingly-similar/",
-        "source": "Complete Music Update",
-        "domain": "completemusicupdate.com",
-        "publishedAt": "2026-09-23T15:05:16.000Z",
+        "id": "noticia-12",
+        "title": "Kelly Clarkson Says ‘I Love AI’ but AI Artists Should Not Be on the Same Music Charts as Humans",
+        "summary": "Kelly Clarkson has shared her admittedly “controversial” opinion on artificial intelligence, saying she thinks it can do “amazing things” but shouldn’t be able to create anything that competes with humans, particularly on music charts. The pop star shared her feelings about the technology during an appearance on the La…",
+        "url": "https://variety.com/2026/music/news/kelly-clarkson-says-i-love-ai-but-shouldnt-compete-music-1236895343/",
+        "source": "Variety",
+        "domain": "variety.com",
+        "publishedAt": "2026-10-01T19:27:52.000Z",
         "tags": [
-          "lawsuit"
+          "ai"
         ],
-        "translated": true,
-        "via": null
-      },
-      {
-        "id": "noticia-9",
-        "title": "IFPI solicita que el descargador de YouTube de código abierto yt‑dlp se incluya en la lista de vigilancia de piratería de la UE",
-        "summary": "El grupo IFPI ha pedido a la Comisión Europea que incluya la herramienta de código abierto yt‑dlp en su Lista de Vigilancia de Piratería, señalando a varios desarrolladores y describiendo el software como un problema importante para la industria musical.",
-        "url": "https://torrentfreak.com/ifpi-wants-open-source-youtube-downloader-yt-dlp-on-eu-piracy-watch-list/",
-        "source": "TorrentFreak",
-        "domain": "torrentfreak.com",
-        "publishedAt": "2026-09-29T08:33:07.000Z",
-        "tags": [],
-        "translated": true,
+        "translated": false,
         "via": null
       }
     ],
@@ -160,8 +208,95 @@
     "items": [
       {
         "id": "noticia-1",
+        "title": "Japanese court says voice is protected by publicity rights; US appeals court says AI training is not fair use",
+        "summary": "There have been two judgments this week of relevance to the ongoing AI debates in the music industry. A Japanese court ruled that publicity rights allow performers to stop unapproved AI voice clones. Meanwhile a US appeals court ruled against an AI company that used the good old fair use defence",
+        "url": "https://completemusicupdate.com/japanese-court-says-voice-is-protected-by-publicity-rights-us-appeals-court-says-ai-training-is-not-fair-use/",
+        "source": "Complete Music Update",
+        "domain": "completemusicupdate.com",
+        "publishedAt": "2026-10-01T15:46:23.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-2",
+        "title": "‘The Song Is Non-Negotiable’: Indie Music Giants Unite to Force a Fair Licensing Framework",
+        "summary": "Indie publishing orgs IMPF and IMPEL have outlined a licensing framework for generative AI to create a fair and sustainable market for the future. Independent music publishing organizations IMPEL and IMPF have now issued a licensing framework for generative AI based on several key principles that will ensure song copyr…",
+        "url": "https://www.digitalmusicnews.com/2026/09/29/impf-and-impel-unite-generative-ai-licensing/",
+        "source": "Digital Music News",
+        "domain": "digitalmusicnews.com",
+        "publishedAt": "2026-09-30T05:00:04.000Z",
+        "tags": [
+          "ai",
+          "licensing"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-3",
+        "title": "Suno Blasts Latest UMG/Sony Lawsuit As ‘Fundamentally Flawed on Both the Facts and the Law’",
+        "summary": "UMG and Sony file another copyright lawsuit against Suno, and the AI company claps back with a statement that the suit is “fundamentally flawed.” Universal Music Group and Sony Music Entertainment continue to heat things up in their ongoing legal battle against the AI music platform Suno. The majors have filed another…",
+        "url": "https://www.digitalmusicnews.com/2026/09/22/suno-comments-umg-sony-lawsuit/",
+        "source": "Digital Music News",
+        "domain": "digitalmusicnews.com",
+        "publishedAt": "2026-09-22T16:00:31.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-4",
+        "title": "AI Lost Its First Fair Use Appeal. Suno Should Be Worried.",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMitwFBVV95cUxOMW4wT3pmbjFGaUdaYmJWRl9RX1dLQ2JpWXc1MnB3UHNMY3FyamstX1pCdmxyNlVHdkl2dF9JWDUtV1hLc2dDZ1BlUnpzTUkxSGhTZ1drZUREUDBaNHNxaFV3RXJrZ2RKRUxfZVVkek16RW9PU0NfQTEwUkd5MGRHTF9ZQU1tU0ZFeE9JYXVaVUxMNDYwRjh2QVhsel9OcGJwc1AtN0VQQllWcDNrNS02MTBnOUcxN00?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "Forbes",
+        "domain": "news.google.com",
+        "publishedAt": "2026-09-30T22:57:31.000Z",
+        "tags": [
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-5",
+        "title": "Suno AI y GEMA: la batalla por los derechos de autor que puede redefinir el negocio de la música para la IA",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMiwwFBVV95cUxPTngyX3RYREpPYnRTSjU4TkxLSkVrX0tmWGt1TjdHNzJZRkxuYjBFMXptdWc0SUJjaW41akJHWGRJRVdjQjUyNmlLWE54RkJfZ1hLUUpFTWl1bzd3dzdzaVNzTGl5cnBBT1VObklkclI0NXdzRnZjMGhmR0JIMDJsaFRhTTlPZGszWnNqS1k1anhFRHdoaUlFbG1kTGJIeEdRWnV1RTF1YVlBYU00RWcyMVRzQ2NxT3h6NUJmSkFIMjFtVU0?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "LexLatin",
+        "domain": "news.google.com",
+        "publishedAt": "2026-10-01T18:22:30.000Z",
+        "tags": [
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-6",
+        "title": "Jermaine Dupri, Jacquees, and Mass Appeal Face ‘Pick It Up’ Infringement Suit from 90s Duo Home Team",
+        "summary": "One month after dropping his multimillion-dollar Sony Music infringement lawsuit, Jermaine Dupri is staring down a copyright complaint for allegedly lifting from a decades-old work to create 2023’s “Pick It Up.” The members of hip-hop duo Home Team, brothers Patrick Watler and Van J. Watler, just recently submitted the…",
+        "url": "https://www.digitalmusicnews.com/2026/09/28/jermaine-dupri-pick-it-up-lawsuit/",
+        "source": "Digital Music News",
+        "domain": "digitalmusicnews.com",
+        "publishedAt": "2026-09-29T06:00:48.000Z",
+        "tags": [
+          "lawsuit"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-7",
         "title": "Trump’s DoJ was biased and wrong about ‘fair use’, say news orgs in OpenAI dispute",
-        "summary": "Music industry AI lawsuits often hinge on whether AI training qualifies as ‘fair use’ under U.S. copyright law. The Trump administration’s DOJ intervened in a case between newspapers and OpenAI, asserting training is fair use; the newspapers argue the DOJ’s view is wrong.",
+        "summary": "Many of the music industry’s AI legal battles swing on whether or not AI training is ‘fair use’ under US copyright law. Donald Trump’s DoJ recently intervened in a dispute between newspapers and OpenAI insisting AI training is fair use. The newspapers have responded, explaining why the DoJ is wrong",
         "url": "https://completemusicupdate.com/trumps-doj-was-biased-and-wrong-about-fair-use-say-news-orgs-in-openai-dispute/",
         "source": "Complete Music Update",
         "domain": "completemusicupdate.com",
@@ -169,13 +304,13 @@
         "tags": [
           "ai"
         ],
-        "translated": true,
+        "translated": false,
         "via": null
       },
       {
-        "id": "noticia-2",
+        "id": "noticia-8",
         "title": "Universal Music Group sues DistroKid over AI music, copyright claims",
-        "summary": "Universal Music Group has filed a lawsuit against DistroKid, claiming the service distributes AI‑generated music without respecting copyright owners and seeking compensation for those alleged infringements in the music market.",
+        "summary": "",
         "url": "https://news.google.com/rss/articles/CBMirgFBVV95cUxPM01MaEk0UEU1UU1Ta0k3U0pldGhnT0k0VnpZUTVXdFhTRExGNVZlcVlpTEloSm1ubEZ5MkJva3A5dXV4QmdleC1uZGxGMHN1elp4TDRkbHdtbF9XeHRwdDhrV3dOUkI1NlpCa0N5cnR6NHZfdEdubmtBTkZESG9QNERuQUNXM1hiWlNnU3l2a3NteGwxLUlnVG9KaG5WdjBwY3djUTZsc1MtQWt6dUE?oc=5&hl=es-419&gl=US&ceid=US:es-419",
         "source": "Business News Nigeria",
         "domain": "news.google.com",
@@ -184,27 +319,13 @@
           "lawsuit",
           "ai"
         ],
-        "translated": true,
+        "translated": false,
         "via": "Google News"
       },
       {
-        "id": "noticia-3",
-        "title": "AI Companies Are Raising Millions From Music They Took Without Permission (Guest Post)",
-        "summary": "In a guest post, Jamie Njoku‑Goodwin warns that weak copyright enforcement could spark a “music laundering” epidemic, noting that AI firms are raising millions by using music without permission in the industry.",
-        "url": "https://variety.com/2026/music/opinion/ai-companies-raising-millions-from-music-without-permission-1236878697/",
-        "source": "Variety",
-        "domain": "variety.com",
-        "publishedAt": "2026-09-30T14:00:00.000Z",
-        "tags": [
-          "ai"
-        ],
-        "translated": true,
-        "via": null
-      },
-      {
-        "id": "noticia-4",
+        "id": "noticia-9",
         "title": "IFPI sees X as ‘a significant concern for the music industry’",
-        "summary": "The global IFPI body submitted to the EU a list of anticipated infringement sources for 2026, highlighting stream‑ripping services, cyberlockers, torrent sites, as well as AI, streaming fraud and the platform X as notable concerns for the music industry.",
+        "summary": "Global recorded-music body the IFPI has made its latest submission to the EU Counterfeit and Piracy Watchlist consultation: a document listing the biggest sources of infringement it sees in 2026. Published by TorrentFreak, the filing ranges across stream-ripping services, cyberlockers and torrent services, but also giv…",
         "url": "https://musically.com/2026/09/30/ifpi-sees-x-as-a-significant-concern-for-the-music-industry/",
         "source": "Music Ally",
         "domain": "musically.com",
@@ -213,13 +334,13 @@
           "ai",
           "streaming"
         ],
-        "translated": true,
+        "translated": false,
         "via": null
       },
       {
-        "id": "noticia-5",
+        "id": "noticia-10",
         "title": "Suno Confirms V6 AI Music Model Was Trained on User Creations as Sony and Universal File New Copyright Lawsuit",
-        "summary": "Suno acknowledges that its V6 AI music model was trained using user‑generated creations, as Sony and Universal launch a new copyright lawsuit alleging infringement tied to that training approach in the music sector.",
+        "summary": "",
         "url": "https://news.google.com/rss/articles/CBMi5AFBVV95cUxPU0lJcWUxZTU1R2F3NmRwWUFQZHVPbEV2NTE5Sms1eG1KRG5rbEpQWHJXOVptcE1xaFpRdTVJX2YyNFZtYzVPYXRsMlhYVVBHWkJUNmtaUnZTU0VNWjJaZV9saklTSkZydXpSVmt1c1JjTzdrZUtlWEZ1QU5ybmJsdlRXUmMtMkZhTFV1Y0Rjd2ppZ1FGRTRzdGYyQWR1SFpTWjJoLW5tMEpKOFR1bGw1bEdMemRZSXMwWHBZei1udVpZUTJBUnE2NnUtZzZDei1OS2NSV28zZUpqdXhSckx2eExmN3E?oc=5&hl=es-419&gl=US&ceid=US:es-419",
         "source": "Rockum",
         "domain": "news.google.com",
@@ -228,63 +349,35 @@
           "lawsuit",
           "ai"
         ],
-        "translated": true,
+        "translated": false,
         "via": "Google News"
       },
       {
-        "id": "noticia-6",
-        "title": "IMPF and IMPEL publish AI licensing principles, insisting songs and recordings must be valued equally",
-        "summary": "The indie publishing community, via IMPF and IMPEL, released an AI licensing framework stating as a non‑negotiable principle that song rights and recording rights must be valued equally, contrasting with current streaming practices.",
-        "url": "https://completemusicupdate.com/impf-and-impel-publish-ai-licensing-principles-insisting-songs-and-recordings-must-be-valued-equally/",
-        "source": "Complete Music Update",
-        "domain": "completemusicupdate.com",
-        "publishedAt": "2026-09-30T15:45:04.000Z",
-        "tags": [
-          "ai",
-          "licensing",
-          "streaming"
-        ],
-        "translated": true,
-        "via": null
-      },
-      {
-        "id": "noticia-7",
-        "title": "ElevenLabs has doubled its valuation to $22bn since February",
-        "summary": "ElevenLabs, the creator of Eleven Music and partner on a separate project with Universal Music Group, has seen its valuation rise to $22 billion since February, despite speculation about an imminent AI bubble burst.",
-        "url": "https://musically.com/2026/10/01/elevenlabs-has-doubled-its-valuation-to-22bn-since-february/",
-        "source": "Music Ally",
-        "domain": "musically.com",
-        "publishedAt": "2026-10-01T12:00:00.000Z",
+        "id": "noticia-11",
+        "title": "ElevenLabs valuation doubles to $22B – four times that of AI music rival Suno",
+        "summary": "ElevenLabs completed a USD $300 million employee tender offer at a valuation of $22 billion. Source",
+        "url": "https://www.musicbusinessworldwide.com/elevenlabs-valuation-doubles-to-22b-four-times-that-of-ai-music-rival-suno/",
+        "source": "Music Business Worldwide",
+        "domain": "musicbusinessworldwide.com",
+        "publishedAt": "2026-10-01T18:04:43.000Z",
         "tags": [
           "ai"
         ],
-        "translated": true,
+        "translated": false,
         "via": null
       },
       {
-        "id": "noticia-8",
-        "title": "Outkast sue Ovrkast after he reneges on commitment to change performer name to something less confusingly similar",
-        "summary": "Outkast filed a trademark infringement lawsuit against Ovrkast, who admitted his name causes confusion with the group. Although he promised to change it by July, Ovrkast failed to honor that agreement.",
-        "url": "https://completemusicupdate.com/outkast-sues-ovrkast-after-he-reneges-on-commitment-to-change-performer-name-to-something-less-confusingly-similar/",
-        "source": "Complete Music Update",
-        "domain": "completemusicupdate.com",
-        "publishedAt": "2026-09-23T15:05:16.000Z",
+        "id": "noticia-12",
+        "title": "Kelly Clarkson Says ‘I Love AI’ but AI Artists Should Not Be on the Same Music Charts as Humans",
+        "summary": "Kelly Clarkson has shared her admittedly “controversial” opinion on artificial intelligence, saying she thinks it can do “amazing things” but shouldn’t be able to create anything that competes with humans, particularly on music charts. The pop star shared her feelings about the technology during an appearance on the La…",
+        "url": "https://variety.com/2026/music/news/kelly-clarkson-says-i-love-ai-but-shouldnt-compete-music-1236895343/",
+        "source": "Variety",
+        "domain": "variety.com",
+        "publishedAt": "2026-10-01T19:27:52.000Z",
         "tags": [
-          "lawsuit"
+          "ai"
         ],
-        "translated": true,
-        "via": null
-      },
-      {
-        "id": "noticia-9",
-        "title": "IFPI Wants Open Source YouTube Downloader yt-dlp on EU Piracy Watch List",
-        "summary": "IFPI has urged the European Commission to add the open‑source YouTube downloader yt‑dlp to its Counterfeit and Piracy Watch List, naming several developers and describing the tool as a major issue for the music industry.",
-        "url": "https://torrentfreak.com/ifpi-wants-open-source-youtube-downloader-yt-dlp-on-eu-piracy-watch-list/",
-        "source": "TorrentFreak",
-        "domain": "torrentfreak.com",
-        "publishedAt": "2026-09-29T08:33:07.000Z",
-        "tags": [],
-        "translated": true,
+        "translated": false,
         "via": null
       }
     ],
