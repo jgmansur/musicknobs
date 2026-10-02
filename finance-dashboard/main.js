@@ -44,7 +44,7 @@ const DEUDAS_RECIBOS_FOLDER_ID = '157KDn-vbkuHH1L8xbaJBGz-oKmT7p5a9';
 const SPREADSHEET_RSM_ID = '14VsoPHGNTSUSbzMOqGWs2qSL-pGywPgjUoHD3MqIJfo'; // Recibos Salud Mariel
 const SALDOS_SHEET_ID    = '1-cX_qxld3ioSpcO9lEBPg90Db6AyK7SczpJTvj7rw4U'; // Saldos (fuente de verdad — Claude accede vía service account)
 const RSM_FOLDER_ID = '1-ZfeWQ-Rmh-Wm2WMCkULkN6MQWBuxYnj';
-const APP_VERSION  = 'v8.13.0';
+const APP_VERSION  = 'v8.14.0';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -79,35 +79,33 @@ const AI_MIRROR_SYNC_MAX_WAIT_MS = 5 * 60_000;
  * enterarse. Se avisa, no se traga el error.
  */
 async function financeCoreSync({ fecha, lugar, concepto, monto, tipo, forma, recibo, source = 'manual' }) {
-    if (!balanceDesdeWorker || !bandeja_token()) return;
-
+    // Es el ÚNICO lugar donde se guarda un gasto nuevo: si no llega, no existe.
+    // Por eso lanza en vez de avisar "se guardó, pero…": quien llama muestra
+    // el error y el formulario se queda con los datos para reintentar.
+    if (!balanceDesdeWorker) await balance_loadFromWorker();
+    if (!balanceDesdeWorker) {
+        throw new Error('sin conexión con finanzas, NO se guardó. Toca «Volver a entrar» arriba y reintenta.');
+    }
     const cuenta = balanceAccounts.find(a =>
         balance_getAccountMatchKeys(a).includes(balance_normalizePaymentKey(forma)));
     if (!cuenta) {
-        alert(`El movimiento se guardó, pero "${forma}" no existe como cuenta en finance-core, ` +
-              'así que el saldo no se movió.');
-        return;
+        throw new Error(`"${forma}" no es una cuenta de finanzas, NO se guardó. Elige la forma de pago de la lista.`);
     }
-    try {
-        await bandeja_api('/api/movimientos', {
-            method: 'POST',
-            body: JSON.stringify({
-                accountId: cuenta.id,
-                amount: Math.abs(Number(monto)),
-                kind: (tipo || '').toLowerCase().startsWith('ingreso') ? 'ingreso' : 'gasto',
-                occurredAt: fecha ? `${fecha}T12:00:00-06:00` : undefined,
-                merchant: lugar || null,
-                description: concepto || null,
-                receiptUrl: recibo || null,
-                source,
-            }),
-        });
-        await balance_loadFromWorker();
-        balance_updateKpi?.();
-    } catch (err) {
-        alert(`El movimiento se guardó, pero no llegó a finance-core: ${err.message}\n` +
-              'El saldo puede quedar desfasado hasta que se reintente.');
-    }
+    await bandeja_api('/api/movimientos', {
+        method: 'POST',
+        body: JSON.stringify({
+            accountId: cuenta.id,
+            amount: Math.abs(Number(monto)),
+            kind: (tipo || '').toLowerCase().startsWith('ingreso') ? 'ingreso' : 'gasto',
+            occurredAt: fecha ? `${fecha}T12:00:00-06:00` : undefined,
+            merchant: lugar || null,
+            description: concepto || null,
+            receiptUrl: recibo || null,
+            source,
+        }),
+    });
+    await balance_loadFromWorker();
+    balance_updateKpi?.();
 }
 
 
@@ -1041,6 +1039,9 @@ let balanceAccounts   = [];
    el ajuste que la app calculaba sobre la hoja de Gastos sobra. Aplicarlo
    encima duplicaría cada gasto. */
 let balanceDesdeWorker = false;
+// Saldos de respaldo (foto vieja o cuentas vacías): se muestran, nunca se guardan.
+let balanceSinConexion = false;
+const BALANCE_SNAPSHOT_KEY = 'finance_accounts_worker_snapshot_v1';
 /* Igual que arriba, para las deudas. */
 let deudasDesdeWorker = false;
 let balanceEditingId  = null;
@@ -1327,7 +1328,13 @@ async function balance_loadFromWorker() {
             sortOrder: b.sort_order,
         }));
         balanceDesdeWorker = true;
+        balanceSinConexion = false;
         localStorage.setItem('finance_accounts_v1', JSON.stringify(balanceAccounts));
+        // La última foto buena: es lo que se muestra si un día el worker no
+        // contesta, en vez de la hoja congelada.
+        localStorage.setItem(BALANCE_SNAPSHOT_KEY, JSON.stringify({
+            at: new Date().toISOString(), accounts: balanceAccounts,
+        }));
         debugUpdate({ load: `finance-core (${balanceAccounts.length})` });
         return true;
     } catch (err) {
@@ -1346,105 +1353,27 @@ async function balance_loadAccounts() {
         return;
     }
     balanceDesdeWorker = false;
+    balanceSinConexion = true;
 
-    if (!accessToken) {
-        try {
-            const raw = localStorage.getItem('finance_accounts_v1');
-            balanceAccounts = raw ? JSON.parse(raw).map(balance_normalizeAccount) : DEFAULT_ACCOUNTS.map(a => balance_normalizeAccount(a));
-        } catch { balanceAccounts = DEFAULT_ACCOUNTS.map(a => balance_normalizeAccount(a)); }
-        balance_refreshUsdMxnRate();
-        balance_refreshBtcMxnRate();
-        balance_refreshInvestmentRates();
-        debugUpdate({ load: `localStorage (${balanceAccounts.length})`, token: 'No' });
-        return;
+    // Sin worker: la última foto buena que dio el worker, dicha como tal. La
+    // hoja de Saldos quedó congelada en agosto; mostrarla eran números falsos.
+    let snapshot = null;
+    try { snapshot = JSON.parse(localStorage.getItem(BALANCE_SNAPSHOT_KEY) || 'null'); } catch {}
+    if (snapshot?.accounts?.length) {
+        balanceAccounts = snapshot.accounts.map(balance_normalizeAccount);
+        const cuando = new Date(snapshot.at).toLocaleString('es-MX', {
+            day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit',
+        });
+        debugUpdate({ load: `última foto de finance-core (${cuando})` });
+        showToast(`⚠️ Sin conexión con finanzas: saldos del ${cuando}, no actualizados.`);
+    } else {
+        balanceAccounts = DEFAULT_ACCOUNTS.map(a => balance_normalizeAccount({ ...a, balance: 0 }));
+        debugUpdate({ load: 'sin conexión y sin foto previa' });
+        showToast('⚠️ Sin conexión con finanzas: todavía no hay saldos en este navegador. Toca «Volver a entrar».');
     }
-
-    // ── Primary: SALDOS_SHEET_ID (fuente de verdad) ──────────────────────────
-    try {
-        const rows = await sheetsGet(SALDOS_SHEET_ID, 'Hoja 1!A2:K');
-        if (rows && rows.filter(r => r[0]).length > 0) {
-            balanceAccounts = rows
-                .filter(r => r[0])
-                .map(r => balance_normalizeAccount({
-                    id:               Number(r[0]) || Date.now(),
-                    name:             r[1] || '',
-                    balance:          typeof r[2] === 'number' ? r[2] : parseSheetValue(r[2]),
-                    type:             r[3] || 'bank',
-                    hidden:           (r[4] || '').toString().toUpperCase() === 'TRUE',
-                    creditLimit:      typeof r[5] === 'number' ? r[5] : parseSheetValue(r[5]),
-                    creditLimitVisible: (r[6] || '').toString().toUpperCase() === 'TRUE',
-                    currency:         (r[7] || 'MXN').toString().toUpperCase(),
-                    investmentType:   (r[8] || 'custom').toString().toLowerCase(),
-                    customAnnualRate: typeof r[9] === 'number' ? r[9] : parseSheetValue(r[9]),
-                    bitcoinInitialMxn: typeof r[10] === 'number' ? r[10] : parseSheetValue(r[10]),
-                }));
-            // Read logNetAnchor and accountLogAnchor from Meta tab
-            try {
-                const metaRows = await sheetsGet(SALDOS_SHEET_ID, 'Meta!A2:B10');
-                const anchorRow = (metaRows || []).find(r => r[0] === 'logNetAnchor');
-                if (anchorRow) {
-                    const v = Number(anchorRow[1]);
-                    if (Number.isFinite(v)) {
-                        balanceLogNetAnchor = v;
-                        localStorage.setItem('balance_log_anchor_v1', String(v));
-                        balanceAnchorNeedsMigration = false;
-                    }
-                }
-                const anchorLogRow = (metaRows || []).find(r => r[0] === 'accountLogAnchor');
-                if (anchorLogRow && anchorLogRow[1]) {
-                    try { balanceAccountLogAnchor = JSON.parse(anchorLogRow[1]); } catch {}
-                }
-            } catch {}
-            localStorage.setItem('finance_accounts_v1', JSON.stringify(balanceAccounts));
-            debugUpdate({ load: `Saldos Sheet (${balanceAccounts.length})` });
-        } else {
-            // Sheet vacío — intentar migrar desde Firebase, luego defaults
-            await balance_migrateToSaldosSheet();
-        }
-    } catch (err) {
-        console.warn('[Saldos] Sheet load failed, using localStorage:', err.message);
-        debugUpdate({ load: `localStorage fallback (${err.message})` });
-        const raw = localStorage.getItem('finance_accounts_v1');
-        balanceAccounts = raw ? JSON.parse(raw).map(balance_normalizeAccount) : DEFAULT_ACCOUNTS.map(a => balance_normalizeAccount(a));
-    }
-
     balance_refreshUsdMxnRate();
     balance_refreshBtcMxnRate();
     balance_refreshInvestmentRates();
-}
-
-async function balance_migrateToSaldosSheet() {
-    // One-time migration: Firebase → SALDOS_SHEET_ID
-    if (_fbUid) {
-        try {
-            const ref  = doc(_fbDb, 'users', _fbUid, 'balance', 'accounts');
-            const snap = await getDoc(ref);
-            if (snap.exists()) {
-                const data = snap.data();
-                balanceAccounts = (data.accounts || []).map(balance_normalizeAccount);
-                const cloudAnchor = Number(data.logNetAnchor);
-                if (Number.isFinite(cloudAnchor)) {
-                    balanceLogNetAnchor = cloudAnchor;
-                    localStorage.setItem('balance_log_anchor_v1', String(cloudAnchor));
-                    balanceAnchorNeedsMigration = false;
-                }
-                if (data.accountLogAnchor && typeof data.accountLogAnchor === 'object') {
-                    balanceAccountLogAnchor = data.accountLogAnchor;
-                }
-                await balance_writeToSheet();
-                localStorage.setItem('finance_accounts_v1', JSON.stringify(balanceAccounts));
-                debugUpdate({ load: `Migrado Firebase→Sheet (${balanceAccounts.length})` });
-                console.info('[Saldos] Migración Firebase → SALDOS_SHEET_ID completada');
-                return;
-            }
-        } catch (err) {
-            console.warn('[Saldos] Migración Firebase fallida:', err.message);
-        }
-    }
-    // Sin datos — usar defaults y escribir al Sheet
-    balanceAccounts = DEFAULT_ACCOUNTS.map(a => balance_normalizeAccount(a));
-    await balance_writeToSheet().catch(console.warn);
-    debugUpdate({ load: `Defaults escritos a Sheet (${balanceAccounts.length})` });
 }
 
 async function balance_writeToSheet() {
@@ -1498,17 +1427,24 @@ async function balance_saveToFirestore() {
 }
 
 async function balance_saveAccounts() {
+    // Lo que hay en pantalla es una foto vieja o cuentas vacías: guardarlo
+    // pisaría (o crearía) cuentas reales con datos falsos.
+    if (balanceSinConexion) {
+        showToast('⚠️ Sin conexión con finanzas: no se guardó. Toca «Volver a entrar» y reintenta.');
+        return;
+    }
     // 1. localStorage siempre (offline-first)
     localStorage.setItem('finance_accounts_v1', JSON.stringify(balanceAccounts));
-    if (!accessToken) {
+    if (!(await financeCore_hayCredencial())) {
         debugUpdate({ save: `Solo localStorage (${balanceAccounts.length})`, token: 'No' });
+        showToast('⚠️ Sin conexión con finanzas: el cambio de cuentas no se guardó. Toca «Volver a entrar».');
         return;
     }
     // 2. Fuente de verdad: finance-core. La hoja de Saldos ya no se lee, así
     //    que escribirle dejaba las cuentas nuevas invisibles para todo el
     //    sistema. El PUT solo toca metadatos: el saldo se mueve con los
     //    movimientos o, deliberadamente, con /reconcile.
-    if (bandeja_token()) {
+    {
         try {
             const r = await bandeja_api('/api/accounts', {
                 method: 'PUT',
@@ -1533,17 +1469,6 @@ async function balance_saveAccounts() {
             showToast(`⚠️ No se pudieron guardar las cuentas: ${err.message}`);
             debugUpdate({ save: `finance-core:ERR`, token: 'Si' });
         }
-        return;
-    }
-
-    // 3. Sin token, camino viejo: la hoja de Saldos.
-    try {
-        await balance_writeToSheet();
-        debugUpdate({ save: `Saldos Sheet:OK (${balanceAccounts.length})`, token: 'Si' });
-    } catch (err) {
-        const code = err?.code || err?.status || 'ERR';
-        console.warn('[Saldos] Sheet save failed:', debugShort(err?.message || err));
-        debugUpdate({ save: `Saldos Sheet:ERR(${code})`, token: 'Si' });
     }
 }
 
@@ -1874,7 +1799,7 @@ function balance_cambioOptimista(id, aplicar, queCambio) {
 
     // Se manda SOLO esta cuenta. El PUT del arreglo completo tardaba ~3.4 s
     // porque reescribe las 13; el PATCH puntual es un UPDATE de una fila.
-    const guardar = bandeja_token()
+    const guardar = financeCore_conectado() && !balanceSinConexion
         ? bandeja_api(`/api/accounts/${id}`, {
             method: 'PATCH',
             body: JSON.stringify({
@@ -2061,7 +1986,7 @@ async function balance_deleteAccount(id) {
     // El borrado va por su propio endpoint: el PUT no borra las cuentas que
     // faltan del arreglo, a propósito, para que un guardado parcial no destruya
     // cuentas. El worker rechaza borrar una con movimientos.
-    if (bandeja_token()) {
+    if (financeCore_conectado()) {
         try {
             await bandeja_api(`/api/accounts/${id}`, { method: 'DELETE' });
         } catch (e) {
@@ -2456,6 +2381,7 @@ function logout() {
     const tokenToRevoke = accessToken;
     clearAccessTokenCache();
     firebase_signOut(); // clear Firebase auth state
+    financeCore_olvidarSesion();
     // Revoke Google token if possible
     if (window.google?.accounts?.oauth2 && tokenToRevoke) {
         google.accounts.oauth2.revoke(tokenToRevoke, () => { console.log('Token revoked') });
@@ -2875,8 +2801,74 @@ function handleApiError(err, el, retryFn) {
  * restaure la sesión: al cargar la página `currentUser` todavía es null, y
  * preguntarlo antes mandaba la app a la hoja vieja aunque hubiera sesión.
  */
+// Sesión propia de finance-core (90 días, firmada por el worker). Es lo que
+// hace que la app no dependa de que Google o Firebase renueven nada: el token
+// de Google dura una hora y Safari bloquea las ventanas que lo renuevan.
+const FC_SESSION_KEY = 'finance_core_session_v1';
+const FC_SESSION_EXP_KEY = 'finance_core_session_exp_v1';
+// Se renueva cuando le quedan menos de 75 días: como mucho una vez cada dos
+// semanas, siempre que haya un login de Google vigente.
+const FC_SESSION_RENEW_MS = 75 * 86_400_000;
+
+function financeCore_sesion() {
+    const session = localStorage.getItem(FC_SESSION_KEY) || '';
+    const exp = Date.parse(localStorage.getItem(FC_SESSION_EXP_KEY) || '');
+    if (!session || !Number.isFinite(exp) || exp <= Date.now()) return '';
+    return session;
+}
+
+function financeCore_olvidarSesion() {
+    localStorage.removeItem(FC_SESSION_KEY);
+    localStorage.removeItem(FC_SESSION_EXP_KEY);
+}
+
+let fcSesionEnCurso = null;
+let fcSesionFalloEn = 0;
+const FC_SESSION_RETRY_MS = 10 * 60_000;
+
+/** Cambia el login de Google vigente por la sesión de 90 días. Nunca abre ventanas. */
+function financeCore_abrirSesion() {
+    // Una sola petición a la vez (el Dashboard hace tres llamadas en paralelo)
+    // y, si falla, no se reintenta en cada llamada sino a los diez minutos.
+    if (fcSesionEnCurso) return fcSesionEnCurso;
+    if (Date.now() - fcSesionFalloEn < FC_SESSION_RETRY_MS) return Promise.resolve(!!financeCore_sesion());
+    fcSesionEnCurso = financeCore_pedirSesion().finally(() => { fcSesionEnCurso = null; });
+    return fcSesionEnCurso;
+}
+
+async function financeCore_pedirSesion() {
+    const exp = Date.parse(localStorage.getItem(FC_SESSION_EXP_KEY) || '');
+    if (financeCore_sesion() && exp - Date.now() > FC_SESSION_RENEW_MS) return true;
+    const expiryTs = parseInt(localStorage.getItem(EXPIRY_KEY) || '0', 10);
+    if (!accessToken || Date.now() >= expiryTs - 20_000) return !!financeCore_sesion();
+    try {
+        const res = await fetch(BANDEJA_API + '/api/session', {
+            method: 'POST',
+            headers: { 'content-type': 'application/json', 'x-google-token': accessToken },
+        });
+        if (!res.ok) throw new Error(`Error ${res.status}`);
+        const { session, expiresAt } = await res.json();
+        if (!session || !expiresAt) throw new Error('respuesta sin sesión');
+        localStorage.setItem(FC_SESSION_KEY, session);
+        localStorage.setItem(FC_SESSION_EXP_KEY, expiresAt);
+        debugUpdate({ auth: `Finanzas conectadas hasta ${expiresAt.slice(0, 10)}` });
+        return true;
+    } catch (err) {
+        fcSesionFalloEn = Date.now();
+        console.warn('[finance-core] no se pudo abrir la sesión:', err.message);
+        return !!financeCore_sesion();
+    }
+}
+
+// ¿Hay alguna credencial para finance-core ahora mismo? Síncrona, para las
+// decisiones de UI. Un solo criterio en toda la app: antes cada pestaña
+// preguntaba solo por la llave vieja y caía a la hoja congelada.
+function financeCore_conectado() {
+    return !!(bandeja_token() || financeCore_sesion() || accessToken || _fbAuth.currentUser);
+}
+
 async function financeCore_hayCredencial() {
-    if (bandeja_token() || accessToken) return true;
+    if (bandeja_token() || financeCore_sesion() || accessToken) return true;
     await _fbAuth.authStateReady?.();
     return !!_fbAuth.currentUser;
 }
@@ -2888,7 +2880,10 @@ async function financeCore_hayCredencial() {
  * (los navegadores solo dejan abrir la ventana de Google desde un clic).
  */
 async function financeCore_conectar({ interactive = false } = {}) {
-    if (interactive) return requestToken({ interactive: true });
+    if (interactive) {
+        if (!(await requestToken({ interactive: true }))) return false;
+    }
+    await financeCore_abrirSesion();
     return financeCore_hayCredencial();
 }
 
@@ -3673,7 +3668,7 @@ async function receiptItems_toggleHormiga(rowNum, checked) {
         hormigaPanelState.prevMonthName
     );
     try {
-        if (item.id && bandeja_token()) {
+        if (item.id && financeCore_conectado()) {
             await bandeja_api(`/api/hormiga/items/${item.id}`, {
                 method: 'PATCH',
                 body: JSON.stringify({ hormigaOverride: checked }),
@@ -3750,7 +3745,7 @@ window.productGroups_toggleHormiga = async function(encodedGroupName, checked) {
     );
     try {
         // Fuente de verdad: finance-core. La hoja solo se usa si no hay token.
-        if (bandeja_token()) {
+        if (financeCore_conectado()) {
             await bandeja_api(`/api/hormiga/grupos/${encodeURIComponent(groupName)}`, {
                 method: 'PUT',
                 body: JSON.stringify({
@@ -4575,17 +4570,10 @@ async function gastos_guardar() {
                 await sheetsUpdate(SPREADSHEET_LOG_ID, `Hoja 1!B${idFila}:I${idFila}`, [[lugar, concepto, parseSheetValue(monto), tipo, forma, allUrls, moneda, fechaCreacionISO]]);
             }
         } else {
-            const fechaCreacionNow = new Date().toISOString();
-
-            // Con finance-core activo, el gasto va SOLO ahí. Escribir además a
-            // la hoja la volvería indispensable: al borrarla, el append fallaría
-            // y el gasto ni siquiera llegaría a la base.
-            if (balanceDesdeWorker) {
-                await financeCoreSync({ fecha, lugar, concepto, monto: parseSheetValue(monto),
-                                        tipo, forma, recibo: nuevasUrls.join(',') });
-            } else {
-                await sheetsAppend(SPREADSHEET_LOG_ID, 'Hoja 1!A:I', [[fecha, lugar, concepto, parseSheetValue(monto), tipo, forma, nuevasUrls.join(','), moneda, fechaCreacionNow]]);
-            }
+            // El gasto va SOLO a finance-core. La hoja quedó congelada en la
+            // migración: escribir ahí era perderlo, porque ya nadie la lee.
+            await financeCoreSync({ fecha, lugar, concepto, monto: parseSheetValue(monto),
+                                    tipo, forma, recibo: nuevasUrls.join(',') });
         }
         status.innerText = nuevasUrls.length
             ? '✅ ' + (idFila ? 'Actualizado con recibo' : 'Guardado con recibo')
@@ -4706,7 +4694,7 @@ async function gastos_editarDesdeModal() {
 
 async function gastos_cargarFijosSelect(selected = '') {
     const select = document.getElementById('g-fixed-expense');
-    if (!select || !bandeja_token()) return;
+    if (!select || !financeCore_conectado()) return;
     try {
         const periodo = new Date().toISOString().slice(0, 7);
         const { fijos = [] } = await bandeja_api(`/api/fijos?period=${periodo}`);
@@ -5838,7 +5826,7 @@ async function fijos_guardar() {
     btn.disabled = true; btn.innerText = 'Guardando...';
     try {
         await _fbAuth.authStateReady?.();
-        if (!editId && !bandeja_token() && !_fbAuth.currentUser) {
+        if (!editId && !financeCore_conectado()) {
             throw new Error('Tu sesión venció. Cierra sesión y vuelve a entrar con Google.');
         }
         // Fuente de verdad: finance-core. La hoja solo se toca si el fijo
@@ -10729,7 +10717,7 @@ async function propiedades_syncPropertyRemotes(item) {
 
 async function propiedades_getWorkerFijos() {
     await _fbAuth.authStateReady?.();
-    if (!bandeja_token() && !_fbAuth.currentUser) {
+    if (!financeCore_conectado()) {
         throw new Error('Tu sesión financiera venció. Cierra sesión y vuelve a entrar con Google.');
     }
     const { fijos } = await bandeja_api('/api/fijos');
@@ -15482,7 +15470,7 @@ window.deudas_generarCuotas = async function() {
         // de FILA, y las cuotas iban serializadas en un string
         // ("3:734.37:1,2,0:mensual:..."). En Supabase cada campo es una columna
         // y cada cuota una fila, así que se manda estructurado.
-        if (bandeja_token()) {
+        if (financeCore_conectado()) {
             await bandeja_api(`/api/deudas/${deudaId}`, {
                 method: 'PATCH',
                 body: JSON.stringify({
@@ -15614,7 +15602,7 @@ window.deudas_toggleCuota = async function(id, idx) {
     // de tener sentido con los UUID.
     const ESTADOS = ['pendiente', 'programada', 'pagada'];
     try {
-        if (bandeja_token()) {
+        if (financeCore_conectado()) {
             await bandeja_api(`/api/deudas/${id}`, {
                 method: 'PATCH',
                 body: JSON.stringify({
@@ -16252,6 +16240,8 @@ async function bandeja_api(path, options = {}) {
     const intentos = [];
     const legacyToken = bandeja_token();
     if (legacyToken) intentos.push(async () => ({ 'x-finance-token': legacyToken }));
+    const session = financeCore_sesion();
+    if (session) intentos.push(async () => ({ 'x-finance-session': session }));
     intentos.push(async () => {
         if (!(await ensureValidAccessToken()) || !accessToken) return null;
         return { 'x-google-token': accessToken };
@@ -16267,9 +16257,13 @@ async function bandeja_api(path, options = {}) {
         if (!headers) continue;
         res = await request(headers);
         if (res.status !== 401) break;
-        // Una llave vieja rechazada no debe volver a intentarse.
+        // Una llave vieja o una sesión rechazada no deben volver a intentarse.
         if (headers['x-finance-token']) localStorage.removeItem(BANDEJA_TOKEN_KEY);
+        if (headers['x-finance-session']) financeCore_olvidarSesion();
     }
+    // Entró con el login de Google y no había sesión: se abre para la próxima,
+    // sin esperar.
+    if (res && res.ok && !financeCore_sesion()) financeCore_abrirSesion();
     if (!res) throw new Error('Tu sesión venció. Cierra sesión y vuelve a entrar con Google.');
     if (res.status === 401) {
         throw new Error('Tu sesión financiera venció. Cierra sesión y vuelve a entrar con Google.');
@@ -16339,7 +16333,7 @@ function bandeja_cargarVista() {
     const setup = document.getElementById('bandeja-setup');
     const contenido = document.getElementById('bandeja-contenido');
 
-    if (!bandeja_token() && !_fbAuth.currentUser) {
+    if (!financeCore_conectado()) {
         setup.hidden = false;
         contenido.hidden = true;
         return;
@@ -16386,7 +16380,7 @@ async function bandeja_cargarPendientes() {
         bandeja_render();
     } catch (err) {
         lista.innerHTML = `<div class="bandeja-vacio">${err.message}</div>`;
-        if (!bandeja_token()) bandeja_cargarVista();
+        if (!financeCore_conectado()) bandeja_cargarVista();
     }
 }
 
@@ -16422,7 +16416,7 @@ function bandeja_pintarTab(nuevos) {
  */
 async function bandeja_sondearTab() {
     await _fbAuth.authStateReady?.();
-    if (!bandeja_token() && !_fbAuth.currentUser) return;
+    if (!financeCore_conectado()) return;
     try {
         const { pending } = await bandeja_api('/api/pending');
         bandejaPendientes = pending || [];
