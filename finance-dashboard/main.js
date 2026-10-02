@@ -43,7 +43,7 @@ const DEUDAS_RECIBOS_FOLDER_ID = '157KDn-vbkuHH1L8xbaJBGz-oKmT7p5a9';
 const SPREADSHEET_RSM_ID = '14VsoPHGNTSUSbzMOqGWs2qSL-pGywPgjUoHD3MqIJfo'; // Recibos Salud Mariel
 const SALDOS_SHEET_ID    = '1-cX_qxld3ioSpcO9lEBPg90Db6AyK7SczpJTvj7rw4U'; // Saldos (fuente de verdad — Claude accede vía service account)
 const RSM_FOLDER_ID = '1-ZfeWQ-Rmh-Wm2WMCkULkN6MQWBuxYnj';
-const APP_VERSION  = 'v8.12.4';
+const APP_VERSION  = 'v8.12.5';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -121,7 +121,7 @@ async function financeCoreSync({ fecha, lugar, concepto, monto, tipo, forma, rec
 let lugaresCatalogo = [];
 
 async function lugares_cargar() {
-    if (!bandeja_token()) return;
+    if (!(await financeCore_hayCredencial())) return;
     try {
         const { lugares } = await bandeja_api('/api/lugares');
         lugaresCatalogo = lugares || [];
@@ -800,7 +800,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Boot
     if (accessToken) {
         hideLoginModal();
-        firebase_restoreRedirectResult().then(() => {
+        firebase_restoreRedirectResult().then(() => financeCore_conectar()).then(() => {
             if (!_fbUid) debugUpdate({ auth: 'Firebase pendiente (se conecta al guardar cuentas)' });
             balance_loadAccounts().then(() => balance_updateKpi());
             showTab(getInitialTabFromHash());
@@ -811,7 +811,7 @@ document.addEventListener('DOMContentLoaded', () => {
             requestToken({ interactive: false }).then(ok => {
                 if (!ok) return;
                 hideLoginModal();
-                firebase_restoreRedirectResult().then(() => {
+                firebase_restoreRedirectResult().then(() => financeCore_conectar()).then(() => {
                     if (!_fbUid) debugUpdate({ auth: 'Google OK · Firebase pendiente' });
                     balance_loadAccounts().then(() => balance_updateKpi());
                     showTab(getInitialTabFromHash());
@@ -1303,7 +1303,7 @@ function balance_getOrCreateSheet() {
  * caiga a la hoja de Google mientras dure la migración.
  */
 async function balance_loadFromWorker() {
-    if (!bandeja_token()) return false;
+    if (!(await financeCore_hayCredencial())) return false;
     try {
         const { balances } = await bandeja_api('/api/balances');
         if (!balances?.length) return false;
@@ -2273,11 +2273,13 @@ async function requestToken(options = {}) {
                         hideLoginModal();
                         if (tokenRequestInteractive) {
                             // Recover redirect session if any; connect Firebase lazily on account save.
-                            firebase_restoreRedirectResult().then(() => {
+                            firebase_restoreRedirectResult().then(() => financeCore_conectar()).then(() => {
                                 if (!_fbUid) debugUpdate({ auth: 'Google OK · Firebase pendiente' });
                                 balance_loadAccounts().then(() => balance_updateKpi());
+                                // Después de conectar: si no, el Dashboard
+                                // carga antes y cae a la hoja vieja.
+                                showTab('dashboard');
                             });
-                            showTab('dashboard');
                         }
                     } else if (tokenRequestInteractive) {
                         showLoginModal();
@@ -2877,6 +2879,43 @@ async function financeCore_hayCredencial() {
     return !!_fbAuth.currentUser;
 }
 
+/**
+ * finance-core reconoce la sesión de Firebase, no la de Google. El login de
+ * Google solo abre las hojas, así que al terminarlo hay que abrir también la
+ * de Firebase: primero en silencio con el mismo token de Google; si Google no
+ * lo deja (el cliente OAuth vive en otro proyecto), con la ventana de Firebase.
+ * La ventana solo se abre con `interactive`, desde un toque del usuario: los
+ * navegadores bloquean popups que no vienen de un clic. Firebase guarda la
+ * sesión en el navegador, así que esto pasa una vez por navegador.
+ */
+async function financeCore_conectar({ interactive = false } = {}) {
+    if (interactive && !_fbAuth.currentUser && !bandeja_token()) {
+        await firebase_signInWithPopup();
+        return !!_fbAuth.currentUser;
+    }
+    if (await financeCore_hayCredencial()) return true;
+    if (accessToken) {
+        try {
+            const credential = GoogleAuthProvider.credential(null, accessToken);
+            const result = await signInWithCredential(_fbAuth, credential);
+            _fbUid = result.user.uid;
+            debugUpdate({ auth: 'Firebase OK (con el login de Google)', uid: _fbUid });
+            return true;
+        } catch (e) {
+            console.warn('[Firebase] conexión silenciosa falló:', e.code || '', e.message);
+            debugUpdate({ auth: 'Firebase pendiente: toca «Conectar finanzas»' });
+        }
+    }
+    return false;
+}
+
+// Vuelve a pedir todo a finance-core, ya con sesión.
+async function financeCore_recargar() {
+    await balance_loadAccounts();
+    balance_updateKpi();
+    await fetchAndProcess();
+}
+
 async function dashboard_datosDesdeWorker() {
     if (!(await financeCore_hayCredencial())) return null;
     try {
@@ -2969,9 +3008,19 @@ async function fetchAndProcess() {
         processAndRender(logData, fixedData, receiptItemRows, productGroupRows);
         // La hoja quedó congelada en la migración: si se llegó aquí, lo que se
         // ve son datos viejos. Decirlo, en vez de un "Sincronizado" engañoso.
-        status.innerText = '⚠️ finance-core no respondió · datos viejos';
         status.style.color = 'var(--accent-orange)';
-        showToast('⚠️ Sin conexión a finance-core: estás viendo datos viejos. Recarga o vuelve a entrar con Google.');
+        if (!(await financeCore_hayCredencial())) {
+            // Lo normal en un navegador nuevo: falta la sesión de Firebase.
+            status.innerHTML = '⚠️ Datos viejos · <button type="button" class="btn-secondary" id="btn-conectar-finanzas">Conectar finanzas</button>';
+            document.getElementById('btn-conectar-finanzas').onclick = async () => {
+                if (await financeCore_conectar({ interactive: true })) financeCore_recargar();
+                else showToast('No se pudo conectar. Revisa que la ventana de Google no esté bloqueada.');
+            };
+            showToast('⚠️ Estás viendo datos viejos. Toca «Conectar finanzas» arriba (solo una vez en este navegador).');
+        } else {
+            status.innerText = '⚠️ finance-core no respondió · datos viejos';
+            showToast('⚠️ Sin conexión a finance-core: estás viendo datos viejos. Recarga en un momento.');
+        }
     } catch (err) {
         if (err.status === 401) {
             status.innerText = 'Sesión expirada'; status.style.color = 'var(--accent-orange)';
@@ -4332,7 +4381,7 @@ async function gastos_exportarPdf() {
  * Devuelve false si no hay token o el worker falla, para caer a la hoja.
  */
 async function gastos_cargarDesdeWorker() {
-    if (!bandeja_token()) return false;
+    if (!(await financeCore_hayCredencial())) return false;
     try {
         const { movimientos } = await bandeja_api('/api/movimientos?limite=3000');
         if (!movimientos) return false;
@@ -14814,7 +14863,7 @@ function deudas_pedirConfigCuota({ cuotaLabel = '' } = {}) {
  * así que se reconstruye aquí en vez de tocar el render.
  */
 async function deudas_cargarDesdeWorker() {
-    if (!bandeja_token()) return false;
+    if (!(await financeCore_hayCredencial())) return false;
     try {
         const { deudas } = await bandeja_api('/api/deudas');
         if (!deudas) return false;
