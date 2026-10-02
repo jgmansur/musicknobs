@@ -43,7 +43,7 @@ const DEUDAS_RECIBOS_FOLDER_ID = '157KDn-vbkuHH1L8xbaJBGz-oKmT7p5a9';
 const SPREADSHEET_RSM_ID = '14VsoPHGNTSUSbzMOqGWs2qSL-pGywPgjUoHD3MqIJfo'; // Recibos Salud Mariel
 const SALDOS_SHEET_ID    = '1-cX_qxld3ioSpcO9lEBPg90Db6AyK7SczpJTvj7rw4U'; // Saldos (fuente de verdad — Claude accede vía service account)
 const RSM_FOLDER_ID = '1-ZfeWQ-Rmh-Wm2WMCkULkN6MQWBuxYnj';
-const APP_VERSION  = 'v8.12.3';
+const APP_VERSION  = 'v8.12.4';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
@@ -2866,8 +2866,19 @@ function handleApiError(err, el, retryFn) {
  * son cientos de líneas de agregados y gráficas. La traducción es barata; el
  * refactor sería arriesgado sin ganar nada hoy.
  */
+/**
+ * ¿Hay con qué autenticarse contra finance-core? Espera a que Firebase
+ * restaure la sesión: al cargar la página `currentUser` todavía es null, y
+ * preguntarlo antes mandaba la app a la hoja vieja aunque hubiera sesión.
+ */
+async function financeCore_hayCredencial() {
+    if (bandeja_token()) return true;
+    await _fbAuth.authStateReady?.();
+    return !!_fbAuth.currentUser;
+}
+
 async function dashboard_datosDesdeWorker() {
-    if (!bandeja_token()) return null;
+    if (!(await financeCore_hayCredencial())) return null;
     try {
         const periodo = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`;
         const [mov, fij, hor] = await Promise.all([
@@ -2956,7 +2967,11 @@ async function fetchAndProcess() {
             sheetsGet(SPREADSHEET_LOG_ID, `${PRODUCT_GROUPS_SHEET}!A2:E`).catch(() => [])
         ]);
         processAndRender(logData, fixedData, receiptItemRows, productGroupRows);
-        status.innerText = 'Sincronizado ✓'; status.style.color = 'var(--accent-green)';
+        // La hoja quedó congelada en la migración: si se llegó aquí, lo que se
+        // ve son datos viejos. Decirlo, en vez de un "Sincronizado" engañoso.
+        status.innerText = '⚠️ finance-core no respondió · datos viejos';
+        status.style.color = 'var(--accent-orange)';
+        showToast('⚠️ Sin conexión a finance-core: estás viendo datos viejos. Recarga o vuelve a entrar con Google.');
     } catch (err) {
         if (err.status === 401) {
             status.innerText = 'Sesión expirada'; status.style.color = 'var(--accent-orange)';
@@ -4847,7 +4862,11 @@ function planner_refreshIfReady() {
  * un mes nuevo simplemente todavía no tiene filas.
  */
 async function fijos_cargarDesdeWorker(nowMonth) {
-    if (!bandeja_token() && !_fbAuth.currentUser) return false;
+    fijosState.errorWorker = '';
+    if (!(await financeCore_hayCredencial())) {
+        fijosState.errorWorker = 'Tu sesión venció. Cierra sesión y vuelve a entrar con Google.';
+        return false;
+    }
     try {
         const periodo = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`;
         const { fijos } = await bandeja_api(`/api/fijos?period=${periodo}`);
@@ -4899,6 +4918,7 @@ async function fijos_cargarDesdeWorker(nowMonth) {
         return true;
     } catch (err) {
         console.warn('[Fijos] finance-core no respondió:', err.message);
+        fijosState.errorWorker = err.message;
         return false;
     }
 }
@@ -4914,7 +4934,7 @@ async function fijos_cargarDatos() {
         fijosState.categorias = [...new Set(catRows.map(r => r[0]).filter((c) => c && !String(c).startsWith('__')))];
         if (!fijosState.categorias.length) fijosState.categorias = ['General'];
 
-        // Fuente de verdad: finance-core. La hoja queda de respaldo.
+        // Fuente de verdad: finance-core. Solo las categorías siguen en la hoja.
         const nowMonthW = `${new Date().getFullYear()}-${new Date().getMonth() + 1}`;
         if (await fijos_cargarDesdeWorker(nowMonthW)) {
             fijos_generarPills();
@@ -4924,82 +4944,25 @@ async function fijos_cargarDatos() {
             return;
         }
 
-        // ── Monthly Reset ──────────────────────────────────────────────
-        // If month changed since last reset, clear all 'Pagado' checkboxes.
-        // IMPORTANT: Set the month key BEFORE the updates to prevent concurrent
-        // resets from multiple tabs/devices opening at the same time.
-        const nowMonth = `${new Date().getFullYear()}-${new Date().getMonth() + 1}`;
-        const storedMonth = localStorage.getItem(RESET_MONTH_KEY);
-        localStorage.setItem(RESET_MONTH_KEY, nowMonth);
-        if (storedMonth && storedMonth !== nowMonth && rows.length > 0) {
-            console.log('[fijos] Nuevo mes detectado — reseteando progreso de pagos');
-            const lastRow = rows.length + 1;
-            await sheetsUpdate(
-                SPREADSHEET_FIXED_ID,
-                `Hoja 1!F2:F${lastRow}`,
-                rows.map((r) => [parseFixedPeriodicity(r[8]) === 'Cuota de Deuda' ? (r[5] || 'FALSE') : 'FALSE'])
-            ).catch(e => console.warn('Reset mensual falló:', e));
-            await sheetsUpdate(
-                SPREADSHEET_FIXED_ID,
-                `Hoja 1!H2:H${lastRow}`,
-                rows.map(r => [parseFixedPeriodicity(r[8]) === 'Cuota de Deuda' ? (r[7] || serializePaymentStates(new Array(parsePaymentsTotal(r[6])).fill(false))) : serializePaymentStates(new Array(parsePaymentsTotal(r[6])).fill(false))])
-            ).catch(e => console.warn('Reset mensual estado pagos falló:', e));
-            await sheetsUpdate(
-                SPREADSHEET_FIXED_ID,
-                `Hoja 1!N2:N${lastRow}`,
-                rows.map(r => [parseFixedPeriodicity(r[8]) === 'Cuota de Deuda' ? (r[13] || serializePaymentStates(new Array(parsePaymentsTotal(r[6])).fill(false))) : serializePaymentStates(new Array(parsePaymentsTotal(r[6])).fill(false))])
-            ).catch(e => console.warn('Reset mensual waived falló:', e));
-        }
-        // ─────────────────────────────────────────────────────────────
-
-        fijosState.allItems = rows.map((row, i) => {
-            const dayOfMonth = parseDayOfMonth(row[0]);
-            const moneda = parseCurrencyCode(row[12]);
-            const gRaw   = parseSheetValue(row[2]);
-            const nRaw   = parseSheetValue(row[3]);
-            const g      = convertTransactionAmountToMxn(gRaw, moneda);
-            const n      = convertTransactionAmountToMxn(nRaw, moneda);
-            const pagosMes = parsePaymentsTotal(row[6]);
-            const pagosEstado = parsePaymentStates(row[7], pagosMes, parseBool(row[5]));
-            const waivedEstado = parseWaiveStates(row[13], pagosMes, pagosEstado);
-            const pagosHechos = pagosEstado.filter(Boolean).length;
-            const isPaid = pagosHechos >= pagosMes;
-            const periodicidad = parseFixedPeriodicity(row[8]);
-            const inicioMes = parseStartMonth(row[9], nowMonth);
-            const isDueThisMonth = isFixedDueThisMonth(periodicidad, inicioMes, nowMonth);
-            return {
-                id: i + 2,
-                fecha: `Día ${dayOfMonth}`,
-                fechaValue: String(dayOfMonth).padStart(2, '0'),
-                diaMes: dayOfMonth,
-                concepto:   row[1] || '',
-                monto:      g || n,
-                montoOriginal: gRaw || nRaw,
-                moneda,
-                tipo:       g > 0 ? 'gasto' : 'ingreso',
-                categoria:  fijos_limpiarCategoria(row[4]),
-                isPaid,
-                pagosMes,
-                pagosEstado,
-                waivedEstado,
-                pagosHechos,
-                periodicidad,
-                inicioMes,
-                isDueThisMonth,
-                pagador: parseFixedPayer(row[10]),
-                formaPago: parseFixedFormaPago(row[10]),
-                budgetCategory: parseBudgetCategory(row[11]),
-                linkGroup: (row[14] || '').toString().trim(),
-                fechasPago: parseFechasPago(row[15], pagosMes),
-            };
-        }).filter(i => i.concepto).sort((a, b) => a.diaMes - b.diaMes);
-
-        fijos_generarPills();
-        fijos_syncDashboardStats();
-        fijos_aplicarFiltros();
-        planner_refreshIfReady();
+        // Sin finance-core NO se cae a la hoja: quedó congelada en la
+        // migración, así que mostraría fijos viejos con ids de fila que ya no
+        // se pueden editar. Mejor decirlo y ofrecer reintentar.
+        fijosState.allItems = [];
+        fijos_renderErrorWorker();
     } catch(e) { handleApiError(e, document.getElementById('f-lista')); }
 }
+
+function fijos_renderErrorWorker() {
+    const el = document.getElementById('f-lista');
+    if (!el) return;
+    const motivo = fijos_escapeHtml(fijosState.errorWorker || 'finance-core no respondió.');
+    el.innerHTML = `<div class="empty-state text-danger">
+        ⚠️ No pude cargar tus gastos fijos.<br>
+        <span style="font-size:.8rem;color:var(--text-muted)">${motivo}</span><br>
+        <button class="mini-btn" style="margin-top:.75rem" onclick="fijos_cargarDatos()">🔄 Reintentar</button>
+      </div>`;
+}
+window.fijos_cargarDatos = fijos_cargarDatos;
 
 function fijos_generarPills() {
     const categoryPills = (cat) => fijosState.categorias
@@ -5286,7 +5249,9 @@ function fijos_renderLista(lista) {
 }
 
 window.fijos_editar = function(id) {
-    const item = fijosState.allItems.find(i => i.id === id);
+    // El onclick siempre manda texto; un id numérico de fila nunca hacía match
+    // con `===` y el botón se quedaba mudo.
+    const item = fijosState.allItems.find(i => String(i.id) === String(id));
     if (item) fijos_abrirSheet(item);
 };
 
