@@ -16,7 +16,7 @@ import { normalizeEmails, sendFixedExpenseReminders } from './fixed-reminders.js
 
 const CORS = {
     'access-control-allow-origin': '*',
-    'access-control-allow-headers': 'authorization, content-type, x-finance-token',
+    'access-control-allow-headers': 'authorization, content-type, x-finance-token, x-google-token',
     // Deben listarse TODOS los métodos que usa la API. El navegador lee esta
     // cabecera y bloquea cualquier método ausente, aunque el preflight
     // responda 204 — y el error que ve el usuario no menciona el método.
@@ -41,6 +41,36 @@ const FIREBASE_API_KEY = 'AIzaSyCvYPZLCQdfuGLD4WDVnMUSerhPVutThy8';
 
 export async function isAuthorizedRequest(request, env, fetchImpl = fetch) {
     if (request.headers.get('x-finance-token') === env.API_TOKEN) return true;
+
+    // El mismo login de Google con el que el dashboard abre las hojas. Safari
+    // bloquea la ventana de Firebase (vive en otro dominio), así que el token
+    // de Google se verifica directo con Google: que sea de nuestra app y de
+    // un correo permitido.
+    const googleToken = (request.headers.get('x-google-token') || '').trim();
+    if (googleToken) {
+        try {
+            const response = await fetchImpl(
+                `https://oauth2.googleapis.com/tokeninfo?access_token=${encodeURIComponent(googleToken)}`,
+            );
+            if (!response.ok) return false;
+            const info = await response.json();
+            const allowedEmails = String(env.FINANCE_ALLOWED_EMAILS || '')
+                .split(',')
+                .map((email) => email.trim().toLowerCase())
+                .filter(Boolean);
+            const clientIds = String(env.GOOGLE_CLIENT_IDS || '')
+                .split(',')
+                .map((id) => id.trim())
+                .filter(Boolean);
+            return clientIds.includes(info.aud || info.azp)
+                && String(info.email_verified) === 'true'
+                && Number(info.expires_in) > 0
+                && allowedEmails.includes(String(info.email || '').toLowerCase());
+        } catch (error) {
+            console.warn('Google token verification failed:', error?.message || error);
+            return false;
+        }
+    }
 
     const authorization = request.headers.get('authorization') || '';
     const idToken = authorization.startsWith('Bearer ') ? authorization.slice(7).trim() : '';

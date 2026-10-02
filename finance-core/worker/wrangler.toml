@@ -15,6 +15,9 @@ preview_urls = false
 
 [vars]
 FINANCE_ALLOWED_EMAILS = "jgmansur2@gmail.com"
+# Cliente OAuth del dashboard (proyecto «Jay App»): solo sus tokens de Google
+# entran por x-google-token, no los de cualquier otra app.
+GOOGLE_CLIENT_IDS = "427918095213-6cbm5sgcfn6o8qosg6qe1r6u9toj66dp.apps.googleusercontent.com"
 
 [observability]
 enabled = true
