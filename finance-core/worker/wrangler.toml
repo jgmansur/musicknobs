@@ -33,3 +33,4 @@ crons = ["*/15 * * * *"]
 #   GMAIL_CLIENT_SECRET
 #   GMAIL_REFRESH_TOKEN
 #   API_TOKEN
+#   SESSION_SECRET  (firma las sesiones del dashboard; rotarlo las cierra todas)

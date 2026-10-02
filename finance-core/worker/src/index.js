@@ -4,8 +4,8 @@
  *   scheduled()  cron cada 15 min: lee Gmail y llena la bandeja de pendientes.
  *   fetch()      API mínima para que el dashboard lea y apruebe pendientes.
  *
- * Toda la API exige el header `x-finance-token`. Sin él, 401: la base tiene
- * movimientos reales y esto vive en internet abierto.
+ * Toda la API exige credencial (ver identifyRequest). Sin ella, 401: la base
+ * tiene movimientos reales y esto vive en internet abierto.
  */
 
 import postgres from 'postgres';
@@ -13,10 +13,11 @@ import { runIngest } from './ingest.js';
 import { aprobarPendiente, borrarMovimiento, pagarFijo } from '../../shared/movimientos.js';
 import { revisarSalud } from '../../shared/salud.js';
 import { normalizeEmails, sendFixedExpenseReminders } from './fixed-reminders.js';
+import { signSession, verifySession } from './session.js';
 
 const CORS = {
     'access-control-allow-origin': '*',
-    'access-control-allow-headers': 'authorization, content-type, x-finance-token, x-google-token',
+    'access-control-allow-headers': 'authorization, content-type, x-finance-token, x-google-token, x-finance-session',
     // Deben listarse TODOS los métodos que usa la API. El navegador lee esta
     // cabecera y bloquea cualquier método ausente, aunque el preflight
     // responda 204 — y el error que ve el usuario no menciona el método.
@@ -39,43 +40,61 @@ const preflight = () => new Response(null, { status: 204, headers: CORS });
 
 const FIREBASE_API_KEY = 'AIzaSyCvYPZLCQdfuGLD4WDVnMUSerhPVutThy8';
 
-export async function isAuthorizedRequest(request, env, fetchImpl = fetch) {
-    if (request.headers.get('x-finance-token') === env.API_TOKEN) return true;
+const allowedEmails = (env) =>
+    String(env.FINANCE_ALLOWED_EMAILS || '')
+        .split(',')
+        .map((email) => email.trim().toLowerCase())
+        .filter(Boolean);
 
-    // El mismo login de Google con el que el dashboard abre las hojas. Safari
-    // bloquea la ventana de Firebase (vive en otro dominio), así que el token
-    // de Google se verifica directo con Google: que sea de nuestra app y de
-    // un correo permitido.
+/**
+ * Quién hace la petición, o null. `via` dice con qué credencial entró:
+ *   legacy   x-finance-token (scripts y el MCP; no trae correo)
+ *   session  sesión firmada por este worker (la del dashboard)
+ *   google   login de Google del dashboard, verificado con tokeninfo
+ *   firebase sesión de Firebase (respaldo)
+ */
+export async function identifyRequest(request, env, fetchImpl = fetch) {
+    if (env.API_TOKEN && request.headers.get('x-finance-token') === env.API_TOKEN) {
+        return { via: 'legacy', email: null };
+    }
+    const allowed = allowedEmails(env);
+
+    const session = (request.headers.get('x-finance-session') || '').trim();
+    if (session) {
+        const email = await verifySession(session, env.SESSION_SECRET);
+        if (email && allowed.includes(email)) return { via: 'session', email };
+    }
+
+    // El mismo login de Google con el que el dashboard abre las hojas. Se
+    // verifica con Google: que sea de nuestra app y de un correo permitido.
     const googleToken = (request.headers.get('x-google-token') || '').trim();
     if (googleToken) {
         try {
             const response = await fetchImpl(
                 `https://oauth2.googleapis.com/tokeninfo?access_token=${encodeURIComponent(googleToken)}`,
             );
-            if (!response.ok) return false;
-            const info = await response.json();
-            const allowedEmails = String(env.FINANCE_ALLOWED_EMAILS || '')
-                .split(',')
-                .map((email) => email.trim().toLowerCase())
-                .filter(Boolean);
-            const clientIds = String(env.GOOGLE_CLIENT_IDS || '')
-                .split(',')
-                .map((id) => id.trim())
-                .filter(Boolean);
-            return clientIds.includes(info.aud || info.azp)
-                && String(info.email_verified) === 'true'
-                && Number(info.expires_in) > 0
-                && allowedEmails.includes(String(info.email || '').toLowerCase());
+            if (response.ok) {
+                const info = await response.json();
+                const clientIds = String(env.GOOGLE_CLIENT_IDS || '')
+                    .split(',')
+                    .map((id) => id.trim())
+                    .filter(Boolean);
+                const email = String(info.email || '').toLowerCase();
+                if (clientIds.includes(info.aud || info.azp)
+                    && String(info.email_verified) === 'true'
+                    && Number(info.expires_in) > 0
+                    && allowed.includes(email)) {
+                    return { via: 'google', email };
+                }
+            }
         } catch (error) {
             console.warn('Google token verification failed:', error?.message || error);
-            return false;
         }
     }
 
     const authorization = request.headers.get('authorization') || '';
     const idToken = authorization.startsWith('Bearer ') ? authorization.slice(7).trim() : '';
-    if (!idToken) return false;
-
+    if (!idToken) return null;
     try {
         const response = await fetchImpl(
             `https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=${FIREBASE_API_KEY}`,
@@ -85,19 +104,36 @@ export async function isAuthorizedRequest(request, env, fetchImpl = fetch) {
                 body: JSON.stringify({ idToken }),
             },
         );
-        if (!response.ok) return false;
-        const data = await response.json();
-        const user = data.users?.[0];
-        const allowedEmails = String(env.FINANCE_ALLOWED_EMAILS || '')
-            .split(',')
-            .map((email) => email.trim().toLowerCase())
-            .filter(Boolean);
-        return user?.emailVerified === true
-            && allowedEmails.includes(String(user.email || '').toLowerCase());
+        if (!response.ok) return null;
+        const user = (await response.json()).users?.[0];
+        const email = String(user?.email || '').toLowerCase();
+        return user?.emailVerified === true && allowed.includes(email)
+            ? { via: 'firebase', email }
+            : null;
     } catch (error) {
         console.warn('Firebase token verification failed:', error?.message || error);
-        return false;
+        return null;
     }
+}
+
+export async function isAuthorizedRequest(request, env, fetchImpl = fetch) {
+    return (await identifyRequest(request, env, fetchImpl)) !== null;
+}
+
+/**
+ * POST /api/session: cambia un login de Google (o Firebase) por la sesión
+ * propia de 90 días. Solo desde un login real: una sesión no se renueva a sí
+ * misma, así que una robada deja de servir a los 90 días como máximo.
+ */
+export async function issueSession(identity, env) {
+    if (!identity || !['google', 'firebase'].includes(identity.via)) {
+        return { status: 403, body: { error: 'Entra con Google para abrir la sesión.' } };
+    }
+    if (!env.SESSION_SECRET) {
+        return { status: 503, body: { error: 'Sesiones no configuradas.' } };
+    }
+    const signed = await signSession(identity.email, env.SESSION_SECRET);
+    return { status: 200, body: { ...signed, email: identity.email } };
 }
 
 const connect = (env) =>
@@ -137,8 +173,13 @@ export default {
         const url = new URL(request.url);
         if (url.pathname === '/health') return json({ ok: true });
 
-        if (!await isAuthorizedRequest(request, env)) {
+        const identity = await identifyRequest(request, env);
+        if (!identity) {
             return json({ error: 'no autorizado' }, 401);
+        }
+        if (url.pathname === '/api/session' && request.method === 'POST') {
+            const { status, body } = await issueSession(identity, env);
+            return json(body, status);
         }
 
         const sql = connect(env);
