@@ -28,7 +28,8 @@ import { getFirestore, doc, getDoc, onSnapshot, setDoc, serverTimestamp } from '
 // =============================================
 const CLIENT_ID = '427918095213-6cbm5sgcfn6o8qosg6qe1r6u9toj66dp.apps.googleusercontent.com';
 // OAuth: add drive scope for creating the accounts spreadsheet in Drive
-const SCOPES = 'https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/drive';
+// userinfo.email: finance-core reconoce el login por el correo verificado.
+const SCOPES = 'https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/drive https://www.googleapis.com/auth/userinfo.email';
 const SPREADSHEET_LOG_ID   = '1pn1bsxj2LaoySXAVUvqfEJY1VR4R_T8NsTOqQnVW5Xw'; // Control de Gastos
 const RECEIPT_ITEMS_SHEET = 'Receipt Items';
 const PRODUCT_GROUPS_SHEET = 'Product Groups';
@@ -43,13 +44,14 @@ const DEUDAS_RECIBOS_FOLDER_ID = '157KDn-vbkuHH1L8xbaJBGz-oKmT7p5a9';
 const SPREADSHEET_RSM_ID = '14VsoPHGNTSUSbzMOqGWs2qSL-pGywPgjUoHD3MqIJfo'; // Recibos Salud Mariel
 const SALDOS_SHEET_ID    = '1-cX_qxld3ioSpcO9lEBPg90Db6AyK7SczpJTvj7rw4U'; // Saldos (fuente de verdad — Claude accede vía service account)
 const RSM_FOLDER_ID = '1-ZfeWQ-Rmh-Wm2WMCkULkN6MQWBuxYnj';
-const APP_VERSION  = 'v8.12.5';
+const APP_VERSION  = 'v8.13.0';
 const MELI_CLIENT_ID = '8274124056462040';
 const MELI_AUTH_URL = 'https://auth.mercadolibre.com.mx/authorization';
 const MELI_BROKER_BASE_URL = 'https://opengravity-meli-broker.fly.dev';
 // Bump token keys to force re-auth with the new drive scope
-const TOKEN_KEY    = 'google_access_token_v4';
-const EXPIRY_KEY   = 'google_token_expiry_v4';
+// v5: los tokens anteriores no traen el permiso de correo; se piden una vez.
+const TOKEN_KEY    = 'google_access_token_v5';
+const EXPIRY_KEY   = 'google_token_expiry_v5';
 const TOKEN_LIFETIME_FALLBACK_SEC = 3500;
 const TOKEN_REFRESH_MARGIN_MS = 5 * 60 * 1000;
 const ACCOUNTS_SHEET_KEY = 'finance_accounts_sheet_v1'; // localStorage key for the accounts spreadsheet ID
@@ -2874,39 +2876,20 @@ function handleApiError(err, el, retryFn) {
  * preguntarlo antes mandaba la app a la hoja vieja aunque hubiera sesión.
  */
 async function financeCore_hayCredencial() {
-    if (bandeja_token()) return true;
+    if (bandeja_token() || accessToken) return true;
     await _fbAuth.authStateReady?.();
     return !!_fbAuth.currentUser;
 }
 
 /**
- * finance-core reconoce la sesión de Firebase, no la de Google. El login de
- * Google solo abre las hojas, así que al terminarlo hay que abrir también la
- * de Firebase: primero en silencio con el mismo token de Google; si Google no
- * lo deja (el cliente OAuth vive en otro proyecto), con la ventana de Firebase.
- * La ventana solo se abre con `interactive`, desde un toque del usuario: los
- * navegadores bloquean popups que no vienen de un clic. Firebase guarda la
- * sesión en el navegador, así que esto pasa una vez por navegador.
+ * finance-core acepta el mismo login de Google con el que se abren las hojas,
+ * así que no hace falta otra ventana: Safari bloqueaba la de Firebase. Si el
+ * login venció o no trae el permiso de correo, se vuelve a pedir con un toque
+ * (los navegadores solo dejan abrir la ventana de Google desde un clic).
  */
 async function financeCore_conectar({ interactive = false } = {}) {
-    if (interactive && !_fbAuth.currentUser && !bandeja_token()) {
-        await firebase_signInWithPopup();
-        return !!_fbAuth.currentUser;
-    }
-    if (await financeCore_hayCredencial()) return true;
-    if (accessToken) {
-        try {
-            const credential = GoogleAuthProvider.credential(null, accessToken);
-            const result = await signInWithCredential(_fbAuth, credential);
-            _fbUid = result.user.uid;
-            debugUpdate({ auth: 'Firebase OK (con el login de Google)', uid: _fbUid });
-            return true;
-        } catch (e) {
-            console.warn('[Firebase] conexión silenciosa falló:', e.code || '', e.message);
-            debugUpdate({ auth: 'Firebase pendiente: toca «Conectar finanzas»' });
-        }
-    }
-    return false;
+    if (interactive) return requestToken({ interactive: true });
+    return financeCore_hayCredencial();
 }
 
 // Vuelve a pedir todo a finance-core, ya con sesión.
@@ -3011,12 +2994,12 @@ async function fetchAndProcess() {
         status.style.color = 'var(--accent-orange)';
         if (!(await financeCore_hayCredencial())) {
             // Lo normal en un navegador nuevo: falta la sesión de Firebase.
-            status.innerHTML = '⚠️ Datos viejos · <button type="button" class="btn-secondary" id="btn-conectar-finanzas">Conectar finanzas</button>';
+            status.innerHTML = '⚠️ Datos viejos · <button type="button" class="btn-secondary" id="btn-conectar-finanzas">Volver a entrar</button>';
             document.getElementById('btn-conectar-finanzas').onclick = async () => {
                 if (await financeCore_conectar({ interactive: true })) financeCore_recargar();
-                else showToast('No se pudo conectar. Revisa que la ventana de Google no esté bloqueada.');
+                else showToast('No se pudo entrar. Revisa que la ventana de Google no esté bloqueada.');
             };
-            showToast('⚠️ Estás viendo datos viejos. Toca «Conectar finanzas» arriba (solo una vez en este navegador).');
+            showToast('⚠️ Estás viendo datos viejos. Toca «Volver a entrar» arriba.');
         } else {
             status.innerText = '⚠️ finance-core no respondió · datos viejos';
             showToast('⚠️ Sin conexión a finance-core: estás viendo datos viejos. Recarga en un momento.');
@@ -16255,12 +16238,6 @@ let bandejaIngestPromise = null;
 const bandeja_token = () => localStorage.getItem(BANDEJA_TOKEN_KEY) || '';
 
 async function bandeja_api(path, options = {}) {
-    await _fbAuth.authStateReady?.();
-    const legacyToken = bandeja_token();
-    let firebaseToken = legacyToken ? '' : await _fbAuth.currentUser?.getIdToken();
-    if (!legacyToken && !firebaseToken) {
-        throw new Error('Tu sesión venció. Cierra sesión y vuelve a entrar con Google.');
-    }
     const request = (authHeaders) => fetch(BANDEJA_API + path, {
         ...options,
         headers: {
@@ -16269,18 +16246,31 @@ async function bandeja_api(path, options = {}) {
             ...(options.headers || {}),
         },
     });
-    let res = await request(legacyToken
-        ? { 'x-finance-token': legacyToken }
-        : { authorization: `Bearer ${firebaseToken}` });
-    // Una credencial antigua no debe bloquear al usuario: se elimina y se
-    // reintenta una sola vez con la sesión de Google/Firebase ya activa.
-    if (res.status === 401 && legacyToken) {
-        localStorage.removeItem(BANDEJA_TOKEN_KEY);
-        firebaseToken = await _fbAuth.currentUser?.getIdToken(true);
-        if (firebaseToken) {
-            res = await request({ authorization: `Bearer ${firebaseToken}` });
-        }
+    // Credenciales en orden: la llave vieja si alguien la guardó, el mismo
+    // login de Google con el que se abren las hojas (sirve en cualquier
+    // navegador, Safari incluido) y, de respaldo, una sesión de Firebase.
+    const intentos = [];
+    const legacyToken = bandeja_token();
+    if (legacyToken) intentos.push(async () => ({ 'x-finance-token': legacyToken }));
+    intentos.push(async () => {
+        if (!(await ensureValidAccessToken()) || !accessToken) return null;
+        return { 'x-google-token': accessToken };
+    });
+    intentos.push(async () => {
+        await _fbAuth.authStateReady?.();
+        const firebaseToken = await _fbAuth.currentUser?.getIdToken();
+        return firebaseToken ? { authorization: `Bearer ${firebaseToken}` } : null;
+    });
+    let res = null;
+    for (const credencial of intentos) {
+        const headers = await credencial().catch(() => null);
+        if (!headers) continue;
+        res = await request(headers);
+        if (res.status !== 401) break;
+        // Una llave vieja rechazada no debe volver a intentarse.
+        if (headers['x-finance-token']) localStorage.removeItem(BANDEJA_TOKEN_KEY);
     }
+    if (!res) throw new Error('Tu sesión venció. Cierra sesión y vuelve a entrar con Google.');
     if (res.status === 401) {
         throw new Error('Tu sesión financiera venció. Cierra sesión y vuelve a entrar con Google.');
     }
