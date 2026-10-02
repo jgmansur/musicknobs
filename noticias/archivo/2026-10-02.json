@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-10-02T13:48:03.330Z",
+  "lastUpdated": "2026-10-02T22:56:21.455Z",
   "meta": {
     "method": "rss-retrieval + link-verification + ai-translation",
     "itemCount": 12,
@@ -8,10 +8,9 @@
       "Digital Music News",
       "Forbes",
       "LexLatin",
-      "Music Ally",
       "Music Business Worldwide",
       "Rockum",
-      "Variety"
+      "The Tennessean"
     ],
     "verifiedLinks": 12,
     "aiTranslated": 0,
@@ -53,18 +52,18 @@
       },
       {
         "id": "noticia-3",
-        "title": "Suno Blasts Latest UMG/Sony Lawsuit As ‘Fundamentally Flawed on Both the Facts and the Law’",
-        "summary": "UMG and Sony file another copyright lawsuit against Suno, and the AI company claps back with a statement that the suit is “fundamentally flawed.” Universal Music Group and Sony Music Entertainment continue to heat things up in their ongoing legal battle against the AI music platform Suno. The majors have filed another…",
-        "url": "https://www.digitalmusicnews.com/2026/09/22/suno-comments-umg-sony-lawsuit/",
-        "source": "Digital Music News",
-        "domain": "digitalmusicnews.com",
-        "publishedAt": "2026-09-22T16:00:31.000Z",
+        "title": "US appeals court rejects ‘fair use’ defense over AI training – as Thomson Reuters wins copyright case backed by RIAA and NMPA",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMi8wFBVV95cUxPLVpsd0o2VGhwT3BoSFZTLXVuQTJWSnBQRm1TT01zREhNSm1zRERyRDhqRnVqN2hXbVJYNHowUkFnVl9BTVhUazZ4R3d2b2FXZWU3TFJkRU9sZVZyTkxzbGtwVkJSckwtZjY1bXByVG9OcWo1YldnTDcwQXpBV0xGTGVxUW5iNVhtR3M4YnJqVEEwV2JkeDZUV3BUN2FHYXh2bHg1VGphSmk2S2psMm4tbllhLXMtamktN19KZW5FcFBoS1pYV1dBYkxYNW1VZXNJclZBVEhDOG9CeDIzSE5HcFdkcnRfV2FZWXFpTXYtZkVVSVE?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "Music Business Worldwide",
+        "domain": "news.google.com",
+        "publishedAt": "2026-09-30T10:19:48.000Z",
         "tags": [
           "lawsuit",
           "ai"
         ],
         "translated": false,
-        "via": null
+        "via": "Google News"
       },
       {
         "id": "noticia-4",
@@ -110,6 +109,21 @@
       },
       {
         "id": "noticia-7",
+        "title": "Historic ruling on 'fair use' and AI may help Nashville songwriters",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMitwFBVV95cUxPNGkxNm94cTNBVkk0Z0hnV2Z4T0RJNktYNW1OTlBRWU01QldpRUFkSUZSRG5ZbExhMGczeWtaS2dXN0VUQWEtWnNabFhlU0pnQmZHaDhPOXRadGY2ckR5dVc2cnNGenFaUFdKcGx4UUUwbERnODBGYmJfVTBSNllpVThGbjVHaWVJaE1ITV9RT2pSMXpVbzM2T3VLTFoyZVUxQThvaDF2aHVCVXB4N0VaNW1NOWtiQU0?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "The Tennessean",
+        "domain": "news.google.com",
+        "publishedAt": "2026-10-02T15:23:00.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-8",
         "title": "Trump’s DoJ was biased and wrong about ‘fair use’, say news orgs in OpenAI dispute",
         "summary": "Many of the music industry’s AI legal battles swing on whether or not AI training is ‘fair use’ under US copyright law. Donald Trump’s DoJ recently intervened in a dispute between newspapers and OpenAI insisting AI training is fair use. The newspapers have responded, explaining why the DoJ is wrong",
         "url": "https://completemusicupdate.com/trumps-doj-was-biased-and-wrong-about-fair-use-say-news-orgs-in-openai-dispute/",
@@ -123,7 +137,7 @@
         "via": null
       },
       {
-        "id": "noticia-8",
+        "id": "noticia-9",
         "title": "Suno Confirms V6 AI Music Model Was Trained on User Creations as Sony and Universal File New Copyright Lawsuit",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMi5AFBVV95cUxPU0lJcWUxZTU1R2F3NmRwWUFQZHVPbEV2NTE5Sms1eG1KRG5rbEpQWHJXOVptcE1xaFpRdTVJX2YyNFZtYzVPYXRsMlhYVVBHWkJUNmtaUnZTU0VNWjJaZV9saklTSkZydXpSVmt1c1JjTzdrZUtlWEZ1QU5ybmJsdlRXUmMtMkZhTFV1Y0Rjd2ppZ1FGRTRzdGYyQWR1SFpTWjJoLW5tMEpKOFR1bGw1bEdMemRZSXMwWHBZei1udVpZUTJBUnE2NnUtZzZDei1OS2NSV28zZUpqdXhSckx2eExmN3E?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -138,7 +152,23 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-9",
+        "id": "noticia-10",
+        "title": "Spotify, Amazon Music, Merlin, Empire, Downtown, Distrokid, Meta, Others Join the DOJ In Recommending Prison Time for Streaming Fraudster Michael Smith",
+        "summary": "Ahead of Michael Smith’s October 6th sentencing, the Music Fights Fraud Alliance (MFFA) has submitted a letter to the court arguing for a significant sentence to deter future abuse. Michael Smith, who was convicted of stealing royalties from artists and songwriters with millions of bot-assisted streams on his AI-genera…",
+        "url": "https://www.digitalmusicnews.com/2026/10/01/doj-cites-mffa-streaming-fraud-case/",
+        "source": "Digital Music News",
+        "domain": "digitalmusicnews.com",
+        "publishedAt": "2026-10-02T04:00:40.000Z",
+        "tags": [
+          "lawsuit",
+          "ai",
+          "royalties"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-11",
         "title": "ElevenLabs valuation doubles to $22B – four times that of AI music rival Suno",
         "summary": "ElevenLabs completed a USD $300 million employee tender offer at a valuation of $22 billion. Source",
         "url": "https://www.musicbusinessworldwide.com/elevenlabs-valuation-doubles-to-22b-four-times-that-of-ai-music-rival-suno/",
@@ -152,45 +182,15 @@
         "via": null
       },
       {
-        "id": "noticia-10",
-        "title": "Suno is ‘far beyond’ 2m subscribers and $300m of annual revenue",
-        "summary": "It’s been a little while since AI-music firm Suno announced its user and revenue stats. We’re not getting new figures just yet, but CEO Mikey Shulman provided an update of sorts in an interview with Bloomberg. The post is from Music Ally .",
-        "url": "https://musically.com/2026/10/02/suno-is-far-beyond-2m-subscribers-and-300m-of-annual-revenue/",
-        "source": "Music Ally",
-        "domain": "musically.com",
-        "publishedAt": "2026-10-02T11:30:00.000Z",
-        "tags": [
-          "ai"
-        ],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-11",
-        "title": "Kelly Clarkson Says ‘I Love AI’ but AI Artists Should Not Be on the Same Music Charts as Humans",
-        "summary": "Kelly Clarkson has shared her admittedly “controversial” opinion on artificial intelligence, saying she thinks it can do “amazing things” but shouldn’t be able to create anything that competes with humans, particularly on music charts. The pop star shared her feelings about the technology during an appearance on the La…",
-        "url": "https://variety.com/2026/music/news/kelly-clarkson-says-i-love-ai-but-shouldnt-compete-music-1236895343/",
-        "source": "Variety",
-        "domain": "variety.com",
-        "publishedAt": "2026-10-01T19:27:52.000Z",
-        "tags": [
-          "ai"
-        ],
-        "translated": false,
-        "via": null
-      },
-      {
         "id": "noticia-12",
-        "title": "IMPF and IMPEL publish AI licensing principles, insisting songs and recordings must be valued equally",
-        "summary": "As the music industry enters into ever more deals with AI platforms, the indie publisher community has again insisted that - with AI - song rights and recording rights must be valued equally, unlike in streaming. A new AI framework from IMPF and IMPEL says that key principle is “non-negotiable”",
-        "url": "https://completemusicupdate.com/impf-and-impel-publish-ai-licensing-principles-insisting-songs-and-recordings-must-be-valued-equally/",
-        "source": "Complete Music Update",
-        "domain": "completemusicupdate.com",
-        "publishedAt": "2026-09-30T15:45:04.000Z",
+        "title": "Suno is ‘far beyond’ 2m subscribers and $300m in revenue, says Mikey Shulman – who argues it’s ‘good’ that AI music has no ‘firm rules of the road’ yet",
+        "summary": "Shulman also set out what WMG and BMG get from their deals, and who should be setting AI's rules. Source",
+        "url": "https://www.musicbusinessworldwide.com/suno-is-far-beyond-2m-subscribers-and-300m-in-revenue-says-mikey-shulman-who-argues-its-good-that-ai-music-has-no-firm-rules-of-the-road-yet/",
+        "source": "Music Business Worldwide",
+        "domain": "musicbusinessworldwide.com",
+        "publishedAt": "2026-10-02T16:42:55.000Z",
         "tags": [
-          "ai",
-          "licensing",
-          "streaming"
+          "ai"
         ],
         "translated": false,
         "via": null
@@ -237,18 +237,18 @@
       },
       {
         "id": "noticia-3",
-        "title": "Suno Blasts Latest UMG/Sony Lawsuit As ‘Fundamentally Flawed on Both the Facts and the Law’",
-        "summary": "UMG and Sony file another copyright lawsuit against Suno, and the AI company claps back with a statement that the suit is “fundamentally flawed.” Universal Music Group and Sony Music Entertainment continue to heat things up in their ongoing legal battle against the AI music platform Suno. The majors have filed another…",
-        "url": "https://www.digitalmusicnews.com/2026/09/22/suno-comments-umg-sony-lawsuit/",
-        "source": "Digital Music News",
-        "domain": "digitalmusicnews.com",
-        "publishedAt": "2026-09-22T16:00:31.000Z",
+        "title": "US appeals court rejects ‘fair use’ defense over AI training – as Thomson Reuters wins copyright case backed by RIAA and NMPA",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMi8wFBVV95cUxPLVpsd0o2VGhwT3BoSFZTLXVuQTJWSnBQRm1TT01zREhNSm1zRERyRDhqRnVqN2hXbVJYNHowUkFnVl9BTVhUazZ4R3d2b2FXZWU3TFJkRU9sZVZyTkxzbGtwVkJSckwtZjY1bXByVG9OcWo1YldnTDcwQXpBV0xGTGVxUW5iNVhtR3M4YnJqVEEwV2JkeDZUV3BUN2FHYXh2bHg1VGphSmk2S2psMm4tbllhLXMtamktN19KZW5FcFBoS1pYV1dBYkxYNW1VZXNJclZBVEhDOG9CeDIzSE5HcFdkcnRfV2FZWXFpTXYtZkVVSVE?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "Music Business Worldwide",
+        "domain": "news.google.com",
+        "publishedAt": "2026-09-30T10:19:48.000Z",
         "tags": [
           "lawsuit",
           "ai"
         ],
         "translated": false,
-        "via": null
+        "via": "Google News"
       },
       {
         "id": "noticia-4",
@@ -294,6 +294,21 @@
       },
       {
         "id": "noticia-7",
+        "title": "Historic ruling on 'fair use' and AI may help Nashville songwriters",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMitwFBVV95cUxPNGkxNm94cTNBVkk0Z0hnV2Z4T0RJNktYNW1OTlBRWU01QldpRUFkSUZSRG5ZbExhMGczeWtaS2dXN0VUQWEtWnNabFhlU0pnQmZHaDhPOXRadGY2ckR5dVc2cnNGenFaUFdKcGx4UUUwbERnODBGYmJfVTBSNllpVThGbjVHaWVJaE1ITV9RT2pSMXpVbzM2T3VLTFoyZVUxQThvaDF2aHVCVXB4N0VaNW1NOWtiQU0?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "The Tennessean",
+        "domain": "news.google.com",
+        "publishedAt": "2026-10-02T15:23:00.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-8",
         "title": "Trump’s DoJ was biased and wrong about ‘fair use’, say news orgs in OpenAI dispute",
         "summary": "Many of the music industry’s AI legal battles swing on whether or not AI training is ‘fair use’ under US copyright law. Donald Trump’s DoJ recently intervened in a dispute between newspapers and OpenAI insisting AI training is fair use. The newspapers have responded, explaining why the DoJ is wrong",
         "url": "https://completemusicupdate.com/trumps-doj-was-biased-and-wrong-about-fair-use-say-news-orgs-in-openai-dispute/",
@@ -307,7 +322,7 @@
         "via": null
       },
       {
-        "id": "noticia-8",
+        "id": "noticia-9",
         "title": "Suno Confirms V6 AI Music Model Was Trained on User Creations as Sony and Universal File New Copyright Lawsuit",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMi5AFBVV95cUxPU0lJcWUxZTU1R2F3NmRwWUFQZHVPbEV2NTE5Sms1eG1KRG5rbEpQWHJXOVptcE1xaFpRdTVJX2YyNFZtYzVPYXRsMlhYVVBHWkJUNmtaUnZTU0VNWjJaZV9saklTSkZydXpSVmt1c1JjTzdrZUtlWEZ1QU5ybmJsdlRXUmMtMkZhTFV1Y0Rjd2ppZ1FGRTRzdGYyQWR1SFpTWjJoLW5tMEpKOFR1bGw1bEdMemRZSXMwWHBZei1udVpZUTJBUnE2NnUtZzZDei1OS2NSV28zZUpqdXhSckx2eExmN3E?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -322,7 +337,23 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-9",
+        "id": "noticia-10",
+        "title": "Spotify, Amazon Music, Merlin, Empire, Downtown, Distrokid, Meta, Others Join the DOJ In Recommending Prison Time for Streaming Fraudster Michael Smith",
+        "summary": "Ahead of Michael Smith’s October 6th sentencing, the Music Fights Fraud Alliance (MFFA) has submitted a letter to the court arguing for a significant sentence to deter future abuse. Michael Smith, who was convicted of stealing royalties from artists and songwriters with millions of bot-assisted streams on his AI-genera…",
+        "url": "https://www.digitalmusicnews.com/2026/10/01/doj-cites-mffa-streaming-fraud-case/",
+        "source": "Digital Music News",
+        "domain": "digitalmusicnews.com",
+        "publishedAt": "2026-10-02T04:00:40.000Z",
+        "tags": [
+          "lawsuit",
+          "ai",
+          "royalties"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-11",
         "title": "ElevenLabs valuation doubles to $22B – four times that of AI music rival Suno",
         "summary": "ElevenLabs completed a USD $300 million employee tender offer at a valuation of $22 billion. Source",
         "url": "https://www.musicbusinessworldwide.com/elevenlabs-valuation-doubles-to-22b-four-times-that-of-ai-music-rival-suno/",
@@ -336,45 +367,15 @@
         "via": null
       },
       {
-        "id": "noticia-10",
-        "title": "Suno is ‘far beyond’ 2m subscribers and $300m of annual revenue",
-        "summary": "It’s been a little while since AI-music firm Suno announced its user and revenue stats. We’re not getting new figures just yet, but CEO Mikey Shulman provided an update of sorts in an interview with Bloomberg. The post is from Music Ally .",
-        "url": "https://musically.com/2026/10/02/suno-is-far-beyond-2m-subscribers-and-300m-of-annual-revenue/",
-        "source": "Music Ally",
-        "domain": "musically.com",
-        "publishedAt": "2026-10-02T11:30:00.000Z",
-        "tags": [
-          "ai"
-        ],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-11",
-        "title": "Kelly Clarkson Says ‘I Love AI’ but AI Artists Should Not Be on the Same Music Charts as Humans",
-        "summary": "Kelly Clarkson has shared her admittedly “controversial” opinion on artificial intelligence, saying she thinks it can do “amazing things” but shouldn’t be able to create anything that competes with humans, particularly on music charts. The pop star shared her feelings about the technology during an appearance on the La…",
-        "url": "https://variety.com/2026/music/news/kelly-clarkson-says-i-love-ai-but-shouldnt-compete-music-1236895343/",
-        "source": "Variety",
-        "domain": "variety.com",
-        "publishedAt": "2026-10-01T19:27:52.000Z",
-        "tags": [
-          "ai"
-        ],
-        "translated": false,
-        "via": null
-      },
-      {
         "id": "noticia-12",
-        "title": "IMPF and IMPEL publish AI licensing principles, insisting songs and recordings must be valued equally",
-        "summary": "As the music industry enters into ever more deals with AI platforms, the indie publisher community has again insisted that - with AI - song rights and recording rights must be valued equally, unlike in streaming. A new AI framework from IMPF and IMPEL says that key principle is “non-negotiable”",
-        "url": "https://completemusicupdate.com/impf-and-impel-publish-ai-licensing-principles-insisting-songs-and-recordings-must-be-valued-equally/",
-        "source": "Complete Music Update",
-        "domain": "completemusicupdate.com",
-        "publishedAt": "2026-09-30T15:45:04.000Z",
+        "title": "Suno is ‘far beyond’ 2m subscribers and $300m in revenue, says Mikey Shulman – who argues it’s ‘good’ that AI music has no ‘firm rules of the road’ yet",
+        "summary": "Shulman also set out what WMG and BMG get from their deals, and who should be setting AI's rules. Source",
+        "url": "https://www.musicbusinessworldwide.com/suno-is-far-beyond-2m-subscribers-and-300m-in-revenue-says-mikey-shulman-who-argues-its-good-that-ai-music-has-no-firm-rules-of-the-road-yet/",
+        "source": "Music Business Worldwide",
+        "domain": "musicbusinessworldwide.com",
+        "publishedAt": "2026-10-02T16:42:55.000Z",
         "tags": [
-          "ai",
-          "licensing",
-          "streaming"
+          "ai"
         ],
         "translated": false,
         "via": null
