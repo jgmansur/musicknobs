@@ -1,17 +1,17 @@
 {
-  "lastUpdated": "2026-10-04T13:09:14.121Z",
+  "lastUpdated": "2026-10-04T22:18:25.252Z",
   "meta": {
     "method": "rss-retrieval + link-verification + ai-translation",
     "itemCount": 12,
     "sources": [
+      "Bedroom Producers Blog",
       "Business News Nigeria",
       "Complete Music Update",
-      "Digital Music News",
+      "Forbes",
       "Industria Musical",
       "LexLatin",
       "Music Business Worldwide",
-      "The Tennessean",
-      "forbes.com"
+      "The Tennessean"
     ],
     "verifiedLinks": 12,
     "aiTranslated": 0,
@@ -38,21 +38,6 @@
       },
       {
         "id": "noticia-2",
-        "title": "‘The Song Is Non-Negotiable’: Indie Music Giants Unite to Force a Fair Licensing Framework",
-        "summary": "Indie publishing orgs IMPF and IMPEL have outlined a licensing framework for generative AI to create a fair and sustainable market for the future. Independent music publishing organizations IMPEL and IMPF have now issued a licensing framework for generative AI based on several key principles that will ensure song copyr…",
-        "url": "https://www.digitalmusicnews.com/2026/09/29/impf-and-impel-unite-generative-ai-licensing/",
-        "source": "Digital Music News",
-        "domain": "digitalmusicnews.com",
-        "publishedAt": "2026-09-30T05:00:04.000Z",
-        "tags": [
-          "ai",
-          "licensing"
-        ],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-3",
         "title": "US appeals court rejects ‘fair use’ defense over AI training – as Thomson Reuters wins copyright case backed by RIAA and NMPA",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMi8wFBVV95cUxPLVpsd0o2VGhwT3BoSFZTLXVuQTJWSnBQRm1TT01zREhNSm1zRERyRDhqRnVqN2hXbVJYNHowUkFnVl9BTVhUazZ4R3d2b2FXZWU3TFJkRU9sZVZyTkxzbGtwVkJSckwtZjY1bXByVG9OcWo1YldnTDcwQXpBV0xGTGVxUW5iNVhtR3M4YnJqVEEwV2JkeDZUV3BUN2FHYXh2bHg1VGphSmk2S2psMm4tbllhLXMtamktN19KZW5FcFBoS1pYV1dBYkxYNW1VZXNJclZBVEhDOG9CeDIzSE5HcFdkcnRfV2FZWXFpTXYtZkVVSVE?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -67,11 +52,11 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-4",
+        "id": "noticia-3",
         "title": "AI Lost Its First Fair Use Appeal. Suno Should Be Worried.",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMitwFBVV95cUxOMW4wT3pmbjFGaUdaYmJWRl9RX1dLQ2JpWXc1MnB3UHNMY3FyamstX1pCdmxyNlVHdkl2dF9JWDUtV1hLc2dDZ1BlUnpzTUkxSGhTZ1drZUREUDBaNHNxaFV3RXJrZ2RKRUxfZVVkek16RW9PU0NfQTEwUkd5MGRHTF9ZQU1tU0ZFeE9JYXVaVUxMNDYwRjh2QVhsel9OcGJwc1AtN0VQQllWcDNrNS02MTBnOUcxN00?oc=5&hl=es-419&gl=US&ceid=US:es-419",
-        "source": "forbes.com",
+        "source": "Forbes",
         "domain": "news.google.com",
         "publishedAt": "2026-09-30T22:57:31.000Z",
         "tags": [
@@ -81,7 +66,7 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-5",
+        "id": "noticia-4",
         "title": "Suno AI y GEMA: la batalla por los derechos de autor que puede redefinir el negocio de la música para la IA",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMiwwFBVV95cUxPTngyX3RYREpPYnRTSjU4TkxLSkVrX0tmWGt1TjdHNzJZRkxuYjBFMXptdWc0SUJjaW41akJHWGRJRVdjQjUyNmlLWE54RkJfZ1hLUUpFTWl1bzd3dzdzaVNzTGl5cnBBT1VObklkclI0NXdzRnZjMGhmR0JIMDJsaFRhTTlPZGszWnNqS1k1anhFRHdoaUlFbG1kTGJIeEdRWnV1RTF1YVlBYU00RWcyMVRzQ2NxT3h6NUJmSkFIMjFtVU0?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -95,21 +80,7 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-6",
-        "title": "Jermaine Dupri, Jacquees, and Mass Appeal Face ‘Pick It Up’ Infringement Suit from 90s Duo Home Team",
-        "summary": "One month after dropping his multimillion-dollar Sony Music infringement lawsuit, Jermaine Dupri is staring down a copyright complaint for allegedly lifting from a decades-old work to create 2023’s “Pick It Up.” The members of hip-hop duo Home Team, brothers Patrick Watler and Van J. Watler, just recently submitted the…",
-        "url": "https://www.digitalmusicnews.com/2026/09/28/jermaine-dupri-pick-it-up-lawsuit/",
-        "source": "Digital Music News",
-        "domain": "digitalmusicnews.com",
-        "publishedAt": "2026-09-29T06:00:48.000Z",
-        "tags": [
-          "lawsuit"
-        ],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-7",
+        "id": "noticia-5",
         "title": "Historic ruling on 'fair use' and AI may help Nashville songwriters",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMitwFBVV95cUxPNGkxNm94cTNBVkk0Z0hnV2Z4T0RJNktYNW1OTlBRWU01QldpRUFkSUZSRG5ZbExhMGczeWtaS2dXN0VUQWEtWnNabFhlU0pnQmZHaDhPOXRadGY2ckR5dVc2cnNGenFaUFdKcGx4UUUwbERnODBGYmJfVTBSNllpVThGbjVHaWVJaE1ITV9RT2pSMXpVbzM2T3VLTFoyZVUxQThvaDF2aHVCVXB4N0VaNW1NOWtiQU0?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -124,7 +95,7 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-8",
+        "id": "noticia-6",
         "title": "Trump’s DoJ was biased and wrong about ‘fair use’, say news orgs in OpenAI dispute",
         "summary": "Many of the music industry’s AI legal battles swing on whether or not AI training is ‘fair use’ under US copyright law. Donald Trump’s DoJ recently intervened in a dispute between newspapers and OpenAI insisting AI training is fair use. The newspapers have responded, explaining why the DoJ is wrong",
         "url": "https://completemusicupdate.com/trumps-doj-was-biased-and-wrong-about-fair-use-say-news-orgs-in-openai-dispute/",
@@ -138,7 +109,7 @@
         "via": null
       },
       {
-        "id": "noticia-9",
+        "id": "noticia-7",
         "title": "Universal Music Group sues DistroKid over AI music, copyright claims",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMirgFBVV95cUxPM01MaEk0UEU1UU1Ta0k3U0pldGhnT0k0VnpZUTVXdFhTRExGNVZlcVlpTEloSm1ubEZ5MkJva3A5dXV4QmdleC1uZGxGMHN1elp4TDRkbHdtbF9XeHRwdDhrV3dOUkI1NlpCa0N5cnR6NHZfdEdubmtBTkZESG9QNERuQUNXM1hiWlNnU3l2a3NteGwxLUlnVG9KaG5WdjBwY3djUTZsc1MtQWt6dUE?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -153,7 +124,7 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-10",
+        "id": "noticia-8",
         "title": "ElevenLabs duplica su valoración hasta 22.000 M$",
         "summary": "ElevenLabs, la compañía de audio con inteligencia artificial que está detrás de la plataforma de generación musical ElevenMusic, ha duplicado su valoración hasta los 22.000 millones de dólares tras completar una venta de acciones de empleados por 300 millones, liderada por Wellington y T. Rowe Price. La operación, anun…",
         "url": "https://industriamusical.com/elevenlabs-duplica-valoracion-22000-millones/?utm_source=rss&utm_medium=rss&utm_campaign=elevenlabs-duplica-valoracion-22000-millones",
@@ -167,29 +138,56 @@
         "via": null
       },
       {
-        "id": "noticia-11",
-        "title": "Spotify, Amazon Music, Merlin, Empire, Downtown, Distrokid, Meta, Others Join the DOJ In Recommending Prison Time for Streaming Fraudster Michael Smith",
-        "summary": "Ahead of Michael Smith’s October 6th sentencing, the Music Fights Fraud Alliance (MFFA) has submitted a letter to the court arguing for a significant sentence to deter future abuse. Michael Smith, who was convicted of stealing royalties from artists and songwriters with millions of bot-assisted streams on his AI-genera…",
-        "url": "https://www.digitalmusicnews.com/2026/10/01/doj-cites-mffa-streaming-fraud-case/",
-        "source": "Digital Music News",
-        "domain": "digitalmusicnews.com",
-        "publishedAt": "2026-10-02T04:00:40.000Z",
+        "id": "noticia-9",
+        "title": "Suno confirms v6 is trained on user-generated interactions as new copyright lawsuits surface",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMiaEFVX3lxTE5rRUlBeHdNZXloZXBaRjBqbWxKTnJrMy1Da0VwMHZtcU5iY0w3bDV1MUVjaEhWYndNa1EwMVZ4Qmd5M194TnRHRGhQM09iQmhaeTI5b2h6Y0s5LUJTT1UzN2xzZ3BJNGFr?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "Bedroom Producers Blog",
+        "domain": "news.google.com",
+        "publishedAt": "2026-09-26T07:00:00.000Z",
         "tags": [
           "lawsuit",
-          "ai",
-          "royalties"
+          "ai"
         ],
         "translated": false,
-        "via": null
+        "via": "Google News"
       },
       {
-        "id": "noticia-12",
+        "id": "noticia-10",
         "title": "ElevenLabs valuation doubles to $22B – four times that of AI music rival Suno",
         "summary": "ElevenLabs completed a USD $300 million employee tender offer at a valuation of $22 billion. Source",
         "url": "https://www.musicbusinessworldwide.com/elevenlabs-valuation-doubles-to-22b-four-times-that-of-ai-music-rival-suno/",
         "source": "Music Business Worldwide",
         "domain": "musicbusinessworldwide.com",
         "publishedAt": "2026-10-01T18:04:43.000Z",
+        "tags": [
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-11",
+        "title": "Suno is ‘far beyond’ 2m subscribers and $300m in revenue, says Mikey Shulman – who argues it’s ‘good’ that AI music has no ‘firm rules of the road’ yet",
+        "summary": "Shulman also set out what WMG and BMG get from their deals, and who should be setting AI's rules. Source",
+        "url": "https://www.musicbusinessworldwide.com/suno-is-far-beyond-2m-subscribers-and-300m-in-revenue-says-mikey-shulman-who-argues-its-good-that-ai-music-has-no-firm-rules-of-the-road-yet/",
+        "source": "Music Business Worldwide",
+        "domain": "musicbusinessworldwide.com",
+        "publishedAt": "2026-10-02T16:42:55.000Z",
+        "tags": [
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-12",
+        "title": "Suno dice estar muy por encima de 300 M$ en ingresos",
+        "summary": "Suno está ya «muy por encima» de los 2 millones de suscriptores de pago y los 300 millones de dólares en ingresos que comunicó el pasado febrero. Así lo aseguró su cofundador y consejero delegado, Mikey Shulman, el jueves 1 de octubre en la conferencia Screentime de Bloomberg, en Los Ángeles, según recoge Music Busines…",
+        "url": "https://industriamusical.com/suno-supera-2-millones-suscriptores-300-millones-ingresos/?utm_source=rss&utm_medium=rss&utm_campaign=suno-supera-2-millones-suscriptores-300-millones-ingresos",
+        "source": "Industria Musical",
+        "domain": "industriamusical.com",
+        "publishedAt": "2026-10-04T09:41:25.000Z",
         "tags": [
           "ai"
         ],
@@ -223,21 +221,6 @@
       },
       {
         "id": "noticia-2",
-        "title": "‘The Song Is Non-Negotiable’: Indie Music Giants Unite to Force a Fair Licensing Framework",
-        "summary": "Indie publishing orgs IMPF and IMPEL have outlined a licensing framework for generative AI to create a fair and sustainable market for the future. Independent music publishing organizations IMPEL and IMPF have now issued a licensing framework for generative AI based on several key principles that will ensure song copyr…",
-        "url": "https://www.digitalmusicnews.com/2026/09/29/impf-and-impel-unite-generative-ai-licensing/",
-        "source": "Digital Music News",
-        "domain": "digitalmusicnews.com",
-        "publishedAt": "2026-09-30T05:00:04.000Z",
-        "tags": [
-          "ai",
-          "licensing"
-        ],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-3",
         "title": "US appeals court rejects ‘fair use’ defense over AI training – as Thomson Reuters wins copyright case backed by RIAA and NMPA",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMi8wFBVV95cUxPLVpsd0o2VGhwT3BoSFZTLXVuQTJWSnBQRm1TT01zREhNSm1zRERyRDhqRnVqN2hXbVJYNHowUkFnVl9BTVhUazZ4R3d2b2FXZWU3TFJkRU9sZVZyTkxzbGtwVkJSckwtZjY1bXByVG9OcWo1YldnTDcwQXpBV0xGTGVxUW5iNVhtR3M4YnJqVEEwV2JkeDZUV3BUN2FHYXh2bHg1VGphSmk2S2psMm4tbllhLXMtamktN19KZW5FcFBoS1pYV1dBYkxYNW1VZXNJclZBVEhDOG9CeDIzSE5HcFdkcnRfV2FZWXFpTXYtZkVVSVE?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -252,11 +235,11 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-4",
+        "id": "noticia-3",
         "title": "AI Lost Its First Fair Use Appeal. Suno Should Be Worried.",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMitwFBVV95cUxOMW4wT3pmbjFGaUdaYmJWRl9RX1dLQ2JpWXc1MnB3UHNMY3FyamstX1pCdmxyNlVHdkl2dF9JWDUtV1hLc2dDZ1BlUnpzTUkxSGhTZ1drZUREUDBaNHNxaFV3RXJrZ2RKRUxfZVVkek16RW9PU0NfQTEwUkd5MGRHTF9ZQU1tU0ZFeE9JYXVaVUxMNDYwRjh2QVhsel9OcGJwc1AtN0VQQllWcDNrNS02MTBnOUcxN00?oc=5&hl=es-419&gl=US&ceid=US:es-419",
-        "source": "forbes.com",
+        "source": "Forbes",
         "domain": "news.google.com",
         "publishedAt": "2026-09-30T22:57:31.000Z",
         "tags": [
@@ -266,7 +249,7 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-5",
+        "id": "noticia-4",
         "title": "Suno AI y GEMA: la batalla por los derechos de autor que puede redefinir el negocio de la música para la IA",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMiwwFBVV95cUxPTngyX3RYREpPYnRTSjU4TkxLSkVrX0tmWGt1TjdHNzJZRkxuYjBFMXptdWc0SUJjaW41akJHWGRJRVdjQjUyNmlLWE54RkJfZ1hLUUpFTWl1bzd3dzdzaVNzTGl5cnBBT1VObklkclI0NXdzRnZjMGhmR0JIMDJsaFRhTTlPZGszWnNqS1k1anhFRHdoaUlFbG1kTGJIeEdRWnV1RTF1YVlBYU00RWcyMVRzQ2NxT3h6NUJmSkFIMjFtVU0?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -280,21 +263,7 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-6",
-        "title": "Jermaine Dupri, Jacquees, and Mass Appeal Face ‘Pick It Up’ Infringement Suit from 90s Duo Home Team",
-        "summary": "One month after dropping his multimillion-dollar Sony Music infringement lawsuit, Jermaine Dupri is staring down a copyright complaint for allegedly lifting from a decades-old work to create 2023’s “Pick It Up.” The members of hip-hop duo Home Team, brothers Patrick Watler and Van J. Watler, just recently submitted the…",
-        "url": "https://www.digitalmusicnews.com/2026/09/28/jermaine-dupri-pick-it-up-lawsuit/",
-        "source": "Digital Music News",
-        "domain": "digitalmusicnews.com",
-        "publishedAt": "2026-09-29T06:00:48.000Z",
-        "tags": [
-          "lawsuit"
-        ],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-7",
+        "id": "noticia-5",
         "title": "Historic ruling on 'fair use' and AI may help Nashville songwriters",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMitwFBVV95cUxPNGkxNm94cTNBVkk0Z0hnV2Z4T0RJNktYNW1OTlBRWU01QldpRUFkSUZSRG5ZbExhMGczeWtaS2dXN0VUQWEtWnNabFhlU0pnQmZHaDhPOXRadGY2ckR5dVc2cnNGenFaUFdKcGx4UUUwbERnODBGYmJfVTBSNllpVThGbjVHaWVJaE1ITV9RT2pSMXpVbzM2T3VLTFoyZVUxQThvaDF2aHVCVXB4N0VaNW1NOWtiQU0?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -309,7 +278,7 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-8",
+        "id": "noticia-6",
         "title": "Trump’s DoJ was biased and wrong about ‘fair use’, say news orgs in OpenAI dispute",
         "summary": "Many of the music industry’s AI legal battles swing on whether or not AI training is ‘fair use’ under US copyright law. Donald Trump’s DoJ recently intervened in a dispute between newspapers and OpenAI insisting AI training is fair use. The newspapers have responded, explaining why the DoJ is wrong",
         "url": "https://completemusicupdate.com/trumps-doj-was-biased-and-wrong-about-fair-use-say-news-orgs-in-openai-dispute/",
@@ -323,7 +292,7 @@
         "via": null
       },
       {
-        "id": "noticia-9",
+        "id": "noticia-7",
         "title": "Universal Music Group sues DistroKid over AI music, copyright claims",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMirgFBVV95cUxPM01MaEk0UEU1UU1Ta0k3U0pldGhnT0k0VnpZUTVXdFhTRExGNVZlcVlpTEloSm1ubEZ5MkJva3A5dXV4QmdleC1uZGxGMHN1elp4TDRkbHdtbF9XeHRwdDhrV3dOUkI1NlpCa0N5cnR6NHZfdEdubmtBTkZESG9QNERuQUNXM1hiWlNnU3l2a3NteGwxLUlnVG9KaG5WdjBwY3djUTZsc1MtQWt6dUE?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -338,7 +307,7 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-10",
+        "id": "noticia-8",
         "title": "ElevenLabs duplica su valoración hasta 22.000 M$",
         "summary": "ElevenLabs, la compañía de audio con inteligencia artificial que está detrás de la plataforma de generación musical ElevenMusic, ha duplicado su valoración hasta los 22.000 millones de dólares tras completar una venta de acciones de empleados por 300 millones, liderada por Wellington y T. Rowe Price. La operación, anun…",
         "url": "https://industriamusical.com/elevenlabs-duplica-valoracion-22000-millones/?utm_source=rss&utm_medium=rss&utm_campaign=elevenlabs-duplica-valoracion-22000-millones",
@@ -352,29 +321,56 @@
         "via": null
       },
       {
-        "id": "noticia-11",
-        "title": "Spotify, Amazon Music, Merlin, Empire, Downtown, Distrokid, Meta, Others Join the DOJ In Recommending Prison Time for Streaming Fraudster Michael Smith",
-        "summary": "Ahead of Michael Smith’s October 6th sentencing, the Music Fights Fraud Alliance (MFFA) has submitted a letter to the court arguing for a significant sentence to deter future abuse. Michael Smith, who was convicted of stealing royalties from artists and songwriters with millions of bot-assisted streams on his AI-genera…",
-        "url": "https://www.digitalmusicnews.com/2026/10/01/doj-cites-mffa-streaming-fraud-case/",
-        "source": "Digital Music News",
-        "domain": "digitalmusicnews.com",
-        "publishedAt": "2026-10-02T04:00:40.000Z",
+        "id": "noticia-9",
+        "title": "Suno confirms v6 is trained on user-generated interactions as new copyright lawsuits surface",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMiaEFVX3lxTE5rRUlBeHdNZXloZXBaRjBqbWxKTnJrMy1Da0VwMHZtcU5iY0w3bDV1MUVjaEhWYndNa1EwMVZ4Qmd5M194TnRHRGhQM09iQmhaeTI5b2h6Y0s5LUJTT1UzN2xzZ3BJNGFr?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "Bedroom Producers Blog",
+        "domain": "news.google.com",
+        "publishedAt": "2026-09-26T07:00:00.000Z",
         "tags": [
           "lawsuit",
-          "ai",
-          "royalties"
+          "ai"
         ],
         "translated": false,
-        "via": null
+        "via": "Google News"
       },
       {
-        "id": "noticia-12",
+        "id": "noticia-10",
         "title": "ElevenLabs valuation doubles to $22B – four times that of AI music rival Suno",
         "summary": "ElevenLabs completed a USD $300 million employee tender offer at a valuation of $22 billion. Source",
         "url": "https://www.musicbusinessworldwide.com/elevenlabs-valuation-doubles-to-22b-four-times-that-of-ai-music-rival-suno/",
         "source": "Music Business Worldwide",
         "domain": "musicbusinessworldwide.com",
         "publishedAt": "2026-10-01T18:04:43.000Z",
+        "tags": [
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-11",
+        "title": "Suno is ‘far beyond’ 2m subscribers and $300m in revenue, says Mikey Shulman – who argues it’s ‘good’ that AI music has no ‘firm rules of the road’ yet",
+        "summary": "Shulman also set out what WMG and BMG get from their deals, and who should be setting AI's rules. Source",
+        "url": "https://www.musicbusinessworldwide.com/suno-is-far-beyond-2m-subscribers-and-300m-in-revenue-says-mikey-shulman-who-argues-its-good-that-ai-music-has-no-firm-rules-of-the-road-yet/",
+        "source": "Music Business Worldwide",
+        "domain": "musicbusinessworldwide.com",
+        "publishedAt": "2026-10-02T16:42:55.000Z",
+        "tags": [
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-12",
+        "title": "Suno dice estar muy por encima de 300 M$ en ingresos",
+        "summary": "Suno está ya «muy por encima» de los 2 millones de suscriptores de pago y los 300 millones de dólares en ingresos que comunicó el pasado febrero. Así lo aseguró su cofundador y consejero delegado, Mikey Shulman, el jueves 1 de octubre en la conferencia Screentime de Bloomberg, en Los Ángeles, según recoge Music Busines…",
+        "url": "https://industriamusical.com/suno-supera-2-millones-suscriptores-300-millones-ingresos/?utm_source=rss&utm_medium=rss&utm_campaign=suno-supera-2-millones-suscriptores-300-millones-ingresos",
+        "source": "Industria Musical",
+        "domain": "industriamusical.com",
+        "publishedAt": "2026-10-04T09:41:25.000Z",
         "tags": [
           "ai"
         ],
