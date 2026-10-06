@@ -1,10 +1,9 @@
 {
-  "lastUpdated": "2026-10-06T00:45:20.735Z",
+  "lastUpdated": "2026-10-06T14:08:06.036Z",
   "meta": {
     "method": "rss-retrieval + link-verification + ai-translation",
     "itemCount": 12,
     "sources": [
-      "Billboard",
       "Complete Music Update",
       "Digital Music News",
       "Forbes",
@@ -38,21 +37,6 @@
       },
       {
         "id": "noticia-2",
-        "title": "A US appeals court has rejected a ‘fair use’ defense over AI training. What does it mean for the labels’ fight with Suno?",
-        "summary": "The US Court of Appeals ruled for Thomson Reuters and against AI legal research company ROSS Intelligence on September 29 Source",
-        "url": "https://www.musicbusinessworldwide.com/a-us-appeals-court-has-rejected-a-fair-use-defense-over-ai-training-what-does-it-mean-for-the-labels-fight-with-suno/",
-        "source": "Music Business Worldwide",
-        "domain": "musicbusinessworldwide.com",
-        "publishedAt": "2026-10-05T10:01:47.000Z",
-        "tags": [
-          "lawsuit",
-          "ai"
-        ],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-3",
         "title": "Japanese court says voice is protected by publicity rights; US appeals court says AI training is not fair use",
         "summary": "There have been two judgments this week of relevance to the ongoing AI debates in the music industry. A Japanese court ruled that publicity rights allow performers to stop unapproved AI voice clones. Meanwhile a US appeals court ruled against an AI company that used the good old fair use defence",
         "url": "https://completemusicupdate.com/japanese-court-says-voice-is-protected-by-publicity-rights-us-appeals-court-says-ai-training-is-not-fair-use/",
@@ -67,7 +51,7 @@
         "via": null
       },
       {
-        "id": "noticia-4",
+        "id": "noticia-3",
         "title": "Sony Music has now filed 260k takedowns of AI-deepfake tracks",
         "summary": "In March 2025, Sony Music said that it had successfully gotten more than 75k AI-generated deepfakes of its artists from various online platforms. A year later, in March 2026, the company said that it had now filed more than 135k of these takedown notices. The post is from Music Ally .",
         "url": "https://musically.com/2026/10/05/sony-music-has-now-filed-260k-takedowns-of-ai-deepfake-tracks/",
@@ -81,7 +65,7 @@
         "via": null
       },
       {
-        "id": "noticia-5",
+        "id": "noticia-4",
         "title": "‘The Song Is Non-Negotiable’: Indie Music Giants Unite to Force a Fair Licensing Framework",
         "summary": "Indie publishing orgs IMPF and IMPEL have outlined a licensing framework for generative AI to create a fair and sustainable market for the future. Independent music publishing organizations IMPEL and IMPF have now issued a licensing framework for generative AI based on several key principles that will ensure song copyr…",
         "url": "https://www.digitalmusicnews.com/2026/09/29/impf-and-impel-unite-generative-ai-licensing/",
@@ -94,6 +78,21 @@
         ],
         "translated": false,
         "via": null
+      },
+      {
+        "id": "noticia-5",
+        "title": "US appeals court rejects ‘fair use’ defense over AI training – as Thomson Reuters wins copyright case backed by RIAA and NMPA",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMi8wFBVV95cUxPLVpsd0o2VGhwT3BoSFZTLXVuQTJWSnBQRm1TT01zREhNSm1zRERyRDhqRnVqN2hXbVJYNHowUkFnVl9BTVhUazZ4R3d2b2FXZWU3TFJkRU9sZVZyTkxzbGtwVkJSckwtZjY1bXByVG9OcWo1YldnTDcwQXpBV0xGTGVxUW5iNVhtR3M4YnJqVEEwV2JkeDZUV3BUN2FHYXh2bHg1VGphSmk2S2psMm4tbllhLXMtamktN19KZW5FcFBoS1pYV1dBYkxYNW1VZXNJclZBVEhDOG9CeDIzSE5HcFdkcnRfV2FZWXFpTXYtZkVVSVE?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "Music Business Worldwide",
+        "domain": "news.google.com",
+        "publishedAt": "2026-09-30T10:19:48.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
       },
       {
         "id": "noticia-6",
@@ -168,20 +167,6 @@
       },
       {
         "id": "noticia-11",
-        "title": "Sony Music Has Requested the Removal of Over 260,000 AI Deepfake Songs From Digital Platforms",
-        "summary": "The major music company says the problem is growing fast and that the deepfake issue \"harms artists, misleads fans and undermines the ethical use of AI.\"",
-        "url": "https://www.billboard.com/pro/sony-music-requested-removal-ai-deepfake-songs/",
-        "source": "Billboard",
-        "domain": "billboard.com",
-        "publishedAt": "2026-10-06T00:05:31.000Z",
-        "tags": [
-          "ai"
-        ],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-12",
         "title": "Sony Music has now asked platforms to remove more than 260,000 AI deepfakes imitating artists like Harry Styles, Adele, and Michael Jackson",
         "summary": "Sony told the Financial Times that the fight against AI tracks impersonating artists such as Harry Styles and Adele is \"becoming an uphill struggle.\" Source",
         "url": "https://www.musicbusinessworldwide.com/sony-music-has-now-asked-platforms-to-remove-more-than-260000-ai-deepfakes-imitating-artists-like-harry-styles-adele-and-michael-jackson/",
@@ -190,6 +175,20 @@
         "publishedAt": "2026-10-05T10:19:00.000Z",
         "tags": [
           "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-12",
+        "title": "Don’t say collusion: “no evidence of misconduct or conflict of interest” say major labels and publishers about their Phono V physical negotiations",
+        "summary": "The US Copyright Royalty Board is reviewing what mechanical royalties songwriters and publishers should receive from 2028. It’s labels who pay mechanical royalties on physical records, and the major labels are keen to stress they aren’t colluding with the major publishers to keep the rates down",
+        "url": "https://completemusicupdate.com/dont-say-collusion-no-evidence-of-misconduct-or-conflict-of-interest-say-major-labels-and-publishers-about-their-phono-v-physical-negotiations/",
+        "source": "Complete Music Update",
+        "domain": "completemusicupdate.com",
+        "publishedAt": "2026-10-06T11:34:18.000Z",
+        "tags": [
+          "royalties"
         ],
         "translated": false,
         "via": null
@@ -221,21 +220,6 @@
       },
       {
         "id": "noticia-2",
-        "title": "A US appeals court has rejected a ‘fair use’ defense over AI training. What does it mean for the labels’ fight with Suno?",
-        "summary": "The US Court of Appeals ruled for Thomson Reuters and against AI legal research company ROSS Intelligence on September 29 Source",
-        "url": "https://www.musicbusinessworldwide.com/a-us-appeals-court-has-rejected-a-fair-use-defense-over-ai-training-what-does-it-mean-for-the-labels-fight-with-suno/",
-        "source": "Music Business Worldwide",
-        "domain": "musicbusinessworldwide.com",
-        "publishedAt": "2026-10-05T10:01:47.000Z",
-        "tags": [
-          "lawsuit",
-          "ai"
-        ],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-3",
         "title": "Japanese court says voice is protected by publicity rights; US appeals court says AI training is not fair use",
         "summary": "There have been two judgments this week of relevance to the ongoing AI debates in the music industry. A Japanese court ruled that publicity rights allow performers to stop unapproved AI voice clones. Meanwhile a US appeals court ruled against an AI company that used the good old fair use defence",
         "url": "https://completemusicupdate.com/japanese-court-says-voice-is-protected-by-publicity-rights-us-appeals-court-says-ai-training-is-not-fair-use/",
@@ -250,7 +234,7 @@
         "via": null
       },
       {
-        "id": "noticia-4",
+        "id": "noticia-3",
         "title": "Sony Music has now filed 260k takedowns of AI-deepfake tracks",
         "summary": "In March 2025, Sony Music said that it had successfully gotten more than 75k AI-generated deepfakes of its artists from various online platforms. A year later, in March 2026, the company said that it had now filed more than 135k of these takedown notices. The post is from Music Ally .",
         "url": "https://musically.com/2026/10/05/sony-music-has-now-filed-260k-takedowns-of-ai-deepfake-tracks/",
@@ -264,7 +248,7 @@
         "via": null
       },
       {
-        "id": "noticia-5",
+        "id": "noticia-4",
         "title": "‘The Song Is Non-Negotiable’: Indie Music Giants Unite to Force a Fair Licensing Framework",
         "summary": "Indie publishing orgs IMPF and IMPEL have outlined a licensing framework for generative AI to create a fair and sustainable market for the future. Independent music publishing organizations IMPEL and IMPF have now issued a licensing framework for generative AI based on several key principles that will ensure song copyr…",
         "url": "https://www.digitalmusicnews.com/2026/09/29/impf-and-impel-unite-generative-ai-licensing/",
@@ -277,6 +261,21 @@
         ],
         "translated": false,
         "via": null
+      },
+      {
+        "id": "noticia-5",
+        "title": "US appeals court rejects ‘fair use’ defense over AI training – as Thomson Reuters wins copyright case backed by RIAA and NMPA",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMi8wFBVV95cUxPLVpsd0o2VGhwT3BoSFZTLXVuQTJWSnBQRm1TT01zREhNSm1zRERyRDhqRnVqN2hXbVJYNHowUkFnVl9BTVhUazZ4R3d2b2FXZWU3TFJkRU9sZVZyTkxzbGtwVkJSckwtZjY1bXByVG9OcWo1YldnTDcwQXpBV0xGTGVxUW5iNVhtR3M4YnJqVEEwV2JkeDZUV3BUN2FHYXh2bHg1VGphSmk2S2psMm4tbllhLXMtamktN19KZW5FcFBoS1pYV1dBYkxYNW1VZXNJclZBVEhDOG9CeDIzSE5HcFdkcnRfV2FZWXFpTXYtZkVVSVE?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "Music Business Worldwide",
+        "domain": "news.google.com",
+        "publishedAt": "2026-09-30T10:19:48.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
       },
       {
         "id": "noticia-6",
@@ -351,20 +350,6 @@
       },
       {
         "id": "noticia-11",
-        "title": "Sony Music Has Requested the Removal of Over 260,000 AI Deepfake Songs From Digital Platforms",
-        "summary": "The major music company says the problem is growing fast and that the deepfake issue \"harms artists, misleads fans and undermines the ethical use of AI.\"",
-        "url": "https://www.billboard.com/pro/sony-music-requested-removal-ai-deepfake-songs/",
-        "source": "Billboard",
-        "domain": "billboard.com",
-        "publishedAt": "2026-10-06T00:05:31.000Z",
-        "tags": [
-          "ai"
-        ],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-12",
         "title": "Sony Music has now asked platforms to remove more than 260,000 AI deepfakes imitating artists like Harry Styles, Adele, and Michael Jackson",
         "summary": "Sony told the Financial Times that the fight against AI tracks impersonating artists such as Harry Styles and Adele is \"becoming an uphill struggle.\" Source",
         "url": "https://www.musicbusinessworldwide.com/sony-music-has-now-asked-platforms-to-remove-more-than-260000-ai-deepfakes-imitating-artists-like-harry-styles-adele-and-michael-jackson/",
@@ -373,6 +358,20 @@
         "publishedAt": "2026-10-05T10:19:00.000Z",
         "tags": [
           "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-12",
+        "title": "Don’t say collusion: “no evidence of misconduct or conflict of interest” say major labels and publishers about their Phono V physical negotiations",
+        "summary": "The US Copyright Royalty Board is reviewing what mechanical royalties songwriters and publishers should receive from 2028. It’s labels who pay mechanical royalties on physical records, and the major labels are keen to stress they aren’t colluding with the major publishers to keep the rates down",
+        "url": "https://completemusicupdate.com/dont-say-collusion-no-evidence-of-misconduct-or-conflict-of-interest-say-major-labels-and-publishers-about-their-phono-v-physical-negotiations/",
+        "source": "Complete Music Update",
+        "domain": "completemusicupdate.com",
+        "publishedAt": "2026-10-06T11:34:18.000Z",
+        "tags": [
+          "royalties"
         ],
         "translated": false,
         "via": null
