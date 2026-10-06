@@ -1,9 +1,10 @@
 {
-  "lastUpdated": "2026-10-06T14:08:06.036Z",
+  "lastUpdated": "2026-10-06T22:58:35.408Z",
   "meta": {
     "method": "rss-retrieval + link-verification + ai-translation",
     "itemCount": 12,
     "sources": [
+      "Billboard",
       "Complete Music Update",
       "Digital Music News",
       "Forbes",
@@ -13,7 +14,7 @@
       "The Tennessean"
     ],
     "verifiedLinks": 12,
-    "aiTranslated": 0,
+    "aiTranslated": 2,
     "note": "Los hechos provienen de los artículos originales enlazados. La IA solo traduce y resume; no genera noticias."
   },
   "es": {
@@ -22,8 +23,24 @@
     "items": [
       {
         "id": "noticia-1",
+        "title": "Italian Competition Watchdog Launches Suno Investigation ‘Over Unfair Terms,’ Says ‘The Contractual Provisions on Copyright Deserve Particular Attention’",
+        "summary": "La Autoridad Italiana de Competencia ha iniciado una investigación formal contra Suno, el generador de música IA, por supuestos términos contractuales injustos, destacando la necesidad de revisar las cláusulas de derechos de autor en sus acuerdos.",
+        "url": "https://www.digitalmusicnews.com/2026/10/06/suno-italy-investigation/",
+        "source": "Digital Music News",
+        "domain": "digitalmusicnews.com",
+        "publishedAt": "2026-10-06T15:39:23.000Z",
+        "tags": [
+          "lawsuit",
+          "ai",
+          "licensing"
+        ],
+        "translated": true,
+        "via": null
+      },
+      {
+        "id": "noticia-2",
         "title": "Sony Music’s AI Slop and Deepfakes Crackdown Intensifies — Soundalike Track Removal Requests Reportedly Top 250,000",
-        "summary": "Sony Music’s AI deepfakes crackdown is intensifying: As of September’s end, the major label had fired off north of 250,000 cumulative soundalike-track takedown demands. That concrete figure came to light in a recent Financial Times piece, which pointed to over 260,000 deepfake takedown requests submitted to various “pl…",
+        "summary": "Sony Music ha intensificado su lucha contra deepfakes de IA, enviando más de 250 000 solicitudes de eliminación de pistas que imitan a sus artistas. Un informe del Financial Times indica que el número total supera los 260 000 pedidos a diversas plataformas.",
         "url": "https://www.digitalmusicnews.com/2026/10/05/sony-music-ai-takedowns/",
         "source": "Digital Music News",
         "domain": "digitalmusicnews.com",
@@ -32,11 +49,11 @@
           "lawsuit",
           "ai"
         ],
-        "translated": false,
+        "translated": true,
         "via": null
       },
       {
-        "id": "noticia-2",
+        "id": "noticia-3",
         "title": "Japanese court says voice is protected by publicity rights; US appeals court says AI training is not fair use",
         "summary": "There have been two judgments this week of relevance to the ongoing AI debates in the music industry. A Japanese court ruled that publicity rights allow performers to stop unapproved AI voice clones. Meanwhile a US appeals court ruled against an AI company that used the good old fair use defence",
         "url": "https://completemusicupdate.com/japanese-court-says-voice-is-protected-by-publicity-rights-us-appeals-court-says-ai-training-is-not-fair-use/",
@@ -51,7 +68,7 @@
         "via": null
       },
       {
-        "id": "noticia-3",
+        "id": "noticia-4",
         "title": "Sony Music has now filed 260k takedowns of AI-deepfake tracks",
         "summary": "In March 2025, Sony Music said that it had successfully gotten more than 75k AI-generated deepfakes of its artists from various online platforms. A year later, in March 2026, the company said that it had now filed more than 135k of these takedown notices. The post is from Music Ally .",
         "url": "https://musically.com/2026/10/05/sony-music-has-now-filed-260k-takedowns-of-ai-deepfake-tracks/",
@@ -65,7 +82,7 @@
         "via": null
       },
       {
-        "id": "noticia-4",
+        "id": "noticia-5",
         "title": "‘The Song Is Non-Negotiable’: Indie Music Giants Unite to Force a Fair Licensing Framework",
         "summary": "Indie publishing orgs IMPF and IMPEL have outlined a licensing framework for generative AI to create a fair and sustainable market for the future. Independent music publishing organizations IMPEL and IMPF have now issued a licensing framework for generative AI based on several key principles that will ensure song copyr…",
         "url": "https://www.digitalmusicnews.com/2026/09/29/impf-and-impel-unite-generative-ai-licensing/",
@@ -80,7 +97,7 @@
         "via": null
       },
       {
-        "id": "noticia-5",
+        "id": "noticia-6",
         "title": "US appeals court rejects ‘fair use’ defense over AI training – as Thomson Reuters wins copyright case backed by RIAA and NMPA",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMi8wFBVV95cUxPLVpsd0o2VGhwT3BoSFZTLXVuQTJWSnBQRm1TT01zREhNSm1zRERyRDhqRnVqN2hXbVJYNHowUkFnVl9BTVhUazZ4R3d2b2FXZWU3TFJkRU9sZVZyTkxzbGtwVkJSckwtZjY1bXByVG9OcWo1YldnTDcwQXpBV0xGTGVxUW5iNVhtR3M4YnJqVEEwV2JkeDZUV3BUN2FHYXh2bHg1VGphSmk2S2psMm4tbllhLXMtamktN19KZW5FcFBoS1pYV1dBYkxYNW1VZXNJclZBVEhDOG9CeDIzSE5HcFdkcnRfV2FZWXFpTXYtZkVVSVE?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -95,7 +112,7 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-6",
+        "id": "noticia-7",
         "title": "AI Lost Its First Fair Use Appeal. Suno Should Be Worried.",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMitwFBVV95cUxOMW4wT3pmbjFGaUdaYmJWRl9RX1dLQ2JpWXc1MnB3UHNMY3FyamstX1pCdmxyNlVHdkl2dF9JWDUtV1hLc2dDZ1BlUnpzTUkxSGhTZ1drZUREUDBaNHNxaFV3RXJrZ2RKRUxfZVVkek16RW9PU0NfQTEwUkd5MGRHTF9ZQU1tU0ZFeE9JYXVaVUxMNDYwRjh2QVhsel9OcGJwc1AtN0VQQllWcDNrNS02MTBnOUcxN00?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -109,7 +126,7 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-7",
+        "id": "noticia-8",
         "title": "Suno AI y GEMA: la batalla por los derechos de autor que puede redefinir el negocio de la música para la IA",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMiwwFBVV95cUxPTngyX3RYREpPYnRTSjU4TkxLSkVrX0tmWGt1TjdHNzJZRkxuYjBFMXptdWc0SUJjaW41akJHWGRJRVdjQjUyNmlLWE54RkJfZ1hLUUpFTWl1bzd3dzdzaVNzTGl5cnBBT1VObklkclI0NXdzRnZjMGhmR0JIMDJsaFRhTTlPZGszWnNqS1k1anhFRHdoaUlFbG1kTGJIeEdRWnV1RTF1YVlBYU00RWcyMVRzQ2NxT3h6NUJmSkFIMjFtVU0?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -121,20 +138,6 @@
         ],
         "translated": false,
         "via": "Google News"
-      },
-      {
-        "id": "noticia-8",
-        "title": "Jermaine Dupri, Jacquees, and Mass Appeal Face ‘Pick It Up’ Infringement Suit from 90s Duo Home Team",
-        "summary": "One month after dropping his multimillion-dollar Sony Music infringement lawsuit, Jermaine Dupri is staring down a copyright complaint for allegedly lifting from a decades-old work to create 2023’s “Pick It Up.” The members of hip-hop duo Home Team, brothers Patrick Watler and Van J. Watler, just recently submitted the…",
-        "url": "https://www.digitalmusicnews.com/2026/09/28/jermaine-dupri-pick-it-up-lawsuit/",
-        "source": "Digital Music News",
-        "domain": "digitalmusicnews.com",
-        "publishedAt": "2026-09-29T06:00:48.000Z",
-        "tags": [
-          "lawsuit"
-        ],
-        "translated": false,
-        "via": null
       },
       {
         "id": "noticia-9",
@@ -167,14 +170,16 @@
       },
       {
         "id": "noticia-11",
-        "title": "Sony Music has now asked platforms to remove more than 260,000 AI deepfakes imitating artists like Harry Styles, Adele, and Michael Jackson",
-        "summary": "Sony told the Financial Times that the fight against AI tracks impersonating artists such as Harry Styles and Adele is \"becoming an uphill struggle.\" Source",
-        "url": "https://www.musicbusinessworldwide.com/sony-music-has-now-asked-platforms-to-remove-more-than-260000-ai-deepfakes-imitating-artists-like-harry-styles-adele-and-michael-jackson/",
-        "source": "Music Business Worldwide",
-        "domain": "musicbusinessworldwide.com",
-        "publishedAt": "2026-10-05T10:19:00.000Z",
+        "title": "AI Music Streaming Fraudster Sentenced to 1.5 Years in Prison for $8M Royalties Scam",
+        "summary": "Michael Smith admitted earlier this year to using bots to stream fake songs billions of times in a first-ever criminal case over streaming fraud.",
+        "url": "https://www.billboard.com/pro/ai-music-streaming-fraud-sentence-man-18-months-prison-scam/",
+        "source": "Billboard",
+        "domain": "billboard.com",
+        "publishedAt": "2026-10-06T22:26:32.000Z",
         "tags": [
-          "ai"
+          "ai",
+          "royalties",
+          "streaming"
         ],
         "translated": false,
         "via": null
@@ -205,8 +210,24 @@
     "items": [
       {
         "id": "noticia-1",
+        "title": "Italian Competition Watchdog Launches Suno Investigation ‘Over Unfair Terms,’ Says ‘The Contractual Provisions on Copyright Deserve Particular Attention’",
+        "summary": "The Italian Competition Authority has opened a formal probe into Suno, the AI music generator, alleging unfair contractual terms and emphasizing particular attention to copyright provisions within its legal contracts.",
+        "url": "https://www.digitalmusicnews.com/2026/10/06/suno-italy-investigation/",
+        "source": "Digital Music News",
+        "domain": "digitalmusicnews.com",
+        "publishedAt": "2026-10-06T15:39:23.000Z",
+        "tags": [
+          "lawsuit",
+          "ai",
+          "licensing"
+        ],
+        "translated": true,
+        "via": null
+      },
+      {
+        "id": "noticia-2",
         "title": "Sony Music’s AI Slop and Deepfakes Crackdown Intensifies — Soundalike Track Removal Requests Reportedly Top 250,000",
-        "summary": "Sony Music’s AI deepfakes crackdown is intensifying: As of September’s end, the major label had fired off north of 250,000 cumulative soundalike-track takedown demands. That concrete figure came to light in a recent Financial Times piece, which pointed to over 260,000 deepfake takedown requests submitted to various “pl…",
+        "summary": "Sony Music has stepped up its AI deepfake crackdown, filing over 250,000 takedown requests for soundalike tracks. A Financial Times report notes the total now exceeds 260,000 removal demands submitted to multiple platforms.",
         "url": "https://www.digitalmusicnews.com/2026/10/05/sony-music-ai-takedowns/",
         "source": "Digital Music News",
         "domain": "digitalmusicnews.com",
@@ -215,11 +236,11 @@
           "lawsuit",
           "ai"
         ],
-        "translated": false,
+        "translated": true,
         "via": null
       },
       {
-        "id": "noticia-2",
+        "id": "noticia-3",
         "title": "Japanese court says voice is protected by publicity rights; US appeals court says AI training is not fair use",
         "summary": "There have been two judgments this week of relevance to the ongoing AI debates in the music industry. A Japanese court ruled that publicity rights allow performers to stop unapproved AI voice clones. Meanwhile a US appeals court ruled against an AI company that used the good old fair use defence",
         "url": "https://completemusicupdate.com/japanese-court-says-voice-is-protected-by-publicity-rights-us-appeals-court-says-ai-training-is-not-fair-use/",
@@ -234,7 +255,7 @@
         "via": null
       },
       {
-        "id": "noticia-3",
+        "id": "noticia-4",
         "title": "Sony Music has now filed 260k takedowns of AI-deepfake tracks",
         "summary": "In March 2025, Sony Music said that it had successfully gotten more than 75k AI-generated deepfakes of its artists from various online platforms. A year later, in March 2026, the company said that it had now filed more than 135k of these takedown notices. The post is from Music Ally .",
         "url": "https://musically.com/2026/10/05/sony-music-has-now-filed-260k-takedowns-of-ai-deepfake-tracks/",
@@ -248,7 +269,7 @@
         "via": null
       },
       {
-        "id": "noticia-4",
+        "id": "noticia-5",
         "title": "‘The Song Is Non-Negotiable’: Indie Music Giants Unite to Force a Fair Licensing Framework",
         "summary": "Indie publishing orgs IMPF and IMPEL have outlined a licensing framework for generative AI to create a fair and sustainable market for the future. Independent music publishing organizations IMPEL and IMPF have now issued a licensing framework for generative AI based on several key principles that will ensure song copyr…",
         "url": "https://www.digitalmusicnews.com/2026/09/29/impf-and-impel-unite-generative-ai-licensing/",
@@ -263,7 +284,7 @@
         "via": null
       },
       {
-        "id": "noticia-5",
+        "id": "noticia-6",
         "title": "US appeals court rejects ‘fair use’ defense over AI training – as Thomson Reuters wins copyright case backed by RIAA and NMPA",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMi8wFBVV95cUxPLVpsd0o2VGhwT3BoSFZTLXVuQTJWSnBQRm1TT01zREhNSm1zRERyRDhqRnVqN2hXbVJYNHowUkFnVl9BTVhUazZ4R3d2b2FXZWU3TFJkRU9sZVZyTkxzbGtwVkJSckwtZjY1bXByVG9OcWo1YldnTDcwQXpBV0xGTGVxUW5iNVhtR3M4YnJqVEEwV2JkeDZUV3BUN2FHYXh2bHg1VGphSmk2S2psMm4tbllhLXMtamktN19KZW5FcFBoS1pYV1dBYkxYNW1VZXNJclZBVEhDOG9CeDIzSE5HcFdkcnRfV2FZWXFpTXYtZkVVSVE?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -278,7 +299,7 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-6",
+        "id": "noticia-7",
         "title": "AI Lost Its First Fair Use Appeal. Suno Should Be Worried.",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMitwFBVV95cUxOMW4wT3pmbjFGaUdaYmJWRl9RX1dLQ2JpWXc1MnB3UHNMY3FyamstX1pCdmxyNlVHdkl2dF9JWDUtV1hLc2dDZ1BlUnpzTUkxSGhTZ1drZUREUDBaNHNxaFV3RXJrZ2RKRUxfZVVkek16RW9PU0NfQTEwUkd5MGRHTF9ZQU1tU0ZFeE9JYXVaVUxMNDYwRjh2QVhsel9OcGJwc1AtN0VQQllWcDNrNS02MTBnOUcxN00?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -292,7 +313,7 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-7",
+        "id": "noticia-8",
         "title": "Suno AI y GEMA: la batalla por los derechos de autor que puede redefinir el negocio de la música para la IA",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMiwwFBVV95cUxPTngyX3RYREpPYnRTSjU4TkxLSkVrX0tmWGt1TjdHNzJZRkxuYjBFMXptdWc0SUJjaW41akJHWGRJRVdjQjUyNmlLWE54RkJfZ1hLUUpFTWl1bzd3dzdzaVNzTGl5cnBBT1VObklkclI0NXdzRnZjMGhmR0JIMDJsaFRhTTlPZGszWnNqS1k1anhFRHdoaUlFbG1kTGJIeEdRWnV1RTF1YVlBYU00RWcyMVRzQ2NxT3h6NUJmSkFIMjFtVU0?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -304,20 +325,6 @@
         ],
         "translated": false,
         "via": "Google News"
-      },
-      {
-        "id": "noticia-8",
-        "title": "Jermaine Dupri, Jacquees, and Mass Appeal Face ‘Pick It Up’ Infringement Suit from 90s Duo Home Team",
-        "summary": "One month after dropping his multimillion-dollar Sony Music infringement lawsuit, Jermaine Dupri is staring down a copyright complaint for allegedly lifting from a decades-old work to create 2023’s “Pick It Up.” The members of hip-hop duo Home Team, brothers Patrick Watler and Van J. Watler, just recently submitted the…",
-        "url": "https://www.digitalmusicnews.com/2026/09/28/jermaine-dupri-pick-it-up-lawsuit/",
-        "source": "Digital Music News",
-        "domain": "digitalmusicnews.com",
-        "publishedAt": "2026-09-29T06:00:48.000Z",
-        "tags": [
-          "lawsuit"
-        ],
-        "translated": false,
-        "via": null
       },
       {
         "id": "noticia-9",
@@ -350,14 +357,16 @@
       },
       {
         "id": "noticia-11",
-        "title": "Sony Music has now asked platforms to remove more than 260,000 AI deepfakes imitating artists like Harry Styles, Adele, and Michael Jackson",
-        "summary": "Sony told the Financial Times that the fight against AI tracks impersonating artists such as Harry Styles and Adele is \"becoming an uphill struggle.\" Source",
-        "url": "https://www.musicbusinessworldwide.com/sony-music-has-now-asked-platforms-to-remove-more-than-260000-ai-deepfakes-imitating-artists-like-harry-styles-adele-and-michael-jackson/",
-        "source": "Music Business Worldwide",
-        "domain": "musicbusinessworldwide.com",
-        "publishedAt": "2026-10-05T10:19:00.000Z",
+        "title": "AI Music Streaming Fraudster Sentenced to 1.5 Years in Prison for $8M Royalties Scam",
+        "summary": "Michael Smith admitted earlier this year to using bots to stream fake songs billions of times in a first-ever criminal case over streaming fraud.",
+        "url": "https://www.billboard.com/pro/ai-music-streaming-fraud-sentence-man-18-months-prison-scam/",
+        "source": "Billboard",
+        "domain": "billboard.com",
+        "publishedAt": "2026-10-06T22:26:32.000Z",
         "tags": [
-          "ai"
+          "ai",
+          "royalties",
+          "streaming"
         ],
         "translated": false,
         "via": null
