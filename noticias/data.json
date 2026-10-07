@@ -1,14 +1,13 @@
 {
-  "lastUpdated": "2026-10-07T14:26:34.099Z",
+  "lastUpdated": "2026-10-07T23:33:16.600Z",
   "meta": {
     "method": "rss-retrieval + link-verification + ai-translation",
     "itemCount": 12,
     "sources": [
-      "Billboard",
       "Complete Music Update",
-      "Digital Music News",
       "Forbes",
       "LexLatin",
+      "Music Ally",
       "Music Business Worldwide",
       "The Tennessean"
     ],
@@ -22,28 +21,12 @@
     "items": [
       {
         "id": "noticia-1",
-        "title": "Italian Competition Watchdog Launches Suno Investigation ‘Over Unfair Terms,’ Says ‘The Contractual Provisions on Copyright Deserve Particular Attention’",
-        "summary": "When it rains, it pours and, in Suno’s case, keeps on pouring: Besides facing a number of stateside lawsuits as well as international copyright claims, the AI music generator is now grappling with a formal investigation in Italy over its allegedly “unfair terms.” The Italian Competition Authority (ICA) disclosed the pr…",
-        "url": "https://www.digitalmusicnews.com/2026/10/06/suno-italy-investigation/",
-        "source": "Digital Music News",
-        "domain": "digitalmusicnews.com",
-        "publishedAt": "2026-10-06T15:39:23.000Z",
-        "tags": [
-          "lawsuit",
-          "ai",
-          "licensing"
-        ],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-2",
-        "title": "Sony Music’s AI Slop and Deepfakes Crackdown Intensifies — Soundalike Track Removal Requests Reportedly Top 250,000",
-        "summary": "Sony Music’s AI deepfakes crackdown is intensifying: As of September’s end, the major label had fired off north of 250,000 cumulative soundalike-track takedown demands. That concrete figure came to light in a recent Financial Times piece, which pointed to over 260,000 deepfake takedown requests submitted to various “pl…",
-        "url": "https://www.digitalmusicnews.com/2026/10/05/sony-music-ai-takedowns/",
-        "source": "Digital Music News",
-        "domain": "digitalmusicnews.com",
-        "publishedAt": "2026-10-05T16:00:04.000Z",
+        "title": "Italy’s competition watchdog probes Suno over ‘unfair terms’",
+        "summary": "Suno’s legal headaches expanded beyond the US some time ago, with lawsuits filed by collecting societies in Europe and Scandinavia. Now Italy is getting in on the act – although this isn’t about copyright infringement. Well, not directly. The post is from Music Ally .",
+        "url": "https://musically.com/2026/10/07/italys-competition-watchdog-probes-suno-over-unfair-terms/",
+        "source": "Music Ally",
+        "domain": "musically.com",
+        "publishedAt": "2026-10-07T12:30:00.000Z",
         "tags": [
           "lawsuit",
           "ai"
@@ -52,22 +35,7 @@
         "via": null
       },
       {
-        "id": "noticia-3",
-        "title": "RIAA CEO Mitch Glazier on AI, Copyright & Congress | On the Record",
-        "summary": "As the music industry faces a new era of AI, the fight over artists’ rights is playing out in Washington D.C.. On this week’s episode of Billboard On The Record, host Kristin Robinson is joined by Mitch Glazier, Chairman/CEO of the RIAA (Recording Industry Association of America), to discuss the intersection of music a…",
-        "url": "https://www.billboard.com/video/mitch-glazier-billboard-on-the-record/",
-        "source": "Billboard",
-        "domain": "billboard.com",
-        "publishedAt": "2026-10-07T13:00:00.000Z",
-        "tags": [
-          "ai",
-          "legislation"
-        ],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-4",
+        "id": "noticia-2",
         "title": "Japanese court says voice is protected by publicity rights; US appeals court says AI training is not fair use",
         "summary": "There have been two judgments this week of relevance to the ongoing AI debates in the music industry. A Japanese court ruled that publicity rights allow performers to stop unapproved AI voice clones. Meanwhile a US appeals court ruled against an AI company that used the good old fair use defence",
         "url": "https://completemusicupdate.com/japanese-court-says-voice-is-protected-by-publicity-rights-us-appeals-court-says-ai-training-is-not-fair-use/",
@@ -82,7 +50,7 @@
         "via": null
       },
       {
-        "id": "noticia-5",
+        "id": "noticia-3",
         "title": "Majors and BMG tell US Supreme Court not to let appeals court decision ‘radically disrupt copyright worldwide’ in songwriter termination rights case",
         "summary": "January 12 ruling held that termination under US law returns an author's rights across the world, and not only in the US Source",
         "url": "https://www.musicbusinessworldwide.com/majors-and-bmg-tell-us-supreme-court-not-to-let-appeals-court-decision-radically-disrupt-copyright-worldwide-in-songwriter-termination-rights-case/",
@@ -96,22 +64,7 @@
         "via": null
       },
       {
-        "id": "noticia-6",
-        "title": "‘The Song Is Non-Negotiable’: Indie Music Giants Unite to Force a Fair Licensing Framework",
-        "summary": "Indie publishing orgs IMPF and IMPEL have outlined a licensing framework for generative AI to create a fair and sustainable market for the future. Independent music publishing organizations IMPEL and IMPF have now issued a licensing framework for generative AI based on several key principles that will ensure song copyr…",
-        "url": "https://www.digitalmusicnews.com/2026/09/29/impf-and-impel-unite-generative-ai-licensing/",
-        "source": "Digital Music News",
-        "domain": "digitalmusicnews.com",
-        "publishedAt": "2026-09-30T05:00:04.000Z",
-        "tags": [
-          "ai",
-          "licensing"
-        ],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-7",
+        "id": "noticia-4",
         "title": "US appeals court rejects ‘fair use’ defense over AI training – as Thomson Reuters wins copyright case backed by RIAA and NMPA",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMi8wFBVV95cUxPLVpsd0o2VGhwT3BoSFZTLXVuQTJWSnBQRm1TT01zREhNSm1zRERyRDhqRnVqN2hXbVJYNHowUkFnVl9BTVhUazZ4R3d2b2FXZWU3TFJkRU9sZVZyTkxzbGtwVkJSckwtZjY1bXByVG9OcWo1YldnTDcwQXpBV0xGTGVxUW5iNVhtR3M4YnJqVEEwV2JkeDZUV3BUN2FHYXh2bHg1VGphSmk2S2psMm4tbllhLXMtamktN19KZW5FcFBoS1pYV1dBYkxYNW1VZXNJclZBVEhDOG9CeDIzSE5HcFdkcnRfV2FZWXFpTXYtZkVVSVE?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -126,7 +79,23 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-8",
+        "id": "noticia-5",
+        "title": "Phono V streaming rate proposals filed with US Copyright Royalty Board, as DIMA points to 30% growth in publishing revenues since 2022",
+        "summary": "The proceeding will set the mechanical rates on-demand streaming services pay US songwriters and publishers from 2028 through 2032. Source",
+        "url": "https://www.musicbusinessworldwide.com/phono-v-streaming-rate-proposals-filed-with-us-copyright-royalty-board-as-dima-points-to-30-growth-in-publishing-revenues-since-2022/",
+        "source": "Music Business Worldwide",
+        "domain": "musicbusinessworldwide.com",
+        "publishedAt": "2026-10-07T14:38:04.000Z",
+        "tags": [
+          "lawsuit",
+          "royalties",
+          "streaming"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-6",
         "title": "AI Lost Its First Fair Use Appeal. Suno Should Be Worried.",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMitwFBVV95cUxOMW4wT3pmbjFGaUdaYmJWRl9RX1dLQ2JpWXc1MnB3UHNMY3FyamstX1pCdmxyNlVHdkl2dF9JWDUtV1hLc2dDZ1BlUnpzTUkxSGhTZ1drZUREUDBaNHNxaFV3RXJrZ2RKRUxfZVVkek16RW9PU0NfQTEwUkd5MGRHTF9ZQU1tU0ZFeE9JYXVaVUxMNDYwRjh2QVhsel9OcGJwc1AtN0VQQllWcDNrNS02MTBnOUcxN00?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -140,7 +109,7 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-9",
+        "id": "noticia-7",
         "title": "Suno AI y GEMA: la batalla por los derechos de autor que puede redefinir el negocio de la música para la IA",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMiwwFBVV95cUxPTngyX3RYREpPYnRTSjU4TkxLSkVrX0tmWGt1TjdHNzJZRkxuYjBFMXptdWc0SUJjaW41akJHWGRJRVdjQjUyNmlLWE54RkJfZ1hLUUpFTWl1bzd3dzdzaVNzTGl5cnBBT1VObklkclI0NXdzRnZjMGhmR0JIMDJsaFRhTTlPZGszWnNqS1k1anhFRHdoaUlFbG1kTGJIeEdRWnV1RTF1YVlBYU00RWcyMVRzQ2NxT3h6NUJmSkFIMjFtVU0?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -154,7 +123,7 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-10",
+        "id": "noticia-8",
         "title": "Historic ruling on 'fair use' and AI may help Nashville songwriters",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMitwFBVV95cUxPNGkxNm94cTNBVkk0Z0hnV2Z4T0RJNktYNW1OTlBRWU01QldpRUFkSUZSRG5ZbExhMGczeWtaS2dXN0VUQWEtWnNabFhlU0pnQmZHaDhPOXRadGY2ckR5dVc2cnNGenFaUFdKcGx4UUUwbERnODBGYmJfVTBSNllpVThGbjVHaWVJaE1ITV9RT2pSMXpVbzM2T3VLTFoyZVUxQThvaDF2aHVCVXB4N0VaNW1NOWtiQU0?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -169,7 +138,7 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-11",
+        "id": "noticia-9",
         "title": "Trump’s DoJ was biased and wrong about ‘fair use’, say news orgs in OpenAI dispute",
         "summary": "Many of the music industry’s AI legal battles swing on whether or not AI training is ‘fair use’ under US copyright law. Donald Trump’s DoJ recently intervened in a dispute between newspapers and OpenAI insisting AI training is fair use. The newspapers have responded, explaining why the DoJ is wrong",
         "url": "https://completemusicupdate.com/trumps-doj-was-biased-and-wrong-about-fair-use-say-news-orgs-in-openai-dispute/",
@@ -183,16 +152,46 @@
         "via": null
       },
       {
-        "id": "noticia-12",
-        "title": "With a new CFO, three licensing deals, and $775M+ raised, what’s stopping $5.4B-valued Suno from an IPO?",
-        "summary": "The signals pointing to the firm's potential stock market ambitions and the barriers it faces in getting there. Source",
-        "url": "https://www.musicbusinessworldwide.com/with-a-new-cfo-three-licensing-deals-and-775m-raised-whats-stopping-5-4b-valued-suno-from-an-ipo/",
-        "source": "Music Business Worldwide",
-        "domain": "musicbusinessworldwide.com",
-        "publishedAt": "2026-10-07T13:00:10.000Z",
+        "id": "noticia-10",
+        "title": "Music-streaming fraudster Michael Smith gets 18-month jail sentence",
+        "summary": "American producer Michael Smith has been sentenced to 18 months in prison for his infamous AI-powered streaming scam that netted him more than $8m in royalties. The post is from Music Ally .",
+        "url": "https://musically.com/2026/10/07/music-streaming-fraudster-michael-smith-gets-18-month-jail-sentence/",
+        "source": "Music Ally",
+        "domain": "musically.com",
+        "publishedAt": "2026-10-07T11:30:00.000Z",
         "tags": [
           "ai",
-          "licensing"
+          "royalties",
+          "streaming"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-11",
+        "title": "Don’t say collusion: “no evidence of misconduct or conflict of interest” say major labels and publishers about their Phono V physical negotiations",
+        "summary": "The US Copyright Royalty Board is reviewing what mechanical royalties songwriters and publishers should receive from 2028. It’s labels who pay mechanical royalties on physical records, and the major labels are keen to stress they aren’t colluding with the major publishers to keep the rates down",
+        "url": "https://completemusicupdate.com/dont-say-collusion-no-evidence-of-misconduct-or-conflict-of-interest-say-major-labels-and-publishers-about-their-phono-v-physical-negotiations/",
+        "source": "Complete Music Update",
+        "domain": "completemusicupdate.com",
+        "publishedAt": "2026-10-06T11:34:18.000Z",
+        "tags": [
+          "royalties"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-12",
+        "title": "ARIA boss warns Australian politicians on AI lobbying demands",
+        "summary": "Australia is one of the countries where the music industry is slugging it out with some tech companies to win the ears of politicians, as the latter mull what rules to put in place covering AI technology. The post is from Music Ally .",
+        "url": "https://musically.com/2026/10/06/aria-boss-warns-australian-politicians-on-ai-lobbying-demands/",
+        "source": "Music Ally",
+        "domain": "musically.com",
+        "publishedAt": "2026-10-06T11:30:00.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
         ],
         "translated": false,
         "via": null
@@ -209,28 +208,12 @@
     "items": [
       {
         "id": "noticia-1",
-        "title": "Italian Competition Watchdog Launches Suno Investigation ‘Over Unfair Terms,’ Says ‘The Contractual Provisions on Copyright Deserve Particular Attention’",
-        "summary": "When it rains, it pours and, in Suno’s case, keeps on pouring: Besides facing a number of stateside lawsuits as well as international copyright claims, the AI music generator is now grappling with a formal investigation in Italy over its allegedly “unfair terms.” The Italian Competition Authority (ICA) disclosed the pr…",
-        "url": "https://www.digitalmusicnews.com/2026/10/06/suno-italy-investigation/",
-        "source": "Digital Music News",
-        "domain": "digitalmusicnews.com",
-        "publishedAt": "2026-10-06T15:39:23.000Z",
-        "tags": [
-          "lawsuit",
-          "ai",
-          "licensing"
-        ],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-2",
-        "title": "Sony Music’s AI Slop and Deepfakes Crackdown Intensifies — Soundalike Track Removal Requests Reportedly Top 250,000",
-        "summary": "Sony Music’s AI deepfakes crackdown is intensifying: As of September’s end, the major label had fired off north of 250,000 cumulative soundalike-track takedown demands. That concrete figure came to light in a recent Financial Times piece, which pointed to over 260,000 deepfake takedown requests submitted to various “pl…",
-        "url": "https://www.digitalmusicnews.com/2026/10/05/sony-music-ai-takedowns/",
-        "source": "Digital Music News",
-        "domain": "digitalmusicnews.com",
-        "publishedAt": "2026-10-05T16:00:04.000Z",
+        "title": "Italy’s competition watchdog probes Suno over ‘unfair terms’",
+        "summary": "Suno’s legal headaches expanded beyond the US some time ago, with lawsuits filed by collecting societies in Europe and Scandinavia. Now Italy is getting in on the act – although this isn’t about copyright infringement. Well, not directly. The post is from Music Ally .",
+        "url": "https://musically.com/2026/10/07/italys-competition-watchdog-probes-suno-over-unfair-terms/",
+        "source": "Music Ally",
+        "domain": "musically.com",
+        "publishedAt": "2026-10-07T12:30:00.000Z",
         "tags": [
           "lawsuit",
           "ai"
@@ -239,22 +222,7 @@
         "via": null
       },
       {
-        "id": "noticia-3",
-        "title": "RIAA CEO Mitch Glazier on AI, Copyright & Congress | On the Record",
-        "summary": "As the music industry faces a new era of AI, the fight over artists’ rights is playing out in Washington D.C.. On this week’s episode of Billboard On The Record, host Kristin Robinson is joined by Mitch Glazier, Chairman/CEO of the RIAA (Recording Industry Association of America), to discuss the intersection of music a…",
-        "url": "https://www.billboard.com/video/mitch-glazier-billboard-on-the-record/",
-        "source": "Billboard",
-        "domain": "billboard.com",
-        "publishedAt": "2026-10-07T13:00:00.000Z",
-        "tags": [
-          "ai",
-          "legislation"
-        ],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-4",
+        "id": "noticia-2",
         "title": "Japanese court says voice is protected by publicity rights; US appeals court says AI training is not fair use",
         "summary": "There have been two judgments this week of relevance to the ongoing AI debates in the music industry. A Japanese court ruled that publicity rights allow performers to stop unapproved AI voice clones. Meanwhile a US appeals court ruled against an AI company that used the good old fair use defence",
         "url": "https://completemusicupdate.com/japanese-court-says-voice-is-protected-by-publicity-rights-us-appeals-court-says-ai-training-is-not-fair-use/",
@@ -269,7 +237,7 @@
         "via": null
       },
       {
-        "id": "noticia-5",
+        "id": "noticia-3",
         "title": "Majors and BMG tell US Supreme Court not to let appeals court decision ‘radically disrupt copyright worldwide’ in songwriter termination rights case",
         "summary": "January 12 ruling held that termination under US law returns an author's rights across the world, and not only in the US Source",
         "url": "https://www.musicbusinessworldwide.com/majors-and-bmg-tell-us-supreme-court-not-to-let-appeals-court-decision-radically-disrupt-copyright-worldwide-in-songwriter-termination-rights-case/",
@@ -283,22 +251,7 @@
         "via": null
       },
       {
-        "id": "noticia-6",
-        "title": "‘The Song Is Non-Negotiable’: Indie Music Giants Unite to Force a Fair Licensing Framework",
-        "summary": "Indie publishing orgs IMPF and IMPEL have outlined a licensing framework for generative AI to create a fair and sustainable market for the future. Independent music publishing organizations IMPEL and IMPF have now issued a licensing framework for generative AI based on several key principles that will ensure song copyr…",
-        "url": "https://www.digitalmusicnews.com/2026/09/29/impf-and-impel-unite-generative-ai-licensing/",
-        "source": "Digital Music News",
-        "domain": "digitalmusicnews.com",
-        "publishedAt": "2026-09-30T05:00:04.000Z",
-        "tags": [
-          "ai",
-          "licensing"
-        ],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-7",
+        "id": "noticia-4",
         "title": "US appeals court rejects ‘fair use’ defense over AI training – as Thomson Reuters wins copyright case backed by RIAA and NMPA",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMi8wFBVV95cUxPLVpsd0o2VGhwT3BoSFZTLXVuQTJWSnBQRm1TT01zREhNSm1zRERyRDhqRnVqN2hXbVJYNHowUkFnVl9BTVhUazZ4R3d2b2FXZWU3TFJkRU9sZVZyTkxzbGtwVkJSckwtZjY1bXByVG9OcWo1YldnTDcwQXpBV0xGTGVxUW5iNVhtR3M4YnJqVEEwV2JkeDZUV3BUN2FHYXh2bHg1VGphSmk2S2psMm4tbllhLXMtamktN19KZW5FcFBoS1pYV1dBYkxYNW1VZXNJclZBVEhDOG9CeDIzSE5HcFdkcnRfV2FZWXFpTXYtZkVVSVE?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -313,7 +266,23 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-8",
+        "id": "noticia-5",
+        "title": "Phono V streaming rate proposals filed with US Copyright Royalty Board, as DIMA points to 30% growth in publishing revenues since 2022",
+        "summary": "The proceeding will set the mechanical rates on-demand streaming services pay US songwriters and publishers from 2028 through 2032. Source",
+        "url": "https://www.musicbusinessworldwide.com/phono-v-streaming-rate-proposals-filed-with-us-copyright-royalty-board-as-dima-points-to-30-growth-in-publishing-revenues-since-2022/",
+        "source": "Music Business Worldwide",
+        "domain": "musicbusinessworldwide.com",
+        "publishedAt": "2026-10-07T14:38:04.000Z",
+        "tags": [
+          "lawsuit",
+          "royalties",
+          "streaming"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-6",
         "title": "AI Lost Its First Fair Use Appeal. Suno Should Be Worried.",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMitwFBVV95cUxOMW4wT3pmbjFGaUdaYmJWRl9RX1dLQ2JpWXc1MnB3UHNMY3FyamstX1pCdmxyNlVHdkl2dF9JWDUtV1hLc2dDZ1BlUnpzTUkxSGhTZ1drZUREUDBaNHNxaFV3RXJrZ2RKRUxfZVVkek16RW9PU0NfQTEwUkd5MGRHTF9ZQU1tU0ZFeE9JYXVaVUxMNDYwRjh2QVhsel9OcGJwc1AtN0VQQllWcDNrNS02MTBnOUcxN00?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -327,7 +296,7 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-9",
+        "id": "noticia-7",
         "title": "Suno AI y GEMA: la batalla por los derechos de autor que puede redefinir el negocio de la música para la IA",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMiwwFBVV95cUxPTngyX3RYREpPYnRTSjU4TkxLSkVrX0tmWGt1TjdHNzJZRkxuYjBFMXptdWc0SUJjaW41akJHWGRJRVdjQjUyNmlLWE54RkJfZ1hLUUpFTWl1bzd3dzdzaVNzTGl5cnBBT1VObklkclI0NXdzRnZjMGhmR0JIMDJsaFRhTTlPZGszWnNqS1k1anhFRHdoaUlFbG1kTGJIeEdRWnV1RTF1YVlBYU00RWcyMVRzQ2NxT3h6NUJmSkFIMjFtVU0?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -341,7 +310,7 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-10",
+        "id": "noticia-8",
         "title": "Historic ruling on 'fair use' and AI may help Nashville songwriters",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMitwFBVV95cUxPNGkxNm94cTNBVkk0Z0hnV2Z4T0RJNktYNW1OTlBRWU01QldpRUFkSUZSRG5ZbExhMGczeWtaS2dXN0VUQWEtWnNabFhlU0pnQmZHaDhPOXRadGY2ckR5dVc2cnNGenFaUFdKcGx4UUUwbERnODBGYmJfVTBSNllpVThGbjVHaWVJaE1ITV9RT2pSMXpVbzM2T3VLTFoyZVUxQThvaDF2aHVCVXB4N0VaNW1NOWtiQU0?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -356,7 +325,7 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-11",
+        "id": "noticia-9",
         "title": "Trump’s DoJ was biased and wrong about ‘fair use’, say news orgs in OpenAI dispute",
         "summary": "Many of the music industry’s AI legal battles swing on whether or not AI training is ‘fair use’ under US copyright law. Donald Trump’s DoJ recently intervened in a dispute between newspapers and OpenAI insisting AI training is fair use. The newspapers have responded, explaining why the DoJ is wrong",
         "url": "https://completemusicupdate.com/trumps-doj-was-biased-and-wrong-about-fair-use-say-news-orgs-in-openai-dispute/",
@@ -370,16 +339,46 @@
         "via": null
       },
       {
-        "id": "noticia-12",
-        "title": "With a new CFO, three licensing deals, and $775M+ raised, what’s stopping $5.4B-valued Suno from an IPO?",
-        "summary": "The signals pointing to the firm's potential stock market ambitions and the barriers it faces in getting there. Source",
-        "url": "https://www.musicbusinessworldwide.com/with-a-new-cfo-three-licensing-deals-and-775m-raised-whats-stopping-5-4b-valued-suno-from-an-ipo/",
-        "source": "Music Business Worldwide",
-        "domain": "musicbusinessworldwide.com",
-        "publishedAt": "2026-10-07T13:00:10.000Z",
+        "id": "noticia-10",
+        "title": "Music-streaming fraudster Michael Smith gets 18-month jail sentence",
+        "summary": "American producer Michael Smith has been sentenced to 18 months in prison for his infamous AI-powered streaming scam that netted him more than $8m in royalties. The post is from Music Ally .",
+        "url": "https://musically.com/2026/10/07/music-streaming-fraudster-michael-smith-gets-18-month-jail-sentence/",
+        "source": "Music Ally",
+        "domain": "musically.com",
+        "publishedAt": "2026-10-07T11:30:00.000Z",
         "tags": [
           "ai",
-          "licensing"
+          "royalties",
+          "streaming"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-11",
+        "title": "Don’t say collusion: “no evidence of misconduct or conflict of interest” say major labels and publishers about their Phono V physical negotiations",
+        "summary": "The US Copyright Royalty Board is reviewing what mechanical royalties songwriters and publishers should receive from 2028. It’s labels who pay mechanical royalties on physical records, and the major labels are keen to stress they aren’t colluding with the major publishers to keep the rates down",
+        "url": "https://completemusicupdate.com/dont-say-collusion-no-evidence-of-misconduct-or-conflict-of-interest-say-major-labels-and-publishers-about-their-phono-v-physical-negotiations/",
+        "source": "Complete Music Update",
+        "domain": "completemusicupdate.com",
+        "publishedAt": "2026-10-06T11:34:18.000Z",
+        "tags": [
+          "royalties"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-12",
+        "title": "ARIA boss warns Australian politicians on AI lobbying demands",
+        "summary": "Australia is one of the countries where the music industry is slugging it out with some tech companies to win the ears of politicians, as the latter mull what rules to put in place covering AI technology. The post is from Music Ally .",
+        "url": "https://musically.com/2026/10/06/aria-boss-warns-australian-politicians-on-ai-lobbying-demands/",
+        "source": "Music Ally",
+        "domain": "musically.com",
+        "publishedAt": "2026-10-06T11:30:00.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
         ],
         "translated": false,
         "via": null
