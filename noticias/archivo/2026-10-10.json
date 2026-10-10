@@ -1,11 +1,12 @@
 {
-  "lastUpdated": "2026-10-10T13:34:20.494Z",
+  "lastUpdated": "2026-10-10T22:26:26.134Z",
   "meta": {
     "method": "rss-retrieval + link-verification + ai-translation",
     "itemCount": 12,
     "sources": [
       "Complete Music Update",
       "Digital Music News",
+      "Law Commentary",
       "LexLatin",
       "Music Ally",
       "Music Business Worldwide",
@@ -67,6 +68,21 @@
       },
       {
         "id": "noticia-4",
+        "title": "Japanese court says voice is protected by publicity rights; US appeals court says AI training is not fair use",
+        "summary": "There have been two judgments this week of relevance to the ongoing AI debates in the music industry. A Japanese court ruled that publicity rights allow performers to stop unapproved AI voice clones. Meanwhile a US appeals court ruled against an AI company that used the good old fair use defence",
+        "url": "https://completemusicupdate.com/japanese-court-says-voice-is-protected-by-publicity-rights-us-appeals-court-says-ai-training-is-not-fair-use/",
+        "source": "Complete Music Update",
+        "domain": "completemusicupdate.com",
+        "publishedAt": "2026-10-01T15:46:23.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-5",
         "title": "Major publishers tell US Supreme Court they must intervene in termination rights ruling that “threatens the licensing of copyrighted works throughout the world”",
         "summary": "The major music publishers and BMG have submitted a new filing with the US Supreme Court in the ongoing termination rights legal battle involving songwriter Cyril Vetter. He recently told the Supreme Court to ignore the publishers’ doomsaying about this case - their new filing has plenty of that",
         "url": "https://completemusicupdate.com/major-publishers-tell-us-supreme-court-they-must-intervene-in-termination-rights-ruling-that-threatens-the-licensing-of-copyrighted-works-throughout-the-world/",
@@ -81,7 +97,7 @@
         "via": null
       },
       {
-        "id": "noticia-5",
+        "id": "noticia-6",
         "title": "From Sony Music’s 260,000 deepfake takedowns to Suno’s live music expansion… it’s MBW’s Weekly Round-Up",
         "summary": "The biggest headlines from the past few days... Source",
         "url": "https://www.musicbusinessworldwide.com/from-sony-musics-260000-deepfake-takedowns-to-sunos-live-music-expansion-its-mbws-weekly-round-up/",
@@ -89,21 +105,6 @@
         "domain": "musicbusinessworldwide.com",
         "publishedAt": "2026-10-09T15:54:26.000Z",
         "tags": [
-          "ai"
-        ],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-6",
-        "title": "Japanese court says voice is protected by publicity rights; US appeals court says AI training is not fair use",
-        "summary": "There have been two judgments this week of relevance to the ongoing AI debates in the music industry. A Japanese court ruled that publicity rights allow performers to stop unapproved AI voice clones. Meanwhile a US appeals court ruled against an AI company that used the good old fair use defence",
-        "url": "https://completemusicupdate.com/japanese-court-says-voice-is-protected-by-publicity-rights-us-appeals-court-says-ai-training-is-not-fair-use/",
-        "source": "Complete Music Update",
-        "domain": "completemusicupdate.com",
-        "publishedAt": "2026-10-01T15:46:23.000Z",
-        "tags": [
-          "lawsuit",
           "ai"
         ],
         "translated": false,
@@ -156,6 +157,20 @@
       },
       {
         "id": "noticia-10",
+        "title": "OpenAI, Anthropic Face Copyright Backlash as Australian Music Industry Warns of AI Exploitation",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMikAFBVV95cUxOUXBZQnNBZlpMVlZDSGo0clowLWFKMVlvWGV6Wk5oakwtYlh6WXJjUjVjVjlZZnVfQU5OZGtBZjNNYnc1amVSQ0ZzcXN4QjRMQWF2bjRKb2YyZnFSOTdNRG12WE90TFJzX0tmdXk5SGdQa3p0SzdNeXd0M3NlS0s5VURiZlhtcW1NcmVkelpkY1E?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "Law Commentary",
+        "domain": "news.google.com",
+        "publishedAt": "2026-10-08T23:44:55.000Z",
+        "tags": [
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-11",
         "title": "Suno AI y GEMA: la batalla por los derechos de autor que puede redefinir el negocio de la música para la IA",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMiwwFBVV95cUxPTngyX3RYREpPYnRTSjU4TkxLSkVrX0tmWGt1TjdHNzJZRkxuYjBFMXptdWc0SUJjaW41akJHWGRJRVdjQjUyNmlLWE54RkJfZ1hLUUpFTWl1bzd3dzdzaVNzTGl5cnBBT1VObklkclI0NXdzRnZjMGhmR0JIMDJsaFRhTTlPZGszWnNqS1k1anhFRHdoaUlFbG1kTGJIeEdRWnV1RTF1YVlBYU00RWcyMVRzQ2NxT3h6NUJmSkFIMjFtVU0?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -169,7 +184,7 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-11",
+        "id": "noticia-12",
         "title": "Historic ruling on 'fair use' and AI may help Nashville songwriters",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMitwFBVV95cUxPNGkxNm94cTNBVkk0Z0hnV2Z4T0RJNktYNW1OTlBRWU01QldpRUFkSUZSRG5ZbExhMGczeWtaS2dXN0VUQWEtWnNabFhlU0pnQmZHaDhPOXRadGY2ckR5dVc2cnNGenFaUFdKcGx4UUUwbERnODBGYmJfVTBSNllpVThGbjVHaWVJaE1ITV9RT2pSMXpVbzM2T3VLTFoyZVUxQThvaDF2aHVCVXB4N0VaNW1NOWtiQU0?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -182,20 +197,6 @@
         ],
         "translated": false,
         "via": "Google News"
-      },
-      {
-        "id": "noticia-12",
-        "title": "Suno hires Ticketmaster’s Michael Chua to lead its live music team, including Songkick",
-        "summary": "In the role, Chua will lead the AI music company's live music operations, which include concert discovery platform Songkick. Source",
-        "url": "https://www.musicbusinessworldwide.com/suno-hires-ticketmasters-michael-chua-to-lead-its-live-music-team-including-songkick/",
-        "source": "Music Business Worldwide",
-        "domain": "musicbusinessworldwide.com",
-        "publishedAt": "2026-10-08T19:08:33.000Z",
-        "tags": [
-          "ai"
-        ],
-        "translated": false,
-        "via": null
       }
     ],
     "tip": {
@@ -254,6 +255,21 @@
       },
       {
         "id": "noticia-4",
+        "title": "Japanese court says voice is protected by publicity rights; US appeals court says AI training is not fair use",
+        "summary": "There have been two judgments this week of relevance to the ongoing AI debates in the music industry. A Japanese court ruled that publicity rights allow performers to stop unapproved AI voice clones. Meanwhile a US appeals court ruled against an AI company that used the good old fair use defence",
+        "url": "https://completemusicupdate.com/japanese-court-says-voice-is-protected-by-publicity-rights-us-appeals-court-says-ai-training-is-not-fair-use/",
+        "source": "Complete Music Update",
+        "domain": "completemusicupdate.com",
+        "publishedAt": "2026-10-01T15:46:23.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-5",
         "title": "Major publishers tell US Supreme Court they must intervene in termination rights ruling that “threatens the licensing of copyrighted works throughout the world”",
         "summary": "The major music publishers and BMG have submitted a new filing with the US Supreme Court in the ongoing termination rights legal battle involving songwriter Cyril Vetter. He recently told the Supreme Court to ignore the publishers’ doomsaying about this case - their new filing has plenty of that",
         "url": "https://completemusicupdate.com/major-publishers-tell-us-supreme-court-they-must-intervene-in-termination-rights-ruling-that-threatens-the-licensing-of-copyrighted-works-throughout-the-world/",
@@ -268,7 +284,7 @@
         "via": null
       },
       {
-        "id": "noticia-5",
+        "id": "noticia-6",
         "title": "From Sony Music’s 260,000 deepfake takedowns to Suno’s live music expansion… it’s MBW’s Weekly Round-Up",
         "summary": "The biggest headlines from the past few days... Source",
         "url": "https://www.musicbusinessworldwide.com/from-sony-musics-260000-deepfake-takedowns-to-sunos-live-music-expansion-its-mbws-weekly-round-up/",
@@ -276,21 +292,6 @@
         "domain": "musicbusinessworldwide.com",
         "publishedAt": "2026-10-09T15:54:26.000Z",
         "tags": [
-          "ai"
-        ],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-6",
-        "title": "Japanese court says voice is protected by publicity rights; US appeals court says AI training is not fair use",
-        "summary": "There have been two judgments this week of relevance to the ongoing AI debates in the music industry. A Japanese court ruled that publicity rights allow performers to stop unapproved AI voice clones. Meanwhile a US appeals court ruled against an AI company that used the good old fair use defence",
-        "url": "https://completemusicupdate.com/japanese-court-says-voice-is-protected-by-publicity-rights-us-appeals-court-says-ai-training-is-not-fair-use/",
-        "source": "Complete Music Update",
-        "domain": "completemusicupdate.com",
-        "publishedAt": "2026-10-01T15:46:23.000Z",
-        "tags": [
-          "lawsuit",
           "ai"
         ],
         "translated": false,
@@ -343,6 +344,20 @@
       },
       {
         "id": "noticia-10",
+        "title": "OpenAI, Anthropic Face Copyright Backlash as Australian Music Industry Warns of AI Exploitation",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMikAFBVV95cUxOUXBZQnNBZlpMVlZDSGo0clowLWFKMVlvWGV6Wk5oakwtYlh6WXJjUjVjVjlZZnVfQU5OZGtBZjNNYnc1amVSQ0ZzcXN4QjRMQWF2bjRKb2YyZnFSOTdNRG12WE90TFJzX0tmdXk5SGdQa3p0SzdNeXd0M3NlS0s5VURiZlhtcW1NcmVkelpkY1E?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "Law Commentary",
+        "domain": "news.google.com",
+        "publishedAt": "2026-10-08T23:44:55.000Z",
+        "tags": [
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-11",
         "title": "Suno AI y GEMA: la batalla por los derechos de autor que puede redefinir el negocio de la música para la IA",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMiwwFBVV95cUxPTngyX3RYREpPYnRTSjU4TkxLSkVrX0tmWGt1TjdHNzJZRkxuYjBFMXptdWc0SUJjaW41akJHWGRJRVdjQjUyNmlLWE54RkJfZ1hLUUpFTWl1bzd3dzdzaVNzTGl5cnBBT1VObklkclI0NXdzRnZjMGhmR0JIMDJsaFRhTTlPZGszWnNqS1k1anhFRHdoaUlFbG1kTGJIeEdRWnV1RTF1YVlBYU00RWcyMVRzQ2NxT3h6NUJmSkFIMjFtVU0?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -356,7 +371,7 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-11",
+        "id": "noticia-12",
         "title": "Historic ruling on 'fair use' and AI may help Nashville songwriters",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMitwFBVV95cUxPNGkxNm94cTNBVkk0Z0hnV2Z4T0RJNktYNW1OTlBRWU01QldpRUFkSUZSRG5ZbExhMGczeWtaS2dXN0VUQWEtWnNabFhlU0pnQmZHaDhPOXRadGY2ckR5dVc2cnNGenFaUFdKcGx4UUUwbERnODBGYmJfVTBSNllpVThGbjVHaWVJaE1ITV9RT2pSMXpVbzM2T3VLTFoyZVUxQThvaDF2aHVCVXB4N0VaNW1NOWtiQU0?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -369,20 +384,6 @@
         ],
         "translated": false,
         "via": "Google News"
-      },
-      {
-        "id": "noticia-12",
-        "title": "Suno hires Ticketmaster’s Michael Chua to lead its live music team, including Songkick",
-        "summary": "In the role, Chua will lead the AI music company's live music operations, which include concert discovery platform Songkick. Source",
-        "url": "https://www.musicbusinessworldwide.com/suno-hires-ticketmasters-michael-chua-to-lead-its-live-music-team-including-songkick/",
-        "source": "Music Business Worldwide",
-        "domain": "musicbusinessworldwide.com",
-        "publishedAt": "2026-10-08T19:08:33.000Z",
-        "tags": [
-          "ai"
-        ],
-        "translated": false,
-        "via": null
       }
     ],
     "tip": {
