@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-10-10T22:26:26.134Z",
+  "lastUpdated": "2026-10-11T13:56:42.761Z",
   "meta": {
     "method": "rss-retrieval + link-verification + ai-translation",
     "itemCount": 12,
@@ -14,7 +14,7 @@
       "Vietnam.vn"
     ],
     "verifiedLinks": 12,
-    "aiTranslated": 0,
+    "aiTranslated": 5,
     "note": "Los hechos provienen de los artículos originales enlazados. La IA solo traduce y resume; no genera noticias."
   },
   "es": {
@@ -24,7 +24,7 @@
       {
         "id": "noticia-1",
         "title": "Italian Competition Watchdog Launches Suno Investigation ‘Over Unfair Terms,’ Says ‘The Contractual Provisions on Copyright Deserve Particular Attention’",
-        "summary": "When it rains, it pours and, in Suno’s case, keeps on pouring: Besides facing a number of stateside lawsuits as well as international copyright claims, the AI music generator is now grappling with a formal investigation in Italy over its allegedly “unfair terms.” The Italian Competition Authority (ICA) disclosed the pr…",
+        "summary": "Suno, el generador de música IA, está siendo investigado por la Autoridad de Competencia de Italia por supuestos términos contractuales injustos, con especial atención a las cláusulas de derechos de autor, mientras enfrenta varias demandas y reclamaciones internacionales de copyright.",
         "url": "https://www.digitalmusicnews.com/2026/10/06/suno-italy-investigation/",
         "source": "Digital Music News",
         "domain": "digitalmusicnews.com",
@@ -34,13 +34,13 @@
           "ai",
           "licensing"
         ],
-        "translated": false,
+        "translated": true,
         "via": null
       },
       {
         "id": "noticia-2",
         "title": "Sony Music’s AI Slop and Deepfakes Crackdown Intensifies — Soundalike Track Removal Requests Reportedly Top 250,000",
-        "summary": "Sony Music’s AI deepfakes crackdown is intensifying: As of September’s end, the major label had fired off north of 250,000 cumulative soundalike-track takedown demands. That concrete figure came to light in a recent Financial Times piece, which pointed to over 260,000 deepfake takedown requests submitted to various “pl…",
+        "summary": "Sony Music ha enviado más de 250,000 solicitudes de eliminación para retirar pistas generadas por IA que imitan su catálogo, incluyendo deepfakes, mostrando una campaña intensificada de protección de derechos, según informa el Financial Times.",
         "url": "https://www.digitalmusicnews.com/2026/10/05/sony-music-ai-takedowns/",
         "source": "Digital Music News",
         "domain": "digitalmusicnews.com",
@@ -49,27 +49,13 @@
           "lawsuit",
           "ai"
         ],
-        "translated": false,
+        "translated": true,
         "via": null
       },
       {
         "id": "noticia-3",
-        "title": "Who Really Wrote Katy Perry’s ‘Hot N Cold’? A Bizarre Twist Could Derail a Dr. Luke Copyright Settlement In South Dakota",
-        "summary": "A copyright case involving Dr. Luke enters settlement proceedings, but a third party has filed an intervention request, alleging an authorship stake. This week, in the ever-shifting world of copyright infringement lawsuits, two parties on opposing sides of a copyright infringement lawsuit involving a South Dakota broad…",
-        "url": "https://www.digitalmusicnews.com/2026/10/08/dr-luke-sd-broadcaster-lawsuit-settlement/",
-        "source": "Digital Music News",
-        "domain": "digitalmusicnews.com",
-        "publishedAt": "2026-10-08T23:08:25.000Z",
-        "tags": [
-          "lawsuit"
-        ],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-4",
         "title": "Japanese court says voice is protected by publicity rights; US appeals court says AI training is not fair use",
-        "summary": "There have been two judgments this week of relevance to the ongoing AI debates in the music industry. A Japanese court ruled that publicity rights allow performers to stop unapproved AI voice clones. Meanwhile a US appeals court ruled against an AI company that used the good old fair use defence",
+        "summary": "Un tribunal japonés determinó que los derechos de publicidad de los artistas impiden clones de voz no autorizados por IA, mientras que un tribunal de apelaciones estadounidense rechazó la defensa de uso justo de una empresa de IA para entrenar datos, evidenciando enfoques legales diferentes.",
         "url": "https://completemusicupdate.com/japanese-court-says-voice-is-protected-by-publicity-rights-us-appeals-court-says-ai-training-is-not-fair-use/",
         "source": "Complete Music Update",
         "domain": "completemusicupdate.com",
@@ -78,13 +64,27 @@
           "lawsuit",
           "ai"
         ],
-        "translated": false,
+        "translated": true,
+        "via": null
+      },
+      {
+        "id": "noticia-4",
+        "title": "Who Really Wrote Katy Perry’s ‘Hot N Cold’? A Bizarre Twist Could Derail a Dr. Luke Copyright Settlement In South Dakota",
+        "summary": "Un caso de derechos de autor de Dr. Luke en Dakota del Sur avanza hacia un acuerdo, pero una tercera parte ha intervenido alegando derechos de autoría, lo que podría complicar la resolución de disputas sobre canciones como “Hot N Cold” de Katy Perry.",
+        "url": "https://www.digitalmusicnews.com/2026/10/08/dr-luke-sd-broadcaster-lawsuit-settlement/",
+        "source": "Digital Music News",
+        "domain": "digitalmusicnews.com",
+        "publishedAt": "2026-10-08T23:08:25.000Z",
+        "tags": [
+          "lawsuit"
+        ],
+        "translated": true,
         "via": null
       },
       {
         "id": "noticia-5",
         "title": "Major publishers tell US Supreme Court they must intervene in termination rights ruling that “threatens the licensing of copyrighted works throughout the world”",
-        "summary": "The major music publishers and BMG have submitted a new filing with the US Supreme Court in the ongoing termination rights legal battle involving songwriter Cyril Vetter. He recently told the Supreme Court to ignore the publishers’ doomsaying about this case - their new filing has plenty of that",
+        "summary": "Los principales editores musicales y BMG presentaron un escrito ante la Corte Suprema de EE. UU. solicitando intervención en un caso de derechos de terminación que involucra al compositor Cyril Vetter, alegando que la decisión podría poner en riesgo la licencia mundial de obras protegidas.",
         "url": "https://completemusicupdate.com/major-publishers-tell-us-supreme-court-they-must-intervene-in-termination-rights-ruling-that-threatens-the-licensing-of-copyrighted-works-throughout-the-world/",
         "source": "Complete Music Update",
         "domain": "completemusicupdate.com",
@@ -93,7 +93,7 @@
           "lawsuit",
           "licensing"
         ],
-        "translated": false,
+        "translated": true,
         "via": null
       },
       {
@@ -157,12 +157,12 @@
       },
       {
         "id": "noticia-10",
-        "title": "OpenAI, Anthropic Face Copyright Backlash as Australian Music Industry Warns of AI Exploitation",
+        "title": "Suno AI y GEMA: la batalla por los derechos de autor que puede redefinir el negocio de la música para la IA",
         "summary": "",
-        "url": "https://news.google.com/rss/articles/CBMikAFBVV95cUxOUXBZQnNBZlpMVlZDSGo0clowLWFKMVlvWGV6Wk5oakwtYlh6WXJjUjVjVjlZZnVfQU5OZGtBZjNNYnc1amVSQ0ZzcXN4QjRMQWF2bjRKb2YyZnFSOTdNRG12WE90TFJzX0tmdXk5SGdQa3p0SzdNeXd0M3NlS0s5VURiZlhtcW1NcmVkelpkY1E?oc=5&hl=es-419&gl=US&ceid=US:es-419",
-        "source": "Law Commentary",
+        "url": "https://news.google.com/rss/articles/CBMiwwFBVV95cUxPTngyX3RYREpPYnRTSjU4TkxLSkVrX0tmWGt1TjdHNzJZRkxuYjBFMXptdWc0SUJjaW41akJHWGRJRVdjQjUyNmlLWE54RkJfZ1hLUUpFTWl1bzd3dzdzaVNzTGl5cnBBT1VObklkclI0NXdzRnZjMGhmR0JIMDJsaFRhTTlPZGszWnNqS1k1anhFRHdoaUlFbG1kTGJIeEdRWnV1RTF1YVlBYU00RWcyMVRzQ2NxT3h6NUJmSkFIMjFtVU0?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "LexLatin",
         "domain": "news.google.com",
-        "publishedAt": "2026-10-08T23:44:55.000Z",
+        "publishedAt": "2026-10-01T18:30:17.000Z",
         "tags": [
           "ai"
         ],
@@ -171,12 +171,12 @@
       },
       {
         "id": "noticia-11",
-        "title": "Suno AI y GEMA: la batalla por los derechos de autor que puede redefinir el negocio de la música para la IA",
+        "title": "OpenAI, Anthropic Face Copyright Backlash as Australian Music Industry Warns of AI Exploitation",
         "summary": "",
-        "url": "https://news.google.com/rss/articles/CBMiwwFBVV95cUxPTngyX3RYREpPYnRTSjU4TkxLSkVrX0tmWGt1TjdHNzJZRkxuYjBFMXptdWc0SUJjaW41akJHWGRJRVdjQjUyNmlLWE54RkJfZ1hLUUpFTWl1bzd3dzdzaVNzTGl5cnBBT1VObklkclI0NXdzRnZjMGhmR0JIMDJsaFRhTTlPZGszWnNqS1k1anhFRHdoaUlFbG1kTGJIeEdRWnV1RTF1YVlBYU00RWcyMVRzQ2NxT3h6NUJmSkFIMjFtVU0?oc=5&hl=es-419&gl=US&ceid=US:es-419",
-        "source": "LexLatin",
+        "url": "https://news.google.com/rss/articles/CBMikAFBVV95cUxOUXBZQnNBZlpMVlZDSGo0clowLWFKMVlvWGV6Wk5oakwtYlh6WXJjUjVjVjlZZnVfQU5OZGtBZjNNYnc1amVSQ0ZzcXN4QjRMQWF2bjRKb2YyZnFSOTdNRG12WE90TFJzX0tmdXk5SGdQa3p0SzdNeXd0M3NlS0s5VURiZlhtcW1NcmVkelpkY1E?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "Law Commentary",
         "domain": "news.google.com",
-        "publishedAt": "2026-10-01T18:30:17.000Z",
+        "publishedAt": "2026-10-08T23:44:55.000Z",
         "tags": [
           "ai"
         ],
@@ -200,8 +200,8 @@
       }
     ],
     "tip": {
-      "title": "Split sheet firmado el mismo día de la sesión",
-      "body": "Los porcentajes de autoría se pelean cuando la canción pega, no cuando se escribe. Firma el split sheet con todos los presentes antes de salir del estudio, aunque sean amigos."
+      "title": "Trabajo por encargo: quién queda como autor se pacta por escrito",
+      "body": "Si produces para un cliente, define por contrato si cedes derechos, si conservas puntos de producción y si tu nombre aparece en los créditos. Sin contrato, la interpretación depende de la ley de cada país."
     }
   },
   "en": {
@@ -211,7 +211,7 @@
       {
         "id": "noticia-1",
         "title": "Italian Competition Watchdog Launches Suno Investigation ‘Over Unfair Terms,’ Says ‘The Contractual Provisions on Copyright Deserve Particular Attention’",
-        "summary": "When it rains, it pours and, in Suno’s case, keeps on pouring: Besides facing a number of stateside lawsuits as well as international copyright claims, the AI music generator is now grappling with a formal investigation in Italy over its allegedly “unfair terms.” The Italian Competition Authority (ICA) disclosed the pr…",
+        "summary": "Suno, the AI music generator, is being investigated by Italy's Competition Authority for allegedly unfair contract terms, with particular focus on copyright provisions, as the company also faces multiple lawsuits and international copyright claims.",
         "url": "https://www.digitalmusicnews.com/2026/10/06/suno-italy-investigation/",
         "source": "Digital Music News",
         "domain": "digitalmusicnews.com",
@@ -221,13 +221,13 @@
           "ai",
           "licensing"
         ],
-        "translated": false,
+        "translated": true,
         "via": null
       },
       {
         "id": "noticia-2",
         "title": "Sony Music’s AI Slop and Deepfakes Crackdown Intensifies — Soundalike Track Removal Requests Reportedly Top 250,000",
-        "summary": "Sony Music’s AI deepfakes crackdown is intensifying: As of September’s end, the major label had fired off north of 250,000 cumulative soundalike-track takedown demands. That concrete figure came to light in a recent Financial Times piece, which pointed to over 260,000 deepfake takedown requests submitted to various “pl…",
+        "summary": "Sony Music has filed more than 250,000 takedown requests to remove AI‑generated soundalike tracks and deepfake recordings, reflecting an intensified effort to protect its catalog, as reported by the Financial Times.",
         "url": "https://www.digitalmusicnews.com/2026/10/05/sony-music-ai-takedowns/",
         "source": "Digital Music News",
         "domain": "digitalmusicnews.com",
@@ -236,27 +236,13 @@
           "lawsuit",
           "ai"
         ],
-        "translated": false,
+        "translated": true,
         "via": null
       },
       {
         "id": "noticia-3",
-        "title": "Who Really Wrote Katy Perry’s ‘Hot N Cold’? A Bizarre Twist Could Derail a Dr. Luke Copyright Settlement In South Dakota",
-        "summary": "A copyright case involving Dr. Luke enters settlement proceedings, but a third party has filed an intervention request, alleging an authorship stake. This week, in the ever-shifting world of copyright infringement lawsuits, two parties on opposing sides of a copyright infringement lawsuit involving a South Dakota broad…",
-        "url": "https://www.digitalmusicnews.com/2026/10/08/dr-luke-sd-broadcaster-lawsuit-settlement/",
-        "source": "Digital Music News",
-        "domain": "digitalmusicnews.com",
-        "publishedAt": "2026-10-08T23:08:25.000Z",
-        "tags": [
-          "lawsuit"
-        ],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-4",
         "title": "Japanese court says voice is protected by publicity rights; US appeals court says AI training is not fair use",
-        "summary": "There have been two judgments this week of relevance to the ongoing AI debates in the music industry. A Japanese court ruled that publicity rights allow performers to stop unapproved AI voice clones. Meanwhile a US appeals court ruled against an AI company that used the good old fair use defence",
+        "summary": "A Japanese court ruled that performers’ publicity rights block unauthorized AI voice clones, while a U.S. appeals court rejected an AI company’s fair‑use defense for training data, highlighting divergent legal approaches to AI in music.",
         "url": "https://completemusicupdate.com/japanese-court-says-voice-is-protected-by-publicity-rights-us-appeals-court-says-ai-training-is-not-fair-use/",
         "source": "Complete Music Update",
         "domain": "completemusicupdate.com",
@@ -265,13 +251,27 @@
           "lawsuit",
           "ai"
         ],
-        "translated": false,
+        "translated": true,
+        "via": null
+      },
+      {
+        "id": "noticia-4",
+        "title": "Who Really Wrote Katy Perry’s ‘Hot N Cold’? A Bizarre Twist Could Derail a Dr. Luke Copyright Settlement In South Dakota",
+        "summary": "A Dr. Luke copyright case in South Dakota has moved toward settlement, but a third party has intervened claiming authorship rights, potentially complicating the resolution of disputes over songs such as Katy Perry’s “Hot N Cold.”",
+        "url": "https://www.digitalmusicnews.com/2026/10/08/dr-luke-sd-broadcaster-lawsuit-settlement/",
+        "source": "Digital Music News",
+        "domain": "digitalmusicnews.com",
+        "publishedAt": "2026-10-08T23:08:25.000Z",
+        "tags": [
+          "lawsuit"
+        ],
+        "translated": true,
         "via": null
       },
       {
         "id": "noticia-5",
         "title": "Major publishers tell US Supreme Court they must intervene in termination rights ruling that “threatens the licensing of copyrighted works throughout the world”",
-        "summary": "The major music publishers and BMG have submitted a new filing with the US Supreme Court in the ongoing termination rights legal battle involving songwriter Cyril Vetter. He recently told the Supreme Court to ignore the publishers’ doomsaying about this case - their new filing has plenty of that",
+        "summary": "Major music publishers and BMG have filed a brief with the U.S. Supreme Court urging intervention in a termination‑rights case concerning songwriter Cyril Vetter, arguing the ruling could jeopardize global licensing of copyrighted works.",
         "url": "https://completemusicupdate.com/major-publishers-tell-us-supreme-court-they-must-intervene-in-termination-rights-ruling-that-threatens-the-licensing-of-copyrighted-works-throughout-the-world/",
         "source": "Complete Music Update",
         "domain": "completemusicupdate.com",
@@ -280,7 +280,7 @@
           "lawsuit",
           "licensing"
         ],
-        "translated": false,
+        "translated": true,
         "via": null
       },
       {
@@ -344,12 +344,12 @@
       },
       {
         "id": "noticia-10",
-        "title": "OpenAI, Anthropic Face Copyright Backlash as Australian Music Industry Warns of AI Exploitation",
+        "title": "Suno AI y GEMA: la batalla por los derechos de autor que puede redefinir el negocio de la música para la IA",
         "summary": "",
-        "url": "https://news.google.com/rss/articles/CBMikAFBVV95cUxOUXBZQnNBZlpMVlZDSGo0clowLWFKMVlvWGV6Wk5oakwtYlh6WXJjUjVjVjlZZnVfQU5OZGtBZjNNYnc1amVSQ0ZzcXN4QjRMQWF2bjRKb2YyZnFSOTdNRG12WE90TFJzX0tmdXk5SGdQa3p0SzdNeXd0M3NlS0s5VURiZlhtcW1NcmVkelpkY1E?oc=5&hl=es-419&gl=US&ceid=US:es-419",
-        "source": "Law Commentary",
+        "url": "https://news.google.com/rss/articles/CBMiwwFBVV95cUxPTngyX3RYREpPYnRTSjU4TkxLSkVrX0tmWGt1TjdHNzJZRkxuYjBFMXptdWc0SUJjaW41akJHWGRJRVdjQjUyNmlLWE54RkJfZ1hLUUpFTWl1bzd3dzdzaVNzTGl5cnBBT1VObklkclI0NXdzRnZjMGhmR0JIMDJsaFRhTTlPZGszWnNqS1k1anhFRHdoaUlFbG1kTGJIeEdRWnV1RTF1YVlBYU00RWcyMVRzQ2NxT3h6NUJmSkFIMjFtVU0?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "LexLatin",
         "domain": "news.google.com",
-        "publishedAt": "2026-10-08T23:44:55.000Z",
+        "publishedAt": "2026-10-01T18:30:17.000Z",
         "tags": [
           "ai"
         ],
@@ -358,12 +358,12 @@
       },
       {
         "id": "noticia-11",
-        "title": "Suno AI y GEMA: la batalla por los derechos de autor que puede redefinir el negocio de la música para la IA",
+        "title": "OpenAI, Anthropic Face Copyright Backlash as Australian Music Industry Warns of AI Exploitation",
         "summary": "",
-        "url": "https://news.google.com/rss/articles/CBMiwwFBVV95cUxPTngyX3RYREpPYnRTSjU4TkxLSkVrX0tmWGt1TjdHNzJZRkxuYjBFMXptdWc0SUJjaW41akJHWGRJRVdjQjUyNmlLWE54RkJfZ1hLUUpFTWl1bzd3dzdzaVNzTGl5cnBBT1VObklkclI0NXdzRnZjMGhmR0JIMDJsaFRhTTlPZGszWnNqS1k1anhFRHdoaUlFbG1kTGJIeEdRWnV1RTF1YVlBYU00RWcyMVRzQ2NxT3h6NUJmSkFIMjFtVU0?oc=5&hl=es-419&gl=US&ceid=US:es-419",
-        "source": "LexLatin",
+        "url": "https://news.google.com/rss/articles/CBMikAFBVV95cUxOUXBZQnNBZlpMVlZDSGo0clowLWFKMVlvWGV6Wk5oakwtYlh6WXJjUjVjVjlZZnVfQU5OZGtBZjNNYnc1amVSQ0ZzcXN4QjRMQWF2bjRKb2YyZnFSOTdNRG12WE90TFJzX0tmdXk5SGdQa3p0SzdNeXd0M3NlS0s5VURiZlhtcW1NcmVkelpkY1E?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "Law Commentary",
         "domain": "news.google.com",
-        "publishedAt": "2026-10-01T18:30:17.000Z",
+        "publishedAt": "2026-10-08T23:44:55.000Z",
         "tags": [
           "ai"
         ],
@@ -387,8 +387,8 @@
       }
     ],
     "tip": {
-      "title": "Sign the split sheet the day of the session",
-      "body": "Songwriting splits get disputed when the song blows up, not when it's written. Sign a split sheet with everyone in the room before you leave the studio —even with friends."
+      "title": "Work for hire: put authorship in writing",
+      "body": "If you produce for a client, spell out in the contract whether you assign rights, keep producer points, and get credited. Without a contract, the outcome depends on each country's law."
     }
   }
 }
