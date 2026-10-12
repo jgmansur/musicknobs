@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-10-11T22:48:29.174Z",
+  "lastUpdated": "2026-10-12T16:40:54.914Z",
   "meta": {
     "method": "rss-retrieval + link-verification + ai-translation",
     "itemCount": 12,
@@ -9,11 +9,10 @@
       "Law Commentary",
       "Music Ally",
       "Music Business Worldwide",
-      "The Tennessean",
       "Vietnam.vn"
     ],
     "verifiedLinks": 12,
-    "aiTranslated": 4,
+    "aiTranslated": 0,
     "note": "Los hechos provienen de los artículos originales enlazados. La IA solo traduce y resume; no genera noticias."
   },
   "es": {
@@ -22,8 +21,24 @@
     "items": [
       {
         "id": "noticia-1",
+        "title": "DistroKid is removing songs in response to UMG lawsuit – and some artists aren’t happy",
+        "summary": "In September, UMG sued distributer DistroKid over the latter’s “illegal, deceptive, and unlawful practices” – with two specific and fairly blockbuster accusations at the lawsuit’s heart: that DistroKid is “flooding” streaming services with “AI-generated slop”; and that it is also committing “massive, blatant copyright…",
+        "url": "https://musically.com/2026/10/12/distrokid-is-removing-songs-in-response-to-umg-lawsuit-and-some-artists-arent-happy/",
+        "source": "Music Ally",
+        "domain": "musically.com",
+        "publishedAt": "2026-10-12T12:45:00.000Z",
+        "tags": [
+          "lawsuit",
+          "ai",
+          "streaming"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-2",
         "title": "Italian Competition Watchdog Launches Suno Investigation ‘Over Unfair Terms,’ Says ‘The Contractual Provisions on Copyright Deserve Particular Attention’",
-        "summary": "La Autoridad Italiana de Competencia ha iniciado una investigación formal contra Suno, el generador de música IA, por supuestos términos contractuales injustos, destacando la necesidad de prestar especial atención a las cláusulas de derechos de autor en sus contratos.",
+        "summary": "When it rains, it pours and, in Suno’s case, keeps on pouring: Besides facing a number of stateside lawsuits as well as international copyright claims, the AI music generator is now grappling with a formal investigation in Italy over its allegedly “unfair terms.” The Italian Competition Authority (ICA) disclosed the pr…",
         "url": "https://www.digitalmusicnews.com/2026/10/06/suno-italy-investigation/",
         "source": "Digital Music News",
         "domain": "digitalmusicnews.com",
@@ -33,13 +48,13 @@
           "ai",
           "licensing"
         ],
-        "translated": true,
+        "translated": false,
         "via": null
       },
       {
-        "id": "noticia-2",
+        "id": "noticia-3",
         "title": "Sony Music’s AI Slop and Deepfakes Crackdown Intensifies — Soundalike Track Removal Requests Reportedly Top 250,000",
-        "summary": "Sony Music ha intensificado su lucha contra deepfakes y pistas imitativas, enviando más de 250 000 solicitudes de eliminación a distintas plataformas, según un informe del Financial Times que indica más de 260 000 peticiones acumuladas.",
+        "summary": "Sony Music’s AI deepfakes crackdown is intensifying: As of September’s end, the major label had fired off north of 250,000 cumulative soundalike-track takedown demands. That concrete figure came to light in a recent Financial Times piece, which pointed to over 260,000 deepfake takedown requests submitted to various “pl…",
         "url": "https://www.digitalmusicnews.com/2026/10/05/sony-music-ai-takedowns/",
         "source": "Digital Music News",
         "domain": "digitalmusicnews.com",
@@ -48,13 +63,13 @@
           "lawsuit",
           "ai"
         ],
-        "translated": true,
+        "translated": false,
         "via": null
       },
       {
-        "id": "noticia-3",
+        "id": "noticia-4",
         "title": "Who Really Wrote Katy Perry’s ‘Hot N Cold’? A Bizarre Twist Could Derail a Dr. Luke Copyright Settlement In South Dakota",
-        "summary": "Un tercero ha solicitado intervenir en el proceso de conciliación del caso de derechos de autor de Dr. Luke, alegando participación en la autoría de ‘Hot N Cold’ de Katy Perry, lo que podría complicar el acuerdo propuesto en Dakota del Sur.",
+        "summary": "A copyright case involving Dr. Luke enters settlement proceedings, but a third party has filed an intervention request, alleging an authorship stake. This week, in the ever-shifting world of copyright infringement lawsuits, two parties on opposing sides of a copyright infringement lawsuit involving a South Dakota broad…",
         "url": "https://www.digitalmusicnews.com/2026/10/08/dr-luke-sd-broadcaster-lawsuit-settlement/",
         "source": "Digital Music News",
         "domain": "digitalmusicnews.com",
@@ -62,13 +77,13 @@
         "tags": [
           "lawsuit"
         ],
-        "translated": true,
+        "translated": false,
         "via": null
       },
       {
-        "id": "noticia-4",
+        "id": "noticia-5",
         "title": "Major publishers tell US Supreme Court they must intervene in termination rights ruling that “threatens the licensing of copyrighted works throughout the world”",
-        "summary": "Los principales editores musicales y BMG presentaron ante la Corte Suprema de EE. UU. un escrito solicitando intervención en el litigio sobre derechos de terminación que, según ellos, pone en riesgo la licencia de obras protegidas a nivel global.",
+        "summary": "The major music publishers and BMG have submitted a new filing with the US Supreme Court in the ongoing termination rights legal battle involving songwriter Cyril Vetter. He recently told the Supreme Court to ignore the publishers’ doomsaying about this case - their new filing has plenty of that",
         "url": "https://completemusicupdate.com/major-publishers-tell-us-supreme-court-they-must-intervene-in-termination-rights-ruling-that-threatens-the-licensing-of-copyrighted-works-throughout-the-world/",
         "source": "Complete Music Update",
         "domain": "completemusicupdate.com",
@@ -77,11 +92,11 @@
           "lawsuit",
           "licensing"
         ],
-        "translated": true,
+        "translated": false,
         "via": null
       },
       {
-        "id": "noticia-5",
+        "id": "noticia-6",
         "title": "From Sony Music’s 260,000 deepfake takedowns to Suno’s live music expansion… it’s MBW’s Weekly Round-Up",
         "summary": "The biggest headlines from the past few days... Source",
         "url": "https://www.musicbusinessworldwide.com/from-sony-musics-260000-deepfake-takedowns-to-sunos-live-music-expansion-its-mbws-weekly-round-up/",
@@ -95,7 +110,7 @@
         "via": null
       },
       {
-        "id": "noticia-6",
+        "id": "noticia-7",
         "title": "A US appeals court has rejected a ‘fair use’ defense over AI training. What does it mean for the labels’ fight with Suno?",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMi7AFBVV95cUxPNG1UUFV4dTV3dkhweVdfdHR5R1BSLUU3c2kxTGxiNWhGSFZmMjVEd2l2bGxIWE93UE5MZC11RTV3Q2ZrRUFBZGxCRE9qYk1CazNKbjQ0dURrc0VfQlR2SjhqX3NwVnhuY3pkWFpBRmNNbk9FUWxTekx5UlY5alJEbWdFLXpDWmw0NXJKLVdoSTdHVzhIMFlRZGpzMXF4dXU2X1RIWUgxOTVsNXl3VkJicnhWY3JXelhwSExUR2Q2YVpkd3Z6bU5HUmdOaFJzRWZDcGptcjduTUNOQngySl9mNEdZUWxnc01Sd3NWbA?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -110,7 +125,7 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-7",
+        "id": "noticia-8",
         "title": "La industria musical australiana advierte al Parlamento contra la flexibilización de las leyes de derechos de autor para permitir el uso de la inteligencia artificial.",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMiqgFBVV95cUxORUM4d1FqN19vRXJUZmFZbUFFWnNCTnhIWTRkck1CMHQ5Y0RGLU5sSENmdkNKeGpNdHktd0M5NlVrWWZidEFuQnlxV1FXbXRKLWpVbFEyZFprTzN5TzB2WUpqc0dXbXlvdnFuNnRDVkk0SHVzd005U2NXQlBqbC1DeEtIYTI5ZTR6TFdiYTBIeGxsampMbndJN2FvclZKX0VEWmQ4LU9aeUFZdw?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -125,7 +140,7 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-8",
+        "id": "noticia-9",
         "title": "New Suno live music division to help make it the “first creative entertainment platform”",
         "summary": "Part of Suno’s licensing deal with Warner Music Group last November involved acquiring concert-discovery platform Songkick. It felt like a strange quirk at the time – what does an AI music-generating platform have to do with live gigs? – but now we’ll find out how this seemingly odd-couple relationship will work. The p…",
         "url": "https://musically.com/2026/10/09/new-suno-live-music-division-to-help-make-it-the-first-creative-entertainment-platform/",
@@ -140,7 +155,22 @@
         "via": null
       },
       {
-        "id": "noticia-9",
+        "id": "noticia-10",
+        "title": "Apple hires employees and licenses tech from AI podcast startup Huxe",
+        "summary": "We’re used to reading about novel ways of recruiting people en masse from another company, but a “reverse acqui-hire deal” was a new one to us. You’ll be aware of an acqui-hire deal, where one company – usually a major corporation – buys another outright in order to absorb the entirety of their staff and their skills.…",
+        "url": "https://musically.com/2026/10/12/apple-hires-employees-and-licenses-tech-from-ai-podcast-startup-huxe/",
+        "source": "Music Ally",
+        "domain": "musically.com",
+        "publishedAt": "2026-10-12T12:45:00.000Z",
+        "tags": [
+          "ai",
+          "licensing"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-11",
         "title": "OpenAI, Anthropic Face Copyright Backlash as Australian Music Industry Warns of AI Exploitation",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMikAFBVV95cUxOUXBZQnNBZlpMVlZDSGo0clowLWFKMVlvWGV6Wk5oakwtYlh6WXJjUjVjVjlZZnVfQU5OZGtBZjNNYnc1amVSQ0ZzcXN4QjRMQWF2bjRKb2YyZnFSOTdNRG12WE90TFJzX0tmdXk5SGdQa3p0SzdNeXd0M3NlS0s5VURiZlhtcW1NcmVkelpkY1E?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -154,22 +184,7 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-10",
-        "title": "Historic ruling on 'fair use' and AI may help Nashville songwriters",
-        "summary": "",
-        "url": "https://news.google.com/rss/articles/CBMitwFBVV95cUxPNGkxNm94cTNBVkk0Z0hnV2Z4T0RJNktYNW1OTlBRWU01QldpRUFkSUZSRG5ZbExhMGczeWtaS2dXN0VUQWEtWnNabFhlU0pnQmZHaDhPOXRadGY2ckR5dVc2cnNGenFaUFdKcGx4UUUwbERnODBGYmJfVTBSNllpVThGbjVHaWVJaE1ITV9RT2pSMXpVbzM2T3VLTFoyZVUxQThvaDF2aHVCVXB4N0VaNW1NOWtiQU0?oc=5&hl=es-419&gl=US&ceid=US:es-419",
-        "source": "The Tennessean",
-        "domain": "news.google.com",
-        "publishedAt": "2026-10-02T15:23:00.000Z",
-        "tags": [
-          "lawsuit",
-          "ai"
-        ],
-        "translated": false,
-        "via": "Google News"
-      },
-      {
-        "id": "noticia-11",
+        "id": "noticia-12",
         "title": "Suno hires Ticketmaster’s Michael Chua to lead its live music team, including Songkick",
         "summary": "In the role, Chua will lead the AI music company's live music operations, which include concert discovery platform Songkick. Source",
         "url": "https://www.musicbusinessworldwide.com/suno-hires-ticketmasters-michael-chua-to-lead-its-live-music-team-including-songkick/",
@@ -181,25 +196,11 @@
         ],
         "translated": false,
         "via": null
-      },
-      {
-        "id": "noticia-12",
-        "title": "Sollos “re-engineers” Olivia Dean and Sam Smith songs to help you sleep and focus",
-        "summary": "It’s comforting to remember that music isn’t merely a thing that exists in a series of breathless AI press releases – it’s also a nice thing that makes people feel nice. Feeling good can sometimes seem like a scarce resource in 2026, and while listening to your favourite artists can make you feel better, what if the mu…",
-        "url": "https://musically.com/2026/10/09/sollos-re-engineers-olivia-dean-and-sam-smith-songs-to-help-you-sleep-and-focus/",
-        "source": "Music Ally",
-        "domain": "musically.com",
-        "publishedAt": "2026-10-09T13:18:07.000Z",
-        "tags": [
-          "ai"
-        ],
-        "translated": false,
-        "via": null
       }
     ],
     "tip": {
-      "title": "Trabajo por encargo: quién queda como autor se pacta por escrito",
-      "body": "Si produces para un cliente, define por contrato si cedes derechos, si conservas puntos de producción y si tu nombre aparece en los créditos. Sin contrato, la interpretación depende de la ley de cada país."
+      "title": "Content ID no es lo mismo que ser dueño",
+      "body": "Que YouTube reclame un video a tu favor no prueba titularidad, y que no lo reclame no significa que puedas usar la obra. Content ID es un sistema privado de la plataforma, no una autoridad legal."
     }
   },
   "en": {
@@ -208,8 +209,24 @@
     "items": [
       {
         "id": "noticia-1",
+        "title": "DistroKid is removing songs in response to UMG lawsuit – and some artists aren’t happy",
+        "summary": "In September, UMG sued distributer DistroKid over the latter’s “illegal, deceptive, and unlawful practices” – with two specific and fairly blockbuster accusations at the lawsuit’s heart: that DistroKid is “flooding” streaming services with “AI-generated slop”; and that it is also committing “massive, blatant copyright…",
+        "url": "https://musically.com/2026/10/12/distrokid-is-removing-songs-in-response-to-umg-lawsuit-and-some-artists-arent-happy/",
+        "source": "Music Ally",
+        "domain": "musically.com",
+        "publishedAt": "2026-10-12T12:45:00.000Z",
+        "tags": [
+          "lawsuit",
+          "ai",
+          "streaming"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-2",
         "title": "Italian Competition Watchdog Launches Suno Investigation ‘Over Unfair Terms,’ Says ‘The Contractual Provisions on Copyright Deserve Particular Attention’",
-        "summary": "The Italian Competition Authority has opened a formal probe into Suno, the AI music generator, alleging unfair contractual terms and emphasizing that copyright provisions in its agreements require particular scrutiny.",
+        "summary": "When it rains, it pours and, in Suno’s case, keeps on pouring: Besides facing a number of stateside lawsuits as well as international copyright claims, the AI music generator is now grappling with a formal investigation in Italy over its allegedly “unfair terms.” The Italian Competition Authority (ICA) disclosed the pr…",
         "url": "https://www.digitalmusicnews.com/2026/10/06/suno-italy-investigation/",
         "source": "Digital Music News",
         "domain": "digitalmusicnews.com",
@@ -219,13 +236,13 @@
           "ai",
           "licensing"
         ],
-        "translated": true,
+        "translated": false,
         "via": null
       },
       {
-        "id": "noticia-2",
+        "id": "noticia-3",
         "title": "Sony Music’s AI Slop and Deepfakes Crackdown Intensifies — Soundalike Track Removal Requests Reportedly Top 250,000",
-        "summary": "Sony Music is ramping up its crackdown on AI‑generated deepfakes and sound‑alike tracks, having filed over 250,000 takedown requests with various platforms, with the Financial Times reporting more than 260,000 cumulative requests.",
+        "summary": "Sony Music’s AI deepfakes crackdown is intensifying: As of September’s end, the major label had fired off north of 250,000 cumulative soundalike-track takedown demands. That concrete figure came to light in a recent Financial Times piece, which pointed to over 260,000 deepfake takedown requests submitted to various “pl…",
         "url": "https://www.digitalmusicnews.com/2026/10/05/sony-music-ai-takedowns/",
         "source": "Digital Music News",
         "domain": "digitalmusicnews.com",
@@ -234,13 +251,13 @@
           "lawsuit",
           "ai"
         ],
-        "translated": true,
+        "translated": false,
         "via": null
       },
       {
-        "id": "noticia-3",
+        "id": "noticia-4",
         "title": "Who Really Wrote Katy Perry’s ‘Hot N Cold’? A Bizarre Twist Could Derail a Dr. Luke Copyright Settlement In South Dakota",
-        "summary": "A third party has filed an intervention in Dr. Luke’s copyright settlement case, claiming an authorship interest in Katy Perry’s ‘Hot N Cold’, a development that could jeopardize the proposed agreement in South Dakota.",
+        "summary": "A copyright case involving Dr. Luke enters settlement proceedings, but a third party has filed an intervention request, alleging an authorship stake. This week, in the ever-shifting world of copyright infringement lawsuits, two parties on opposing sides of a copyright infringement lawsuit involving a South Dakota broad…",
         "url": "https://www.digitalmusicnews.com/2026/10/08/dr-luke-sd-broadcaster-lawsuit-settlement/",
         "source": "Digital Music News",
         "domain": "digitalmusicnews.com",
@@ -248,13 +265,13 @@
         "tags": [
           "lawsuit"
         ],
-        "translated": true,
+        "translated": false,
         "via": null
       },
       {
-        "id": "noticia-4",
+        "id": "noticia-5",
         "title": "Major publishers tell US Supreme Court they must intervene in termination rights ruling that “threatens the licensing of copyrighted works throughout the world”",
-        "summary": "Major music publishers together with BMG have filed a brief with the U.S. Supreme Court, urging the Court to intervene in the termination‑rights dispute that they say threatens worldwide licensing of copyrighted works.",
+        "summary": "The major music publishers and BMG have submitted a new filing with the US Supreme Court in the ongoing termination rights legal battle involving songwriter Cyril Vetter. He recently told the Supreme Court to ignore the publishers’ doomsaying about this case - their new filing has plenty of that",
         "url": "https://completemusicupdate.com/major-publishers-tell-us-supreme-court-they-must-intervene-in-termination-rights-ruling-that-threatens-the-licensing-of-copyrighted-works-throughout-the-world/",
         "source": "Complete Music Update",
         "domain": "completemusicupdate.com",
@@ -263,11 +280,11 @@
           "lawsuit",
           "licensing"
         ],
-        "translated": true,
+        "translated": false,
         "via": null
       },
       {
-        "id": "noticia-5",
+        "id": "noticia-6",
         "title": "From Sony Music’s 260,000 deepfake takedowns to Suno’s live music expansion… it’s MBW’s Weekly Round-Up",
         "summary": "The biggest headlines from the past few days... Source",
         "url": "https://www.musicbusinessworldwide.com/from-sony-musics-260000-deepfake-takedowns-to-sunos-live-music-expansion-its-mbws-weekly-round-up/",
@@ -281,7 +298,7 @@
         "via": null
       },
       {
-        "id": "noticia-6",
+        "id": "noticia-7",
         "title": "A US appeals court has rejected a ‘fair use’ defense over AI training. What does it mean for the labels’ fight with Suno?",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMi7AFBVV95cUxPNG1UUFV4dTV3dkhweVdfdHR5R1BSLUU3c2kxTGxiNWhGSFZmMjVEd2l2bGxIWE93UE5MZC11RTV3Q2ZrRUFBZGxCRE9qYk1CazNKbjQ0dURrc0VfQlR2SjhqX3NwVnhuY3pkWFpBRmNNbk9FUWxTekx5UlY5alJEbWdFLXpDWmw0NXJKLVdoSTdHVzhIMFlRZGpzMXF4dXU2X1RIWUgxOTVsNXl3VkJicnhWY3JXelhwSExUR2Q2YVpkd3Z6bU5HUmdOaFJzRWZDcGptcjduTUNOQngySl9mNEdZUWxnc01Sd3NWbA?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -296,7 +313,7 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-7",
+        "id": "noticia-8",
         "title": "La industria musical australiana advierte al Parlamento contra la flexibilización de las leyes de derechos de autor para permitir el uso de la inteligencia artificial.",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMiqgFBVV95cUxORUM4d1FqN19vRXJUZmFZbUFFWnNCTnhIWTRkck1CMHQ5Y0RGLU5sSENmdkNKeGpNdHktd0M5NlVrWWZidEFuQnlxV1FXbXRKLWpVbFEyZFprTzN5TzB2WUpqc0dXbXlvdnFuNnRDVkk0SHVzd005U2NXQlBqbC1DeEtIYTI5ZTR6TFdiYTBIeGxsampMbndJN2FvclZKX0VEWmQ4LU9aeUFZdw?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -311,7 +328,7 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-8",
+        "id": "noticia-9",
         "title": "New Suno live music division to help make it the “first creative entertainment platform”",
         "summary": "Part of Suno’s licensing deal with Warner Music Group last November involved acquiring concert-discovery platform Songkick. It felt like a strange quirk at the time – what does an AI music-generating platform have to do with live gigs? – but now we’ll find out how this seemingly odd-couple relationship will work. The p…",
         "url": "https://musically.com/2026/10/09/new-suno-live-music-division-to-help-make-it-the-first-creative-entertainment-platform/",
@@ -326,7 +343,22 @@
         "via": null
       },
       {
-        "id": "noticia-9",
+        "id": "noticia-10",
+        "title": "Apple hires employees and licenses tech from AI podcast startup Huxe",
+        "summary": "We’re used to reading about novel ways of recruiting people en masse from another company, but a “reverse acqui-hire deal” was a new one to us. You’ll be aware of an acqui-hire deal, where one company – usually a major corporation – buys another outright in order to absorb the entirety of their staff and their skills.…",
+        "url": "https://musically.com/2026/10/12/apple-hires-employees-and-licenses-tech-from-ai-podcast-startup-huxe/",
+        "source": "Music Ally",
+        "domain": "musically.com",
+        "publishedAt": "2026-10-12T12:45:00.000Z",
+        "tags": [
+          "ai",
+          "licensing"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-11",
         "title": "OpenAI, Anthropic Face Copyright Backlash as Australian Music Industry Warns of AI Exploitation",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMikAFBVV95cUxOUXBZQnNBZlpMVlZDSGo0clowLWFKMVlvWGV6Wk5oakwtYlh6WXJjUjVjVjlZZnVfQU5OZGtBZjNNYnc1amVSQ0ZzcXN4QjRMQWF2bjRKb2YyZnFSOTdNRG12WE90TFJzX0tmdXk5SGdQa3p0SzdNeXd0M3NlS0s5VURiZlhtcW1NcmVkelpkY1E?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -340,22 +372,7 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-10",
-        "title": "Historic ruling on 'fair use' and AI may help Nashville songwriters",
-        "summary": "",
-        "url": "https://news.google.com/rss/articles/CBMitwFBVV95cUxPNGkxNm94cTNBVkk0Z0hnV2Z4T0RJNktYNW1OTlBRWU01QldpRUFkSUZSRG5ZbExhMGczeWtaS2dXN0VUQWEtWnNabFhlU0pnQmZHaDhPOXRadGY2ckR5dVc2cnNGenFaUFdKcGx4UUUwbERnODBGYmJfVTBSNllpVThGbjVHaWVJaE1ITV9RT2pSMXpVbzM2T3VLTFoyZVUxQThvaDF2aHVCVXB4N0VaNW1NOWtiQU0?oc=5&hl=es-419&gl=US&ceid=US:es-419",
-        "source": "The Tennessean",
-        "domain": "news.google.com",
-        "publishedAt": "2026-10-02T15:23:00.000Z",
-        "tags": [
-          "lawsuit",
-          "ai"
-        ],
-        "translated": false,
-        "via": "Google News"
-      },
-      {
-        "id": "noticia-11",
+        "id": "noticia-12",
         "title": "Suno hires Ticketmaster’s Michael Chua to lead its live music team, including Songkick",
         "summary": "In the role, Chua will lead the AI music company's live music operations, which include concert discovery platform Songkick. Source",
         "url": "https://www.musicbusinessworldwide.com/suno-hires-ticketmasters-michael-chua-to-lead-its-live-music-team-including-songkick/",
@@ -367,25 +384,11 @@
         ],
         "translated": false,
         "via": null
-      },
-      {
-        "id": "noticia-12",
-        "title": "Sollos “re-engineers” Olivia Dean and Sam Smith songs to help you sleep and focus",
-        "summary": "It’s comforting to remember that music isn’t merely a thing that exists in a series of breathless AI press releases – it’s also a nice thing that makes people feel nice. Feeling good can sometimes seem like a scarce resource in 2026, and while listening to your favourite artists can make you feel better, what if the mu…",
-        "url": "https://musically.com/2026/10/09/sollos-re-engineers-olivia-dean-and-sam-smith-songs-to-help-you-sleep-and-focus/",
-        "source": "Music Ally",
-        "domain": "musically.com",
-        "publishedAt": "2026-10-09T13:18:07.000Z",
-        "tags": [
-          "ai"
-        ],
-        "translated": false,
-        "via": null
       }
     ],
     "tip": {
-      "title": "Work for hire: put authorship in writing",
-      "body": "If you produce for a client, spell out in the contract whether you assign rights, keep producer points, and get credited. Without a contract, the outcome depends on each country's law."
+      "title": "Content ID is not proof of ownership",
+      "body": "A YouTube claim in your favor doesn't prove you own the work, and the absence of a claim doesn't mean you're cleared. Content ID is a private platform system, not a legal authority."
     }
   }
 }
