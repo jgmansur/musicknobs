@@ -3655,7 +3655,7 @@ function renderFocusTaskBoard() {
       ? '<p class="focus-task-note">ℹ️ Hay más información en la nota de Notion.</p>'
       : '';
     root.innerHTML = `
-      <article class="focus-task-card" data-focus-task-id="${escapeHtml(current.id || '')}">
+      <article class="focus-task-card${String(current.tipo || '').trim() === 'ITEA' ? ' focus-task-card-itea' : ''}" data-focus-task-id="${escapeHtml(current.id || '')}">
         <h2 class="focus-task-title">${titleHtml}</h2>
         <p class="focus-task-meta">${escapeHtml(assignee)} · ${escapeHtml(dueLabel)}${timeHtml ? ' · ' : ''}${timeHtml} · ${escapeHtml(current.status || '')} · ${escapeHtml(current.priority || '')}</p>
         ${previewHtml}
