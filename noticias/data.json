@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-10-13T14:57:55.728Z",
+  "lastUpdated": "2026-10-13T23:15:20.930Z",
   "meta": {
     "method": "rss-retrieval + link-verification + ai-translation",
     "itemCount": 12,
@@ -7,11 +7,11 @@
       "Complete Music Update",
       "Digital Music News",
       "Industria Musical",
+      "Law Commentary",
       "Music Ally",
       "Music Business Worldwide",
       "Rolling Stone",
-      "The Ticker",
-      "Vietnam.vn"
+      "The Ticker"
     ],
     "verifiedLinks": 12,
     "aiTranslated": 0,
@@ -129,16 +129,15 @@
       },
       {
         "id": "noticia-8",
-        "title": "UK’s Copyright Tribunal backs PRS For Music in cinema licensing dispute",
-        "summary": "The Tribunal had approved changes to its cinema tariff, known as Tariff C, including an increase in the royalty rate cinemas pay to use its members' music. Source",
-        "url": "https://www.musicbusinessworldwide.com/uks-copyright-tribunal-backs-prs-for-music-in-cinema-licensing-dispute/",
-        "source": "Music Business Worldwide",
-        "domain": "musicbusinessworldwide.com",
-        "publishedAt": "2026-10-13T10:08:55.000Z",
+        "title": "UK Copyright Tribunal ruling recognises “increased value of music in cinema” says PRS",
+        "summary": "A dispute over what royalties cinemas should pay PRS for music contained in the films they screen went before the UK Copyright Tribunal earlier this year. It has ruled in favour of a higher royalty rate which, PRS says, “recognises the increased value of music in the overall cinema experience”",
+        "url": "https://completemusicupdate.com/uk-copyright-tribunal-ruling-recognises-increased-value-of-music-in-cinema-says-prs/",
+        "source": "Complete Music Update",
+        "domain": "completemusicupdate.com",
+        "publishedAt": "2026-10-13T15:38:20.000Z",
         "tags": [
           "lawsuit",
-          "royalties",
-          "licensing"
+          "royalties"
         ],
         "translated": false,
         "via": null
@@ -190,15 +189,15 @@
       },
       {
         "id": "noticia-12",
-        "title": "La industria musical australiana advierte al Parlamento contra la flexibilización de las leyes de derechos de autor para permitir el uso de la inteligencia artificial.",
+        "title": "DistroKid Pulls Independent Artists' Music From Spotify, Apple Music After UMG Copyright Lawsuit",
         "summary": "",
-        "url": "https://news.google.com/rss/articles/CBMiqgFBVV95cUxORUM4d1FqN19vRXJUZmFZbUFFWnNCTnhIWTRkck1CMHQ5Y0RGLU5sSENmdkNKeGpNdHktd0M5NlVrWWZidEFuQnlxV1FXbXRKLWpVbFEyZFprTzN5TzB2WUpqc0dXbXlvdnFuNnRDVkk0SHVzd005U2NXQlBqbC1DeEtIYTI5ZTR6TFdiYTBIeGxsampMbndJN2FvclZKX0VEWmQ4LU9aeUFZdw?oc=5&hl=es-419&gl=US&ceid=US:es-419",
-        "source": "Vietnam.vn",
+        "url": "https://news.google.com/rss/articles/CBMimgFBVV95cUxPS2lxdzFLZGE1SDFUNTZ6WW42MVZNNkhGMFZ0TU85R1p5TU93WFdJeV9kdjZUMXhWLVNRSTZJUmIxYzBlSnNlRHJnN0RFUERGQ2lnNVZwQ2pnbHR6UWJzdGh0WjZrOVg4NzhmZlV0MHgtWVE0NVRNQ25zVGNTMFQxQkRuYTVPYlBFWjdGY2J1amhuVDhGcWRHUFhR?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "Law Commentary",
         "domain": "news.google.com",
-        "publishedAt": "2026-10-06T07:00:00.000Z",
+        "publishedAt": "2026-10-13T14:39:29.000Z",
         "tags": [
-          "ai",
-          "legislation"
+          "lawsuit",
+          "streaming"
         ],
         "translated": false,
         "via": "Google News"
@@ -321,16 +320,15 @@
       },
       {
         "id": "noticia-8",
-        "title": "UK’s Copyright Tribunal backs PRS For Music in cinema licensing dispute",
-        "summary": "The Tribunal had approved changes to its cinema tariff, known as Tariff C, including an increase in the royalty rate cinemas pay to use its members' music. Source",
-        "url": "https://www.musicbusinessworldwide.com/uks-copyright-tribunal-backs-prs-for-music-in-cinema-licensing-dispute/",
-        "source": "Music Business Worldwide",
-        "domain": "musicbusinessworldwide.com",
-        "publishedAt": "2026-10-13T10:08:55.000Z",
+        "title": "UK Copyright Tribunal ruling recognises “increased value of music in cinema” says PRS",
+        "summary": "A dispute over what royalties cinemas should pay PRS for music contained in the films they screen went before the UK Copyright Tribunal earlier this year. It has ruled in favour of a higher royalty rate which, PRS says, “recognises the increased value of music in the overall cinema experience”",
+        "url": "https://completemusicupdate.com/uk-copyright-tribunal-ruling-recognises-increased-value-of-music-in-cinema-says-prs/",
+        "source": "Complete Music Update",
+        "domain": "completemusicupdate.com",
+        "publishedAt": "2026-10-13T15:38:20.000Z",
         "tags": [
           "lawsuit",
-          "royalties",
-          "licensing"
+          "royalties"
         ],
         "translated": false,
         "via": null
@@ -382,15 +380,15 @@
       },
       {
         "id": "noticia-12",
-        "title": "La industria musical australiana advierte al Parlamento contra la flexibilización de las leyes de derechos de autor para permitir el uso de la inteligencia artificial.",
+        "title": "DistroKid Pulls Independent Artists' Music From Spotify, Apple Music After UMG Copyright Lawsuit",
         "summary": "",
-        "url": "https://news.google.com/rss/articles/CBMiqgFBVV95cUxORUM4d1FqN19vRXJUZmFZbUFFWnNCTnhIWTRkck1CMHQ5Y0RGLU5sSENmdkNKeGpNdHktd0M5NlVrWWZidEFuQnlxV1FXbXRKLWpVbFEyZFprTzN5TzB2WUpqc0dXbXlvdnFuNnRDVkk0SHVzd005U2NXQlBqbC1DeEtIYTI5ZTR6TFdiYTBIeGxsampMbndJN2FvclZKX0VEWmQ4LU9aeUFZdw?oc=5&hl=es-419&gl=US&ceid=US:es-419",
-        "source": "Vietnam.vn",
+        "url": "https://news.google.com/rss/articles/CBMimgFBVV95cUxPS2lxdzFLZGE1SDFUNTZ6WW42MVZNNkhGMFZ0TU85R1p5TU93WFdJeV9kdjZUMXhWLVNRSTZJUmIxYzBlSnNlRHJnN0RFUERGQ2lnNVZwQ2pnbHR6UWJzdGh0WjZrOVg4NzhmZlV0MHgtWVE0NVRNQ25zVGNTMFQxQkRuYTVPYlBFWjdGY2J1amhuVDhGcWRHUFhR?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "Law Commentary",
         "domain": "news.google.com",
-        "publishedAt": "2026-10-06T07:00:00.000Z",
+        "publishedAt": "2026-10-13T14:39:29.000Z",
         "tags": [
-          "ai",
-          "legislation"
+          "lawsuit",
+          "streaming"
         ],
         "translated": false,
         "via": "Google News"
