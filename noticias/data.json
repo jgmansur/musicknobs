@@ -1,17 +1,17 @@
 {
-  "lastUpdated": "2026-10-13T23:15:20.930Z",
+  "lastUpdated": "2026-10-14T12:49:51.839Z",
   "meta": {
     "method": "rss-retrieval + link-verification + ai-translation",
     "itemCount": 12,
     "sources": [
       "Complete Music Update",
-      "Digital Music News",
       "Industria Musical",
       "Law Commentary",
       "Music Ally",
       "Music Business Worldwide",
       "Rolling Stone",
-      "The Ticker"
+      "The Ticker",
+      "Vietnam.vn"
     ],
     "verifiedLinks": 12,
     "aiTranslated": 0,
@@ -69,36 +69,6 @@
       },
       {
         "id": "noticia-4",
-        "title": "Atlantic/WMG Sues Ray-Ban Owner Luxottica, Demands Over $64 Million in Damages as Social Media Infringement Crackdown Continues",
-        "summary": "The social media copyright crackdown continues: Warner Music Group (WMG) is now suing multiple subsidiaries of eyewear giant EssilorLuxottica for allegedly infringing on north of 400 compositions and recordings in Instagram and TikTok posts. Plaintiffs including Atlantic Music Group and Warner Chappell recently submitt…",
-        "url": "https://www.digitalmusicnews.com/2026/10/12/warner-music-essilorluxottica-lawsuit/",
-        "source": "Digital Music News",
-        "domain": "digitalmusicnews.com",
-        "publishedAt": "2026-10-12T17:28:17.000Z",
-        "tags": [
-          "lawsuit"
-        ],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-5",
-        "title": "Italian Competition Watchdog Launches Suno Investigation ‘Over Unfair Terms,’ Says ‘The Contractual Provisions on Copyright Deserve Particular Attention’",
-        "summary": "When it rains, it pours and, in Suno’s case, keeps on pouring: Besides facing a number of stateside lawsuits as well as international copyright claims, the AI music generator is now grappling with a formal investigation in Italy over its allegedly “unfair terms.” The Italian Competition Authority (ICA) disclosed the pr…",
-        "url": "https://www.digitalmusicnews.com/2026/10/06/suno-italy-investigation/",
-        "source": "Digital Music News",
-        "domain": "digitalmusicnews.com",
-        "publishedAt": "2026-10-06T15:39:23.000Z",
-        "tags": [
-          "lawsuit",
-          "ai",
-          "licensing"
-        ],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-6",
         "title": "Universal Music appoints first AI director amid copyright lawsuits",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMipwFBVV95cUxQOVkwYzBMeU9pblF1TkZQbE01Nzd1dzhIeWNVQU5wclZCTWpnMGxXU081WnFKR09XSmFTWEVGZVFDd2tlUWhrXzVHRUJXbExlcTZTRndEWnBaMmN2eVE2ZFJHYkhLcE1CY19HVV9xOGsxUzRkRklhSlJUM0pLMWw2TDB1Z0dmTENlUk1VWENTMFNmdEN3QzVSUEtqcDFpN3BQQ1IzX0xfZw?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -113,22 +83,22 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-7",
-        "title": "Sony Music’s AI Slop and Deepfakes Crackdown Intensifies — Soundalike Track Removal Requests Reportedly Top 250,000",
-        "summary": "Sony Music’s AI deepfakes crackdown is intensifying: As of September’s end, the major label had fired off north of 250,000 cumulative soundalike-track takedown demands. That concrete figure came to light in a recent Financial Times piece, which pointed to over 260,000 deepfake takedown requests submitted to various “pl…",
-        "url": "https://www.digitalmusicnews.com/2026/10/05/sony-music-ai-takedowns/",
-        "source": "Digital Music News",
-        "domain": "digitalmusicnews.com",
-        "publishedAt": "2026-10-05T16:00:04.000Z",
+        "id": "noticia-5",
+        "title": "Deezer permitirá ocultar la música hecha con IA al buscar",
+        "summary": "Deezer permitirá a sus usuarios ocultar la música generada íntegramente con inteligencia artificial. La plataforma francesa ha anunciado un interruptor que, una vez activado, excluirá de los resultados de búsqueda las canciones, los álbumes y los artistas vinculados a contenido 100% sintético. La función llegará a todo…",
+        "url": "https://industriamusical.com/deezer-ocultar-musica-ia-busqueda/?utm_source=rss&utm_medium=rss&utm_campaign=deezer-ocultar-musica-ia-busqueda",
+        "source": "Industria Musical",
+        "domain": "industriamusical.com",
+        "publishedAt": "2026-10-14T11:19:05.000Z",
         "tags": [
-          "lawsuit",
-          "ai"
+          "ai",
+          "streaming"
         ],
         "translated": false,
         "via": null
       },
       {
-        "id": "noticia-8",
+        "id": "noticia-6",
         "title": "UK Copyright Tribunal ruling recognises “increased value of music in cinema” says PRS",
         "summary": "A dispute over what royalties cinemas should pay PRS for music contained in the films they screen went before the UK Copyright Tribunal earlier this year. It has ruled in favour of a higher royalty rate which, PRS says, “recognises the increased value of music in the overall cinema experience”",
         "url": "https://completemusicupdate.com/uk-copyright-tribunal-ruling-recognises-increased-value-of-music-in-cinema-says-prs/",
@@ -143,7 +113,22 @@
         "via": null
       },
       {
-        "id": "noticia-9",
+        "id": "noticia-7",
+        "title": "A US appeals court has rejected a ‘fair use’ defense over AI training. What does it mean for the labels’ fight with Suno?",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMi7AFBVV95cUxPNG1UUFV4dTV3dkhweVdfdHR5R1BSLUU3c2kxTGxiNWhGSFZmMjVEd2l2bGxIWE93UE5MZC11RTV3Q2ZrRUFBZGxCRE9qYk1CazNKbjQ0dURrc0VfQlR2SjhqX3NwVnhuY3pkWFpBRmNNbk9FUWxTekx5UlY5alJEbWdFLXpDWmw0NXJKLVdoSTdHVzhIMFlRZGpzMXF4dXU2X1RIWUgxOTVsNXl3VkJicnhWY3JXelhwSExUR2Q2YVpkd3Z6bU5HUmdOaFJzRWZDcGptcjduTUNOQngySl9mNEdZUWxnc01Sd3NWbA?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "Music Business Worldwide",
+        "domain": "news.google.com",
+        "publishedAt": "2026-10-05T07:00:00.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-8",
         "title": "Sara Landry’s legal battle with ex-managers over commissions, copyrights and trademarks now being fought out in US and UK",
         "summary": "In August, London-based management firm The Night Department sued techno producer Sara Landry for breach of contract. She has now responded and countersued. The core dispute is over the management company’s involvement in her label, though there’s also some griping over a Coachella pissing incident",
         "url": "https://completemusicupdate.com/sara-landrys-legal-battle-with-ex-managers-over-commissions-copyrights-and-trademarks-now-being-fought-out-in-us-and-uk/",
@@ -158,7 +143,7 @@
         "via": null
       },
       {
-        "id": "noticia-10",
+        "id": "noticia-9",
         "title": "Major publishers tell US Supreme Court they must intervene in termination rights ruling that “threatens the licensing of copyrighted works throughout the world”",
         "summary": "The major music publishers and BMG have submitted a new filing with the US Supreme Court in the ongoing termination rights legal battle involving songwriter Cyril Vetter. He recently told the Supreme Court to ignore the publishers’ doomsaying about this case - their new filing has plenty of that",
         "url": "https://completemusicupdate.com/major-publishers-tell-us-supreme-court-they-must-intervene-in-termination-rights-ruling-that-threatens-the-licensing-of-copyrighted-works-throughout-the-world/",
@@ -173,22 +158,7 @@
         "via": null
       },
       {
-        "id": "noticia-11",
-        "title": "A US appeals court has rejected a ‘fair use’ defense over AI training. What does it mean for the labels’ fight with Suno?",
-        "summary": "",
-        "url": "https://news.google.com/rss/articles/CBMi7AFBVV95cUxPNG1UUFV4dTV3dkhweVdfdHR5R1BSLUU3c2kxTGxiNWhGSFZmMjVEd2l2bGxIWE93UE5MZC11RTV3Q2ZrRUFBZGxCRE9qYk1CazNKbjQ0dURrc0VfQlR2SjhqX3NwVnhuY3pkWFpBRmNNbk9FUWxTekx5UlY5alJEbWdFLXpDWmw0NXJKLVdoSTdHVzhIMFlRZGpzMXF4dXU2X1RIWUgxOTVsNXl3VkJicnhWY3JXelhwSExUR2Q2YVpkd3Z6bU5HUmdOaFJzRWZDcGptcjduTUNOQngySl9mNEdZUWxnc01Sd3NWbA?oc=5&hl=es-419&gl=US&ceid=US:es-419",
-        "source": "Music Business Worldwide",
-        "domain": "news.google.com",
-        "publishedAt": "2026-10-05T10:01:47.000Z",
-        "tags": [
-          "lawsuit",
-          "ai"
-        ],
-        "translated": false,
-        "via": "Google News"
-      },
-      {
-        "id": "noticia-12",
+        "id": "noticia-10",
         "title": "DistroKid Pulls Independent Artists' Music From Spotify, Apple Music After UMG Copyright Lawsuit",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMimgFBVV95cUxPS2lxdzFLZGE1SDFUNTZ6WW42MVZNNkhGMFZ0TU85R1p5TU93WFdJeV9kdjZUMXhWLVNRSTZJUmIxYzBlSnNlRHJnN0RFUERGQ2lnNVZwQ2pnbHR6UWJzdGh0WjZrOVg4NzhmZlV0MHgtWVE0NVRNQ25zVGNTMFQxQkRuYTVPYlBFWjdGY2J1amhuVDhGcWRHUFhR?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -201,11 +171,41 @@
         ],
         "translated": false,
         "via": "Google News"
+      },
+      {
+        "id": "noticia-11",
+        "title": "La industria musical australiana advierte al Parlamento contra la flexibilización de las leyes de derechos de autor para permitir el uso de la inteligencia artificial.",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMiqgFBVV95cUxORUM4d1FqN19vRXJUZmFZbUFFWnNCTnhIWTRkck1CMHQ5Y0RGLU5sSENmdkNKeGpNdHktd0M5NlVrWWZidEFuQnlxV1FXbXRKLWpVbFEyZFprTzN5TzB2WUpqc0dXbXlvdnFuNnRDVkk0SHVzd005U2NXQlBqbC1DeEtIYTI5ZTR6TFdiYTBIeGxsampMbndJN2FvclZKX0VEWmQ4LU9aeUFZdw?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "Vietnam.vn",
+        "domain": "news.google.com",
+        "publishedAt": "2026-10-06T07:00:00.000Z",
+        "tags": [
+          "ai",
+          "legislation"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-12",
+        "title": "Today in Music AI news: Raye gets botted; UMG senior AI role; Character•AI bankruptcy; Rocketship launches",
+        "summary": "When Raye announced a show in London’s Royal Albert Hall, you’d expect demand for tickets to be high. But when the show received 1.8 pre-sale million sign-ups – for a 5000 seat show – it became clear to Raye’s team that “scalpers [were] using AI bots to create hundreds of thousands of fake registrations.” Now her team…",
+        "url": "https://musically.com/2026/10/14/today-in-music-ai-news-raye-gets-botted-umg-senior-ai-role-characterai-bankruptcy-rocketship-launches/",
+        "source": "Music Ally",
+        "domain": "musically.com",
+        "publishedAt": "2026-10-14T12:30:00.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": null
       }
     ],
     "tip": {
-      "title": "Voz clonada: el derecho en juego suele no ser el copyright",
-      "body": "Imitar la voz de un artista con IA rara vez es infracción de copyright de la canción; el reclamo típico va por derechos de imagen, voz y publicidad, que varían mucho entre jurisdicciones."
+      "title": "Documenta tu aporte humano cuando uses IA",
+      "body": "Las oficinas de derechos de autor protegen la parte creada por una persona. Guarda prompts, versiones, ediciones y decisiones de mezcla: eso es lo que sostiene tu autoría sobre el resultado."
     }
   },
   "en": {
@@ -260,36 +260,6 @@
       },
       {
         "id": "noticia-4",
-        "title": "Atlantic/WMG Sues Ray-Ban Owner Luxottica, Demands Over $64 Million in Damages as Social Media Infringement Crackdown Continues",
-        "summary": "The social media copyright crackdown continues: Warner Music Group (WMG) is now suing multiple subsidiaries of eyewear giant EssilorLuxottica for allegedly infringing on north of 400 compositions and recordings in Instagram and TikTok posts. Plaintiffs including Atlantic Music Group and Warner Chappell recently submitt…",
-        "url": "https://www.digitalmusicnews.com/2026/10/12/warner-music-essilorluxottica-lawsuit/",
-        "source": "Digital Music News",
-        "domain": "digitalmusicnews.com",
-        "publishedAt": "2026-10-12T17:28:17.000Z",
-        "tags": [
-          "lawsuit"
-        ],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-5",
-        "title": "Italian Competition Watchdog Launches Suno Investigation ‘Over Unfair Terms,’ Says ‘The Contractual Provisions on Copyright Deserve Particular Attention’",
-        "summary": "When it rains, it pours and, in Suno’s case, keeps on pouring: Besides facing a number of stateside lawsuits as well as international copyright claims, the AI music generator is now grappling with a formal investigation in Italy over its allegedly “unfair terms.” The Italian Competition Authority (ICA) disclosed the pr…",
-        "url": "https://www.digitalmusicnews.com/2026/10/06/suno-italy-investigation/",
-        "source": "Digital Music News",
-        "domain": "digitalmusicnews.com",
-        "publishedAt": "2026-10-06T15:39:23.000Z",
-        "tags": [
-          "lawsuit",
-          "ai",
-          "licensing"
-        ],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-6",
         "title": "Universal Music appoints first AI director amid copyright lawsuits",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMipwFBVV95cUxQOVkwYzBMeU9pblF1TkZQbE01Nzd1dzhIeWNVQU5wclZCTWpnMGxXU081WnFKR09XSmFTWEVGZVFDd2tlUWhrXzVHRUJXbExlcTZTRndEWnBaMmN2eVE2ZFJHYkhLcE1CY19HVV9xOGsxUzRkRklhSlJUM0pLMWw2TDB1Z0dmTENlUk1VWENTMFNmdEN3QzVSUEtqcDFpN3BQQ1IzX0xfZw?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -304,22 +274,22 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-7",
-        "title": "Sony Music’s AI Slop and Deepfakes Crackdown Intensifies — Soundalike Track Removal Requests Reportedly Top 250,000",
-        "summary": "Sony Music’s AI deepfakes crackdown is intensifying: As of September’s end, the major label had fired off north of 250,000 cumulative soundalike-track takedown demands. That concrete figure came to light in a recent Financial Times piece, which pointed to over 260,000 deepfake takedown requests submitted to various “pl…",
-        "url": "https://www.digitalmusicnews.com/2026/10/05/sony-music-ai-takedowns/",
-        "source": "Digital Music News",
-        "domain": "digitalmusicnews.com",
-        "publishedAt": "2026-10-05T16:00:04.000Z",
+        "id": "noticia-5",
+        "title": "Deezer permitirá ocultar la música hecha con IA al buscar",
+        "summary": "Deezer permitirá a sus usuarios ocultar la música generada íntegramente con inteligencia artificial. La plataforma francesa ha anunciado un interruptor que, una vez activado, excluirá de los resultados de búsqueda las canciones, los álbumes y los artistas vinculados a contenido 100% sintético. La función llegará a todo…",
+        "url": "https://industriamusical.com/deezer-ocultar-musica-ia-busqueda/?utm_source=rss&utm_medium=rss&utm_campaign=deezer-ocultar-musica-ia-busqueda",
+        "source": "Industria Musical",
+        "domain": "industriamusical.com",
+        "publishedAt": "2026-10-14T11:19:05.000Z",
         "tags": [
-          "lawsuit",
-          "ai"
+          "ai",
+          "streaming"
         ],
         "translated": false,
         "via": null
       },
       {
-        "id": "noticia-8",
+        "id": "noticia-6",
         "title": "UK Copyright Tribunal ruling recognises “increased value of music in cinema” says PRS",
         "summary": "A dispute over what royalties cinemas should pay PRS for music contained in the films they screen went before the UK Copyright Tribunal earlier this year. It has ruled in favour of a higher royalty rate which, PRS says, “recognises the increased value of music in the overall cinema experience”",
         "url": "https://completemusicupdate.com/uk-copyright-tribunal-ruling-recognises-increased-value-of-music-in-cinema-says-prs/",
@@ -334,7 +304,22 @@
         "via": null
       },
       {
-        "id": "noticia-9",
+        "id": "noticia-7",
+        "title": "A US appeals court has rejected a ‘fair use’ defense over AI training. What does it mean for the labels’ fight with Suno?",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMi7AFBVV95cUxPNG1UUFV4dTV3dkhweVdfdHR5R1BSLUU3c2kxTGxiNWhGSFZmMjVEd2l2bGxIWE93UE5MZC11RTV3Q2ZrRUFBZGxCRE9qYk1CazNKbjQ0dURrc0VfQlR2SjhqX3NwVnhuY3pkWFpBRmNNbk9FUWxTekx5UlY5alJEbWdFLXpDWmw0NXJKLVdoSTdHVzhIMFlRZGpzMXF4dXU2X1RIWUgxOTVsNXl3VkJicnhWY3JXelhwSExUR2Q2YVpkd3Z6bU5HUmdOaFJzRWZDcGptcjduTUNOQngySl9mNEdZUWxnc01Sd3NWbA?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "Music Business Worldwide",
+        "domain": "news.google.com",
+        "publishedAt": "2026-10-05T07:00:00.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-8",
         "title": "Sara Landry’s legal battle with ex-managers over commissions, copyrights and trademarks now being fought out in US and UK",
         "summary": "In August, London-based management firm The Night Department sued techno producer Sara Landry for breach of contract. She has now responded and countersued. The core dispute is over the management company’s involvement in her label, though there’s also some griping over a Coachella pissing incident",
         "url": "https://completemusicupdate.com/sara-landrys-legal-battle-with-ex-managers-over-commissions-copyrights-and-trademarks-now-being-fought-out-in-us-and-uk/",
@@ -349,7 +334,7 @@
         "via": null
       },
       {
-        "id": "noticia-10",
+        "id": "noticia-9",
         "title": "Major publishers tell US Supreme Court they must intervene in termination rights ruling that “threatens the licensing of copyrighted works throughout the world”",
         "summary": "The major music publishers and BMG have submitted a new filing with the US Supreme Court in the ongoing termination rights legal battle involving songwriter Cyril Vetter. He recently told the Supreme Court to ignore the publishers’ doomsaying about this case - their new filing has plenty of that",
         "url": "https://completemusicupdate.com/major-publishers-tell-us-supreme-court-they-must-intervene-in-termination-rights-ruling-that-threatens-the-licensing-of-copyrighted-works-throughout-the-world/",
@@ -364,22 +349,7 @@
         "via": null
       },
       {
-        "id": "noticia-11",
-        "title": "A US appeals court has rejected a ‘fair use’ defense over AI training. What does it mean for the labels’ fight with Suno?",
-        "summary": "",
-        "url": "https://news.google.com/rss/articles/CBMi7AFBVV95cUxPNG1UUFV4dTV3dkhweVdfdHR5R1BSLUU3c2kxTGxiNWhGSFZmMjVEd2l2bGxIWE93UE5MZC11RTV3Q2ZrRUFBZGxCRE9qYk1CazNKbjQ0dURrc0VfQlR2SjhqX3NwVnhuY3pkWFpBRmNNbk9FUWxTekx5UlY5alJEbWdFLXpDWmw0NXJKLVdoSTdHVzhIMFlRZGpzMXF4dXU2X1RIWUgxOTVsNXl3VkJicnhWY3JXelhwSExUR2Q2YVpkd3Z6bU5HUmdOaFJzRWZDcGptcjduTUNOQngySl9mNEdZUWxnc01Sd3NWbA?oc=5&hl=es-419&gl=US&ceid=US:es-419",
-        "source": "Music Business Worldwide",
-        "domain": "news.google.com",
-        "publishedAt": "2026-10-05T10:01:47.000Z",
-        "tags": [
-          "lawsuit",
-          "ai"
-        ],
-        "translated": false,
-        "via": "Google News"
-      },
-      {
-        "id": "noticia-12",
+        "id": "noticia-10",
         "title": "DistroKid Pulls Independent Artists' Music From Spotify, Apple Music After UMG Copyright Lawsuit",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMimgFBVV95cUxPS2lxdzFLZGE1SDFUNTZ6WW42MVZNNkhGMFZ0TU85R1p5TU93WFdJeV9kdjZUMXhWLVNRSTZJUmIxYzBlSnNlRHJnN0RFUERGQ2lnNVZwQ2pnbHR6UWJzdGh0WjZrOVg4NzhmZlV0MHgtWVE0NVRNQ25zVGNTMFQxQkRuYTVPYlBFWjdGY2J1amhuVDhGcWRHUFhR?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -392,11 +362,41 @@
         ],
         "translated": false,
         "via": "Google News"
+      },
+      {
+        "id": "noticia-11",
+        "title": "La industria musical australiana advierte al Parlamento contra la flexibilización de las leyes de derechos de autor para permitir el uso de la inteligencia artificial.",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMiqgFBVV95cUxORUM4d1FqN19vRXJUZmFZbUFFWnNCTnhIWTRkck1CMHQ5Y0RGLU5sSENmdkNKeGpNdHktd0M5NlVrWWZidEFuQnlxV1FXbXRKLWpVbFEyZFprTzN5TzB2WUpqc0dXbXlvdnFuNnRDVkk0SHVzd005U2NXQlBqbC1DeEtIYTI5ZTR6TFdiYTBIeGxsampMbndJN2FvclZKX0VEWmQ4LU9aeUFZdw?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "Vietnam.vn",
+        "domain": "news.google.com",
+        "publishedAt": "2026-10-06T07:00:00.000Z",
+        "tags": [
+          "ai",
+          "legislation"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-12",
+        "title": "Today in Music AI news: Raye gets botted; UMG senior AI role; Character•AI bankruptcy; Rocketship launches",
+        "summary": "When Raye announced a show in London’s Royal Albert Hall, you’d expect demand for tickets to be high. But when the show received 1.8 pre-sale million sign-ups – for a 5000 seat show – it became clear to Raye’s team that “scalpers [were] using AI bots to create hundreds of thousands of fake registrations.” Now her team…",
+        "url": "https://musically.com/2026/10/14/today-in-music-ai-news-raye-gets-botted-umg-senior-ai-role-characterai-bankruptcy-rocketship-launches/",
+        "source": "Music Ally",
+        "domain": "musically.com",
+        "publishedAt": "2026-10-14T12:30:00.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": null
       }
     ],
     "tip": {
-      "title": "Cloned vocals: copyright is usually not the issue",
-      "body": "Mimicking an artist's voice with AI is rarely a copyright infringement of the song itself; claims typically run through name, image, voice and publicity rights, which vary widely by jurisdiction."
+      "title": "Document your human contribution when using AI",
+      "body": "Copyright offices protect the human-created portion. Keep prompts, versions, edits and mix decisions —that record is what supports your authorship over the final result."
     }
   }
 }
