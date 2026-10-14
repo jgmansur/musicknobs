@@ -58,6 +58,11 @@ let driveAccessTokenCache = {
 
 const focusTasksCache = new Map();
 const FOCUS_CACHE_TTL_MS = 45_000;
+// Bloques hijos (subtasks/preview) de las tasks del Focus, por page id + last_edited_time.
+const FOCUS_CHILDREN_CACHE_KEY = "focus:children-cache:v1";
+// Plan free de Workers = 50 subrequests por invocación (fetch y KV cuentan). Margen para
+// paginación de bloques y lo que corra en la misma invocación.
+const FOCUS_SUBREQUEST_BUDGET = 40;
 
 function makeFocusCacheKey(options = {}) {
   const scope = String(options.scope || "all").trim().toLowerCase();
@@ -1993,7 +1998,66 @@ async function listManagerFocusTasks(env, options = {}) {
       guard += 1;
     }
 
-    const rows = await Promise.all((pages || []).map(async (page) => {
+    // Antes se pedían los bloques hijos de CADA task en cada carga: 1 query + N fetches.
+    // El plan free de Workers corta en 50 subrequests por invocación, así que con ~50 tasks
+    // en Focus todo el endpoint tronaba ("Too many subrequests"). Ahora los bloques se
+    // guardan en UN solo key de KV, invalidados por last_edited_time de la página (Notion
+    // lo cambia al editar bloques), y solo se piden los que cambiaron, con tope fijo.
+    let subrequests = guard + 1;
+    let childrenCache = {};
+    try {
+      subrequests += 1;
+      const raw = env.REMINDERS ? await env.REMINDERS.get(FOCUS_CHILDREN_CACHE_KEY) : null;
+      if (raw) childrenCache = JSON.parse(raw) || {};
+    } catch (_) {
+      childrenCache = {};
+    }
+    subrequests += 1; // reservado para el put del caché
+
+    const dueOf = (page) => toIsoDateOnly(page?.properties?.["Date (ToDo)"]?.date?.start);
+    // Si no alcanza el presupuesto, que se carguen primero hoy y atrasadas.
+    const fetchOrder = [...pages].sort((a, b) => {
+      const aLate = dueOf(a) <= todayIso ? 0 : 1;
+      const bLate = dueOf(b) <= todayIso ? 0 : 1;
+      return aLate - bLate || dueOf(b).localeCompare(dueOf(a));
+    });
+    const toFetch = [];
+    for (const page of fetchOrder) {
+      const hit = childrenCache[page.id];
+      if (hit && hit.e === page.last_edited_time) continue;
+      if (subrequests >= FOCUS_SUBREQUEST_BUDGET) break;
+      subrequests += 1;
+      toFetch.push(page);
+    }
+
+    let cacheChanged = false;
+    await Promise.all(toFetch.map(async (page) => {
+      try {
+        const blocks = await notionGetPageChildren(page.id, notionToken, notionVersion);
+        childrenCache[page.id] = {
+          e: page.last_edited_time,
+          s: parseSubtasksFromBlocks(blocks),
+          x: detectExtraTaskInfo(blocks),
+          p: extractTaskPreview(blocks),
+        };
+        cacheChanged = true;
+      } catch (_) {
+        // Una task con bloques ilegibles no debe tumbar todo el Focus.
+      }
+    }));
+
+    const liveIds = new Set(pages.map((page) => page.id));
+    for (const id of Object.keys(childrenCache)) {
+      if (!liveIds.has(id)) { delete childrenCache[id]; cacheChanged = true; }
+    }
+    if (cacheChanged && env.REMINDERS) {
+      try {
+        await env.REMINDERS.put(FOCUS_CHILDREN_CACHE_KEY, JSON.stringify(childrenCache));
+      } catch (_) {}
+    }
+
+    let incomplete = false;
+    const rows = (pages || []).map((page) => {
       const props = page.properties || {};
       const status = props?.Estatus?.select?.name || "Pendiente";
       const priority = props?.Prioridad?.select?.name || "";
@@ -2005,10 +2069,12 @@ async function listManagerFocusTasks(env, options = {}) {
       const notificar = Boolean(props?.[TASK_NOTIFY_PROPERTY]?.checkbox);
       const backlog = Boolean(props?.[TASK_BACKLOG_PROPERTY]?.checkbox);
       const assignees = parseAssigneesFromProperty(props, allUsers);
-      const subtaskBlocks = await notionGetPageChildren(page.id, notionToken, notionVersion);
-      const subtasks = parseSubtasksFromBlocks(subtaskBlocks);
-      const hasExtraInfo = detectExtraTaskInfo(subtaskBlocks);
-      const taskPreview = extractTaskPreview(subtaskBlocks);
+      // Una entrada vieja (e distinto) sigue siendo mejor que nada mientras se refresca.
+      const cachedChildren = childrenCache[page.id];
+      if (!cachedChildren || cachedChildren.e !== page.last_edited_time) incomplete = true;
+      const subtasks = Array.isArray(cachedChildren?.s) ? cachedChildren.s : [];
+      const hasExtraInfo = Boolean(cachedChildren?.x);
+      const taskPreview = String(cachedChildren?.p || "");
 
       return {
         id: page.id,
@@ -2031,7 +2097,7 @@ async function listManagerFocusTasks(env, options = {}) {
         subtasks,
         subtaskCount: subtasks.length,
       };
-    }));
+    });
 
     const scopedRows = scope === "mine" && viewerEmail
       ? rows.filter((row) => {
@@ -2063,8 +2129,10 @@ async function listManagerFocusTasks(env, options = {}) {
       forward,
       users: allUsers,
       counts: { today: today.length, overdue: overdue.length, forward: forward.length },
+      subtasksIncomplete: incomplete,
     };
-    setCachedFocusTasks({ scope, viewerEmail }, response);
+    // Si faltaron bloques por el tope, no se cachea en memoria: la siguiente carga completa el resto.
+    if (!incomplete) setCachedFocusTasks({ scope, viewerEmail }, response);
     return response;
   } catch (e) {
     return { source: "error", error: "Focus tasks query failed", details: String(e?.message || e), today: [], overdue: [], forward: [] };

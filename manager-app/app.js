@@ -3782,6 +3782,8 @@ async function fetchFocusBucketsFallback({ scope = 'all', viewerEmail = '' } = {
   return splitFocusBuckets(rows);
 }
 
+let focusSubtaskRetries = 0;
+
 async function loadFocusTasks({ keepMode = true, silent = false, fresh = false } = {}) {
   if (!isAuthenticated) {
     focusTodayTasks = [];
@@ -3808,6 +3810,14 @@ async function loadFocusTasks({ keepMode = true, silent = false, fresh = false }
       focusTodayTasks = (res.today || []).map(mapTaskApiItem);
       focusOverdueTasks = (res.overdue || []).map(mapTaskApiItem);
       focusForwardTasks = (res.forward || []).map(mapTaskApiItem);
+      // El worker carga los bloques de subtasks con tope por invocación; si faltaron,
+      // una recarga silenciosa completa el resto (con límite para no quedar en loop).
+      if (res.subtasksIncomplete && focusSubtaskRetries < 3) {
+        focusSubtaskRetries += 1;
+        setTimeout(() => loadFocusTasks({ keepMode: true, silent: true, fresh: true }), 2500);
+      } else if (!res.subtasksIncomplete) {
+        focusSubtaskRetries = 0;
+      }
     } catch {
       const buckets = await fetchFocusBucketsFallback({ scope, viewerEmail });
       focusTodayTasks = buckets.today;
