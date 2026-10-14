@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-10-14T12:49:51.839Z",
+  "lastUpdated": "2026-10-14T22:14:33.945Z",
   "meta": {
     "method": "rss-retrieval + link-verification + ai-translation",
     "itemCount": 12,
@@ -9,8 +9,8 @@
       "Law Commentary",
       "Music Ally",
       "Music Business Worldwide",
-      "Rolling Stone",
       "The Ticker",
+      "Variety",
       "Vietnam.vn"
     ],
     "verifiedLinks": 12,
@@ -39,21 +39,6 @@
       },
       {
         "id": "noticia-2",
-        "title": "DistroKid Removed Songs From Streaming Platforms in Response to UMG Copyright Suit",
-        "summary": "Though the distributor was ostensibly targeting AI slop and potentially infringing content, numerous artists said their original music was hit with takedowns",
-        "url": "https://www.rollingstone.com/music/music-news/distrokid-removed-music-response-umg-lawsuit-1235641464/",
-        "source": "Rolling Stone",
-        "domain": "rollingstone.com",
-        "publishedAt": "2026-10-12T21:18:01.000Z",
-        "tags": [
-          "ai",
-          "streaming"
-        ],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-3",
         "title": "El adelanto electoral en España deja sin tramitar las principales normas culturales pendientes",
         "summary": "El adelanto electoral al 29 de noviembre deja sin tramitar las principales normas culturales pendientes, entre ellas el anteproyecto de ley sobre el uso de la inteligencia artificial generativa en las artes y la ley de creación de la Oficina Española de Derechos de Autor y Conexos. El Estatuto del Artista mantiene su p…",
         "url": "https://industriamusical.com/adelanto-electoral-tumba-ley-ia-artistas-oficina-derechos-autor/?utm_source=rss&utm_medium=rss&utm_campaign=adelanto-electoral-tumba-ley-ia-artistas-oficina-derechos-autor",
@@ -68,7 +53,7 @@
         "via": null
       },
       {
-        "id": "noticia-4",
+        "id": "noticia-3",
         "title": "Universal Music appoints first AI director amid copyright lawsuits",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMipwFBVV95cUxQOVkwYzBMeU9pblF1TkZQbE01Nzd1dzhIeWNVQU5wclZCTWpnMGxXU081WnFKR09XSmFTWEVGZVFDd2tlUWhrXzVHRUJXbExlcTZTRndEWnBaMmN2eVE2ZFJHYkhLcE1CY19HVV9xOGsxUzRkRklhSlJUM0pLMWw2TDB1Z0dmTENlUk1VWENTMFNmdEN3QzVSUEtqcDFpN3BQQ1IzX0xfZw?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -83,7 +68,7 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-5",
+        "id": "noticia-4",
         "title": "Deezer permitirá ocultar la música hecha con IA al buscar",
         "summary": "Deezer permitirá a sus usuarios ocultar la música generada íntegramente con inteligencia artificial. La plataforma francesa ha anunciado un interruptor que, una vez activado, excluirá de los resultados de búsqueda las canciones, los álbumes y los artistas vinculados a contenido 100% sintético. La función llegará a todo…",
         "url": "https://industriamusical.com/deezer-ocultar-musica-ia-busqueda/?utm_source=rss&utm_medium=rss&utm_campaign=deezer-ocultar-musica-ia-busqueda",
@@ -98,7 +83,7 @@
         "via": null
       },
       {
-        "id": "noticia-6",
+        "id": "noticia-5",
         "title": "UK Copyright Tribunal ruling recognises “increased value of music in cinema” says PRS",
         "summary": "A dispute over what royalties cinemas should pay PRS for music contained in the films they screen went before the UK Copyright Tribunal earlier this year. It has ruled in favour of a higher royalty rate which, PRS says, “recognises the increased value of music in the overall cinema experience”",
         "url": "https://completemusicupdate.com/uk-copyright-tribunal-ruling-recognises-increased-value-of-music-in-cinema-says-prs/",
@@ -111,6 +96,21 @@
         ],
         "translated": false,
         "via": null
+      },
+      {
+        "id": "noticia-6",
+        "title": "La industria musical australiana advierte al Parlamento contra la flexibilización de las leyes de derechos de autor para permitir el uso de la inteligencia artificial.",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMiqgFBVV95cUxORUM4d1FqN19vRXJUZmFZbUFFWnNCTnhIWTRkck1CMHQ5Y0RGLU5sSENmdkNKeGpNdHktd0M5NlVrWWZidEFuQnlxV1FXbXRKLWpVbFEyZFprTzN5TzB2WUpqc0dXbXlvdnFuNnRDVkk0SHVzd005U2NXQlBqbC1DeEtIYTI5ZTR6TFdiYTBIeGxsampMbndJN2FvclZKX0VEWmQ4LU9aeUFZdw?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "Vietnam.vn",
+        "domain": "news.google.com",
+        "publishedAt": "2026-10-09T10:13:34.000Z",
+        "tags": [
+          "ai",
+          "legislation"
+        ],
+        "translated": false,
+        "via": "Google News"
       },
       {
         "id": "noticia-7",
@@ -174,18 +174,18 @@
       },
       {
         "id": "noticia-11",
-        "title": "La industria musical australiana advierte al Parlamento contra la flexibilización de las leyes de derechos de autor para permitir el uso de la inteligencia artificial.",
-        "summary": "",
-        "url": "https://news.google.com/rss/articles/CBMiqgFBVV95cUxORUM4d1FqN19vRXJUZmFZbUFFWnNCTnhIWTRkck1CMHQ5Y0RGLU5sSENmdkNKeGpNdHktd0M5NlVrWWZidEFuQnlxV1FXbXRKLWpVbFEyZFprTzN5TzB2WUpqc0dXbXlvdnFuNnRDVkk0SHVzd005U2NXQlBqbC1DeEtIYTI5ZTR6TFdiYTBIeGxsampMbndJN2FvclZKX0VEWmQ4LU9aeUFZdw?oc=5&hl=es-419&gl=US&ceid=US:es-419",
-        "source": "Vietnam.vn",
-        "domain": "news.google.com",
-        "publishedAt": "2026-10-06T07:00:00.000Z",
+        "title": "YouTube to Label AI-Generated Songs Across Its Platforms: Listeners ‘Want Transparency’",
+        "summary": "YouTube will label AI-generated songs across its main website and YouTube Music, the latest service to publicly mark tracks as not produced by humans. “Generative AI is opening up new ways for artists to create, experiment, and share music,” YouTube said in a blog post on Wednesday. “As these tools evolve, our listener…",
+        "url": "https://variety.com/2026/music/news/youtube-to-label-ai-generated-songs-music-1236912408/",
+        "source": "Variety",
+        "domain": "variety.com",
+        "publishedAt": "2026-10-14T20:31:28.000Z",
         "tags": [
           "ai",
-          "legislation"
+          "streaming"
         ],
         "translated": false,
-        "via": "Google News"
+        "via": null
       },
       {
         "id": "noticia-12",
@@ -230,21 +230,6 @@
       },
       {
         "id": "noticia-2",
-        "title": "DistroKid Removed Songs From Streaming Platforms in Response to UMG Copyright Suit",
-        "summary": "Though the distributor was ostensibly targeting AI slop and potentially infringing content, numerous artists said their original music was hit with takedowns",
-        "url": "https://www.rollingstone.com/music/music-news/distrokid-removed-music-response-umg-lawsuit-1235641464/",
-        "source": "Rolling Stone",
-        "domain": "rollingstone.com",
-        "publishedAt": "2026-10-12T21:18:01.000Z",
-        "tags": [
-          "ai",
-          "streaming"
-        ],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-3",
         "title": "El adelanto electoral en España deja sin tramitar las principales normas culturales pendientes",
         "summary": "El adelanto electoral al 29 de noviembre deja sin tramitar las principales normas culturales pendientes, entre ellas el anteproyecto de ley sobre el uso de la inteligencia artificial generativa en las artes y la ley de creación de la Oficina Española de Derechos de Autor y Conexos. El Estatuto del Artista mantiene su p…",
         "url": "https://industriamusical.com/adelanto-electoral-tumba-ley-ia-artistas-oficina-derechos-autor/?utm_source=rss&utm_medium=rss&utm_campaign=adelanto-electoral-tumba-ley-ia-artistas-oficina-derechos-autor",
@@ -259,7 +244,7 @@
         "via": null
       },
       {
-        "id": "noticia-4",
+        "id": "noticia-3",
         "title": "Universal Music appoints first AI director amid copyright lawsuits",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMipwFBVV95cUxQOVkwYzBMeU9pblF1TkZQbE01Nzd1dzhIeWNVQU5wclZCTWpnMGxXU081WnFKR09XSmFTWEVGZVFDd2tlUWhrXzVHRUJXbExlcTZTRndEWnBaMmN2eVE2ZFJHYkhLcE1CY19HVV9xOGsxUzRkRklhSlJUM0pLMWw2TDB1Z0dmTENlUk1VWENTMFNmdEN3QzVSUEtqcDFpN3BQQ1IzX0xfZw?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -274,7 +259,7 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-5",
+        "id": "noticia-4",
         "title": "Deezer permitirá ocultar la música hecha con IA al buscar",
         "summary": "Deezer permitirá a sus usuarios ocultar la música generada íntegramente con inteligencia artificial. La plataforma francesa ha anunciado un interruptor que, una vez activado, excluirá de los resultados de búsqueda las canciones, los álbumes y los artistas vinculados a contenido 100% sintético. La función llegará a todo…",
         "url": "https://industriamusical.com/deezer-ocultar-musica-ia-busqueda/?utm_source=rss&utm_medium=rss&utm_campaign=deezer-ocultar-musica-ia-busqueda",
@@ -289,7 +274,7 @@
         "via": null
       },
       {
-        "id": "noticia-6",
+        "id": "noticia-5",
         "title": "UK Copyright Tribunal ruling recognises “increased value of music in cinema” says PRS",
         "summary": "A dispute over what royalties cinemas should pay PRS for music contained in the films they screen went before the UK Copyright Tribunal earlier this year. It has ruled in favour of a higher royalty rate which, PRS says, “recognises the increased value of music in the overall cinema experience”",
         "url": "https://completemusicupdate.com/uk-copyright-tribunal-ruling-recognises-increased-value-of-music-in-cinema-says-prs/",
@@ -302,6 +287,21 @@
         ],
         "translated": false,
         "via": null
+      },
+      {
+        "id": "noticia-6",
+        "title": "La industria musical australiana advierte al Parlamento contra la flexibilización de las leyes de derechos de autor para permitir el uso de la inteligencia artificial.",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMiqgFBVV95cUxORUM4d1FqN19vRXJUZmFZbUFFWnNCTnhIWTRkck1CMHQ5Y0RGLU5sSENmdkNKeGpNdHktd0M5NlVrWWZidEFuQnlxV1FXbXRKLWpVbFEyZFprTzN5TzB2WUpqc0dXbXlvdnFuNnRDVkk0SHVzd005U2NXQlBqbC1DeEtIYTI5ZTR6TFdiYTBIeGxsampMbndJN2FvclZKX0VEWmQ4LU9aeUFZdw?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "Vietnam.vn",
+        "domain": "news.google.com",
+        "publishedAt": "2026-10-09T10:13:34.000Z",
+        "tags": [
+          "ai",
+          "legislation"
+        ],
+        "translated": false,
+        "via": "Google News"
       },
       {
         "id": "noticia-7",
@@ -365,18 +365,18 @@
       },
       {
         "id": "noticia-11",
-        "title": "La industria musical australiana advierte al Parlamento contra la flexibilización de las leyes de derechos de autor para permitir el uso de la inteligencia artificial.",
-        "summary": "",
-        "url": "https://news.google.com/rss/articles/CBMiqgFBVV95cUxORUM4d1FqN19vRXJUZmFZbUFFWnNCTnhIWTRkck1CMHQ5Y0RGLU5sSENmdkNKeGpNdHktd0M5NlVrWWZidEFuQnlxV1FXbXRKLWpVbFEyZFprTzN5TzB2WUpqc0dXbXlvdnFuNnRDVkk0SHVzd005U2NXQlBqbC1DeEtIYTI5ZTR6TFdiYTBIeGxsampMbndJN2FvclZKX0VEWmQ4LU9aeUFZdw?oc=5&hl=es-419&gl=US&ceid=US:es-419",
-        "source": "Vietnam.vn",
-        "domain": "news.google.com",
-        "publishedAt": "2026-10-06T07:00:00.000Z",
+        "title": "YouTube to Label AI-Generated Songs Across Its Platforms: Listeners ‘Want Transparency’",
+        "summary": "YouTube will label AI-generated songs across its main website and YouTube Music, the latest service to publicly mark tracks as not produced by humans. “Generative AI is opening up new ways for artists to create, experiment, and share music,” YouTube said in a blog post on Wednesday. “As these tools evolve, our listener…",
+        "url": "https://variety.com/2026/music/news/youtube-to-label-ai-generated-songs-music-1236912408/",
+        "source": "Variety",
+        "domain": "variety.com",
+        "publishedAt": "2026-10-14T20:31:28.000Z",
         "tags": [
           "ai",
-          "legislation"
+          "streaming"
         ],
         "translated": false,
-        "via": "Google News"
+        "via": null
       },
       {
         "id": "noticia-12",
