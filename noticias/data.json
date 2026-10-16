@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-10-16T12:18:37.681Z",
+  "lastUpdated": "2026-10-16T22:02:04.031Z",
   "meta": {
     "method": "rss-retrieval + link-verification + ai-translation",
     "itemCount": 12,
@@ -7,6 +7,7 @@
       "Complete Music Update",
       "Digital Music News",
       "Industria Musical",
+      "Music Ally",
       "Music Business Worldwide",
       "The Ticker",
       "TorrentFreak",
@@ -51,22 +52,6 @@
       },
       {
         "id": "noticia-3",
-        "title": "Italian Competition Watchdog Launches Suno Investigation ‘Over Unfair Terms,’ Says ‘The Contractual Provisions on Copyright Deserve Particular Attention’",
-        "summary": "When it rains, it pours and, in Suno’s case, keeps on pouring: Besides facing a number of stateside lawsuits as well as international copyright claims, the AI music generator is now grappling with a formal investigation in Italy over its allegedly “unfair terms.” The Italian Competition Authority (ICA) disclosed the pr…",
-        "url": "https://www.digitalmusicnews.com/2026/10/06/suno-italy-investigation/",
-        "source": "Digital Music News",
-        "domain": "digitalmusicnews.com",
-        "publishedAt": "2026-10-06T15:39:23.000Z",
-        "tags": [
-          "lawsuit",
-          "ai",
-          "licensing"
-        ],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-4",
         "title": "La legislación sobre derechos de autor tiene dificultades para adaptarse a la música creada con inteligencia artificial en Corea del Sur.",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMigAFBVV95cUxOT244YVZJQmhUZWRkcjB2UVRXamc4QlpyMU1pRFg1VkxYNGM1N1RnTVVRNVNZRjdvUnNHQTNlTGQ3MzFpb0JjMExtSnYtSU9WTXpPa0dxQklDWHZvUlF0S1BoRDJKcVJCUEV5UU9TbnVaT1dZQ1k0Z0ktZlA1VFR0bQ?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -81,13 +66,27 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-5",
+        "id": "noticia-4",
         "title": "RIAA Flags Anna’s Archive and AI Voice Cloner to U.S. Government",
         "summary": "The RIAA has submitted its latest overview of \"notorious markets\" to the U.S. Government. It lists familiar names such as The Pirate Bay and Rapidgator, but the music group also flags shadow library Anna's Archive and AI voice-cloning service Lalals. The RIAA presents both as \"additional\" areas of concern, not as offic…",
         "url": "https://torrentfreak.com/riaa-flags-annas-archive-and-ai-voice-cloner-to-u-s-government/",
         "source": "TorrentFreak",
         "domain": "torrentfreak.com",
         "publishedAt": "2026-10-15T07:52:44.000Z",
+        "tags": [
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-5",
+        "title": "Publishing body ICMP blasts potential AI rules in Australia",
+        "summary": "Australia’s government is currently devising its future policies on AI, training and copyright. We recently reported on labels body ARIA’s boss Annabelle Herd’s testimony at a select-committee hearing as part of that process. The post is from Music Ally .",
+        "url": "https://musically.com/2026/10/16/publishing-body-icmp-blasts-potential-ai-rules-in-australia/",
+        "source": "Music Ally",
+        "domain": "musically.com",
+        "publishedAt": "2026-10-16T12:30:00.000Z",
         "tags": [
           "ai"
         ],
@@ -185,15 +184,14 @@
       },
       {
         "id": "noticia-12",
-        "title": "Sara Landry’s legal battle with ex-managers over commissions, copyrights and trademarks now being fought out in US and UK",
-        "summary": "In August, London-based management firm The Night Department sued techno producer Sara Landry for breach of contract. She has now responded and countersued. The core dispute is over the management company’s involvement in her label, though there’s also some griping over a Coachella pissing incident",
-        "url": "https://completemusicupdate.com/sara-landrys-legal-battle-with-ex-managers-over-commissions-copyrights-and-trademarks-now-being-fought-out-in-us-and-uk/",
-        "source": "Complete Music Update",
-        "domain": "completemusicupdate.com",
-        "publishedAt": "2026-10-12T16:45:18.000Z",
+        "title": "Who Really Wrote Katy Perry’s ‘Hot N Cold’? A Bizarre Twist Could Derail a Dr. Luke Copyright Settlement In South Dakota",
+        "summary": "A copyright case involving Dr. Luke enters settlement proceedings, but a third party has filed an intervention request, alleging an authorship stake. This week, in the ever-shifting world of copyright infringement lawsuits, two parties on opposing sides of a copyright infringement lawsuit involving a South Dakota broad…",
+        "url": "https://www.digitalmusicnews.com/2026/10/08/dr-luke-sd-broadcaster-lawsuit-settlement/",
+        "source": "Digital Music News",
+        "domain": "digitalmusicnews.com",
+        "publishedAt": "2026-10-08T23:08:25.000Z",
         "tags": [
-          "lawsuit",
-          "licensing"
+          "lawsuit"
         ],
         "translated": false,
         "via": null
@@ -239,22 +237,6 @@
       },
       {
         "id": "noticia-3",
-        "title": "Italian Competition Watchdog Launches Suno Investigation ‘Over Unfair Terms,’ Says ‘The Contractual Provisions on Copyright Deserve Particular Attention’",
-        "summary": "When it rains, it pours and, in Suno’s case, keeps on pouring: Besides facing a number of stateside lawsuits as well as international copyright claims, the AI music generator is now grappling with a formal investigation in Italy over its allegedly “unfair terms.” The Italian Competition Authority (ICA) disclosed the pr…",
-        "url": "https://www.digitalmusicnews.com/2026/10/06/suno-italy-investigation/",
-        "source": "Digital Music News",
-        "domain": "digitalmusicnews.com",
-        "publishedAt": "2026-10-06T15:39:23.000Z",
-        "tags": [
-          "lawsuit",
-          "ai",
-          "licensing"
-        ],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-4",
         "title": "La legislación sobre derechos de autor tiene dificultades para adaptarse a la música creada con inteligencia artificial en Corea del Sur.",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMigAFBVV95cUxOT244YVZJQmhUZWRkcjB2UVRXamc4QlpyMU1pRFg1VkxYNGM1N1RnTVVRNVNZRjdvUnNHQTNlTGQ3MzFpb0JjMExtSnYtSU9WTXpPa0dxQklDWHZvUlF0S1BoRDJKcVJCUEV5UU9TbnVaT1dZQ1k0Z0ktZlA1VFR0bQ?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -269,13 +251,27 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-5",
+        "id": "noticia-4",
         "title": "RIAA Flags Anna’s Archive and AI Voice Cloner to U.S. Government",
         "summary": "The RIAA has submitted its latest overview of \"notorious markets\" to the U.S. Government. It lists familiar names such as The Pirate Bay and Rapidgator, but the music group also flags shadow library Anna's Archive and AI voice-cloning service Lalals. The RIAA presents both as \"additional\" areas of concern, not as offic…",
         "url": "https://torrentfreak.com/riaa-flags-annas-archive-and-ai-voice-cloner-to-u-s-government/",
         "source": "TorrentFreak",
         "domain": "torrentfreak.com",
         "publishedAt": "2026-10-15T07:52:44.000Z",
+        "tags": [
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-5",
+        "title": "Publishing body ICMP blasts potential AI rules in Australia",
+        "summary": "Australia’s government is currently devising its future policies on AI, training and copyright. We recently reported on labels body ARIA’s boss Annabelle Herd’s testimony at a select-committee hearing as part of that process. The post is from Music Ally .",
+        "url": "https://musically.com/2026/10/16/publishing-body-icmp-blasts-potential-ai-rules-in-australia/",
+        "source": "Music Ally",
+        "domain": "musically.com",
+        "publishedAt": "2026-10-16T12:30:00.000Z",
         "tags": [
           "ai"
         ],
@@ -373,15 +369,14 @@
       },
       {
         "id": "noticia-12",
-        "title": "Sara Landry’s legal battle with ex-managers over commissions, copyrights and trademarks now being fought out in US and UK",
-        "summary": "In August, London-based management firm The Night Department sued techno producer Sara Landry for breach of contract. She has now responded and countersued. The core dispute is over the management company’s involvement in her label, though there’s also some griping over a Coachella pissing incident",
-        "url": "https://completemusicupdate.com/sara-landrys-legal-battle-with-ex-managers-over-commissions-copyrights-and-trademarks-now-being-fought-out-in-us-and-uk/",
-        "source": "Complete Music Update",
-        "domain": "completemusicupdate.com",
-        "publishedAt": "2026-10-12T16:45:18.000Z",
+        "title": "Who Really Wrote Katy Perry’s ‘Hot N Cold’? A Bizarre Twist Could Derail a Dr. Luke Copyright Settlement In South Dakota",
+        "summary": "A copyright case involving Dr. Luke enters settlement proceedings, but a third party has filed an intervention request, alleging an authorship stake. This week, in the ever-shifting world of copyright infringement lawsuits, two parties on opposing sides of a copyright infringement lawsuit involving a South Dakota broad…",
+        "url": "https://www.digitalmusicnews.com/2026/10/08/dr-luke-sd-broadcaster-lawsuit-settlement/",
+        "source": "Digital Music News",
+        "domain": "digitalmusicnews.com",
+        "publishedAt": "2026-10-08T23:08:25.000Z",
         "tags": [
-          "lawsuit",
-          "licensing"
+          "lawsuit"
         ],
         "translated": false,
         "via": null
