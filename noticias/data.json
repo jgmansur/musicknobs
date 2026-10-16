@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-10-15T22:10:17.218Z",
+  "lastUpdated": "2026-10-16T12:18:37.681Z",
   "meta": {
     "method": "rss-retrieval + link-verification + ai-translation",
     "itemCount": 12,
@@ -51,20 +51,6 @@
       },
       {
         "id": "noticia-3",
-        "title": "RIAA Flags Anna’s Archive and AI Voice Cloner to U.S. Government",
-        "summary": "The RIAA has submitted its latest overview of \"notorious markets\" to the U.S. Government. It lists familiar names such as The Pirate Bay and Rapidgator, but the music group also flags shadow library Anna's Archive and AI voice-cloning service Lalals. The RIAA presents both as \"additional\" areas of concern, not as offic…",
-        "url": "https://torrentfreak.com/riaa-flags-annas-archive-and-ai-voice-cloner-to-u-s-government/",
-        "source": "TorrentFreak",
-        "domain": "torrentfreak.com",
-        "publishedAt": "2026-10-15T07:52:44.000Z",
-        "tags": [
-          "ai"
-        ],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-4",
         "title": "Italian Competition Watchdog Launches Suno Investigation ‘Over Unfair Terms,’ Says ‘The Contractual Provisions on Copyright Deserve Particular Attention’",
         "summary": "When it rains, it pours and, in Suno’s case, keeps on pouring: Besides facing a number of stateside lawsuits as well as international copyright claims, the AI music generator is now grappling with a formal investigation in Italy over its allegedly “unfair terms.” The Italian Competition Authority (ICA) disclosed the pr…",
         "url": "https://www.digitalmusicnews.com/2026/10/06/suno-italy-investigation/",
@@ -80,7 +66,36 @@
         "via": null
       },
       {
+        "id": "noticia-4",
+        "title": "La legislación sobre derechos de autor tiene dificultades para adaptarse a la música creada con inteligencia artificial en Corea del Sur.",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMigAFBVV95cUxOT244YVZJQmhUZWRkcjB2UVRXamc4QlpyMU1pRFg1VkxYNGM1N1RnTVVRNVNZRjdvUnNHQTNlTGQ3MzFpb0JjMExtSnYtSU9WTXpPa0dxQklDWHZvUlF0S1BoRDJKcVJCUEV5UU9TbnVaT1dZQ1k0Z0ktZlA1VFR0bQ?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "Vietnam.vn",
+        "domain": "news.google.com",
+        "publishedAt": "2026-10-15T23:11:44.000Z",
+        "tags": [
+          "ai",
+          "legislation"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
         "id": "noticia-5",
+        "title": "RIAA Flags Anna’s Archive and AI Voice Cloner to U.S. Government",
+        "summary": "The RIAA has submitted its latest overview of \"notorious markets\" to the U.S. Government. It lists familiar names such as The Pirate Bay and Rapidgator, but the music group also flags shadow library Anna's Archive and AI voice-cloning service Lalals. The RIAA presents both as \"additional\" areas of concern, not as offic…",
+        "url": "https://torrentfreak.com/riaa-flags-annas-archive-and-ai-voice-cloner-to-u-s-government/",
+        "source": "TorrentFreak",
+        "domain": "torrentfreak.com",
+        "publishedAt": "2026-10-15T07:52:44.000Z",
+        "tags": [
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-6",
         "title": "Universal Music appoints first AI director amid copyright lawsuits",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMipwFBVV95cUxQOVkwYzBMeU9pblF1TkZQbE01Nzd1dzhIeWNVQU5wclZCTWpnMGxXU081WnFKR09XSmFTWEVGZVFDd2tlUWhrXzVHRUJXbExlcTZTRndEWnBaMmN2eVE2ZFJHYkhLcE1CY19HVV9xOGsxUzRkRklhSlJUM0pLMWw2TDB1Z0dmTENlUk1VWENTMFNmdEN3QzVSUEtqcDFpN3BQQ1IzX0xfZw?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -95,7 +110,7 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-6",
+        "id": "noticia-7",
         "title": "Deezer permitirá ocultar la música hecha con IA al buscar",
         "summary": "Deezer permitirá a sus usuarios ocultar la música generada íntegramente con inteligencia artificial. La plataforma francesa ha anunciado un interruptor que, una vez activado, excluirá de los resultados de búsqueda las canciones, los álbumes y los artistas vinculados a contenido 100% sintético. La función llegará a todo…",
         "url": "https://industriamusical.com/deezer-ocultar-musica-ia-busqueda/?utm_source=rss&utm_medium=rss&utm_campaign=deezer-ocultar-musica-ia-busqueda",
@@ -110,7 +125,7 @@
         "via": null
       },
       {
-        "id": "noticia-7",
+        "id": "noticia-8",
         "title": "YouTube Music etiqueta la música generada con IA",
         "summary": "YouTube Music ha empezado a etiquetar las canciones creadas «principalmente con inteligencia artificial generativa». La etiqueta aparece en la pantalla del reproductor y, al pulsarla, se abre un menú con más información. La función se amplía también a la aplicación principal de YouTube, según anunció la plataforma el 1…",
         "url": "https://industriamusical.com/youtube-music-etiquetas-musica-ia/?utm_source=rss&utm_medium=rss&utm_campaign=youtube-music-etiquetas-musica-ia",
@@ -125,7 +140,7 @@
         "via": null
       },
       {
-        "id": "noticia-8",
+        "id": "noticia-9",
         "title": "Warner Chappell Music signs My Chemical Romance to exclusive worldwide publishing deal",
         "summary": "Warner Chappell will oversee the catalog's global rights administration, copyright protection, and sync licensing across film, television, and video games. Source",
         "url": "https://www.musicbusinessworldwide.com/warner-chappell-music-signs-my-chemical-romance-to-exclusive-worldwide-publishing-deal/",
@@ -139,7 +154,7 @@
         "via": null
       },
       {
-        "id": "noticia-9",
+        "id": "noticia-10",
         "title": "UK Copyright Tribunal ruling recognises “increased value of music in cinema” says PRS",
         "summary": "A dispute over what royalties cinemas should pay PRS for music contained in the films they screen went before the UK Copyright Tribunal earlier this year. It has ruled in favour of a higher royalty rate which, PRS says, “recognises the increased value of music in the overall cinema experience”",
         "url": "https://completemusicupdate.com/uk-copyright-tribunal-ruling-recognises-increased-value-of-music-in-cinema-says-prs/",
@@ -154,7 +169,7 @@
         "via": null
       },
       {
-        "id": "noticia-10",
+        "id": "noticia-11",
         "title": "La industria musical australiana advierte al Parlamento contra la flexibilización de las leyes de derechos de autor para permitir el uso de la inteligencia artificial.",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMiqgFBVV95cUxORUM4d1FqN19vRXJUZmFZbUFFWnNCTnhIWTRkck1CMHQ5Y0RGLU5sSENmdkNKeGpNdHktd0M5NlVrWWZidEFuQnlxV1FXbXRKLWpVbFEyZFprTzN5TzB2WUpqc0dXbXlvdnFuNnRDVkk0SHVzd005U2NXQlBqbC1DeEtIYTI5ZTR6TFdiYTBIeGxsampMbndJN2FvclZKX0VEWmQ4LU9aeUFZdw?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -169,7 +184,7 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-11",
+        "id": "noticia-12",
         "title": "Sara Landry’s legal battle with ex-managers over commissions, copyrights and trademarks now being fought out in US and UK",
         "summary": "In August, London-based management firm The Night Department sued techno producer Sara Landry for breach of contract. She has now responded and countersued. The core dispute is over the management company’s involvement in her label, though there’s also some griping over a Coachella pissing incident",
         "url": "https://completemusicupdate.com/sara-landrys-legal-battle-with-ex-managers-over-commissions-copyrights-and-trademarks-now-being-fought-out-in-us-and-uk/",
@@ -182,26 +197,11 @@
         ],
         "translated": false,
         "via": null
-      },
-      {
-        "id": "noticia-12",
-        "title": "Major publishers tell US Supreme Court they must intervene in termination rights ruling that “threatens the licensing of copyrighted works throughout the world”",
-        "summary": "The major music publishers and BMG have submitted a new filing with the US Supreme Court in the ongoing termination rights legal battle involving songwriter Cyril Vetter. He recently told the Supreme Court to ignore the publishers’ doomsaying about this case - their new filing has plenty of that",
-        "url": "https://completemusicupdate.com/major-publishers-tell-us-supreme-court-they-must-intervene-in-termination-rights-ruling-that-threatens-the-licensing-of-copyrighted-works-throughout-the-world/",
-        "source": "Complete Music Update",
-        "domain": "completemusicupdate.com",
-        "publishedAt": "2026-10-08T16:00:36.000Z",
-        "tags": [
-          "lawsuit",
-          "licensing"
-        ],
-        "translated": false,
-        "via": null
       }
     ],
     "tip": {
-      "title": "Lee los términos del generador de IA que usas",
-      "body": "Cada plataforma decide por contrato qué puedes hacer comercialmente con lo que generas y qué derechos se reserva. Dos herramientas parecidas pueden darte licencias completamente distintas."
+      "title": "Registra tu catálogo también en la sociedad de gestión",
+      "body": "El registro de autoría y la recaudación son trámites distintos. Si tu obra no está dada de alta en la sociedad correspondiente, las regalías de ejecución pública simplemente no te llegan."
     }
   },
   "en": {
@@ -239,20 +239,6 @@
       },
       {
         "id": "noticia-3",
-        "title": "RIAA Flags Anna’s Archive and AI Voice Cloner to U.S. Government",
-        "summary": "The RIAA has submitted its latest overview of \"notorious markets\" to the U.S. Government. It lists familiar names such as The Pirate Bay and Rapidgator, but the music group also flags shadow library Anna's Archive and AI voice-cloning service Lalals. The RIAA presents both as \"additional\" areas of concern, not as offic…",
-        "url": "https://torrentfreak.com/riaa-flags-annas-archive-and-ai-voice-cloner-to-u-s-government/",
-        "source": "TorrentFreak",
-        "domain": "torrentfreak.com",
-        "publishedAt": "2026-10-15T07:52:44.000Z",
-        "tags": [
-          "ai"
-        ],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-4",
         "title": "Italian Competition Watchdog Launches Suno Investigation ‘Over Unfair Terms,’ Says ‘The Contractual Provisions on Copyright Deserve Particular Attention’",
         "summary": "When it rains, it pours and, in Suno’s case, keeps on pouring: Besides facing a number of stateside lawsuits as well as international copyright claims, the AI music generator is now grappling with a formal investigation in Italy over its allegedly “unfair terms.” The Italian Competition Authority (ICA) disclosed the pr…",
         "url": "https://www.digitalmusicnews.com/2026/10/06/suno-italy-investigation/",
@@ -268,7 +254,36 @@
         "via": null
       },
       {
+        "id": "noticia-4",
+        "title": "La legislación sobre derechos de autor tiene dificultades para adaptarse a la música creada con inteligencia artificial en Corea del Sur.",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMigAFBVV95cUxOT244YVZJQmhUZWRkcjB2UVRXamc4QlpyMU1pRFg1VkxYNGM1N1RnTVVRNVNZRjdvUnNHQTNlTGQ3MzFpb0JjMExtSnYtSU9WTXpPa0dxQklDWHZvUlF0S1BoRDJKcVJCUEV5UU9TbnVaT1dZQ1k0Z0ktZlA1VFR0bQ?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "Vietnam.vn",
+        "domain": "news.google.com",
+        "publishedAt": "2026-10-15T23:11:44.000Z",
+        "tags": [
+          "ai",
+          "legislation"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
         "id": "noticia-5",
+        "title": "RIAA Flags Anna’s Archive and AI Voice Cloner to U.S. Government",
+        "summary": "The RIAA has submitted its latest overview of \"notorious markets\" to the U.S. Government. It lists familiar names such as The Pirate Bay and Rapidgator, but the music group also flags shadow library Anna's Archive and AI voice-cloning service Lalals. The RIAA presents both as \"additional\" areas of concern, not as offic…",
+        "url": "https://torrentfreak.com/riaa-flags-annas-archive-and-ai-voice-cloner-to-u-s-government/",
+        "source": "TorrentFreak",
+        "domain": "torrentfreak.com",
+        "publishedAt": "2026-10-15T07:52:44.000Z",
+        "tags": [
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-6",
         "title": "Universal Music appoints first AI director amid copyright lawsuits",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMipwFBVV95cUxQOVkwYzBMeU9pblF1TkZQbE01Nzd1dzhIeWNVQU5wclZCTWpnMGxXU081WnFKR09XSmFTWEVGZVFDd2tlUWhrXzVHRUJXbExlcTZTRndEWnBaMmN2eVE2ZFJHYkhLcE1CY19HVV9xOGsxUzRkRklhSlJUM0pLMWw2TDB1Z0dmTENlUk1VWENTMFNmdEN3QzVSUEtqcDFpN3BQQ1IzX0xfZw?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -283,7 +298,7 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-6",
+        "id": "noticia-7",
         "title": "Deezer permitirá ocultar la música hecha con IA al buscar",
         "summary": "Deezer permitirá a sus usuarios ocultar la música generada íntegramente con inteligencia artificial. La plataforma francesa ha anunciado un interruptor que, una vez activado, excluirá de los resultados de búsqueda las canciones, los álbumes y los artistas vinculados a contenido 100% sintético. La función llegará a todo…",
         "url": "https://industriamusical.com/deezer-ocultar-musica-ia-busqueda/?utm_source=rss&utm_medium=rss&utm_campaign=deezer-ocultar-musica-ia-busqueda",
@@ -298,7 +313,7 @@
         "via": null
       },
       {
-        "id": "noticia-7",
+        "id": "noticia-8",
         "title": "YouTube Music etiqueta la música generada con IA",
         "summary": "YouTube Music ha empezado a etiquetar las canciones creadas «principalmente con inteligencia artificial generativa». La etiqueta aparece en la pantalla del reproductor y, al pulsarla, se abre un menú con más información. La función se amplía también a la aplicación principal de YouTube, según anunció la plataforma el 1…",
         "url": "https://industriamusical.com/youtube-music-etiquetas-musica-ia/?utm_source=rss&utm_medium=rss&utm_campaign=youtube-music-etiquetas-musica-ia",
@@ -313,7 +328,7 @@
         "via": null
       },
       {
-        "id": "noticia-8",
+        "id": "noticia-9",
         "title": "Warner Chappell Music signs My Chemical Romance to exclusive worldwide publishing deal",
         "summary": "Warner Chappell will oversee the catalog's global rights administration, copyright protection, and sync licensing across film, television, and video games. Source",
         "url": "https://www.musicbusinessworldwide.com/warner-chappell-music-signs-my-chemical-romance-to-exclusive-worldwide-publishing-deal/",
@@ -327,7 +342,7 @@
         "via": null
       },
       {
-        "id": "noticia-9",
+        "id": "noticia-10",
         "title": "UK Copyright Tribunal ruling recognises “increased value of music in cinema” says PRS",
         "summary": "A dispute over what royalties cinemas should pay PRS for music contained in the films they screen went before the UK Copyright Tribunal earlier this year. It has ruled in favour of a higher royalty rate which, PRS says, “recognises the increased value of music in the overall cinema experience”",
         "url": "https://completemusicupdate.com/uk-copyright-tribunal-ruling-recognises-increased-value-of-music-in-cinema-says-prs/",
@@ -342,7 +357,7 @@
         "via": null
       },
       {
-        "id": "noticia-10",
+        "id": "noticia-11",
         "title": "La industria musical australiana advierte al Parlamento contra la flexibilización de las leyes de derechos de autor para permitir el uso de la inteligencia artificial.",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMiqgFBVV95cUxORUM4d1FqN19vRXJUZmFZbUFFWnNCTnhIWTRkck1CMHQ5Y0RGLU5sSENmdkNKeGpNdHktd0M5NlVrWWZidEFuQnlxV1FXbXRKLWpVbFEyZFprTzN5TzB2WUpqc0dXbXlvdnFuNnRDVkk0SHVzd005U2NXQlBqbC1DeEtIYTI5ZTR6TFdiYTBIeGxsampMbndJN2FvclZKX0VEWmQ4LU9aeUFZdw?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -357,7 +372,7 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-11",
+        "id": "noticia-12",
         "title": "Sara Landry’s legal battle with ex-managers over commissions, copyrights and trademarks now being fought out in US and UK",
         "summary": "In August, London-based management firm The Night Department sued techno producer Sara Landry for breach of contract. She has now responded and countersued. The core dispute is over the management company’s involvement in her label, though there’s also some griping over a Coachella pissing incident",
         "url": "https://completemusicupdate.com/sara-landrys-legal-battle-with-ex-managers-over-commissions-copyrights-and-trademarks-now-being-fought-out-in-us-and-uk/",
@@ -370,26 +385,11 @@
         ],
         "translated": false,
         "via": null
-      },
-      {
-        "id": "noticia-12",
-        "title": "Major publishers tell US Supreme Court they must intervene in termination rights ruling that “threatens the licensing of copyrighted works throughout the world”",
-        "summary": "The major music publishers and BMG have submitted a new filing with the US Supreme Court in the ongoing termination rights legal battle involving songwriter Cyril Vetter. He recently told the Supreme Court to ignore the publishers’ doomsaying about this case - their new filing has plenty of that",
-        "url": "https://completemusicupdate.com/major-publishers-tell-us-supreme-court-they-must-intervene-in-termination-rights-ruling-that-threatens-the-licensing-of-copyrighted-works-throughout-the-world/",
-        "source": "Complete Music Update",
-        "domain": "completemusicupdate.com",
-        "publishedAt": "2026-10-08T16:00:36.000Z",
-        "tags": [
-          "lawsuit",
-          "licensing"
-        ],
-        "translated": false,
-        "via": null
       }
     ],
     "tip": {
-      "title": "Read the terms of the AI generator you use",
-      "body": "Each platform decides by contract what you may do commercially with your outputs and what rights it keeps. Two similar tools can grant completely different licenses."
+      "title": "Register with your collecting society too",
+      "body": "Copyright registration and royalty collection are separate steps. If your work isn't registered with the right society, public performance royalties simply never reach you."
     }
   }
 }
