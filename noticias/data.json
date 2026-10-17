@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-10-16T22:02:04.031Z",
+  "lastUpdated": "2026-10-17T11:32:46.153Z",
   "meta": {
     "method": "rss-retrieval + link-verification + ai-translation",
     "itemCount": 12,
@@ -125,6 +125,20 @@
       },
       {
         "id": "noticia-8",
+        "title": "Corea del Sur busca una solución de \"música con IA legal\" mediante el seguimiento de los derechos de autor.",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMirAFBVV95cUxOZTlSaHU2Q3R5SlBNS1QzcWhJaTVTU1ZJY05nN05TaUoyZXdEeG9ZRHAydDRTS0hNTU9wNGFaRElUeEptZTU2OEVZNEUwa0FzNzY1TDg1WDZfMS1KME1DZ3BuVDdfTkRSOXNrM3ExajlTTVRIZEdZcU5uc0J3ZURnNWN6cG43bU4taUN2MEgxdkxMYkNHTXQ1U3pSeThhSS1ZSWpuQVFPVDBNU0x5?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "Vietnam.vn",
+        "domain": "news.google.com",
+        "publishedAt": "2026-10-17T09:25:45.000Z",
+        "tags": [
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-9",
         "title": "YouTube Music etiqueta la música generada con IA",
         "summary": "YouTube Music ha empezado a etiquetar las canciones creadas «principalmente con inteligencia artificial generativa». La etiqueta aparece en la pantalla del reproductor y, al pulsarla, se abre un menú con más información. La función se amplía también a la aplicación principal de YouTube, según anunció la plataforma el 1…",
         "url": "https://industriamusical.com/youtube-music-etiquetas-musica-ia/?utm_source=rss&utm_medium=rss&utm_campaign=youtube-music-etiquetas-musica-ia",
@@ -139,7 +153,7 @@
         "via": null
       },
       {
-        "id": "noticia-9",
+        "id": "noticia-10",
         "title": "Warner Chappell Music signs My Chemical Romance to exclusive worldwide publishing deal",
         "summary": "Warner Chappell will oversee the catalog's global rights administration, copyright protection, and sync licensing across film, television, and video games. Source",
         "url": "https://www.musicbusinessworldwide.com/warner-chappell-music-signs-my-chemical-romance-to-exclusive-worldwide-publishing-deal/",
@@ -153,7 +167,7 @@
         "via": null
       },
       {
-        "id": "noticia-10",
+        "id": "noticia-11",
         "title": "UK Copyright Tribunal ruling recognises “increased value of music in cinema” says PRS",
         "summary": "A dispute over what royalties cinemas should pay PRS for music contained in the films they screen went before the UK Copyright Tribunal earlier this year. It has ruled in favour of a higher royalty rate which, PRS says, “recognises the increased value of music in the overall cinema experience”",
         "url": "https://completemusicupdate.com/uk-copyright-tribunal-ruling-recognises-increased-value-of-music-in-cinema-says-prs/",
@@ -168,7 +182,7 @@
         "via": null
       },
       {
-        "id": "noticia-11",
+        "id": "noticia-12",
         "title": "La industria musical australiana advierte al Parlamento contra la flexibilización de las leyes de derechos de autor para permitir el uso de la inteligencia artificial.",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMiqgFBVV95cUxORUM4d1FqN19vRXJUZmFZbUFFWnNCTnhIWTRkck1CMHQ5Y0RGLU5sSENmdkNKeGpNdHktd0M5NlVrWWZidEFuQnlxV1FXbXRKLWpVbFEyZFprTzN5TzB2WUpqc0dXbXlvdnFuNnRDVkk0SHVzd005U2NXQlBqbC1DeEtIYTI5ZTR6TFdiYTBIeGxsampMbndJN2FvclZKX0VEWmQ4LU9aeUFZdw?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -181,25 +195,11 @@
         ],
         "translated": false,
         "via": "Google News"
-      },
-      {
-        "id": "noticia-12",
-        "title": "Who Really Wrote Katy Perry’s ‘Hot N Cold’? A Bizarre Twist Could Derail a Dr. Luke Copyright Settlement In South Dakota",
-        "summary": "A copyright case involving Dr. Luke enters settlement proceedings, but a third party has filed an intervention request, alleging an authorship stake. This week, in the ever-shifting world of copyright infringement lawsuits, two parties on opposing sides of a copyright infringement lawsuit involving a South Dakota broad…",
-        "url": "https://www.digitalmusicnews.com/2026/10/08/dr-luke-sd-broadcaster-lawsuit-settlement/",
-        "source": "Digital Music News",
-        "domain": "digitalmusicnews.com",
-        "publishedAt": "2026-10-08T23:08:25.000Z",
-        "tags": [
-          "lawsuit"
-        ],
-        "translated": false,
-        "via": null
       }
     ],
     "tip": {
-      "title": "Registra tu catálogo también en la sociedad de gestión",
-      "body": "El registro de autoría y la recaudación son trámites distintos. Si tu obra no está dada de alta en la sociedad correspondiente, las regalías de ejecución pública simplemente no te llegan."
+      "title": "Los covers necesitan licencia aunque des crédito",
+      "body": "Acreditar al autor no sustituye la licencia. Para publicar un cover en plataformas necesitas la licencia mecánica correspondiente, y para usarlo en video, además, la sincronización."
     }
   },
   "en": {
@@ -310,6 +310,20 @@
       },
       {
         "id": "noticia-8",
+        "title": "Corea del Sur busca una solución de \"música con IA legal\" mediante el seguimiento de los derechos de autor.",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMirAFBVV95cUxOZTlSaHU2Q3R5SlBNS1QzcWhJaTVTU1ZJY05nN05TaUoyZXdEeG9ZRHAydDRTS0hNTU9wNGFaRElUeEptZTU2OEVZNEUwa0FzNzY1TDg1WDZfMS1KME1DZ3BuVDdfTkRSOXNrM3ExajlTTVRIZEdZcU5uc0J3ZURnNWN6cG43bU4taUN2MEgxdkxMYkNHTXQ1U3pSeThhSS1ZSWpuQVFPVDBNU0x5?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "Vietnam.vn",
+        "domain": "news.google.com",
+        "publishedAt": "2026-10-17T09:25:45.000Z",
+        "tags": [
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-9",
         "title": "YouTube Music etiqueta la música generada con IA",
         "summary": "YouTube Music ha empezado a etiquetar las canciones creadas «principalmente con inteligencia artificial generativa». La etiqueta aparece en la pantalla del reproductor y, al pulsarla, se abre un menú con más información. La función se amplía también a la aplicación principal de YouTube, según anunció la plataforma el 1…",
         "url": "https://industriamusical.com/youtube-music-etiquetas-musica-ia/?utm_source=rss&utm_medium=rss&utm_campaign=youtube-music-etiquetas-musica-ia",
@@ -324,7 +338,7 @@
         "via": null
       },
       {
-        "id": "noticia-9",
+        "id": "noticia-10",
         "title": "Warner Chappell Music signs My Chemical Romance to exclusive worldwide publishing deal",
         "summary": "Warner Chappell will oversee the catalog's global rights administration, copyright protection, and sync licensing across film, television, and video games. Source",
         "url": "https://www.musicbusinessworldwide.com/warner-chappell-music-signs-my-chemical-romance-to-exclusive-worldwide-publishing-deal/",
@@ -338,7 +352,7 @@
         "via": null
       },
       {
-        "id": "noticia-10",
+        "id": "noticia-11",
         "title": "UK Copyright Tribunal ruling recognises “increased value of music in cinema” says PRS",
         "summary": "A dispute over what royalties cinemas should pay PRS for music contained in the films they screen went before the UK Copyright Tribunal earlier this year. It has ruled in favour of a higher royalty rate which, PRS says, “recognises the increased value of music in the overall cinema experience”",
         "url": "https://completemusicupdate.com/uk-copyright-tribunal-ruling-recognises-increased-value-of-music-in-cinema-says-prs/",
@@ -353,7 +367,7 @@
         "via": null
       },
       {
-        "id": "noticia-11",
+        "id": "noticia-12",
         "title": "La industria musical australiana advierte al Parlamento contra la flexibilización de las leyes de derechos de autor para permitir el uso de la inteligencia artificial.",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMiqgFBVV95cUxORUM4d1FqN19vRXJUZmFZbUFFWnNCTnhIWTRkck1CMHQ5Y0RGLU5sSENmdkNKeGpNdHktd0M5NlVrWWZidEFuQnlxV1FXbXRKLWpVbFEyZFprTzN5TzB2WUpqc0dXbXlvdnFuNnRDVkk0SHVzd005U2NXQlBqbC1DeEtIYTI5ZTR6TFdiYTBIeGxsampMbndJN2FvclZKX0VEWmQ4LU9aeUFZdw?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -366,25 +380,11 @@
         ],
         "translated": false,
         "via": "Google News"
-      },
-      {
-        "id": "noticia-12",
-        "title": "Who Really Wrote Katy Perry’s ‘Hot N Cold’? A Bizarre Twist Could Derail a Dr. Luke Copyright Settlement In South Dakota",
-        "summary": "A copyright case involving Dr. Luke enters settlement proceedings, but a third party has filed an intervention request, alleging an authorship stake. This week, in the ever-shifting world of copyright infringement lawsuits, two parties on opposing sides of a copyright infringement lawsuit involving a South Dakota broad…",
-        "url": "https://www.digitalmusicnews.com/2026/10/08/dr-luke-sd-broadcaster-lawsuit-settlement/",
-        "source": "Digital Music News",
-        "domain": "digitalmusicnews.com",
-        "publishedAt": "2026-10-08T23:08:25.000Z",
-        "tags": [
-          "lawsuit"
-        ],
-        "translated": false,
-        "via": null
       }
     ],
     "tip": {
-      "title": "Register with your collecting society too",
-      "body": "Copyright registration and royalty collection are separate steps. If your work isn't registered with the right society, public performance royalties simply never reach you."
+      "title": "Covers need a license even if you give credit",
+      "body": "Crediting the songwriter is not a license. Releasing a cover on platforms requires a mechanical license, and using it in a video also requires a sync license."
     }
   }
 }
