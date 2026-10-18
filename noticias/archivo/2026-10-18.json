@@ -1,0 +1,390 @@
+{
+  "lastUpdated": "2026-10-18T12:01:48.956Z",
+  "meta": {
+    "method": "rss-retrieval + link-verification + ai-translation",
+    "itemCount": 12,
+    "sources": [
+      "Complete Music Update",
+      "Digital Music News",
+      "Industria Musical",
+      "Music Ally",
+      "Music Business Worldwide",
+      "The Ticker",
+      "TorrentFreak",
+      "Vietnam.vn"
+    ],
+    "verifiedLinks": 12,
+    "aiTranslated": 0,
+    "note": "Los hechos provienen de los artículos originales enlazados. La IA solo traduce y resume; no genera noticias."
+  },
+  "es": {
+    "title": "Noticias de Copyright e Inteligencia Artificial",
+    "subtitle": "Notas publicadas por medios reales de la industria, con liga al artículo original. Sin noticias inventadas.",
+    "items": [
+      {
+        "id": "noticia-1",
+        "title": "Atlantic/WMG Sues Ray-Ban Owner Luxottica, Demands Over $64 Million in Damages as Social Media Infringement Crackdown Continues",
+        "summary": "The social media copyright crackdown continues: Warner Music Group (WMG) is now suing multiple subsidiaries of eyewear giant EssilorLuxottica for allegedly infringing on north of 400 compositions and recordings in Instagram and TikTok posts. Plaintiffs including Atlantic Music Group and Warner Chappell recently submitt…",
+        "url": "https://www.digitalmusicnews.com/2026/10/12/warner-music-essilorluxottica-lawsuit/",
+        "source": "Digital Music News",
+        "domain": "digitalmusicnews.com",
+        "publishedAt": "2026-10-12T17:28:17.000Z",
+        "tags": [
+          "lawsuit"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-2",
+        "title": "Can We Sue Our Way to AI Control?",
+        "summary": "The labels want their power back. Copyright needs to be rebuilt. There is a comforting version of the AI music story in which the record labels sue, the technology companies pay, and musicians emerge with their rights intact. The lawyers finish arguing, the executives shake hands, and somebody issues a statement about…",
+        "url": "https://www.digitalmusicnews.com/2026/10/13/can-we-sue-our-way-to-ai-control/",
+        "source": "Digital Music News",
+        "domain": "digitalmusicnews.com",
+        "publishedAt": "2026-10-13T18:15:41.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-3",
+        "title": "La legislación sobre derechos de autor tiene dificultades para adaptarse a la música creada con inteligencia artificial en Corea del Sur.",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMigAFBVV95cUxOT244YVZJQmhUZWRkcjB2UVRXamc4QlpyMU1pRFg1VkxYNGM1N1RnTVVRNVNZRjdvUnNHQTNlTGQ3MzFpb0JjMExtSnYtSU9WTXpPa0dxQklDWHZvUlF0S1BoRDJKcVJCUEV5UU9TbnVaT1dZQ1k0Z0ktZlA1VFR0bQ?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "Vietnam.vn",
+        "domain": "news.google.com",
+        "publishedAt": "2026-10-15T23:11:44.000Z",
+        "tags": [
+          "ai",
+          "legislation"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-4",
+        "title": "RIAA Flags Anna’s Archive and AI Voice Cloner to U.S. Government",
+        "summary": "The RIAA has submitted its latest overview of \"notorious markets\" to the U.S. Government. It lists familiar names such as The Pirate Bay and Rapidgator, but the music group also flags shadow library Anna's Archive and AI voice-cloning service Lalals. The RIAA presents both as \"additional\" areas of concern, not as offic…",
+        "url": "https://torrentfreak.com/riaa-flags-annas-archive-and-ai-voice-cloner-to-u-s-government/",
+        "source": "TorrentFreak",
+        "domain": "torrentfreak.com",
+        "publishedAt": "2026-10-15T07:52:44.000Z",
+        "tags": [
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-5",
+        "title": "Publishing body ICMP blasts potential AI rules in Australia",
+        "summary": "Australia’s government is currently devising its future policies on AI, training and copyright. We recently reported on labels body ARIA’s boss Annabelle Herd’s testimony at a select-committee hearing as part of that process. The post is from Music Ally .",
+        "url": "https://musically.com/2026/10/16/publishing-body-icmp-blasts-potential-ai-rules-in-australia/",
+        "source": "Music Ally",
+        "domain": "musically.com",
+        "publishedAt": "2026-10-16T12:30:00.000Z",
+        "tags": [
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-6",
+        "title": "Universal Music appoints first AI director amid copyright lawsuits",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMipwFBVV95cUxQOVkwYzBMeU9pblF1TkZQbE01Nzd1dzhIeWNVQU5wclZCTWpnMGxXU081WnFKR09XSmFTWEVGZVFDd2tlUWhrXzVHRUJXbExlcTZTRndEWnBaMmN2eVE2ZFJHYkhLcE1CY19HVV9xOGsxUzRkRklhSlJUM0pLMWw2TDB1Z0dmTENlUk1VWENTMFNmdEN3QzVSUEtqcDFpN3BQQ1IzX0xfZw?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "The Ticker",
+        "domain": "news.google.com",
+        "publishedAt": "2026-10-13T13:07:31.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-7",
+        "title": "Deezer permitirá ocultar la música hecha con IA al buscar",
+        "summary": "Deezer permitirá a sus usuarios ocultar la música generada íntegramente con inteligencia artificial. La plataforma francesa ha anunciado un interruptor que, una vez activado, excluirá de los resultados de búsqueda las canciones, los álbumes y los artistas vinculados a contenido 100% sintético. La función llegará a todo…",
+        "url": "https://industriamusical.com/deezer-ocultar-musica-ia-busqueda/?utm_source=rss&utm_medium=rss&utm_campaign=deezer-ocultar-musica-ia-busqueda",
+        "source": "Industria Musical",
+        "domain": "industriamusical.com",
+        "publishedAt": "2026-10-14T11:19:05.000Z",
+        "tags": [
+          "ai",
+          "streaming"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-8",
+        "title": "Corea del Sur busca una solución de \"música con IA legal\" mediante el seguimiento de los derechos de autor.",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMirAFBVV95cUxOZTlSaHU2Q3R5SlBNS1QzcWhJaTVTU1ZJY05nN05TaUoyZXdEeG9ZRHAydDRTS0hNTU9wNGFaRElUeEptZTU2OEVZNEUwa0FzNzY1TDg1WDZfMS1KME1DZ3BuVDdfTkRSOXNrM3ExajlTTVRIZEdZcU5uc0J3ZURnNWN6cG43bU4taUN2MEgxdkxMYkNHTXQ1U3pSeThhSS1ZSWpuQVFPVDBNU0x5?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "Vietnam.vn",
+        "domain": "news.google.com",
+        "publishedAt": "2026-10-17T09:25:45.000Z",
+        "tags": [
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-9",
+        "title": "La industria musical australiana advierte al Parlamento contra la flexibilización de las leyes de derechos de autor para permitir el uso de la inteligencia artificial.",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMiqgFBVV95cUxORUM4d1FqN19vRXJUZmFZbUFFWnNCTnhIWTRkck1CMHQ5Y0RGLU5sSENmdkNKeGpNdHktd0M5NlVrWWZidEFuQnlxV1FXbXRKLWpVbFEyZFprTzN5TzB2WUpqc0dXbXlvdnFuNnRDVkk0SHVzd005U2NXQlBqbC1DeEtIYTI5ZTR6TFdiYTBIeGxsampMbndJN2FvclZKX0VEWmQ4LU9aeUFZdw?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "Vietnam.vn",
+        "domain": "news.google.com",
+        "publishedAt": "2026-10-09T10:13:34.000Z",
+        "tags": [
+          "ai",
+          "legislation"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-10",
+        "title": "YouTube Music etiqueta la música generada con IA",
+        "summary": "YouTube Music ha empezado a etiquetar las canciones creadas «principalmente con inteligencia artificial generativa». La etiqueta aparece en la pantalla del reproductor y, al pulsarla, se abre un menú con más información. La función se amplía también a la aplicación principal de YouTube, según anunció la plataforma el 1…",
+        "url": "https://industriamusical.com/youtube-music-etiquetas-musica-ia/?utm_source=rss&utm_medium=rss&utm_campaign=youtube-music-etiquetas-musica-ia",
+        "source": "Industria Musical",
+        "domain": "industriamusical.com",
+        "publishedAt": "2026-10-14T22:53:47.000Z",
+        "tags": [
+          "ai",
+          "streaming"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-11",
+        "title": "Warner Chappell Music signs My Chemical Romance to exclusive worldwide publishing deal",
+        "summary": "Warner Chappell will oversee the catalog's global rights administration, copyright protection, and sync licensing across film, television, and video games. Source",
+        "url": "https://www.musicbusinessworldwide.com/warner-chappell-music-signs-my-chemical-romance-to-exclusive-worldwide-publishing-deal/",
+        "source": "Music Business Worldwide",
+        "domain": "musicbusinessworldwide.com",
+        "publishedAt": "2026-10-15T17:35:20.000Z",
+        "tags": [
+          "licensing"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-12",
+        "title": "UK Copyright Tribunal ruling recognises “increased value of music in cinema” says PRS",
+        "summary": "A dispute over what royalties cinemas should pay PRS for music contained in the films they screen went before the UK Copyright Tribunal earlier this year. It has ruled in favour of a higher royalty rate which, PRS says, “recognises the increased value of music in the overall cinema experience”",
+        "url": "https://completemusicupdate.com/uk-copyright-tribunal-ruling-recognises-increased-value-of-music-in-cinema-says-prs/",
+        "source": "Complete Music Update",
+        "domain": "completemusicupdate.com",
+        "publishedAt": "2026-10-13T15:38:20.000Z",
+        "tags": [
+          "lawsuit",
+          "royalties"
+        ],
+        "translated": false,
+        "via": null
+      }
+    ],
+    "tip": {
+      "title": "Metadata incompleta es dinero que se queda en el limbo",
+      "body": "ISRC, ISWC, nombres legales completos y porcentajes correctos determinan a quién le pagan. Un solo campo mal escrito manda tus regalías a la bolsa de no identificados."
+    }
+  },
+  "en": {
+    "title": "Copyright & Artificial Intelligence News",
+    "subtitle": "Stories published by real industry outlets, each linked to its original article. No invented news.",
+    "items": [
+      {
+        "id": "noticia-1",
+        "title": "Atlantic/WMG Sues Ray-Ban Owner Luxottica, Demands Over $64 Million in Damages as Social Media Infringement Crackdown Continues",
+        "summary": "The social media copyright crackdown continues: Warner Music Group (WMG) is now suing multiple subsidiaries of eyewear giant EssilorLuxottica for allegedly infringing on north of 400 compositions and recordings in Instagram and TikTok posts. Plaintiffs including Atlantic Music Group and Warner Chappell recently submitt…",
+        "url": "https://www.digitalmusicnews.com/2026/10/12/warner-music-essilorluxottica-lawsuit/",
+        "source": "Digital Music News",
+        "domain": "digitalmusicnews.com",
+        "publishedAt": "2026-10-12T17:28:17.000Z",
+        "tags": [
+          "lawsuit"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-2",
+        "title": "Can We Sue Our Way to AI Control?",
+        "summary": "The labels want their power back. Copyright needs to be rebuilt. There is a comforting version of the AI music story in which the record labels sue, the technology companies pay, and musicians emerge with their rights intact. The lawyers finish arguing, the executives shake hands, and somebody issues a statement about…",
+        "url": "https://www.digitalmusicnews.com/2026/10/13/can-we-sue-our-way-to-ai-control/",
+        "source": "Digital Music News",
+        "domain": "digitalmusicnews.com",
+        "publishedAt": "2026-10-13T18:15:41.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-3",
+        "title": "La legislación sobre derechos de autor tiene dificultades para adaptarse a la música creada con inteligencia artificial en Corea del Sur.",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMigAFBVV95cUxOT244YVZJQmhUZWRkcjB2UVRXamc4QlpyMU1pRFg1VkxYNGM1N1RnTVVRNVNZRjdvUnNHQTNlTGQ3MzFpb0JjMExtSnYtSU9WTXpPa0dxQklDWHZvUlF0S1BoRDJKcVJCUEV5UU9TbnVaT1dZQ1k0Z0ktZlA1VFR0bQ?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "Vietnam.vn",
+        "domain": "news.google.com",
+        "publishedAt": "2026-10-15T23:11:44.000Z",
+        "tags": [
+          "ai",
+          "legislation"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-4",
+        "title": "RIAA Flags Anna’s Archive and AI Voice Cloner to U.S. Government",
+        "summary": "The RIAA has submitted its latest overview of \"notorious markets\" to the U.S. Government. It lists familiar names such as The Pirate Bay and Rapidgator, but the music group also flags shadow library Anna's Archive and AI voice-cloning service Lalals. The RIAA presents both as \"additional\" areas of concern, not as offic…",
+        "url": "https://torrentfreak.com/riaa-flags-annas-archive-and-ai-voice-cloner-to-u-s-government/",
+        "source": "TorrentFreak",
+        "domain": "torrentfreak.com",
+        "publishedAt": "2026-10-15T07:52:44.000Z",
+        "tags": [
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-5",
+        "title": "Publishing body ICMP blasts potential AI rules in Australia",
+        "summary": "Australia’s government is currently devising its future policies on AI, training and copyright. We recently reported on labels body ARIA’s boss Annabelle Herd’s testimony at a select-committee hearing as part of that process. The post is from Music Ally .",
+        "url": "https://musically.com/2026/10/16/publishing-body-icmp-blasts-potential-ai-rules-in-australia/",
+        "source": "Music Ally",
+        "domain": "musically.com",
+        "publishedAt": "2026-10-16T12:30:00.000Z",
+        "tags": [
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-6",
+        "title": "Universal Music appoints first AI director amid copyright lawsuits",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMipwFBVV95cUxQOVkwYzBMeU9pblF1TkZQbE01Nzd1dzhIeWNVQU5wclZCTWpnMGxXU081WnFKR09XSmFTWEVGZVFDd2tlUWhrXzVHRUJXbExlcTZTRndEWnBaMmN2eVE2ZFJHYkhLcE1CY19HVV9xOGsxUzRkRklhSlJUM0pLMWw2TDB1Z0dmTENlUk1VWENTMFNmdEN3QzVSUEtqcDFpN3BQQ1IzX0xfZw?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "The Ticker",
+        "domain": "news.google.com",
+        "publishedAt": "2026-10-13T13:07:31.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-7",
+        "title": "Deezer permitirá ocultar la música hecha con IA al buscar",
+        "summary": "Deezer permitirá a sus usuarios ocultar la música generada íntegramente con inteligencia artificial. La plataforma francesa ha anunciado un interruptor que, una vez activado, excluirá de los resultados de búsqueda las canciones, los álbumes y los artistas vinculados a contenido 100% sintético. La función llegará a todo…",
+        "url": "https://industriamusical.com/deezer-ocultar-musica-ia-busqueda/?utm_source=rss&utm_medium=rss&utm_campaign=deezer-ocultar-musica-ia-busqueda",
+        "source": "Industria Musical",
+        "domain": "industriamusical.com",
+        "publishedAt": "2026-10-14T11:19:05.000Z",
+        "tags": [
+          "ai",
+          "streaming"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-8",
+        "title": "Corea del Sur busca una solución de \"música con IA legal\" mediante el seguimiento de los derechos de autor.",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMirAFBVV95cUxOZTlSaHU2Q3R5SlBNS1QzcWhJaTVTU1ZJY05nN05TaUoyZXdEeG9ZRHAydDRTS0hNTU9wNGFaRElUeEptZTU2OEVZNEUwa0FzNzY1TDg1WDZfMS1KME1DZ3BuVDdfTkRSOXNrM3ExajlTTVRIZEdZcU5uc0J3ZURnNWN6cG43bU4taUN2MEgxdkxMYkNHTXQ1U3pSeThhSS1ZSWpuQVFPVDBNU0x5?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "Vietnam.vn",
+        "domain": "news.google.com",
+        "publishedAt": "2026-10-17T09:25:45.000Z",
+        "tags": [
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-9",
+        "title": "La industria musical australiana advierte al Parlamento contra la flexibilización de las leyes de derechos de autor para permitir el uso de la inteligencia artificial.",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMiqgFBVV95cUxORUM4d1FqN19vRXJUZmFZbUFFWnNCTnhIWTRkck1CMHQ5Y0RGLU5sSENmdkNKeGpNdHktd0M5NlVrWWZidEFuQnlxV1FXbXRKLWpVbFEyZFprTzN5TzB2WUpqc0dXbXlvdnFuNnRDVkk0SHVzd005U2NXQlBqbC1DeEtIYTI5ZTR6TFdiYTBIeGxsampMbndJN2FvclZKX0VEWmQ4LU9aeUFZdw?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "Vietnam.vn",
+        "domain": "news.google.com",
+        "publishedAt": "2026-10-09T10:13:34.000Z",
+        "tags": [
+          "ai",
+          "legislation"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-10",
+        "title": "YouTube Music etiqueta la música generada con IA",
+        "summary": "YouTube Music ha empezado a etiquetar las canciones creadas «principalmente con inteligencia artificial generativa». La etiqueta aparece en la pantalla del reproductor y, al pulsarla, se abre un menú con más información. La función se amplía también a la aplicación principal de YouTube, según anunció la plataforma el 1…",
+        "url": "https://industriamusical.com/youtube-music-etiquetas-musica-ia/?utm_source=rss&utm_medium=rss&utm_campaign=youtube-music-etiquetas-musica-ia",
+        "source": "Industria Musical",
+        "domain": "industriamusical.com",
+        "publishedAt": "2026-10-14T22:53:47.000Z",
+        "tags": [
+          "ai",
+          "streaming"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-11",
+        "title": "Warner Chappell Music signs My Chemical Romance to exclusive worldwide publishing deal",
+        "summary": "Warner Chappell will oversee the catalog's global rights administration, copyright protection, and sync licensing across film, television, and video games. Source",
+        "url": "https://www.musicbusinessworldwide.com/warner-chappell-music-signs-my-chemical-romance-to-exclusive-worldwide-publishing-deal/",
+        "source": "Music Business Worldwide",
+        "domain": "musicbusinessworldwide.com",
+        "publishedAt": "2026-10-15T17:35:20.000Z",
+        "tags": [
+          "licensing"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-12",
+        "title": "UK Copyright Tribunal ruling recognises “increased value of music in cinema” says PRS",
+        "summary": "A dispute over what royalties cinemas should pay PRS for music contained in the films they screen went before the UK Copyright Tribunal earlier this year. It has ruled in favour of a higher royalty rate which, PRS says, “recognises the increased value of music in the overall cinema experience”",
+        "url": "https://completemusicupdate.com/uk-copyright-tribunal-ruling-recognises-increased-value-of-music-in-cinema-says-prs/",
+        "source": "Complete Music Update",
+        "domain": "completemusicupdate.com",
+        "publishedAt": "2026-10-13T15:38:20.000Z",
+        "tags": [
+          "lawsuit",
+          "royalties"
+        ],
+        "translated": false,
+        "via": null
+      }
+    ],
+    "tip": {
+      "title": "Incomplete metadata means money left unclaimed",
+      "body": "ISRC, ISWC, full legal names and correct splits decide who gets paid. A single mistyped field sends your royalties into the unidentified pool."
+    }
+  }
+}
