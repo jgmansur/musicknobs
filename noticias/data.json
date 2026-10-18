@@ -1,10 +1,9 @@
 {
-  "lastUpdated": "2026-10-18T12:01:48.956Z",
+  "lastUpdated": "2026-10-18T21:26:17.600Z",
   "meta": {
     "method": "rss-retrieval + link-verification + ai-translation",
     "itemCount": 12,
     "sources": [
-      "Complete Music Update",
       "Digital Music News",
       "Industria Musical",
       "Music Ally",
@@ -14,7 +13,7 @@
       "Vietnam.vn"
     ],
     "verifiedLinks": 12,
-    "aiTranslated": 0,
+    "aiTranslated": 4,
     "note": "Los hechos provienen de los artículos originales enlazados. La IA solo traduce y resume; no genera noticias."
   },
   "es": {
@@ -24,7 +23,7 @@
       {
         "id": "noticia-1",
         "title": "Atlantic/WMG Sues Ray-Ban Owner Luxottica, Demands Over $64 Million in Damages as Social Media Infringement Crackdown Continues",
-        "summary": "The social media copyright crackdown continues: Warner Music Group (WMG) is now suing multiple subsidiaries of eyewear giant EssilorLuxottica for allegedly infringing on north of 400 compositions and recordings in Instagram and TikTok posts. Plaintiffs including Atlantic Music Group and Warner Chappell recently submitt…",
+        "summary": "Warner Music Group y Atlantic Music Group demandan a varias subsidiarias de EssilorLuxottica por supuesta infracción de más de 400 composiciones y grabaciones en publicaciones de Instagram y TikTok, solicitando más de 64 millones de dólares en daños ante un tribunal federal de Nueva York.",
         "url": "https://www.digitalmusicnews.com/2026/10/12/warner-music-essilorluxottica-lawsuit/",
         "source": "Digital Music News",
         "domain": "digitalmusicnews.com",
@@ -32,13 +31,13 @@
         "tags": [
           "lawsuit"
         ],
-        "translated": false,
+        "translated": true,
         "via": null
       },
       {
         "id": "noticia-2",
         "title": "Can We Sue Our Way to AI Control?",
-        "summary": "The labels want their power back. Copyright needs to be rebuilt. There is a comforting version of the AI music story in which the record labels sue, the technology companies pay, and musicians emerge with their rights intact. The lawyers finish arguing, the executives shake hands, and somebody issues a statement about…",
+        "summary": "El artículo explora la idea de que los sellos discográficos podrían utilizar demandas para influir en la regulación de la música generada por IA, describiendo un escenario en el que las compañías tecnológicas paguen y los músicos mantengan sus derechos.",
         "url": "https://www.digitalmusicnews.com/2026/10/13/can-we-sue-our-way-to-ai-control/",
         "source": "Digital Music News",
         "domain": "digitalmusicnews.com",
@@ -47,13 +46,13 @@
           "lawsuit",
           "ai"
         ],
-        "translated": false,
+        "translated": true,
         "via": null
       },
       {
         "id": "noticia-3",
         "title": "La legislación sobre derechos de autor tiene dificultades para adaptarse a la música creada con inteligencia artificial en Corea del Sur.",
-        "summary": "",
+        "summary": "La legislación de derechos de autor en Corea del Sur muestra dificultades para adaptarse a la música creada mediante inteligencia artificial, lo que genera incertidumbre sobre la protección legal de obras generadas por algoritmos.",
         "url": "https://news.google.com/rss/articles/CBMigAFBVV95cUxOT244YVZJQmhUZWRkcjB2UVRXamc4QlpyMU1pRFg1VkxYNGM1N1RnTVVRNVNZRjdvUnNHQTNlTGQ3MzFpb0JjMExtSnYtSU9WTXpPa0dxQklDWHZvUlF0S1BoRDJKcVJCUEV5UU9TbnVaT1dZQ1k0Z0ktZlA1VFR0bQ?oc=5&hl=es-419&gl=US&ceid=US:es-419",
         "source": "Vietnam.vn",
         "domain": "news.google.com",
@@ -62,13 +61,13 @@
           "ai",
           "legislation"
         ],
-        "translated": false,
+        "translated": true,
         "via": "Google News"
       },
       {
         "id": "noticia-4",
         "title": "RIAA Flags Anna’s Archive and AI Voice Cloner to U.S. Government",
-        "summary": "The RIAA has submitted its latest overview of \"notorious markets\" to the U.S. Government. It lists familiar names such as The Pirate Bay and Rapidgator, but the music group also flags shadow library Anna's Archive and AI voice-cloning service Lalals. The RIAA presents both as \"additional\" areas of concern, not as offic…",
+        "summary": "La RIAA entregó al gobierno de EE. UU. un informe sobre mercados notorios, incluyendo The Pirate Bay y Rapidgator, y añadió la biblioteca sombra Anna’s Archive y el servicio de clonación de voz AI Lalals como áreas de preocupación adicionales, sin considerarlos candidatos oficiales a vigilancia.",
         "url": "https://torrentfreak.com/riaa-flags-annas-archive-and-ai-voice-cloner-to-u-s-government/",
         "source": "TorrentFreak",
         "domain": "torrentfreak.com",
@@ -76,7 +75,7 @@
         "tags": [
           "ai"
         ],
-        "translated": false,
+        "translated": true,
         "via": null
       },
       {
@@ -169,6 +168,20 @@
       },
       {
         "id": "noticia-11",
+        "title": "Who Really Wrote Katy Perry’s ‘Hot N Cold’? A Bizarre Twist Could Derail a Dr. Luke Copyright Settlement In South Dakota",
+        "summary": "A copyright case involving Dr. Luke enters settlement proceedings, but a third party has filed an intervention request, alleging an authorship stake. This week, in the ever-shifting world of copyright infringement lawsuits, two parties on opposing sides of a copyright infringement lawsuit involving a South Dakota broad…",
+        "url": "https://www.digitalmusicnews.com/2026/10/08/dr-luke-sd-broadcaster-lawsuit-settlement/",
+        "source": "Digital Music News",
+        "domain": "digitalmusicnews.com",
+        "publishedAt": "2026-10-08T23:08:25.000Z",
+        "tags": [
+          "lawsuit"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-12",
         "title": "Warner Chappell Music signs My Chemical Romance to exclusive worldwide publishing deal",
         "summary": "Warner Chappell will oversee the catalog's global rights administration, copyright protection, and sync licensing across film, television, and video games. Source",
         "url": "https://www.musicbusinessworldwide.com/warner-chappell-music-signs-my-chemical-romance-to-exclusive-worldwide-publishing-deal/",
@@ -177,21 +190,6 @@
         "publishedAt": "2026-10-15T17:35:20.000Z",
         "tags": [
           "licensing"
-        ],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-12",
-        "title": "UK Copyright Tribunal ruling recognises “increased value of music in cinema” says PRS",
-        "summary": "A dispute over what royalties cinemas should pay PRS for music contained in the films they screen went before the UK Copyright Tribunal earlier this year. It has ruled in favour of a higher royalty rate which, PRS says, “recognises the increased value of music in the overall cinema experience”",
-        "url": "https://completemusicupdate.com/uk-copyright-tribunal-ruling-recognises-increased-value-of-music-in-cinema-says-prs/",
-        "source": "Complete Music Update",
-        "domain": "completemusicupdate.com",
-        "publishedAt": "2026-10-13T15:38:20.000Z",
-        "tags": [
-          "lawsuit",
-          "royalties"
         ],
         "translated": false,
         "via": null
@@ -209,7 +207,7 @@
       {
         "id": "noticia-1",
         "title": "Atlantic/WMG Sues Ray-Ban Owner Luxottica, Demands Over $64 Million in Damages as Social Media Infringement Crackdown Continues",
-        "summary": "The social media copyright crackdown continues: Warner Music Group (WMG) is now suing multiple subsidiaries of eyewear giant EssilorLuxottica for allegedly infringing on north of 400 compositions and recordings in Instagram and TikTok posts. Plaintiffs including Atlantic Music Group and Warner Chappell recently submitt…",
+        "summary": "Warner Music Group and Atlantic Music Group sue multiple EssilorLuxottica subsidiaries for alleged infringement of over 400 compositions and recordings in Instagram and TikTok posts, seeking more than $64 million in damages before a New York federal court.",
         "url": "https://www.digitalmusicnews.com/2026/10/12/warner-music-essilorluxottica-lawsuit/",
         "source": "Digital Music News",
         "domain": "digitalmusicnews.com",
@@ -217,13 +215,13 @@
         "tags": [
           "lawsuit"
         ],
-        "translated": false,
+        "translated": true,
         "via": null
       },
       {
         "id": "noticia-2",
         "title": "Can We Sue Our Way to AI Control?",
-        "summary": "The labels want their power back. Copyright needs to be rebuilt. There is a comforting version of the AI music story in which the record labels sue, the technology companies pay, and musicians emerge with their rights intact. The lawyers finish arguing, the executives shake hands, and somebody issues a statement about…",
+        "summary": "The piece examines the notion that record labels may use lawsuits to shape AI‑generated music regulation, outlining a scenario where tech firms pay and musicians retain their rights.",
         "url": "https://www.digitalmusicnews.com/2026/10/13/can-we-sue-our-way-to-ai-control/",
         "source": "Digital Music News",
         "domain": "digitalmusicnews.com",
@@ -232,13 +230,13 @@
           "lawsuit",
           "ai"
         ],
-        "translated": false,
+        "translated": true,
         "via": null
       },
       {
         "id": "noticia-3",
         "title": "La legislación sobre derechos de autor tiene dificultades para adaptarse a la música creada con inteligencia artificial en Corea del Sur.",
-        "summary": "",
+        "summary": "South Korean copyright law is facing challenges in adapting to music produced with artificial intelligence, creating uncertainty about legal protection for algorithm‑generated works and prompting discussion among policymakers and industry stakeholders.",
         "url": "https://news.google.com/rss/articles/CBMigAFBVV95cUxOT244YVZJQmhUZWRkcjB2UVRXamc4QlpyMU1pRFg1VkxYNGM1N1RnTVVRNVNZRjdvUnNHQTNlTGQ3MzFpb0JjMExtSnYtSU9WTXpPa0dxQklDWHZvUlF0S1BoRDJKcVJCUEV5UU9TbnVaT1dZQ1k0Z0ktZlA1VFR0bQ?oc=5&hl=es-419&gl=US&ceid=US:es-419",
         "source": "Vietnam.vn",
         "domain": "news.google.com",
@@ -247,13 +245,13 @@
           "ai",
           "legislation"
         ],
-        "translated": false,
+        "translated": true,
         "via": "Google News"
       },
       {
         "id": "noticia-4",
         "title": "RIAA Flags Anna’s Archive and AI Voice Cloner to U.S. Government",
-        "summary": "The RIAA has submitted its latest overview of \"notorious markets\" to the U.S. Government. It lists familiar names such as The Pirate Bay and Rapidgator, but the music group also flags shadow library Anna's Archive and AI voice-cloning service Lalals. The RIAA presents both as \"additional\" areas of concern, not as offic…",
+        "summary": "RIAA submitted to the U.S. government a report on notorious markets, naming The Pirate Bay and Rapidgator, and additionally flagged the shadow library Anna’s Archive and AI voice‑cloning service Lalals as extra concerns, though not as official watchlist candidates.",
         "url": "https://torrentfreak.com/riaa-flags-annas-archive-and-ai-voice-cloner-to-u-s-government/",
         "source": "TorrentFreak",
         "domain": "torrentfreak.com",
@@ -261,7 +259,7 @@
         "tags": [
           "ai"
         ],
-        "translated": false,
+        "translated": true,
         "via": null
       },
       {
@@ -354,6 +352,20 @@
       },
       {
         "id": "noticia-11",
+        "title": "Who Really Wrote Katy Perry’s ‘Hot N Cold’? A Bizarre Twist Could Derail a Dr. Luke Copyright Settlement In South Dakota",
+        "summary": "A copyright case involving Dr. Luke enters settlement proceedings, but a third party has filed an intervention request, alleging an authorship stake. This week, in the ever-shifting world of copyright infringement lawsuits, two parties on opposing sides of a copyright infringement lawsuit involving a South Dakota broad…",
+        "url": "https://www.digitalmusicnews.com/2026/10/08/dr-luke-sd-broadcaster-lawsuit-settlement/",
+        "source": "Digital Music News",
+        "domain": "digitalmusicnews.com",
+        "publishedAt": "2026-10-08T23:08:25.000Z",
+        "tags": [
+          "lawsuit"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-12",
         "title": "Warner Chappell Music signs My Chemical Romance to exclusive worldwide publishing deal",
         "summary": "Warner Chappell will oversee the catalog's global rights administration, copyright protection, and sync licensing across film, television, and video games. Source",
         "url": "https://www.musicbusinessworldwide.com/warner-chappell-music-signs-my-chemical-romance-to-exclusive-worldwide-publishing-deal/",
@@ -362,21 +374,6 @@
         "publishedAt": "2026-10-15T17:35:20.000Z",
         "tags": [
           "licensing"
-        ],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-12",
-        "title": "UK Copyright Tribunal ruling recognises “increased value of music in cinema” says PRS",
-        "summary": "A dispute over what royalties cinemas should pay PRS for music contained in the films they screen went before the UK Copyright Tribunal earlier this year. It has ruled in favour of a higher royalty rate which, PRS says, “recognises the increased value of music in the overall cinema experience”",
-        "url": "https://completemusicupdate.com/uk-copyright-tribunal-ruling-recognises-increased-value-of-music-in-cinema-says-prs/",
-        "source": "Complete Music Update",
-        "domain": "completemusicupdate.com",
-        "publishedAt": "2026-10-13T15:38:20.000Z",
-        "tags": [
-          "lawsuit",
-          "royalties"
         ],
         "translated": false,
         "via": null
