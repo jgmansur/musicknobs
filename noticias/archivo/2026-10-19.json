@@ -1,0 +1,388 @@
+{
+  "lastUpdated": "2026-10-19T14:36:44.643Z",
+  "meta": {
+    "method": "rss-retrieval + link-verification + ai-translation",
+    "itemCount": 12,
+    "sources": [
+      "Digital Music News",
+      "Industria Musical",
+      "Music Ally",
+      "Music Business Worldwide",
+      "RouteNote",
+      "The Ticker",
+      "TorrentFreak",
+      "Vietnam.vn"
+    ],
+    "verifiedLinks": 12,
+    "aiTranslated": 2,
+    "note": "Los hechos provienen de los artículos originales enlazados. La IA solo traduce y resume; no genera noticias."
+  },
+  "es": {
+    "title": "Noticias de Copyright e Inteligencia Artificial",
+    "subtitle": "Notas publicadas por medios reales de la industria, con liga al artículo original. Sin noticias inventadas.",
+    "items": [
+      {
+        "id": "noticia-1",
+        "title": "Drake Sued Over ‘Janice STFU’ by Producer Who Says Rapper Stole His Chorus",
+        "summary": "Drake enfrenta una demanda por infracción de derechos de autor sobre su canción “Janice STFU”, presentada por el productor Aviel Calev Hirschfield, quien alega que el rapero utilizó su coro sin el reconocimiento adecuado y afirma que la pista incorpora su contribución sustancial.",
+        "url": "https://www.digitalmusicnews.com/2026/10/18/drake-sued-over-janice-stfu/",
+        "source": "Digital Music News",
+        "domain": "digitalmusicnews.com",
+        "publishedAt": "2026-10-19T04:12:55.000Z",
+        "tags": [
+          "lawsuit"
+        ],
+        "translated": true,
+        "via": null
+      },
+      {
+        "id": "noticia-2",
+        "title": "Sony and Universal Demand DistroKid AI Music Upload Data in Copyright Battle",
+        "summary": "Sony y Universal exigen que DistroKid proporcione datos sobre las subidas de música generada por IA como parte de una disputa de derechos de autor, buscando transparencia sobre cómo la plataforma gestiona composiciones de inteligencia artificial.",
+        "url": "https://news.google.com/rss/articles/CBMiqAFBVV95cUxNWEx6dFBnWnhxQ1lOSm5tT1RFemhzVk9ndkd5bUMyZ0pleTFJMWQ1eFJHSllodkt6WFBKUk5PbDBQRVAzV01sUU1KRjU2Mk9US0s4MmlxZGhCVzJMQlVLWmxKYzBiUGN6aUstQ25aM1hKTkZPWi1PdE9lN2kxdGYyU1U1bjU4bUhVZWd5Qm1lSGRyQkZHNWRmemFpcldtQ2U3c2tITDhZcUM?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "RouteNote",
+        "domain": "news.google.com",
+        "publishedAt": "2026-10-19T08:46:02.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": true,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-3",
+        "title": "Atlantic/WMG Sues Ray-Ban Owner Luxottica, Demands Over $64 Million in Damages as Social Media Infringement Crackdown Continues",
+        "summary": "The social media copyright crackdown continues: Warner Music Group (WMG) is now suing multiple subsidiaries of eyewear giant EssilorLuxottica for allegedly infringing on north of 400 compositions and recordings in Instagram and TikTok posts. Plaintiffs including Atlantic Music Group and Warner Chappell recently submitt…",
+        "url": "https://www.digitalmusicnews.com/2026/10/12/warner-music-essilorluxottica-lawsuit/",
+        "source": "Digital Music News",
+        "domain": "digitalmusicnews.com",
+        "publishedAt": "2026-10-12T17:28:17.000Z",
+        "tags": [
+          "lawsuit"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-4",
+        "title": "Can We Sue Our Way to AI Control?",
+        "summary": "The labels want their power back. Copyright needs to be rebuilt. There is a comforting version of the AI music story in which the record labels sue, the technology companies pay, and musicians emerge with their rights intact. The lawyers finish arguing, the executives shake hands, and somebody issues a statement about…",
+        "url": "https://www.digitalmusicnews.com/2026/10/13/can-we-sue-our-way-to-ai-control/",
+        "source": "Digital Music News",
+        "domain": "digitalmusicnews.com",
+        "publishedAt": "2026-10-13T18:15:41.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-5",
+        "title": "La legislación sobre derechos de autor tiene dificultades para adaptarse a la música creada con inteligencia artificial en Corea del Sur.",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMigAFBVV95cUxOT244YVZJQmhUZWRkcjB2UVRXamc4QlpyMU1pRFg1VkxYNGM1N1RnTVVRNVNZRjdvUnNHQTNlTGQ3MzFpb0JjMExtSnYtSU9WTXpPa0dxQklDWHZvUlF0S1BoRDJKcVJCUEV5UU9TbnVaT1dZQ1k0Z0ktZlA1VFR0bQ?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "Vietnam.vn",
+        "domain": "news.google.com",
+        "publishedAt": "2026-10-15T23:11:44.000Z",
+        "tags": [
+          "ai",
+          "legislation"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-6",
+        "title": "RIAA Flags Anna’s Archive and AI Voice Cloner to U.S. Government",
+        "summary": "The RIAA has submitted its latest overview of \"notorious markets\" to the U.S. Government. It lists familiar names such as The Pirate Bay and Rapidgator, but the music group also flags shadow library Anna's Archive and AI voice-cloning service Lalals. The RIAA presents both as \"additional\" areas of concern, not as offic…",
+        "url": "https://torrentfreak.com/riaa-flags-annas-archive-and-ai-voice-cloner-to-u-s-government/",
+        "source": "TorrentFreak",
+        "domain": "torrentfreak.com",
+        "publishedAt": "2026-10-15T07:52:44.000Z",
+        "tags": [
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-7",
+        "title": "Publishing body ICMP blasts potential AI rules in Australia",
+        "summary": "Australia’s government is currently devising its future policies on AI, training and copyright. We recently reported on labels body ARIA’s boss Annabelle Herd’s testimony at a select-committee hearing as part of that process. The post is from Music Ally .",
+        "url": "https://musically.com/2026/10/16/publishing-body-icmp-blasts-potential-ai-rules-in-australia/",
+        "source": "Music Ally",
+        "domain": "musically.com",
+        "publishedAt": "2026-10-16T12:30:00.000Z",
+        "tags": [
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-8",
+        "title": "Musixmatch acquires Songdex and Blokur owner Music Reports",
+        "summary": "Lyrics firm Musixmatch was founded 16 years ago, but has never bought another company… until now. It has announced the acquisition of Music Reports, the US firm that owns the Songdex copyright registry as well as rights and licensing firm Blokur. The post is from Music Ally .",
+        "url": "https://musically.com/2026/10/19/musixmatch-acquires-songdex-and-blokur-owner-music-reports/",
+        "source": "Music Ally",
+        "domain": "musically.com",
+        "publishedAt": "2026-10-19T12:30:00.000Z",
+        "tags": [
+          "licensing"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-9",
+        "title": "Universal Music appoints first AI director amid copyright lawsuits",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMipwFBVV95cUxQOVkwYzBMeU9pblF1TkZQbE01Nzd1dzhIeWNVQU5wclZCTWpnMGxXU081WnFKR09XSmFTWEVGZVFDd2tlUWhrXzVHRUJXbExlcTZTRndEWnBaMmN2eVE2ZFJHYkhLcE1CY19HVV9xOGsxUzRkRklhSlJUM0pLMWw2TDB1Z0dmTENlUk1VWENTMFNmdEN3QzVSUEtqcDFpN3BQQ1IzX0xfZw?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "The Ticker",
+        "domain": "news.google.com",
+        "publishedAt": "2026-10-13T13:07:31.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-10",
+        "title": "Deezer permitirá ocultar la música hecha con IA al buscar",
+        "summary": "Deezer permitirá a sus usuarios ocultar la música generada íntegramente con inteligencia artificial. La plataforma francesa ha anunciado un interruptor que, una vez activado, excluirá de los resultados de búsqueda las canciones, los álbumes y los artistas vinculados a contenido 100% sintético. La función llegará a todo…",
+        "url": "https://industriamusical.com/deezer-ocultar-musica-ia-busqueda/?utm_source=rss&utm_medium=rss&utm_campaign=deezer-ocultar-musica-ia-busqueda",
+        "source": "Industria Musical",
+        "domain": "industriamusical.com",
+        "publishedAt": "2026-10-14T11:19:05.000Z",
+        "tags": [
+          "ai",
+          "streaming"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-11",
+        "title": "Corea del Sur busca una solución de \"música con IA legal\" mediante el seguimiento de los derechos de autor.",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMirAFBVV95cUxOZTlSaHU2Q3R5SlBNS1QzcWhJaTVTU1ZJY05nN05TaUoyZXdEeG9ZRHAydDRTS0hNTU9wNGFaRElUeEptZTU2OEVZNEUwa0FzNzY1TDg1WDZfMS1KME1DZ3BuVDdfTkRSOXNrM3ExajlTTVRIZEdZcU5uc0J3ZURnNWN6cG43bU4taUN2MEgxdkxMYkNHTXQ1U3pSeThhSS1ZSWpuQVFPVDBNU0x5?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "Vietnam.vn",
+        "domain": "news.google.com",
+        "publishedAt": "2026-10-17T09:25:45.000Z",
+        "tags": [
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-12",
+        "title": "Sony and Universal ask court to force Suno investor Lightspeed to testify about the ‘legal risk of training data’",
+        "summary": "The labels made their case in a filing in Boston federal court last Tuesday (October 13), opposing Lightspeed's motion to quash their subpoena. Source",
+        "url": "https://www.musicbusinessworldwide.com/sony-and-universal-ask-court-to-force-suno-investor-lightspeed-to-testify-about-the-legal-risk-of-training-data/",
+        "source": "Music Business Worldwide",
+        "domain": "musicbusinessworldwide.com",
+        "publishedAt": "2026-10-19T10:37:19.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      }
+    ],
+    "tip": {
+      "title": "Guarda evidencia de la fecha de creación",
+      "body": "Un correo a ti mismo con el archivo adjunto, un repositorio con historial o un servicio de sellado de tiempo cuestan poco y construyen una línea de tiempo defendible."
+    }
+  },
+  "en": {
+    "title": "Copyright & Artificial Intelligence News",
+    "subtitle": "Stories published by real industry outlets, each linked to its original article. No invented news.",
+    "items": [
+      {
+        "id": "noticia-1",
+        "title": "Drake Sued Over ‘Janice STFU’ by Producer Who Says Rapper Stole His Chorus",
+        "summary": "Drake faces a copyright infringement lawsuit over his song “Janice STFU,” filed by producer Aviel Calev Hirschfield, who alleges the rapper used his chorus without proper acknowledgment and claims the track incorporates his substantial contribution.",
+        "url": "https://www.digitalmusicnews.com/2026/10/18/drake-sued-over-janice-stfu/",
+        "source": "Digital Music News",
+        "domain": "digitalmusicnews.com",
+        "publishedAt": "2026-10-19T04:12:55.000Z",
+        "tags": [
+          "lawsuit"
+        ],
+        "translated": true,
+        "via": null
+      },
+      {
+        "id": "noticia-2",
+        "title": "Sony and Universal Demand DistroKid AI Music Upload Data in Copyright Battle",
+        "summary": "Sony and Universal are demanding that DistroKid provide data on uploads of AI-generated music as part of an ongoing copyright dispute, seeking transparency on how the platform handles artificial‑intelligence compositions.",
+        "url": "https://news.google.com/rss/articles/CBMiqAFBVV95cUxNWEx6dFBnWnhxQ1lOSm5tT1RFemhzVk9ndkd5bUMyZ0pleTFJMWQ1eFJHSllodkt6WFBKUk5PbDBQRVAzV01sUU1KRjU2Mk9US0s4MmlxZGhCVzJMQlVLWmxKYzBiUGN6aUstQ25aM1hKTkZPWi1PdE9lN2kxdGYyU1U1bjU4bUhVZWd5Qm1lSGRyQkZHNWRmemFpcldtQ2U3c2tITDhZcUM?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "RouteNote",
+        "domain": "news.google.com",
+        "publishedAt": "2026-10-19T08:46:02.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": true,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-3",
+        "title": "Atlantic/WMG Sues Ray-Ban Owner Luxottica, Demands Over $64 Million in Damages as Social Media Infringement Crackdown Continues",
+        "summary": "The social media copyright crackdown continues: Warner Music Group (WMG) is now suing multiple subsidiaries of eyewear giant EssilorLuxottica for allegedly infringing on north of 400 compositions and recordings in Instagram and TikTok posts. Plaintiffs including Atlantic Music Group and Warner Chappell recently submitt…",
+        "url": "https://www.digitalmusicnews.com/2026/10/12/warner-music-essilorluxottica-lawsuit/",
+        "source": "Digital Music News",
+        "domain": "digitalmusicnews.com",
+        "publishedAt": "2026-10-12T17:28:17.000Z",
+        "tags": [
+          "lawsuit"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-4",
+        "title": "Can We Sue Our Way to AI Control?",
+        "summary": "The labels want their power back. Copyright needs to be rebuilt. There is a comforting version of the AI music story in which the record labels sue, the technology companies pay, and musicians emerge with their rights intact. The lawyers finish arguing, the executives shake hands, and somebody issues a statement about…",
+        "url": "https://www.digitalmusicnews.com/2026/10/13/can-we-sue-our-way-to-ai-control/",
+        "source": "Digital Music News",
+        "domain": "digitalmusicnews.com",
+        "publishedAt": "2026-10-13T18:15:41.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-5",
+        "title": "La legislación sobre derechos de autor tiene dificultades para adaptarse a la música creada con inteligencia artificial en Corea del Sur.",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMigAFBVV95cUxOT244YVZJQmhUZWRkcjB2UVRXamc4QlpyMU1pRFg1VkxYNGM1N1RnTVVRNVNZRjdvUnNHQTNlTGQ3MzFpb0JjMExtSnYtSU9WTXpPa0dxQklDWHZvUlF0S1BoRDJKcVJCUEV5UU9TbnVaT1dZQ1k0Z0ktZlA1VFR0bQ?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "Vietnam.vn",
+        "domain": "news.google.com",
+        "publishedAt": "2026-10-15T23:11:44.000Z",
+        "tags": [
+          "ai",
+          "legislation"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-6",
+        "title": "RIAA Flags Anna’s Archive and AI Voice Cloner to U.S. Government",
+        "summary": "The RIAA has submitted its latest overview of \"notorious markets\" to the U.S. Government. It lists familiar names such as The Pirate Bay and Rapidgator, but the music group also flags shadow library Anna's Archive and AI voice-cloning service Lalals. The RIAA presents both as \"additional\" areas of concern, not as offic…",
+        "url": "https://torrentfreak.com/riaa-flags-annas-archive-and-ai-voice-cloner-to-u-s-government/",
+        "source": "TorrentFreak",
+        "domain": "torrentfreak.com",
+        "publishedAt": "2026-10-15T07:52:44.000Z",
+        "tags": [
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-7",
+        "title": "Publishing body ICMP blasts potential AI rules in Australia",
+        "summary": "Australia’s government is currently devising its future policies on AI, training and copyright. We recently reported on labels body ARIA’s boss Annabelle Herd’s testimony at a select-committee hearing as part of that process. The post is from Music Ally .",
+        "url": "https://musically.com/2026/10/16/publishing-body-icmp-blasts-potential-ai-rules-in-australia/",
+        "source": "Music Ally",
+        "domain": "musically.com",
+        "publishedAt": "2026-10-16T12:30:00.000Z",
+        "tags": [
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-8",
+        "title": "Musixmatch acquires Songdex and Blokur owner Music Reports",
+        "summary": "Lyrics firm Musixmatch was founded 16 years ago, but has never bought another company… until now. It has announced the acquisition of Music Reports, the US firm that owns the Songdex copyright registry as well as rights and licensing firm Blokur. The post is from Music Ally .",
+        "url": "https://musically.com/2026/10/19/musixmatch-acquires-songdex-and-blokur-owner-music-reports/",
+        "source": "Music Ally",
+        "domain": "musically.com",
+        "publishedAt": "2026-10-19T12:30:00.000Z",
+        "tags": [
+          "licensing"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-9",
+        "title": "Universal Music appoints first AI director amid copyright lawsuits",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMipwFBVV95cUxQOVkwYzBMeU9pblF1TkZQbE01Nzd1dzhIeWNVQU5wclZCTWpnMGxXU081WnFKR09XSmFTWEVGZVFDd2tlUWhrXzVHRUJXbExlcTZTRndEWnBaMmN2eVE2ZFJHYkhLcE1CY19HVV9xOGsxUzRkRklhSlJUM0pLMWw2TDB1Z0dmTENlUk1VWENTMFNmdEN3QzVSUEtqcDFpN3BQQ1IzX0xfZw?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "The Ticker",
+        "domain": "news.google.com",
+        "publishedAt": "2026-10-13T13:07:31.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-10",
+        "title": "Deezer permitirá ocultar la música hecha con IA al buscar",
+        "summary": "Deezer permitirá a sus usuarios ocultar la música generada íntegramente con inteligencia artificial. La plataforma francesa ha anunciado un interruptor que, una vez activado, excluirá de los resultados de búsqueda las canciones, los álbumes y los artistas vinculados a contenido 100% sintético. La función llegará a todo…",
+        "url": "https://industriamusical.com/deezer-ocultar-musica-ia-busqueda/?utm_source=rss&utm_medium=rss&utm_campaign=deezer-ocultar-musica-ia-busqueda",
+        "source": "Industria Musical",
+        "domain": "industriamusical.com",
+        "publishedAt": "2026-10-14T11:19:05.000Z",
+        "tags": [
+          "ai",
+          "streaming"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-11",
+        "title": "Corea del Sur busca una solución de \"música con IA legal\" mediante el seguimiento de los derechos de autor.",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMirAFBVV95cUxOZTlSaHU2Q3R5SlBNS1QzcWhJaTVTU1ZJY05nN05TaUoyZXdEeG9ZRHAydDRTS0hNTU9wNGFaRElUeEptZTU2OEVZNEUwa0FzNzY1TDg1WDZfMS1KME1DZ3BuVDdfTkRSOXNrM3ExajlTTVRIZEdZcU5uc0J3ZURnNWN6cG43bU4taUN2MEgxdkxMYkNHTXQ1U3pSeThhSS1ZSWpuQVFPVDBNU0x5?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "Vietnam.vn",
+        "domain": "news.google.com",
+        "publishedAt": "2026-10-17T09:25:45.000Z",
+        "tags": [
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-12",
+        "title": "Sony and Universal ask court to force Suno investor Lightspeed to testify about the ‘legal risk of training data’",
+        "summary": "The labels made their case in a filing in Boston federal court last Tuesday (October 13), opposing Lightspeed's motion to quash their subpoena. Source",
+        "url": "https://www.musicbusinessworldwide.com/sony-and-universal-ask-court-to-force-suno-investor-lightspeed-to-testify-about-the-legal-risk-of-training-data/",
+        "source": "Music Business Worldwide",
+        "domain": "musicbusinessworldwide.com",
+        "publishedAt": "2026-10-19T10:37:19.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      }
+    ],
+    "tip": {
+      "title": "Keep evidence of your creation date",
+      "body": "An email to yourself with the file attached, a repository with history, or a timestamping service cost little and build a defensible timeline."
+    }
+  }
+}
