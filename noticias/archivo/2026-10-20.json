@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-10-20T12:40:45.115Z",
+  "lastUpdated": "2026-10-20T22:14:49.535Z",
   "meta": {
     "method": "rss-retrieval + link-verification + ai-translation",
     "itemCount": 12,
@@ -7,7 +7,7 @@
       "Confilegal",
       "Digital Music News",
       "Music Ally",
-      "Music Business Worldwide",
+      "Rolling Stone",
       "RouteNote",
       "The Ticker",
       "TorrentFreak",
@@ -80,41 +80,12 @@
       },
       {
         "id": "noticia-5",
-        "title": "Universal Music and Sony Music Tighten the Screws on Suno Investor Lightspeed, Demanding Docs About the Platform’s Training Data, ‘Impact on the Music Industry,’ and More",
-        "summary": "On top of aggressively pushing to learn DistroKid’s AI release volume, Universal Music and Sony Music are now demanding that Suno investor Lightspeed testify and provide a trove of documents concerning the platform’s training and more. That subpoena sub-dispute quietly boiled over one month ago, when Lightspeed Venture…",
-        "url": "https://www.digitalmusicnews.com/2026/10/19/suno-lightspeed-subpoena-dispute/",
+        "title": "Atlantic/WMG Sues Ray-Ban Owner Luxottica, Demands Over $64 Million in Damages as Social Media Infringement Crackdown Continues",
+        "summary": "The social media copyright crackdown continues: Warner Music Group (WMG) is now suing multiple subsidiaries of eyewear giant EssilorLuxottica for allegedly infringing on north of 400 compositions and recordings in Instagram and TikTok posts. Plaintiffs including Atlantic Music Group and Warner Chappell recently submitt…",
+        "url": "https://www.digitalmusicnews.com/2026/10/12/warner-music-essilorluxottica-lawsuit/",
         "source": "Digital Music News",
         "domain": "digitalmusicnews.com",
-        "publishedAt": "2026-10-19T21:31:00.000Z",
-        "tags": [
-          "lawsuit",
-          "ai"
-        ],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-6",
-        "title": "‘The only way to properly create value in music is to make lasting copyrights.’",
-        "summary": "Newly confirmed as sole Chairman and CEO of Warner Records Group, Aaron Bay-Schuck tells MBW why patience beats volume, why WMG needs two frontline label groups, and why the AI flood only makes a very human record company worth more... Source",
-        "url": "https://www.musicbusinessworldwide.com/aaron-bay-schuck-the-only-way-to-properly-create-value-in-music-is-to-make-lasting-copyrights/",
-        "source": "Music Business Worldwide",
-        "domain": "musicbusinessworldwide.com",
-        "publishedAt": "2026-10-19T16:35:28.000Z",
-        "tags": [
-          "ai"
-        ],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-7",
-        "title": "Majors and BMG lose Supreme Court fight over songwriters’ worldwide copyright reclaims – on a technicality",
-        "summary": "Their challenge ended on Monday (October 19) without the court ruling on its merits, after four of its nine justices sat the case out Source",
-        "url": "https://www.musicbusinessworldwide.com/majors-and-bmg-lose-supreme-court-fight-over-songwriters-worldwide-copyright-reclaims-on-a-technicality/",
-        "source": "Music Business Worldwide",
-        "domain": "musicbusinessworldwide.com",
-        "publishedAt": "2026-10-19T15:10:56.000Z",
+        "publishedAt": "2026-10-12T17:28:17.000Z",
         "tags": [
           "lawsuit"
         ],
@@ -122,7 +93,7 @@
         "via": null
       },
       {
-        "id": "noticia-8",
+        "id": "noticia-6",
         "title": "La legislación sobre derechos de autor tiene dificultades para adaptarse a la música creada con inteligencia artificial en Corea del Sur.",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMigAFBVV95cUxOT244YVZJQmhUZWRkcjB2UVRXamc4QlpyMU1pRFg1VkxYNGM1N1RnTVVRNVNZRjdvUnNHQTNlTGQ3MzFpb0JjMExtSnYtSU9WTXpPa0dxQklDWHZvUlF0S1BoRDJKcVJCUEV5UU9TbnVaT1dZQ1k0Z0ktZlA1VFR0bQ?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -137,7 +108,7 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-9",
+        "id": "noticia-7",
         "title": "RIAA Flags Anna’s Archive and AI Voice Cloner to U.S. Government",
         "summary": "The RIAA has submitted its latest overview of \"notorious markets\" to the U.S. Government. It lists familiar names such as The Pirate Bay and Rapidgator, but the music group also flags shadow library Anna's Archive and AI voice-cloning service Lalals. The RIAA presents both as \"additional\" areas of concern, not as offic…",
         "url": "https://torrentfreak.com/riaa-flags-annas-archive-and-ai-voice-cloner-to-u-s-government/",
@@ -151,7 +122,23 @@
         "via": null
       },
       {
-        "id": "noticia-10",
+        "id": "noticia-8",
+        "title": "‘Human Made, Human Paid’: The Largest U.S. Musicians Union Is Demanding AI Protections",
+        "summary": "American Federation of Musicians asking major labels to give artists a contract with AI protections and compensation",
+        "url": "https://www.rollingstone.com/music/music-news/human-made-human-paid-musicians-union-afm-labor-agreement-1235645099/",
+        "source": "Rolling Stone",
+        "domain": "rollingstone.com",
+        "publishedAt": "2026-10-20T17:15:32.000Z",
+        "tags": [
+          "lawsuit",
+          "ai",
+          "licensing"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-9",
         "title": "Un músico, condenado a prisión por utilizar \"bots\" de inteligencia artificial para cobrar millones en derechos de autor",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMi4wFBVV95cUxNNkQ0eXF3ZXF2YnJPRmM2bnFYWXc4NGVmc29Hb2syNXk2alZKSW02MWo1OGEwbnY1MnJXM2hweGpFbTB6T2tTdGtQRENxdFRfNXVrYWwtRGs5ZjBCSVZfMnhZcmpMOE9LNHNxdWhKMVd3X2ZsN2xzUjNiNURfNGctTjdvTTFtbXgwNjk1RDFSUHN4UkRsa1Zzc3FXa3d6aTdSNHFtcXRyTGtHRVpEeTdZcVlBQXROZWhQRnRIZnJManRNckZid0ViekNMUnhYX2pTTEsxZ1BMcUZ1d3dEQUhVQXJ2NA?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -165,7 +152,7 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-11",
+        "id": "noticia-10",
         "title": "Musixmatch acquires Songdex and Blokur owner Music Reports",
         "summary": "Lyrics firm Musixmatch was founded 16 years ago, but has never bought another company… until now. It has announced the acquisition of Music Reports, the US firm that owns the Songdex copyright registry as well as rights and licensing firm Blokur. The post is from Music Ally .",
         "url": "https://musically.com/2026/10/19/musixmatch-acquires-songdex-and-blokur-owner-music-reports/",
@@ -179,7 +166,7 @@
         "via": null
       },
       {
-        "id": "noticia-12",
+        "id": "noticia-11",
         "title": "Universal Music appoints first AI director amid copyright lawsuits",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMipwFBVV95cUxQOVkwYzBMeU9pblF1TkZQbE01Nzd1dzhIeWNVQU5wclZCTWpnMGxXU081WnFKR09XSmFTWEVGZVFDd2tlUWhrXzVHRUJXbExlcTZTRndEWnBaMmN2eVE2ZFJHYkhLcE1CY19HVV9xOGsxUzRkRklhSlJUM0pLMWw2TDB1Z0dmTENlUk1VWENTMFNmdEN3QzVSUEtqcDFpN3BQQ1IzX0xfZw?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -192,6 +179,21 @@
         ],
         "translated": false,
         "via": "Google News"
+      },
+      {
+        "id": "noticia-12",
+        "title": "Spotify Removes 75 Million Songs Identified as ‘AI-Generated Slop or Spam’",
+        "summary": "The streaming service cut the slop tracks in favor of “more music made by authentic, human artists,” with 50 million more being filtered from recommendations made to listeners",
+        "url": "https://www.rollingstone.com/music/music-news/spotify-removes-50-million-spam-songs-1235645433/",
+        "source": "Rolling Stone",
+        "domain": "rollingstone.com",
+        "publishedAt": "2026-10-20T17:20:35.000Z",
+        "tags": [
+          "ai",
+          "streaming"
+        ],
+        "translated": false,
+        "via": null
       }
     ],
     "tip": {
@@ -262,41 +264,12 @@
       },
       {
         "id": "noticia-5",
-        "title": "Universal Music and Sony Music Tighten the Screws on Suno Investor Lightspeed, Demanding Docs About the Platform’s Training Data, ‘Impact on the Music Industry,’ and More",
-        "summary": "On top of aggressively pushing to learn DistroKid’s AI release volume, Universal Music and Sony Music are now demanding that Suno investor Lightspeed testify and provide a trove of documents concerning the platform’s training and more. That subpoena sub-dispute quietly boiled over one month ago, when Lightspeed Venture…",
-        "url": "https://www.digitalmusicnews.com/2026/10/19/suno-lightspeed-subpoena-dispute/",
+        "title": "Atlantic/WMG Sues Ray-Ban Owner Luxottica, Demands Over $64 Million in Damages as Social Media Infringement Crackdown Continues",
+        "summary": "The social media copyright crackdown continues: Warner Music Group (WMG) is now suing multiple subsidiaries of eyewear giant EssilorLuxottica for allegedly infringing on north of 400 compositions and recordings in Instagram and TikTok posts. Plaintiffs including Atlantic Music Group and Warner Chappell recently submitt…",
+        "url": "https://www.digitalmusicnews.com/2026/10/12/warner-music-essilorluxottica-lawsuit/",
         "source": "Digital Music News",
         "domain": "digitalmusicnews.com",
-        "publishedAt": "2026-10-19T21:31:00.000Z",
-        "tags": [
-          "lawsuit",
-          "ai"
-        ],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-6",
-        "title": "‘The only way to properly create value in music is to make lasting copyrights.’",
-        "summary": "Newly confirmed as sole Chairman and CEO of Warner Records Group, Aaron Bay-Schuck tells MBW why patience beats volume, why WMG needs two frontline label groups, and why the AI flood only makes a very human record company worth more... Source",
-        "url": "https://www.musicbusinessworldwide.com/aaron-bay-schuck-the-only-way-to-properly-create-value-in-music-is-to-make-lasting-copyrights/",
-        "source": "Music Business Worldwide",
-        "domain": "musicbusinessworldwide.com",
-        "publishedAt": "2026-10-19T16:35:28.000Z",
-        "tags": [
-          "ai"
-        ],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-7",
-        "title": "Majors and BMG lose Supreme Court fight over songwriters’ worldwide copyright reclaims – on a technicality",
-        "summary": "Their challenge ended on Monday (October 19) without the court ruling on its merits, after four of its nine justices sat the case out Source",
-        "url": "https://www.musicbusinessworldwide.com/majors-and-bmg-lose-supreme-court-fight-over-songwriters-worldwide-copyright-reclaims-on-a-technicality/",
-        "source": "Music Business Worldwide",
-        "domain": "musicbusinessworldwide.com",
-        "publishedAt": "2026-10-19T15:10:56.000Z",
+        "publishedAt": "2026-10-12T17:28:17.000Z",
         "tags": [
           "lawsuit"
         ],
@@ -304,7 +277,7 @@
         "via": null
       },
       {
-        "id": "noticia-8",
+        "id": "noticia-6",
         "title": "La legislación sobre derechos de autor tiene dificultades para adaptarse a la música creada con inteligencia artificial en Corea del Sur.",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMigAFBVV95cUxOT244YVZJQmhUZWRkcjB2UVRXamc4QlpyMU1pRFg1VkxYNGM1N1RnTVVRNVNZRjdvUnNHQTNlTGQ3MzFpb0JjMExtSnYtSU9WTXpPa0dxQklDWHZvUlF0S1BoRDJKcVJCUEV5UU9TbnVaT1dZQ1k0Z0ktZlA1VFR0bQ?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -319,7 +292,7 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-9",
+        "id": "noticia-7",
         "title": "RIAA Flags Anna’s Archive and AI Voice Cloner to U.S. Government",
         "summary": "The RIAA has submitted its latest overview of \"notorious markets\" to the U.S. Government. It lists familiar names such as The Pirate Bay and Rapidgator, but the music group also flags shadow library Anna's Archive and AI voice-cloning service Lalals. The RIAA presents both as \"additional\" areas of concern, not as offic…",
         "url": "https://torrentfreak.com/riaa-flags-annas-archive-and-ai-voice-cloner-to-u-s-government/",
@@ -333,7 +306,23 @@
         "via": null
       },
       {
-        "id": "noticia-10",
+        "id": "noticia-8",
+        "title": "‘Human Made, Human Paid’: The Largest U.S. Musicians Union Is Demanding AI Protections",
+        "summary": "American Federation of Musicians asking major labels to give artists a contract with AI protections and compensation",
+        "url": "https://www.rollingstone.com/music/music-news/human-made-human-paid-musicians-union-afm-labor-agreement-1235645099/",
+        "source": "Rolling Stone",
+        "domain": "rollingstone.com",
+        "publishedAt": "2026-10-20T17:15:32.000Z",
+        "tags": [
+          "lawsuit",
+          "ai",
+          "licensing"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-9",
         "title": "Un músico, condenado a prisión por utilizar \"bots\" de inteligencia artificial para cobrar millones en derechos de autor",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMi4wFBVV95cUxNNkQ0eXF3ZXF2YnJPRmM2bnFYWXc4NGVmc29Hb2syNXk2alZKSW02MWo1OGEwbnY1MnJXM2hweGpFbTB6T2tTdGtQRENxdFRfNXVrYWwtRGs5ZjBCSVZfMnhZcmpMOE9LNHNxdWhKMVd3X2ZsN2xzUjNiNURfNGctTjdvTTFtbXgwNjk1RDFSUHN4UkRsa1Zzc3FXa3d6aTdSNHFtcXRyTGtHRVpEeTdZcVlBQXROZWhQRnRIZnJManRNckZid0ViekNMUnhYX2pTTEsxZ1BMcUZ1d3dEQUhVQXJ2NA?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -347,7 +336,7 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-11",
+        "id": "noticia-10",
         "title": "Musixmatch acquires Songdex and Blokur owner Music Reports",
         "summary": "Lyrics firm Musixmatch was founded 16 years ago, but has never bought another company… until now. It has announced the acquisition of Music Reports, the US firm that owns the Songdex copyright registry as well as rights and licensing firm Blokur. The post is from Music Ally .",
         "url": "https://musically.com/2026/10/19/musixmatch-acquires-songdex-and-blokur-owner-music-reports/",
@@ -361,7 +350,7 @@
         "via": null
       },
       {
-        "id": "noticia-12",
+        "id": "noticia-11",
         "title": "Universal Music appoints first AI director amid copyright lawsuits",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMipwFBVV95cUxQOVkwYzBMeU9pblF1TkZQbE01Nzd1dzhIeWNVQU5wclZCTWpnMGxXU081WnFKR09XSmFTWEVGZVFDd2tlUWhrXzVHRUJXbExlcTZTRndEWnBaMmN2eVE2ZFJHYkhLcE1CY19HVV9xOGsxUzRkRklhSlJUM0pLMWw2TDB1Z0dmTENlUk1VWENTMFNmdEN3QzVSUEtqcDFpN3BQQ1IzX0xfZw?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -374,6 +363,21 @@
         ],
         "translated": false,
         "via": "Google News"
+      },
+      {
+        "id": "noticia-12",
+        "title": "Spotify Removes 75 Million Songs Identified as ‘AI-Generated Slop or Spam’",
+        "summary": "The streaming service cut the slop tracks in favor of “more music made by authentic, human artists,” with 50 million more being filtered from recommendations made to listeners",
+        "url": "https://www.rollingstone.com/music/music-news/spotify-removes-50-million-spam-songs-1235645433/",
+        "source": "Rolling Stone",
+        "domain": "rollingstone.com",
+        "publishedAt": "2026-10-20T17:20:35.000Z",
+        "tags": [
+          "ai",
+          "streaming"
+        ],
+        "translated": false,
+        "via": null
       }
     ],
     "tip": {
