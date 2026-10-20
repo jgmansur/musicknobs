@@ -1,0 +1,384 @@
+{
+  "lastUpdated": "2026-10-20T12:40:45.115Z",
+  "meta": {
+    "method": "rss-retrieval + link-verification + ai-translation",
+    "itemCount": 12,
+    "sources": [
+      "Confilegal",
+      "Digital Music News",
+      "Music Ally",
+      "Music Business Worldwide",
+      "RouteNote",
+      "The Ticker",
+      "TorrentFreak",
+      "Vietnam.vn"
+    ],
+    "verifiedLinks": 12,
+    "aiTranslated": 0,
+    "note": "Los hechos provienen de los artículos originales enlazados. La IA solo traduce y resume; no genera noticias."
+  },
+  "es": {
+    "title": "Noticias de Copyright e Inteligencia Artificial",
+    "subtitle": "Notas publicadas por medios reales de la industria, con liga al artículo original. Sin noticias inventadas.",
+    "items": [
+      {
+        "id": "noticia-1",
+        "title": "Drake Sued Over ‘Janice STFU’ by Producer Who Says Rapper Stole His Chorus",
+        "summary": "Drake is being sued for copyright infringement on his hit “Janice STFU” by a producer who says the rapper and his team “shamelessly refuse to acknowledge” his substantial contributions. Drake has been hit with a copyright infringement lawsuit over his hit song “Janice STFU” by a producer named Aviel Calev Hirschfield,…",
+        "url": "https://www.digitalmusicnews.com/2026/10/18/drake-sued-over-janice-stfu/",
+        "source": "Digital Music News",
+        "domain": "digitalmusicnews.com",
+        "publishedAt": "2026-10-19T04:12:55.000Z",
+        "tags": [
+          "lawsuit"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-2",
+        "title": "Elephant In the Room Reminder: Major Hits from Kylie Minogue and Nick Cave Already Used to Train AI Without Compensation, the ICMP Tells Australian Legislators",
+        "summary": "The global trade body ICMP warns that AI training may lead to the dilution of Australian copyright laws, effectively “legitimizing larceny.” The International Confederation of Music Publishers (ICMP) has cautioned the Australian government against giving in to efforts from tech companies seeking to weaken copyright law…",
+        "url": "https://www.digitalmusicnews.com/2026/10/19/icmp-kylie-minogue-songs-train-ai/",
+        "source": "Digital Music News",
+        "domain": "digitalmusicnews.com",
+        "publishedAt": "2026-10-20T04:00:26.000Z",
+        "tags": [
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-3",
+        "title": "Labels’ fail in bid to get Supreme Court to overturn termination-rights ruling",
+        "summary": "The three major labels and BMG have failed in their bid to get the US Supreme Court to overturn a ruling that artists can exert their ‘termination rights’ to regain their copyrights globally, not just in the US. The post is from Music Ally .",
+        "url": "https://musically.com/2026/10/20/labels-fail-in-bid-to-get-supreme-court-to-overturn-termination-rights-ruling/",
+        "source": "Music Ally",
+        "domain": "musically.com",
+        "publishedAt": "2026-10-20T12:30:00.000Z",
+        "tags": [
+          "lawsuit"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-4",
+        "title": "Sony and Universal Demand DistroKid AI Music Upload Data in Copyright Battle",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMiqAFBVV95cUxNWEx6dFBnWnhxQ1lOSm5tT1RFemhzVk9ndkd5bUMyZ0pleTFJMWQ1eFJHSllodkt6WFBKUk5PbDBQRVAzV01sUU1KRjU2Mk9US0s4MmlxZGhCVzJMQlVLWmxKYzBiUGN6aUstQ25aM1hKTkZPWi1PdE9lN2kxdGYyU1U1bjU4bUhVZWd5Qm1lSGRyQkZHNWRmemFpcldtQ2U3c2tITDhZcUM?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "RouteNote",
+        "domain": "news.google.com",
+        "publishedAt": "2026-10-19T08:46:02.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-5",
+        "title": "Universal Music and Sony Music Tighten the Screws on Suno Investor Lightspeed, Demanding Docs About the Platform’s Training Data, ‘Impact on the Music Industry,’ and More",
+        "summary": "On top of aggressively pushing to learn DistroKid’s AI release volume, Universal Music and Sony Music are now demanding that Suno investor Lightspeed testify and provide a trove of documents concerning the platform’s training and more. That subpoena sub-dispute quietly boiled over one month ago, when Lightspeed Venture…",
+        "url": "https://www.digitalmusicnews.com/2026/10/19/suno-lightspeed-subpoena-dispute/",
+        "source": "Digital Music News",
+        "domain": "digitalmusicnews.com",
+        "publishedAt": "2026-10-19T21:31:00.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-6",
+        "title": "‘The only way to properly create value in music is to make lasting copyrights.’",
+        "summary": "Newly confirmed as sole Chairman and CEO of Warner Records Group, Aaron Bay-Schuck tells MBW why patience beats volume, why WMG needs two frontline label groups, and why the AI flood only makes a very human record company worth more... Source",
+        "url": "https://www.musicbusinessworldwide.com/aaron-bay-schuck-the-only-way-to-properly-create-value-in-music-is-to-make-lasting-copyrights/",
+        "source": "Music Business Worldwide",
+        "domain": "musicbusinessworldwide.com",
+        "publishedAt": "2026-10-19T16:35:28.000Z",
+        "tags": [
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-7",
+        "title": "Majors and BMG lose Supreme Court fight over songwriters’ worldwide copyright reclaims – on a technicality",
+        "summary": "Their challenge ended on Monday (October 19) without the court ruling on its merits, after four of its nine justices sat the case out Source",
+        "url": "https://www.musicbusinessworldwide.com/majors-and-bmg-lose-supreme-court-fight-over-songwriters-worldwide-copyright-reclaims-on-a-technicality/",
+        "source": "Music Business Worldwide",
+        "domain": "musicbusinessworldwide.com",
+        "publishedAt": "2026-10-19T15:10:56.000Z",
+        "tags": [
+          "lawsuit"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-8",
+        "title": "La legislación sobre derechos de autor tiene dificultades para adaptarse a la música creada con inteligencia artificial en Corea del Sur.",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMigAFBVV95cUxOT244YVZJQmhUZWRkcjB2UVRXamc4QlpyMU1pRFg1VkxYNGM1N1RnTVVRNVNZRjdvUnNHQTNlTGQ3MzFpb0JjMExtSnYtSU9WTXpPa0dxQklDWHZvUlF0S1BoRDJKcVJCUEV5UU9TbnVaT1dZQ1k0Z0ktZlA1VFR0bQ?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "Vietnam.vn",
+        "domain": "news.google.com",
+        "publishedAt": "2026-10-15T23:11:44.000Z",
+        "tags": [
+          "ai",
+          "legislation"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-9",
+        "title": "RIAA Flags Anna’s Archive and AI Voice Cloner to U.S. Government",
+        "summary": "The RIAA has submitted its latest overview of \"notorious markets\" to the U.S. Government. It lists familiar names such as The Pirate Bay and Rapidgator, but the music group also flags shadow library Anna's Archive and AI voice-cloning service Lalals. The RIAA presents both as \"additional\" areas of concern, not as offic…",
+        "url": "https://torrentfreak.com/riaa-flags-annas-archive-and-ai-voice-cloner-to-u-s-government/",
+        "source": "TorrentFreak",
+        "domain": "torrentfreak.com",
+        "publishedAt": "2026-10-15T07:52:44.000Z",
+        "tags": [
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-10",
+        "title": "Un músico, condenado a prisión por utilizar \"bots\" de inteligencia artificial para cobrar millones en derechos de autor",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMi4wFBVV95cUxNNkQ0eXF3ZXF2YnJPRmM2bnFYWXc4NGVmc29Hb2syNXk2alZKSW02MWo1OGEwbnY1MnJXM2hweGpFbTB6T2tTdGtQRENxdFRfNXVrYWwtRGs5ZjBCSVZfMnhZcmpMOE9LNHNxdWhKMVd3X2ZsN2xzUjNiNURfNGctTjdvTTFtbXgwNjk1RDFSUHN4UkRsa1Zzc3FXa3d6aTdSNHFtcXRyTGtHRVpEeTdZcVlBQXROZWhQRnRIZnJManRNckZid0ViekNMUnhYX2pTTEsxZ1BMcUZ1d3dEQUhVQXJ2NA?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "Confilegal",
+        "domain": "news.google.com",
+        "publishedAt": "2026-10-20T03:51:02.000Z",
+        "tags": [
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-11",
+        "title": "Musixmatch acquires Songdex and Blokur owner Music Reports",
+        "summary": "Lyrics firm Musixmatch was founded 16 years ago, but has never bought another company… until now. It has announced the acquisition of Music Reports, the US firm that owns the Songdex copyright registry as well as rights and licensing firm Blokur. The post is from Music Ally .",
+        "url": "https://musically.com/2026/10/19/musixmatch-acquires-songdex-and-blokur-owner-music-reports/",
+        "source": "Music Ally",
+        "domain": "musically.com",
+        "publishedAt": "2026-10-19T12:30:00.000Z",
+        "tags": [
+          "licensing"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-12",
+        "title": "Universal Music appoints first AI director amid copyright lawsuits",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMipwFBVV95cUxQOVkwYzBMeU9pblF1TkZQbE01Nzd1dzhIeWNVQU5wclZCTWpnMGxXU081WnFKR09XSmFTWEVGZVFDd2tlUWhrXzVHRUJXbExlcTZTRndEWnBaMmN2eVE2ZFJHYkhLcE1CY19HVV9xOGsxUzRkRklhSlJUM0pLMWw2TDB1Z0dmTENlUk1VWENTMFNmdEN3QzVSUEtqcDFpN3BQQ1IzX0xfZw?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "The Ticker",
+        "domain": "news.google.com",
+        "publishedAt": "2026-10-13T13:07:31.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
+      }
+    ],
+    "tip": {
+      "title": "Antes de firmar, revisa la reversión de derechos",
+      "body": "La pregunta clave de cualquier contrato no es cuánto te dan hoy, sino cuándo y cómo recuperas tu obra. Si no hay cláusula de reversión, estás cediendo por el plazo completo."
+    }
+  },
+  "en": {
+    "title": "Copyright & Artificial Intelligence News",
+    "subtitle": "Stories published by real industry outlets, each linked to its original article. No invented news.",
+    "items": [
+      {
+        "id": "noticia-1",
+        "title": "Drake Sued Over ‘Janice STFU’ by Producer Who Says Rapper Stole His Chorus",
+        "summary": "Drake is being sued for copyright infringement on his hit “Janice STFU” by a producer who says the rapper and his team “shamelessly refuse to acknowledge” his substantial contributions. Drake has been hit with a copyright infringement lawsuit over his hit song “Janice STFU” by a producer named Aviel Calev Hirschfield,…",
+        "url": "https://www.digitalmusicnews.com/2026/10/18/drake-sued-over-janice-stfu/",
+        "source": "Digital Music News",
+        "domain": "digitalmusicnews.com",
+        "publishedAt": "2026-10-19T04:12:55.000Z",
+        "tags": [
+          "lawsuit"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-2",
+        "title": "Elephant In the Room Reminder: Major Hits from Kylie Minogue and Nick Cave Already Used to Train AI Without Compensation, the ICMP Tells Australian Legislators",
+        "summary": "The global trade body ICMP warns that AI training may lead to the dilution of Australian copyright laws, effectively “legitimizing larceny.” The International Confederation of Music Publishers (ICMP) has cautioned the Australian government against giving in to efforts from tech companies seeking to weaken copyright law…",
+        "url": "https://www.digitalmusicnews.com/2026/10/19/icmp-kylie-minogue-songs-train-ai/",
+        "source": "Digital Music News",
+        "domain": "digitalmusicnews.com",
+        "publishedAt": "2026-10-20T04:00:26.000Z",
+        "tags": [
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-3",
+        "title": "Labels’ fail in bid to get Supreme Court to overturn termination-rights ruling",
+        "summary": "The three major labels and BMG have failed in their bid to get the US Supreme Court to overturn a ruling that artists can exert their ‘termination rights’ to regain their copyrights globally, not just in the US. The post is from Music Ally .",
+        "url": "https://musically.com/2026/10/20/labels-fail-in-bid-to-get-supreme-court-to-overturn-termination-rights-ruling/",
+        "source": "Music Ally",
+        "domain": "musically.com",
+        "publishedAt": "2026-10-20T12:30:00.000Z",
+        "tags": [
+          "lawsuit"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-4",
+        "title": "Sony and Universal Demand DistroKid AI Music Upload Data in Copyright Battle",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMiqAFBVV95cUxNWEx6dFBnWnhxQ1lOSm5tT1RFemhzVk9ndkd5bUMyZ0pleTFJMWQ1eFJHSllodkt6WFBKUk5PbDBQRVAzV01sUU1KRjU2Mk9US0s4MmlxZGhCVzJMQlVLWmxKYzBiUGN6aUstQ25aM1hKTkZPWi1PdE9lN2kxdGYyU1U1bjU4bUhVZWd5Qm1lSGRyQkZHNWRmemFpcldtQ2U3c2tITDhZcUM?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "RouteNote",
+        "domain": "news.google.com",
+        "publishedAt": "2026-10-19T08:46:02.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-5",
+        "title": "Universal Music and Sony Music Tighten the Screws on Suno Investor Lightspeed, Demanding Docs About the Platform’s Training Data, ‘Impact on the Music Industry,’ and More",
+        "summary": "On top of aggressively pushing to learn DistroKid’s AI release volume, Universal Music and Sony Music are now demanding that Suno investor Lightspeed testify and provide a trove of documents concerning the platform’s training and more. That subpoena sub-dispute quietly boiled over one month ago, when Lightspeed Venture…",
+        "url": "https://www.digitalmusicnews.com/2026/10/19/suno-lightspeed-subpoena-dispute/",
+        "source": "Digital Music News",
+        "domain": "digitalmusicnews.com",
+        "publishedAt": "2026-10-19T21:31:00.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-6",
+        "title": "‘The only way to properly create value in music is to make lasting copyrights.’",
+        "summary": "Newly confirmed as sole Chairman and CEO of Warner Records Group, Aaron Bay-Schuck tells MBW why patience beats volume, why WMG needs two frontline label groups, and why the AI flood only makes a very human record company worth more... Source",
+        "url": "https://www.musicbusinessworldwide.com/aaron-bay-schuck-the-only-way-to-properly-create-value-in-music-is-to-make-lasting-copyrights/",
+        "source": "Music Business Worldwide",
+        "domain": "musicbusinessworldwide.com",
+        "publishedAt": "2026-10-19T16:35:28.000Z",
+        "tags": [
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-7",
+        "title": "Majors and BMG lose Supreme Court fight over songwriters’ worldwide copyright reclaims – on a technicality",
+        "summary": "Their challenge ended on Monday (October 19) without the court ruling on its merits, after four of its nine justices sat the case out Source",
+        "url": "https://www.musicbusinessworldwide.com/majors-and-bmg-lose-supreme-court-fight-over-songwriters-worldwide-copyright-reclaims-on-a-technicality/",
+        "source": "Music Business Worldwide",
+        "domain": "musicbusinessworldwide.com",
+        "publishedAt": "2026-10-19T15:10:56.000Z",
+        "tags": [
+          "lawsuit"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-8",
+        "title": "La legislación sobre derechos de autor tiene dificultades para adaptarse a la música creada con inteligencia artificial en Corea del Sur.",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMigAFBVV95cUxOT244YVZJQmhUZWRkcjB2UVRXamc4QlpyMU1pRFg1VkxYNGM1N1RnTVVRNVNZRjdvUnNHQTNlTGQ3MzFpb0JjMExtSnYtSU9WTXpPa0dxQklDWHZvUlF0S1BoRDJKcVJCUEV5UU9TbnVaT1dZQ1k0Z0ktZlA1VFR0bQ?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "Vietnam.vn",
+        "domain": "news.google.com",
+        "publishedAt": "2026-10-15T23:11:44.000Z",
+        "tags": [
+          "ai",
+          "legislation"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-9",
+        "title": "RIAA Flags Anna’s Archive and AI Voice Cloner to U.S. Government",
+        "summary": "The RIAA has submitted its latest overview of \"notorious markets\" to the U.S. Government. It lists familiar names such as The Pirate Bay and Rapidgator, but the music group also flags shadow library Anna's Archive and AI voice-cloning service Lalals. The RIAA presents both as \"additional\" areas of concern, not as offic…",
+        "url": "https://torrentfreak.com/riaa-flags-annas-archive-and-ai-voice-cloner-to-u-s-government/",
+        "source": "TorrentFreak",
+        "domain": "torrentfreak.com",
+        "publishedAt": "2026-10-15T07:52:44.000Z",
+        "tags": [
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-10",
+        "title": "Un músico, condenado a prisión por utilizar \"bots\" de inteligencia artificial para cobrar millones en derechos de autor",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMi4wFBVV95cUxNNkQ0eXF3ZXF2YnJPRmM2bnFYWXc4NGVmc29Hb2syNXk2alZKSW02MWo1OGEwbnY1MnJXM2hweGpFbTB6T2tTdGtQRENxdFRfNXVrYWwtRGs5ZjBCSVZfMnhZcmpMOE9LNHNxdWhKMVd3X2ZsN2xzUjNiNURfNGctTjdvTTFtbXgwNjk1RDFSUHN4UkRsa1Zzc3FXa3d6aTdSNHFtcXRyTGtHRVpEeTdZcVlBQXROZWhQRnRIZnJManRNckZid0ViekNMUnhYX2pTTEsxZ1BMcUZ1d3dEQUhVQXJ2NA?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "Confilegal",
+        "domain": "news.google.com",
+        "publishedAt": "2026-10-20T03:51:02.000Z",
+        "tags": [
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-11",
+        "title": "Musixmatch acquires Songdex and Blokur owner Music Reports",
+        "summary": "Lyrics firm Musixmatch was founded 16 years ago, but has never bought another company… until now. It has announced the acquisition of Music Reports, the US firm that owns the Songdex copyright registry as well as rights and licensing firm Blokur. The post is from Music Ally .",
+        "url": "https://musically.com/2026/10/19/musixmatch-acquires-songdex-and-blokur-owner-music-reports/",
+        "source": "Music Ally",
+        "domain": "musically.com",
+        "publishedAt": "2026-10-19T12:30:00.000Z",
+        "tags": [
+          "licensing"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-12",
+        "title": "Universal Music appoints first AI director amid copyright lawsuits",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMipwFBVV95cUxQOVkwYzBMeU9pblF1TkZQbE01Nzd1dzhIeWNVQU5wclZCTWpnMGxXU081WnFKR09XSmFTWEVGZVFDd2tlUWhrXzVHRUJXbExlcTZTRndEWnBaMmN2eVE2ZFJHYkhLcE1CY19HVV9xOGsxUzRkRklhSlJUM0pLMWw2TDB1Z0dmTENlUk1VWENTMFNmdEN3QzVSUEtqcDFpN3BQQ1IzX0xfZw?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "The Ticker",
+        "domain": "news.google.com",
+        "publishedAt": "2026-10-13T13:07:31.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
+      }
+    ],
+    "tip": {
+      "title": "Before signing, check the reversion clause",
+      "body": "The key question in any deal isn't what you get today —it's when and how you get your work back. With no reversion clause, you're assigning for the full term."
+    }
+  }
+}
