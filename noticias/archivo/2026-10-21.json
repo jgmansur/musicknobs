@@ -1,17 +1,17 @@
 {
-  "lastUpdated": "2026-10-21T12:52:48.158Z",
+  "lastUpdated": "2026-10-21T22:17:04.168Z",
   "meta": {
     "method": "rss-retrieval + link-verification + ai-translation",
     "itemCount": 12,
     "sources": [
+      "Billboard",
       "Confilegal",
       "Digital Music News",
-      "Industria Musical",
       "Music Ally",
-      "Music Business Worldwide",
       "Rolling Stone",
       "RouteNote",
       "The Ticker",
+      "TorrentFreak",
       "Vietnam.vn"
     ],
     "verifiedLinks": 12,
@@ -95,20 +95,6 @@
       },
       {
         "id": "noticia-6",
-        "title": "Kroger and LG sued by Puppy Songs creator over alleged unlicensed use of TikTok hit ‘Cheese Tax’",
-        "summary": "Each complaint seeks damages set by law of up to $150,000 per infringed work and a court order barring the company from further infringing Hobbs' rights. Source",
-        "url": "https://www.musicbusinessworldwide.com/kroger-and-lg-sued-by-puppy-songs-creator-over-alleged-unlicensed-use-of-tiktok-hit-cheese-tax/",
-        "source": "Music Business Worldwide",
-        "domain": "musicbusinessworldwide.com",
-        "publishedAt": "2026-10-21T11:28:53.000Z",
-        "tags": [
-          "lawsuit"
-        ],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-7",
         "title": "La legislación sobre derechos de autor tiene dificultades para adaptarse a la música creada con inteligencia artificial en Corea del Sur.",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMigAFBVV95cUxOT244YVZJQmhUZWRkcjB2UVRXamc4QlpyMU1pRFg1VkxYNGM1N1RnTVVRNVNZRjdvUnNHQTNlTGQ3MzFpb0JjMExtSnYtSU9WTXpPa0dxQklDWHZvUlF0S1BoRDJKcVJCUEV5UU9TbnVaT1dZQ1k0Z0ktZlA1VFR0bQ?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -123,7 +109,36 @@
         "via": "Google News"
       },
       {
+        "id": "noticia-7",
+        "title": "RIAA Flags Anna’s Archive and AI Voice Cloner to U.S. Government",
+        "summary": "The RIAA has submitted its latest overview of \"notorious markets\" to the U.S. Government. It lists familiar names such as The Pirate Bay and Rapidgator, but the music group also flags shadow library Anna's Archive and AI voice-cloning service Lalals. The RIAA presents both as \"additional\" areas of concern, not as offic…",
+        "url": "https://torrentfreak.com/riaa-flags-annas-archive-and-ai-voice-cloner-to-u-s-government/",
+        "source": "TorrentFreak",
+        "domain": "torrentfreak.com",
+        "publishedAt": "2026-10-15T07:52:44.000Z",
+        "tags": [
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
         "id": "noticia-8",
+        "title": "AI-Generated Music and the Future of Creativity Discussed at Billboard Latin Music Week",
+        "summary": "Experts talk about the challenges authors face, and whether regulation is enough, in the era of artificial intelligence.",
+        "url": "https://www.billboard.com/pro/ai-music-protect-human-creators-billboard-latin-music-week/",
+        "source": "Billboard",
+        "domain": "billboard.com",
+        "publishedAt": "2026-10-21T22:08:29.000Z",
+        "tags": [
+          "ai",
+          "legislation"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-9",
         "title": "‘Human Made, Human Paid’: The Largest U.S. Musicians Union Is Demanding AI Protections",
         "summary": "American Federation of Musicians asking major labels to give artists a contract with AI protections and compensation",
         "url": "https://www.rollingstone.com/music/music-news/human-made-human-paid-musicians-union-afm-labor-agreement-1235645099/",
@@ -139,7 +154,7 @@
         "via": null
       },
       {
-        "id": "noticia-9",
+        "id": "noticia-10",
         "title": "Un músico, condenado a prisión por utilizar \"bots\" de inteligencia artificial para cobrar millones en derechos de autor",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMi4wFBVV95cUxNNkQ0eXF3ZXF2YnJPRmM2bnFYWXc4NGVmc29Hb2syNXk2alZKSW02MWo1OGEwbnY1MnJXM2hweGpFbTB6T2tTdGtQRENxdFRfNXVrYWwtRGs5ZjBCSVZfMnhZcmpMOE9LNHNxdWhKMVd3X2ZsN2xzUjNiNURfNGctTjdvTTFtbXgwNjk1RDFSUHN4UkRsa1Zzc3FXa3d6aTdSNHFtcXRyTGtHRVpEeTdZcVlBQXROZWhQRnRIZnJManRNckZid0ViekNMUnhYX2pTTEsxZ1BMcUZ1d3dEQUhVQXJ2NA?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -153,7 +168,7 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-10",
+        "id": "noticia-11",
         "title": "Universal Music appoints first AI director amid copyright lawsuits",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMipwFBVV95cUxQOVkwYzBMeU9pblF1TkZQbE01Nzd1dzhIeWNVQU5wclZCTWpnMGxXU081WnFKR09XSmFTWEVGZVFDd2tlUWhrXzVHRUJXbExlcTZTRndEWnBaMmN2eVE2ZFJHYkhLcE1CY19HVV9xOGsxUzRkRklhSlJUM0pLMWw2TDB1Z0dmTENlUk1VWENTMFNmdEN3QzVSUEtqcDFpN3BQQ1IzX0xfZw?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -168,28 +183,13 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-11",
+        "id": "noticia-12",
         "title": "Spotify Removes 75 Million Songs Identified as ‘AI-Generated Slop or Spam’",
         "summary": "The streaming service cut the slop tracks in favor of “more music made by authentic, human artists,” with 50 million more being filtered from recommendations made to listeners",
         "url": "https://www.rollingstone.com/music/music-news/spotify-removes-50-million-spam-songs-1235645433/",
         "source": "Rolling Stone",
         "domain": "rollingstone.com",
         "publishedAt": "2026-10-20T17:20:35.000Z",
-        "tags": [
-          "ai",
-          "streaming"
-        ],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-12",
-        "title": "Deezer permitirá ocultar la música hecha con IA al buscar",
-        "summary": "Deezer permitirá a sus usuarios ocultar la música generada íntegramente con inteligencia artificial. La plataforma francesa ha anunciado un interruptor que, una vez activado, excluirá de los resultados de búsqueda las canciones, los álbumes y los artistas vinculados a contenido 100% sintético. La función llegará a todo…",
-        "url": "https://industriamusical.com/deezer-ocultar-musica-ia-busqueda/?utm_source=rss&utm_medium=rss&utm_campaign=deezer-ocultar-musica-ia-busqueda",
-        "source": "Industria Musical",
-        "domain": "industriamusical.com",
-        "publishedAt": "2026-10-14T11:19:05.000Z",
         "tags": [
           "ai",
           "streaming"
@@ -280,20 +280,6 @@
       },
       {
         "id": "noticia-6",
-        "title": "Kroger and LG sued by Puppy Songs creator over alleged unlicensed use of TikTok hit ‘Cheese Tax’",
-        "summary": "Each complaint seeks damages set by law of up to $150,000 per infringed work and a court order barring the company from further infringing Hobbs' rights. Source",
-        "url": "https://www.musicbusinessworldwide.com/kroger-and-lg-sued-by-puppy-songs-creator-over-alleged-unlicensed-use-of-tiktok-hit-cheese-tax/",
-        "source": "Music Business Worldwide",
-        "domain": "musicbusinessworldwide.com",
-        "publishedAt": "2026-10-21T11:28:53.000Z",
-        "tags": [
-          "lawsuit"
-        ],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-7",
         "title": "La legislación sobre derechos de autor tiene dificultades para adaptarse a la música creada con inteligencia artificial en Corea del Sur.",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMigAFBVV95cUxOT244YVZJQmhUZWRkcjB2UVRXamc4QlpyMU1pRFg1VkxYNGM1N1RnTVVRNVNZRjdvUnNHQTNlTGQ3MzFpb0JjMExtSnYtSU9WTXpPa0dxQklDWHZvUlF0S1BoRDJKcVJCUEV5UU9TbnVaT1dZQ1k0Z0ktZlA1VFR0bQ?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -308,7 +294,36 @@
         "via": "Google News"
       },
       {
+        "id": "noticia-7",
+        "title": "RIAA Flags Anna’s Archive and AI Voice Cloner to U.S. Government",
+        "summary": "The RIAA has submitted its latest overview of \"notorious markets\" to the U.S. Government. It lists familiar names such as The Pirate Bay and Rapidgator, but the music group also flags shadow library Anna's Archive and AI voice-cloning service Lalals. The RIAA presents both as \"additional\" areas of concern, not as offic…",
+        "url": "https://torrentfreak.com/riaa-flags-annas-archive-and-ai-voice-cloner-to-u-s-government/",
+        "source": "TorrentFreak",
+        "domain": "torrentfreak.com",
+        "publishedAt": "2026-10-15T07:52:44.000Z",
+        "tags": [
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
         "id": "noticia-8",
+        "title": "AI-Generated Music and the Future of Creativity Discussed at Billboard Latin Music Week",
+        "summary": "Experts talk about the challenges authors face, and whether regulation is enough, in the era of artificial intelligence.",
+        "url": "https://www.billboard.com/pro/ai-music-protect-human-creators-billboard-latin-music-week/",
+        "source": "Billboard",
+        "domain": "billboard.com",
+        "publishedAt": "2026-10-21T22:08:29.000Z",
+        "tags": [
+          "ai",
+          "legislation"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-9",
         "title": "‘Human Made, Human Paid’: The Largest U.S. Musicians Union Is Demanding AI Protections",
         "summary": "American Federation of Musicians asking major labels to give artists a contract with AI protections and compensation",
         "url": "https://www.rollingstone.com/music/music-news/human-made-human-paid-musicians-union-afm-labor-agreement-1235645099/",
@@ -324,7 +339,7 @@
         "via": null
       },
       {
-        "id": "noticia-9",
+        "id": "noticia-10",
         "title": "Un músico, condenado a prisión por utilizar \"bots\" de inteligencia artificial para cobrar millones en derechos de autor",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMi4wFBVV95cUxNNkQ0eXF3ZXF2YnJPRmM2bnFYWXc4NGVmc29Hb2syNXk2alZKSW02MWo1OGEwbnY1MnJXM2hweGpFbTB6T2tTdGtQRENxdFRfNXVrYWwtRGs5ZjBCSVZfMnhZcmpMOE9LNHNxdWhKMVd3X2ZsN2xzUjNiNURfNGctTjdvTTFtbXgwNjk1RDFSUHN4UkRsa1Zzc3FXa3d6aTdSNHFtcXRyTGtHRVpEeTdZcVlBQXROZWhQRnRIZnJManRNckZid0ViekNMUnhYX2pTTEsxZ1BMcUZ1d3dEQUhVQXJ2NA?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -338,7 +353,7 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-10",
+        "id": "noticia-11",
         "title": "Universal Music appoints first AI director amid copyright lawsuits",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMipwFBVV95cUxQOVkwYzBMeU9pblF1TkZQbE01Nzd1dzhIeWNVQU5wclZCTWpnMGxXU081WnFKR09XSmFTWEVGZVFDd2tlUWhrXzVHRUJXbExlcTZTRndEWnBaMmN2eVE2ZFJHYkhLcE1CY19HVV9xOGsxUzRkRklhSlJUM0pLMWw2TDB1Z0dmTENlUk1VWENTMFNmdEN3QzVSUEtqcDFpN3BQQ1IzX0xfZw?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -353,28 +368,13 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-11",
+        "id": "noticia-12",
         "title": "Spotify Removes 75 Million Songs Identified as ‘AI-Generated Slop or Spam’",
         "summary": "The streaming service cut the slop tracks in favor of “more music made by authentic, human artists,” with 50 million more being filtered from recommendations made to listeners",
         "url": "https://www.rollingstone.com/music/music-news/spotify-removes-50-million-spam-songs-1235645433/",
         "source": "Rolling Stone",
         "domain": "rollingstone.com",
         "publishedAt": "2026-10-20T17:20:35.000Z",
-        "tags": [
-          "ai",
-          "streaming"
-        ],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-12",
-        "title": "Deezer permitirá ocultar la música hecha con IA al buscar",
-        "summary": "Deezer permitirá a sus usuarios ocultar la música generada íntegramente con inteligencia artificial. La plataforma francesa ha anunciado un interruptor que, una vez activado, excluirá de los resultados de búsqueda las canciones, los álbumes y los artistas vinculados a contenido 100% sintético. La función llegará a todo…",
-        "url": "https://industriamusical.com/deezer-ocultar-musica-ia-busqueda/?utm_source=rss&utm_medium=rss&utm_campaign=deezer-ocultar-musica-ia-busqueda",
-        "source": "Industria Musical",
-        "domain": "industriamusical.com",
-        "publishedAt": "2026-10-14T11:19:05.000Z",
         "tags": [
           "ai",
           "streaming"
