@@ -1,16 +1,17 @@
 {
-  "lastUpdated": "2026-10-20T22:14:49.535Z",
+  "lastUpdated": "2026-10-21T12:52:48.158Z",
   "meta": {
     "method": "rss-retrieval + link-verification + ai-translation",
     "itemCount": 12,
     "sources": [
       "Confilegal",
       "Digital Music News",
+      "Industria Musical",
       "Music Ally",
+      "Music Business Worldwide",
       "Rolling Stone",
       "RouteNote",
       "The Ticker",
-      "TorrentFreak",
       "Vietnam.vn"
     ],
     "verifiedLinks": 12,
@@ -23,6 +24,20 @@
     "items": [
       {
         "id": "noticia-1",
+        "title": "Today in Social Media Infringement Cases: LG and Kroger Sued for Allegedly Using Viral Track ‘Cheese Tax’ in TikTok Videos",
+        "summary": "Today in social media copyright complaints: A pair of infringement actions against Kroger and LG Electronics, which allegedly incorporated a protected track into TikTok videos without authorization. Georgia-based singer-songwriter Matt Hobbs, the creator of Puppy Songs, submitted the lawsuits to a California federal co…",
+        "url": "https://www.digitalmusicnews.com/2026/10/20/cheese-tax-lawsuit-kroger-lg/",
+        "source": "Digital Music News",
+        "domain": "digitalmusicnews.com",
+        "publishedAt": "2026-10-21T02:30:34.000Z",
+        "tags": [
+          "lawsuit"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-2",
         "title": "Drake Sued Over ‘Janice STFU’ by Producer Who Says Rapper Stole His Chorus",
         "summary": "Drake is being sued for copyright infringement on his hit “Janice STFU” by a producer who says the rapper and his team “shamelessly refuse to acknowledge” his substantial contributions. Drake has been hit with a copyright infringement lawsuit over his hit song “Janice STFU” by a producer named Aviel Calev Hirschfield,…",
         "url": "https://www.digitalmusicnews.com/2026/10/18/drake-sued-over-janice-stfu/",
@@ -36,7 +51,7 @@
         "via": null
       },
       {
-        "id": "noticia-2",
+        "id": "noticia-3",
         "title": "Elephant In the Room Reminder: Major Hits from Kylie Minogue and Nick Cave Already Used to Train AI Without Compensation, the ICMP Tells Australian Legislators",
         "summary": "The global trade body ICMP warns that AI training may lead to the dilution of Australian copyright laws, effectively “legitimizing larceny.” The International Confederation of Music Publishers (ICMP) has cautioned the Australian government against giving in to efforts from tech companies seeking to weaken copyright law…",
         "url": "https://www.digitalmusicnews.com/2026/10/19/icmp-kylie-minogue-songs-train-ai/",
@@ -50,7 +65,7 @@
         "via": null
       },
       {
-        "id": "noticia-3",
+        "id": "noticia-4",
         "title": "Labels’ fail in bid to get Supreme Court to overturn termination-rights ruling",
         "summary": "The three major labels and BMG have failed in their bid to get the US Supreme Court to overturn a ruling that artists can exert their ‘termination rights’ to regain their copyrights globally, not just in the US. The post is from Music Ally .",
         "url": "https://musically.com/2026/10/20/labels-fail-in-bid-to-get-supreme-court-to-overturn-termination-rights-ruling/",
@@ -64,7 +79,7 @@
         "via": null
       },
       {
-        "id": "noticia-4",
+        "id": "noticia-5",
         "title": "Sony and Universal Demand DistroKid AI Music Upload Data in Copyright Battle",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMiqAFBVV95cUxNWEx6dFBnWnhxQ1lOSm5tT1RFemhzVk9ndkd5bUMyZ0pleTFJMWQ1eFJHSllodkt6WFBKUk5PbDBQRVAzV01sUU1KRjU2Mk9US0s4MmlxZGhCVzJMQlVLWmxKYzBiUGN6aUstQ25aM1hKTkZPWi1PdE9lN2kxdGYyU1U1bjU4bUhVZWd5Qm1lSGRyQkZHNWRmemFpcldtQ2U3c2tITDhZcUM?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -79,13 +94,13 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-5",
-        "title": "Atlantic/WMG Sues Ray-Ban Owner Luxottica, Demands Over $64 Million in Damages as Social Media Infringement Crackdown Continues",
-        "summary": "The social media copyright crackdown continues: Warner Music Group (WMG) is now suing multiple subsidiaries of eyewear giant EssilorLuxottica for allegedly infringing on north of 400 compositions and recordings in Instagram and TikTok posts. Plaintiffs including Atlantic Music Group and Warner Chappell recently submitt…",
-        "url": "https://www.digitalmusicnews.com/2026/10/12/warner-music-essilorluxottica-lawsuit/",
-        "source": "Digital Music News",
-        "domain": "digitalmusicnews.com",
-        "publishedAt": "2026-10-12T17:28:17.000Z",
+        "id": "noticia-6",
+        "title": "Kroger and LG sued by Puppy Songs creator over alleged unlicensed use of TikTok hit ‘Cheese Tax’",
+        "summary": "Each complaint seeks damages set by law of up to $150,000 per infringed work and a court order barring the company from further infringing Hobbs' rights. Source",
+        "url": "https://www.musicbusinessworldwide.com/kroger-and-lg-sued-by-puppy-songs-creator-over-alleged-unlicensed-use-of-tiktok-hit-cheese-tax/",
+        "source": "Music Business Worldwide",
+        "domain": "musicbusinessworldwide.com",
+        "publishedAt": "2026-10-21T11:28:53.000Z",
         "tags": [
           "lawsuit"
         ],
@@ -93,7 +108,7 @@
         "via": null
       },
       {
-        "id": "noticia-6",
+        "id": "noticia-7",
         "title": "La legislación sobre derechos de autor tiene dificultades para adaptarse a la música creada con inteligencia artificial en Corea del Sur.",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMigAFBVV95cUxOT244YVZJQmhUZWRkcjB2UVRXamc4QlpyMU1pRFg1VkxYNGM1N1RnTVVRNVNZRjdvUnNHQTNlTGQ3MzFpb0JjMExtSnYtSU9WTXpPa0dxQklDWHZvUlF0S1BoRDJKcVJCUEV5UU9TbnVaT1dZQ1k0Z0ktZlA1VFR0bQ?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -106,20 +121,6 @@
         ],
         "translated": false,
         "via": "Google News"
-      },
-      {
-        "id": "noticia-7",
-        "title": "RIAA Flags Anna’s Archive and AI Voice Cloner to U.S. Government",
-        "summary": "The RIAA has submitted its latest overview of \"notorious markets\" to the U.S. Government. It lists familiar names such as The Pirate Bay and Rapidgator, but the music group also flags shadow library Anna's Archive and AI voice-cloning service Lalals. The RIAA presents both as \"additional\" areas of concern, not as offic…",
-        "url": "https://torrentfreak.com/riaa-flags-annas-archive-and-ai-voice-cloner-to-u-s-government/",
-        "source": "TorrentFreak",
-        "domain": "torrentfreak.com",
-        "publishedAt": "2026-10-15T07:52:44.000Z",
-        "tags": [
-          "ai"
-        ],
-        "translated": false,
-        "via": null
       },
       {
         "id": "noticia-8",
@@ -153,20 +154,6 @@
       },
       {
         "id": "noticia-10",
-        "title": "Musixmatch acquires Songdex and Blokur owner Music Reports",
-        "summary": "Lyrics firm Musixmatch was founded 16 years ago, but has never bought another company… until now. It has announced the acquisition of Music Reports, the US firm that owns the Songdex copyright registry as well as rights and licensing firm Blokur. The post is from Music Ally .",
-        "url": "https://musically.com/2026/10/19/musixmatch-acquires-songdex-and-blokur-owner-music-reports/",
-        "source": "Music Ally",
-        "domain": "musically.com",
-        "publishedAt": "2026-10-19T12:30:00.000Z",
-        "tags": [
-          "licensing"
-        ],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-11",
         "title": "Universal Music appoints first AI director amid copyright lawsuits",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMipwFBVV95cUxQOVkwYzBMeU9pblF1TkZQbE01Nzd1dzhIeWNVQU5wclZCTWpnMGxXU081WnFKR09XSmFTWEVGZVFDd2tlUWhrXzVHRUJXbExlcTZTRndEWnBaMmN2eVE2ZFJHYkhLcE1CY19HVV9xOGsxUzRkRklhSlJUM0pLMWw2TDB1Z0dmTENlUk1VWENTMFNmdEN3QzVSUEtqcDFpN3BQQ1IzX0xfZw?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -181,7 +168,7 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-12",
+        "id": "noticia-11",
         "title": "Spotify Removes 75 Million Songs Identified as ‘AI-Generated Slop or Spam’",
         "summary": "The streaming service cut the slop tracks in favor of “more music made by authentic, human artists,” with 50 million more being filtered from recommendations made to listeners",
         "url": "https://www.rollingstone.com/music/music-news/spotify-removes-50-million-spam-songs-1235645433/",
@@ -194,11 +181,26 @@
         ],
         "translated": false,
         "via": null
+      },
+      {
+        "id": "noticia-12",
+        "title": "Deezer permitirá ocultar la música hecha con IA al buscar",
+        "summary": "Deezer permitirá a sus usuarios ocultar la música generada íntegramente con inteligencia artificial. La plataforma francesa ha anunciado un interruptor que, una vez activado, excluirá de los resultados de búsqueda las canciones, los álbumes y los artistas vinculados a contenido 100% sintético. La función llegará a todo…",
+        "url": "https://industriamusical.com/deezer-ocultar-musica-ia-busqueda/?utm_source=rss&utm_medium=rss&utm_campaign=deezer-ocultar-musica-ia-busqueda",
+        "source": "Industria Musical",
+        "domain": "industriamusical.com",
+        "publishedAt": "2026-10-14T11:19:05.000Z",
+        "tags": [
+          "ai",
+          "streaming"
+        ],
+        "translated": false,
+        "via": null
       }
     ],
     "tip": {
-      "title": "Antes de firmar, revisa la reversión de derechos",
-      "body": "La pregunta clave de cualquier contrato no es cuánto te dan hoy, sino cuándo y cómo recuperas tu obra. Si no hay cláusula de reversión, estás cediendo por el plazo completo."
+      "title": "Registra antes de publicar, no después",
+      "body": "El registro de tu obra no crea el derecho de autor —ese nace con la creación— pero sí te da la prueba con fecha cierta que vale en un juicio. Regístrala antes de subirla a plataformas, no cuando ya tengas el problema."
     }
   },
   "en": {
@@ -207,6 +209,20 @@
     "items": [
       {
         "id": "noticia-1",
+        "title": "Today in Social Media Infringement Cases: LG and Kroger Sued for Allegedly Using Viral Track ‘Cheese Tax’ in TikTok Videos",
+        "summary": "Today in social media copyright complaints: A pair of infringement actions against Kroger and LG Electronics, which allegedly incorporated a protected track into TikTok videos without authorization. Georgia-based singer-songwriter Matt Hobbs, the creator of Puppy Songs, submitted the lawsuits to a California federal co…",
+        "url": "https://www.digitalmusicnews.com/2026/10/20/cheese-tax-lawsuit-kroger-lg/",
+        "source": "Digital Music News",
+        "domain": "digitalmusicnews.com",
+        "publishedAt": "2026-10-21T02:30:34.000Z",
+        "tags": [
+          "lawsuit"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-2",
         "title": "Drake Sued Over ‘Janice STFU’ by Producer Who Says Rapper Stole His Chorus",
         "summary": "Drake is being sued for copyright infringement on his hit “Janice STFU” by a producer who says the rapper and his team “shamelessly refuse to acknowledge” his substantial contributions. Drake has been hit with a copyright infringement lawsuit over his hit song “Janice STFU” by a producer named Aviel Calev Hirschfield,…",
         "url": "https://www.digitalmusicnews.com/2026/10/18/drake-sued-over-janice-stfu/",
@@ -220,7 +236,7 @@
         "via": null
       },
       {
-        "id": "noticia-2",
+        "id": "noticia-3",
         "title": "Elephant In the Room Reminder: Major Hits from Kylie Minogue and Nick Cave Already Used to Train AI Without Compensation, the ICMP Tells Australian Legislators",
         "summary": "The global trade body ICMP warns that AI training may lead to the dilution of Australian copyright laws, effectively “legitimizing larceny.” The International Confederation of Music Publishers (ICMP) has cautioned the Australian government against giving in to efforts from tech companies seeking to weaken copyright law…",
         "url": "https://www.digitalmusicnews.com/2026/10/19/icmp-kylie-minogue-songs-train-ai/",
@@ -234,7 +250,7 @@
         "via": null
       },
       {
-        "id": "noticia-3",
+        "id": "noticia-4",
         "title": "Labels’ fail in bid to get Supreme Court to overturn termination-rights ruling",
         "summary": "The three major labels and BMG have failed in their bid to get the US Supreme Court to overturn a ruling that artists can exert their ‘termination rights’ to regain their copyrights globally, not just in the US. The post is from Music Ally .",
         "url": "https://musically.com/2026/10/20/labels-fail-in-bid-to-get-supreme-court-to-overturn-termination-rights-ruling/",
@@ -248,7 +264,7 @@
         "via": null
       },
       {
-        "id": "noticia-4",
+        "id": "noticia-5",
         "title": "Sony and Universal Demand DistroKid AI Music Upload Data in Copyright Battle",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMiqAFBVV95cUxNWEx6dFBnWnhxQ1lOSm5tT1RFemhzVk9ndkd5bUMyZ0pleTFJMWQ1eFJHSllodkt6WFBKUk5PbDBQRVAzV01sUU1KRjU2Mk9US0s4MmlxZGhCVzJMQlVLWmxKYzBiUGN6aUstQ25aM1hKTkZPWi1PdE9lN2kxdGYyU1U1bjU4bUhVZWd5Qm1lSGRyQkZHNWRmemFpcldtQ2U3c2tITDhZcUM?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -263,13 +279,13 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-5",
-        "title": "Atlantic/WMG Sues Ray-Ban Owner Luxottica, Demands Over $64 Million in Damages as Social Media Infringement Crackdown Continues",
-        "summary": "The social media copyright crackdown continues: Warner Music Group (WMG) is now suing multiple subsidiaries of eyewear giant EssilorLuxottica for allegedly infringing on north of 400 compositions and recordings in Instagram and TikTok posts. Plaintiffs including Atlantic Music Group and Warner Chappell recently submitt…",
-        "url": "https://www.digitalmusicnews.com/2026/10/12/warner-music-essilorluxottica-lawsuit/",
-        "source": "Digital Music News",
-        "domain": "digitalmusicnews.com",
-        "publishedAt": "2026-10-12T17:28:17.000Z",
+        "id": "noticia-6",
+        "title": "Kroger and LG sued by Puppy Songs creator over alleged unlicensed use of TikTok hit ‘Cheese Tax’",
+        "summary": "Each complaint seeks damages set by law of up to $150,000 per infringed work and a court order barring the company from further infringing Hobbs' rights. Source",
+        "url": "https://www.musicbusinessworldwide.com/kroger-and-lg-sued-by-puppy-songs-creator-over-alleged-unlicensed-use-of-tiktok-hit-cheese-tax/",
+        "source": "Music Business Worldwide",
+        "domain": "musicbusinessworldwide.com",
+        "publishedAt": "2026-10-21T11:28:53.000Z",
         "tags": [
           "lawsuit"
         ],
@@ -277,7 +293,7 @@
         "via": null
       },
       {
-        "id": "noticia-6",
+        "id": "noticia-7",
         "title": "La legislación sobre derechos de autor tiene dificultades para adaptarse a la música creada con inteligencia artificial en Corea del Sur.",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMigAFBVV95cUxOT244YVZJQmhUZWRkcjB2UVRXamc4QlpyMU1pRFg1VkxYNGM1N1RnTVVRNVNZRjdvUnNHQTNlTGQ3MzFpb0JjMExtSnYtSU9WTXpPa0dxQklDWHZvUlF0S1BoRDJKcVJCUEV5UU9TbnVaT1dZQ1k0Z0ktZlA1VFR0bQ?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -290,20 +306,6 @@
         ],
         "translated": false,
         "via": "Google News"
-      },
-      {
-        "id": "noticia-7",
-        "title": "RIAA Flags Anna’s Archive and AI Voice Cloner to U.S. Government",
-        "summary": "The RIAA has submitted its latest overview of \"notorious markets\" to the U.S. Government. It lists familiar names such as The Pirate Bay and Rapidgator, but the music group also flags shadow library Anna's Archive and AI voice-cloning service Lalals. The RIAA presents both as \"additional\" areas of concern, not as offic…",
-        "url": "https://torrentfreak.com/riaa-flags-annas-archive-and-ai-voice-cloner-to-u-s-government/",
-        "source": "TorrentFreak",
-        "domain": "torrentfreak.com",
-        "publishedAt": "2026-10-15T07:52:44.000Z",
-        "tags": [
-          "ai"
-        ],
-        "translated": false,
-        "via": null
       },
       {
         "id": "noticia-8",
@@ -337,20 +339,6 @@
       },
       {
         "id": "noticia-10",
-        "title": "Musixmatch acquires Songdex and Blokur owner Music Reports",
-        "summary": "Lyrics firm Musixmatch was founded 16 years ago, but has never bought another company… until now. It has announced the acquisition of Music Reports, the US firm that owns the Songdex copyright registry as well as rights and licensing firm Blokur. The post is from Music Ally .",
-        "url": "https://musically.com/2026/10/19/musixmatch-acquires-songdex-and-blokur-owner-music-reports/",
-        "source": "Music Ally",
-        "domain": "musically.com",
-        "publishedAt": "2026-10-19T12:30:00.000Z",
-        "tags": [
-          "licensing"
-        ],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-11",
         "title": "Universal Music appoints first AI director amid copyright lawsuits",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMipwFBVV95cUxQOVkwYzBMeU9pblF1TkZQbE01Nzd1dzhIeWNVQU5wclZCTWpnMGxXU081WnFKR09XSmFTWEVGZVFDd2tlUWhrXzVHRUJXbExlcTZTRndEWnBaMmN2eVE2ZFJHYkhLcE1CY19HVV9xOGsxUzRkRklhSlJUM0pLMWw2TDB1Z0dmTENlUk1VWENTMFNmdEN3QzVSUEtqcDFpN3BQQ1IzX0xfZw?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -365,7 +353,7 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-12",
+        "id": "noticia-11",
         "title": "Spotify Removes 75 Million Songs Identified as ‘AI-Generated Slop or Spam’",
         "summary": "The streaming service cut the slop tracks in favor of “more music made by authentic, human artists,” with 50 million more being filtered from recommendations made to listeners",
         "url": "https://www.rollingstone.com/music/music-news/spotify-removes-50-million-spam-songs-1235645433/",
@@ -378,11 +366,26 @@
         ],
         "translated": false,
         "via": null
+      },
+      {
+        "id": "noticia-12",
+        "title": "Deezer permitirá ocultar la música hecha con IA al buscar",
+        "summary": "Deezer permitirá a sus usuarios ocultar la música generada íntegramente con inteligencia artificial. La plataforma francesa ha anunciado un interruptor que, una vez activado, excluirá de los resultados de búsqueda las canciones, los álbumes y los artistas vinculados a contenido 100% sintético. La función llegará a todo…",
+        "url": "https://industriamusical.com/deezer-ocultar-musica-ia-busqueda/?utm_source=rss&utm_medium=rss&utm_campaign=deezer-ocultar-musica-ia-busqueda",
+        "source": "Industria Musical",
+        "domain": "industriamusical.com",
+        "publishedAt": "2026-10-14T11:19:05.000Z",
+        "tags": [
+          "ai",
+          "streaming"
+        ],
+        "translated": false,
+        "via": null
       }
     ],
     "tip": {
-      "title": "Before signing, check the reversion clause",
-      "body": "The key question in any deal isn't what you get today —it's when and how you get your work back. With no reversion clause, you're assigning for the full term."
+      "title": "Register before you release, not after",
+      "body": "Registration doesn't create your copyright —that exists from the moment of creation— but it gives you dated proof that holds up in court. Register before uploading to platforms, not after trouble shows up."
     }
   }
 }
