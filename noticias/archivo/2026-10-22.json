@@ -1,0 +1,388 @@
+{
+  "lastUpdated": "2026-10-22T12:55:13.825Z",
+  "meta": {
+    "method": "rss-retrieval + link-verification + ai-translation",
+    "itemCount": 12,
+    "sources": [
+      "Billboard",
+      "Confilegal",
+      "Digital Music News",
+      "Music Business Worldwide",
+      "RIAA",
+      "Reuters",
+      "RouteNote",
+      "The Ticker",
+      "TorrentFreak",
+      "Vietnam.vn"
+    ],
+    "verifiedLinks": 12,
+    "aiTranslated": 12,
+    "note": "Los hechos provienen de los artículos originales enlazados. La IA solo traduce y resume; no genera noticias."
+  },
+  "es": {
+    "title": "Noticias de Copyright e Inteligencia Artificial",
+    "subtitle": "Notas publicadas por medios reales de la industria, con liga al artículo original. Sin noticias inventadas.",
+    "items": [
+      {
+        "id": "noticia-1",
+        "title": "Reservoir demanda a Suno por copiar 1.050 canciones, alegando que el modelo de negocio de la empresa de IA era \"infringir ahora\" y \"resolver barato después\"",
+        "summary": "Reservoir afirma que Suno copió más de mil canciones de su catálogo, incluyendo obras de Joni Mitchell, Johnny Cash y Madonna, y alega que el modelo de la empresa de IA consiste en infringir ahora y luego llegar a acuerdos de bajo costo.",
+        "url": "https://www.musicbusinessworldwide.com/reservoir-sues-suno-for-infringment-over-1050-songs-including-tracks-by-joni-mitchell-johnny-cash-madonna-and-more/",
+        "source": "Music Business Worldwide",
+        "domain": "musicbusinessworldwide.com",
+        "publishedAt": "2026-10-22T12:19:08.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": true,
+        "via": null
+      },
+      {
+        "id": "noticia-2",
+        "title": "Hoy en casos de infracción en redes sociales: LG y Kroger demandados por supuestamente usar la pista viral \"Cheese Tax\" en videos de TikTok",
+        "summary": "LG Electronics y Kroger enfrentan demandas por supuestamente usar la canción \"Cheese Tax\" en videos de TikTok sin autorización; los procesos fueron presentados por el cantautor Matt Hobbs, creador de Puppy Songs, ante un tribunal federal de California.",
+        "url": "https://www.digitalmusicnews.com/2026/10/20/cheese-tax-lawsuit-kroger-lg/",
+        "source": "Digital Music News",
+        "domain": "digitalmusicnews.com",
+        "publishedAt": "2026-10-21T02:30:34.000Z",
+        "tags": [
+          "lawsuit"
+        ],
+        "translated": true,
+        "via": null
+      },
+      {
+        "id": "noticia-3",
+        "title": "Reservoir demanda a Suno y Anthropic en nuevas demandas por música IA: \"Destinados a reemplazar a los artistas\"",
+        "summary": "Reservoir acusa a los laboratorios de IA Suno y Anthropic de haber tomado canciones de Madonna y Johnny Cash de su catálogo para entrenar sus modelos, alegando que la intención es sustituir a los artistas con música generada por IA.",
+        "url": "https://www.billboard.com/pro/reservoir-sues-suno-anthropic-over-ai-training/",
+        "source": "Billboard",
+        "domain": "billboard.com",
+        "publishedAt": "2026-10-22T12:11:54.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": true,
+        "via": null
+      },
+      {
+        "id": "noticia-4",
+        "title": "Drake demandado por \"Janice STFU\" por productor que dice que el rapero le robó el coro",
+        "summary": "El productor Aviel Calev Hirschfield ha presentado una demanda por infracción de derechos de autor contra Drake, alegando que el rapero utilizó un coro creado por Hirschfield en la canción \"Janice STFU\" sin reconocer su contribución.",
+        "url": "https://www.digitalmusicnews.com/2026/10/18/drake-sued-over-janice-stfu/",
+        "source": "Digital Music News",
+        "domain": "digitalmusicnews.com",
+        "publishedAt": "2026-10-19T04:12:55.000Z",
+        "tags": [
+          "lawsuit"
+        ],
+        "translated": true,
+        "via": null
+      },
+      {
+        "id": "noticia-5",
+        "title": "Recordatorio del Elefante en la Sala: Grandes éxitos de Kylie Minogue y Nick Cave ya se usaron para entrenar IA sin compensación, dice ICMP a legisladores australianos",
+        "summary": "La Confederación Internacional de Editoriales Musicales advirtió a los legisladores australianos que sistemas de IA ya han sido entrenados con éxitos de Kylie Minogue y Nick Cave sin compensación, argumentando que esta práctica podría debilitar la protección de derechos de autor y legitimar el uso no autorizado.",
+        "url": "https://www.digitalmusicnews.com/2026/10/19/icmp-kylie-minogue-songs-train-ai/",
+        "source": "Digital Music News",
+        "domain": "digitalmusicnews.com",
+        "publishedAt": "2026-10-20T04:00:26.000Z",
+        "tags": [
+          "ai"
+        ],
+        "translated": true,
+        "via": null
+      },
+      {
+        "id": "noticia-6",
+        "title": "Docenas de organizaciones internacionales de medios respaldan a creativos australianos en advertencia contra cambios de derechos de autor",
+        "summary": "Sesenta y tres organizaciones internacionales de medios, lideradas por la News/Media Alliance, enviaron una carta a funcionarios australianos pidiendo rechazar las propuestas de reforma de derechos de autor que permitirían a empresas de IA usar material protegido sin compensación, representando a miles de titulares.",
+        "url": "https://www.riaa.com/news/dozens-of-international-media-organizations-back-australian-creatives-in-warning-against-copyright-changes/",
+        "source": "RIAA",
+        "domain": "riaa.com",
+        "publishedAt": "2026-10-21T22:15:12.000Z",
+        "tags": [
+          "ai"
+        ],
+        "translated": true,
+        "via": null
+      },
+      {
+        "id": "noticia-7",
+        "title": "Anthropic y editoriales musicales se enfrentan en defensa de \"uso justo\" en caso de derechos de autor de IA",
+        "summary": "En una disputa de derechos de autor, la empresa de IA Anthropic y varias editoriales musicales se confrontan, con las editoriales argumentando que su uso del material protegido constituye un uso justo bajo la legislación vigente.",
+        "url": "https://news.google.com/rss/articles/CBMitAFBVV95cUxNT3pZQUU3NTI4WFhrZkxldDBxUTRpT20za0J4X2JkYTUxdExnbFdaUEoyam5PWmFTa2xNWHpTTGZqdTl6SWhuOW4tcXMyNE9uOHNqcHlIRGhHendlM2JyYkJVRjE1RnNSUDhpVjFZNEY3Vy1kamtSVTJXaFdiWE1oYXlxS2Q1Ylg4NV9kNmhLMElBOTAxdXJVa0E1eEt6NUkxWU9UcTU1MGIyeDdBUy1jcXFvR04?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "Reuters",
+        "domain": "news.google.com",
+        "publishedAt": "2026-10-21T21:17:07.000Z",
+        "tags": [
+          "ai"
+        ],
+        "translated": true,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-8",
+        "title": "Sony y Universal exigen datos de carga de música IA a DistroKid en batalla de derechos de autor",
+        "summary": "Sony Music y Universal Music han solicitado a DistroKid que proporcione información sobre las cargas de música generada por IA como parte de una disputa de derechos de autor entre los grandes sellos y la plataforma de distribución.",
+        "url": "https://news.google.com/rss/articles/CBMiqAFBVV95cUxNWEx6dFBnWnhxQ1lOSm5tT1RFemhzVk9ndkd5bUMyZ0pleTFJMWQ1eFJHSllodkt6WFBKUk5PbDBQRVAzV01sUU1KRjU2Mk9US0s4MmlxZGhCVzJMQlVLWmxKYzBiUGN6aUstQ25aM1hKTkZPWi1PdE9lN2kxdGYyU1U1bjU4bUhVZWd5Qm1lSGRyQkZHNWRmemFpcldtQ2U3c2tITDhZcUM?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "RouteNote",
+        "domain": "news.google.com",
+        "publishedAt": "2026-10-19T08:46:02.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": true,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-9",
+        "title": "La legislación sobre derechos de autor tiene dificultades para adaptarse a la música creada con inteligencia artificial en Corea del Sur.",
+        "summary": "La normativa surcoreana de derechos de autor enfrenta retos para regular la música producida mediante inteligencia artificial, ya que las disposiciones actuales no cubren de manera adecuada las obras generadas por algoritmos.",
+        "url": "https://news.google.com/rss/articles/CBMigAFBVV95cUxOT244YVZJQmhUZWRkcjB2UVRXamc4QlpyMU1pRFg1VkxYNGM1N1RnTVVRNVNZRjdvUnNHQTNlTGQ3MzFpb0JjMExtSnYtSU9WTXpPa0dxQklDWHZvUlF0S1BoRDJKcVJCUEV5UU9TbnVaT1dZQ1k0Z0ktZlA1VFR0bQ?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "Vietnam.vn",
+        "domain": "news.google.com",
+        "publishedAt": "2026-10-15T23:11:44.000Z",
+        "tags": [
+          "ai",
+          "legislation"
+        ],
+        "translated": true,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-10",
+        "title": "RIAA señala a Anna’s Archive y clonador de voz IA al gobierno de EE. UU.",
+        "summary": "La RIAA presentó su último informe de \"mercados notorios\" al gobierno de EE. UU., añadiendo la biblioteca sombra Anna’s Archive y el servicio de clonación de voz IA Lalals a la lista de preocupaciones adicionales junto a sitios de piratería establecidos.",
+        "url": "https://torrentfreak.com/riaa-flags-annas-archive-and-ai-voice-cloner-to-u-s-government/",
+        "source": "TorrentFreak",
+        "domain": "torrentfreak.com",
+        "publishedAt": "2026-10-15T07:52:44.000Z",
+        "tags": [
+          "ai"
+        ],
+        "translated": true,
+        "via": null
+      },
+      {
+        "id": "noticia-11",
+        "title": "Universal Music nombra al primer director de IA en medio de demandas de derechos de autor",
+        "summary": "Universal Music anunció la creación de un puesto ejecutivo dedicado a la inteligencia artificial, nombrando a su primer director de IA mientras la compañía enfrenta demandas de derechos de autor relacionadas con contenido generado por IA.",
+        "url": "https://news.google.com/rss/articles/CBMipwFBVV95cUxQOVkwYzBMeU9pblF1TkZQbE01Nzd1dzhIeWNVQU5wclZCTWpnMGxXU081WnFKR09XSmFTWEVGZVFDd2tlUWhrXzVHRUJXbExlcTZTRndEWnBaMmN2eVE2ZFJHYkhLcE1CY19HVV9xOGsxUzRkRklhSlJUM0pLMWw2TDB1Z0dmTENlUk1VWENTMFNmdEN3QzVSUEtqcDFpN3BQQ1IzX0xfZw?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "The Ticker",
+        "domain": "news.google.com",
+        "publishedAt": "2026-10-13T13:07:31.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": true,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-12",
+        "title": "Un músico, condenado a prisión por utilizar \"bots\" de inteligencia artificial para cobrar millones en derechos de autor",
+        "summary": "Un juez condenó a prisión a un músico que utilizó bots de inteligencia artificial para generar reclamaciones de derechos de autor por varios millones de dólares, considerándolo un fraude al sistema de regalías.",
+        "url": "https://news.google.com/rss/articles/CBMi4wFBVV95cUxNNkQ0eXF3ZXF2YnJPRmM2bnFYWXc4NGVmc29Hb2syNXk2alZKSW02MWo1OGEwbnY1MnJXM2hweGpFbTB6T2tTdGtQRENxdFRfNXVrYWwtRGs5ZjBCSVZfMnhZcmpMOE9LNHNxdWhKMVd3X2ZsN2xzUjNiNURfNGctTjdvTTFtbXgwNjk1RDFSUHN4UkRsa1Zzc3FXa3d6aTdSNHFtcXRyTGtHRVpEeTdZcVlBQXROZWhQRnRIZnJManRNckZid0ViekNMUnhYX2pTTEsxZ1BMcUZ1d3dEQUhVQXJ2NA?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "Confilegal",
+        "domain": "news.google.com",
+        "publishedAt": "2026-10-20T03:51:02.000Z",
+        "tags": [
+          "ai"
+        ],
+        "translated": true,
+        "via": "Google News"
+      }
+    ],
+    "tip": {
+      "title": "Guarda los proyectos, no solo el master",
+      "body": "En una disputa de autoría, el archivo de sesión de tu DAW con fecha, stems y versiones intermedias pesa más que el WAV final. Respalda el proyecto completo, no nada más el bounce."
+    }
+  },
+  "en": {
+    "title": "Copyright & Artificial Intelligence News",
+    "subtitle": "Stories published by real industry outlets, each linked to its original article. No invented news.",
+    "items": [
+      {
+        "id": "noticia-1",
+        "title": "Reservoir sues Suno for copying 1,050 songs, alleging AI firm’s business model was to ‘infringe now’ and ‘settle on the cheap later’",
+        "summary": "Reservoir claims Suno copied over a thousand songs from its catalog, including works by Joni Mitchell, Johnny Cash and Madonna, alleging the AI company's model involves immediate infringement followed by low‑cost settlements.",
+        "url": "https://www.musicbusinessworldwide.com/reservoir-sues-suno-for-infringment-over-1050-songs-including-tracks-by-joni-mitchell-johnny-cash-madonna-and-more/",
+        "source": "Music Business Worldwide",
+        "domain": "musicbusinessworldwide.com",
+        "publishedAt": "2026-10-22T12:19:08.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": true,
+        "via": null
+      },
+      {
+        "id": "noticia-2",
+        "title": "Today in Social Media Infringement Cases: LG and Kroger Sued for Allegedly Using Viral Track ‘Cheese Tax’ in TikTok Videos",
+        "summary": "LG Electronics and Kroger are facing copyright lawsuits for allegedly incorporating the track “Cheese Tax” into TikTok videos without permission; the suits were filed by songwriter Matt Hobbs of Puppy Songs in a California federal court.",
+        "url": "https://www.digitalmusicnews.com/2026/10/20/cheese-tax-lawsuit-kroger-lg/",
+        "source": "Digital Music News",
+        "domain": "digitalmusicnews.com",
+        "publishedAt": "2026-10-21T02:30:34.000Z",
+        "tags": [
+          "lawsuit"
+        ],
+        "translated": true,
+        "via": null
+      },
+      {
+        "id": "noticia-3",
+        "title": "Reservoir Sues Suno & Anthropic in Latest Lawsuits Over AI Music: ‘Meant to Replace the Artists’",
+        "summary": "Reservoir alleges that AI labs Suno and Anthropic illegally copied songs by Madonna and Johnny Cash from its catalog to train generative models, claiming the companies aim to replace artists with AI‑generated music.",
+        "url": "https://www.billboard.com/pro/reservoir-sues-suno-anthropic-over-ai-training/",
+        "source": "Billboard",
+        "domain": "billboard.com",
+        "publishedAt": "2026-10-22T12:11:54.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": true,
+        "via": null
+      },
+      {
+        "id": "noticia-4",
+        "title": "Drake Sued Over ‘Janice STFU’ by Producer Who Says Rapper Stole His Chorus",
+        "summary": "Producer Aviel Calev Hirschfield has filed a copyright infringement lawsuit against Drake, asserting that the rapper used a chorus created by Hirschfield in the song “Janice STFU” without proper acknowledgment.",
+        "url": "https://www.digitalmusicnews.com/2026/10/18/drake-sued-over-janice-stfu/",
+        "source": "Digital Music News",
+        "domain": "digitalmusicnews.com",
+        "publishedAt": "2026-10-19T04:12:55.000Z",
+        "tags": [
+          "lawsuit"
+        ],
+        "translated": true,
+        "via": null
+      },
+      {
+        "id": "noticia-5",
+        "title": "Elephant In the Room Reminder: Major Hits from Kylie Minogue and Nick Cave Already Used to Train AI Without Compensation, the ICMP Tells Australian Legislators",
+        "summary": "The International Confederation of Music Publishers warned Australian legislators that AI systems have been trained on major hits by Kylie Minogue and Nick Cave without compensation, arguing this practice could weaken copyright protections and legitimize unauthorized use.",
+        "url": "https://www.digitalmusicnews.com/2026/10/19/icmp-kylie-minogue-songs-train-ai/",
+        "source": "Digital Music News",
+        "domain": "digitalmusicnews.com",
+        "publishedAt": "2026-10-20T04:00:26.000Z",
+        "tags": [
+          "ai"
+        ],
+        "translated": true,
+        "via": null
+      },
+      {
+        "id": "noticia-6",
+        "title": "Dozens of International Media Organizations Back Australian Creatives in Warning Against Copyright Changes",
+        "summary": "Sixty‑three international media organizations, coordinated by the News/Media Alliance, sent a letter to Australian officials urging them to reject proposed copyright amendments that would permit AI firms to train models on copyrighted works without compensation, representing thousands of rights holders.",
+        "url": "https://www.riaa.com/news/dozens-of-international-media-organizations-back-australian-creatives-in-warning-against-copyright-changes/",
+        "source": "RIAA",
+        "domain": "riaa.com",
+        "publishedAt": "2026-10-21T22:15:12.000Z",
+        "tags": [
+          "ai"
+        ],
+        "translated": true,
+        "via": null
+      },
+      {
+        "id": "noticia-7",
+        "title": "Anthropic, music publishers square off on 'fair use' defense in AI copyright case",
+        "summary": "In a copyright dispute, AI developer Anthropic and several music publishers are confronting each other, with the publishers arguing that their use of copyrighted material qualifies as fair use under the law.",
+        "url": "https://news.google.com/rss/articles/CBMitAFBVV95cUxNT3pZQUU3NTI4WFhrZkxldDBxUTRpT20za0J4X2JkYTUxdExnbFdaUEoyam5PWmFTa2xNWHpTTGZqdTl6SWhuOW4tcXMyNE9uOHNqcHlIRGhHendlM2JyYkJVRjE1RnNSUDhpVjFZNEY3Vy1kamtSVTJXaFdiWE1oYXlxS2Q1Ylg4NV9kNmhLMElBOTAxdXJVa0E1eEt6NUkxWU9UcTU1MGIyeDdBUy1jcXFvR04?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "Reuters",
+        "domain": "news.google.com",
+        "publishedAt": "2026-10-21T21:17:07.000Z",
+        "tags": [
+          "ai"
+        ],
+        "translated": true,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-8",
+        "title": "Sony and Universal Demand DistroKid AI Music Upload Data in Copyright Battle",
+        "summary": "Sony Music and Universal Music have demanded that DistroKid supply data on AI‑generated music uploads as part of an ongoing copyright conflict between the major labels and the distribution platform.",
+        "url": "https://news.google.com/rss/articles/CBMiqAFBVV95cUxNWEx6dFBnWnhxQ1lOSm5tT1RFemhzVk9ndkd5bUMyZ0pleTFJMWQ1eFJHSllodkt6WFBKUk5PbDBQRVAzV01sUU1KRjU2Mk9US0s4MmlxZGhCVzJMQlVLWmxKYzBiUGN6aUstQ25aM1hKTkZPWi1PdE9lN2kxdGYyU1U1bjU4bUhVZWd5Qm1lSGRyQkZHNWRmemFpcldtQ2U3c2tITDhZcUM?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "RouteNote",
+        "domain": "news.google.com",
+        "publishedAt": "2026-10-19T08:46:02.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": true,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-9",
+        "title": "La legislación sobre derechos de autor tiene dificultades para adaptarse a la música creada con inteligencia artificial en Corea del Sur.",
+        "summary": "South Korean copyright law struggles to adapt to music created with artificial intelligence, as existing regulations do not adequately address works generated by algorithms.",
+        "url": "https://news.google.com/rss/articles/CBMigAFBVV95cUxOT244YVZJQmhUZWRkcjB2UVRXamc4QlpyMU1pRFg1VkxYNGM1N1RnTVVRNVNZRjdvUnNHQTNlTGQ3MzFpb0JjMExtSnYtSU9WTXpPa0dxQklDWHZvUlF0S1BoRDJKcVJCUEV5UU9TbnVaT1dZQ1k0Z0ktZlA1VFR0bQ?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "Vietnam.vn",
+        "domain": "news.google.com",
+        "publishedAt": "2026-10-15T23:11:44.000Z",
+        "tags": [
+          "ai",
+          "legislation"
+        ],
+        "translated": true,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-10",
+        "title": "RIAA Flags Anna’s Archive and AI Voice Cloner to U.S. Government",
+        "summary": "The RIAA presented its latest “notorious markets” report to the U.S. government, adding the shadow library Anna’s Archive and the AI voice‑cloning service Lalals to the list of additional concerns alongside established piracy sites.",
+        "url": "https://torrentfreak.com/riaa-flags-annas-archive-and-ai-voice-cloner-to-u-s-government/",
+        "source": "TorrentFreak",
+        "domain": "torrentfreak.com",
+        "publishedAt": "2026-10-15T07:52:44.000Z",
+        "tags": [
+          "ai"
+        ],
+        "translated": true,
+        "via": null
+      },
+      {
+        "id": "noticia-11",
+        "title": "Universal Music appoints first AI director amid copyright lawsuits",
+        "summary": "Universal Music announced the creation of a new executive position dedicated to artificial intelligence, appointing its first AI director as the company navigates ongoing copyright lawsuits involving AI‑generated content.",
+        "url": "https://news.google.com/rss/articles/CBMipwFBVV95cUxQOVkwYzBMeU9pblF1TkZQbE01Nzd1dzhIeWNVQU5wclZCTWpnMGxXU081WnFKR09XSmFTWEVGZVFDd2tlUWhrXzVHRUJXbExlcTZTRndEWnBaMmN2eVE2ZFJHYkhLcE1CY19HVV9xOGsxUzRkRklhSlJUM0pLMWw2TDB1Z0dmTENlUk1VWENTMFNmdEN3QzVSUEtqcDFpN3BQQ1IzX0xfZw?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "The Ticker",
+        "domain": "news.google.com",
+        "publishedAt": "2026-10-13T13:07:31.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": true,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-12",
+        "title": "Un músico, condenado a prisión por utilizar \"bots\" de inteligencia artificial para cobrar millones en derechos de autor",
+        "summary": "A court sentenced a musician to prison for employing artificial‑intelligence bots to file copyright royalty claims worth millions of dollars, deeming the actions a fraud against the royalty system.",
+        "url": "https://news.google.com/rss/articles/CBMi4wFBVV95cUxNNkQ0eXF3ZXF2YnJPRmM2bnFYWXc4NGVmc29Hb2syNXk2alZKSW02MWo1OGEwbnY1MnJXM2hweGpFbTB6T2tTdGtQRENxdFRfNXVrYWwtRGs5ZjBCSVZfMnhZcmpMOE9LNHNxdWhKMVd3X2ZsN2xzUjNiNURfNGctTjdvTTFtbXgwNjk1RDFSUHN4UkRsa1Zzc3FXa3d6aTdSNHFtcXRyTGtHRVpEeTdZcVlBQXROZWhQRnRIZnJManRNckZid0ViekNMUnhYX2pTTEsxZ1BMcUZ1d3dEQUhVQXJ2NA?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "Confilegal",
+        "domain": "news.google.com",
+        "publishedAt": "2026-10-20T03:51:02.000Z",
+        "tags": [
+          "ai"
+        ],
+        "translated": true,
+        "via": "Google News"
+      }
+    ],
+    "tip": {
+      "title": "Keep the project files, not just the master",
+      "body": "In an authorship dispute, your dated DAW session with stems and work-in-progress versions carries more weight than the final WAV. Back up the whole project, not just the bounce."
+    }
+  }
+}
