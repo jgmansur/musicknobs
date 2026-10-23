@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-10-22T22:15:11.526Z",
+  "lastUpdated": "2026-10-23T12:34:35.350Z",
   "meta": {
     "method": "rss-retrieval + link-verification + ai-translation",
     "itemCount": 12,
@@ -7,14 +7,14 @@
       "Complete Music Update",
       "Digital Music News",
       "Industria Musical",
+      "Music Ally",
       "Music Business Worldwide",
       "RIAA",
       "Reuters",
-      "RouteNote",
-      "Vietnam.vn"
+      "RouteNote"
     ],
     "verifiedLinks": 12,
-    "aiTranslated": 1,
+    "aiTranslated": 0,
     "note": "Los hechos provienen de los artículos originales enlazados. La IA solo traduce y resume; no genera noticias."
   },
   "es": {
@@ -23,21 +23,37 @@
     "items": [
       {
         "id": "noticia-1",
-        "title": "Reservoir Fires Off Infringement and DMCA Suits Against Suno and Anthropic, Demanding Nearly $340 Million in Total Damages",
-        "summary": "Reservoir Media ha presentado demandas por infracción de derechos de autor y violación del DMCA contra Suno y Anthropic en la Corte de Distrito del Norte de California, exigiendo casi 340 millones de dólares en daños, incluyendo una reclamación de 200 millones contra Suno.",
-        "url": "https://www.digitalmusicnews.com/2026/10/22/reservoir-media-suno-anthropic-lawsuit/",
-        "source": "Digital Music News",
-        "domain": "digitalmusicnews.com",
-        "publishedAt": "2026-10-22T20:20:29.000Z",
+        "title": "Reservoir hits Suno and Anthropic with copyright infringement lawsuits",
+        "summary": "Reservoir Media is the latest music rightsholder taking aim at AI companies in the courts. It’s gone with a double-pronged attack, suing both Suno and Anthropic on the same day this week. The post is from Music Ally .",
+        "url": "https://musically.com/2026/10/23/reservoir-hits-suno-and-anthropic-with-copyright-infringement-lawsuits/",
+        "source": "Music Ally",
+        "domain": "musically.com",
+        "publishedAt": "2026-10-23T12:30:00.000Z",
         "tags": [
           "lawsuit",
           "ai"
         ],
-        "translated": true,
+        "translated": false,
         "via": null
       },
       {
         "id": "noticia-2",
+        "title": "Suno v. MLC Subpoena Dispute Boils Over as AI Platform Demands Years Worth of DSP-Specific Streaming Data",
+        "summary": "We’ve heard plenty about Suno the defendant. But what about Suno the filing party? As it grapples with high-stakes infringement complaints from UMG, Sony Music, and a slew of others, the AI music platform is now demanding a trove of streaming-data documents, pertaining to several DSPs, from the MLC. This newest subpoen…",
+        "url": "https://www.digitalmusicnews.com/2026/10/22/suno-mlc-subpoena/",
+        "source": "Digital Music News",
+        "domain": "digitalmusicnews.com",
+        "publishedAt": "2026-10-23T00:04:24.000Z",
+        "tags": [
+          "lawsuit",
+          "ai",
+          "streaming"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-3",
         "title": "Claude’s lyrics are diluting real lyrics, say music publishers in latest Anthropic proceedings",
         "summary": "The big debate over whether or not AI training is fair use under US copyright law was taking place in court again yesterday, this time in the context of music, specifically lyrics, with the copyright legal battle between AI company Anthropic and the Universal, Concord and ABKCO music publishers",
         "url": "https://completemusicupdate.com/claudes-lyrics-are-diluting-real-lyrics-say-music-publishers-in-latest-anthropic-proceedings/",
@@ -52,7 +68,7 @@
         "via": null
       },
       {
-        "id": "noticia-3",
+        "id": "noticia-4",
         "title": "Today in Social Media Infringement Cases: LG and Kroger Sued for Allegedly Using Viral Track ‘Cheese Tax’ in TikTok Videos",
         "summary": "Today in social media copyright complaints: A pair of infringement actions against Kroger and LG Electronics, which allegedly incorporated a protected track into TikTok videos without authorization. Georgia-based singer-songwriter Matt Hobbs, the creator of Puppy Songs, submitted the lawsuits to a California federal co…",
         "url": "https://www.digitalmusicnews.com/2026/10/20/cheese-tax-lawsuit-kroger-lg/",
@@ -66,7 +82,7 @@
         "via": null
       },
       {
-        "id": "noticia-4",
+        "id": "noticia-5",
         "title": "Reservoir sues Suno and Anthropic for infringing songs by Joni Mitchell, Johnny Cash, Madonna and more",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMi6gFBVV95cUxOUmRxZlpmZVRhSkc2RDExdlNxNXB1cHViMXVUUXVRUGtVLURUVHhqd0xkSnlNdS1lSmRaTThoUnBacy0wUVUzVTQ2YXNSRFBvUE5lMUh2U280azhaR2lhaFdNcF9uY3JSNUVRUGNqVnROU1NwTmxMdHlhTGxvRG4tRHh5c09tMlFwSWQ4V3NZOWdGYm9kcUYyMFNhTmhHS1AyMUdLNWVScjEwSDBmZ200QnFRRm9FYXZ3c0FYX0pNVHdnb2Frak1tczVRbWE5dkdjU1VCaVVUMXVaeUNydUlqYVF1M0tLS2N1Ymc?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -81,7 +97,7 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-5",
+        "id": "noticia-6",
         "title": "Drake Sued Over ‘Janice STFU’ by Producer Who Says Rapper Stole His Chorus",
         "summary": "Drake is being sued for copyright infringement on his hit “Janice STFU” by a producer who says the rapper and his team “shamelessly refuse to acknowledge” his substantial contributions. Drake has been hit with a copyright infringement lawsuit over his hit song “Janice STFU” by a producer named Aviel Calev Hirschfield,…",
         "url": "https://www.digitalmusicnews.com/2026/10/18/drake-sued-over-janice-stfu/",
@@ -95,7 +111,7 @@
         "via": null
       },
       {
-        "id": "noticia-6",
+        "id": "noticia-7",
         "title": "Dozens of International Media Organizations Back Australian Creatives in Warning Against Copyright Changes",
         "summary": "Canberra, Australia – Today a group of 63 international media organizations led by the News/Media Alliance delivered a letter to senior Australian politicians asking them to reject proposed changes to the country’s copyright laws that would allow artificial intelligence companies to use copyrighted material in training…",
         "url": "https://www.riaa.com/news/dozens-of-international-media-organizations-back-australian-creatives-in-warning-against-copyright-changes/",
@@ -109,7 +125,7 @@
         "via": null
       },
       {
-        "id": "noticia-7",
+        "id": "noticia-8",
         "title": "Universal Music Group becomes first major music company to license TYGER, which uses AI to adapt songs to gameplay in real time",
         "summary": "Select recordings and songs from UMG's recorded music and publishing catalogs will become available on TYGER's paid, on-demand subscription service. Source",
         "url": "https://www.musicbusinessworldwide.com/umg-becomes-first-major-music-company-to-license-tyger-which-uses-ai-to-adapt-songs-to-gameplay-in-real-time/",
@@ -125,7 +141,7 @@
         "via": null
       },
       {
-        "id": "noticia-8",
+        "id": "noticia-9",
         "title": "Anthropic, music publishers square off on 'fair use' defense in AI copyright case",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMitAFBVV95cUxNT3pZQUU3NTI4WFhrZkxldDBxUTRpT20za0J4X2JkYTUxdExnbFdaUEoyam5PWmFTa2xNWHpTTGZqdTl6SWhuOW4tcXMyNE9uOHNqcHlIRGhHendlM2JyYkJVRjE1RnNSUDhpVjFZNEY3Vy1kamtSVTJXaFdiWE1oYXlxS2Q1Ylg4NV9kNmhLMElBOTAxdXJVa0E1eEt6NUkxWU9UcTU1MGIyeDdBUy1jcXFvR04?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -139,7 +155,7 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-9",
+        "id": "noticia-10",
         "title": "Sony and Universal Demand DistroKid AI Music Upload Data in Copyright Battle",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMiqAFBVV95cUxNWEx6dFBnWnhxQ1lOSm5tT1RFemhzVk9ndkd5bUMyZ0pleTFJMWQ1eFJHSllodkt6WFBKUk5PbDBQRVAzV01sUU1KRjU2Mk9US0s4MmlxZGhCVzJMQlVLWmxKYzBiUGN6aUstQ25aM1hKTkZPWi1PdE9lN2kxdGYyU1U1bjU4bUhVZWd5Qm1lSGRyQkZHNWRmemFpcldtQ2U3c2tITDhZcUM?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -154,7 +170,7 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-10",
+        "id": "noticia-11",
         "title": "Musixmatch compra Music Reports, dueña de Songdex",
         "summary": "Musixmatch ha comprado Music Reports, la compañía de Los Ángeles propietaria del registro de derechos de autor Songdex. La operación, anunciada el 19 de octubre, incluye también la plataforma londinense de datos y licencias Blokur y el software de hojas de música Cuetrak, ambos de Music Reports. Es la primera adquisici…",
         "url": "https://industriamusical.com/musixmatch-compra-music-reports-songdex-blokur-cuetrak/?utm_source=rss&utm_medium=rss&utm_campaign=musixmatch-compra-music-reports-songdex-blokur-cuetrak",
@@ -168,7 +184,7 @@
         "via": null
       },
       {
-        "id": "noticia-11",
+        "id": "noticia-12",
         "title": "Suno admits it has not deleted all the recordings used to train its AI, in answer to UMG and Sony’s ‘laundering’ lawsuit",
         "summary": "The 44-page answer was filed on Tuesday (October 20) in the US District Court for the District of Massachusetts, and reviewed by MBW. Source",
         "url": "https://www.musicbusinessworldwide.com/suno-admits-it-has-not-deleted-all-the-recordings-used-to-train-its-ai-in-answer-to-umg-and-sonys-laundering-lawsuit/",
@@ -181,26 +197,11 @@
         ],
         "translated": false,
         "via": null
-      },
-      {
-        "id": "noticia-12",
-        "title": "La legislación sobre derechos de autor tiene dificultades para adaptarse a la música creada con inteligencia artificial en Corea del Sur.",
-        "summary": "",
-        "url": "https://news.google.com/rss/articles/CBMigAFBVV95cUxOT244YVZJQmhUZWRkcjB2UVRXamc4QlpyMU1pRFg1VkxYNGM1N1RnTVVRNVNZRjdvUnNHQTNlTGQ3MzFpb0JjMExtSnYtSU9WTXpPa0dxQklDWHZvUlF0S1BoRDJKcVJCUEV5UU9TbnVaT1dZQ1k0Z0ktZlA1VFR0bQ?oc=5&hl=es-419&gl=US&ceid=US:es-419",
-        "source": "Vietnam.vn",
-        "domain": "news.google.com",
-        "publishedAt": "2026-10-15T23:11:44.000Z",
-        "tags": [
-          "ai",
-          "legislation"
-        ],
-        "translated": false,
-        "via": "Google News"
       }
     ],
     "tip": {
-      "title": "Guarda los proyectos, no solo el master",
-      "body": "En una disputa de autoría, el archivo de sesión de tu DAW con fecha, stems y versiones intermedias pesa más que el WAV final. Respalda el proyecto completo, no nada más el bounce."
+      "title": "Sample sin licencia no se arregla con 'menos de 7 segundos'",
+      "body": "No existe una cantidad de segundos legalmente segura. Cualquier fragmento reconocible puede ser infracción, y necesitas dos permisos: el de la grabación (sello) y el de la composición (editorial)."
     }
   },
   "en": {
@@ -209,21 +210,37 @@
     "items": [
       {
         "id": "noticia-1",
-        "title": "Reservoir Fires Off Infringement and DMCA Suits Against Suno and Anthropic, Demanding Nearly $340 Million in Total Damages",
-        "summary": "Reservoir Media has filed copyright infringement and DMCA lawsuits against Suno and Anthropic in the U.S. District Court for the Northern District of California, seeking nearly $340 million in damages, including a claim of about $200 million against Suno.",
-        "url": "https://www.digitalmusicnews.com/2026/10/22/reservoir-media-suno-anthropic-lawsuit/",
-        "source": "Digital Music News",
-        "domain": "digitalmusicnews.com",
-        "publishedAt": "2026-10-22T20:20:29.000Z",
+        "title": "Reservoir hits Suno and Anthropic with copyright infringement lawsuits",
+        "summary": "Reservoir Media is the latest music rightsholder taking aim at AI companies in the courts. It’s gone with a double-pronged attack, suing both Suno and Anthropic on the same day this week. The post is from Music Ally .",
+        "url": "https://musically.com/2026/10/23/reservoir-hits-suno-and-anthropic-with-copyright-infringement-lawsuits/",
+        "source": "Music Ally",
+        "domain": "musically.com",
+        "publishedAt": "2026-10-23T12:30:00.000Z",
         "tags": [
           "lawsuit",
           "ai"
         ],
-        "translated": true,
+        "translated": false,
         "via": null
       },
       {
         "id": "noticia-2",
+        "title": "Suno v. MLC Subpoena Dispute Boils Over as AI Platform Demands Years Worth of DSP-Specific Streaming Data",
+        "summary": "We’ve heard plenty about Suno the defendant. But what about Suno the filing party? As it grapples with high-stakes infringement complaints from UMG, Sony Music, and a slew of others, the AI music platform is now demanding a trove of streaming-data documents, pertaining to several DSPs, from the MLC. This newest subpoen…",
+        "url": "https://www.digitalmusicnews.com/2026/10/22/suno-mlc-subpoena/",
+        "source": "Digital Music News",
+        "domain": "digitalmusicnews.com",
+        "publishedAt": "2026-10-23T00:04:24.000Z",
+        "tags": [
+          "lawsuit",
+          "ai",
+          "streaming"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-3",
         "title": "Claude’s lyrics are diluting real lyrics, say music publishers in latest Anthropic proceedings",
         "summary": "The big debate over whether or not AI training is fair use under US copyright law was taking place in court again yesterday, this time in the context of music, specifically lyrics, with the copyright legal battle between AI company Anthropic and the Universal, Concord and ABKCO music publishers",
         "url": "https://completemusicupdate.com/claudes-lyrics-are-diluting-real-lyrics-say-music-publishers-in-latest-anthropic-proceedings/",
@@ -238,7 +255,7 @@
         "via": null
       },
       {
-        "id": "noticia-3",
+        "id": "noticia-4",
         "title": "Today in Social Media Infringement Cases: LG and Kroger Sued for Allegedly Using Viral Track ‘Cheese Tax’ in TikTok Videos",
         "summary": "Today in social media copyright complaints: A pair of infringement actions against Kroger and LG Electronics, which allegedly incorporated a protected track into TikTok videos without authorization. Georgia-based singer-songwriter Matt Hobbs, the creator of Puppy Songs, submitted the lawsuits to a California federal co…",
         "url": "https://www.digitalmusicnews.com/2026/10/20/cheese-tax-lawsuit-kroger-lg/",
@@ -252,7 +269,7 @@
         "via": null
       },
       {
-        "id": "noticia-4",
+        "id": "noticia-5",
         "title": "Reservoir sues Suno and Anthropic for infringing songs by Joni Mitchell, Johnny Cash, Madonna and more",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMi6gFBVV95cUxOUmRxZlpmZVRhSkc2RDExdlNxNXB1cHViMXVUUXVRUGtVLURUVHhqd0xkSnlNdS1lSmRaTThoUnBacy0wUVUzVTQ2YXNSRFBvUE5lMUh2U280azhaR2lhaFdNcF9uY3JSNUVRUGNqVnROU1NwTmxMdHlhTGxvRG4tRHh5c09tMlFwSWQ4V3NZOWdGYm9kcUYyMFNhTmhHS1AyMUdLNWVScjEwSDBmZ200QnFRRm9FYXZ3c0FYX0pNVHdnb2Frak1tczVRbWE5dkdjU1VCaVVUMXVaeUNydUlqYVF1M0tLS2N1Ymc?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -267,7 +284,7 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-5",
+        "id": "noticia-6",
         "title": "Drake Sued Over ‘Janice STFU’ by Producer Who Says Rapper Stole His Chorus",
         "summary": "Drake is being sued for copyright infringement on his hit “Janice STFU” by a producer who says the rapper and his team “shamelessly refuse to acknowledge” his substantial contributions. Drake has been hit with a copyright infringement lawsuit over his hit song “Janice STFU” by a producer named Aviel Calev Hirschfield,…",
         "url": "https://www.digitalmusicnews.com/2026/10/18/drake-sued-over-janice-stfu/",
@@ -281,7 +298,7 @@
         "via": null
       },
       {
-        "id": "noticia-6",
+        "id": "noticia-7",
         "title": "Dozens of International Media Organizations Back Australian Creatives in Warning Against Copyright Changes",
         "summary": "Canberra, Australia – Today a group of 63 international media organizations led by the News/Media Alliance delivered a letter to senior Australian politicians asking them to reject proposed changes to the country’s copyright laws that would allow artificial intelligence companies to use copyrighted material in training…",
         "url": "https://www.riaa.com/news/dozens-of-international-media-organizations-back-australian-creatives-in-warning-against-copyright-changes/",
@@ -295,7 +312,7 @@
         "via": null
       },
       {
-        "id": "noticia-7",
+        "id": "noticia-8",
         "title": "Universal Music Group becomes first major music company to license TYGER, which uses AI to adapt songs to gameplay in real time",
         "summary": "Select recordings and songs from UMG's recorded music and publishing catalogs will become available on TYGER's paid, on-demand subscription service. Source",
         "url": "https://www.musicbusinessworldwide.com/umg-becomes-first-major-music-company-to-license-tyger-which-uses-ai-to-adapt-songs-to-gameplay-in-real-time/",
@@ -311,7 +328,7 @@
         "via": null
       },
       {
-        "id": "noticia-8",
+        "id": "noticia-9",
         "title": "Anthropic, music publishers square off on 'fair use' defense in AI copyright case",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMitAFBVV95cUxNT3pZQUU3NTI4WFhrZkxldDBxUTRpT20za0J4X2JkYTUxdExnbFdaUEoyam5PWmFTa2xNWHpTTGZqdTl6SWhuOW4tcXMyNE9uOHNqcHlIRGhHendlM2JyYkJVRjE1RnNSUDhpVjFZNEY3Vy1kamtSVTJXaFdiWE1oYXlxS2Q1Ylg4NV9kNmhLMElBOTAxdXJVa0E1eEt6NUkxWU9UcTU1MGIyeDdBUy1jcXFvR04?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -325,7 +342,7 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-9",
+        "id": "noticia-10",
         "title": "Sony and Universal Demand DistroKid AI Music Upload Data in Copyright Battle",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMiqAFBVV95cUxNWEx6dFBnWnhxQ1lOSm5tT1RFemhzVk9ndkd5bUMyZ0pleTFJMWQ1eFJHSllodkt6WFBKUk5PbDBQRVAzV01sUU1KRjU2Mk9US0s4MmlxZGhCVzJMQlVLWmxKYzBiUGN6aUstQ25aM1hKTkZPWi1PdE9lN2kxdGYyU1U1bjU4bUhVZWd5Qm1lSGRyQkZHNWRmemFpcldtQ2U3c2tITDhZcUM?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -340,7 +357,7 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-10",
+        "id": "noticia-11",
         "title": "Musixmatch compra Music Reports, dueña de Songdex",
         "summary": "Musixmatch ha comprado Music Reports, la compañía de Los Ángeles propietaria del registro de derechos de autor Songdex. La operación, anunciada el 19 de octubre, incluye también la plataforma londinense de datos y licencias Blokur y el software de hojas de música Cuetrak, ambos de Music Reports. Es la primera adquisici…",
         "url": "https://industriamusical.com/musixmatch-compra-music-reports-songdex-blokur-cuetrak/?utm_source=rss&utm_medium=rss&utm_campaign=musixmatch-compra-music-reports-songdex-blokur-cuetrak",
@@ -354,7 +371,7 @@
         "via": null
       },
       {
-        "id": "noticia-11",
+        "id": "noticia-12",
         "title": "Suno admits it has not deleted all the recordings used to train its AI, in answer to UMG and Sony’s ‘laundering’ lawsuit",
         "summary": "The 44-page answer was filed on Tuesday (October 20) in the US District Court for the District of Massachusetts, and reviewed by MBW. Source",
         "url": "https://www.musicbusinessworldwide.com/suno-admits-it-has-not-deleted-all-the-recordings-used-to-train-its-ai-in-answer-to-umg-and-sonys-laundering-lawsuit/",
@@ -367,26 +384,11 @@
         ],
         "translated": false,
         "via": null
-      },
-      {
-        "id": "noticia-12",
-        "title": "La legislación sobre derechos de autor tiene dificultades para adaptarse a la música creada con inteligencia artificial en Corea del Sur.",
-        "summary": "",
-        "url": "https://news.google.com/rss/articles/CBMigAFBVV95cUxOT244YVZJQmhUZWRkcjB2UVRXamc4QlpyMU1pRFg1VkxYNGM1N1RnTVVRNVNZRjdvUnNHQTNlTGQ3MzFpb0JjMExtSnYtSU9WTXpPa0dxQklDWHZvUlF0S1BoRDJKcVJCUEV5UU9TbnVaT1dZQ1k0Z0ktZlA1VFR0bQ?oc=5&hl=es-419&gl=US&ceid=US:es-419",
-        "source": "Vietnam.vn",
-        "domain": "news.google.com",
-        "publishedAt": "2026-10-15T23:11:44.000Z",
-        "tags": [
-          "ai",
-          "legislation"
-        ],
-        "translated": false,
-        "via": "Google News"
       }
     ],
     "tip": {
-      "title": "Keep the project files, not just the master",
-      "body": "In an authorship dispute, your dated DAW session with stems and work-in-progress versions carries more weight than the final WAV. Back up the whole project, not just the bounce."
+      "title": "There is no safe 'under 7 seconds' rule for samples",
+      "body": "No number of seconds is legally safe. Any recognizable fragment can infringe, and you need two clearances: the master recording (label) and the composition (publisher)."
     }
   }
 }
