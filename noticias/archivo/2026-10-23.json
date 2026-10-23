@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-10-23T12:34:35.350Z",
+  "lastUpdated": "2026-10-23T22:02:27.916Z",
   "meta": {
     "method": "rss-retrieval + link-verification + ai-translation",
     "itemCount": 12,
@@ -11,7 +11,8 @@
       "Music Business Worldwide",
       "RIAA",
       "Reuters",
-      "RouteNote"
+      "RouteNote",
+      "Vietnam.vn"
     ],
     "verifiedLinks": 12,
     "aiTranslated": 0,
@@ -38,12 +39,12 @@
       },
       {
         "id": "noticia-2",
-        "title": "Suno v. MLC Subpoena Dispute Boils Over as AI Platform Demands Years Worth of DSP-Specific Streaming Data",
+        "title": "Suno v. MLC Subpoena Dispute Boils Over as AI Platform Demands Multiple Years of DSP-Specific Streaming Data",
         "summary": "We’ve heard plenty about Suno the defendant. But what about Suno the filing party? As it grapples with high-stakes infringement complaints from UMG, Sony Music, and a slew of others, the AI music platform is now demanding a trove of streaming-data documents, pertaining to several DSPs, from the MLC. This newest subpoen…",
         "url": "https://www.digitalmusicnews.com/2026/10/22/suno-mlc-subpoena/",
         "source": "Digital Music News",
         "domain": "digitalmusicnews.com",
-        "publishedAt": "2026-10-23T00:04:24.000Z",
+        "publishedAt": "2026-10-23T06:00:24.000Z",
         "tags": [
           "lawsuit",
           "ai",
@@ -126,22 +127,6 @@
       },
       {
         "id": "noticia-8",
-        "title": "Universal Music Group becomes first major music company to license TYGER, which uses AI to adapt songs to gameplay in real time",
-        "summary": "Select recordings and songs from UMG's recorded music and publishing catalogs will become available on TYGER's paid, on-demand subscription service. Source",
-        "url": "https://www.musicbusinessworldwide.com/umg-becomes-first-major-music-company-to-license-tyger-which-uses-ai-to-adapt-songs-to-gameplay-in-real-time/",
-        "source": "Music Business Worldwide",
-        "domain": "musicbusinessworldwide.com",
-        "publishedAt": "2026-10-22T14:23:14.000Z",
-        "tags": [
-          "lawsuit",
-          "ai",
-          "licensing"
-        ],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-9",
         "title": "Anthropic, music publishers square off on 'fair use' defense in AI copyright case",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMitAFBVV95cUxNT3pZQUU3NTI4WFhrZkxldDBxUTRpT20za0J4X2JkYTUxdExnbFdaUEoyam5PWmFTa2xNWHpTTGZqdTl6SWhuOW4tcXMyNE9uOHNqcHlIRGhHendlM2JyYkJVRjE1RnNSUDhpVjFZNEY3Vy1kamtSVTJXaFdiWE1oYXlxS2Q1Ylg4NV9kNmhLMElBOTAxdXJVa0E1eEt6NUkxWU9UcTU1MGIyeDdBUy1jcXFvR04?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -155,7 +140,7 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-10",
+        "id": "noticia-9",
         "title": "Sony and Universal Demand DistroKid AI Music Upload Data in Copyright Battle",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMiqAFBVV95cUxNWEx6dFBnWnhxQ1lOSm5tT1RFemhzVk9ndkd5bUMyZ0pleTFJMWQ1eFJHSllodkt6WFBKUk5PbDBQRVAzV01sUU1KRjU2Mk9US0s4MmlxZGhCVzJMQlVLWmxKYzBiUGN6aUstQ25aM1hKTkZPWi1PdE9lN2kxdGYyU1U1bjU4bUhVZWd5Qm1lSGRyQkZHNWRmemFpcldtQ2U3c2tITDhZcUM?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -164,6 +149,20 @@
         "publishedAt": "2026-10-19T08:46:02.000Z",
         "tags": [
           "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-10",
+        "title": "La explosión de la música creada con inteligencia artificial plantea desafíos en materia de derechos de autor.",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMiggFBVV95cUxQOVgyd0ZqOVgxT3dMQmFCeXN0MnJueWhRal9IOUU4TEJpTzZObGt1d2ZkcnNEOERNdnZLQUZhLWo0bFBTdFY2d21jZG9YY1pOSDdDSVA5VFNjaHdadnR4R0REQjZhSkM0Skpvc0F1U3J1MG5WUm5fOHdBSzh1ZVNoN3pB?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "Vietnam.vn",
+        "domain": "news.google.com",
+        "publishedAt": "2026-10-23T06:33:48.000Z",
+        "tags": [
           "ai"
         ],
         "translated": false,
@@ -185,16 +184,13 @@
       },
       {
         "id": "noticia-12",
-        "title": "Suno admits it has not deleted all the recordings used to train its AI, in answer to UMG and Sony’s ‘laundering’ lawsuit",
-        "summary": "The 44-page answer was filed on Tuesday (October 20) in the US District Court for the District of Massachusetts, and reviewed by MBW. Source",
-        "url": "https://www.musicbusinessworldwide.com/suno-admits-it-has-not-deleted-all-the-recordings-used-to-train-its-ai-in-answer-to-umg-and-sonys-laundering-lawsuit/",
-        "source": "Music Business Worldwide",
-        "domain": "musicbusinessworldwide.com",
-        "publishedAt": "2026-10-22T14:25:36.000Z",
-        "tags": [
-          "lawsuit",
-          "ai"
-        ],
+        "title": "Former Eminem employee faces up to five years in jail after pleading guilty to stealing and selling unreleased music files",
+        "summary": "In January 2025 unreleased Eminem tracks started to mysteriously appear online, prompting an FBI investigation that linked the leaks to one of the rapper’s former employees, Joseph Strange. He has now pleaded guilty to criminal copyright infringement and faces up to five years in jail",
+        "url": "https://completemusicupdate.com/former-eminem-employee-faces-up-to-five-years-in-jail-after-pleading-guilty-to-stealing-and-selling-unreleased-music-files/",
+        "source": "Complete Music Update",
+        "domain": "completemusicupdate.com",
+        "publishedAt": "2026-10-23T14:50:13.000Z",
+        "tags": [],
         "translated": false,
         "via": null
       }
@@ -225,12 +221,12 @@
       },
       {
         "id": "noticia-2",
-        "title": "Suno v. MLC Subpoena Dispute Boils Over as AI Platform Demands Years Worth of DSP-Specific Streaming Data",
+        "title": "Suno v. MLC Subpoena Dispute Boils Over as AI Platform Demands Multiple Years of DSP-Specific Streaming Data",
         "summary": "We’ve heard plenty about Suno the defendant. But what about Suno the filing party? As it grapples with high-stakes infringement complaints from UMG, Sony Music, and a slew of others, the AI music platform is now demanding a trove of streaming-data documents, pertaining to several DSPs, from the MLC. This newest subpoen…",
         "url": "https://www.digitalmusicnews.com/2026/10/22/suno-mlc-subpoena/",
         "source": "Digital Music News",
         "domain": "digitalmusicnews.com",
-        "publishedAt": "2026-10-23T00:04:24.000Z",
+        "publishedAt": "2026-10-23T06:00:24.000Z",
         "tags": [
           "lawsuit",
           "ai",
@@ -313,22 +309,6 @@
       },
       {
         "id": "noticia-8",
-        "title": "Universal Music Group becomes first major music company to license TYGER, which uses AI to adapt songs to gameplay in real time",
-        "summary": "Select recordings and songs from UMG's recorded music and publishing catalogs will become available on TYGER's paid, on-demand subscription service. Source",
-        "url": "https://www.musicbusinessworldwide.com/umg-becomes-first-major-music-company-to-license-tyger-which-uses-ai-to-adapt-songs-to-gameplay-in-real-time/",
-        "source": "Music Business Worldwide",
-        "domain": "musicbusinessworldwide.com",
-        "publishedAt": "2026-10-22T14:23:14.000Z",
-        "tags": [
-          "lawsuit",
-          "ai",
-          "licensing"
-        ],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-9",
         "title": "Anthropic, music publishers square off on 'fair use' defense in AI copyright case",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMitAFBVV95cUxNT3pZQUU3NTI4WFhrZkxldDBxUTRpT20za0J4X2JkYTUxdExnbFdaUEoyam5PWmFTa2xNWHpTTGZqdTl6SWhuOW4tcXMyNE9uOHNqcHlIRGhHendlM2JyYkJVRjE1RnNSUDhpVjFZNEY3Vy1kamtSVTJXaFdiWE1oYXlxS2Q1Ylg4NV9kNmhLMElBOTAxdXJVa0E1eEt6NUkxWU9UcTU1MGIyeDdBUy1jcXFvR04?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -342,7 +322,7 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-10",
+        "id": "noticia-9",
         "title": "Sony and Universal Demand DistroKid AI Music Upload Data in Copyright Battle",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMiqAFBVV95cUxNWEx6dFBnWnhxQ1lOSm5tT1RFemhzVk9ndkd5bUMyZ0pleTFJMWQ1eFJHSllodkt6WFBKUk5PbDBQRVAzV01sUU1KRjU2Mk9US0s4MmlxZGhCVzJMQlVLWmxKYzBiUGN6aUstQ25aM1hKTkZPWi1PdE9lN2kxdGYyU1U1bjU4bUhVZWd5Qm1lSGRyQkZHNWRmemFpcldtQ2U3c2tITDhZcUM?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -351,6 +331,20 @@
         "publishedAt": "2026-10-19T08:46:02.000Z",
         "tags": [
           "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-10",
+        "title": "La explosión de la música creada con inteligencia artificial plantea desafíos en materia de derechos de autor.",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMiggFBVV95cUxQOVgyd0ZqOVgxT3dMQmFCeXN0MnJueWhRal9IOUU4TEJpTzZObGt1d2ZkcnNEOERNdnZLQUZhLWo0bFBTdFY2d21jZG9YY1pOSDdDSVA5VFNjaHdadnR4R0REQjZhSkM0Skpvc0F1U3J1MG5WUm5fOHdBSzh1ZVNoN3pB?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "Vietnam.vn",
+        "domain": "news.google.com",
+        "publishedAt": "2026-10-23T06:33:48.000Z",
+        "tags": [
           "ai"
         ],
         "translated": false,
@@ -372,16 +366,13 @@
       },
       {
         "id": "noticia-12",
-        "title": "Suno admits it has not deleted all the recordings used to train its AI, in answer to UMG and Sony’s ‘laundering’ lawsuit",
-        "summary": "The 44-page answer was filed on Tuesday (October 20) in the US District Court for the District of Massachusetts, and reviewed by MBW. Source",
-        "url": "https://www.musicbusinessworldwide.com/suno-admits-it-has-not-deleted-all-the-recordings-used-to-train-its-ai-in-answer-to-umg-and-sonys-laundering-lawsuit/",
-        "source": "Music Business Worldwide",
-        "domain": "musicbusinessworldwide.com",
-        "publishedAt": "2026-10-22T14:25:36.000Z",
-        "tags": [
-          "lawsuit",
-          "ai"
-        ],
+        "title": "Former Eminem employee faces up to five years in jail after pleading guilty to stealing and selling unreleased music files",
+        "summary": "In January 2025 unreleased Eminem tracks started to mysteriously appear online, prompting an FBI investigation that linked the leaks to one of the rapper’s former employees, Joseph Strange. He has now pleaded guilty to criminal copyright infringement and faces up to five years in jail",
+        "url": "https://completemusicupdate.com/former-eminem-employee-faces-up-to-five-years-in-jail-after-pleading-guilty-to-stealing-and-selling-unreleased-music-files/",
+        "source": "Complete Music Update",
+        "domain": "completemusicupdate.com",
+        "publishedAt": "2026-10-23T14:50:13.000Z",
+        "tags": [],
         "translated": false,
         "via": null
       }
