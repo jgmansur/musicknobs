@@ -1,10 +1,9 @@
 {
-  "lastUpdated": "2026-10-25T12:31:37.653Z",
+  "lastUpdated": "2026-10-25T21:41:17.333Z",
   "meta": {
     "method": "rss-retrieval + link-verification + ai-translation",
     "itemCount": 12,
     "sources": [
-      "Billboard",
       "Complete Music Update",
       "Diario AS",
       "Industria Musical",
@@ -14,6 +13,7 @@
       "RIAA",
       "Reuters",
       "RouteNote",
+      "Variety",
       "Vietnam.vn"
     ],
     "verifiedLinks": 12,
@@ -61,7 +61,7 @@
         "url": "https://news.google.com/rss/articles/CBMiswFBVV95cUxPbk9lV0FTQUFqTXo2a001RG5Nemk4d3N5Vno0VTF5bUhYWWxaVC13bklQWF90M2VfV3NqUnNJRGp1VzYzanhSemluZnhNejlGbmtQQ3ZnT2FBSEpoVUwyeDlMR1dnYmtneTFwMW1xY0tVYm5BSzlwVVBjUUJmTU1kVzFYbks2SnRTd2RxdDBRNXVjV1MxR2hSSUpJUUxFVUhfRXkxbExfdWN2YVV6SUVuZ25VVQ?oc=5&hl=es-419&gl=US&ceid=US:es-419",
         "source": "NME",
         "domain": "news.google.com",
-        "publishedAt": "2026-10-25T11:44:52.000Z",
+        "publishedAt": "2026-10-25T11:46:12.000Z",
         "tags": [
           "lawsuit",
           "ai"
@@ -183,16 +183,13 @@
       },
       {
         "id": "noticia-12",
-        "title": "Anthropic Sued For Stealing Elvis Presley Music to Train AI: ‘Deeply Protective of These Iconic Songs’",
-        "summary": "The owners of The King's IP are cracking down on the tech giant, adding one of music's most legendary figures to the massive legal battle over AI music.",
-        "url": "https://www.billboard.com/pro/elvis-presley-estate-sues-suno-anthropic/",
-        "source": "Billboard",
-        "domain": "billboard.com",
-        "publishedAt": "2026-10-24T14:34:54.000Z",
-        "tags": [
-          "lawsuit",
-          "ai"
-        ],
+        "title": "Biographies of John Williams and Bernard Herrmann Among Honored Works in ASCAP’s Awards for Music Writing and Broadcasts",
+        "summary": "The winners of annual awards given out by ASCAP for the year’s most outstanding music writing and broadcasts include biographies of film composers John Williams and Bernard Herrmann, as well as a documentary about cult R&B artist Swamp Dogg, liner notes for an archival release from Frank Zappa, Rick Beato’s YouTube pod…",
+        "url": "https://variety.com/2026/music/news/ascap-writing-awards-biographies-john-williams-bernard-herrmann-1236922092/",
+        "source": "Variety",
+        "domain": "variety.com",
+        "publishedAt": "2026-10-23T03:01:11.000Z",
+        "tags": [],
         "translated": false,
         "via": null
       }
@@ -243,7 +240,7 @@
         "url": "https://news.google.com/rss/articles/CBMiswFBVV95cUxPbk9lV0FTQUFqTXo2a001RG5Nemk4d3N5Vno0VTF5bUhYWWxaVC13bklQWF90M2VfV3NqUnNJRGp1VzYzanhSemluZnhNejlGbmtQQ3ZnT2FBSEpoVUwyeDlMR1dnYmtneTFwMW1xY0tVYm5BSzlwVVBjUUJmTU1kVzFYbks2SnRTd2RxdDBRNXVjV1MxR2hSSUpJUUxFVUhfRXkxbExfdWN2YVV6SUVuZ25VVQ?oc=5&hl=es-419&gl=US&ceid=US:es-419",
         "source": "NME",
         "domain": "news.google.com",
-        "publishedAt": "2026-10-25T11:44:52.000Z",
+        "publishedAt": "2026-10-25T11:46:12.000Z",
         "tags": [
           "lawsuit",
           "ai"
@@ -365,16 +362,13 @@
       },
       {
         "id": "noticia-12",
-        "title": "Anthropic Sued For Stealing Elvis Presley Music to Train AI: ‘Deeply Protective of These Iconic Songs’",
-        "summary": "The owners of The King's IP are cracking down on the tech giant, adding one of music's most legendary figures to the massive legal battle over AI music.",
-        "url": "https://www.billboard.com/pro/elvis-presley-estate-sues-suno-anthropic/",
-        "source": "Billboard",
-        "domain": "billboard.com",
-        "publishedAt": "2026-10-24T14:34:54.000Z",
-        "tags": [
-          "lawsuit",
-          "ai"
-        ],
+        "title": "Biographies of John Williams and Bernard Herrmann Among Honored Works in ASCAP’s Awards for Music Writing and Broadcasts",
+        "summary": "The winners of annual awards given out by ASCAP for the year’s most outstanding music writing and broadcasts include biographies of film composers John Williams and Bernard Herrmann, as well as a documentary about cult R&B artist Swamp Dogg, liner notes for an archival release from Frank Zappa, Rick Beato’s YouTube pod…",
+        "url": "https://variety.com/2026/music/news/ascap-writing-awards-biographies-john-williams-bernard-herrmann-1236922092/",
+        "source": "Variety",
+        "domain": "variety.com",
+        "publishedAt": "2026-10-23T03:01:11.000Z",
+        "tags": [],
         "translated": false,
         "via": null
       }
