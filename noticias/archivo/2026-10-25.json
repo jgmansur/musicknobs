@@ -1,0 +1,387 @@
+{
+  "lastUpdated": "2026-10-25T12:31:37.653Z",
+  "meta": {
+    "method": "rss-retrieval + link-verification + ai-translation",
+    "itemCount": 12,
+    "sources": [
+      "Billboard",
+      "Complete Music Update",
+      "Diario AS",
+      "Industria Musical",
+      "Music Ally",
+      "Music Business Worldwide",
+      "NME",
+      "RIAA",
+      "Reuters",
+      "RouteNote",
+      "Vietnam.vn"
+    ],
+    "verifiedLinks": 12,
+    "aiTranslated": 0,
+    "note": "Los hechos provienen de los artículos originales enlazados. La IA solo traduce y resume; no genera noticias."
+  },
+  "es": {
+    "title": "Noticias de Copyright e Inteligencia Artificial",
+    "subtitle": "Notas publicadas por medios reales de la industria, con liga al artículo original. Sin noticias inventadas.",
+    "items": [
+      {
+        "id": "noticia-1",
+        "title": "Reservoir hits Suno and Anthropic with copyright infringement lawsuits",
+        "summary": "Reservoir Media is the latest music rightsholder taking aim at AI companies in the courts. It’s gone with a double-pronged attack, suing both Suno and Anthropic on the same day this week. The post is from Music Ally .",
+        "url": "https://musically.com/2026/10/23/reservoir-hits-suno-and-anthropic-with-copyright-infringement-lawsuits/",
+        "source": "Music Ally",
+        "domain": "musically.com",
+        "publishedAt": "2026-10-23T12:30:00.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-2",
+        "title": "Claude’s lyrics are diluting real lyrics, say music publishers in latest Anthropic proceedings",
+        "summary": "The big debate over whether or not AI training is fair use under US copyright law was taking place in court again yesterday, this time in the context of music, specifically lyrics, with the copyright legal battle between AI company Anthropic and the Universal, Concord and ABKCO music publishers",
+        "url": "https://completemusicupdate.com/claudes-lyrics-are-diluting-real-lyrics-say-music-publishers-in-latest-anthropic-proceedings/",
+        "source": "Complete Music Update",
+        "domain": "completemusicupdate.com",
+        "publishedAt": "2026-10-22T15:56:56.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-3",
+        "title": "Elvis Presley rightsholders sue AI company Anthropic over alleged copyright infringement of 274 songs",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMiswFBVV95cUxPbk9lV0FTQUFqTXo2a001RG5Nemk4d3N5Vno0VTF5bUhYWWxaVC13bklQWF90M2VfV3NqUnNJRGp1VzYzanhSemluZnhNejlGbmtQQ3ZnT2FBSEpoVUwyeDlMR1dnYmtneTFwMW1xY0tVYm5BSzlwVVBjUUJmTU1kVzFYbks2SnRTd2RxdDBRNXVjV1MxR2hSSUpJUUxFVUhfRXkxbExfdWN2YVV6SUVuZ25VVQ?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "NME",
+        "domain": "news.google.com",
+        "publishedAt": "2026-10-25T11:44:52.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-4",
+        "title": "Reservoir sues Suno and Anthropic for infringing songs by Joni Mitchell, Johnny Cash, Madonna and more",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMi6gFBVV95cUxOUmRxZlpmZVRhSkc2RDExdlNxNXB1cHViMXVUUXVRUGtVLURUVHhqd0xkSnlNdS1lSmRaTThoUnBacy0wUVUzVTQ2YXNSRFBvUE5lMUh2U280azhaR2lhaFdNcF9uY3JSNUVRUGNqVnROU1NwTmxMdHlhTGxvRG4tRHh5c09tMlFwSWQ4V3NZOWdGYm9kcUYyMFNhTmhHS1AyMUdLNWVScjEwSDBmZ200QnFRRm9FYXZ3c0FYX0pNVHdnb2Frak1tczVRbWE5dkdjU1VCaVVUMXVaeUNydUlqYVF1M0tLS2N1Ymc?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "Music Business Worldwide",
+        "domain": "news.google.com",
+        "publishedAt": "2026-10-22T12:19:08.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-5",
+        "title": "Condenan a prisión a un ‘músico’ millonario por crear canciones generadas por IA: cobraba derechos de autor si",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMimAJBVV95cUxQbTdEZHRhWGttbERaRmIxQlVONUt2ZzhKajlnU1M4MmdVcDlTSGdfM3pwWW5EdUM1Z29EN0doV2M5OFhYN0JsTFRPRGpQY2ZjbnBRR1AxV0p5YXgxdHVhc1p0bVQxdElWZkpXTmlySkh2QVVwbFRneGhQQjhxdm9rdzhZTWx1dldvVEpYaUFHUnZucU41ajVFTkczUUNCancxYjZlWXJxaFAyVHVpNzNjY2V5UTl5ZHJaNWhKOTg5LVNPalFhbk1sUmotRjZxSEs4Sl9FdTBWZnB0dC13T1FsNGFRdnBUYjFWTHQzS2YtV0Q5bXJmb0QzZmRGMml2SzZCOHRhSGR5Rl9hcUYybE50YXBWcmJxbjdv0gGsAkFVX3lxTE5XQnBadzhNLTl6UXd5dHhBb05FZEtZV3hraGtIaVVIUWJOd3NyMjYtMENuTHd4dHhqN0h3NXZIZWoyU2dKSzBBeVN1eHY5Nmpjazl0MTdmRjgtclVFN3paUV9UckhSc1VZRjFmb2NfQ2xyNk8zemlsWlJNNkhLVnF4RWFGbU5BWUJ6MFNWSld3bTU2VEVOTWhxRE44WnM4U0hoWDNLbHI2bHZNR3pTdWdPMHdncE0xNFBvVzlDdW1yd1F1U050Z0hhZ0pCZlppc2J4eGZNUXNhZTVkc2tPd21GQ0NHMWZuVlNwdkFQZGVVUEdvVHBBWDNYWmNOb2tuellqNTFKNXRGcXNtTFduRHdxbEtqSmF0TjM4VXpQUUdZRHZCNUJlcU5EU0JYRw?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "Diario AS",
+        "domain": "news.google.com",
+        "publishedAt": "2026-10-24T19:07:12.000Z",
+        "tags": [
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-6",
+        "title": "Dozens of International Media Organizations Back Australian Creatives in Warning Against Copyright Changes",
+        "summary": "Canberra, Australia – Today a group of 63 international media organizations led by the News/Media Alliance delivered a letter to senior Australian politicians asking them to reject proposed changes to the country’s copyright laws that would allow artificial intelligence companies to use copyrighted material in training…",
+        "url": "https://www.riaa.com/news/dozens-of-international-media-organizations-back-australian-creatives-in-warning-against-copyright-changes/",
+        "source": "RIAA",
+        "domain": "riaa.com",
+        "publishedAt": "2026-10-21T22:15:12.000Z",
+        "tags": [
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-7",
+        "title": "Anthropic, music publishers square off on 'fair use' defense in AI copyright case",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMitAFBVV95cUxNT3pZQUU3NTI4WFhrZkxldDBxUTRpT20za0J4X2JkYTUxdExnbFdaUEoyam5PWmFTa2xNWHpTTGZqdTl6SWhuOW4tcXMyNE9uOHNqcHlIRGhHendlM2JyYkJVRjE1RnNSUDhpVjFZNEY3Vy1kamtSVTJXaFdiWE1oYXlxS2Q1Ylg4NV9kNmhLMElBOTAxdXJVa0E1eEt6NUkxWU9UcTU1MGIyeDdBUy1jcXFvR04?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "Reuters",
+        "domain": "news.google.com",
+        "publishedAt": "2026-10-21T21:17:07.000Z",
+        "tags": [
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-8",
+        "title": "Sony and Universal Demand DistroKid AI Music Upload Data in Copyright Battle",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMiqAFBVV95cUxNWEx6dFBnWnhxQ1lOSm5tT1RFemhzVk9ndkd5bUMyZ0pleTFJMWQ1eFJHSllodkt6WFBKUk5PbDBQRVAzV01sUU1KRjU2Mk9US0s4MmlxZGhCVzJMQlVLWmxKYzBiUGN6aUstQ25aM1hKTkZPWi1PdE9lN2kxdGYyU1U1bjU4bUhVZWd5Qm1lSGRyQkZHNWRmemFpcldtQ2U3c2tITDhZcUM?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "RouteNote",
+        "domain": "news.google.com",
+        "publishedAt": "2026-10-19T08:46:02.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-9",
+        "title": "La explosión de la música creada con inteligencia artificial plantea desafíos en materia de derechos de autor.",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMiggFBVV95cUxQOVgyd0ZqOVgxT3dMQmFCeXN0MnJueWhRal9IOUU4TEJpTzZObGt1d2ZkcnNEOERNdnZLQUZhLWo0bFBTdFY2d21jZG9YY1pOSDdDSVA5VFNjaHdadnR4R0REQjZhSkM0Skpvc0F1U3J1MG5WUm5fOHdBSzh1ZVNoN3pB?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "Vietnam.vn",
+        "domain": "news.google.com",
+        "publishedAt": "2026-10-23T06:33:48.000Z",
+        "tags": [
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-10",
+        "title": "Musixmatch compra Music Reports, dueña de Songdex",
+        "summary": "Musixmatch ha comprado Music Reports, la compañía de Los Ángeles propietaria del registro de derechos de autor Songdex. La operación, anunciada el 19 de octubre, incluye también la plataforma londinense de datos y licencias Blokur y el software de hojas de música Cuetrak, ambos de Music Reports. Es la primera adquisici…",
+        "url": "https://industriamusical.com/musixmatch-compra-music-reports-songdex-blokur-cuetrak/?utm_source=rss&utm_medium=rss&utm_campaign=musixmatch-compra-music-reports-songdex-blokur-cuetrak",
+        "source": "Industria Musical",
+        "domain": "industriamusical.com",
+        "publishedAt": "2026-10-22T17:11:39.000Z",
+        "tags": [
+          "licensing"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-11",
+        "title": "Former Eminem employee faces up to five years in jail after pleading guilty to stealing and selling unreleased music files",
+        "summary": "In January 2025 unreleased Eminem tracks started to mysteriously appear online, prompting an FBI investigation that linked the leaks to one of the rapper’s former employees, Joseph Strange. He has now pleaded guilty to criminal copyright infringement and faces up to five years in jail",
+        "url": "https://completemusicupdate.com/former-eminem-employee-faces-up-to-five-years-in-jail-after-pleading-guilty-to-stealing-and-selling-unreleased-music-files/",
+        "source": "Complete Music Update",
+        "domain": "completemusicupdate.com",
+        "publishedAt": "2026-10-23T14:50:13.000Z",
+        "tags": [],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-12",
+        "title": "Anthropic Sued For Stealing Elvis Presley Music to Train AI: ‘Deeply Protective of These Iconic Songs’",
+        "summary": "The owners of The King's IP are cracking down on the tech giant, adding one of music's most legendary figures to the massive legal battle over AI music.",
+        "url": "https://www.billboard.com/pro/elvis-presley-estate-sues-suno-anthropic/",
+        "source": "Billboard",
+        "domain": "billboard.com",
+        "publishedAt": "2026-10-24T14:34:54.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      }
+    ],
+    "tip": {
+      "title": "Trabajo por encargo: quién queda como autor se pacta por escrito",
+      "body": "Si produces para un cliente, define por contrato si cedes derechos, si conservas puntos de producción y si tu nombre aparece en los créditos. Sin contrato, la interpretación depende de la ley de cada país."
+    }
+  },
+  "en": {
+    "title": "Copyright & Artificial Intelligence News",
+    "subtitle": "Stories published by real industry outlets, each linked to its original article. No invented news.",
+    "items": [
+      {
+        "id": "noticia-1",
+        "title": "Reservoir hits Suno and Anthropic with copyright infringement lawsuits",
+        "summary": "Reservoir Media is the latest music rightsholder taking aim at AI companies in the courts. It’s gone with a double-pronged attack, suing both Suno and Anthropic on the same day this week. The post is from Music Ally .",
+        "url": "https://musically.com/2026/10/23/reservoir-hits-suno-and-anthropic-with-copyright-infringement-lawsuits/",
+        "source": "Music Ally",
+        "domain": "musically.com",
+        "publishedAt": "2026-10-23T12:30:00.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-2",
+        "title": "Claude’s lyrics are diluting real lyrics, say music publishers in latest Anthropic proceedings",
+        "summary": "The big debate over whether or not AI training is fair use under US copyright law was taking place in court again yesterday, this time in the context of music, specifically lyrics, with the copyright legal battle between AI company Anthropic and the Universal, Concord and ABKCO music publishers",
+        "url": "https://completemusicupdate.com/claudes-lyrics-are-diluting-real-lyrics-say-music-publishers-in-latest-anthropic-proceedings/",
+        "source": "Complete Music Update",
+        "domain": "completemusicupdate.com",
+        "publishedAt": "2026-10-22T15:56:56.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-3",
+        "title": "Elvis Presley rightsholders sue AI company Anthropic over alleged copyright infringement of 274 songs",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMiswFBVV95cUxPbk9lV0FTQUFqTXo2a001RG5Nemk4d3N5Vno0VTF5bUhYWWxaVC13bklQWF90M2VfV3NqUnNJRGp1VzYzanhSemluZnhNejlGbmtQQ3ZnT2FBSEpoVUwyeDlMR1dnYmtneTFwMW1xY0tVYm5BSzlwVVBjUUJmTU1kVzFYbks2SnRTd2RxdDBRNXVjV1MxR2hSSUpJUUxFVUhfRXkxbExfdWN2YVV6SUVuZ25VVQ?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "NME",
+        "domain": "news.google.com",
+        "publishedAt": "2026-10-25T11:44:52.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-4",
+        "title": "Reservoir sues Suno and Anthropic for infringing songs by Joni Mitchell, Johnny Cash, Madonna and more",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMi6gFBVV95cUxOUmRxZlpmZVRhSkc2RDExdlNxNXB1cHViMXVUUXVRUGtVLURUVHhqd0xkSnlNdS1lSmRaTThoUnBacy0wUVUzVTQ2YXNSRFBvUE5lMUh2U280azhaR2lhaFdNcF9uY3JSNUVRUGNqVnROU1NwTmxMdHlhTGxvRG4tRHh5c09tMlFwSWQ4V3NZOWdGYm9kcUYyMFNhTmhHS1AyMUdLNWVScjEwSDBmZ200QnFRRm9FYXZ3c0FYX0pNVHdnb2Frak1tczVRbWE5dkdjU1VCaVVUMXVaeUNydUlqYVF1M0tLS2N1Ymc?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "Music Business Worldwide",
+        "domain": "news.google.com",
+        "publishedAt": "2026-10-22T12:19:08.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-5",
+        "title": "Condenan a prisión a un ‘músico’ millonario por crear canciones generadas por IA: cobraba derechos de autor si",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMimAJBVV95cUxQbTdEZHRhWGttbERaRmIxQlVONUt2ZzhKajlnU1M4MmdVcDlTSGdfM3pwWW5EdUM1Z29EN0doV2M5OFhYN0JsTFRPRGpQY2ZjbnBRR1AxV0p5YXgxdHVhc1p0bVQxdElWZkpXTmlySkh2QVVwbFRneGhQQjhxdm9rdzhZTWx1dldvVEpYaUFHUnZucU41ajVFTkczUUNCancxYjZlWXJxaFAyVHVpNzNjY2V5UTl5ZHJaNWhKOTg5LVNPalFhbk1sUmotRjZxSEs4Sl9FdTBWZnB0dC13T1FsNGFRdnBUYjFWTHQzS2YtV0Q5bXJmb0QzZmRGMml2SzZCOHRhSGR5Rl9hcUYybE50YXBWcmJxbjdv0gGsAkFVX3lxTE5XQnBadzhNLTl6UXd5dHhBb05FZEtZV3hraGtIaVVIUWJOd3NyMjYtMENuTHd4dHhqN0h3NXZIZWoyU2dKSzBBeVN1eHY5Nmpjazl0MTdmRjgtclVFN3paUV9UckhSc1VZRjFmb2NfQ2xyNk8zemlsWlJNNkhLVnF4RWFGbU5BWUJ6MFNWSld3bTU2VEVOTWhxRE44WnM4U0hoWDNLbHI2bHZNR3pTdWdPMHdncE0xNFBvVzlDdW1yd1F1U050Z0hhZ0pCZlppc2J4eGZNUXNhZTVkc2tPd21GQ0NHMWZuVlNwdkFQZGVVUEdvVHBBWDNYWmNOb2tuellqNTFKNXRGcXNtTFduRHdxbEtqSmF0TjM4VXpQUUdZRHZCNUJlcU5EU0JYRw?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "Diario AS",
+        "domain": "news.google.com",
+        "publishedAt": "2026-10-24T19:07:12.000Z",
+        "tags": [
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-6",
+        "title": "Dozens of International Media Organizations Back Australian Creatives in Warning Against Copyright Changes",
+        "summary": "Canberra, Australia – Today a group of 63 international media organizations led by the News/Media Alliance delivered a letter to senior Australian politicians asking them to reject proposed changes to the country’s copyright laws that would allow artificial intelligence companies to use copyrighted material in training…",
+        "url": "https://www.riaa.com/news/dozens-of-international-media-organizations-back-australian-creatives-in-warning-against-copyright-changes/",
+        "source": "RIAA",
+        "domain": "riaa.com",
+        "publishedAt": "2026-10-21T22:15:12.000Z",
+        "tags": [
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-7",
+        "title": "Anthropic, music publishers square off on 'fair use' defense in AI copyright case",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMitAFBVV95cUxNT3pZQUU3NTI4WFhrZkxldDBxUTRpT20za0J4X2JkYTUxdExnbFdaUEoyam5PWmFTa2xNWHpTTGZqdTl6SWhuOW4tcXMyNE9uOHNqcHlIRGhHendlM2JyYkJVRjE1RnNSUDhpVjFZNEY3Vy1kamtSVTJXaFdiWE1oYXlxS2Q1Ylg4NV9kNmhLMElBOTAxdXJVa0E1eEt6NUkxWU9UcTU1MGIyeDdBUy1jcXFvR04?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "Reuters",
+        "domain": "news.google.com",
+        "publishedAt": "2026-10-21T21:17:07.000Z",
+        "tags": [
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-8",
+        "title": "Sony and Universal Demand DistroKid AI Music Upload Data in Copyright Battle",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMiqAFBVV95cUxNWEx6dFBnWnhxQ1lOSm5tT1RFemhzVk9ndkd5bUMyZ0pleTFJMWQ1eFJHSllodkt6WFBKUk5PbDBQRVAzV01sUU1KRjU2Mk9US0s4MmlxZGhCVzJMQlVLWmxKYzBiUGN6aUstQ25aM1hKTkZPWi1PdE9lN2kxdGYyU1U1bjU4bUhVZWd5Qm1lSGRyQkZHNWRmemFpcldtQ2U3c2tITDhZcUM?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "RouteNote",
+        "domain": "news.google.com",
+        "publishedAt": "2026-10-19T08:46:02.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-9",
+        "title": "La explosión de la música creada con inteligencia artificial plantea desafíos en materia de derechos de autor.",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMiggFBVV95cUxQOVgyd0ZqOVgxT3dMQmFCeXN0MnJueWhRal9IOUU4TEJpTzZObGt1d2ZkcnNEOERNdnZLQUZhLWo0bFBTdFY2d21jZG9YY1pOSDdDSVA5VFNjaHdadnR4R0REQjZhSkM0Skpvc0F1U3J1MG5WUm5fOHdBSzh1ZVNoN3pB?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "Vietnam.vn",
+        "domain": "news.google.com",
+        "publishedAt": "2026-10-23T06:33:48.000Z",
+        "tags": [
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-10",
+        "title": "Musixmatch compra Music Reports, dueña de Songdex",
+        "summary": "Musixmatch ha comprado Music Reports, la compañía de Los Ángeles propietaria del registro de derechos de autor Songdex. La operación, anunciada el 19 de octubre, incluye también la plataforma londinense de datos y licencias Blokur y el software de hojas de música Cuetrak, ambos de Music Reports. Es la primera adquisici…",
+        "url": "https://industriamusical.com/musixmatch-compra-music-reports-songdex-blokur-cuetrak/?utm_source=rss&utm_medium=rss&utm_campaign=musixmatch-compra-music-reports-songdex-blokur-cuetrak",
+        "source": "Industria Musical",
+        "domain": "industriamusical.com",
+        "publishedAt": "2026-10-22T17:11:39.000Z",
+        "tags": [
+          "licensing"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-11",
+        "title": "Former Eminem employee faces up to five years in jail after pleading guilty to stealing and selling unreleased music files",
+        "summary": "In January 2025 unreleased Eminem tracks started to mysteriously appear online, prompting an FBI investigation that linked the leaks to one of the rapper’s former employees, Joseph Strange. He has now pleaded guilty to criminal copyright infringement and faces up to five years in jail",
+        "url": "https://completemusicupdate.com/former-eminem-employee-faces-up-to-five-years-in-jail-after-pleading-guilty-to-stealing-and-selling-unreleased-music-files/",
+        "source": "Complete Music Update",
+        "domain": "completemusicupdate.com",
+        "publishedAt": "2026-10-23T14:50:13.000Z",
+        "tags": [],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-12",
+        "title": "Anthropic Sued For Stealing Elvis Presley Music to Train AI: ‘Deeply Protective of These Iconic Songs’",
+        "summary": "The owners of The King's IP are cracking down on the tech giant, adding one of music's most legendary figures to the massive legal battle over AI music.",
+        "url": "https://www.billboard.com/pro/elvis-presley-estate-sues-suno-anthropic/",
+        "source": "Billboard",
+        "domain": "billboard.com",
+        "publishedAt": "2026-10-24T14:34:54.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      }
+    ],
+    "tip": {
+      "title": "Work for hire: put authorship in writing",
+      "body": "If you produce for a client, spell out in the contract whether you assign rights, keep producer points, and get credited. Without a contract, the outcome depends on each country's law."
+    }
+  }
+}
