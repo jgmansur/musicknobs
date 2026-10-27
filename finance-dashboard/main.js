@@ -79,33 +79,48 @@ const AI_MIRROR_SYNC_MAX_WAIT_MS = 5 * 60_000;
  * enterarse. Se avisa, no se traga el error.
  */
 async function financeCoreSync({ fecha, lugar, concepto, monto, tipo, forma, recibo, source = 'manual' }) {
-    // Es el ÚNICO lugar donde se guarda un gasto nuevo: si no llega, no existe.
-    // Por eso lanza en vez de avisar "se guardó, pero…": quien llama muestra
-    // el error y el formulario se queda con los datos para reintentar.
-    if (!balanceDesdeWorker) await balance_loadFromWorker();
+    // Preserve the current app's Firebase/session recovery before attempting a write.
     if (!balanceDesdeWorker) {
-        throw new Error('sin conexión con finanzas, NO se guardó. Toca «Volver a entrar» arriba y reintenta.');
+        try { await balance_loadFromWorker(); } catch { /* No write has been attempted. */ }
     }
-    const cuenta = balanceAccounts.find(a =>
+    if (!balanceDesdeWorker) {
+        return { state: 'failed', message: 'No se envió el movimiento: conecta finance-core antes de guardar.' };
+    }
+    const cuentas = balanceAccounts.filter(a =>
         balance_getAccountMatchKeys(a).includes(balance_normalizePaymentKey(forma)));
-    if (!cuenta) {
-        throw new Error(`"${forma}" no es una cuenta de finanzas, NO se guardó. Elige la forma de pago de la lista.`);
+    if (cuentas.length !== 1) {
+        return { state: 'failed', message: 'No se envió el movimiento: selecciona una cuenta válida y sin ambigüedad.' };
     }
-    await bandeja_api('/api/movimientos', {
-        method: 'POST',
-        body: JSON.stringify({
-            accountId: cuenta.id,
-            amount: Math.abs(Number(monto)),
-            kind: (tipo || '').toLowerCase().startsWith('ingreso') ? 'ingreso' : 'gasto',
-            occurredAt: fecha ? `${fecha}T12:00:00-06:00` : undefined,
-            merchant: lugar || null,
-            description: concepto || null,
-            receiptUrl: recibo || null,
-            source,
-        }),
-    });
-    await balance_loadFromWorker();
-    balance_updateKpi?.();
+    let result;
+    try {
+        result = await bandeja_api('/api/movimientos', {
+            method: 'POST',
+            body: JSON.stringify({
+                accountId: cuentas[0].id,
+                amount: Math.abs(Number(monto)),
+                kind: (tipo || '').toLowerCase().startsWith('ingreso') ? 'ingreso' : 'gasto',
+                occurredAt: fecha ? `${fecha}T12:00:00-06:00` : undefined,
+                merchant: lugar || null,
+                description: concepto || null,
+                receiptUrl: recibo || null,
+                source,
+            }),
+        });
+    } catch {
+        // The request may have committed before its response was lost. Never retry here.
+        return { state: 'pending', message: 'Guardado sin confirmar. Revisa el historial antes de volver a guardar para evitar duplicados.' };
+    }
+    if (result?.ok !== true || !result.id) {
+        return { state: 'pending', message: 'La respuesta no confirmó el movimiento. Revisa el historial antes de volver a guardar.' };
+    }
+    let refreshPending = false;
+    try {
+        refreshPending = !(await balance_loadFromWorker());
+        if (!refreshPending) balance_updateKpi?.();
+    } catch {
+        refreshPending = true;
+    }
+    return { state: 'confirmed', id: result.id, refreshPending };
 }
 
 
@@ -4302,7 +4317,17 @@ function _renderChartWithMode(data, mode) {
 // =============================================
 // CONTROL DE GASTOS MODULE
 // =============================================
-const gastosState = { allRows: [], offset: 0, search: '', detailRow: null, editRow: null, logSheetId: null };
+const gastosState = { allRows: [], offset: 0, search: '', detailRow: null, editRow: null, logSheetId: null, saveState: 'idle' };
+
+function gastos_guardadoEnCurso() {
+    return gastosState.saveState === 'sending' || gastosState.saveState === 'pending';
+}
+
+window.addEventListener('beforeunload', (event) => {
+    if (!gastos_guardadoEnCurso()) return;
+    event.preventDefault();
+    event.returnValue = '';
+});
 
 // `esIdDeWorker` vive en ./shared/ids.js, generado desde finance-core.
 
@@ -4480,6 +4505,7 @@ function gastos_renderLista(append) {
 async function gastos_guardar() {
     const btn      = document.getElementById('g-btn-save');
     const status   = document.getElementById('g-status');
+    if (btn.disabled || gastos_guardadoEnCurso()) return;
     const lugar    = document.getElementById('g-lugar').value.trim();
     if (lugar === '__nuevo__') {
         showToast('⚠️ Elige un lugar de la lista o agrégalo primero');
@@ -4497,6 +4523,7 @@ async function gastos_guardar() {
     if (!hasRecibo && (!lugar || !monto)) {
         status.innerText = '⚠️ Falta Lugar o Monto (o adjunta un recibo)'; status.style.color = 'var(--accent-orange)'; return;
     }
+    gastosState.saveState = 'sending';
     btn.disabled = true; btn.innerText = idFila ? 'Actualizando...' : 'Guardando...';
     const fecha    = new Date().toLocaleDateString('en-CA');
     const concepto = document.getElementById('g-concepto').value.trim();
@@ -4506,6 +4533,7 @@ async function gastos_guardar() {
     // ── Upload photos to Drive (non-blocking: failure just skips photos) ──
     const fileInput = document.getElementById('g-fotos-input');
     let nuevasUrls = [];
+    let receiptUploadIncomplete = false;
     if (fileInput.files.length > 0) {
         btn.innerText = `Subiendo ${fileInput.files.length} archivo(s)...`;
         try {
@@ -4525,6 +4553,7 @@ async function gastos_guardar() {
                 if (url) nuevasUrls.push(url);
             }
         } catch (driveErr) {
+            receiptUploadIncomplete = true;
             // Drive API not enabled or permission error — save transaction anyway, warn user
             console.warn('Drive upload skipped:', driveErr);
             const isDriveDisabled = driveErr?.message?.includes('403');
@@ -4537,7 +4566,8 @@ async function gastos_guardar() {
         btn.innerText = idFila ? 'Actualizando...' : 'Guardando...';
     }
 
-    // ── Save to Sheets ──────────────────────────────────
+    // ── Save to the currently selected backend ───────────
+    let coreSaveResult = null;
     try {
         if (idFila) {
             // `editRow` y no `detailRow`: el segundo lo pone en null
@@ -4572,24 +4602,46 @@ async function gastos_guardar() {
         } else {
             // El gasto va SOLO a finance-core. La hoja quedó congelada en la
             // migración: escribir ahí era perderlo, porque ya nadie la lee.
-            await financeCoreSync({ fecha, lugar, concepto, monto: parseSheetValue(monto),
+            coreSaveResult = await financeCoreSync({ fecha, lugar, concepto, monto: parseSheetValue(monto),
                                     tipo, forma, recibo: nuevasUrls.join(',') });
+            if (coreSaveResult.state !== 'confirmed') {
+                status.innerText = `⚠️ ${coreSaveResult.message}`;
+                status.style.color = 'var(--accent-orange)';
+                gastosState.saveState = coreSaveResult.state === 'pending' ? 'pending' : 'idle';
+                btn.disabled = coreSaveResult.state === 'pending';
+                btn.innerText = coreSaveResult.state === 'pending' ? 'SIN CONFIRMAR' : 'GUARDAR';
+                return;
+            }
         }
         status.innerText = nuevasUrls.length
             ? '✅ ' + (idFila ? 'Actualizado con recibo' : 'Guardado con recibo')
             : '✅ ' + (idFila ? 'Actualizado' : 'Guardado');
         status.style.color = 'var(--accent-green)';
+        gastosState.saveState = 'idle';
         gastos_cancelar();
+        if (coreSaveResult?.refreshPending || receiptUploadIncomplete) {
+            const details = [
+                coreSaveResult?.refreshPending ? 'saldo pendiente de actualizar; no vuelvas a registrar el movimiento' : '',
+                receiptUploadIncomplete ? 'algunos recibos no se pudieron adjuntar' : '',
+            ].filter(Boolean).join(' · ');
+            status.innerText = `⚠️ Movimiento guardado · ${details}`;
+            status.style.color = 'var(--accent-orange)';
+        }
         gastos_cargarHistorial();
     } catch(e) {
         console.error('gastos_guardar error:', e);
         const msg = e?.message || e?.status || 'Sin detalle';
         status.innerText = `❌ Error al guardar: ${msg.substring(0, 70)}`; status.style.color = '#f87171';
+        gastosState.saveState = 'idle';
         btn.disabled = false; btn.innerText = idFila ? 'ACTUALIZAR' : 'GUARDAR';
     }
 }
 
 function gastos_cancelar() {
+    if (gastos_guardadoEnCurso()) {
+        document.getElementById('g-status').innerText = '⚠️ Conservamos el formulario: espera la confirmación o revisa el historial antes de descartarlo.';
+        return;
+    }
     // Si no se limpia, la siguiente edición arrastraría los recibos y la fecha
     // de la anterior.
     gastosState.editRow = null;
@@ -4614,7 +4666,11 @@ function gastos_cancelar() {
     if (fixedField) fixedField.classList.add('hidden');
     const fixedSelect = document.getElementById('g-fixed-expense');
     if (fixedSelect) fixedSelect.value = '';
-    setTimeout(() => { document.getElementById('g-status').innerText = ''; }, 2500);
+    const status = document.getElementById('g-status');
+    const completedMessage = status.innerText;
+    setTimeout(() => {
+        if (!gastos_guardadoEnCurso() && status.innerText === completedMessage) status.innerText = '';
+    }, 2500);
 }
 
 function gastos_abrirModal(row) {
@@ -4653,6 +4709,10 @@ function gastos_cerrarModal() {
 }
 
 async function gastos_editarDesdeModal() {
+    if (gastos_guardadoEnCurso()) {
+        showToast('⚠️ Hay un guardado sin resolver. Conservamos el formulario actual.');
+        return;
+    }
     const row = gastosState.detailRow; if (!row) return;
     lugares_pintarSelect(row.lugar || '');
     document.getElementById('g-concepto').value  = row.concepto;
