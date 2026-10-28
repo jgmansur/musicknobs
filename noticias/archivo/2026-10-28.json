@@ -1,0 +1,392 @@
+{
+  "lastUpdated": "2026-10-28T13:57:49.044Z",
+  "meta": {
+    "method": "rss-retrieval + link-verification + ai-translation",
+    "itemCount": 12,
+    "sources": [
+      "CNBC TV18",
+      "CelebrityAccess",
+      "Complete Music Update",
+      "Diario AS",
+      "Digital Music News",
+      "Extra News Mundo",
+      "Music Ally",
+      "Rolling Stone",
+      "ThePrint",
+      "Variety"
+    ],
+    "verifiedLinks": 12,
+    "aiTranslated": 11,
+    "note": "Los hechos provienen de los artículos originales enlazados. La IA solo traduce y resume; no genera noticias."
+  },
+  "es": {
+    "title": "Noticias de Copyright e Inteligencia Artificial",
+    "subtitle": "Notas publicadas por medios reales de la industria, con liga al artículo original. Sin noticias inventadas.",
+    "items": [
+      {
+        "id": "noticia-1",
+        "title": "Los propietarios de los derechos de Elvis Presley demandan a Anthropic por presunta infracción de derechos de autor",
+        "summary": "Los propietarios de los derechos de Elvis Presley han presentado una demanda contra Anthropic, alegando infracción de derechos de autor por el uso de 274 canciones del artista para entrenar modelos de IA sin autorización.",
+        "url": "https://www.digitalmusicnews.com/2026/10/25/elvis-presley-ip-anthropic-copyright-infringement/",
+        "source": "Digital Music News",
+        "domain": "digitalmusicnews.com",
+        "publishedAt": "2026-10-26T04:44:03.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": true,
+        "via": null
+      },
+      {
+        "id": "noticia-2",
+        "title": "A medida que las citaciones de UMG contra Suno apuntan al MLC, múltiples inversores, DistroKid y ahora Apple Music, ¿están los descubrimientos que cambian el juego en el horizonte?",
+        "summary": "Una serie de citaciones relacionadas con el caso UMG v. Suno ahora involucran al MLC, inversores, DistroKid y Apple Music, lo que plantea la posibilidad de revelaciones significativas en la disputa de derechos de autor de IA.",
+        "url": "https://www.digitalmusicnews.com/2026/10/26/suno-subpoenas-umg-apple-music/",
+        "source": "Digital Music News",
+        "domain": "digitalmusicnews.com",
+        "publishedAt": "2026-10-26T22:18:45.000Z",
+        "tags": [
+          "lawsuit",
+          "ai",
+          "streaming"
+        ],
+        "translated": true,
+        "via": null
+      },
+      {
+        "id": "noticia-3",
+        "title": "Una tormenta de citaciones UMG contra Suno está sobre nosotros — un análisis más profundo de las disputas de alto riesgo y su importancia en litigios de derechos de autor",
+        "summary": "El artículo examina el creciente número de demandas de documentos y testimonios en la ola de citaciones UMG v. Suno, destacando su relevancia más amplia para la litigación de derechos de autor relacionada con IA y cómo pueden moldear futuras estrategias legales para los titulares de derechos musicales.",
+        "url": "https://www.digitalmusicnews.com/2026/10/27/umg-v-suno-subpoenas-analysis/",
+        "source": "Digital Music News",
+        "domain": "digitalmusicnews.com",
+        "publishedAt": "2026-10-27T22:51:59.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": true,
+        "via": null
+      },
+      {
+        "id": "noticia-4",
+        "title": "Reservoir demanda a Suno y Anthropic por presunta infracción de derechos de autor de IA, busca casi 340 millones de dólares",
+        "summary": "Reservoir ha presentado una demanda contra Suno y Anthropic, alegando infracción de derechos de autor por el uso de contenido musical en sistemas de IA y solicitando una compensación cercana a 340 millones de dólares.",
+        "url": "https://news.google.com/rss/articles/CBMi0wFBVV95cUxNYTlCeGg2alJuZHF6YzczOWNXbFFpT2dWNHAwal9Ka3RTR1NwTTRqenVIQVQ2S3Z4VDBUci1kckhpMUc3SjFBNnNXdllVN2lwMmVWaU1XRTg1YVo5dVVHbXg5T053WXRhd3E0QXdOSGs2NkFvY05hRVF0ZE5wdWFPblhsNWFpdGNqQVFBUE9WUWdvTnhHcTY3Z3M1OTZhUlVlSjhPRUpNc3NPSVpZUWJxV2E0YzBsdDBOamdmWFdLdXlUWldMNDFTZExEbk85eUhrcFVJ?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "CelebrityAccess",
+        "domain": "news.google.com",
+        "publishedAt": "2026-10-25T15:54:28.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": true,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-5",
+        "title": "Los editores musicales afirman que las letras de Claude diluyen las letras reales, en los últimos procedimientos contra Anthropic",
+        "summary": "Los editores musicales argumentan que las letras generadas por IA de Anthropic, como las de Claude, diluyen las letras originales, lo que plantea preguntas de uso justo en un caso judicial que involucra a Universal, Concord y ABKCO contra la empresa de IA.",
+        "url": "https://completemusicupdate.com/claudes-lyrics-are-diluting-real-lyrics-say-music-publishers-in-latest-anthropic-proceedings/",
+        "source": "Complete Music Update",
+        "domain": "completemusicupdate.com",
+        "publishedAt": "2026-10-22T15:56:56.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": true,
+        "via": null
+      },
+      {
+        "id": "noticia-6",
+        "title": "Neil Young presenta una demanda de 10 millones de dólares contra Trump por usar ‘Rockin’ in the Free World’, seis años después de un acuerdo previo sobre la misma canción",
+        "summary": "Neil Young ha demandado al comité político de Donald Trump por 10 millones de dólares, alegando infracción de derechos de autor por el uso continuo de su canción ‘Rockin’ in the Free World’ como música de entrada en mítines electorales.",
+        "url": "https://variety.com/2026/music/news/neil-young-files-suit-donald-trump-rockin-in-the-free-world-1236931685/",
+        "source": "Variety",
+        "domain": "variety.com",
+        "publishedAt": "2026-10-26T23:50:34.000Z",
+        "tags": [
+          "lawsuit"
+        ],
+        "translated": true,
+        "via": null
+      },
+      {
+        "id": "noticia-7",
+        "title": "Propietarios de la música de Elvis Presley demandan a Anthropic por infracción de derechos de autor",
+        "summary": "Los titulares de los derechos de la música de Elvis Presley han interpuesto una demanda contra Anthropic, acusando a la empresa de IA de infringir derechos de autor al utilizar obras del cantante sin autorización.",
+        "url": "https://news.google.com/rss/articles/CBMifkFVX3lxTE9seTRPTTNERGM4NGNDd0dTb0VicURjVGR2Vnp3bW16am13U2FSRHFtaEdsaTlZeE5YSG9QeW5neGxvdEx1ZmZpNkt1QXpHVVpGVWVXZUowV0FUeFJqYmxJMWR4T2dQbFFjeVYxeUFtemtXZVRleldrZ0g5NENQQQ?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "Extra News Mundo",
+        "domain": "news.google.com",
+        "publishedAt": "2026-10-27T21:27:03.000Z",
+        "tags": [
+          "lawsuit"
+        ],
+        "translated": true,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-8",
+        "title": "La demanda por derechos de autor de Drake ‘Janice STFU’ es retirada",
+        "summary": "Una demanda que acusaba a Drake de infringir derechos de autor con la canción ‘Janice STFU’ fue retirada menos de dos semanas después de que un productor de Oregón afirmara haber escrito el coro.",
+        "url": "https://www.rollingstone.com/music/music-news/drake-janice-stfu-lawsuit-dismissed-1235648586/",
+        "source": "Rolling Stone",
+        "domain": "rollingstone.com",
+        "publishedAt": "2026-10-27T18:00:12.000Z",
+        "tags": [
+          "lawsuit"
+        ],
+        "translated": true,
+        "via": null
+      },
+      {
+        "id": "noticia-9",
+        "title": "Condenan a prisión a un ‘músico’ millonario por crear canciones generadas por IA: cobraba derechos de autor si",
+        "summary": "Un tribunal ha condenado a prisión a una persona descrita como ‘músico’ millonario que generaba canciones con IA y cobraba derechos de autor por ellas, considerándolo delito de apropiación indebida.",
+        "url": "https://news.google.com/rss/articles/CBMimAJBVV95cUxQbTdEZHRhWGttbERaRmIxQlVONUt2ZzhKajlnU1M4MmdVcDlTSGdfM3pwWW5EdUM1Z29EN0doV2M5OFhYN0JsTFRPRGpQY2ZjbnBRR1AxV0p5YXgxdHVhc1p0bVQxdElWZkpXTmlySkh2QVVwbFRneGhQQjhxdm9rdzhZTWx1dldvVEpYaUFHUnZucU41ajVFTkczUUNCancxYjZlWXJxaFAyVHVpNzNjY2V5UTl5ZHJaNWhKOTg5LVNPalFhbk1sUmotRjZxSEs4Sl9FdTBWZnB0dC13T1FsNGFRdnBUYjFWTHQzS2YtV0Q5bXJmb0QzZmRGMml2SzZCOHRhSGR5Rl9hcUYybE50YXBWcmJxbjdv0gGsAkFVX3lxTE5XQnBadzhNLTl6UXd5dHhBb05FZEtZV3hraGtIaVVIUWJOd3NyMjYtMENuTHd4dHhqN0h3NXZIZWoyU2dKSzBBeVN1eHY5Nmpjazl0MTdmRjgtclVFN3paUV9UckhSc1VZRjFmb2NfQ2xyNk8zemlsWlJNNkhLVnF4RWFGbU5BWUJ6MFNWSld3bTU2VEVOTWhxRE44WnM4U0hoWDNLbHI2bHZNR3pTdWdPMHdncE0xNFBvVzlDdW1yd1F1U050Z0hhZ0pCZlppc2J4eGZNUXNhZTVkc2tPd21GQ0NHMWZuVlNwdkFQZGVVUEdvVHBBWDNYWmNOb2tuellqNTFKNXRGcXNtTFduRHdxbEtqSmF0TjM4VXpQUUdZRHZCNUJlcU5EU0JYRw?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "Diario AS",
+        "domain": "news.google.com",
+        "publishedAt": "2026-10-24T19:07:12.000Z",
+        "tags": [
+          "ai"
+        ],
+        "translated": true,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-10",
+        "title": "Tu IA no es nada más que un perro callejero… el propietario de los derechos de Elvis Presley demanda a Anthropic",
+        "summary": "Authentic Brands Group, propietario de varios derechos de Elvis Presley, ha presentado una demanda contra Anthropic mientras la empresa se prepara para salir a bolsa, añadiendo presión al sector de IA musical.",
+        "url": "https://musically.com/2026/10/26/your-ais-nothin-but-a-hound-dog-elvis-presley-ip-owner-sues-anthropic/",
+        "source": "Music Ally",
+        "domain": "musically.com",
+        "publishedAt": "2026-10-26T13:30:00.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": true,
+        "via": null
+      },
+      {
+        "id": "noticia-11",
+        "title": "Las canciones de Elvis suenan desafinadas en la batalla de derechos de autor de IA de 41 millones de dólares",
+        "summary": "Una disputa legal de 41 millones de dólares enfrenta a los propietarios de canciones de Elvis Presley contra compañías de IA que supuestamente usaron sus obras sin autorización, generando un conflicto de derechos de autor.",
+        "url": "https://news.google.com/rss/articles/CBMipAFBVV95cUxQelo4dklSbUh6eHA2MXRrbkkxcG9OWVhmMDhKai1GUTlzM0Vpbk4xN3ZlYTlESVY5TzNPSjJoNVBoT2RTWUs1ZExuck15UUlWRDhLd1ZUeHRzODVHTzhSbEpRN2FUeXpnWWFwY0pheTJTLW9wRHpHRnc1RlRFNlhmcV8yU005OTFqZ2ppbENtcW1jUEZfdjFpT01VZ3RyZ3QzUmZ5MtIBqgFBVV95cUxNQ2lTN19GSkMyMk9ITE4tS3Y5YVdJc05ILTlGdnB0S29ZYnlUWG5kdnN3V2czZVU3NmRydEM0Qi1RZ0dRTFlyQUNQenpRLUN4ZnZFaENUbWdPVTBIcnZobUZaWEpLVWt2Ymc3VWNuaU1Ub1JjVVNWQVBjaHFnSWxhM0VWaU9rbTcwMWZqdzdxZ0ppRzlMLThsNUR4a1FTVk5xUUtWY0VGMWxyQQ?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "CNBC TV18",
+        "domain": "news.google.com",
+        "publishedAt": "2026-10-26T16:27:04.000Z",
+        "tags": [
+          "ai"
+        ],
+        "translated": true,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-12",
+        "title": "From ‘All Shook Up’ to ‘Return to Sender’, Elvis Presley’s songs at the centre of AI copyright suit",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMimwFBVV95cUxNXzFPbWx6cGYzRnYwNFkwVGRka3VxZ2tBRE9sQkVCbzlERnItNmJPS0FMTkxxWW95MEdvdnBvTE9XMmJ2SzV6ZWt4RWVmY3AyYXQzZGVGQTc1cU1MYmRTWGZrXy04bllWR2RkWlZNR2VUbHFNQ0N3b2lEN0ZHX2tETDVPVndxZF9PUHN1V3NMcXlKRFgwY1RVZWlvd9IBoAFBVV95cUxQRC1KTm9faGpVbFFadUZUczdBd2tyRi1BbzBNTDJ3NE90V1gzRC14UTAwZ09GVUI0VERPclFwZW01QVI0MUEtSS1aVGxiOElPNnV1U3h1VlBZR090M1YyR1EyNnNIUEZEN2UtRDQ3STlHOTExamdhYzJYUG00d2loQWQwcnc2OUhkX0xlYW9aNWppWDFNNHhYVFNhS2d5cWwz?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "ThePrint",
+        "domain": "news.google.com",
+        "publishedAt": "2026-10-26T12:11:26.000Z",
+        "tags": [
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
+      }
+    ],
+    "tip": {
+      "title": "Documenta tu aporte humano cuando uses IA",
+      "body": "Las oficinas de derechos de autor protegen la parte creada por una persona. Guarda prompts, versiones, ediciones y decisiones de mezcla: eso es lo que sostiene tu autoría sobre el resultado."
+    }
+  },
+  "en": {
+    "title": "Copyright & Artificial Intelligence News",
+    "subtitle": "Stories published by real industry outlets, each linked to its original article. No invented news.",
+    "items": [
+      {
+        "id": "noticia-1",
+        "title": "Elvis Presley IP Owners Sue Anthropic Over Allegations of Copyright Infringement",
+        "summary": "Elvis Presley’s rightsholders have sued Anthropic, alleging copyright infringement for using 274 of his songs to train AI models without permission.",
+        "url": "https://www.digitalmusicnews.com/2026/10/25/elvis-presley-ip-anthropic-copyright-infringement/",
+        "source": "Digital Music News",
+        "domain": "digitalmusicnews.com",
+        "publishedAt": "2026-10-26T04:44:03.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": true,
+        "via": null
+      },
+      {
+        "id": "noticia-2",
+        "title": "As UMG v. Suno Subpoenas Target the MLC, Multiple Investors, DistroKid, and Now Apple Music, Are Game-Changing Disclosures on the Horizon?",
+        "summary": "A series of subpoenas related to the UMG v. Suno case now involve the MLC, investors, DistroKid and Apple Music, raising the possibility of significant disclosures in the AI copyright dispute.",
+        "url": "https://www.digitalmusicnews.com/2026/10/26/suno-subpoenas-umg-apple-music/",
+        "source": "Digital Music News",
+        "domain": "digitalmusicnews.com",
+        "publishedAt": "2026-10-26T22:18:45.000Z",
+        "tags": [
+          "lawsuit",
+          "ai",
+          "streaming"
+        ],
+        "translated": true,
+        "via": null
+      },
+      {
+        "id": "noticia-3",
+        "title": "A UMG v. Suno Subpoena Maelstrom Is Upon Us — Here’s a Closer Look At the High-Stakes Disputes and Their Copyright-Litigation Significance",
+        "summary": "The article examines the growing number of document and testimony demands in the UMG v. Suno subpoena wave, highlighting their broader significance for AI-related copyright litigation and how they may shape future legal strategies for music rights holders.",
+        "url": "https://www.digitalmusicnews.com/2026/10/27/umg-v-suno-subpoenas-analysis/",
+        "source": "Digital Music News",
+        "domain": "digitalmusicnews.com",
+        "publishedAt": "2026-10-27T22:51:59.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": true,
+        "via": null
+      },
+      {
+        "id": "noticia-4",
+        "title": "Reservoir Sues Suno And Anthropic Over Alleged AI Copyright Infringement, Seeks Nearly $340 Million",
+        "summary": "Reservoir has sued Suno and Anthropic, alleging AI copyright infringement for using musical content in AI systems and seeking compensation close to $340 million.",
+        "url": "https://news.google.com/rss/articles/CBMi0wFBVV95cUxNYTlCeGg2alJuZHF6YzczOWNXbFFpT2dWNHAwal9Ka3RTR1NwTTRqenVIQVQ2S3Z4VDBUci1kckhpMUc3SjFBNnNXdllVN2lwMmVWaU1XRTg1YVo5dVVHbXg5T053WXRhd3E0QXdOSGs2NkFvY05hRVF0ZE5wdWFPblhsNWFpdGNqQVFBUE9WUWdvTnhHcTY3Z3M1OTZhUlVlSjhPRUpNc3NPSVpZUWJxV2E0YzBsdDBOamdmWFdLdXlUWldMNDFTZExEbk85eUhrcFVJ?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "CelebrityAccess",
+        "domain": "news.google.com",
+        "publishedAt": "2026-10-25T15:54:28.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": true,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-5",
+        "title": "Claude’s lyrics are diluting real lyrics, say music publishers in latest Anthropic proceedings",
+        "summary": "Music publishers argue that Anthropic’s AI‑generated lyrics, such as those from Claude, dilute original lyrics, raising fair‑use questions in a court case involving Universal, Concord and ABKCO against the AI company.",
+        "url": "https://completemusicupdate.com/claudes-lyrics-are-diluting-real-lyrics-say-music-publishers-in-latest-anthropic-proceedings/",
+        "source": "Complete Music Update",
+        "domain": "completemusicupdate.com",
+        "publishedAt": "2026-10-22T15:56:56.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": true,
+        "via": null
+      },
+      {
+        "id": "noticia-6",
+        "title": "Neil Young Files $10 Million Suit Against Trump for Using ‘Rockin’ in the Free World,’ Six Years After a Prior Settlement Over the Same Song",
+        "summary": "Neil Young has filed a $10 million lawsuit against Donald Trump’s political action committee, alleging copyright infringement for the ongoing use of his song ‘Rockin’ in the Free World’ as walk‑up music at election rallies.",
+        "url": "https://variety.com/2026/music/news/neil-young-files-suit-donald-trump-rockin-in-the-free-world-1236931685/",
+        "source": "Variety",
+        "domain": "variety.com",
+        "publishedAt": "2026-10-26T23:50:34.000Z",
+        "tags": [
+          "lawsuit"
+        ],
+        "translated": true,
+        "via": null
+      },
+      {
+        "id": "noticia-7",
+        "title": "Propietarios de la música de Elvis Presley demandan a Anthropic por infracción de derechos de autor",
+        "summary": "Elvis Presley music rights owners have filed a lawsuit against Anthropic, accusing the AI company of copyright infringement for using the singer’s works without permission.",
+        "url": "https://news.google.com/rss/articles/CBMifkFVX3lxTE9seTRPTTNERGM4NGNDd0dTb0VicURjVGR2Vnp3bW16am13U2FSRHFtaEdsaTlZeE5YSG9QeW5neGxvdEx1ZmZpNkt1QXpHVVpGVWVXZUowV0FUeFJqYmxJMWR4T2dQbFFjeVYxeUFtemtXZVRleldrZ0g5NENQQQ?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "Extra News Mundo",
+        "domain": "news.google.com",
+        "publishedAt": "2026-10-27T21:27:03.000Z",
+        "tags": [
+          "lawsuit"
+        ],
+        "translated": true,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-8",
+        "title": "Drake ‘Janice STFU’ Copyright Lawsuit is Withdrawn",
+        "summary": "A lawsuit alleging Drake infringed copyright with the song ‘Janice STFU’ was withdrawn less than two weeks after an Oregon producer claimed to have written the chorus.",
+        "url": "https://www.rollingstone.com/music/music-news/drake-janice-stfu-lawsuit-dismissed-1235648586/",
+        "source": "Rolling Stone",
+        "domain": "rollingstone.com",
+        "publishedAt": "2026-10-27T18:00:12.000Z",
+        "tags": [
+          "lawsuit"
+        ],
+        "translated": true,
+        "via": null
+      },
+      {
+        "id": "noticia-9",
+        "title": "Condenan a prisión a un ‘músico’ millonario por crear canciones generadas por IA: cobraba derechos de autor si",
+        "summary": "A court has sentenced to prison a ‘musician’ millionaire who created AI‑generated songs and collected royalties for them, deeming it an unlawful appropriation.",
+        "url": "https://news.google.com/rss/articles/CBMimAJBVV95cUxQbTdEZHRhWGttbERaRmIxQlVONUt2ZzhKajlnU1M4MmdVcDlTSGdfM3pwWW5EdUM1Z29EN0doV2M5OFhYN0JsTFRPRGpQY2ZjbnBRR1AxV0p5YXgxdHVhc1p0bVQxdElWZkpXTmlySkh2QVVwbFRneGhQQjhxdm9rdzhZTWx1dldvVEpYaUFHUnZucU41ajVFTkczUUNCancxYjZlWXJxaFAyVHVpNzNjY2V5UTl5ZHJaNWhKOTg5LVNPalFhbk1sUmotRjZxSEs4Sl9FdTBWZnB0dC13T1FsNGFRdnBUYjFWTHQzS2YtV0Q5bXJmb0QzZmRGMml2SzZCOHRhSGR5Rl9hcUYybE50YXBWcmJxbjdv0gGsAkFVX3lxTE5XQnBadzhNLTl6UXd5dHhBb05FZEtZV3hraGtIaVVIUWJOd3NyMjYtMENuTHd4dHhqN0h3NXZIZWoyU2dKSzBBeVN1eHY5Nmpjazl0MTdmRjgtclVFN3paUV9UckhSc1VZRjFmb2NfQ2xyNk8zemlsWlJNNkhLVnF4RWFGbU5BWUJ6MFNWSld3bTU2VEVOTWhxRE44WnM4U0hoWDNLbHI2bHZNR3pTdWdPMHdncE0xNFBvVzlDdW1yd1F1U050Z0hhZ0pCZlppc2J4eGZNUXNhZTVkc2tPd21GQ0NHMWZuVlNwdkFQZGVVUEdvVHBBWDNYWmNOb2tuellqNTFKNXRGcXNtTFduRHdxbEtqSmF0TjM4VXpQUUdZRHZCNUJlcU5EU0JYRw?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "Diario AS",
+        "domain": "news.google.com",
+        "publishedAt": "2026-10-24T19:07:12.000Z",
+        "tags": [
+          "ai"
+        ],
+        "translated": true,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-10",
+        "title": "Your AI’s nothin’ but a hound dog… Elvis Presley IP owner sues Anthropic",
+        "summary": "Authentic Brands Group, owner of several Elvis Presley IP rights, has sued Anthropic as the AI company prepares for an IPO, adding pressure to the music‑AI sector.",
+        "url": "https://musically.com/2026/10/26/your-ais-nothin-but-a-hound-dog-elvis-presley-ip-owner-sues-anthropic/",
+        "source": "Music Ally",
+        "domain": "musically.com",
+        "publishedAt": "2026-10-26T13:30:00.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": true,
+        "via": null
+      },
+      {
+        "id": "noticia-11",
+        "title": "Elvis's songs hit a sour note in AI's $41 million copyright battle",
+        "summary": "A $41 million legal battle pits Elvis Presley song rights owners against AI companies alleged to have used the works without permission, creating a copyright conflict.",
+        "url": "https://news.google.com/rss/articles/CBMipAFBVV95cUxQelo4dklSbUh6eHA2MXRrbkkxcG9OWVhmMDhKai1GUTlzM0Vpbk4xN3ZlYTlESVY5TzNPSjJoNVBoT2RTWUs1ZExuck15UUlWRDhLd1ZUeHRzODVHTzhSbEpRN2FUeXpnWWFwY0pheTJTLW9wRHpHRnc1RlRFNlhmcV8yU005OTFqZ2ppbENtcW1jUEZfdjFpT01VZ3RyZ3QzUmZ5MtIBqgFBVV95cUxNQ2lTN19GSkMyMk9ITE4tS3Y5YVdJc05ILTlGdnB0S29ZYnlUWG5kdnN3V2czZVU3NmRydEM0Qi1RZ0dRTFlyQUNQenpRLUN4ZnZFaENUbWdPVTBIcnZobUZaWEpLVWt2Ymc3VWNuaU1Ub1JjVVNWQVBjaHFnSWxhM0VWaU9rbTcwMWZqdzdxZ0ppRzlMLThsNUR4a1FTVk5xUUtWY0VGMWxyQQ?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "CNBC TV18",
+        "domain": "news.google.com",
+        "publishedAt": "2026-10-26T16:27:04.000Z",
+        "tags": [
+          "ai"
+        ],
+        "translated": true,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-12",
+        "title": "From ‘All Shook Up’ to ‘Return to Sender’, Elvis Presley’s songs at the centre of AI copyright suit",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMimwFBVV95cUxNXzFPbWx6cGYzRnYwNFkwVGRka3VxZ2tBRE9sQkVCbzlERnItNmJPS0FMTkxxWW95MEdvdnBvTE9XMmJ2SzV6ZWt4RWVmY3AyYXQzZGVGQTc1cU1MYmRTWGZrXy04bllWR2RkWlZNR2VUbHFNQ0N3b2lEN0ZHX2tETDVPVndxZF9PUHN1V3NMcXlKRFgwY1RVZWlvd9IBoAFBVV95cUxQRC1KTm9faGpVbFFadUZUczdBd2tyRi1BbzBNTDJ3NE90V1gzRC14UTAwZ09GVUI0VERPclFwZW01QVI0MUEtSS1aVGxiOElPNnV1U3h1VlBZR090M1YyR1EyNnNIUEZEN2UtRDQ3STlHOTExamdhYzJYUG00d2loQWQwcnc2OUhkX0xlYW9aNWppWDFNNHhYVFNhS2d5cWwz?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "ThePrint",
+        "domain": "news.google.com",
+        "publishedAt": "2026-10-26T12:11:26.000Z",
+        "tags": [
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
+      }
+    ],
+    "tip": {
+      "title": "Document your human contribution when using AI",
+      "body": "Copyright offices protect the human-created portion. Keep prompts, versions, edits and mix decisions —that record is what supports your authorship over the final result."
+    }
+  }
+}
