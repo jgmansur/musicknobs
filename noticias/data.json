@@ -1,21 +1,23 @@
 {
-  "lastUpdated": "2026-10-30T14:01:39.893Z",
+  "lastUpdated": "2026-10-30T22:55:53.320Z",
   "meta": {
     "method": "rss-retrieval + link-verification + ai-translation",
     "itemCount": 12,
     "sources": [
       "Complete Music Update",
-      "Digital Music News",
       "Extra News Mundo",
       "Music Ally",
       "Music Business Worldwide",
       "RouteNote",
       "TechRadar",
       "The Korea Daily",
+      "Vietnam.vn",
+      "Vocal",
+      "techtimes.co.uk",
       "www.techtimes.co.uk"
     ],
     "verifiedLinks": 12,
-    "aiTranslated": 12,
+    "aiTranslated": 0,
     "note": "Los hechos provienen de los artículos originales enlazados. La IA solo traduce y resume; no genera noticias."
   },
   "es": {
@@ -24,70 +26,23 @@
     "items": [
       {
         "id": "noticia-1",
-        "title": "Suno Fires Back Against Apple’s Subpoena Opposition, Doubling Down on Its Push for Information About ‘Current License Negotiations,’ ‘Anti-AI Deal Terms,’ and More",
-        "summary": "Suno responde a la oposición de Apple a su citación, insistiendo en obtener información sobre negociaciones de licencias actuales, cláusulas anti‑IA y conversaciones de Apple Music con sellos mayores, argumentando que es esencial para sus defensas de uso justo y abuso de derechos de autor.",
-        "url": "https://www.digitalmusicnews.com/2026/10/28/suno-apple-subpoena-dispute/",
-        "source": "Digital Music News",
-        "domain": "digitalmusicnews.com",
-        "publishedAt": "2026-10-28T23:46:44.000Z",
-        "tags": [
-          "ai",
-          "licensing",
-          "streaming"
-        ],
-        "translated": true,
-        "via": null
-      },
-      {
-        "id": "noticia-2",
-        "title": "Elvis Presley IP Owners Sue Anthropic Over Allegations of Copyright Infringement",
-        "summary": "Los titulares de los derechos de Elvis Presley han presentado una demanda contra Anthropic, alegando que la empresa utilizó 274 canciones del cantante para entrenar sus modelos de IA sin obtener autorización, lo que consideran una infracción de derechos de autor.",
-        "url": "https://www.digitalmusicnews.com/2026/10/25/elvis-presley-ip-anthropic-copyright-infringement/",
-        "source": "Digital Music News",
-        "domain": "digitalmusicnews.com",
-        "publishedAt": "2026-10-26T04:44:03.000Z",
-        "tags": [
-          "lawsuit",
-          "ai"
-        ],
-        "translated": true,
-        "via": null
-      },
-      {
-        "id": "noticia-3",
-        "title": "As UMG v. Suno Subpoenas Target the MLC, Multiple Investors, DistroKid, and Now Apple Music, Are Game-Changing Disclosures on the Horizon?",
-        "summary": "Suno enfrenta una serie creciente de demandas de derechos de autor en la industria musical y ha recibido múltiples citaciones que incluyen solicitudes de documentos y deposiciones, dirigidas a la MLC, inversores, DistroKid y Apple Music, lo que sugiere posibles revelaciones significativas en el futuro.",
-        "url": "https://www.digitalmusicnews.com/2026/10/26/suno-subpoenas-umg-apple-music/",
-        "source": "Digital Music News",
-        "domain": "digitalmusicnews.com",
-        "publishedAt": "2026-10-26T22:18:45.000Z",
-        "tags": [
-          "lawsuit",
-          "ai",
-          "streaming"
-        ],
-        "translated": true,
-        "via": null
-      },
-      {
-        "id": "noticia-4",
         "title": "Anthropic sued over Elvis catalog — and the 274-song copyright battle shows the AI industry's 'fair use' excuses are getting old",
-        "summary": "Anthropic enfrenta una demanda por el catálogo de Elvis, donde la disputa de 274 canciones cuestiona las defensas de 'uso justo' que la industria de IA ha utilizado.",
+        "summary": "",
         "url": "https://news.google.com/rss/articles/CBMigAJBVV95cUxNa2Z3VjdTZ0RCOVBWZTJRRkduZU16TUYtaVdfR0lJS2hMbXFnZzdSMHBoZW5sV25CVndXUEtXeTVPMDVDTWhhTTZIajZhUEZOMzJOTWE3WWNlVDI1YlZzYV9BNVFZaU9QbjRUQi1JYXB3ak9QR2Q0dkNBZ0pZTmUyWmVUMnBmd3NYNHJKbi1sT2JYX3l4dG5LTzh0ZWxjc2dyaGUzazhwNXFQbzZuMEFtNFhsUEdBSExsaTdpR1dlVzhWZk1oYV9UbWlXdjBGa0RzTzhrVVdEbnBrMVY5TTZjUVQzckQ0ZnN5Ul94dkNXX3JPd3BQb0c0Q3FWYVZKLTEt?oc=5&hl=es-419&gl=US&ceid=US:es-419",
         "source": "TechRadar",
         "domain": "news.google.com",
-        "publishedAt": "2026-10-30T01:02:41.000Z",
+        "publishedAt": "2026-10-30T01:00:00.000Z",
         "tags": [
           "lawsuit",
           "ai"
         ],
-        "translated": true,
+        "translated": false,
         "via": "Google News"
       },
       {
-        "id": "noticia-5",
+        "id": "noticia-2",
         "title": "Reservoir Sues Suno and Anthropic Over AI Music Copyright, Seeking Nearly $338 Million",
-        "summary": "Reservoir presenta una demanda contra Suno y Anthropic por infracción de derechos de autor en música generada por IA, solicitando aproximadamente 338 millones de dólares en compensación.",
+        "summary": "",
         "url": "https://news.google.com/rss/articles/CBMiswFBVV95cUxNWmU2NG1rWkxvR3J4U00zRmpVMVRENXlGWkNGRDQ5RldEX0M3NG5hbjBkU1BvdVgwazNFOTZ1M2FHUS1MUWNoaHVqQWhwWDgzdzFneHJYcUN1VUlHM3BzQmNtR0dmRTl2RW9wUkFDT0hKTDNzaGdLeGFjNDFiUEpHaFZ2UlJaZWR5Z1FvcmZHeTFKSExuTWxYamVaSmhuUS1ucXJPZlFoS0FyaW9WblktckNBRQ?oc=5&hl=es-419&gl=US&ceid=US:es-419",
         "source": "RouteNote",
         "domain": "news.google.com",
@@ -96,13 +51,28 @@
           "lawsuit",
           "ai"
         ],
-        "translated": true,
+        "translated": false,
         "via": "Google News"
       },
       {
-        "id": "noticia-6",
+        "id": "noticia-3",
+        "title": "Anthropic Sued For Copyright Infringement For Using Elvis Presley’s Music to Train AI",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMirgFBVV95cUxOTExQV2JjOExwYjRaRW1RaVphYlhpSjlhRzZYdk83c0pYLVhoamZnWEhZVHlsNTVXSGhJaEFFeDhtVGJrakJ1QXpTOGdZM243alFTUVRrRk9iNzVyWWtsRnVwMzlzdkljQXVTN2ktMkhCdGpvVlBBRDVjbXR2eTVFdnhGNDNqNk1zMVhJUGZGY3lvXzlOYWxpRDVUd1g2QmVjX2E2bXc0dUhtV1dvLWc?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "Vocal",
+        "domain": "news.google.com",
+        "publishedAt": "2026-10-26T19:21:42.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-4",
         "title": "AI Music Copyright Lawsuit — BTS & Psy Songs Used Without Permission in $12B Legal Battle",
-        "summary": "Una demanda de derechos de autor alega que canciones de BTS y Psy fueron usadas sin permiso en una disputa legal valorada en 12 mil millones de dólares.",
+        "summary": "",
         "url": "https://news.google.com/rss/articles/CBMidkFVX3lxTE5NTEI1R2J0aGpLWE1FbzJLNy0xbHJQTzViZnZWX08zUnVFTUkwQmtmLWxsU1FRSUdDSUNndTFBWE5lOVdQT1dxYV8tNnRib0ZuTXdBUm00Tl9Ra2NTbnMwNmFPcHB0Tk1IbXFQeUdfdnFEMUgwemc?oc=5&hl=es-419&gl=US&ceid=US:es-419",
         "source": "The Korea Daily",
         "domain": "news.google.com",
@@ -111,13 +81,13 @@
           "lawsuit",
           "ai"
         ],
-        "translated": true,
+        "translated": false,
         "via": "Google News"
       },
       {
-        "id": "noticia-7",
+        "id": "noticia-5",
         "title": "Claude’s lyrics are diluting real lyrics, say music publishers in latest Anthropic proceedings",
-        "summary": "Los editores de música Universal, Concord y ABKCO argumentan en el proceso contra Anthropic que las letras generadas por Claude están diluyendo las letras reales, reavivando el debate sobre el uso justo de entrenamientos de IA bajo la ley de derechos de autor de EE. UU.",
+        "summary": "The big debate over whether or not AI training is fair use under US copyright law was taking place in court again yesterday, this time in the context of music, specifically lyrics, with the copyright legal battle between AI company Anthropic and the Universal, Concord and ABKCO music publishers",
         "url": "https://completemusicupdate.com/claudes-lyrics-are-diluting-real-lyrics-say-music-publishers-in-latest-anthropic-proceedings/",
         "source": "Complete Music Update",
         "domain": "completemusicupdate.com",
@@ -126,13 +96,13 @@
           "lawsuit",
           "ai"
         ],
-        "translated": true,
+        "translated": false,
         "via": null
       },
       {
-        "id": "noticia-8",
+        "id": "noticia-6",
         "title": "Suno Accused of Training AI on BTS and Psy Hits Without Permission in Copyright Case Over 60,202 Recordings",
-        "summary": "Suno es acusado de entrenar su IA con éxitos de BTS y Psy sin autorización, en una demanda de derechos de autor que involucra 60 202 grabaciones.",
+        "summary": "",
         "url": "https://news.google.com/rss/articles/CBMihwFBVV95cUxOUC1GTmotZUhtb2EwOG5vemk2dnlJQzV4akVoX183SnB4eFRnbU9KSzAtTV9xcm1iVzkySG95VmYxMnBYNkxQVS1uVzMwUDFYS2xKZGhxLUlBamFtUTNOX2xoV3E4LWNCQlZVdGtOVkRtREZ4UXF3bTktbWU4RWRhNDdmZVNLdDQ?oc=5&hl=es-419&gl=US&ceid=US:es-419",
         "source": "www.techtimes.co.uk",
         "domain": "news.google.com",
@@ -140,13 +110,13 @@
         "tags": [
           "ai"
         ],
-        "translated": true,
+        "translated": false,
         "via": "Google News"
       },
       {
-        "id": "noticia-9",
+        "id": "noticia-7",
         "title": "Suno fights to make Apple testify on whether Apple Music could survive without UMG and Sony, claiming the majors use their catalogs ‘as a cudgel’ to win anti-AI concessions",
-        "summary": "Suno solicita que un testigo de Apple declare sobre las negociaciones de licencias actuales de Apple Music y supuesta fraude de streaming, alegando que los sellos mayores usan sus catálogos como presión para obtener concesiones anti‑IA.",
+        "summary": "Suno also wants an Apple witness to testify about Apple’s current licensing talks with both majors and streaming fraud on Apple Music. Source",
         "url": "https://www.musicbusinessworldwide.com/suno-fights-to-make-apple-testify-on-whether-apple-music-could-survive-without-umg-and-sony-claiming-the-majors-use-their-catalogs-as-a-cudgel-to-win-anti-ai-concessions/",
         "source": "Music Business Worldwide",
         "domain": "musicbusinessworldwide.com",
@@ -156,13 +126,42 @@
           "licensing",
           "streaming"
         ],
-        "translated": true,
+        "translated": false,
         "via": null
+      },
+      {
+        "id": "noticia-8",
+        "title": "Proteger los derechos de autor de la música frente al desafío de la inteligencia artificial.",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMigwFBVV95cUxPT00wdnJfNks1WXpQUko2ZTlBeU56NU1ETVRzLWZPN0pZaHhKSXl3bmdYa3l6amNoeXVmS3hwN0FrMFIwODFRcWFfYW5za1NrWjhEdm00U2JaWjgwMGFvWk5lTzFtRncwSUwwY21uZHdwODVLOTBJVS0tcVNMWGlOMEdQTQ?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "Vietnam.vn",
+        "domain": "news.google.com",
+        "publishedAt": "2026-10-30T13:55:06.000Z",
+        "tags": [
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-9",
+        "title": "Elvis Presley Rights Holders Seek $41M From Anthropic in AI Copyright Lawsuit Over 274 Songs",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMijgFBVV95cUxQNFVtNGNXTENmb0dHNDh3NjdjN3l1VS1haF9XdTF2cldJU19jamRnY0tyX0V0X0J4cEtHajRnbjROTVYtVnhfMGhpckZmbkNwXzFVYjJOTVdJMEtnU3pvZ2M1WWxQYXVvSlJQTWpCU1NFT1gtSDRENlFMZTl1MkJNY2dkMThoc1hGa2J3ZllR?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "techtimes.co.uk",
+        "domain": "news.google.com",
+        "publishedAt": "2026-10-26T12:14:36.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
       },
       {
         "id": "noticia-10",
         "title": "UMG talks AI music: ‘The volume is growing faster than the safeguards’",
-        "summary": "En la llamada de resultados trimestrales, Lucian Grainge de Universal Music Group advirtió que la cantidad de pistas totalmente generadas por IA supera los 90 000 por día, indicando que el crecimiento supera a las medidas de protección existentes.",
+        "summary": "Universal Music Group’s quarterly financial earnings-call yesterday saw boss Sir Lucian Grainge sounding the latest alarm around AI music. He cited Deezer’s latest figures showing more than 90,000 fully AI-generated tracks are being uploaded to streaming services every day. The post is from Music Ally .",
         "url": "https://musically.com/2026/10/30/umg-talks-ai-music-the-volume-is-growing-faster-than-the-safeguards/",
         "source": "Music Ally",
         "domain": "musically.com",
@@ -171,13 +170,28 @@
           "ai",
           "streaming"
         ],
-        "translated": true,
+        "translated": false,
         "via": null
       },
       {
         "id": "noticia-11",
+        "title": "Reservoir sues Suno and Anthropic for infringing songs by Joni Mitchell, Johnny Cash, Madonna and more",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMi6gFBVV95cUxOUmRxZlpmZVRhSkc2RDExdlNxNXB1cHViMXVUUXVRUGtVLURUVHhqd0xkSnlNdS1lSmRaTThoUnBacy0wUVUzVTQ2YXNSRFBvUE5lMUh2U280azhaR2lhaFdNcF9uY3JSNUVRUGNqVnROU1NwTmxMdHlhTGxvRG4tRHh5c09tMlFwSWQ4V3NZOWdGYm9kcUYyMFNhTmhHS1AyMUdLNWVScjEwSDBmZ200QnFRRm9FYXZ3c0FYX0pNVHdnb2Frak1tczVRbWE5dkdjU1VCaVVUMXVaeUNydUlqYVF1M0tLS2N1Ymc?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "Music Business Worldwide",
+        "domain": "news.google.com",
+        "publishedAt": "2026-10-22T12:19:08.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-12",
         "title": "Propietarios de la música de Elvis Presley demandan a Anthropic por infracción de derechos de autor",
-        "summary": "Los propietarios de la música de Elvis Presley presentan una demanda contra Anthropic, alegando infracción de derechos de autor por el uso no autorizado de sus obras.",
+        "summary": "",
         "url": "https://news.google.com/rss/articles/CBMifkFVX3lxTE9seTRPTTNERGM4NGNDd0dTb0VicURjVGR2Vnp3bW16am13U2FSRHFtaEdsaTlZeE5YSG9QeW5neGxvdEx1ZmZpNkt1QXpHVVpGVWVXZUowV0FUeFJqYmxJMWR4T2dQbFFjeVYxeUFtemtXZVRleldrZ0g5NENQQQ?oc=5&hl=es-419&gl=US&ceid=US:es-419",
         "source": "Extra News Mundo",
         "domain": "news.google.com",
@@ -185,22 +199,8 @@
         "tags": [
           "lawsuit"
         ],
-        "translated": true,
+        "translated": false,
         "via": "Google News"
-      },
-      {
-        "id": "noticia-12",
-        "title": "Suno’s new MCP tool lets users make songs inside ChatGPT, Claude, and Gemini – as its developer API gets a sign-in portal but remains in beta",
-        "summary": "Suno lanzó la herramienta MCP, que permite crear canciones dentro de asistentes de IA como ChatGPT, Claude y Gemini; la API para desarrolladores está en beta y ahora incluye un portal de inicio de sesión.",
-        "url": "https://www.musicbusinessworldwide.com/sunos-new-mcp-tool-lets-users-make-songs-inside-chatgpt-claude-and-gemini-as-its-developer-api-gets-a-sign-in-portal-but-remains-in-beta/",
-        "source": "Music Business Worldwide",
-        "domain": "musicbusinessworldwide.com",
-        "publishedAt": "2026-10-30T08:47:23.000Z",
-        "tags": [
-          "ai"
-        ],
-        "translated": true,
-        "via": null
       }
     ],
     "tip": {
@@ -214,70 +214,23 @@
     "items": [
       {
         "id": "noticia-1",
-        "title": "Suno Fires Back Against Apple’s Subpoena Opposition, Doubling Down on Its Push for Information About ‘Current License Negotiations,’ ‘Anti-AI Deal Terms,’ and More",
-        "summary": "Suno pushes back against Apple’s attempt to quash its subpoena, demanding details on current licensing talks, anti‑AI deal terms and Apple Music’s major‑label negotiations, asserting the data is crucial to its fair‑use and copyright‑misuse defenses.",
-        "url": "https://www.digitalmusicnews.com/2026/10/28/suno-apple-subpoena-dispute/",
-        "source": "Digital Music News",
-        "domain": "digitalmusicnews.com",
-        "publishedAt": "2026-10-28T23:46:44.000Z",
-        "tags": [
-          "ai",
-          "licensing",
-          "streaming"
-        ],
-        "translated": true,
-        "via": null
-      },
-      {
-        "id": "noticia-2",
-        "title": "Elvis Presley IP Owners Sue Anthropic Over Allegations of Copyright Infringement",
-        "summary": "Elvis Presley’s rightsholders have sued Anthropic, claiming the AI firm used 274 of the singer’s songs to train its models without permission, which they allege constitutes copyright infringement.",
-        "url": "https://www.digitalmusicnews.com/2026/10/25/elvis-presley-ip-anthropic-copyright-infringement/",
-        "source": "Digital Music News",
-        "domain": "digitalmusicnews.com",
-        "publishedAt": "2026-10-26T04:44:03.000Z",
-        "tags": [
-          "lawsuit",
-          "ai"
-        ],
-        "translated": true,
-        "via": null
-      },
-      {
-        "id": "noticia-3",
-        "title": "As UMG v. Suno Subpoenas Target the MLC, Multiple Investors, DistroKid, and Now Apple Music, Are Game-Changing Disclosures on the Horizon?",
-        "summary": "Suno is confronting an expanding wave of music‑industry copyright complaints and has been served with subpoenas demanding documents and depositions from the MLC, investors, DistroKid and Apple Music, hinting at potentially major disclosures ahead.",
-        "url": "https://www.digitalmusicnews.com/2026/10/26/suno-subpoenas-umg-apple-music/",
-        "source": "Digital Music News",
-        "domain": "digitalmusicnews.com",
-        "publishedAt": "2026-10-26T22:18:45.000Z",
-        "tags": [
-          "lawsuit",
-          "ai",
-          "streaming"
-        ],
-        "translated": true,
-        "via": null
-      },
-      {
-        "id": "noticia-4",
         "title": "Anthropic sued over Elvis catalog — and the 274-song copyright battle shows the AI industry's 'fair use' excuses are getting old",
-        "summary": "Anthropic is sued over the Elvis catalog, with a 274‑song copyright battle challenging the AI industry’s reliance on “fair use” defenses.",
+        "summary": "",
         "url": "https://news.google.com/rss/articles/CBMigAJBVV95cUxNa2Z3VjdTZ0RCOVBWZTJRRkduZU16TUYtaVdfR0lJS2hMbXFnZzdSMHBoZW5sV25CVndXUEtXeTVPMDVDTWhhTTZIajZhUEZOMzJOTWE3WWNlVDI1YlZzYV9BNVFZaU9QbjRUQi1JYXB3ak9QR2Q0dkNBZ0pZTmUyWmVUMnBmd3NYNHJKbi1sT2JYX3l4dG5LTzh0ZWxjc2dyaGUzazhwNXFQbzZuMEFtNFhsUEdBSExsaTdpR1dlVzhWZk1oYV9UbWlXdjBGa0RzTzhrVVdEbnBrMVY5TTZjUVQzckQ0ZnN5Ul94dkNXX3JPd3BQb0c0Q3FWYVZKLTEt?oc=5&hl=es-419&gl=US&ceid=US:es-419",
         "source": "TechRadar",
         "domain": "news.google.com",
-        "publishedAt": "2026-10-30T01:02:41.000Z",
+        "publishedAt": "2026-10-30T01:00:00.000Z",
         "tags": [
           "lawsuit",
           "ai"
         ],
-        "translated": true,
+        "translated": false,
         "via": "Google News"
       },
       {
-        "id": "noticia-5",
+        "id": "noticia-2",
         "title": "Reservoir Sues Suno and Anthropic Over AI Music Copyright, Seeking Nearly $338 Million",
-        "summary": "Reservoir sues Suno and Anthropic for AI‑generated music copyright infringement, seeking nearly $338 million in damages.",
+        "summary": "",
         "url": "https://news.google.com/rss/articles/CBMiswFBVV95cUxNWmU2NG1rWkxvR3J4U00zRmpVMVRENXlGWkNGRDQ5RldEX0M3NG5hbjBkU1BvdVgwazNFOTZ1M2FHUS1MUWNoaHVqQWhwWDgzdzFneHJYcUN1VUlHM3BzQmNtR0dmRTl2RW9wUkFDT0hKTDNzaGdLeGFjNDFiUEpHaFZ2UlJaZWR5Z1FvcmZHeTFKSExuTWxYamVaSmhuUS1ucXJPZlFoS0FyaW9WblktckNBRQ?oc=5&hl=es-419&gl=US&ceid=US:es-419",
         "source": "RouteNote",
         "domain": "news.google.com",
@@ -286,13 +239,28 @@
           "lawsuit",
           "ai"
         ],
-        "translated": true,
+        "translated": false,
         "via": "Google News"
       },
       {
-        "id": "noticia-6",
+        "id": "noticia-3",
+        "title": "Anthropic Sued For Copyright Infringement For Using Elvis Presley’s Music to Train AI",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMirgFBVV95cUxOTExQV2JjOExwYjRaRW1RaVphYlhpSjlhRzZYdk83c0pYLVhoamZnWEhZVHlsNTVXSGhJaEFFeDhtVGJrakJ1QXpTOGdZM243alFTUVRrRk9iNzVyWWtsRnVwMzlzdkljQXVTN2ktMkhCdGpvVlBBRDVjbXR2eTVFdnhGNDNqNk1zMVhJUGZGY3lvXzlOYWxpRDVUd1g2QmVjX2E2bXc0dUhtV1dvLWc?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "Vocal",
+        "domain": "news.google.com",
+        "publishedAt": "2026-10-26T19:21:42.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-4",
         "title": "AI Music Copyright Lawsuit — BTS & Psy Songs Used Without Permission in $12B Legal Battle",
-        "summary": "A copyright lawsuit claims BTS and Psy songs were used without permission in a $12 billion legal battle.",
+        "summary": "",
         "url": "https://news.google.com/rss/articles/CBMidkFVX3lxTE5NTEI1R2J0aGpLWE1FbzJLNy0xbHJQTzViZnZWX08zUnVFTUkwQmtmLWxsU1FRSUdDSUNndTFBWE5lOVdQT1dxYV8tNnRib0ZuTXdBUm00Tl9Ra2NTbnMwNmFPcHB0Tk1IbXFQeUdfdnFEMUgwemc?oc=5&hl=es-419&gl=US&ceid=US:es-419",
         "source": "The Korea Daily",
         "domain": "news.google.com",
@@ -301,13 +269,13 @@
           "lawsuit",
           "ai"
         ],
-        "translated": true,
+        "translated": false,
         "via": "Google News"
       },
       {
-        "id": "noticia-7",
+        "id": "noticia-5",
         "title": "Claude’s lyrics are diluting real lyrics, say music publishers in latest Anthropic proceedings",
-        "summary": "Music publishers Universal, Concord and ABKCO contend in the Anthropic case that Claude’s AI‑generated lyrics are diluting real lyrics, reigniting the U.S. copyright fair‑use debate over AI training.",
+        "summary": "The big debate over whether or not AI training is fair use under US copyright law was taking place in court again yesterday, this time in the context of music, specifically lyrics, with the copyright legal battle between AI company Anthropic and the Universal, Concord and ABKCO music publishers",
         "url": "https://completemusicupdate.com/claudes-lyrics-are-diluting-real-lyrics-say-music-publishers-in-latest-anthropic-proceedings/",
         "source": "Complete Music Update",
         "domain": "completemusicupdate.com",
@@ -316,13 +284,13 @@
           "lawsuit",
           "ai"
         ],
-        "translated": true,
+        "translated": false,
         "via": null
       },
       {
-        "id": "noticia-8",
+        "id": "noticia-6",
         "title": "Suno Accused of Training AI on BTS and Psy Hits Without Permission in Copyright Case Over 60,202 Recordings",
-        "summary": "Suno is accused of training its AI on BTS and Psy hits without permission in a copyright case covering 60,202 recordings.",
+        "summary": "",
         "url": "https://news.google.com/rss/articles/CBMihwFBVV95cUxOUC1GTmotZUhtb2EwOG5vemk2dnlJQzV4akVoX183SnB4eFRnbU9KSzAtTV9xcm1iVzkySG95VmYxMnBYNkxQVS1uVzMwUDFYS2xKZGhxLUlBamFtUTNOX2xoV3E4LWNCQlZVdGtOVkRtREZ4UXF3bTktbWU4RWRhNDdmZVNLdDQ?oc=5&hl=es-419&gl=US&ceid=US:es-419",
         "source": "www.techtimes.co.uk",
         "domain": "news.google.com",
@@ -330,13 +298,13 @@
         "tags": [
           "ai"
         ],
-        "translated": true,
+        "translated": false,
         "via": "Google News"
       },
       {
-        "id": "noticia-9",
+        "id": "noticia-7",
         "title": "Suno fights to make Apple testify on whether Apple Music could survive without UMG and Sony, claiming the majors use their catalogs ‘as a cudgel’ to win anti-AI concessions",
-        "summary": "Suno seeks an Apple witness to testify on current Apple Music licensing negotiations and alleged streaming fraud, claiming major labels wield their catalogs as leverage to secure anti‑AI concessions.",
+        "summary": "Suno also wants an Apple witness to testify about Apple’s current licensing talks with both majors and streaming fraud on Apple Music. Source",
         "url": "https://www.musicbusinessworldwide.com/suno-fights-to-make-apple-testify-on-whether-apple-music-could-survive-without-umg-and-sony-claiming-the-majors-use-their-catalogs-as-a-cudgel-to-win-anti-ai-concessions/",
         "source": "Music Business Worldwide",
         "domain": "musicbusinessworldwide.com",
@@ -346,13 +314,42 @@
           "licensing",
           "streaming"
         ],
-        "translated": true,
+        "translated": false,
         "via": null
+      },
+      {
+        "id": "noticia-8",
+        "title": "Proteger los derechos de autor de la música frente al desafío de la inteligencia artificial.",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMigwFBVV95cUxPT00wdnJfNks1WXpQUko2ZTlBeU56NU1ETVRzLWZPN0pZaHhKSXl3bmdYa3l6amNoeXVmS3hwN0FrMFIwODFRcWFfYW5za1NrWjhEdm00U2JaWjgwMGFvWk5lTzFtRncwSUwwY21uZHdwODVLOTBJVS0tcVNMWGlOMEdQTQ?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "Vietnam.vn",
+        "domain": "news.google.com",
+        "publishedAt": "2026-10-30T13:55:06.000Z",
+        "tags": [
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-9",
+        "title": "Elvis Presley Rights Holders Seek $41M From Anthropic in AI Copyright Lawsuit Over 274 Songs",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMijgFBVV95cUxQNFVtNGNXTENmb0dHNDh3NjdjN3l1VS1haF9XdTF2cldJU19jamRnY0tyX0V0X0J4cEtHajRnbjROTVYtVnhfMGhpckZmbkNwXzFVYjJOTVdJMEtnU3pvZ2M1WWxQYXVvSlJQTWpCU1NFT1gtSDRENlFMZTl1MkJNY2dkMThoc1hGa2J3ZllR?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "techtimes.co.uk",
+        "domain": "news.google.com",
+        "publishedAt": "2026-10-26T12:14:36.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
       },
       {
         "id": "noticia-10",
         "title": "UMG talks AI music: ‘The volume is growing faster than the safeguards’",
-        "summary": "During UMG’s quarterly earnings call, Lucian Grainge warned that fully AI‑generated tracks exceed 90,000 daily, noting that the volume is increasing faster than existing safeguards.",
+        "summary": "Universal Music Group’s quarterly financial earnings-call yesterday saw boss Sir Lucian Grainge sounding the latest alarm around AI music. He cited Deezer’s latest figures showing more than 90,000 fully AI-generated tracks are being uploaded to streaming services every day. The post is from Music Ally .",
         "url": "https://musically.com/2026/10/30/umg-talks-ai-music-the-volume-is-growing-faster-than-the-safeguards/",
         "source": "Music Ally",
         "domain": "musically.com",
@@ -361,13 +358,28 @@
           "ai",
           "streaming"
         ],
-        "translated": true,
+        "translated": false,
         "via": null
       },
       {
         "id": "noticia-11",
+        "title": "Reservoir sues Suno and Anthropic for infringing songs by Joni Mitchell, Johnny Cash, Madonna and more",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMi6gFBVV95cUxOUmRxZlpmZVRhSkc2RDExdlNxNXB1cHViMXVUUXVRUGtVLURUVHhqd0xkSnlNdS1lSmRaTThoUnBacy0wUVUzVTQ2YXNSRFBvUE5lMUh2U280azhaR2lhaFdNcF9uY3JSNUVRUGNqVnROU1NwTmxMdHlhTGxvRG4tRHh5c09tMlFwSWQ4V3NZOWdGYm9kcUYyMFNhTmhHS1AyMUdLNWVScjEwSDBmZ200QnFRRm9FYXZ3c0FYX0pNVHdnb2Frak1tczVRbWE5dkdjU1VCaVVUMXVaeUNydUlqYVF1M0tLS2N1Ymc?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "Music Business Worldwide",
+        "domain": "news.google.com",
+        "publishedAt": "2026-10-22T12:19:08.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-12",
         "title": "Propietarios de la música de Elvis Presley demandan a Anthropic por infracción de derechos de autor",
-        "summary": "Elvis Presley music owners file a lawsuit against Anthropic, claiming copyright infringement for unauthorized use of their works.",
+        "summary": "",
         "url": "https://news.google.com/rss/articles/CBMifkFVX3lxTE9seTRPTTNERGM4NGNDd0dTb0VicURjVGR2Vnp3bW16am13U2FSRHFtaEdsaTlZeE5YSG9QeW5neGxvdEx1ZmZpNkt1QXpHVVpGVWVXZUowV0FUeFJqYmxJMWR4T2dQbFFjeVYxeUFtemtXZVRleldrZ0g5NENQQQ?oc=5&hl=es-419&gl=US&ceid=US:es-419",
         "source": "Extra News Mundo",
         "domain": "news.google.com",
@@ -375,22 +387,8 @@
         "tags": [
           "lawsuit"
         ],
-        "translated": true,
+        "translated": false,
         "via": "Google News"
-      },
-      {
-        "id": "noticia-12",
-        "title": "Suno’s new MCP tool lets users make songs inside ChatGPT, Claude, and Gemini – as its developer API gets a sign-in portal but remains in beta",
-        "summary": "Suno introduced the MCP tool, enabling song creation inside AI assistants such as ChatGPT, Claude, and Gemini; its developer API remains in beta and now features a sign‑in portal.",
-        "url": "https://www.musicbusinessworldwide.com/sunos-new-mcp-tool-lets-users-make-songs-inside-chatgpt-claude-and-gemini-as-its-developer-api-gets-a-sign-in-portal-but-remains-in-beta/",
-        "source": "Music Business Worldwide",
-        "domain": "musicbusinessworldwide.com",
-        "publishedAt": "2026-10-30T08:47:23.000Z",
-        "tags": [
-          "ai"
-        ],
-        "translated": true,
-        "via": null
       }
     ],
     "tip": {
