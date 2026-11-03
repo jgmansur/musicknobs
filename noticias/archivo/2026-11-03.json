@@ -1,17 +1,16 @@
 {
-  "lastUpdated": "2026-11-03T01:31:47.629Z",
+  "lastUpdated": "2026-11-03T15:00:16.948Z",
   "meta": {
     "method": "rss-retrieval + link-verification + ai-translation",
     "itemCount": 12,
     "sources": [
+      "Caras y Caretas | La Revista de la Patria",
+      "Complete Music Update",
       "Digital Music News",
       "El Ecosistema Startup",
-      "Extra News Mundo",
       "Music Ally",
       "Music Business Worldwide",
-      "RouteNote",
-      "TechRadar",
-      "The Korea Daily"
+      "TechRadar"
     ],
     "verifiedLinks": 12,
     "aiTranslated": 0,
@@ -69,6 +68,21 @@
       },
       {
         "id": "noticia-4",
+        "title": "AI roundup: Lyria lawsuit, Anthropic’s Q3, OpenAI pile-in",
+        "summary": "Big money, big lawsuits, and claims that if AI training isn’t ruled as ‘fair use’ it would “threaten not merely a single industry, but the broader economy” – not to mention hamper cancer research, cybersecurity defences and emergency response systems. It’s quite the day of news in the AI world. The post is from Music A…",
+        "url": "https://musically.com/2026/11/03/ai-roundup-lyria-lawsuit-anthropics-q3-openai-pile-in/",
+        "source": "Music Ally",
+        "domain": "musically.com",
+        "publishedAt": "2026-11-03T12:30:00.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-5",
         "title": "As UMG v. Suno Subpoenas Target the MLC, Multiple Investors, DistroKid, and Now Apple Music, Are Game-Changing Disclosures on the Horizon?",
         "summary": "As Suno fends off an ever-growing number of music industry copyright complaints, a raft of subpoena showdowns – including the AI platform’s own document and deposition demands – are now in full swing. Does that mean game-changing disclosures are on the horizon? Time will tell, though the current evidence suggests yes.…",
         "url": "https://www.digitalmusicnews.com/2026/10/26/suno-subpoenas-umg-apple-music/",
@@ -84,7 +98,7 @@
         "via": null
       },
       {
-        "id": "noticia-5",
+        "id": "noticia-6",
         "title": "Anthropic sued over Elvis catalog — and the 274-song copyright battle shows the AI industry's 'fair use' excuses are getting old",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMigAJBVV95cUxNa2Z3VjdTZ0RCOVBWZTJRRkduZU16TUYtaVdfR0lJS2hMbXFnZzdSMHBoZW5sV25CVndXUEtXeTVPMDVDTWhhTTZIajZhUEZOMzJOTWE3WWNlVDI1YlZzYV9BNVFZaU9QbjRUQi1JYXB3ak9QR2Q0dkNBZ0pZTmUyWmVUMnBmd3NYNHJKbi1sT2JYX3l4dG5LTzh0ZWxjc2dyaGUzazhwNXFQbzZuMEFtNFhsUEdBSExsaTdpR1dlVzhWZk1oYV9UbWlXdjBGa0RzTzhrVVdEbnBrMVY5TTZjUVQzckQ0ZnN5Ul94dkNXX3JPd3BQb0c0Q3FWYVZKLTEt?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -99,7 +113,7 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-6",
+        "id": "noticia-7",
         "title": "UMG, Sony, and DistroKid tell court they are ‘working on a resolution’ in dispute over AI music data for Suno case",
         "summary": "The two majors are seeking data from DistroKid on how many of the tracks it delivers to streaming services are flagged as AI-generated. Source",
         "url": "https://www.musicbusinessworldwide.com/umg-sony-and-distrokid-tell-court-they-are-working-on-a-resolution-in-dispute-over-ai-music-data-for-suno-case/",
@@ -115,7 +129,7 @@
         "via": null
       },
       {
-        "id": "noticia-7",
+        "id": "noticia-8",
         "title": "GEMA on AI: ‘The most important thing is we get an output remuneration’",
         "summary": "Having won an initial ruling against Suno in Germany, collecting society GEMA is considering its future moves in AI music, both in terms of lawsuits and policy lobbying. In an interview for our Music Ally Focus podcast today, general counsel Dr Kai Welp talked about one of its priorities on the latter front. The post i…",
         "url": "https://musically.com/2026/11/02/gema-on-ai-the-most-important-thing-is-we-get-an-output-remuneration/",
@@ -130,37 +144,7 @@
         "via": null
       },
       {
-        "id": "noticia-8",
-        "title": "Reservoir Sues Suno and Anthropic Over AI Music Copyright, Seeking Nearly $338 Million",
-        "summary": "",
-        "url": "https://news.google.com/rss/articles/CBMiswFBVV95cUxNWmU2NG1rWkxvR3J4U00zRmpVMVRENXlGWkNGRDQ5RldEX0M3NG5hbjBkU1BvdVgwazNFOTZ1M2FHUS1MUWNoaHVqQWhwWDgzdzFneHJYcUN1VUlHM3BzQmNtR0dmRTl2RW9wUkFDT0hKTDNzaGdLeGFjNDFiUEpHaFZ2UlJaZWR5Z1FvcmZHeTFKSExuTWxYamVaSmhuUS1ucXJPZlFoS0FyaW9WblktckNBRQ?oc=5&hl=es-419&gl=US&ceid=US:es-419",
-        "source": "RouteNote",
-        "domain": "news.google.com",
-        "publishedAt": "2026-10-26T21:25:00.000Z",
-        "tags": [
-          "lawsuit",
-          "ai"
-        ],
-        "translated": false,
-        "via": "Google News"
-      },
-      {
         "id": "noticia-9",
-        "title": "AI Music Copyright Lawsuit — BTS & Psy Songs Used Without Permission in $12B Legal Battle",
-        "summary": "",
-        "url": "https://news.google.com/rss/articles/CBMidkFVX3lxTE5NTEI1R2J0aGpLWE1FbzJLNy0xbHJQTzViZnZWX08zUnVFTUkwQmtmLWxsU1FRSUdDSUNndTFBWE5lOVdQT1dxYV8tNnRib0ZuTXdBUm00Tl9Ra2NTbnMwNmFPcHB0Tk1IbXFQeUdfdnFEMUgwemc?oc=5&hl=es-419&gl=US&ceid=US:es-419",
-        "source": "The Korea Daily",
-        "domain": "news.google.com",
-        "publishedAt": "2026-10-28T15:12:46.000Z",
-        "tags": [
-          "lawsuit",
-          "ai"
-        ],
-        "translated": false,
-        "via": "Google News"
-      },
-      {
-        "id": "noticia-10",
         "title": "Música con IA: qué puedes hacer con Suno, Udio y Spotify",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMijgFBVV95cUxQM0M0TXp6dWVUUGxFc3dtM1dVZnZpLVhRUUlmUG5RUmFteWZLanhSYzJuTUVZS0tDZ2NpQXl6Y3ZNUzNVakFza2FrbzBrbkNDck9JUUpHdmI5THAyVmFsRUxQYjd1NEhLOEJCZVluSk5kc3NJbmFTa0xyaGpIUlBGT19JU2IteEpfZ3BYeG93?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -175,7 +159,7 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-11",
+        "id": "noticia-10",
         "title": "Vickie Nauman talks games (and why AI drones are more worrying than AI tunes)",
         "summary": "Gaming is really, really different than anything else that’s out there. It’s not like film and TV synchronisation licensing. The post is from Music Ally .",
         "url": "https://musically.com/2026/11/02/vickie-nauman-talks-games-and-why-ai-drones-are-more-worrying-than-ai-tunes/",
@@ -190,18 +174,33 @@
         "via": null
       },
       {
-        "id": "noticia-12",
-        "title": "Propietarios de la música de Elvis Presley demandan a Anthropic por infracción de derechos de autor",
+        "id": "noticia-11",
+        "title": "IA y música, un largo debate por derechos de autor",
         "summary": "",
-        "url": "https://news.google.com/rss/articles/CBMifkFVX3lxTE9seTRPTTNERGM4NGNDd0dTb0VicURjVGR2Vnp3bW16am13U2FSRHFtaEdsaTlZeE5YSG9QeW5neGxvdEx1ZmZpNkt1QXpHVVpGVWVXZUowV0FUeFJqYmxJMWR4T2dQbFFjeVYxeUFtemtXZVRleldrZ0g5NENQQQ?oc=5&hl=es-419&gl=US&ceid=US:es-419",
-        "source": "Extra News Mundo",
+        "url": "https://news.google.com/rss/articles/CBMilAFBVV95cUxPTV85ZC1hN0c5dWEzYTNTcXRGYy1ES0RSdXNfcWs3LTRoMmYwQ25qYkdsTDhvNTFUU2phU1dJNUNfa1NTLU15ek5IWGI0MFB1RGRzeUx0dHVVSGZDbGpTZTVpalRlZFlmOVZLTU5OeWpUeXZQWm83Z1o4NFoxajNKdjNtZVl4cUg1aG1Bamp5bXUxM2lo0gGUAUFVX3lxTE9NXzlkLWE3Rzl1YTNhM1NxdEZjLURLRFJ1c19xazctNGgyZjBDbmpiR2xMOG81MVRTamFTV0k1Q19rU1MtTXl6TkhYYjQwUHVEZHN5THR0dVVIZkNsalNlNWlqVGVkWWY5VktNTk55alR5dlBabzdnWjg0WjFqM0p2M21lWXhxSDVobUFqanltdTEzaWg?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "Caras y Caretas | La Revista de la Patria",
         "domain": "news.google.com",
-        "publishedAt": "2026-10-27T21:27:03.000Z",
+        "publishedAt": "2026-10-26T14:10:52.000Z",
         "tags": [
-          "lawsuit"
+          "ai"
         ],
         "translated": false,
         "via": "Google News"
+      },
+      {
+        "id": "noticia-12",
+        "title": "Spotify aiming to get AI remix product live in early 2027, even though it remains unclear if artists and fans are all that interested in it",
+        "summary": "Spotify is reportedly hoping to launch its much hyped AI remix tool early next year. It’s not really clear that music creators or fans are all that excited about the proposition, though Universal says conversations with artists about opting into the the AI gimmick are actually going “extremely well”",
+        "url": "https://completemusicupdate.com/spotify-aiming-to-get-ai-remix-product-live-in-early-2027-even-though-it-remains-unclear-if-artists-and-fans-are-all-that-interested-in-it/",
+        "source": "Complete Music Update",
+        "domain": "completemusicupdate.com",
+        "publishedAt": "2026-10-30T16:16:55.000Z",
+        "tags": [
+          "ai",
+          "streaming"
+        ],
+        "translated": false,
+        "via": null
       }
     ],
     "tip": {
@@ -261,6 +260,21 @@
       },
       {
         "id": "noticia-4",
+        "title": "AI roundup: Lyria lawsuit, Anthropic’s Q3, OpenAI pile-in",
+        "summary": "Big money, big lawsuits, and claims that if AI training isn’t ruled as ‘fair use’ it would “threaten not merely a single industry, but the broader economy” – not to mention hamper cancer research, cybersecurity defences and emergency response systems. It’s quite the day of news in the AI world. The post is from Music A…",
+        "url": "https://musically.com/2026/11/03/ai-roundup-lyria-lawsuit-anthropics-q3-openai-pile-in/",
+        "source": "Music Ally",
+        "domain": "musically.com",
+        "publishedAt": "2026-11-03T12:30:00.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-5",
         "title": "As UMG v. Suno Subpoenas Target the MLC, Multiple Investors, DistroKid, and Now Apple Music, Are Game-Changing Disclosures on the Horizon?",
         "summary": "As Suno fends off an ever-growing number of music industry copyright complaints, a raft of subpoena showdowns – including the AI platform’s own document and deposition demands – are now in full swing. Does that mean game-changing disclosures are on the horizon? Time will tell, though the current evidence suggests yes.…",
         "url": "https://www.digitalmusicnews.com/2026/10/26/suno-subpoenas-umg-apple-music/",
@@ -276,7 +290,7 @@
         "via": null
       },
       {
-        "id": "noticia-5",
+        "id": "noticia-6",
         "title": "Anthropic sued over Elvis catalog — and the 274-song copyright battle shows the AI industry's 'fair use' excuses are getting old",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMigAJBVV95cUxNa2Z3VjdTZ0RCOVBWZTJRRkduZU16TUYtaVdfR0lJS2hMbXFnZzdSMHBoZW5sV25CVndXUEtXeTVPMDVDTWhhTTZIajZhUEZOMzJOTWE3WWNlVDI1YlZzYV9BNVFZaU9QbjRUQi1JYXB3ak9QR2Q0dkNBZ0pZTmUyWmVUMnBmd3NYNHJKbi1sT2JYX3l4dG5LTzh0ZWxjc2dyaGUzazhwNXFQbzZuMEFtNFhsUEdBSExsaTdpR1dlVzhWZk1oYV9UbWlXdjBGa0RzTzhrVVdEbnBrMVY5TTZjUVQzckQ0ZnN5Ul94dkNXX3JPd3BQb0c0Q3FWYVZKLTEt?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -291,7 +305,7 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-6",
+        "id": "noticia-7",
         "title": "UMG, Sony, and DistroKid tell court they are ‘working on a resolution’ in dispute over AI music data for Suno case",
         "summary": "The two majors are seeking data from DistroKid on how many of the tracks it delivers to streaming services are flagged as AI-generated. Source",
         "url": "https://www.musicbusinessworldwide.com/umg-sony-and-distrokid-tell-court-they-are-working-on-a-resolution-in-dispute-over-ai-music-data-for-suno-case/",
@@ -307,7 +321,7 @@
         "via": null
       },
       {
-        "id": "noticia-7",
+        "id": "noticia-8",
         "title": "GEMA on AI: ‘The most important thing is we get an output remuneration’",
         "summary": "Having won an initial ruling against Suno in Germany, collecting society GEMA is considering its future moves in AI music, both in terms of lawsuits and policy lobbying. In an interview for our Music Ally Focus podcast today, general counsel Dr Kai Welp talked about one of its priorities on the latter front. The post i…",
         "url": "https://musically.com/2026/11/02/gema-on-ai-the-most-important-thing-is-we-get-an-output-remuneration/",
@@ -322,37 +336,7 @@
         "via": null
       },
       {
-        "id": "noticia-8",
-        "title": "Reservoir Sues Suno and Anthropic Over AI Music Copyright, Seeking Nearly $338 Million",
-        "summary": "",
-        "url": "https://news.google.com/rss/articles/CBMiswFBVV95cUxNWmU2NG1rWkxvR3J4U00zRmpVMVRENXlGWkNGRDQ5RldEX0M3NG5hbjBkU1BvdVgwazNFOTZ1M2FHUS1MUWNoaHVqQWhwWDgzdzFneHJYcUN1VUlHM3BzQmNtR0dmRTl2RW9wUkFDT0hKTDNzaGdLeGFjNDFiUEpHaFZ2UlJaZWR5Z1FvcmZHeTFKSExuTWxYamVaSmhuUS1ucXJPZlFoS0FyaW9WblktckNBRQ?oc=5&hl=es-419&gl=US&ceid=US:es-419",
-        "source": "RouteNote",
-        "domain": "news.google.com",
-        "publishedAt": "2026-10-26T21:25:00.000Z",
-        "tags": [
-          "lawsuit",
-          "ai"
-        ],
-        "translated": false,
-        "via": "Google News"
-      },
-      {
         "id": "noticia-9",
-        "title": "AI Music Copyright Lawsuit — BTS & Psy Songs Used Without Permission in $12B Legal Battle",
-        "summary": "",
-        "url": "https://news.google.com/rss/articles/CBMidkFVX3lxTE5NTEI1R2J0aGpLWE1FbzJLNy0xbHJQTzViZnZWX08zUnVFTUkwQmtmLWxsU1FRSUdDSUNndTFBWE5lOVdQT1dxYV8tNnRib0ZuTXdBUm00Tl9Ra2NTbnMwNmFPcHB0Tk1IbXFQeUdfdnFEMUgwemc?oc=5&hl=es-419&gl=US&ceid=US:es-419",
-        "source": "The Korea Daily",
-        "domain": "news.google.com",
-        "publishedAt": "2026-10-28T15:12:46.000Z",
-        "tags": [
-          "lawsuit",
-          "ai"
-        ],
-        "translated": false,
-        "via": "Google News"
-      },
-      {
-        "id": "noticia-10",
         "title": "Música con IA: qué puedes hacer con Suno, Udio y Spotify",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMijgFBVV95cUxQM0M0TXp6dWVUUGxFc3dtM1dVZnZpLVhRUUlmUG5RUmFteWZLanhSYzJuTUVZS0tDZ2NpQXl6Y3ZNUzNVakFza2FrbzBrbkNDck9JUUpHdmI5THAyVmFsRUxQYjd1NEhLOEJCZVluSk5kc3NJbmFTa0xyaGpIUlBGT19JU2IteEpfZ3BYeG93?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -367,7 +351,7 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-11",
+        "id": "noticia-10",
         "title": "Vickie Nauman talks games (and why AI drones are more worrying than AI tunes)",
         "summary": "Gaming is really, really different than anything else that’s out there. It’s not like film and TV synchronisation licensing. The post is from Music Ally .",
         "url": "https://musically.com/2026/11/02/vickie-nauman-talks-games-and-why-ai-drones-are-more-worrying-than-ai-tunes/",
@@ -382,18 +366,33 @@
         "via": null
       },
       {
-        "id": "noticia-12",
-        "title": "Propietarios de la música de Elvis Presley demandan a Anthropic por infracción de derechos de autor",
+        "id": "noticia-11",
+        "title": "IA y música, un largo debate por derechos de autor",
         "summary": "",
-        "url": "https://news.google.com/rss/articles/CBMifkFVX3lxTE9seTRPTTNERGM4NGNDd0dTb0VicURjVGR2Vnp3bW16am13U2FSRHFtaEdsaTlZeE5YSG9QeW5neGxvdEx1ZmZpNkt1QXpHVVpGVWVXZUowV0FUeFJqYmxJMWR4T2dQbFFjeVYxeUFtemtXZVRleldrZ0g5NENQQQ?oc=5&hl=es-419&gl=US&ceid=US:es-419",
-        "source": "Extra News Mundo",
+        "url": "https://news.google.com/rss/articles/CBMilAFBVV95cUxPTV85ZC1hN0c5dWEzYTNTcXRGYy1ES0RSdXNfcWs3LTRoMmYwQ25qYkdsTDhvNTFUU2phU1dJNUNfa1NTLU15ek5IWGI0MFB1RGRzeUx0dHVVSGZDbGpTZTVpalRlZFlmOVZLTU5OeWpUeXZQWm83Z1o4NFoxajNKdjNtZVl4cUg1aG1Bamp5bXUxM2lo0gGUAUFVX3lxTE9NXzlkLWE3Rzl1YTNhM1NxdEZjLURLRFJ1c19xazctNGgyZjBDbmpiR2xMOG81MVRTamFTV0k1Q19rU1MtTXl6TkhYYjQwUHVEZHN5THR0dVVIZkNsalNlNWlqVGVkWWY5VktNTk55alR5dlBabzdnWjg0WjFqM0p2M21lWXhxSDVobUFqanltdTEzaWg?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "Caras y Caretas | La Revista de la Patria",
         "domain": "news.google.com",
-        "publishedAt": "2026-10-27T21:27:03.000Z",
+        "publishedAt": "2026-10-26T14:10:52.000Z",
         "tags": [
-          "lawsuit"
+          "ai"
         ],
         "translated": false,
         "via": "Google News"
+      },
+      {
+        "id": "noticia-12",
+        "title": "Spotify aiming to get AI remix product live in early 2027, even though it remains unclear if artists and fans are all that interested in it",
+        "summary": "Spotify is reportedly hoping to launch its much hyped AI remix tool early next year. It’s not really clear that music creators or fans are all that excited about the proposition, though Universal says conversations with artists about opting into the the AI gimmick are actually going “extremely well”",
+        "url": "https://completemusicupdate.com/spotify-aiming-to-get-ai-remix-product-live-in-early-2027-even-though-it-remains-unclear-if-artists-and-fans-are-all-that-interested-in-it/",
+        "source": "Complete Music Update",
+        "domain": "completemusicupdate.com",
+        "publishedAt": "2026-10-30T16:16:55.000Z",
+        "tags": [
+          "ai",
+          "streaming"
+        ],
+        "translated": false,
+        "via": null
       }
     ],
     "tip": {
