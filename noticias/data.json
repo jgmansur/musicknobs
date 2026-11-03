@@ -1,17 +1,17 @@
 {
-  "lastUpdated": "2026-11-02T16:59:21.577Z",
+  "lastUpdated": "2026-11-03T01:31:47.629Z",
   "meta": {
     "method": "rss-retrieval + link-verification + ai-translation",
     "itemCount": 12,
     "sources": [
       "Digital Music News",
       "El Ecosistema Startup",
+      "Extra News Mundo",
       "Music Ally",
       "Music Business Worldwide",
       "RouteNote",
       "TechRadar",
-      "The Korea Daily",
-      "Vietnam.vn"
+      "The Korea Daily"
     ],
     "verifiedLinks": 12,
     "aiTranslated": 0,
@@ -161,36 +161,6 @@
       },
       {
         "id": "noticia-10",
-        "title": "Suno fights to make Apple testify on whether Apple Music could survive without UMG and Sony, claiming the majors use their catalogs ‘as a cudgel’ to win anti-AI concessions",
-        "summary": "Suno also wants an Apple witness to testify about Apple’s current licensing talks with both majors and streaming fraud on Apple Music. Source",
-        "url": "https://www.musicbusinessworldwide.com/suno-fights-to-make-apple-testify-on-whether-apple-music-could-survive-without-umg-and-sony-claiming-the-majors-use-their-catalogs-as-a-cudgel-to-win-anti-ai-concessions/",
-        "source": "Music Business Worldwide",
-        "domain": "musicbusinessworldwide.com",
-        "publishedAt": "2026-10-30T08:47:52.000Z",
-        "tags": [
-          "ai",
-          "licensing",
-          "streaming"
-        ],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-11",
-        "title": "Proteger los derechos de autor de la música frente al desafío de la inteligencia artificial.",
-        "summary": "",
-        "url": "https://news.google.com/rss/articles/CBMigwFBVV95cUxPT00wdnJfNks1WXpQUko2ZTlBeU56NU1ETVRzLWZPN0pZaHhKSXl3bmdYa3l6amNoeXVmS3hwN0FrMFIwODFRcWFfYW5za1NrWjhEdm00U2JaWjgwMGFvWk5lTzFtRncwSUwwY21uZHdwODVLOTBJVS0tcVNMWGlOMEdQTQ?oc=5&hl=es-419&gl=US&ceid=US:es-419",
-        "source": "Vietnam.vn",
-        "domain": "news.google.com",
-        "publishedAt": "2026-10-30T13:55:06.000Z",
-        "tags": [
-          "ai"
-        ],
-        "translated": false,
-        "via": "Google News"
-      },
-      {
-        "id": "noticia-12",
         "title": "Música con IA: qué puedes hacer con Suno, Udio y Spotify",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMijgFBVV95cUxQM0M0TXp6dWVUUGxFc3dtM1dVZnZpLVhRUUlmUG5RUmFteWZLanhSYzJuTUVZS0tDZ2NpQXl6Y3ZNUzNVakFza2FrbzBrbkNDck9JUUpHdmI5THAyVmFsRUxQYjd1NEhLOEJCZVluSk5kc3NJbmFTa0xyaGpIUlBGT19JU2IteEpfZ3BYeG93?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -203,11 +173,40 @@
         ],
         "translated": false,
         "via": "Google News"
+      },
+      {
+        "id": "noticia-11",
+        "title": "Vickie Nauman talks games (and why AI drones are more worrying than AI tunes)",
+        "summary": "Gaming is really, really different than anything else that’s out there. It’s not like film and TV synchronisation licensing. The post is from Music Ally .",
+        "url": "https://musically.com/2026/11/02/vickie-nauman-talks-games-and-why-ai-drones-are-more-worrying-than-ai-tunes/",
+        "source": "Music Ally",
+        "domain": "musically.com",
+        "publishedAt": "2026-11-02T06:00:00.000Z",
+        "tags": [
+          "ai",
+          "licensing"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-12",
+        "title": "Propietarios de la música de Elvis Presley demandan a Anthropic por infracción de derechos de autor",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMifkFVX3lxTE9seTRPTTNERGM4NGNDd0dTb0VicURjVGR2Vnp3bW16am13U2FSRHFtaEdsaTlZeE5YSG9QeW5neGxvdEx1ZmZpNkt1QXpHVVpGVWVXZUowV0FUeFJqYmxJMWR4T2dQbFFjeVYxeUFtemtXZVRleldrZ0g5NENQQQ?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "Extra News Mundo",
+        "domain": "news.google.com",
+        "publishedAt": "2026-10-27T21:27:03.000Z",
+        "tags": [
+          "lawsuit"
+        ],
+        "translated": false,
+        "via": "Google News"
       }
     ],
     "tip": {
-      "title": "Guarda evidencia de la fecha de creación",
-      "body": "Un correo a ti mismo con el archivo adjunto, un repositorio con historial o un servicio de sellado de tiempo cuestan poco y construyen una línea de tiempo defendible."
+      "title": "Antes de firmar, revisa la reversión de derechos",
+      "body": "La pregunta clave de cualquier contrato no es cuánto te dan hoy, sino cuándo y cómo recuperas tu obra. Si no hay cláusula de reversión, estás cediendo por el plazo completo."
     }
   },
   "en": {
@@ -354,36 +353,6 @@
       },
       {
         "id": "noticia-10",
-        "title": "Suno fights to make Apple testify on whether Apple Music could survive without UMG and Sony, claiming the majors use their catalogs ‘as a cudgel’ to win anti-AI concessions",
-        "summary": "Suno also wants an Apple witness to testify about Apple’s current licensing talks with both majors and streaming fraud on Apple Music. Source",
-        "url": "https://www.musicbusinessworldwide.com/suno-fights-to-make-apple-testify-on-whether-apple-music-could-survive-without-umg-and-sony-claiming-the-majors-use-their-catalogs-as-a-cudgel-to-win-anti-ai-concessions/",
-        "source": "Music Business Worldwide",
-        "domain": "musicbusinessworldwide.com",
-        "publishedAt": "2026-10-30T08:47:52.000Z",
-        "tags": [
-          "ai",
-          "licensing",
-          "streaming"
-        ],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-11",
-        "title": "Proteger los derechos de autor de la música frente al desafío de la inteligencia artificial.",
-        "summary": "",
-        "url": "https://news.google.com/rss/articles/CBMigwFBVV95cUxPT00wdnJfNks1WXpQUko2ZTlBeU56NU1ETVRzLWZPN0pZaHhKSXl3bmdYa3l6amNoeXVmS3hwN0FrMFIwODFRcWFfYW5za1NrWjhEdm00U2JaWjgwMGFvWk5lTzFtRncwSUwwY21uZHdwODVLOTBJVS0tcVNMWGlOMEdQTQ?oc=5&hl=es-419&gl=US&ceid=US:es-419",
-        "source": "Vietnam.vn",
-        "domain": "news.google.com",
-        "publishedAt": "2026-10-30T13:55:06.000Z",
-        "tags": [
-          "ai"
-        ],
-        "translated": false,
-        "via": "Google News"
-      },
-      {
-        "id": "noticia-12",
         "title": "Música con IA: qué puedes hacer con Suno, Udio y Spotify",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMijgFBVV95cUxQM0M0TXp6dWVUUGxFc3dtM1dVZnZpLVhRUUlmUG5RUmFteWZLanhSYzJuTUVZS0tDZ2NpQXl6Y3ZNUzNVakFza2FrbzBrbkNDck9JUUpHdmI5THAyVmFsRUxQYjd1NEhLOEJCZVluSk5kc3NJbmFTa0xyaGpIUlBGT19JU2IteEpfZ3BYeG93?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -396,11 +365,40 @@
         ],
         "translated": false,
         "via": "Google News"
+      },
+      {
+        "id": "noticia-11",
+        "title": "Vickie Nauman talks games (and why AI drones are more worrying than AI tunes)",
+        "summary": "Gaming is really, really different than anything else that’s out there. It’s not like film and TV synchronisation licensing. The post is from Music Ally .",
+        "url": "https://musically.com/2026/11/02/vickie-nauman-talks-games-and-why-ai-drones-are-more-worrying-than-ai-tunes/",
+        "source": "Music Ally",
+        "domain": "musically.com",
+        "publishedAt": "2026-11-02T06:00:00.000Z",
+        "tags": [
+          "ai",
+          "licensing"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-12",
+        "title": "Propietarios de la música de Elvis Presley demandan a Anthropic por infracción de derechos de autor",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMifkFVX3lxTE9seTRPTTNERGM4NGNDd0dTb0VicURjVGR2Vnp3bW16am13U2FSRHFtaEdsaTlZeE5YSG9QeW5neGxvdEx1ZmZpNkt1QXpHVVpGVWVXZUowV0FUeFJqYmxJMWR4T2dQbFFjeVYxeUFtemtXZVRleldrZ0g5NENQQQ?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "Extra News Mundo",
+        "domain": "news.google.com",
+        "publishedAt": "2026-10-27T21:27:03.000Z",
+        "tags": [
+          "lawsuit"
+        ],
+        "translated": false,
+        "via": "Google News"
       }
     ],
     "tip": {
-      "title": "Keep evidence of your creation date",
-      "body": "An email to yourself with the file attached, a repository with history, or a timestamping service cost little and build a defensible timeline."
+      "title": "Before signing, check the reversion clause",
+      "body": "The key question in any deal isn't what you get today —it's when and how you get your work back. With no reversion clause, you're assigning for the full term."
     }
   }
 }
