@@ -1,13 +1,14 @@
 {
-  "lastUpdated": "2026-11-03T15:00:16.948Z",
+  "lastUpdated": "2026-11-03T23:56:55.522Z",
   "meta": {
     "method": "rss-retrieval + link-verification + ai-translation",
     "itemCount": 12,
     "sources": [
-      "Caras y Caretas | La Revista de la Patria",
+      "Billboard",
       "Complete Music Update",
       "Digital Music News",
       "El Ecosistema Startup",
+      "Industria Musical",
       "Music Ally",
       "Music Business Worldwide",
       "TechRadar"
@@ -22,15 +23,15 @@
     "items": [
       {
         "id": "noticia-1",
-        "title": "Irving Azoff’s Music Artists Coalition joins Cate Blanchett and CAA on AI licensing brief in New York Times’ case against OpenAI",
-        "summary": "RIAA, NMPA, ASCAP, BMI, and five other music organizations filed a proposed brief of their own, formally backing the plaintiffs. Source",
-        "url": "https://www.musicbusinessworldwide.com/irving-azoffs-music-artists-coalition-joins-cate-blanchett-and-caa-on-ai-licensing-brief-in-new-york-times-case-against-openai/",
-        "source": "Music Business Worldwide",
-        "domain": "musicbusinessworldwide.com",
-        "publishedAt": "2026-11-02T14:26:35.000Z",
+        "title": "Music industry intervenes in Open AI’s big legal battle with newspapers and authors",
+        "summary": "All of the US music industry’s copyright lawsuits against AI companies swing on whether or not AI training is fair use under US law. A big legal battle involving authors, newspapers and Open AI also centres on fair use, and the music industry has now intervened in that case via an amicus brief",
+        "url": "https://completemusicupdate.com/music-industry-intervenes-in-open-ais-big-legal-battle-with-newspapers-and-authors/",
+        "source": "Complete Music Update",
+        "domain": "completemusicupdate.com",
+        "publishedAt": "2026-11-03T17:31:31.000Z",
         "tags": [
-          "ai",
-          "licensing"
+          "lawsuit",
+          "ai"
         ],
         "translated": false,
         "via": null
@@ -114,16 +115,15 @@
       },
       {
         "id": "noticia-7",
-        "title": "UMG, Sony, and DistroKid tell court they are ‘working on a resolution’ in dispute over AI music data for Suno case",
-        "summary": "The two majors are seeking data from DistroKid on how many of the tracks it delivers to streaming services are flagged as AI-generated. Source",
-        "url": "https://www.musicbusinessworldwide.com/umg-sony-and-distrokid-tell-court-they-are-working-on-a-resolution-in-dispute-over-ai-music-data-for-suno-case/",
-        "source": "Music Business Worldwide",
-        "domain": "musicbusinessworldwide.com",
-        "publishedAt": "2026-11-02T14:25:49.000Z",
+        "title": "Suno Says Jason Isbell Lawsuit Over Artist ‘Identities’ Must Be Dismissed: ‘Nothing Unlawful About That’",
+        "summary": "The AI music company has filed its first major response to the novel lawsuit, which accuses it of violating musicians' likeness rights.",
+        "url": "https://www.billboard.com/pro/suno-responds-jason-isbell-ai-music-lawsuit/",
+        "source": "Billboard",
+        "domain": "billboard.com",
+        "publishedAt": "2026-11-03T22:25:48.000Z",
         "tags": [
           "lawsuit",
-          "ai",
-          "streaming"
+          "ai"
         ],
         "translated": false,
         "via": null
@@ -145,6 +145,35 @@
       },
       {
         "id": "noticia-9",
+        "title": "Suno lleva su generador de canciones a ChatGPT y Claude",
+        "summary": "Suno MCP, en beta desde el 28 de octubre, permite crear canciones desde ChatGPT, Claude, Gemini o Cursor, incluso con el plan gratuito y sus créditos.",
+        "url": "https://industriamusical.com/suno-mcp-canciones-chatbots-ia/?utm_source=rss&utm_medium=rss&utm_campaign=suno-mcp-canciones-chatbots-ia",
+        "source": "Industria Musical",
+        "domain": "industriamusical.com",
+        "publishedAt": "2026-11-03T17:47:41.000Z",
+        "tags": [
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-10",
+        "title": "Spotify quiere ser el agente musical de ChatGPT y Claude",
+        "summary": "Spotify quiere ser el servicio que eligen los agentes de IA: ya está en ChatGPT, Claude y Muse, y asegura que no comparte datos de escucha con ellos.",
+        "url": "https://industriamusical.com/spotify-agente-ia-chatgpt-claude/?utm_source=rss&utm_medium=rss&utm_campaign=spotify-agente-ia-chatgpt-claude",
+        "source": "Industria Musical",
+        "domain": "industriamusical.com",
+        "publishedAt": "2026-11-03T17:47:35.000Z",
+        "tags": [
+          "ai",
+          "streaming"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-11",
         "title": "Música con IA: qué puedes hacer con Suno, Udio y Spotify",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMijgFBVV95cUxQM0M0TXp6dWVUUGxFc3dtM1dVZnZpLVhRUUlmUG5RUmFteWZLanhSYzJuTUVZS0tDZ2NpQXl6Y3ZNUzNVakFza2FrbzBrbkNDck9JUUpHdmI5THAyVmFsRUxQYjd1NEhLOEJCZVluSk5kc3NJbmFTa0xyaGpIUlBGT19JU2IteEpfZ3BYeG93?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -159,48 +188,19 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-10",
-        "title": "Vickie Nauman talks games (and why AI drones are more worrying than AI tunes)",
-        "summary": "Gaming is really, really different than anything else that’s out there. It’s not like film and TV synchronisation licensing. The post is from Music Ally .",
-        "url": "https://musically.com/2026/11/02/vickie-nauman-talks-games-and-why-ai-drones-are-more-worrying-than-ai-tunes/",
-        "source": "Music Ally",
-        "domain": "musically.com",
-        "publishedAt": "2026-11-02T06:00:00.000Z",
-        "tags": [
-          "ai",
-          "licensing"
-        ],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-11",
-        "title": "IA y música, un largo debate por derechos de autor",
+        "id": "noticia-12",
+        "title": "UMG, Sony, and DistroKid tell court they are ‘working on a resolution’ in dispute over AI music data for Suno case",
         "summary": "",
-        "url": "https://news.google.com/rss/articles/CBMilAFBVV95cUxPTV85ZC1hN0c5dWEzYTNTcXRGYy1ES0RSdXNfcWs3LTRoMmYwQ25qYkdsTDhvNTFUU2phU1dJNUNfa1NTLU15ek5IWGI0MFB1RGRzeUx0dHVVSGZDbGpTZTVpalRlZFlmOVZLTU5OeWpUeXZQWm83Z1o4NFoxajNKdjNtZVl4cUg1aG1Bamp5bXUxM2lo0gGUAUFVX3lxTE9NXzlkLWE3Rzl1YTNhM1NxdEZjLURLRFJ1c19xazctNGgyZjBDbmpiR2xMOG81MVRTamFTV0k1Q19rU1MtTXl6TkhYYjQwUHVEZHN5THR0dVVIZkNsalNlNWlqVGVkWWY5VktNTk55alR5dlBabzdnWjg0WjFqM0p2M21lWXhxSDVobUFqanltdTEzaWg?oc=5&hl=es-419&gl=US&ceid=US:es-419",
-        "source": "Caras y Caretas | La Revista de la Patria",
+        "url": "https://news.google.com/rss/articles/CBMi5AFBVV95cUxOc0RGMVNxeUlsbjZiNXpMbkFVVHp3N2t0dmFKMGVCOE5aMFRhMnVnTmNvaVRIVUNNNGFQOW5zY01xbTAxZmZleFI4Z2dDN3c5U2ZXUjE2NFE4S3l1SG9aUmxUa05kYXBvNmhSSEFLSlZzeDM5TUxwZzRxM1NJZm9JaVhHUnVraEFZYzRKUEw2aDNlY0pzczBvLVAxMGZKTV9fOUpjaFF1ZnFnaEVsZGxQUFJnLTNPb1ctSm8tVklMTzMzMGZqZk5aN3MwTW1rc1J6ZjRjZDB6MEVlSV9lb1ZIMVp6ckI?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "Music Business Worldwide",
         "domain": "news.google.com",
-        "publishedAt": "2026-10-26T14:10:52.000Z",
+        "publishedAt": "2026-11-02T14:25:49.000Z",
         "tags": [
+          "lawsuit",
           "ai"
         ],
         "translated": false,
         "via": "Google News"
-      },
-      {
-        "id": "noticia-12",
-        "title": "Spotify aiming to get AI remix product live in early 2027, even though it remains unclear if artists and fans are all that interested in it",
-        "summary": "Spotify is reportedly hoping to launch its much hyped AI remix tool early next year. It’s not really clear that music creators or fans are all that excited about the proposition, though Universal says conversations with artists about opting into the the AI gimmick are actually going “extremely well”",
-        "url": "https://completemusicupdate.com/spotify-aiming-to-get-ai-remix-product-live-in-early-2027-even-though-it-remains-unclear-if-artists-and-fans-are-all-that-interested-in-it/",
-        "source": "Complete Music Update",
-        "domain": "completemusicupdate.com",
-        "publishedAt": "2026-10-30T16:16:55.000Z",
-        "tags": [
-          "ai",
-          "streaming"
-        ],
-        "translated": false,
-        "via": null
       }
     ],
     "tip": {
@@ -214,15 +214,15 @@
     "items": [
       {
         "id": "noticia-1",
-        "title": "Irving Azoff’s Music Artists Coalition joins Cate Blanchett and CAA on AI licensing brief in New York Times’ case against OpenAI",
-        "summary": "RIAA, NMPA, ASCAP, BMI, and five other music organizations filed a proposed brief of their own, formally backing the plaintiffs. Source",
-        "url": "https://www.musicbusinessworldwide.com/irving-azoffs-music-artists-coalition-joins-cate-blanchett-and-caa-on-ai-licensing-brief-in-new-york-times-case-against-openai/",
-        "source": "Music Business Worldwide",
-        "domain": "musicbusinessworldwide.com",
-        "publishedAt": "2026-11-02T14:26:35.000Z",
+        "title": "Music industry intervenes in Open AI’s big legal battle with newspapers and authors",
+        "summary": "All of the US music industry’s copyright lawsuits against AI companies swing on whether or not AI training is fair use under US law. A big legal battle involving authors, newspapers and Open AI also centres on fair use, and the music industry has now intervened in that case via an amicus brief",
+        "url": "https://completemusicupdate.com/music-industry-intervenes-in-open-ais-big-legal-battle-with-newspapers-and-authors/",
+        "source": "Complete Music Update",
+        "domain": "completemusicupdate.com",
+        "publishedAt": "2026-11-03T17:31:31.000Z",
         "tags": [
-          "ai",
-          "licensing"
+          "lawsuit",
+          "ai"
         ],
         "translated": false,
         "via": null
@@ -306,16 +306,15 @@
       },
       {
         "id": "noticia-7",
-        "title": "UMG, Sony, and DistroKid tell court they are ‘working on a resolution’ in dispute over AI music data for Suno case",
-        "summary": "The two majors are seeking data from DistroKid on how many of the tracks it delivers to streaming services are flagged as AI-generated. Source",
-        "url": "https://www.musicbusinessworldwide.com/umg-sony-and-distrokid-tell-court-they-are-working-on-a-resolution-in-dispute-over-ai-music-data-for-suno-case/",
-        "source": "Music Business Worldwide",
-        "domain": "musicbusinessworldwide.com",
-        "publishedAt": "2026-11-02T14:25:49.000Z",
+        "title": "Suno Says Jason Isbell Lawsuit Over Artist ‘Identities’ Must Be Dismissed: ‘Nothing Unlawful About That’",
+        "summary": "The AI music company has filed its first major response to the novel lawsuit, which accuses it of violating musicians' likeness rights.",
+        "url": "https://www.billboard.com/pro/suno-responds-jason-isbell-ai-music-lawsuit/",
+        "source": "Billboard",
+        "domain": "billboard.com",
+        "publishedAt": "2026-11-03T22:25:48.000Z",
         "tags": [
           "lawsuit",
-          "ai",
-          "streaming"
+          "ai"
         ],
         "translated": false,
         "via": null
@@ -337,6 +336,35 @@
       },
       {
         "id": "noticia-9",
+        "title": "Suno lleva su generador de canciones a ChatGPT y Claude",
+        "summary": "Suno MCP, en beta desde el 28 de octubre, permite crear canciones desde ChatGPT, Claude, Gemini o Cursor, incluso con el plan gratuito y sus créditos.",
+        "url": "https://industriamusical.com/suno-mcp-canciones-chatbots-ia/?utm_source=rss&utm_medium=rss&utm_campaign=suno-mcp-canciones-chatbots-ia",
+        "source": "Industria Musical",
+        "domain": "industriamusical.com",
+        "publishedAt": "2026-11-03T17:47:41.000Z",
+        "tags": [
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-10",
+        "title": "Spotify quiere ser el agente musical de ChatGPT y Claude",
+        "summary": "Spotify quiere ser el servicio que eligen los agentes de IA: ya está en ChatGPT, Claude y Muse, y asegura que no comparte datos de escucha con ellos.",
+        "url": "https://industriamusical.com/spotify-agente-ia-chatgpt-claude/?utm_source=rss&utm_medium=rss&utm_campaign=spotify-agente-ia-chatgpt-claude",
+        "source": "Industria Musical",
+        "domain": "industriamusical.com",
+        "publishedAt": "2026-11-03T17:47:35.000Z",
+        "tags": [
+          "ai",
+          "streaming"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-11",
         "title": "Música con IA: qué puedes hacer con Suno, Udio y Spotify",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMijgFBVV95cUxQM0M0TXp6dWVUUGxFc3dtM1dVZnZpLVhRUUlmUG5RUmFteWZLanhSYzJuTUVZS0tDZ2NpQXl6Y3ZNUzNVakFza2FrbzBrbkNDck9JUUpHdmI5THAyVmFsRUxQYjd1NEhLOEJCZVluSk5kc3NJbmFTa0xyaGpIUlBGT19JU2IteEpfZ3BYeG93?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -351,48 +379,19 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-10",
-        "title": "Vickie Nauman talks games (and why AI drones are more worrying than AI tunes)",
-        "summary": "Gaming is really, really different than anything else that’s out there. It’s not like film and TV synchronisation licensing. The post is from Music Ally .",
-        "url": "https://musically.com/2026/11/02/vickie-nauman-talks-games-and-why-ai-drones-are-more-worrying-than-ai-tunes/",
-        "source": "Music Ally",
-        "domain": "musically.com",
-        "publishedAt": "2026-11-02T06:00:00.000Z",
-        "tags": [
-          "ai",
-          "licensing"
-        ],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-11",
-        "title": "IA y música, un largo debate por derechos de autor",
+        "id": "noticia-12",
+        "title": "UMG, Sony, and DistroKid tell court they are ‘working on a resolution’ in dispute over AI music data for Suno case",
         "summary": "",
-        "url": "https://news.google.com/rss/articles/CBMilAFBVV95cUxPTV85ZC1hN0c5dWEzYTNTcXRGYy1ES0RSdXNfcWs3LTRoMmYwQ25qYkdsTDhvNTFUU2phU1dJNUNfa1NTLU15ek5IWGI0MFB1RGRzeUx0dHVVSGZDbGpTZTVpalRlZFlmOVZLTU5OeWpUeXZQWm83Z1o4NFoxajNKdjNtZVl4cUg1aG1Bamp5bXUxM2lo0gGUAUFVX3lxTE9NXzlkLWE3Rzl1YTNhM1NxdEZjLURLRFJ1c19xazctNGgyZjBDbmpiR2xMOG81MVRTamFTV0k1Q19rU1MtTXl6TkhYYjQwUHVEZHN5THR0dVVIZkNsalNlNWlqVGVkWWY5VktNTk55alR5dlBabzdnWjg0WjFqM0p2M21lWXhxSDVobUFqanltdTEzaWg?oc=5&hl=es-419&gl=US&ceid=US:es-419",
-        "source": "Caras y Caretas | La Revista de la Patria",
+        "url": "https://news.google.com/rss/articles/CBMi5AFBVV95cUxOc0RGMVNxeUlsbjZiNXpMbkFVVHp3N2t0dmFKMGVCOE5aMFRhMnVnTmNvaVRIVUNNNGFQOW5zY01xbTAxZmZleFI4Z2dDN3c5U2ZXUjE2NFE4S3l1SG9aUmxUa05kYXBvNmhSSEFLSlZzeDM5TUxwZzRxM1NJZm9JaVhHUnVraEFZYzRKUEw2aDNlY0pzczBvLVAxMGZKTV9fOUpjaFF1ZnFnaEVsZGxQUFJnLTNPb1ctSm8tVklMTzMzMGZqZk5aN3MwTW1rc1J6ZjRjZDB6MEVlSV9lb1ZIMVp6ckI?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "Music Business Worldwide",
         "domain": "news.google.com",
-        "publishedAt": "2026-10-26T14:10:52.000Z",
+        "publishedAt": "2026-11-02T14:25:49.000Z",
         "tags": [
+          "lawsuit",
           "ai"
         ],
         "translated": false,
         "via": "Google News"
-      },
-      {
-        "id": "noticia-12",
-        "title": "Spotify aiming to get AI remix product live in early 2027, even though it remains unclear if artists and fans are all that interested in it",
-        "summary": "Spotify is reportedly hoping to launch its much hyped AI remix tool early next year. It’s not really clear that music creators or fans are all that excited about the proposition, though Universal says conversations with artists about opting into the the AI gimmick are actually going “extremely well”",
-        "url": "https://completemusicupdate.com/spotify-aiming-to-get-ai-remix-product-live-in-early-2027-even-though-it-remains-unclear-if-artists-and-fans-are-all-that-interested-in-it/",
-        "source": "Complete Music Update",
-        "domain": "completemusicupdate.com",
-        "publishedAt": "2026-10-30T16:16:55.000Z",
-        "tags": [
-          "ai",
-          "streaming"
-        ],
-        "translated": false,
-        "via": null
       }
     ],
     "tip": {
