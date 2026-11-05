@@ -1,19 +1,18 @@
 {
-  "lastUpdated": "2026-11-05T00:19:04.131Z",
+  "lastUpdated": "2026-11-05T15:23:17.680Z",
   "meta": {
     "method": "rss-retrieval + link-verification + ai-translation",
-    "itemCount": 11,
+    "itemCount": 12,
     "sources": [
-      "Billboard",
-      "Caras y Caretas | La Revista de la Patria",
       "Complete Music Update",
-      "El Ecosistema Startup",
+      "Digital Music News",
       "Industria Musical",
       "Music Ally",
-      "Music Business Worldwide"
+      "Music Business Worldwide",
+      "TorrentFreak"
     ],
-    "verifiedLinks": 11,
-    "aiTranslated": 7,
+    "verifiedLinks": 12,
+    "aiTranslated": 0,
     "note": "Los hechos provienen de los artículos originales enlazados. La IA solo traduce y resume; no genera noticias."
   },
   "es": {
@@ -22,8 +21,8 @@
     "items": [
       {
         "id": "noticia-1",
-        "title": "Suno argumenta que el juez debe desestimar la demanda de derechos de publicidad del músico",
-        "summary": "Suno enfrenta varias demandas en la industria musical; la más destacada es la de Jason Isbell, que alega que la IA vulnera derechos de publicidad al asociar nombres de artistas con estilos musicales. Suno pide al juez que desestime la acción.",
+        "title": "Suno argues that judge should throw out musician’s publicity rights lawsuit",
+        "summary": "Suno is fighting several music industry lawsuits, but one stands out - filed by musician Jason Isbell - because it accuses the AI company of infringing publicity rights by connecting artist names to musical styles in the back-end. Suno has responded to that lawsuit, urging the judge to dismiss it",
         "url": "https://completemusicupdate.com/suno-argues-that-judge-should-throw-out-musicians-publicity-rights-lawsuit/",
         "source": "Complete Music Update",
         "domain": "completemusicupdate.com",
@@ -32,13 +31,28 @@
           "lawsuit",
           "ai"
         ],
-        "translated": true,
+        "translated": false,
         "via": null
       },
       {
         "id": "noticia-2",
-        "title": "La industria musical interviene en la gran batalla legal de Open AI con periódicos y autores",
-        "summary": "Las demandas de derechos de autor de la industria musical contra compañías de IA dependen de si el entrenamiento de IA constituye uso justo bajo la ley. La industria ha intervenido en la disputa de Open AI con autores y periódicos mediante un amicus brief.",
+        "title": "Meta Employees ‘Interacted’ With Pirated Copies of Adult Films, Filing Shows",
+        "summary": "A newly unredacted court filing shows that Meta’s internal investigation found several employees who appear to have interacted with Strike 3’s adult films. The adult content producers say these were torrented copies listed in their lawsuit, but Meta says there is no evidence of torrenting. The company also stresses tha…",
+        "url": "https://torrentfreak.com/meta-employees-interacted-with-pirated-copies-of-adult-films-filing-shows/",
+        "source": "TorrentFreak",
+        "domain": "torrentfreak.com",
+        "publishedAt": "2026-11-05T07:22:30.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-3",
+        "title": "Music industry intervenes in Open AI’s big legal battle with newspapers and authors",
+        "summary": "All of the US music industry’s copyright lawsuits against AI companies swing on whether or not AI training is fair use under US law. A big legal battle involving authors, newspapers and Open AI also centres on fair use, and the music industry has now intervened in that case via an amicus brief",
         "url": "https://completemusicupdate.com/music-industry-intervenes-in-open-ais-big-legal-battle-with-newspapers-and-authors/",
         "source": "Complete Music Update",
         "domain": "completemusicupdate.com",
@@ -47,28 +61,103 @@
           "lawsuit",
           "ai"
         ],
-        "translated": true,
-        "via": null
-      },
-      {
-        "id": "noticia-3",
-        "title": "Suno solicita al tribunal desestimar la acción colectiva de derechos de publicidad de Jason Isbell. Afirma que los nombres de artistas son ‘abreviaturas’ de géneros musicales",
-        "summary": "Suno presentó una moción el martes 3 de noviembre para que el tribunal desestime la acción colectiva de derechos de publicidad iniciada por Jason Isbell, argumentando que los nombres de los artistas funcionan como abreviaturas de géneros musicales.",
-        "url": "https://www.musicbusinessworldwide.com/suno-asks-court-to-dismiss-jason-isbells-right-of-publicity-class-action-it-claims-artist-names-are-shorthand-for-musical-genres/",
-        "source": "Music Business Worldwide",
-        "domain": "musicbusinessworldwide.com",
-        "publishedAt": "2026-11-04T17:35:23.000Z",
-        "tags": [
-          "lawsuit",
-          "ai"
-        ],
-        "translated": true,
+        "translated": false,
         "via": null
       },
       {
         "id": "noticia-4",
+        "title": "Nothing Illegal Here: Suno Moves to Dismiss Jason Isbell’s Class Action Lawsuit on First Amendment and US Copyright Law Grounds",
+        "summary": "Suno moves to dismiss a right-of-publicity case filed by a group of performers, including Jason Isbell and David Lowery, claiming that none of its outputs could be mistaken for those musicians. Suno has filed a motion to dismiss the U.S. privacy and publicity rights claims filed by musicians Jason Isbell and David Lowe…",
+        "url": "https://www.digitalmusicnews.com/2026/11/03/suno-moves-to-dismiss-isbell-class-action-lawsuit/",
+        "source": "Digital Music News",
+        "domain": "digitalmusicnews.com",
+        "publishedAt": "2026-11-04T00:29:03.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-5",
+        "title": "Suno Fires Back Against Apple’s Subpoena Opposition, Doubling Down on Its Push for Information About ‘Current License Negotiations,’ ‘Anti-AI Deal Terms,’ and More",
+        "summary": "Suno is doubling down on its Apple subpoena push, arguing that the information being sought – about Apple Music’s major label licensing talks, “anti-AI deal terms,” and more – is central to its fair use and copyright misuse arguments. The AI music platform took aim at Apple’s motion to quash in a 24-page opposition fil…",
+        "url": "https://www.digitalmusicnews.com/2026/10/28/suno-apple-subpoena-dispute/",
+        "source": "Digital Music News",
+        "domain": "digitalmusicnews.com",
+        "publishedAt": "2026-10-28T23:46:44.000Z",
+        "tags": [
+          "ai",
+          "licensing",
+          "streaming"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-6",
+        "title": "As UMG v. Suno Subpoenas Target the MLC, Multiple Investors, DistroKid, and Now Apple Music, Are Game-Changing Disclosures on the Horizon?",
+        "summary": "As Suno fends off an ever-growing number of music industry copyright complaints, a raft of subpoena showdowns – including the AI platform’s own document and deposition demands – are now in full swing. Does that mean game-changing disclosures are on the horizon? Time will tell, though the current evidence suggests yes.…",
+        "url": "https://www.digitalmusicnews.com/2026/10/26/suno-subpoenas-umg-apple-music/",
+        "source": "Digital Music News",
+        "domain": "digitalmusicnews.com",
+        "publishedAt": "2026-10-26T22:18:45.000Z",
+        "tags": [
+          "lawsuit",
+          "ai",
+          "streaming"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-7",
+        "title": "BTS ‘SWIM’ copyright lawsuit against HYBE dropped by songwriters less than four months after filing",
+        "summary": "Dismissal comes less than four months after the songwriters filed their complaint on July 8 Source",
+        "url": "https://www.musicbusinessworldwide.com/bts-swim-copyright-lawsuit-against-hybe-dropped-by-songwriters-less-than-four-months-after-filing/",
+        "source": "Music Business Worldwide",
+        "domain": "musicbusinessworldwide.com",
+        "publishedAt": "2026-11-05T10:54:08.000Z",
+        "tags": [
+          "lawsuit"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-8",
+        "title": "B2B music streamer Soundtrack inks SESAC deal, estimates unlicensed music in US businesses costs the industry $1.4B a year",
+        "summary": "Soundtrack now licensed by all four major US PROs Source",
+        "url": "https://www.musicbusinessworldwide.com/b2b-music-streamer-soundtrack-inks-sesac-deal-estimates-unlicensed-music-in-us-businesses-costs-the-industry-1-4b-a-year/",
+        "source": "Music Business Worldwide",
+        "domain": "musicbusinessworldwide.com",
+        "publishedAt": "2026-11-05T10:49:34.000Z",
+        "tags": [
+          "licensing"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-9",
+        "title": "Apple Music set for karaoke expansion with ‘Selfie Sing’ feature",
+        "summary": "Spotify may be preparing to launch a tool for people to remix songs using AI, but Apple Music’s next feature is more about making songs your own… with your voice. It’s called ‘Selfie Sing’. The post is from Music Ally .",
+        "url": "https://musically.com/2026/11/05/apple-music-set-for-karaoke-expansion-with-selfie-sing-feature/",
+        "source": "Music Ally",
+        "domain": "musically.com",
+        "publishedAt": "2026-11-05T13:30:00.000Z",
+        "tags": [
+          "ai",
+          "streaming"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-10",
         "title": "Suno lleva su generador de canciones a ChatGPT y Claude",
-        "summary": "Desde el 28 de octubre, Suno MCP está en fase beta y permite a los usuarios generar canciones mediante los asistentes de IA ChatGPT, Claude, Gemini o Cursor, ofreciendo también la opción de crear música con el plan gratuito y los créditos disponibles.",
+        "summary": "Suno MCP, en beta desde el 28 de octubre, permite crear canciones desde ChatGPT, Claude, Gemini o Cursor, incluso con el plan gratuito y sus créditos.",
         "url": "https://industriamusical.com/suno-mcp-canciones-chatbots-ia/?utm_source=rss&utm_medium=rss&utm_campaign=suno-mcp-canciones-chatbots-ia",
         "source": "Industria Musical",
         "domain": "industriamusical.com",
@@ -76,13 +165,13 @@
         "tags": [
           "ai"
         ],
-        "translated": true,
+        "translated": false,
         "via": null
       },
       {
-        "id": "noticia-5",
+        "id": "noticia-11",
         "title": "Spotify quiere ser el agente musical de ChatGPT y Claude",
-        "summary": "Spotify busca posicionarse como el servicio preferido por los agentes de IA, ya integrándose con ChatGPT, Claude y Muse, y garantiza que no comparte datos de escucha con esas plataformas.",
+        "summary": "Spotify quiere ser el servicio que eligen los agentes de IA: ya está en ChatGPT, Claude y Muse, y asegura que no comparte datos de escucha con ellos.",
         "url": "https://industriamusical.com/spotify-agente-ia-chatgpt-claude/?utm_source=rss&utm_medium=rss&utm_campaign=spotify-agente-ia-chatgpt-claude",
         "source": "Industria Musical",
         "domain": "industriamusical.com",
@@ -91,13 +180,13 @@
           "ai",
           "streaming"
         ],
-        "translated": true,
+        "translated": false,
         "via": null
       },
       {
-        "id": "noticia-6",
-        "title": "5 cosas que debes saber del informe global de CISAC, mientras los ingresos por derechos de compositores alcanzan un récord de $15.9 mil millones en 2025, con más de $900 millones del MLC, y la IA en foco",
-        "summary": "Las colecciones globales de derechos de compositores alcanzaron un récord de 14,06 mil millones de euros en 2025, impulsadas principalmente por la inclusión por primera vez del MLC, y el informe de CISAC también destaca la IA como tema relevante.",
+        "id": "noticia-12",
+        "title": "5 things to know about CISAC’s global report, as songwriter royalty collections hit record $15.9B in 2025, with $900M+ from The MLC, and AI in focus",
+        "summary": "Global songwriter royalty collections hit a record €14.06 billion in 2025, with the increase largely driven by the first-time inclusion of The MLC Source",
         "url": "https://www.musicbusinessworldwide.com/5-things-to-know-about-cisacs-global-report-as-songwriter-royalty-collections-hit-record-15-9b-in-2025-with-900m-from-the-mlc-and-ai-in-focus/",
         "source": "Music Business Worldwide",
         "domain": "musicbusinessworldwide.com",
@@ -106,81 +195,8 @@
           "ai",
           "royalties"
         ],
-        "translated": true,
-        "via": null
-      },
-      {
-        "id": "noticia-7",
-        "title": "Música con IA: qué puedes hacer con Suno, Udio y Spotify",
-        "summary": "El artículo describe las posibilidades que ofrecen Suno, Udio y Spotify para crear música con inteligencia artificial.",
-        "url": "https://news.google.com/rss/articles/CBMijgFBVV95cUxQM0M0TXp6dWVUUGxFc3dtM1dVZnZpLVhRUUlmUG5RUmFteWZLanhSYzJuTUVZS0tDZ2NpQXl6Y3ZNUzNVakFza2FrbzBrbkNDck9JUUpHdmI5THAyVmFsRUxQYjd1NEhLOEJCZVluSk5kc3NJbmFTa0xyaGpIUlBGT19JU2IteEpfZ3BYeG93?oc=5&hl=es-419&gl=US&ceid=US:es-419",
-        "source": "El Ecosistema Startup",
-        "domain": "news.google.com",
-        "publishedAt": "2026-11-01T03:21:37.000Z",
-        "tags": [
-          "ai",
-          "streaming"
-        ],
-        "translated": true,
-        "via": "Google News"
-      },
-      {
-        "id": "noticia-8",
-        "title": "Shopify says sellers are seeing sales boosts from AI channels",
-        "summary": "Plenty of artists and labels are using Shopify for their online storefronts, so the company’s latest financial earnings call provides some useful pointers on the platform’s future. The post is from Music Ally .",
-        "url": "https://musically.com/2026/11/04/shopify-says-sellers-are-seeing-sales-boosts-from-ai-channels/",
-        "source": "Music Ally",
-        "domain": "musically.com",
-        "publishedAt": "2026-11-04T14:00:00.000Z",
-        "tags": [
-          "ai"
-        ],
         "translated": false,
         "via": null
-      },
-      {
-        "id": "noticia-9",
-        "title": "UMG, Sony, and DistroKid tell court they are ‘working on a resolution’ in dispute over AI music data for Suno case",
-        "summary": "",
-        "url": "https://news.google.com/rss/articles/CBMi5AFBVV95cUxOc0RGMVNxeUlsbjZiNXpMbkFVVHp3N2t0dmFKMGVCOE5aMFRhMnVnTmNvaVRIVUNNNGFQOW5zY01xbTAxZmZleFI4Z2dDN3c5U2ZXUjE2NFE4S3l1SG9aUmxUa05kYXBvNmhSSEFLSlZzeDM5TUxwZzRxM1NJZm9JaVhHUnVraEFZYzRKUEw2aDNlY0pzczBvLVAxMGZKTV9fOUpjaFF1ZnFnaEVsZGxQUFJnLTNPb1ctSm8tVklMTzMzMGZqZk5aN3MwTW1rc1J6ZjRjZDB6MEVlSV9lb1ZIMVp6ckI?oc=5&hl=es-419&gl=US&ceid=US:es-419",
-        "source": "Music Business Worldwide",
-        "domain": "news.google.com",
-        "publishedAt": "2026-11-02T14:25:49.000Z",
-        "tags": [
-          "lawsuit",
-          "ai"
-        ],
-        "translated": false,
-        "via": "Google News"
-      },
-      {
-        "id": "noticia-10",
-        "title": "IA y música, un largo debate por derechos de autor",
-        "summary": "",
-        "url": "https://news.google.com/rss/articles/CBMilAFBVV95cUxPTV85ZC1hN0c5dWEzYTNTcXRGYy1ES0RSdXNfcWs3LTRoMmYwQ25qYkdsTDhvNTFUU2phU1dJNUNfa1NTLU15ek5IWGI0MFB1RGRzeUx0dHVVSGZDbGpTZTVpalRlZFlmOVZLTU5OeWpUeXZQWm83Z1o4NFoxajNKdjNtZVl4cUg1aG1Bamp5bXUxM2lo0gGUAUFVX3lxTE9NXzlkLWE3Rzl1YTNhM1NxdEZjLURLRFJ1c19xazctNGgyZjBDbmpiR2xMOG81MVRTamFTV0k1Q19rU1MtTXl6TkhYYjQwUHVEZHN5THR0dVVIZkNsalNlNWlqVGVkWWY5VktNTk55alR5dlBabzdnWjg0WjFqM0p2M21lWXhxSDVobUFqanltdTEzaWg?oc=5&hl=es-419&gl=US&ceid=US:es-419",
-        "source": "Caras y Caretas | La Revista de la Patria",
-        "domain": "news.google.com",
-        "publishedAt": "2026-10-26T14:10:52.000Z",
-        "tags": [
-          "ai"
-        ],
-        "translated": false,
-        "via": "Google News"
-      },
-      {
-        "id": "noticia-11",
-        "title": "Suno Says Jason Isbell Lawsuit Over Artist ‘Identities’ Must Be Dismissed: ‘Nothing Unlawful About That’",
-        "summary": "",
-        "url": "https://news.google.com/rss/articles/CBMif0FVX3lxTFA3LU1vczZqNFVGN0xGTzFxUHpYZ1FEcHoxaFludTl0NzlJam5hamZNREoyVVZQc3dUaFV2VURoS3IzdUNKXy1TXy1HeWJZTUNhZDJKeFRtN0loN1BpY2pDUXZCYTdhaXRhZzVPU1RMcGhuaXl4cTQ3Qk1pZTdsejA?oc=5&hl=es-419&gl=US&ceid=US:es-419",
-        "source": "Billboard",
-        "domain": "news.google.com",
-        "publishedAt": "2026-11-03T22:26:51.000Z",
-        "tags": [
-          "lawsuit",
-          "ai"
-        ],
-        "translated": false,
-        "via": "Google News"
       }
     ],
     "tip": {
@@ -195,7 +211,7 @@
       {
         "id": "noticia-1",
         "title": "Suno argues that judge should throw out musician’s publicity rights lawsuit",
-        "summary": "Suno is involved in multiple music‑industry lawsuits; the most prominent is filed by musician Jason Isbell, who claims the AI company infringes publicity rights by linking artist names to musical styles in its backend. Suno asks the judge to dismiss the case.",
+        "summary": "Suno is fighting several music industry lawsuits, but one stands out - filed by musician Jason Isbell - because it accuses the AI company of infringing publicity rights by connecting artist names to musical styles in the back-end. Suno has responded to that lawsuit, urging the judge to dismiss it",
         "url": "https://completemusicupdate.com/suno-argues-that-judge-should-throw-out-musicians-publicity-rights-lawsuit/",
         "source": "Complete Music Update",
         "domain": "completemusicupdate.com",
@@ -204,13 +220,28 @@
           "lawsuit",
           "ai"
         ],
-        "translated": true,
+        "translated": false,
         "via": null
       },
       {
         "id": "noticia-2",
+        "title": "Meta Employees ‘Interacted’ With Pirated Copies of Adult Films, Filing Shows",
+        "summary": "A newly unredacted court filing shows that Meta’s internal investigation found several employees who appear to have interacted with Strike 3’s adult films. The adult content producers say these were torrented copies listed in their lawsuit, but Meta says there is no evidence of torrenting. The company also stresses tha…",
+        "url": "https://torrentfreak.com/meta-employees-interacted-with-pirated-copies-of-adult-films-filing-shows/",
+        "source": "TorrentFreak",
+        "domain": "torrentfreak.com",
+        "publishedAt": "2026-11-05T07:22:30.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-3",
         "title": "Music industry intervenes in Open AI’s big legal battle with newspapers and authors",
-        "summary": "US music‑industry copyright suits against AI firms hinge on whether AI training qualifies as fair use. The industry has entered the major Open AI case involving authors and newspapers by filing an amicus brief supporting its position.",
+        "summary": "All of the US music industry’s copyright lawsuits against AI companies swing on whether or not AI training is fair use under US law. A big legal battle involving authors, newspapers and Open AI also centres on fair use, and the music industry has now intervened in that case via an amicus brief",
         "url": "https://completemusicupdate.com/music-industry-intervenes-in-open-ais-big-legal-battle-with-newspapers-and-authors/",
         "source": "Complete Music Update",
         "domain": "completemusicupdate.com",
@@ -219,28 +250,103 @@
           "lawsuit",
           "ai"
         ],
-        "translated": true,
-        "via": null
-      },
-      {
-        "id": "noticia-3",
-        "title": "Suno asks court to dismiss Jason Isbell’s right-of-publicity class action. It claims artist names are ‘shorthand’ for musical genres",
-        "summary": "Suno filed a motion on Tuesday, November 3, asking the court to dismiss the class‑action lawsuit brought by Jason Isbell over publicity rights, contending that artist names serve as shorthand for musical genres.",
-        "url": "https://www.musicbusinessworldwide.com/suno-asks-court-to-dismiss-jason-isbells-right-of-publicity-class-action-it-claims-artist-names-are-shorthand-for-musical-genres/",
-        "source": "Music Business Worldwide",
-        "domain": "musicbusinessworldwide.com",
-        "publishedAt": "2026-11-04T17:35:23.000Z",
-        "tags": [
-          "lawsuit",
-          "ai"
-        ],
-        "translated": true,
+        "translated": false,
         "via": null
       },
       {
         "id": "noticia-4",
-        "title": "Suno brings its song generator to ChatGPT and Claude",
-        "summary": "Since October 28, Suno MCP has been in beta, enabling users to create songs through AI assistants such as ChatGPT, Claude, Gemini, or Cursor, and also allowing music generation with the free plan and available credits.",
+        "title": "Nothing Illegal Here: Suno Moves to Dismiss Jason Isbell’s Class Action Lawsuit on First Amendment and US Copyright Law Grounds",
+        "summary": "Suno moves to dismiss a right-of-publicity case filed by a group of performers, including Jason Isbell and David Lowery, claiming that none of its outputs could be mistaken for those musicians. Suno has filed a motion to dismiss the U.S. privacy and publicity rights claims filed by musicians Jason Isbell and David Lowe…",
+        "url": "https://www.digitalmusicnews.com/2026/11/03/suno-moves-to-dismiss-isbell-class-action-lawsuit/",
+        "source": "Digital Music News",
+        "domain": "digitalmusicnews.com",
+        "publishedAt": "2026-11-04T00:29:03.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-5",
+        "title": "Suno Fires Back Against Apple’s Subpoena Opposition, Doubling Down on Its Push for Information About ‘Current License Negotiations,’ ‘Anti-AI Deal Terms,’ and More",
+        "summary": "Suno is doubling down on its Apple subpoena push, arguing that the information being sought – about Apple Music’s major label licensing talks, “anti-AI deal terms,” and more – is central to its fair use and copyright misuse arguments. The AI music platform took aim at Apple’s motion to quash in a 24-page opposition fil…",
+        "url": "https://www.digitalmusicnews.com/2026/10/28/suno-apple-subpoena-dispute/",
+        "source": "Digital Music News",
+        "domain": "digitalmusicnews.com",
+        "publishedAt": "2026-10-28T23:46:44.000Z",
+        "tags": [
+          "ai",
+          "licensing",
+          "streaming"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-6",
+        "title": "As UMG v. Suno Subpoenas Target the MLC, Multiple Investors, DistroKid, and Now Apple Music, Are Game-Changing Disclosures on the Horizon?",
+        "summary": "As Suno fends off an ever-growing number of music industry copyright complaints, a raft of subpoena showdowns – including the AI platform’s own document and deposition demands – are now in full swing. Does that mean game-changing disclosures are on the horizon? Time will tell, though the current evidence suggests yes.…",
+        "url": "https://www.digitalmusicnews.com/2026/10/26/suno-subpoenas-umg-apple-music/",
+        "source": "Digital Music News",
+        "domain": "digitalmusicnews.com",
+        "publishedAt": "2026-10-26T22:18:45.000Z",
+        "tags": [
+          "lawsuit",
+          "ai",
+          "streaming"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-7",
+        "title": "BTS ‘SWIM’ copyright lawsuit against HYBE dropped by songwriters less than four months after filing",
+        "summary": "Dismissal comes less than four months after the songwriters filed their complaint on July 8 Source",
+        "url": "https://www.musicbusinessworldwide.com/bts-swim-copyright-lawsuit-against-hybe-dropped-by-songwriters-less-than-four-months-after-filing/",
+        "source": "Music Business Worldwide",
+        "domain": "musicbusinessworldwide.com",
+        "publishedAt": "2026-11-05T10:54:08.000Z",
+        "tags": [
+          "lawsuit"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-8",
+        "title": "B2B music streamer Soundtrack inks SESAC deal, estimates unlicensed music in US businesses costs the industry $1.4B a year",
+        "summary": "Soundtrack now licensed by all four major US PROs Source",
+        "url": "https://www.musicbusinessworldwide.com/b2b-music-streamer-soundtrack-inks-sesac-deal-estimates-unlicensed-music-in-us-businesses-costs-the-industry-1-4b-a-year/",
+        "source": "Music Business Worldwide",
+        "domain": "musicbusinessworldwide.com",
+        "publishedAt": "2026-11-05T10:49:34.000Z",
+        "tags": [
+          "licensing"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-9",
+        "title": "Apple Music set for karaoke expansion with ‘Selfie Sing’ feature",
+        "summary": "Spotify may be preparing to launch a tool for people to remix songs using AI, but Apple Music’s next feature is more about making songs your own… with your voice. It’s called ‘Selfie Sing’. The post is from Music Ally .",
+        "url": "https://musically.com/2026/11/05/apple-music-set-for-karaoke-expansion-with-selfie-sing-feature/",
+        "source": "Music Ally",
+        "domain": "musically.com",
+        "publishedAt": "2026-11-05T13:30:00.000Z",
+        "tags": [
+          "ai",
+          "streaming"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-10",
+        "title": "Suno lleva su generador de canciones a ChatGPT y Claude",
+        "summary": "Suno MCP, en beta desde el 28 de octubre, permite crear canciones desde ChatGPT, Claude, Gemini o Cursor, incluso con el plan gratuito y sus créditos.",
         "url": "https://industriamusical.com/suno-mcp-canciones-chatbots-ia/?utm_source=rss&utm_medium=rss&utm_campaign=suno-mcp-canciones-chatbots-ia",
         "source": "Industria Musical",
         "domain": "industriamusical.com",
@@ -248,13 +354,13 @@
         "tags": [
           "ai"
         ],
-        "translated": true,
+        "translated": false,
         "via": null
       },
       {
-        "id": "noticia-5",
-        "title": "Spotify wants to be the musical agent for ChatGPT and Claude",
-        "summary": "Spotify aims to become the chosen service for AI agents, already available on ChatGPT, Claude and Muse, and states that it does not share any listening data with those platforms.",
+        "id": "noticia-11",
+        "title": "Spotify quiere ser el agente musical de ChatGPT y Claude",
+        "summary": "Spotify quiere ser el servicio que eligen los agentes de IA: ya está en ChatGPT, Claude y Muse, y asegura que no comparte datos de escucha con ellos.",
         "url": "https://industriamusical.com/spotify-agente-ia-chatgpt-claude/?utm_source=rss&utm_medium=rss&utm_campaign=spotify-agente-ia-chatgpt-claude",
         "source": "Industria Musical",
         "domain": "industriamusical.com",
@@ -263,13 +369,13 @@
           "ai",
           "streaming"
         ],
-        "translated": true,
+        "translated": false,
         "via": null
       },
       {
-        "id": "noticia-6",
+        "id": "noticia-12",
         "title": "5 things to know about CISAC’s global report, as songwriter royalty collections hit record $15.9B in 2025, with $900M+ from The MLC, and AI in focus",
-        "summary": "Global songwriter royalty collections reached a record €14.06 billion in 2025, largely driven by the first‑time inclusion of the MLC, and CISAC’s report also highlights artificial intelligence as a key focus area.",
+        "summary": "Global songwriter royalty collections hit a record €14.06 billion in 2025, with the increase largely driven by the first-time inclusion of The MLC Source",
         "url": "https://www.musicbusinessworldwide.com/5-things-to-know-about-cisacs-global-report-as-songwriter-royalty-collections-hit-record-15-9b-in-2025-with-900m-from-the-mlc-and-ai-in-focus/",
         "source": "Music Business Worldwide",
         "domain": "musicbusinessworldwide.com",
@@ -278,81 +384,8 @@
           "ai",
           "royalties"
         ],
-        "translated": true,
-        "via": null
-      },
-      {
-        "id": "noticia-7",
-        "title": "Music with AI: what you can do with Suno, Udio and Spotify",
-        "summary": "The piece outlines what Suno, Udio and Spotify enable users to do in music creation using artificial intelligence.",
-        "url": "https://news.google.com/rss/articles/CBMijgFBVV95cUxQM0M0TXp6dWVUUGxFc3dtM1dVZnZpLVhRUUlmUG5RUmFteWZLanhSYzJuTUVZS0tDZ2NpQXl6Y3ZNUzNVakFza2FrbzBrbkNDck9JUUpHdmI5THAyVmFsRUxQYjd1NEhLOEJCZVluSk5kc3NJbmFTa0xyaGpIUlBGT19JU2IteEpfZ3BYeG93?oc=5&hl=es-419&gl=US&ceid=US:es-419",
-        "source": "El Ecosistema Startup",
-        "domain": "news.google.com",
-        "publishedAt": "2026-11-01T03:21:37.000Z",
-        "tags": [
-          "ai",
-          "streaming"
-        ],
-        "translated": true,
-        "via": "Google News"
-      },
-      {
-        "id": "noticia-8",
-        "title": "Shopify says sellers are seeing sales boosts from AI channels",
-        "summary": "Plenty of artists and labels are using Shopify for their online storefronts, so the company’s latest financial earnings call provides some useful pointers on the platform’s future. The post is from Music Ally .",
-        "url": "https://musically.com/2026/11/04/shopify-says-sellers-are-seeing-sales-boosts-from-ai-channels/",
-        "source": "Music Ally",
-        "domain": "musically.com",
-        "publishedAt": "2026-11-04T14:00:00.000Z",
-        "tags": [
-          "ai"
-        ],
         "translated": false,
         "via": null
-      },
-      {
-        "id": "noticia-9",
-        "title": "UMG, Sony, and DistroKid tell court they are ‘working on a resolution’ in dispute over AI music data for Suno case",
-        "summary": "",
-        "url": "https://news.google.com/rss/articles/CBMi5AFBVV95cUxOc0RGMVNxeUlsbjZiNXpMbkFVVHp3N2t0dmFKMGVCOE5aMFRhMnVnTmNvaVRIVUNNNGFQOW5zY01xbTAxZmZleFI4Z2dDN3c5U2ZXUjE2NFE4S3l1SG9aUmxUa05kYXBvNmhSSEFLSlZzeDM5TUxwZzRxM1NJZm9JaVhHUnVraEFZYzRKUEw2aDNlY0pzczBvLVAxMGZKTV9fOUpjaFF1ZnFnaEVsZGxQUFJnLTNPb1ctSm8tVklMTzMzMGZqZk5aN3MwTW1rc1J6ZjRjZDB6MEVlSV9lb1ZIMVp6ckI?oc=5&hl=es-419&gl=US&ceid=US:es-419",
-        "source": "Music Business Worldwide",
-        "domain": "news.google.com",
-        "publishedAt": "2026-11-02T14:25:49.000Z",
-        "tags": [
-          "lawsuit",
-          "ai"
-        ],
-        "translated": false,
-        "via": "Google News"
-      },
-      {
-        "id": "noticia-10",
-        "title": "IA y música, un largo debate por derechos de autor",
-        "summary": "",
-        "url": "https://news.google.com/rss/articles/CBMilAFBVV95cUxPTV85ZC1hN0c5dWEzYTNTcXRGYy1ES0RSdXNfcWs3LTRoMmYwQ25qYkdsTDhvNTFUU2phU1dJNUNfa1NTLU15ek5IWGI0MFB1RGRzeUx0dHVVSGZDbGpTZTVpalRlZFlmOVZLTU5OeWpUeXZQWm83Z1o4NFoxajNKdjNtZVl4cUg1aG1Bamp5bXUxM2lo0gGUAUFVX3lxTE9NXzlkLWE3Rzl1YTNhM1NxdEZjLURLRFJ1c19xazctNGgyZjBDbmpiR2xMOG81MVRTamFTV0k1Q19rU1MtTXl6TkhYYjQwUHVEZHN5THR0dVVIZkNsalNlNWlqVGVkWWY5VktNTk55alR5dlBabzdnWjg0WjFqM0p2M21lWXhxSDVobUFqanltdTEzaWg?oc=5&hl=es-419&gl=US&ceid=US:es-419",
-        "source": "Caras y Caretas | La Revista de la Patria",
-        "domain": "news.google.com",
-        "publishedAt": "2026-10-26T14:10:52.000Z",
-        "tags": [
-          "ai"
-        ],
-        "translated": false,
-        "via": "Google News"
-      },
-      {
-        "id": "noticia-11",
-        "title": "Suno Says Jason Isbell Lawsuit Over Artist ‘Identities’ Must Be Dismissed: ‘Nothing Unlawful About That’",
-        "summary": "",
-        "url": "https://news.google.com/rss/articles/CBMif0FVX3lxTFA3LU1vczZqNFVGN0xGTzFxUHpYZ1FEcHoxaFludTl0NzlJam5hamZNREoyVVZQc3dUaFV2VURoS3IzdUNKXy1TXy1HeWJZTUNhZDJKeFRtN0loN1BpY2pDUXZCYTdhaXRhZzVPU1RMcGhuaXl4cTQ3Qk1pZTdsejA?oc=5&hl=es-419&gl=US&ceid=US:es-419",
-        "source": "Billboard",
-        "domain": "news.google.com",
-        "publishedAt": "2026-11-03T22:26:51.000Z",
-        "tags": [
-          "lawsuit",
-          "ai"
-        ],
-        "translated": false,
-        "via": "Google News"
       }
     ],
     "tip": {
