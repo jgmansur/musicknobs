@@ -1,12 +1,13 @@
 {
-  "lastUpdated": "2026-11-06T14:57:06.643Z",
+  "lastUpdated": "2026-11-06T23:42:39.781Z",
   "meta": {
     "method": "rss-retrieval + link-verification + ai-translation",
     "itemCount": 12,
     "sources": [
-      "Billboard",
       "Complete Music Update",
       "Digital Music News",
+      "El Ecosistema Startup",
+      "Industria Musical",
       "Music Ally",
       "Music Business Worldwide",
       "TorrentFreak"
@@ -126,20 +127,6 @@
       },
       {
         "id": "noticia-8",
-        "title": "BTS ‘SWIM’ copyright lawsuit against HYBE dropped by songwriters less than four months after filing",
-        "summary": "Dismissal comes less than four months after the songwriters filed their complaint on July 8 Source",
-        "url": "https://www.musicbusinessworldwide.com/bts-swim-copyright-lawsuit-against-hybe-dropped-by-songwriters-less-than-four-months-after-filing/",
-        "source": "Music Business Worldwide",
-        "domain": "musicbusinessworldwide.com",
-        "publishedAt": "2026-11-05T10:54:08.000Z",
-        "tags": [
-          "lawsuit"
-        ],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-9",
         "title": "SoundCloud will soon have more AI music – from ElevenLabs",
         "summary": "With rightsholders urging streaming services to de-recommend, de-monetise and even remove AI-generated music, it’s a ballsy move to announce a deal opening up a new pipeline for it, to say the least. The post is from Music Ally .",
         "url": "https://musically.com/2026/11/06/soundcloud-will-soon-have-more-ai-music-from-elevenlabs/",
@@ -155,33 +142,7 @@
         "via": null
       },
       {
-        "id": "noticia-10",
-        "title": "B2B music streamer Soundtrack inks SESAC deal, estimates unlicensed music in US businesses costs the industry $1.4B a year",
-        "summary": "Soundtrack now licensed by all four major US PROs Source",
-        "url": "https://www.musicbusinessworldwide.com/b2b-music-streamer-soundtrack-inks-sesac-deal-estimates-unlicensed-music-in-us-businesses-costs-the-industry-1-4b-a-year/",
-        "source": "Music Business Worldwide",
-        "domain": "musicbusinessworldwide.com",
-        "publishedAt": "2026-11-05T10:49:34.000Z",
-        "tags": [
-          "licensing"
-        ],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-11",
-        "title": "Wynonna Judd to Receive ASCAP Golden Note Award: ‘A Singular, Powerhouse Voice’",
-        "summary": "Previous recipients include Garth Brooks, LeAnn Rimes, Reba McEntire and Alan Jackson.",
-        "url": "https://www.billboard.com/pro/wynonna-judd-ascap-golden-note-award/",
-        "source": "Billboard",
-        "domain": "billboard.com",
-        "publishedAt": "2026-11-06T14:00:00.000Z",
-        "tags": [],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-12",
+        "id": "noticia-9",
         "title": "Mashup Edu’s AI-agent Nia is designed to “run the business side” of indie acts’ careers",
         "summary": "Indian music education and creator-development platform Mashup Edu — which runs Xcelerator, a ten-week music business programme for indie artists; and Backstage, an on-campus music industry literacy course for school […] The post is from Music Ally .",
         "url": "https://musically.com/2026/11/06/mashup-edus-ai-agent-nia-is-designed-to-run-the-business-side-of-indie-acts-careers/",
@@ -193,6 +154,50 @@
         ],
         "translated": false,
         "via": null
+      },
+      {
+        "id": "noticia-10",
+        "title": "Suno lleva su generador de canciones a ChatGPT y Claude",
+        "summary": "Suno MCP, en beta desde el 28 de octubre, permite crear canciones desde ChatGPT, Claude, Gemini o Cursor, incluso con el plan gratuito y sus créditos.",
+        "url": "https://industriamusical.com/suno-mcp-canciones-chatbots-ia/?utm_source=rss&utm_medium=rss&utm_campaign=suno-mcp-canciones-chatbots-ia",
+        "source": "Industria Musical",
+        "domain": "industriamusical.com",
+        "publishedAt": "2026-11-03T17:47:41.000Z",
+        "tags": [
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-11",
+        "title": "Spotify quiere ser el agente musical de ChatGPT y Claude",
+        "summary": "Spotify quiere ser el servicio que eligen los agentes de IA: ya está en ChatGPT, Claude y Muse, y asegura que no comparte datos de escucha con ellos.",
+        "url": "https://industriamusical.com/spotify-agente-ia-chatgpt-claude/?utm_source=rss&utm_medium=rss&utm_campaign=spotify-agente-ia-chatgpt-claude",
+        "source": "Industria Musical",
+        "domain": "industriamusical.com",
+        "publishedAt": "2026-11-03T17:47:35.000Z",
+        "tags": [
+          "ai",
+          "streaming"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-12",
+        "title": "Música con IA: qué puedes hacer con Suno, Udio y Spotify",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMijgFBVV95cUxQM0M0TXp6dWVUUGxFc3dtM1dVZnZpLVhRUUlmUG5RUmFteWZLanhSYzJuTUVZS0tDZ2NpQXl6Y3ZNUzNVakFza2FrbzBrbkNDck9JUUpHdmI5THAyVmFsRUxQYjd1NEhLOEJCZVluSk5kc3NJbmFTa0xyaGpIUlBGT19JU2IteEpfZ3BYeG93?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "El Ecosistema Startup",
+        "domain": "news.google.com",
+        "publishedAt": "2026-11-01T03:21:37.000Z",
+        "tags": [
+          "ai",
+          "streaming"
+        ],
+        "translated": false,
+        "via": "Google News"
       }
     ],
     "tip": {
@@ -311,20 +316,6 @@
       },
       {
         "id": "noticia-8",
-        "title": "BTS ‘SWIM’ copyright lawsuit against HYBE dropped by songwriters less than four months after filing",
-        "summary": "Dismissal comes less than four months after the songwriters filed their complaint on July 8 Source",
-        "url": "https://www.musicbusinessworldwide.com/bts-swim-copyright-lawsuit-against-hybe-dropped-by-songwriters-less-than-four-months-after-filing/",
-        "source": "Music Business Worldwide",
-        "domain": "musicbusinessworldwide.com",
-        "publishedAt": "2026-11-05T10:54:08.000Z",
-        "tags": [
-          "lawsuit"
-        ],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-9",
         "title": "SoundCloud will soon have more AI music – from ElevenLabs",
         "summary": "With rightsholders urging streaming services to de-recommend, de-monetise and even remove AI-generated music, it’s a ballsy move to announce a deal opening up a new pipeline for it, to say the least. The post is from Music Ally .",
         "url": "https://musically.com/2026/11/06/soundcloud-will-soon-have-more-ai-music-from-elevenlabs/",
@@ -340,33 +331,7 @@
         "via": null
       },
       {
-        "id": "noticia-10",
-        "title": "B2B music streamer Soundtrack inks SESAC deal, estimates unlicensed music in US businesses costs the industry $1.4B a year",
-        "summary": "Soundtrack now licensed by all four major US PROs Source",
-        "url": "https://www.musicbusinessworldwide.com/b2b-music-streamer-soundtrack-inks-sesac-deal-estimates-unlicensed-music-in-us-businesses-costs-the-industry-1-4b-a-year/",
-        "source": "Music Business Worldwide",
-        "domain": "musicbusinessworldwide.com",
-        "publishedAt": "2026-11-05T10:49:34.000Z",
-        "tags": [
-          "licensing"
-        ],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-11",
-        "title": "Wynonna Judd to Receive ASCAP Golden Note Award: ‘A Singular, Powerhouse Voice’",
-        "summary": "Previous recipients include Garth Brooks, LeAnn Rimes, Reba McEntire and Alan Jackson.",
-        "url": "https://www.billboard.com/pro/wynonna-judd-ascap-golden-note-award/",
-        "source": "Billboard",
-        "domain": "billboard.com",
-        "publishedAt": "2026-11-06T14:00:00.000Z",
-        "tags": [],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-12",
+        "id": "noticia-9",
         "title": "Mashup Edu’s AI-agent Nia is designed to “run the business side” of indie acts’ careers",
         "summary": "Indian music education and creator-development platform Mashup Edu — which runs Xcelerator, a ten-week music business programme for indie artists; and Backstage, an on-campus music industry literacy course for school […] The post is from Music Ally .",
         "url": "https://musically.com/2026/11/06/mashup-edus-ai-agent-nia-is-designed-to-run-the-business-side-of-indie-acts-careers/",
@@ -378,6 +343,50 @@
         ],
         "translated": false,
         "via": null
+      },
+      {
+        "id": "noticia-10",
+        "title": "Suno lleva su generador de canciones a ChatGPT y Claude",
+        "summary": "Suno MCP, en beta desde el 28 de octubre, permite crear canciones desde ChatGPT, Claude, Gemini o Cursor, incluso con el plan gratuito y sus créditos.",
+        "url": "https://industriamusical.com/suno-mcp-canciones-chatbots-ia/?utm_source=rss&utm_medium=rss&utm_campaign=suno-mcp-canciones-chatbots-ia",
+        "source": "Industria Musical",
+        "domain": "industriamusical.com",
+        "publishedAt": "2026-11-03T17:47:41.000Z",
+        "tags": [
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-11",
+        "title": "Spotify quiere ser el agente musical de ChatGPT y Claude",
+        "summary": "Spotify quiere ser el servicio que eligen los agentes de IA: ya está en ChatGPT, Claude y Muse, y asegura que no comparte datos de escucha con ellos.",
+        "url": "https://industriamusical.com/spotify-agente-ia-chatgpt-claude/?utm_source=rss&utm_medium=rss&utm_campaign=spotify-agente-ia-chatgpt-claude",
+        "source": "Industria Musical",
+        "domain": "industriamusical.com",
+        "publishedAt": "2026-11-03T17:47:35.000Z",
+        "tags": [
+          "ai",
+          "streaming"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-12",
+        "title": "Música con IA: qué puedes hacer con Suno, Udio y Spotify",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMijgFBVV95cUxQM0M0TXp6dWVUUGxFc3dtM1dVZnZpLVhRUUlmUG5RUmFteWZLanhSYzJuTUVZS0tDZ2NpQXl6Y3ZNUzNVakFza2FrbzBrbkNDck9JUUpHdmI5THAyVmFsRUxQYjd1NEhLOEJCZVluSk5kc3NJbmFTa0xyaGpIUlBGT19JU2IteEpfZ3BYeG93?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "El Ecosistema Startup",
+        "domain": "news.google.com",
+        "publishedAt": "2026-11-01T03:21:37.000Z",
+        "tags": [
+          "ai",
+          "streaming"
+        ],
+        "translated": false,
+        "via": "Google News"
       }
     ],
     "tip": {
