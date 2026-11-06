@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-11-06T00:07:06.652Z",
+  "lastUpdated": "2026-11-06T14:57:06.643Z",
   "meta": {
     "method": "rss-retrieval + link-verification + ai-translation",
     "itemCount": 12,
@@ -7,7 +7,6 @@
       "Billboard",
       "Complete Music Update",
       "Digital Music News",
-      "Industria Musical",
       "Music Ally",
       "Music Business Worldwide",
       "TorrentFreak"
@@ -67,21 +66,6 @@
       },
       {
         "id": "noticia-4",
-        "title": "Nothing Illegal Here: Suno Moves to Dismiss Jason Isbell’s Class Action Lawsuit on First Amendment and US Copyright Law Grounds",
-        "summary": "Suno moves to dismiss a right-of-publicity case filed by a group of performers, including Jason Isbell and David Lowery, claiming that none of its outputs could be mistaken for those musicians. Suno has filed a motion to dismiss the U.S. privacy and publicity rights claims filed by musicians Jason Isbell and David Lowe…",
-        "url": "https://www.digitalmusicnews.com/2026/11/03/suno-moves-to-dismiss-isbell-class-action-lawsuit/",
-        "source": "Digital Music News",
-        "domain": "digitalmusicnews.com",
-        "publishedAt": "2026-11-04T00:29:03.000Z",
-        "tags": [
-          "lawsuit",
-          "ai"
-        ],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-5",
         "title": "Suno Fires Back Against Apple’s Subpoena Opposition, Doubling Down on Its Push for Information About ‘Current License Negotiations,’ ‘Anti-AI Deal Terms,’ and More",
         "summary": "Suno is doubling down on its Apple subpoena push, arguing that the information being sought – about Apple Music’s major label licensing talks, “anti-AI deal terms,” and more – is central to its fair use and copyright misuse arguments. The AI music platform took aim at Apple’s motion to quash in a 24-page opposition fil…",
         "url": "https://www.digitalmusicnews.com/2026/10/28/suno-apple-subpoena-dispute/",
@@ -97,13 +81,13 @@
         "via": null
       },
       {
-        "id": "noticia-6",
-        "title": "A UMG v. Suno Subpoena Maelstrom Is Upon Us — Here’s a Closer Look At the High-Stakes Disputes and Their Copyright-Litigation Significance",
-        "summary": "With a UMG v. Suno subpoena maelstrom upon us, here’s a closer look at some of the document and testimony demands’ many interesting angles – and the disputes’ bigger-picture significance in the AI litigation arena. We’ve covered the subpoena clashes from the outset, and the available evidence suggests that the list wil…",
-        "url": "https://www.digitalmusicnews.com/2026/10/27/umg-v-suno-subpoenas-analysis/",
+        "id": "noticia-5",
+        "title": "Nothing Illegal Here: Suno Moves to Dismiss Jason Isbell’s Class Action Lawsuit on First Amendment and US Copyright Law Grounds",
+        "summary": "Suno moves to dismiss a right-of-publicity case filed by a group of performers, including Jason Isbell and David Lowery, claiming that none of its outputs could be mistaken for those musicians. Suno has filed a motion to dismiss the U.S. privacy and publicity rights claims filed by musicians Jason Isbell and David Lowe…",
+        "url": "https://www.digitalmusicnews.com/2026/11/03/suno-moves-to-dismiss-isbell-class-action-lawsuit/",
         "source": "Digital Music News",
         "domain": "digitalmusicnews.com",
-        "publishedAt": "2026-10-27T22:51:59.000Z",
+        "publishedAt": "2026-11-04T00:29:03.000Z",
         "tags": [
           "lawsuit",
           "ai"
@@ -112,7 +96,36 @@
         "via": null
       },
       {
+        "id": "noticia-6",
+        "title": "Kroger Moves to Toss Sony Music-Led Infringement Lawsuit, Arguing Cox v. Sony Invalidates Everything",
+        "summary": "Kroger asks a federal judge to toss Sony Music’s broad-ranging infringement case, claiming that the Cox v. Sony case ruling set the precedent that businesses can’t be liable for influencer posts. Kroger and 17 affiliates have asked a California federal judge to throw out Sony Music’s broad-ranging infringement suit ove…",
+        "url": "https://www.digitalmusicnews.com/2026/11/05/kroger-moves-to-toss-sony-music-lawsuit/",
+        "source": "Digital Music News",
+        "domain": "digitalmusicnews.com",
+        "publishedAt": "2026-11-06T05:34:32.000Z",
+        "tags": [
+          "lawsuit"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
         "id": "noticia-7",
+        "title": "Rotor Videos opens Artist Unlimited to any artist from $9.99 a month, with unlimited release visuals and a library of 17M+, non-AI-generated clips",
+        "summary": "The plans give artists unlimited access to Rotor's tools for making visual assets for release campaigns, including music videos, lyric videos, Spotify Canvas, and Apple Music Album Motion. Source",
+        "url": "https://www.musicbusinessworldwide.com/rotor-videos-opens-artist-unlimited-to-any-artist-from-9-99-a-month-with-unlimited-release-visuals-and-a-library-of-17m-non-ai-generated-clips/",
+        "source": "Music Business Worldwide",
+        "domain": "musicbusinessworldwide.com",
+        "publishedAt": "2026-11-06T14:56:21.000Z",
+        "tags": [
+          "ai",
+          "streaming"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-8",
         "title": "BTS ‘SWIM’ copyright lawsuit against HYBE dropped by songwriters less than four months after filing",
         "summary": "Dismissal comes less than four months after the songwriters filed their complaint on July 8 Source",
         "url": "https://www.musicbusinessworldwide.com/bts-swim-copyright-lawsuit-against-hybe-dropped-by-songwriters-less-than-four-months-after-filing/",
@@ -126,7 +139,23 @@
         "via": null
       },
       {
-        "id": "noticia-8",
+        "id": "noticia-9",
+        "title": "SoundCloud will soon have more AI music – from ElevenLabs",
+        "summary": "With rightsholders urging streaming services to de-recommend, de-monetise and even remove AI-generated music, it’s a ballsy move to announce a deal opening up a new pipeline for it, to say the least. The post is from Music Ally .",
+        "url": "https://musically.com/2026/11/06/soundcloud-will-soon-have-more-ai-music-from-elevenlabs/",
+        "source": "Music Ally",
+        "domain": "musically.com",
+        "publishedAt": "2026-11-06T12:30:00.000Z",
+        "tags": [
+          "ai",
+          "licensing",
+          "streaming"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-10",
         "title": "B2B music streamer Soundtrack inks SESAC deal, estimates unlicensed music in US businesses costs the industry $1.4B a year",
         "summary": "Soundtrack now licensed by all four major US PROs Source",
         "url": "https://www.musicbusinessworldwide.com/b2b-music-streamer-soundtrack-inks-sesac-deal-estimates-unlicensed-music-in-us-businesses-costs-the-industry-1-4b-a-year/",
@@ -140,57 +169,27 @@
         "via": null
       },
       {
-        "id": "noticia-9",
-        "title": "Apple Music set for karaoke expansion with ‘Selfie Sing’ feature",
-        "summary": "Spotify may be preparing to launch a tool for people to remix songs using AI, but Apple Music’s next feature is more about making songs your own… with your voice. It’s called ‘Selfie Sing’. The post is from Music Ally .",
-        "url": "https://musically.com/2026/11/05/apple-music-set-for-karaoke-expansion-with-selfie-sing-feature/",
-        "source": "Music Ally",
-        "domain": "musically.com",
-        "publishedAt": "2026-11-05T13:30:00.000Z",
-        "tags": [
-          "ai",
-          "streaming"
-        ],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-10",
-        "title": "ASCAP Unveils Mental Health Initiative for Members in Partnership With Project Healthy Minds",
-        "summary": "Through the new collaboration, ASCAP members will be connected with mental health providers offering talk therapy, psychiatric services and more.",
-        "url": "https://www.billboard.com/pro/ascap-mental-health-initiative-songwriters/",
+        "id": "noticia-11",
+        "title": "Wynonna Judd to Receive ASCAP Golden Note Award: ‘A Singular, Powerhouse Voice’",
+        "summary": "Previous recipients include Garth Brooks, LeAnn Rimes, Reba McEntire and Alan Jackson.",
+        "url": "https://www.billboard.com/pro/wynonna-judd-ascap-golden-note-award/",
         "source": "Billboard",
         "domain": "billboard.com",
-        "publishedAt": "2026-11-06T00:06:42.000Z",
+        "publishedAt": "2026-11-06T14:00:00.000Z",
         "tags": [],
         "translated": false,
         "via": null
       },
       {
-        "id": "noticia-11",
-        "title": "Suno lleva su generador de canciones a ChatGPT y Claude",
-        "summary": "Suno MCP, en beta desde el 28 de octubre, permite crear canciones desde ChatGPT, Claude, Gemini o Cursor, incluso con el plan gratuito y sus créditos.",
-        "url": "https://industriamusical.com/suno-mcp-canciones-chatbots-ia/?utm_source=rss&utm_medium=rss&utm_campaign=suno-mcp-canciones-chatbots-ia",
-        "source": "Industria Musical",
-        "domain": "industriamusical.com",
-        "publishedAt": "2026-11-03T17:47:41.000Z",
+        "id": "noticia-12",
+        "title": "Mashup Edu’s AI-agent Nia is designed to “run the business side” of indie acts’ careers",
+        "summary": "Indian music education and creator-development platform Mashup Edu — which runs Xcelerator, a ten-week music business programme for indie artists; and Backstage, an on-campus music industry literacy course for school […] The post is from Music Ally .",
+        "url": "https://musically.com/2026/11/06/mashup-edus-ai-agent-nia-is-designed-to-run-the-business-side-of-indie-acts-careers/",
+        "source": "Music Ally",
+        "domain": "musically.com",
+        "publishedAt": "2026-11-06T05:46:05.000Z",
         "tags": [
           "ai"
-        ],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-12",
-        "title": "Spotify quiere ser el agente musical de ChatGPT y Claude",
-        "summary": "Spotify quiere ser el servicio que eligen los agentes de IA: ya está en ChatGPT, Claude y Muse, y asegura que no comparte datos de escucha con ellos.",
-        "url": "https://industriamusical.com/spotify-agente-ia-chatgpt-claude/?utm_source=rss&utm_medium=rss&utm_campaign=spotify-agente-ia-chatgpt-claude",
-        "source": "Industria Musical",
-        "domain": "industriamusical.com",
-        "publishedAt": "2026-11-03T17:47:35.000Z",
-        "tags": [
-          "ai",
-          "streaming"
         ],
         "translated": false,
         "via": null
@@ -252,21 +251,6 @@
       },
       {
         "id": "noticia-4",
-        "title": "Nothing Illegal Here: Suno Moves to Dismiss Jason Isbell’s Class Action Lawsuit on First Amendment and US Copyright Law Grounds",
-        "summary": "Suno moves to dismiss a right-of-publicity case filed by a group of performers, including Jason Isbell and David Lowery, claiming that none of its outputs could be mistaken for those musicians. Suno has filed a motion to dismiss the U.S. privacy and publicity rights claims filed by musicians Jason Isbell and David Lowe…",
-        "url": "https://www.digitalmusicnews.com/2026/11/03/suno-moves-to-dismiss-isbell-class-action-lawsuit/",
-        "source": "Digital Music News",
-        "domain": "digitalmusicnews.com",
-        "publishedAt": "2026-11-04T00:29:03.000Z",
-        "tags": [
-          "lawsuit",
-          "ai"
-        ],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-5",
         "title": "Suno Fires Back Against Apple’s Subpoena Opposition, Doubling Down on Its Push for Information About ‘Current License Negotiations,’ ‘Anti-AI Deal Terms,’ and More",
         "summary": "Suno is doubling down on its Apple subpoena push, arguing that the information being sought – about Apple Music’s major label licensing talks, “anti-AI deal terms,” and more – is central to its fair use and copyright misuse arguments. The AI music platform took aim at Apple’s motion to quash in a 24-page opposition fil…",
         "url": "https://www.digitalmusicnews.com/2026/10/28/suno-apple-subpoena-dispute/",
@@ -282,13 +266,13 @@
         "via": null
       },
       {
-        "id": "noticia-6",
-        "title": "A UMG v. Suno Subpoena Maelstrom Is Upon Us — Here’s a Closer Look At the High-Stakes Disputes and Their Copyright-Litigation Significance",
-        "summary": "With a UMG v. Suno subpoena maelstrom upon us, here’s a closer look at some of the document and testimony demands’ many interesting angles – and the disputes’ bigger-picture significance in the AI litigation arena. We’ve covered the subpoena clashes from the outset, and the available evidence suggests that the list wil…",
-        "url": "https://www.digitalmusicnews.com/2026/10/27/umg-v-suno-subpoenas-analysis/",
+        "id": "noticia-5",
+        "title": "Nothing Illegal Here: Suno Moves to Dismiss Jason Isbell’s Class Action Lawsuit on First Amendment and US Copyright Law Grounds",
+        "summary": "Suno moves to dismiss a right-of-publicity case filed by a group of performers, including Jason Isbell and David Lowery, claiming that none of its outputs could be mistaken for those musicians. Suno has filed a motion to dismiss the U.S. privacy and publicity rights claims filed by musicians Jason Isbell and David Lowe…",
+        "url": "https://www.digitalmusicnews.com/2026/11/03/suno-moves-to-dismiss-isbell-class-action-lawsuit/",
         "source": "Digital Music News",
         "domain": "digitalmusicnews.com",
-        "publishedAt": "2026-10-27T22:51:59.000Z",
+        "publishedAt": "2026-11-04T00:29:03.000Z",
         "tags": [
           "lawsuit",
           "ai"
@@ -297,7 +281,36 @@
         "via": null
       },
       {
+        "id": "noticia-6",
+        "title": "Kroger Moves to Toss Sony Music-Led Infringement Lawsuit, Arguing Cox v. Sony Invalidates Everything",
+        "summary": "Kroger asks a federal judge to toss Sony Music’s broad-ranging infringement case, claiming that the Cox v. Sony case ruling set the precedent that businesses can’t be liable for influencer posts. Kroger and 17 affiliates have asked a California federal judge to throw out Sony Music’s broad-ranging infringement suit ove…",
+        "url": "https://www.digitalmusicnews.com/2026/11/05/kroger-moves-to-toss-sony-music-lawsuit/",
+        "source": "Digital Music News",
+        "domain": "digitalmusicnews.com",
+        "publishedAt": "2026-11-06T05:34:32.000Z",
+        "tags": [
+          "lawsuit"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
         "id": "noticia-7",
+        "title": "Rotor Videos opens Artist Unlimited to any artist from $9.99 a month, with unlimited release visuals and a library of 17M+, non-AI-generated clips",
+        "summary": "The plans give artists unlimited access to Rotor's tools for making visual assets for release campaigns, including music videos, lyric videos, Spotify Canvas, and Apple Music Album Motion. Source",
+        "url": "https://www.musicbusinessworldwide.com/rotor-videos-opens-artist-unlimited-to-any-artist-from-9-99-a-month-with-unlimited-release-visuals-and-a-library-of-17m-non-ai-generated-clips/",
+        "source": "Music Business Worldwide",
+        "domain": "musicbusinessworldwide.com",
+        "publishedAt": "2026-11-06T14:56:21.000Z",
+        "tags": [
+          "ai",
+          "streaming"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-8",
         "title": "BTS ‘SWIM’ copyright lawsuit against HYBE dropped by songwriters less than four months after filing",
         "summary": "Dismissal comes less than four months after the songwriters filed their complaint on July 8 Source",
         "url": "https://www.musicbusinessworldwide.com/bts-swim-copyright-lawsuit-against-hybe-dropped-by-songwriters-less-than-four-months-after-filing/",
@@ -311,7 +324,23 @@
         "via": null
       },
       {
-        "id": "noticia-8",
+        "id": "noticia-9",
+        "title": "SoundCloud will soon have more AI music – from ElevenLabs",
+        "summary": "With rightsholders urging streaming services to de-recommend, de-monetise and even remove AI-generated music, it’s a ballsy move to announce a deal opening up a new pipeline for it, to say the least. The post is from Music Ally .",
+        "url": "https://musically.com/2026/11/06/soundcloud-will-soon-have-more-ai-music-from-elevenlabs/",
+        "source": "Music Ally",
+        "domain": "musically.com",
+        "publishedAt": "2026-11-06T12:30:00.000Z",
+        "tags": [
+          "ai",
+          "licensing",
+          "streaming"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-10",
         "title": "B2B music streamer Soundtrack inks SESAC deal, estimates unlicensed music in US businesses costs the industry $1.4B a year",
         "summary": "Soundtrack now licensed by all four major US PROs Source",
         "url": "https://www.musicbusinessworldwide.com/b2b-music-streamer-soundtrack-inks-sesac-deal-estimates-unlicensed-music-in-us-businesses-costs-the-industry-1-4b-a-year/",
@@ -325,57 +354,27 @@
         "via": null
       },
       {
-        "id": "noticia-9",
-        "title": "Apple Music set for karaoke expansion with ‘Selfie Sing’ feature",
-        "summary": "Spotify may be preparing to launch a tool for people to remix songs using AI, but Apple Music’s next feature is more about making songs your own… with your voice. It’s called ‘Selfie Sing’. The post is from Music Ally .",
-        "url": "https://musically.com/2026/11/05/apple-music-set-for-karaoke-expansion-with-selfie-sing-feature/",
-        "source": "Music Ally",
-        "domain": "musically.com",
-        "publishedAt": "2026-11-05T13:30:00.000Z",
-        "tags": [
-          "ai",
-          "streaming"
-        ],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-10",
-        "title": "ASCAP Unveils Mental Health Initiative for Members in Partnership With Project Healthy Minds",
-        "summary": "Through the new collaboration, ASCAP members will be connected with mental health providers offering talk therapy, psychiatric services and more.",
-        "url": "https://www.billboard.com/pro/ascap-mental-health-initiative-songwriters/",
+        "id": "noticia-11",
+        "title": "Wynonna Judd to Receive ASCAP Golden Note Award: ‘A Singular, Powerhouse Voice’",
+        "summary": "Previous recipients include Garth Brooks, LeAnn Rimes, Reba McEntire and Alan Jackson.",
+        "url": "https://www.billboard.com/pro/wynonna-judd-ascap-golden-note-award/",
         "source": "Billboard",
         "domain": "billboard.com",
-        "publishedAt": "2026-11-06T00:06:42.000Z",
+        "publishedAt": "2026-11-06T14:00:00.000Z",
         "tags": [],
         "translated": false,
         "via": null
       },
       {
-        "id": "noticia-11",
-        "title": "Suno lleva su generador de canciones a ChatGPT y Claude",
-        "summary": "Suno MCP, en beta desde el 28 de octubre, permite crear canciones desde ChatGPT, Claude, Gemini o Cursor, incluso con el plan gratuito y sus créditos.",
-        "url": "https://industriamusical.com/suno-mcp-canciones-chatbots-ia/?utm_source=rss&utm_medium=rss&utm_campaign=suno-mcp-canciones-chatbots-ia",
-        "source": "Industria Musical",
-        "domain": "industriamusical.com",
-        "publishedAt": "2026-11-03T17:47:41.000Z",
+        "id": "noticia-12",
+        "title": "Mashup Edu’s AI-agent Nia is designed to “run the business side” of indie acts’ careers",
+        "summary": "Indian music education and creator-development platform Mashup Edu — which runs Xcelerator, a ten-week music business programme for indie artists; and Backstage, an on-campus music industry literacy course for school […] The post is from Music Ally .",
+        "url": "https://musically.com/2026/11/06/mashup-edus-ai-agent-nia-is-designed-to-run-the-business-side-of-indie-acts-careers/",
+        "source": "Music Ally",
+        "domain": "musically.com",
+        "publishedAt": "2026-11-06T05:46:05.000Z",
         "tags": [
           "ai"
-        ],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-12",
-        "title": "Spotify quiere ser el agente musical de ChatGPT y Claude",
-        "summary": "Spotify quiere ser el servicio que eligen los agentes de IA: ya está en ChatGPT, Claude y Muse, y asegura que no comparte datos de escucha con ellos.",
-        "url": "https://industriamusical.com/spotify-agente-ia-chatgpt-claude/?utm_source=rss&utm_medium=rss&utm_campaign=spotify-agente-ia-chatgpt-claude",
-        "source": "Industria Musical",
-        "domain": "industriamusical.com",
-        "publishedAt": "2026-11-03T17:47:35.000Z",
-        "tags": [
-          "ai",
-          "streaming"
         ],
         "translated": false,
         "via": null
