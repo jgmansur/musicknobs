@@ -1,9 +1,10 @@
 {
-  "lastUpdated": "2026-11-05T15:23:17.680Z",
+  "lastUpdated": "2026-11-06T00:07:06.652Z",
   "meta": {
     "method": "rss-retrieval + link-verification + ai-translation",
     "itemCount": 12,
     "sources": [
+      "Billboard",
       "Complete Music Update",
       "Digital Music News",
       "Industria Musical",
@@ -97,16 +98,15 @@
       },
       {
         "id": "noticia-6",
-        "title": "As UMG v. Suno Subpoenas Target the MLC, Multiple Investors, DistroKid, and Now Apple Music, Are Game-Changing Disclosures on the Horizon?",
-        "summary": "As Suno fends off an ever-growing number of music industry copyright complaints, a raft of subpoena showdowns – including the AI platform’s own document and deposition demands – are now in full swing. Does that mean game-changing disclosures are on the horizon? Time will tell, though the current evidence suggests yes.…",
-        "url": "https://www.digitalmusicnews.com/2026/10/26/suno-subpoenas-umg-apple-music/",
+        "title": "A UMG v. Suno Subpoena Maelstrom Is Upon Us — Here’s a Closer Look At the High-Stakes Disputes and Their Copyright-Litigation Significance",
+        "summary": "With a UMG v. Suno subpoena maelstrom upon us, here’s a closer look at some of the document and testimony demands’ many interesting angles – and the disputes’ bigger-picture significance in the AI litigation arena. We’ve covered the subpoena clashes from the outset, and the available evidence suggests that the list wil…",
+        "url": "https://www.digitalmusicnews.com/2026/10/27/umg-v-suno-subpoenas-analysis/",
         "source": "Digital Music News",
         "domain": "digitalmusicnews.com",
-        "publishedAt": "2026-10-26T22:18:45.000Z",
+        "publishedAt": "2026-10-27T22:51:59.000Z",
         "tags": [
           "lawsuit",
-          "ai",
-          "streaming"
+          "ai"
         ],
         "translated": false,
         "via": null
@@ -156,6 +156,18 @@
       },
       {
         "id": "noticia-10",
+        "title": "ASCAP Unveils Mental Health Initiative for Members in Partnership With Project Healthy Minds",
+        "summary": "Through the new collaboration, ASCAP members will be connected with mental health providers offering talk therapy, psychiatric services and more.",
+        "url": "https://www.billboard.com/pro/ascap-mental-health-initiative-songwriters/",
+        "source": "Billboard",
+        "domain": "billboard.com",
+        "publishedAt": "2026-11-06T00:06:42.000Z",
+        "tags": [],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-11",
         "title": "Suno lleva su generador de canciones a ChatGPT y Claude",
         "summary": "Suno MCP, en beta desde el 28 de octubre, permite crear canciones desde ChatGPT, Claude, Gemini o Cursor, incluso con el plan gratuito y sus créditos.",
         "url": "https://industriamusical.com/suno-mcp-canciones-chatbots-ia/?utm_source=rss&utm_medium=rss&utm_campaign=suno-mcp-canciones-chatbots-ia",
@@ -169,7 +181,7 @@
         "via": null
       },
       {
-        "id": "noticia-11",
+        "id": "noticia-12",
         "title": "Spotify quiere ser el agente musical de ChatGPT y Claude",
         "summary": "Spotify quiere ser el servicio que eligen los agentes de IA: ya está en ChatGPT, Claude y Muse, y asegura que no comparte datos de escucha con ellos.",
         "url": "https://industriamusical.com/spotify-agente-ia-chatgpt-claude/?utm_source=rss&utm_medium=rss&utm_campaign=spotify-agente-ia-chatgpt-claude",
@@ -182,26 +194,11 @@
         ],
         "translated": false,
         "via": null
-      },
-      {
-        "id": "noticia-12",
-        "title": "5 things to know about CISAC’s global report, as songwriter royalty collections hit record $15.9B in 2025, with $900M+ from The MLC, and AI in focus",
-        "summary": "Global songwriter royalty collections hit a record €14.06 billion in 2025, with the increase largely driven by the first-time inclusion of The MLC Source",
-        "url": "https://www.musicbusinessworldwide.com/5-things-to-know-about-cisacs-global-report-as-songwriter-royalty-collections-hit-record-15-9b-in-2025-with-900m-from-the-mlc-and-ai-in-focus/",
-        "source": "Music Business Worldwide",
-        "domain": "musicbusinessworldwide.com",
-        "publishedAt": "2026-11-04T17:54:11.000Z",
-        "tags": [
-          "ai",
-          "royalties"
-        ],
-        "translated": false,
-        "via": null
       }
     ],
     "tip": {
-      "title": "Guarda los proyectos, no solo el master",
-      "body": "En una disputa de autoría, el archivo de sesión de tu DAW con fecha, stems y versiones intermedias pesa más que el WAV final. Respalda el proyecto completo, no nada más el bounce."
+      "title": "Sample sin licencia no se arregla con 'menos de 7 segundos'",
+      "body": "No existe una cantidad de segundos legalmente segura. Cualquier fragmento reconocible puede ser infracción, y necesitas dos permisos: el de la grabación (sello) y el de la composición (editorial)."
     }
   },
   "en": {
@@ -286,16 +283,15 @@
       },
       {
         "id": "noticia-6",
-        "title": "As UMG v. Suno Subpoenas Target the MLC, Multiple Investors, DistroKid, and Now Apple Music, Are Game-Changing Disclosures on the Horizon?",
-        "summary": "As Suno fends off an ever-growing number of music industry copyright complaints, a raft of subpoena showdowns – including the AI platform’s own document and deposition demands – are now in full swing. Does that mean game-changing disclosures are on the horizon? Time will tell, though the current evidence suggests yes.…",
-        "url": "https://www.digitalmusicnews.com/2026/10/26/suno-subpoenas-umg-apple-music/",
+        "title": "A UMG v. Suno Subpoena Maelstrom Is Upon Us — Here’s a Closer Look At the High-Stakes Disputes and Their Copyright-Litigation Significance",
+        "summary": "With a UMG v. Suno subpoena maelstrom upon us, here’s a closer look at some of the document and testimony demands’ many interesting angles – and the disputes’ bigger-picture significance in the AI litigation arena. We’ve covered the subpoena clashes from the outset, and the available evidence suggests that the list wil…",
+        "url": "https://www.digitalmusicnews.com/2026/10/27/umg-v-suno-subpoenas-analysis/",
         "source": "Digital Music News",
         "domain": "digitalmusicnews.com",
-        "publishedAt": "2026-10-26T22:18:45.000Z",
+        "publishedAt": "2026-10-27T22:51:59.000Z",
         "tags": [
           "lawsuit",
-          "ai",
-          "streaming"
+          "ai"
         ],
         "translated": false,
         "via": null
@@ -345,6 +341,18 @@
       },
       {
         "id": "noticia-10",
+        "title": "ASCAP Unveils Mental Health Initiative for Members in Partnership With Project Healthy Minds",
+        "summary": "Through the new collaboration, ASCAP members will be connected with mental health providers offering talk therapy, psychiatric services and more.",
+        "url": "https://www.billboard.com/pro/ascap-mental-health-initiative-songwriters/",
+        "source": "Billboard",
+        "domain": "billboard.com",
+        "publishedAt": "2026-11-06T00:06:42.000Z",
+        "tags": [],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-11",
         "title": "Suno lleva su generador de canciones a ChatGPT y Claude",
         "summary": "Suno MCP, en beta desde el 28 de octubre, permite crear canciones desde ChatGPT, Claude, Gemini o Cursor, incluso con el plan gratuito y sus créditos.",
         "url": "https://industriamusical.com/suno-mcp-canciones-chatbots-ia/?utm_source=rss&utm_medium=rss&utm_campaign=suno-mcp-canciones-chatbots-ia",
@@ -358,7 +366,7 @@
         "via": null
       },
       {
-        "id": "noticia-11",
+        "id": "noticia-12",
         "title": "Spotify quiere ser el agente musical de ChatGPT y Claude",
         "summary": "Spotify quiere ser el servicio que eligen los agentes de IA: ya está en ChatGPT, Claude y Muse, y asegura que no comparte datos de escucha con ellos.",
         "url": "https://industriamusical.com/spotify-agente-ia-chatgpt-claude/?utm_source=rss&utm_medium=rss&utm_campaign=spotify-agente-ia-chatgpt-claude",
@@ -371,26 +379,11 @@
         ],
         "translated": false,
         "via": null
-      },
-      {
-        "id": "noticia-12",
-        "title": "5 things to know about CISAC’s global report, as songwriter royalty collections hit record $15.9B in 2025, with $900M+ from The MLC, and AI in focus",
-        "summary": "Global songwriter royalty collections hit a record €14.06 billion in 2025, with the increase largely driven by the first-time inclusion of The MLC Source",
-        "url": "https://www.musicbusinessworldwide.com/5-things-to-know-about-cisacs-global-report-as-songwriter-royalty-collections-hit-record-15-9b-in-2025-with-900m-from-the-mlc-and-ai-in-focus/",
-        "source": "Music Business Worldwide",
-        "domain": "musicbusinessworldwide.com",
-        "publishedAt": "2026-11-04T17:54:11.000Z",
-        "tags": [
-          "ai",
-          "royalties"
-        ],
-        "translated": false,
-        "via": null
       }
     ],
     "tip": {
-      "title": "Keep the project files, not just the master",
-      "body": "In an authorship dispute, your dated DAW session with stems and work-in-progress versions carries more weight than the final WAV. Back up the whole project, not just the bounce."
+      "title": "There is no safe 'under 7 seconds' rule for samples",
+      "body": "No number of seconds is legally safe. Any recognizable fragment can infringe, and you need two clearances: the master recording (label) and the composition (publisher)."
     }
   }
 }
