@@ -1,18 +1,17 @@
 {
-  "lastUpdated": "2026-11-06T23:42:39.781Z",
+  "lastUpdated": "2026-11-07T13:55:17.989Z",
   "meta": {
     "method": "rss-retrieval + link-verification + ai-translation",
-    "itemCount": 12,
+    "itemCount": 10,
     "sources": [
       "Complete Music Update",
       "Digital Music News",
       "El Ecosistema Startup",
-      "Industria Musical",
       "Music Ally",
       "Music Business Worldwide",
       "TorrentFreak"
     ],
-    "verifiedLinks": 12,
+    "verifiedLinks": 10,
     "aiTranslated": 0,
     "note": "Los hechos provienen de los artículos originales enlazados. La IA solo traduce y resume; no genera noticias."
   },
@@ -157,35 +156,6 @@
       },
       {
         "id": "noticia-10",
-        "title": "Suno lleva su generador de canciones a ChatGPT y Claude",
-        "summary": "Suno MCP, en beta desde el 28 de octubre, permite crear canciones desde ChatGPT, Claude, Gemini o Cursor, incluso con el plan gratuito y sus créditos.",
-        "url": "https://industriamusical.com/suno-mcp-canciones-chatbots-ia/?utm_source=rss&utm_medium=rss&utm_campaign=suno-mcp-canciones-chatbots-ia",
-        "source": "Industria Musical",
-        "domain": "industriamusical.com",
-        "publishedAt": "2026-11-03T17:47:41.000Z",
-        "tags": [
-          "ai"
-        ],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-11",
-        "title": "Spotify quiere ser el agente musical de ChatGPT y Claude",
-        "summary": "Spotify quiere ser el servicio que eligen los agentes de IA: ya está en ChatGPT, Claude y Muse, y asegura que no comparte datos de escucha con ellos.",
-        "url": "https://industriamusical.com/spotify-agente-ia-chatgpt-claude/?utm_source=rss&utm_medium=rss&utm_campaign=spotify-agente-ia-chatgpt-claude",
-        "source": "Industria Musical",
-        "domain": "industriamusical.com",
-        "publishedAt": "2026-11-03T17:47:35.000Z",
-        "tags": [
-          "ai",
-          "streaming"
-        ],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-12",
         "title": "Música con IA: qué puedes hacer con Suno, Udio y Spotify",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMijgFBVV95cUxQM0M0TXp6dWVUUGxFc3dtM1dVZnZpLVhRUUlmUG5RUmFteWZLanhSYzJuTUVZS0tDZ2NpQXl6Y3ZNUzNVakFza2FrbzBrbkNDck9JUUpHdmI5THAyVmFsRUxQYjd1NEhLOEJCZVluSk5kc3NJbmFTa0xyaGpIUlBGT19JU2IteEpfZ3BYeG93?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -201,8 +171,8 @@
       }
     ],
     "tip": {
-      "title": "Sample sin licencia no se arregla con 'menos de 7 segundos'",
-      "body": "No existe una cantidad de segundos legalmente segura. Cualquier fragmento reconocible puede ser infracción, y necesitas dos permisos: el de la grabación (sello) y el de la composición (editorial)."
+      "title": "Split sheet firmado el mismo día de la sesión",
+      "body": "Los porcentajes de autoría se pelean cuando la canción pega, no cuando se escribe. Firma el split sheet con todos los presentes antes de salir del estudio, aunque sean amigos."
     }
   },
   "en": {
@@ -346,35 +316,6 @@
       },
       {
         "id": "noticia-10",
-        "title": "Suno lleva su generador de canciones a ChatGPT y Claude",
-        "summary": "Suno MCP, en beta desde el 28 de octubre, permite crear canciones desde ChatGPT, Claude, Gemini o Cursor, incluso con el plan gratuito y sus créditos.",
-        "url": "https://industriamusical.com/suno-mcp-canciones-chatbots-ia/?utm_source=rss&utm_medium=rss&utm_campaign=suno-mcp-canciones-chatbots-ia",
-        "source": "Industria Musical",
-        "domain": "industriamusical.com",
-        "publishedAt": "2026-11-03T17:47:41.000Z",
-        "tags": [
-          "ai"
-        ],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-11",
-        "title": "Spotify quiere ser el agente musical de ChatGPT y Claude",
-        "summary": "Spotify quiere ser el servicio que eligen los agentes de IA: ya está en ChatGPT, Claude y Muse, y asegura que no comparte datos de escucha con ellos.",
-        "url": "https://industriamusical.com/spotify-agente-ia-chatgpt-claude/?utm_source=rss&utm_medium=rss&utm_campaign=spotify-agente-ia-chatgpt-claude",
-        "source": "Industria Musical",
-        "domain": "industriamusical.com",
-        "publishedAt": "2026-11-03T17:47:35.000Z",
-        "tags": [
-          "ai",
-          "streaming"
-        ],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-12",
         "title": "Música con IA: qué puedes hacer con Suno, Udio y Spotify",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMijgFBVV95cUxQM0M0TXp6dWVUUGxFc3dtM1dVZnZpLVhRUUlmUG5RUmFteWZLanhSYzJuTUVZS0tDZ2NpQXl6Y3ZNUzNVakFza2FrbzBrbkNDck9JUUpHdmI5THAyVmFsRUxQYjd1NEhLOEJCZVluSk5kc3NJbmFTa0xyaGpIUlBGT19JU2IteEpfZ3BYeG93?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -390,8 +331,8 @@
       }
     ],
     "tip": {
-      "title": "There is no safe 'under 7 seconds' rule for samples",
-      "body": "No number of seconds is legally safe. Any recognizable fragment can infringe, and you need two clearances: the master recording (label) and the composition (publisher)."
+      "title": "Sign the split sheet the day of the session",
+      "body": "Songwriting splits get disputed when the song blows up, not when it's written. Sign a split sheet with everyone in the room before you leave the studio —even with friends."
     }
   }
 }
