@@ -1,17 +1,20 @@
 {
-  "lastUpdated": "2026-11-07T13:55:17.989Z",
+  "lastUpdated": "2026-11-07T22:40:23.472Z",
   "meta": {
     "method": "rss-retrieval + link-verification + ai-translation",
-    "itemCount": 10,
+    "itemCount": 12,
     "sources": [
+      "Billboard",
+      "CBS News",
       "Complete Music Update",
+      "Detroit Free Press",
       "Digital Music News",
-      "El Ecosistema Startup",
-      "Music Ally",
       "Music Business Worldwide",
-      "TorrentFreak"
+      "TorrentFreak",
+      "Variety",
+      "localmemphis.com"
     ],
-    "verifiedLinks": 10,
+    "verifiedLinks": 12,
     "aiTranslated": 0,
     "note": "Los hechos provienen de los artículos originales enlazados. La IA solo traduce y resume; no genera noticias."
   },
@@ -36,27 +39,26 @@
       },
       {
         "id": "noticia-2",
+        "title": "Elvis Presley Enterprises suing AI music generator company over copyright infringement",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMixwFBVV95cUxQa0x0STBhcWpOek56dkwzalZicnprVVNRQmMwVGIzZFV1NWd1UXJHZlZ3SVU5cUtHbGprZ3BoV3BxaDZKMEhqZVhBMmt4SDE4d3Zia1VtamdYMzBBdDlaWllkQjI1bTByakxIcGNQQzV1eTQydml1ZXZYdDZyX250QkI0bE1qMU5RczBFeTlUaVU2NkhCSlNVRG1aRjFGSWtZTDlhWU5CMU5uNmJfbUhkMmVqcDFqMTh2ZEpPWklXWVdwbnQwZWZz?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "localmemphis.com",
+        "domain": "news.google.com",
+        "publishedAt": "2026-11-07T22:32:00.000Z",
+        "tags": [
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-3",
         "title": "Meta Employees ‘Interacted’ With Pirated Copies of Adult Films, Filing Shows",
         "summary": "A newly unredacted court filing shows that Meta’s internal investigation found several employees who appear to have interacted with Strike 3’s adult films. The adult content producers say these were torrented copies listed in their lawsuit, but Meta says there is no evidence of torrenting. The company also stresses tha…",
         "url": "https://torrentfreak.com/meta-employees-interacted-with-pirated-copies-of-adult-films-filing-shows/",
         "source": "TorrentFreak",
         "domain": "torrentfreak.com",
         "publishedAt": "2026-11-05T07:22:30.000Z",
-        "tags": [
-          "lawsuit",
-          "ai"
-        ],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-3",
-        "title": "Music industry intervenes in Open AI’s big legal battle with newspapers and authors",
-        "summary": "All of the US music industry’s copyright lawsuits against AI companies swing on whether or not AI training is fair use under US law. A big legal battle involving authors, newspapers and Open AI also centres on fair use, and the music industry has now intervened in that case via an amicus brief",
-        "url": "https://completemusicupdate.com/music-industry-intervenes-in-open-ais-big-legal-battle-with-newspapers-and-authors/",
-        "source": "Complete Music Update",
-        "domain": "completemusicupdate.com",
-        "publishedAt": "2026-11-03T17:31:31.000Z",
         "tags": [
           "lawsuit",
           "ai"
@@ -82,6 +84,21 @@
       },
       {
         "id": "noticia-5",
+        "title": "Music industry intervenes in Open AI’s big legal battle with newspapers and authors",
+        "summary": "All of the US music industry’s copyright lawsuits against AI companies swing on whether or not AI training is fair use under US law. A big legal battle involving authors, newspapers and Open AI also centres on fair use, and the music industry has now intervened in that case via an amicus brief",
+        "url": "https://completemusicupdate.com/music-industry-intervenes-in-open-ais-big-legal-battle-with-newspapers-and-authors/",
+        "source": "Complete Music Update",
+        "domain": "completemusicupdate.com",
+        "publishedAt": "2026-11-03T17:31:31.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-6",
         "title": "Nothing Illegal Here: Suno Moves to Dismiss Jason Isbell’s Class Action Lawsuit on First Amendment and US Copyright Law Grounds",
         "summary": "Suno moves to dismiss a right-of-publicity case filed by a group of performers, including Jason Isbell and David Lowery, claiming that none of its outputs could be mistaken for those musicians. Suno has filed a motion to dismiss the U.S. privacy and publicity rights claims filed by musicians Jason Isbell and David Lowe…",
         "url": "https://www.digitalmusicnews.com/2026/11/03/suno-moves-to-dismiss-isbell-class-action-lawsuit/",
@@ -96,7 +113,37 @@
         "via": null
       },
       {
-        "id": "noticia-6",
+        "id": "noticia-7",
+        "title": "AI platform reproduced Michigan music publishers' copyrighted works without authorization, lawsuit says",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMijAFBVV95cUxNN3NEUjkxX25lTGgzYXJtdG9nazU3VzRHMENEWG9RVjg3RndNajVWS1VPWHdBOXV6R3JoWE51RlJ1NGdSM3JXWFpQN1hKZmxEU2ZxYjU0S3BTNDhoYTFHd0Q3bHFrQTdlSFRlaTBOTEMydmRvcEpaeGU1dktFekp2VTZ4QjhvZUYyT1ZQRg?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "CBS News",
+        "domain": "news.google.com",
+        "publishedAt": "2026-11-07T22:15:34.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-8",
+        "title": "Eminem song publisher seeks $41M in copyright lawsuit vs. AI platform",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMiuwFBVV95cUxNV2Z1RzdMVDFtbTQwc1VqXy1SVFNPcTNrYjVNZWFUdldKY2psVnQ4TXQxUWhGQmwyLUZISE1CbWNnSGtaRmw5MDB2WjZhM3dYV0VRN2VMMXVmTUYzSm03S0VEemVwWXFhTDRLVXlsaGNzMkROR3p5SmpfTUJuYjJZS1BQMVFPNVJZNmlJNjJHM3d0ZmUzRHVHcUtybzZnUFpqTy0tM0dKLVRyS3Z1R1ZDNVBuVXhyaHBxbW1R?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "Detroit Free Press",
+        "domain": "news.google.com",
+        "publishedAt": "2026-11-07T17:09:00.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-9",
         "title": "Kroger Moves to Toss Sony Music-Led Infringement Lawsuit, Arguing Cox v. Sony Invalidates Everything",
         "summary": "Kroger asks a federal judge to toss Sony Music’s broad-ranging infringement case, claiming that the Cox v. Sony case ruling set the precedent that businesses can’t be liable for influencer posts. Kroger and 17 affiliates have asked a California federal judge to throw out Sony Music’s broad-ranging infringement suit ove…",
         "url": "https://www.digitalmusicnews.com/2026/11/05/kroger-moves-to-toss-sony-music-lawsuit/",
@@ -110,7 +157,37 @@
         "via": null
       },
       {
-        "id": "noticia-7",
+        "id": "noticia-10",
+        "title": "Elvis Presley Rights Owners Sue Suno Over AI Voice Cloning: ‘Elvis’ Identity Was Stolen’",
+        "summary": "The singer's legendary voice is at the center of a cutting-edge lawsuit that aims to hold the AI firm legally liable for allowing users to create knockoff vocals.",
+        "url": "https://www.billboard.com/pro/elvis-presley-ai-voice-cloning-lawsuit-suno/",
+        "source": "Billboard",
+        "domain": "billboard.com",
+        "publishedAt": "2026-11-07T15:38:11.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-11",
+        "title": "Elvis Music Owners, Eminem Publisher File Sprawling New Lawsuits Against AI Music Generator Suno: ‘The Next Elvis Won’t Pick Up a Guitar’",
+        "summary": "A collection of Elvis Presley music rightsholders and the publisher of many of Eminem’s records have filed sprawling new federal lawsuits against the AI music generator Suno, with each party making separate allegations that add to the AI company’s legal challenges. The Presley lawsuit — brought by a group that includes…",
+        "url": "https://variety.com/2026/music/news/elvis-eminem-sue-suno-ai-music-generator-1236941798/",
+        "source": "Variety",
+        "domain": "variety.com",
+        "publishedAt": "2026-11-07T16:15:26.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-12",
         "title": "Rotor Videos opens Artist Unlimited to any artist from $9.99 a month, with unlimited release visuals and a library of 17M+, non-AI-generated clips",
         "summary": "The plans give artists unlimited access to Rotor's tools for making visual assets for release campaigns, including music videos, lyric videos, Spotify Canvas, and Apple Music Album Motion. Source",
         "url": "https://www.musicbusinessworldwide.com/rotor-videos-opens-artist-unlimited-to-any-artist-from-9-99-a-month-with-unlimited-release-visuals-and-a-library-of-17m-non-ai-generated-clips/",
@@ -123,51 +200,6 @@
         ],
         "translated": false,
         "via": null
-      },
-      {
-        "id": "noticia-8",
-        "title": "SoundCloud will soon have more AI music – from ElevenLabs",
-        "summary": "With rightsholders urging streaming services to de-recommend, de-monetise and even remove AI-generated music, it’s a ballsy move to announce a deal opening up a new pipeline for it, to say the least. The post is from Music Ally .",
-        "url": "https://musically.com/2026/11/06/soundcloud-will-soon-have-more-ai-music-from-elevenlabs/",
-        "source": "Music Ally",
-        "domain": "musically.com",
-        "publishedAt": "2026-11-06T12:30:00.000Z",
-        "tags": [
-          "ai",
-          "licensing",
-          "streaming"
-        ],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-9",
-        "title": "Mashup Edu’s AI-agent Nia is designed to “run the business side” of indie acts’ careers",
-        "summary": "Indian music education and creator-development platform Mashup Edu — which runs Xcelerator, a ten-week music business programme for indie artists; and Backstage, an on-campus music industry literacy course for school […] The post is from Music Ally .",
-        "url": "https://musically.com/2026/11/06/mashup-edus-ai-agent-nia-is-designed-to-run-the-business-side-of-indie-acts-careers/",
-        "source": "Music Ally",
-        "domain": "musically.com",
-        "publishedAt": "2026-11-06T05:46:05.000Z",
-        "tags": [
-          "ai"
-        ],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-10",
-        "title": "Música con IA: qué puedes hacer con Suno, Udio y Spotify",
-        "summary": "",
-        "url": "https://news.google.com/rss/articles/CBMijgFBVV95cUxQM0M0TXp6dWVUUGxFc3dtM1dVZnZpLVhRUUlmUG5RUmFteWZLanhSYzJuTUVZS0tDZ2NpQXl6Y3ZNUzNVakFza2FrbzBrbkNDck9JUUpHdmI5THAyVmFsRUxQYjd1NEhLOEJCZVluSk5kc3NJbmFTa0xyaGpIUlBGT19JU2IteEpfZ3BYeG93?oc=5&hl=es-419&gl=US&ceid=US:es-419",
-        "source": "El Ecosistema Startup",
-        "domain": "news.google.com",
-        "publishedAt": "2026-11-01T03:21:37.000Z",
-        "tags": [
-          "ai",
-          "streaming"
-        ],
-        "translated": false,
-        "via": "Google News"
       }
     ],
     "tip": {
@@ -196,27 +228,26 @@
       },
       {
         "id": "noticia-2",
+        "title": "Elvis Presley Enterprises suing AI music generator company over copyright infringement",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMixwFBVV95cUxQa0x0STBhcWpOek56dkwzalZicnprVVNRQmMwVGIzZFV1NWd1UXJHZlZ3SVU5cUtHbGprZ3BoV3BxaDZKMEhqZVhBMmt4SDE4d3Zia1VtamdYMzBBdDlaWllkQjI1bTByakxIcGNQQzV1eTQydml1ZXZYdDZyX250QkI0bE1qMU5RczBFeTlUaVU2NkhCSlNVRG1aRjFGSWtZTDlhWU5CMU5uNmJfbUhkMmVqcDFqMTh2ZEpPWklXWVdwbnQwZWZz?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "localmemphis.com",
+        "domain": "news.google.com",
+        "publishedAt": "2026-11-07T22:32:00.000Z",
+        "tags": [
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-3",
         "title": "Meta Employees ‘Interacted’ With Pirated Copies of Adult Films, Filing Shows",
         "summary": "A newly unredacted court filing shows that Meta’s internal investigation found several employees who appear to have interacted with Strike 3’s adult films. The adult content producers say these were torrented copies listed in their lawsuit, but Meta says there is no evidence of torrenting. The company also stresses tha…",
         "url": "https://torrentfreak.com/meta-employees-interacted-with-pirated-copies-of-adult-films-filing-shows/",
         "source": "TorrentFreak",
         "domain": "torrentfreak.com",
         "publishedAt": "2026-11-05T07:22:30.000Z",
-        "tags": [
-          "lawsuit",
-          "ai"
-        ],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-3",
-        "title": "Music industry intervenes in Open AI’s big legal battle with newspapers and authors",
-        "summary": "All of the US music industry’s copyright lawsuits against AI companies swing on whether or not AI training is fair use under US law. A big legal battle involving authors, newspapers and Open AI also centres on fair use, and the music industry has now intervened in that case via an amicus brief",
-        "url": "https://completemusicupdate.com/music-industry-intervenes-in-open-ais-big-legal-battle-with-newspapers-and-authors/",
-        "source": "Complete Music Update",
-        "domain": "completemusicupdate.com",
-        "publishedAt": "2026-11-03T17:31:31.000Z",
         "tags": [
           "lawsuit",
           "ai"
@@ -242,6 +273,21 @@
       },
       {
         "id": "noticia-5",
+        "title": "Music industry intervenes in Open AI’s big legal battle with newspapers and authors",
+        "summary": "All of the US music industry’s copyright lawsuits against AI companies swing on whether or not AI training is fair use under US law. A big legal battle involving authors, newspapers and Open AI also centres on fair use, and the music industry has now intervened in that case via an amicus brief",
+        "url": "https://completemusicupdate.com/music-industry-intervenes-in-open-ais-big-legal-battle-with-newspapers-and-authors/",
+        "source": "Complete Music Update",
+        "domain": "completemusicupdate.com",
+        "publishedAt": "2026-11-03T17:31:31.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-6",
         "title": "Nothing Illegal Here: Suno Moves to Dismiss Jason Isbell’s Class Action Lawsuit on First Amendment and US Copyright Law Grounds",
         "summary": "Suno moves to dismiss a right-of-publicity case filed by a group of performers, including Jason Isbell and David Lowery, claiming that none of its outputs could be mistaken for those musicians. Suno has filed a motion to dismiss the U.S. privacy and publicity rights claims filed by musicians Jason Isbell and David Lowe…",
         "url": "https://www.digitalmusicnews.com/2026/11/03/suno-moves-to-dismiss-isbell-class-action-lawsuit/",
@@ -256,7 +302,37 @@
         "via": null
       },
       {
-        "id": "noticia-6",
+        "id": "noticia-7",
+        "title": "AI platform reproduced Michigan music publishers' copyrighted works without authorization, lawsuit says",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMijAFBVV95cUxNN3NEUjkxX25lTGgzYXJtdG9nazU3VzRHMENEWG9RVjg3RndNajVWS1VPWHdBOXV6R3JoWE51RlJ1NGdSM3JXWFpQN1hKZmxEU2ZxYjU0S3BTNDhoYTFHd0Q3bHFrQTdlSFRlaTBOTEMydmRvcEpaeGU1dktFekp2VTZ4QjhvZUYyT1ZQRg?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "CBS News",
+        "domain": "news.google.com",
+        "publishedAt": "2026-11-07T22:15:34.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-8",
+        "title": "Eminem song publisher seeks $41M in copyright lawsuit vs. AI platform",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMiuwFBVV95cUxNV2Z1RzdMVDFtbTQwc1VqXy1SVFNPcTNrYjVNZWFUdldKY2psVnQ4TXQxUWhGQmwyLUZISE1CbWNnSGtaRmw5MDB2WjZhM3dYV0VRN2VMMXVmTUYzSm03S0VEemVwWXFhTDRLVXlsaGNzMkROR3p5SmpfTUJuYjJZS1BQMVFPNVJZNmlJNjJHM3d0ZmUzRHVHcUtybzZnUFpqTy0tM0dKLVRyS3Z1R1ZDNVBuVXhyaHBxbW1R?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "Detroit Free Press",
+        "domain": "news.google.com",
+        "publishedAt": "2026-11-07T17:09:00.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-9",
         "title": "Kroger Moves to Toss Sony Music-Led Infringement Lawsuit, Arguing Cox v. Sony Invalidates Everything",
         "summary": "Kroger asks a federal judge to toss Sony Music’s broad-ranging infringement case, claiming that the Cox v. Sony case ruling set the precedent that businesses can’t be liable for influencer posts. Kroger and 17 affiliates have asked a California federal judge to throw out Sony Music’s broad-ranging infringement suit ove…",
         "url": "https://www.digitalmusicnews.com/2026/11/05/kroger-moves-to-toss-sony-music-lawsuit/",
@@ -270,7 +346,37 @@
         "via": null
       },
       {
-        "id": "noticia-7",
+        "id": "noticia-10",
+        "title": "Elvis Presley Rights Owners Sue Suno Over AI Voice Cloning: ‘Elvis’ Identity Was Stolen’",
+        "summary": "The singer's legendary voice is at the center of a cutting-edge lawsuit that aims to hold the AI firm legally liable for allowing users to create knockoff vocals.",
+        "url": "https://www.billboard.com/pro/elvis-presley-ai-voice-cloning-lawsuit-suno/",
+        "source": "Billboard",
+        "domain": "billboard.com",
+        "publishedAt": "2026-11-07T15:38:11.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-11",
+        "title": "Elvis Music Owners, Eminem Publisher File Sprawling New Lawsuits Against AI Music Generator Suno: ‘The Next Elvis Won’t Pick Up a Guitar’",
+        "summary": "A collection of Elvis Presley music rightsholders and the publisher of many of Eminem’s records have filed sprawling new federal lawsuits against the AI music generator Suno, with each party making separate allegations that add to the AI company’s legal challenges. The Presley lawsuit — brought by a group that includes…",
+        "url": "https://variety.com/2026/music/news/elvis-eminem-sue-suno-ai-music-generator-1236941798/",
+        "source": "Variety",
+        "domain": "variety.com",
+        "publishedAt": "2026-11-07T16:15:26.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-12",
         "title": "Rotor Videos opens Artist Unlimited to any artist from $9.99 a month, with unlimited release visuals and a library of 17M+, non-AI-generated clips",
         "summary": "The plans give artists unlimited access to Rotor's tools for making visual assets for release campaigns, including music videos, lyric videos, Spotify Canvas, and Apple Music Album Motion. Source",
         "url": "https://www.musicbusinessworldwide.com/rotor-videos-opens-artist-unlimited-to-any-artist-from-9-99-a-month-with-unlimited-release-visuals-and-a-library-of-17m-non-ai-generated-clips/",
@@ -283,51 +389,6 @@
         ],
         "translated": false,
         "via": null
-      },
-      {
-        "id": "noticia-8",
-        "title": "SoundCloud will soon have more AI music – from ElevenLabs",
-        "summary": "With rightsholders urging streaming services to de-recommend, de-monetise and even remove AI-generated music, it’s a ballsy move to announce a deal opening up a new pipeline for it, to say the least. The post is from Music Ally .",
-        "url": "https://musically.com/2026/11/06/soundcloud-will-soon-have-more-ai-music-from-elevenlabs/",
-        "source": "Music Ally",
-        "domain": "musically.com",
-        "publishedAt": "2026-11-06T12:30:00.000Z",
-        "tags": [
-          "ai",
-          "licensing",
-          "streaming"
-        ],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-9",
-        "title": "Mashup Edu’s AI-agent Nia is designed to “run the business side” of indie acts’ careers",
-        "summary": "Indian music education and creator-development platform Mashup Edu — which runs Xcelerator, a ten-week music business programme for indie artists; and Backstage, an on-campus music industry literacy course for school […] The post is from Music Ally .",
-        "url": "https://musically.com/2026/11/06/mashup-edus-ai-agent-nia-is-designed-to-run-the-business-side-of-indie-acts-careers/",
-        "source": "Music Ally",
-        "domain": "musically.com",
-        "publishedAt": "2026-11-06T05:46:05.000Z",
-        "tags": [
-          "ai"
-        ],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-10",
-        "title": "Música con IA: qué puedes hacer con Suno, Udio y Spotify",
-        "summary": "",
-        "url": "https://news.google.com/rss/articles/CBMijgFBVV95cUxQM0M0TXp6dWVUUGxFc3dtM1dVZnZpLVhRUUlmUG5RUmFteWZLanhSYzJuTUVZS0tDZ2NpQXl6Y3ZNUzNVakFza2FrbzBrbkNDck9JUUpHdmI5THAyVmFsRUxQYjd1NEhLOEJCZVluSk5kc3NJbmFTa0xyaGpIUlBGT19JU2IteEpfZ3BYeG93?oc=5&hl=es-419&gl=US&ceid=US:es-419",
-        "source": "El Ecosistema Startup",
-        "domain": "news.google.com",
-        "publishedAt": "2026-11-01T03:21:37.000Z",
-        "tags": [
-          "ai",
-          "streaming"
-        ],
-        "translated": false,
-        "via": "Google News"
       }
     ],
     "tip": {
