@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-11-07T22:40:23.472Z",
+  "lastUpdated": "2026-11-08T14:15:07.154Z",
   "meta": {
     "method": "rss-retrieval + link-verification + ai-translation",
     "itemCount": 12,
@@ -39,12 +39,12 @@
       },
       {
         "id": "noticia-2",
-        "title": "Elvis Presley Enterprises suing AI music generator company over copyright infringement",
+        "title": "Elvis Presley Enterprises suing AI music generator Suno over copyright infringement",
         "summary": "",
-        "url": "https://news.google.com/rss/articles/CBMixwFBVV95cUxQa0x0STBhcWpOek56dkwzalZicnprVVNRQmMwVGIzZFV1NWd1UXJHZlZ3SVU5cUtHbGprZ3BoV3BxaDZKMEhqZVhBMmt4SDE4d3Zia1VtamdYMzBBdDlaWllkQjI1bTByakxIcGNQQzV1eTQydml1ZXZYdDZyX250QkI0bE1qMU5RczBFeTlUaVU2NkhCSlNVRG1aRjFGSWtZTDlhWU5CMU5uNmJfbUhkMmVqcDFqMTh2ZEpPWklXWVdwbnQwZWZz?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "url": "https://news.google.com/rss/articles/CBMikgJBVV95cUxOdDkzSVM1aVBaWlMyR1lnUm9qQjFUSXZyYVpZaTFWdm84QWQwSjBhVjI3RG1xc19CckZfNWwyZzhPQ0N0dEpST2t2RHp6ZnpWZi1nSEVhejRHVkFyd0s5VWVpREhyZEt2X05NWDRobXNWM2ltZzBxMmJxQ0FVd1pCbjBzdHd3Z1FXZ1V1dVJ2azNucHNydnh4RV9YREZoT0JpRXNTRWdkUmJEUzBGTlZGV3laSWNyU0RjX2dzZG1jY0p3SEJDbnFKMkRLZ1JKZEtGQ0RTbVBJU0JLaDZXUWdjNFUwNnBreE8tNlYtOUx5NkNBOTJYTmhfQmRlOU5SbGk5UE5tTGREb0lkWDRHaUpyQXhR?oc=5&hl=es-419&gl=US&ceid=US:es-419",
         "source": "localmemphis.com",
         "domain": "news.google.com",
-        "publishedAt": "2026-11-07T22:32:00.000Z",
+        "publishedAt": "2026-11-08T00:23:00.000Z",
         "tags": [
           "ai"
         ],
@@ -68,22 +68,6 @@
       },
       {
         "id": "noticia-4",
-        "title": "Suno Fires Back Against Apple’s Subpoena Opposition, Doubling Down on Its Push for Information About ‘Current License Negotiations,’ ‘Anti-AI Deal Terms,’ and More",
-        "summary": "Suno is doubling down on its Apple subpoena push, arguing that the information being sought – about Apple Music’s major label licensing talks, “anti-AI deal terms,” and more – is central to its fair use and copyright misuse arguments. The AI music platform took aim at Apple’s motion to quash in a 24-page opposition fil…",
-        "url": "https://www.digitalmusicnews.com/2026/10/28/suno-apple-subpoena-dispute/",
-        "source": "Digital Music News",
-        "domain": "digitalmusicnews.com",
-        "publishedAt": "2026-10-28T23:46:44.000Z",
-        "tags": [
-          "ai",
-          "licensing",
-          "streaming"
-        ],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-5",
         "title": "Music industry intervenes in Open AI’s big legal battle with newspapers and authors",
         "summary": "All of the US music industry’s copyright lawsuits against AI companies swing on whether or not AI training is fair use under US law. A big legal battle involving authors, newspapers and Open AI also centres on fair use, and the music industry has now intervened in that case via an amicus brief",
         "url": "https://completemusicupdate.com/music-industry-intervenes-in-open-ais-big-legal-battle-with-newspapers-and-authors/",
@@ -98,7 +82,7 @@
         "via": null
       },
       {
-        "id": "noticia-6",
+        "id": "noticia-5",
         "title": "Nothing Illegal Here: Suno Moves to Dismiss Jason Isbell’s Class Action Lawsuit on First Amendment and US Copyright Law Grounds",
         "summary": "Suno moves to dismiss a right-of-publicity case filed by a group of performers, including Jason Isbell and David Lowery, claiming that none of its outputs could be mistaken for those musicians. Suno has filed a motion to dismiss the U.S. privacy and publicity rights claims filed by musicians Jason Isbell and David Lowe…",
         "url": "https://www.digitalmusicnews.com/2026/11/03/suno-moves-to-dismiss-isbell-class-action-lawsuit/",
@@ -113,7 +97,7 @@
         "via": null
       },
       {
-        "id": "noticia-7",
+        "id": "noticia-6",
         "title": "AI platform reproduced Michigan music publishers' copyrighted works without authorization, lawsuit says",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMijAFBVV95cUxNN3NEUjkxX25lTGgzYXJtdG9nazU3VzRHMENEWG9RVjg3RndNajVWS1VPWHdBOXV6R3JoWE51RlJ1NGdSM3JXWFpQN1hKZmxEU2ZxYjU0S3BTNDhoYTFHd0Q3bHFrQTdlSFRlaTBOTEMydmRvcEpaeGU1dktFekp2VTZ4QjhvZUYyT1ZQRg?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -128,7 +112,7 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-8",
+        "id": "noticia-7",
         "title": "Eminem song publisher seeks $41M in copyright lawsuit vs. AI platform",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMiuwFBVV95cUxNV2Z1RzdMVDFtbTQwc1VqXy1SVFNPcTNrYjVNZWFUdldKY2psVnQ4TXQxUWhGQmwyLUZISE1CbWNnSGtaRmw5MDB2WjZhM3dYV0VRN2VMMXVmTUYzSm03S0VEemVwWXFhTDRLVXlsaGNzMkROR3p5SmpfTUJuYjJZS1BQMVFPNVJZNmlJNjJHM3d0ZmUzRHVHcUtybzZnUFpqTy0tM0dKLVRyS3Z1R1ZDNVBuVXhyaHBxbW1R?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -143,13 +127,27 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-9",
+        "id": "noticia-8",
         "title": "Kroger Moves to Toss Sony Music-Led Infringement Lawsuit, Arguing Cox v. Sony Invalidates Everything",
         "summary": "Kroger asks a federal judge to toss Sony Music’s broad-ranging infringement case, claiming that the Cox v. Sony case ruling set the precedent that businesses can’t be liable for influencer posts. Kroger and 17 affiliates have asked a California federal judge to throw out Sony Music’s broad-ranging infringement suit ove…",
         "url": "https://www.digitalmusicnews.com/2026/11/05/kroger-moves-to-toss-sony-music-lawsuit/",
         "source": "Digital Music News",
         "domain": "digitalmusicnews.com",
         "publishedAt": "2026-11-06T05:34:32.000Z",
+        "tags": [
+          "lawsuit"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-9",
+        "title": "BTS Copyright Infringement Lawsuit Over ‘Swim’ Abruptly Dropped After a Few Months",
+        "summary": "A copyright infringement lawsuit over BTS’ hit “Swim” has been withdrawn after only a few months, with the group of songwriters moving to dismiss. A group of songwriters who filed a copyright infringement lawsuit against Hybe over the BTS hit “Swim” has moved to dismiss their case after just four months. The lawsuit wa…",
+        "url": "https://www.digitalmusicnews.com/2026/11/04/bts-swim-copyright-infringement-lawsuit-dropped/",
+        "source": "Digital Music News",
+        "domain": "digitalmusicnews.com",
+        "publishedAt": "2026-11-05T04:30:27.000Z",
         "tags": [
           "lawsuit"
         ],
@@ -203,8 +201,8 @@
       }
     ],
     "tip": {
-      "title": "Split sheet firmado el mismo día de la sesión",
-      "body": "Los porcentajes de autoría se pelean cuando la canción pega, no cuando se escribe. Firma el split sheet con todos los presentes antes de salir del estudio, aunque sean amigos."
+      "title": "Trabajo por encargo: quién queda como autor se pacta por escrito",
+      "body": "Si produces para un cliente, define por contrato si cedes derechos, si conservas puntos de producción y si tu nombre aparece en los créditos. Sin contrato, la interpretación depende de la ley de cada país."
     }
   },
   "en": {
@@ -228,12 +226,12 @@
       },
       {
         "id": "noticia-2",
-        "title": "Elvis Presley Enterprises suing AI music generator company over copyright infringement",
+        "title": "Elvis Presley Enterprises suing AI music generator Suno over copyright infringement",
         "summary": "",
-        "url": "https://news.google.com/rss/articles/CBMixwFBVV95cUxQa0x0STBhcWpOek56dkwzalZicnprVVNRQmMwVGIzZFV1NWd1UXJHZlZ3SVU5cUtHbGprZ3BoV3BxaDZKMEhqZVhBMmt4SDE4d3Zia1VtamdYMzBBdDlaWllkQjI1bTByakxIcGNQQzV1eTQydml1ZXZYdDZyX250QkI0bE1qMU5RczBFeTlUaVU2NkhCSlNVRG1aRjFGSWtZTDlhWU5CMU5uNmJfbUhkMmVqcDFqMTh2ZEpPWklXWVdwbnQwZWZz?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "url": "https://news.google.com/rss/articles/CBMikgJBVV95cUxOdDkzSVM1aVBaWlMyR1lnUm9qQjFUSXZyYVpZaTFWdm84QWQwSjBhVjI3RG1xc19CckZfNWwyZzhPQ0N0dEpST2t2RHp6ZnpWZi1nSEVhejRHVkFyd0s5VWVpREhyZEt2X05NWDRobXNWM2ltZzBxMmJxQ0FVd1pCbjBzdHd3Z1FXZ1V1dVJ2azNucHNydnh4RV9YREZoT0JpRXNTRWdkUmJEUzBGTlZGV3laSWNyU0RjX2dzZG1jY0p3SEJDbnFKMkRLZ1JKZEtGQ0RTbVBJU0JLaDZXUWdjNFUwNnBreE8tNlYtOUx5NkNBOTJYTmhfQmRlOU5SbGk5UE5tTGREb0lkWDRHaUpyQXhR?oc=5&hl=es-419&gl=US&ceid=US:es-419",
         "source": "localmemphis.com",
         "domain": "news.google.com",
-        "publishedAt": "2026-11-07T22:32:00.000Z",
+        "publishedAt": "2026-11-08T00:23:00.000Z",
         "tags": [
           "ai"
         ],
@@ -257,22 +255,6 @@
       },
       {
         "id": "noticia-4",
-        "title": "Suno Fires Back Against Apple’s Subpoena Opposition, Doubling Down on Its Push for Information About ‘Current License Negotiations,’ ‘Anti-AI Deal Terms,’ and More",
-        "summary": "Suno is doubling down on its Apple subpoena push, arguing that the information being sought – about Apple Music’s major label licensing talks, “anti-AI deal terms,” and more – is central to its fair use and copyright misuse arguments. The AI music platform took aim at Apple’s motion to quash in a 24-page opposition fil…",
-        "url": "https://www.digitalmusicnews.com/2026/10/28/suno-apple-subpoena-dispute/",
-        "source": "Digital Music News",
-        "domain": "digitalmusicnews.com",
-        "publishedAt": "2026-10-28T23:46:44.000Z",
-        "tags": [
-          "ai",
-          "licensing",
-          "streaming"
-        ],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-5",
         "title": "Music industry intervenes in Open AI’s big legal battle with newspapers and authors",
         "summary": "All of the US music industry’s copyright lawsuits against AI companies swing on whether or not AI training is fair use under US law. A big legal battle involving authors, newspapers and Open AI also centres on fair use, and the music industry has now intervened in that case via an amicus brief",
         "url": "https://completemusicupdate.com/music-industry-intervenes-in-open-ais-big-legal-battle-with-newspapers-and-authors/",
@@ -287,7 +269,7 @@
         "via": null
       },
       {
-        "id": "noticia-6",
+        "id": "noticia-5",
         "title": "Nothing Illegal Here: Suno Moves to Dismiss Jason Isbell’s Class Action Lawsuit on First Amendment and US Copyright Law Grounds",
         "summary": "Suno moves to dismiss a right-of-publicity case filed by a group of performers, including Jason Isbell and David Lowery, claiming that none of its outputs could be mistaken for those musicians. Suno has filed a motion to dismiss the U.S. privacy and publicity rights claims filed by musicians Jason Isbell and David Lowe…",
         "url": "https://www.digitalmusicnews.com/2026/11/03/suno-moves-to-dismiss-isbell-class-action-lawsuit/",
@@ -302,7 +284,7 @@
         "via": null
       },
       {
-        "id": "noticia-7",
+        "id": "noticia-6",
         "title": "AI platform reproduced Michigan music publishers' copyrighted works without authorization, lawsuit says",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMijAFBVV95cUxNN3NEUjkxX25lTGgzYXJtdG9nazU3VzRHMENEWG9RVjg3RndNajVWS1VPWHdBOXV6R3JoWE51RlJ1NGdSM3JXWFpQN1hKZmxEU2ZxYjU0S3BTNDhoYTFHd0Q3bHFrQTdlSFRlaTBOTEMydmRvcEpaeGU1dktFekp2VTZ4QjhvZUYyT1ZQRg?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -317,7 +299,7 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-8",
+        "id": "noticia-7",
         "title": "Eminem song publisher seeks $41M in copyright lawsuit vs. AI platform",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMiuwFBVV95cUxNV2Z1RzdMVDFtbTQwc1VqXy1SVFNPcTNrYjVNZWFUdldKY2psVnQ4TXQxUWhGQmwyLUZISE1CbWNnSGtaRmw5MDB2WjZhM3dYV0VRN2VMMXVmTUYzSm03S0VEemVwWXFhTDRLVXlsaGNzMkROR3p5SmpfTUJuYjJZS1BQMVFPNVJZNmlJNjJHM3d0ZmUzRHVHcUtybzZnUFpqTy0tM0dKLVRyS3Z1R1ZDNVBuVXhyaHBxbW1R?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -332,13 +314,27 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-9",
+        "id": "noticia-8",
         "title": "Kroger Moves to Toss Sony Music-Led Infringement Lawsuit, Arguing Cox v. Sony Invalidates Everything",
         "summary": "Kroger asks a federal judge to toss Sony Music’s broad-ranging infringement case, claiming that the Cox v. Sony case ruling set the precedent that businesses can’t be liable for influencer posts. Kroger and 17 affiliates have asked a California federal judge to throw out Sony Music’s broad-ranging infringement suit ove…",
         "url": "https://www.digitalmusicnews.com/2026/11/05/kroger-moves-to-toss-sony-music-lawsuit/",
         "source": "Digital Music News",
         "domain": "digitalmusicnews.com",
         "publishedAt": "2026-11-06T05:34:32.000Z",
+        "tags": [
+          "lawsuit"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-9",
+        "title": "BTS Copyright Infringement Lawsuit Over ‘Swim’ Abruptly Dropped After a Few Months",
+        "summary": "A copyright infringement lawsuit over BTS’ hit “Swim” has been withdrawn after only a few months, with the group of songwriters moving to dismiss. A group of songwriters who filed a copyright infringement lawsuit against Hybe over the BTS hit “Swim” has moved to dismiss their case after just four months. The lawsuit wa…",
+        "url": "https://www.digitalmusicnews.com/2026/11/04/bts-swim-copyright-infringement-lawsuit-dropped/",
+        "source": "Digital Music News",
+        "domain": "digitalmusicnews.com",
+        "publishedAt": "2026-11-05T04:30:27.000Z",
         "tags": [
           "lawsuit"
         ],
@@ -392,8 +388,8 @@
       }
     ],
     "tip": {
-      "title": "Sign the split sheet the day of the session",
-      "body": "Songwriting splits get disputed when the song blows up, not when it's written. Sign a split sheet with everyone in the room before you leave the studio —even with friends."
+      "title": "Work for hire: put authorship in writing",
+      "body": "If you produce for a client, spell out in the contract whether you assign rights, keep producer points, and get credited. Without a contract, the outcome depends on each country's law."
     }
   }
 }
