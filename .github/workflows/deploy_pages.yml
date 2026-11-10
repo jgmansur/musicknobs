@@ -4,7 +4,12 @@ on:
   push:
     branches: ["main"]
   workflow_dispatch: {}
-  workflow_call: {} # Allows calling from update_news.yml
+  workflow_call:
+    inputs:
+      ref:
+        description: Exact commit produced by the calling workflow
+        required: true
+        type: string
 
 permissions:
   contents: read
@@ -28,6 +33,12 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref || github.sha }}
+      - name: Verify checkout
+        env:
+          EXPECTED_SHA: ${{ inputs.ref || github.sha }}
+        run: test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
@@ -56,3 +67,17 @@ jobs:
         uses: actions/deploy-pages@v4
         with:
           artifact_name: ${{ env.PAGE_ARTIFACT_NAME }}
+      - name: Verify published news
+        env:
+          PAGE_URL: ${{ steps.deployment.outputs.page_url }}
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 12); do
+            if curl --fail --silent --show-error --max-time 30 "${PAGE_URL%/}/noticias/data.json?deployment=${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}-${attempt}" -o /tmp/published-news.json && cmp -s noticias/data.json /tmp/published-news.json; then
+              echo "Published news matches the deployed commit."
+              exit 0
+            fi
+            sleep 10
+          done
+          echo "Published news does not match the deployed commit." >&2
+          exit 1

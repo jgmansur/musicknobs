@@ -16,6 +16,8 @@ concurrency:
 jobs:
   update-news:
     runs-on: ubuntu-latest
+    outputs:
+      published_sha: ${{ steps.publish.outputs.sha }}
     permissions:
       contents: write
 
@@ -37,6 +39,7 @@ jobs:
         run: node fetch_news.js
 
       - name: Commit and push
+        id: publish
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
@@ -47,10 +50,13 @@ jobs:
             git commit -m "chore(noticias): actualización diaria verificada"
             git push
           fi
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
 
   deploy:
     needs: update-news
     uses: ./.github/workflows/deploy_pages.yml
+    with:
+      ref: ${{ needs.update-news.outputs.published_sha }}
     permissions:
       contents: read
       pages: write
