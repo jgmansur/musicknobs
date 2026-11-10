@@ -1,16 +1,16 @@
 {
-  "lastUpdated": "2026-11-10T15:31:56.784Z",
+  "lastUpdated": "2026-11-10T23:59:10.616Z",
   "meta": {
     "method": "rss-retrieval + link-verification + ai-translation",
     "itemCount": 12,
     "sources": [
       "CBS News",
       "Complete Music Update",
+      "Detroit Free Press",
       "Digital Music News",
       "Engadget",
       "India Today",
       "Music Ally",
-      "Music Business Worldwide",
       "TorrentFreak"
     ],
     "verifiedLinks": 12,
@@ -83,6 +83,21 @@
       },
       {
         "id": "noticia-5",
+        "title": "Flo Milli and Sony Music Beat ‘Never Lose Me’ Infringement Lawsuit on a Critical Technicality — Absence of a Signed License Agreement Deemed ‘A Fatal Defect’",
+        "summary": "A federal court has once again dismissed artist and songwriter Shamar Deal’s “Never Lose Me” infringement lawsuit against Flo Milli and Sony Music – this time with prejudice, meaning it cannot be refiled. Judge André Birotte Jr. just recently granted the defendants’ dismissal motion without leave to amend, after Deal s…",
+        "url": "https://www.digitalmusicnews.com/2026/11/10/flo-milli-lawsuit-dismissal-never-lose-me/",
+        "source": "Digital Music News",
+        "domain": "digitalmusicnews.com",
+        "publishedAt": "2026-11-10T22:28:49.000Z",
+        "tags": [
+          "lawsuit",
+          "licensing"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-6",
         "title": "Suno AI Music Generator Sued Again For Copyright Infringement",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMimwFBVV95cUxNd2RBdmNJNzV5YnFIM3JzclpLNDNuWXhtakVYcWVDUGt2blZOaUVya2U3cnk2QXNwbXZxcFM1QUVJSjIwOTJIZzFLWkpTQlhTYzdyS3gteG96TnY1c2stVFJIS0JxRGRrazNIR3RLT05QeWpPck5OQjdXNXEtX0QyRTd6NUY1UmV6QUdtZ3AtaWZhQ2lnTTd5UVlKTQ?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -97,7 +112,7 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-6",
+        "id": "noticia-7",
         "title": "Elvis Presley and Eminem rights holders sue Suno over alleged copyright infringement",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMi5gFBVV95cUxOVFllaURTQzY0cHY4QVlXNkJ6b3NwYVlZa0Nia2xteDR1WDRPcDF5QnZ4dHdFYWxCZnhra0JfZWM5bUVtcTdmbWZvVnZIb3lqTVQ1dEphTEJPYVJKYXppX1B2aXgzZXpsZFU4Tm04WHBXcHFEd0ZwTGl5SGhkMkpLM2FuYjZxdy1WNmtSbHB4THUtTk1vYld0OXI2QVdXeXFvTGFsR2xkY2JBUkFsVXczVm9uQnlNZlRVd1RIaDh6bjREN2oxdUVJcVJ6OFJpaXVBWTJXalR3WDVHTElLaTQ0VmVqdVVld9IB6wFBVV95cUxQYjR2TzVJZmNuaTl4UlhlaUJpLXBON0RNaWdPLURqT0tkY1F5U3lKS2ZpSTJPNkNxWmZzNDJkUDRFY1VTanZXRTk3cEs0eFhkZDlCNl9DNmIxQzc4QjNYTnNuZW5JU3JvOVlFRnZRWU5kMF9HN2tTWFh0WGFLbmNpNHk4VXdPV0xJcS1QaThSempJbUhzSTNIQ1c4THJZcE1NN2k5Tk1rN0lnR0xBVnlDRnZGRm1BajlxVnJBTFh1ZTlpd3kyTklXREw0bEIxM09uT2xOaGRpVVNneXFqNVdyVHplcXpfTEEyUGY4?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -110,21 +125,6 @@
         ],
         "translated": false,
         "via": "Google News"
-      },
-      {
-        "id": "noticia-7",
-        "title": "Judge throws out copyright lawsuit over Flo Milli’s ‘Never Lose Me,’ ruling producer never signed plaintiff’s $200 exclusive beat license",
-        "summary": "Shamar Deal claimed he held a 10-year exclusive license to a beat used in the song, which he bought for $200 on the online marketplace Traktrain in 2019. Source",
-        "url": "https://www.musicbusinessworldwide.com/judge-throws-out-copyright-lawsuit-over-flo-millis-never-lose-me-ruling-producer-never-signed-plaintiffs-200-exclusive-beat-license/",
-        "source": "Music Business Worldwide",
-        "domain": "musicbusinessworldwide.com",
-        "publishedAt": "2026-11-10T12:00:45.000Z",
-        "tags": [
-          "lawsuit",
-          "licensing"
-        ],
-        "translated": false,
-        "via": null
       },
       {
         "id": "noticia-8",
@@ -143,6 +143,21 @@
       },
       {
         "id": "noticia-9",
+        "title": "Eminem song publisher seeks $41M in copyright lawsuit vs. AI platform",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMi7AFBVV95cUxNUnBPUU5kOW5GQjV3Ykw4R0F4OEJ0bmtpVnhRajNmbzNjTVFJZkRyWTl6cGtUWDJDYXZYTTJZTTZNUzJCZWI0SzlsWXFuQU1iampMS3NDenBjVFJ6QVNjemFVdXBHQ2t3YTBvVldoV1RRY0VNVmx6cFRaU2ZyZGZVNTNmV0tZM2YxeFJYX2lOWXhNSmt6U0RHLU1jRVFGQklqaHEzRWVhU2J1eDdZY01ZaHJQQzU2MktrVmFzcXkyaEFjc00zSlBaMXJoY3pkNFdvcXcwVTlQVzN6cWxNOXdDRmVPNElNeF9FVXd2bA?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "Detroit Free Press",
+        "domain": "news.google.com",
+        "publishedAt": "2026-11-10T21:00:56.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-10",
         "title": "Meta Employees ‘Interacted’ With Pirated Copies of Adult Films, Filing Shows",
         "summary": "A newly unredacted court filing shows that Meta’s internal investigation found several employees who appear to have interacted with Strike 3’s adult films. The adult content producers say these were torrented copies listed in their lawsuit, but Meta says there is no evidence of torrenting. The company also stresses tha…",
         "url": "https://torrentfreak.com/meta-employees-interacted-with-pirated-copies-of-adult-films-filing-shows/",
@@ -157,7 +172,7 @@
         "via": null
       },
       {
-        "id": "noticia-10",
+        "id": "noticia-11",
         "title": "Music industry intervenes in Open AI’s big legal battle with newspapers and authors",
         "summary": "All of the US music industry’s copyright lawsuits against AI companies swing on whether or not AI training is fair use under US law. A big legal battle involving authors, newspapers and Open AI also centres on fair use, and the music industry has now intervened in that case via an amicus brief",
         "url": "https://completemusicupdate.com/music-industry-intervenes-in-open-ais-big-legal-battle-with-newspapers-and-authors/",
@@ -167,20 +182,6 @@
         "tags": [
           "lawsuit",
           "ai"
-        ],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-11",
-        "title": "Dua Lipa ‘Levitating’ Copyright Infringement Lawsuit Suddenly Dismissed",
-        "summary": "A copyright infringement lawsuit over Dua Lipa’s “Levitating” that’s been raging on for years has suddenly been dismissed with prejudice. A producer’s copyright infringement lawsuit over Dua Lipa’s “Levitating” has suddenly been dismissed with prejudice, meaning it cannot be refiled in the future. Los Angeles-based pro…",
-        "url": "https://www.digitalmusicnews.com/2026/11/09/dua-lipa-levitating-copyright-lawsuit-dismissed/",
-        "source": "Digital Music News",
-        "domain": "digitalmusicnews.com",
-        "publishedAt": "2026-11-10T04:38:57.000Z",
-        "tags": [
-          "lawsuit"
         ],
         "translated": false,
         "via": null
@@ -272,6 +273,21 @@
       },
       {
         "id": "noticia-5",
+        "title": "Flo Milli and Sony Music Beat ‘Never Lose Me’ Infringement Lawsuit on a Critical Technicality — Absence of a Signed License Agreement Deemed ‘A Fatal Defect’",
+        "summary": "A federal court has once again dismissed artist and songwriter Shamar Deal’s “Never Lose Me” infringement lawsuit against Flo Milli and Sony Music – this time with prejudice, meaning it cannot be refiled. Judge André Birotte Jr. just recently granted the defendants’ dismissal motion without leave to amend, after Deal s…",
+        "url": "https://www.digitalmusicnews.com/2026/11/10/flo-milli-lawsuit-dismissal-never-lose-me/",
+        "source": "Digital Music News",
+        "domain": "digitalmusicnews.com",
+        "publishedAt": "2026-11-10T22:28:49.000Z",
+        "tags": [
+          "lawsuit",
+          "licensing"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-6",
         "title": "Suno AI Music Generator Sued Again For Copyright Infringement",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMimwFBVV95cUxNd2RBdmNJNzV5YnFIM3JzclpLNDNuWXhtakVYcWVDUGt2blZOaUVya2U3cnk2QXNwbXZxcFM1QUVJSjIwOTJIZzFLWkpTQlhTYzdyS3gteG96TnY1c2stVFJIS0JxRGRrazNIR3RLT05QeWpPck5OQjdXNXEtX0QyRTd6NUY1UmV6QUdtZ3AtaWZhQ2lnTTd5UVlKTQ?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -286,7 +302,7 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-6",
+        "id": "noticia-7",
         "title": "Elvis Presley and Eminem rights holders sue Suno over alleged copyright infringement",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMi5gFBVV95cUxOVFllaURTQzY0cHY4QVlXNkJ6b3NwYVlZa0Nia2xteDR1WDRPcDF5QnZ4dHdFYWxCZnhra0JfZWM5bUVtcTdmbWZvVnZIb3lqTVQ1dEphTEJPYVJKYXppX1B2aXgzZXpsZFU4Tm04WHBXcHFEd0ZwTGl5SGhkMkpLM2FuYjZxdy1WNmtSbHB4THUtTk1vYld0OXI2QVdXeXFvTGFsR2xkY2JBUkFsVXczVm9uQnlNZlRVd1RIaDh6bjREN2oxdUVJcVJ6OFJpaXVBWTJXalR3WDVHTElLaTQ0VmVqdVVld9IB6wFBVV95cUxQYjR2TzVJZmNuaTl4UlhlaUJpLXBON0RNaWdPLURqT0tkY1F5U3lKS2ZpSTJPNkNxWmZzNDJkUDRFY1VTanZXRTk3cEs0eFhkZDlCNl9DNmIxQzc4QjNYTnNuZW5JU3JvOVlFRnZRWU5kMF9HN2tTWFh0WGFLbmNpNHk4VXdPV0xJcS1QaThSempJbUhzSTNIQ1c4THJZcE1NN2k5Tk1rN0lnR0xBVnlDRnZGRm1BajlxVnJBTFh1ZTlpd3kyTklXREw0bEIxM09uT2xOaGRpVVNneXFqNVdyVHplcXpfTEEyUGY4?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -299,21 +315,6 @@
         ],
         "translated": false,
         "via": "Google News"
-      },
-      {
-        "id": "noticia-7",
-        "title": "Judge throws out copyright lawsuit over Flo Milli’s ‘Never Lose Me,’ ruling producer never signed plaintiff’s $200 exclusive beat license",
-        "summary": "Shamar Deal claimed he held a 10-year exclusive license to a beat used in the song, which he bought for $200 on the online marketplace Traktrain in 2019. Source",
-        "url": "https://www.musicbusinessworldwide.com/judge-throws-out-copyright-lawsuit-over-flo-millis-never-lose-me-ruling-producer-never-signed-plaintiffs-200-exclusive-beat-license/",
-        "source": "Music Business Worldwide",
-        "domain": "musicbusinessworldwide.com",
-        "publishedAt": "2026-11-10T12:00:45.000Z",
-        "tags": [
-          "lawsuit",
-          "licensing"
-        ],
-        "translated": false,
-        "via": null
       },
       {
         "id": "noticia-8",
@@ -332,6 +333,21 @@
       },
       {
         "id": "noticia-9",
+        "title": "Eminem song publisher seeks $41M in copyright lawsuit vs. AI platform",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMi7AFBVV95cUxNUnBPUU5kOW5GQjV3Ykw4R0F4OEJ0bmtpVnhRajNmbzNjTVFJZkRyWTl6cGtUWDJDYXZYTTJZTTZNUzJCZWI0SzlsWXFuQU1iampMS3NDenBjVFJ6QVNjemFVdXBHQ2t3YTBvVldoV1RRY0VNVmx6cFRaU2ZyZGZVNTNmV0tZM2YxeFJYX2lOWXhNSmt6U0RHLU1jRVFGQklqaHEzRWVhU2J1eDdZY01ZaHJQQzU2MktrVmFzcXkyaEFjc00zSlBaMXJoY3pkNFdvcXcwVTlQVzN6cWxNOXdDRmVPNElNeF9FVXd2bA?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "Detroit Free Press",
+        "domain": "news.google.com",
+        "publishedAt": "2026-11-10T21:00:56.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-10",
         "title": "Meta Employees ‘Interacted’ With Pirated Copies of Adult Films, Filing Shows",
         "summary": "A newly unredacted court filing shows that Meta’s internal investigation found several employees who appear to have interacted with Strike 3’s adult films. The adult content producers say these were torrented copies listed in their lawsuit, but Meta says there is no evidence of torrenting. The company also stresses tha…",
         "url": "https://torrentfreak.com/meta-employees-interacted-with-pirated-copies-of-adult-films-filing-shows/",
@@ -346,7 +362,7 @@
         "via": null
       },
       {
-        "id": "noticia-10",
+        "id": "noticia-11",
         "title": "Music industry intervenes in Open AI’s big legal battle with newspapers and authors",
         "summary": "All of the US music industry’s copyright lawsuits against AI companies swing on whether or not AI training is fair use under US law. A big legal battle involving authors, newspapers and Open AI also centres on fair use, and the music industry has now intervened in that case via an amicus brief",
         "url": "https://completemusicupdate.com/music-industry-intervenes-in-open-ais-big-legal-battle-with-newspapers-and-authors/",
@@ -356,20 +372,6 @@
         "tags": [
           "lawsuit",
           "ai"
-        ],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-11",
-        "title": "Dua Lipa ‘Levitating’ Copyright Infringement Lawsuit Suddenly Dismissed",
-        "summary": "A copyright infringement lawsuit over Dua Lipa’s “Levitating” that’s been raging on for years has suddenly been dismissed with prejudice. A producer’s copyright infringement lawsuit over Dua Lipa’s “Levitating” has suddenly been dismissed with prejudice, meaning it cannot be refiled in the future. Los Angeles-based pro…",
-        "url": "https://www.digitalmusicnews.com/2026/11/09/dua-lipa-levitating-copyright-lawsuit-dismissed/",
-        "source": "Digital Music News",
-        "domain": "digitalmusicnews.com",
-        "publishedAt": "2026-11-10T04:38:57.000Z",
-        "tags": [
-          "lawsuit"
         ],
         "translated": false,
         "via": null
