@@ -68,16 +68,7 @@ jobs:
         with:
           artifact_name: ${{ env.PAGE_ARTIFACT_NAME }}
       - name: Verify published news
+        timeout-minutes: 15
         env:
           PAGE_URL: ${{ steps.deployment.outputs.page_url }}
-        run: |
-          set -euo pipefail
-          for attempt in $(seq 1 12); do
-            if curl --fail --silent --show-error --max-time 30 "${PAGE_URL%/}/noticias/data.json?deployment=${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}-${attempt}" -o /tmp/published-news.json && cmp -s noticias/data.json /tmp/published-news.json; then
-              echo "Published news matches the deployed commit."
-              exit 0
-            fi
-            sleep 10
-          done
-          echo "Published news does not match the deployed commit." >&2
-          exit 1
+        run: bash .github/scripts/verify_published_news.sh "$PAGE_URL" noticias/data.json
