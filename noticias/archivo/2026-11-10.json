@@ -1,20 +1,17 @@
 {
-  "lastUpdated": "2026-11-10T01:59:54.623Z",
+  "lastUpdated": "2026-11-10T15:31:56.784Z",
   "meta": {
     "method": "rss-retrieval + link-verification + ai-translation",
     "itemCount": 12,
     "sources": [
-      "Billboard",
       "CBS News",
       "Complete Music Update",
-      "Detroit Free Press",
       "Digital Music News",
       "Engadget",
-      "MONCLOA.COM",
+      "India Today",
       "Music Ally",
       "Music Business Worldwide",
-      "TorrentFreak",
-      "Variety"
+      "TorrentFreak"
     ],
     "verifiedLinks": 12,
     "aiTranslated": 0,
@@ -26,6 +23,36 @@
     "items": [
       {
         "id": "noticia-1",
+        "title": "Eminem’s Publisher Eight Mile Style Sues Suno Over Allegations of Copyright Infringement",
+        "summary": "Eminem’s publishing company, Eight Mile Style, has now filed litigation against Suno for allegedly reproducing their copyrighted works without permission or compensation. Digital Music News was given a first look at the complaint. Eight Mile Style, Eminem’s publishing company that owns or controls the exclusivity to hi…",
+        "url": "https://www.digitalmusicnews.com/2026/11/08/eminem-publisher-sues-suno-copyright-infringement/",
+        "source": "Digital Music News",
+        "domain": "digitalmusicnews.com",
+        "publishedAt": "2026-11-09T05:16:52.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-2",
+        "title": "Elvis Presley Enterprises Slaps Suno With Copyright & NIL Suit, Says the Platform Was ‘Always Meant to Replace the Artists Whose Works and Identities Were Being Unlawfully Copied’",
+        "summary": "Another day, another AI infringement lawsuit – this time against Suno, which is accused of infringing a number of Elvis Presley copyrights as well as the King of Rock’s name, image, and likeness (NIL) rights. Plaintiffs including Elvis Presley Enterprises, Raleigh Music Publishing, and a subsidiary of Elvis IP owner Au…",
+        "url": "https://www.digitalmusicnews.com/2026/11/09/elvis-presley-enterprises-suno-lawsuit/",
+        "source": "Digital Music News",
+        "domain": "digitalmusicnews.com",
+        "publishedAt": "2026-11-09T13:00:56.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-3",
         "title": "Suno sued by Elvis Presley rights-owners and Eight Mile Style",
         "summary": "The flow of copyright-infringement lawsuits aimed at AI-music service Suno isn’t letting up yet. Two new legal actions have been added to the pile: from a group of Elvis Presley rights-owners and Eminem publisher Eight Mile Style. The post is from Music Ally .",
         "url": "https://musically.com/2026/11/09/suno-sued-by-elvis-presley-rights-owners-and-eight-mile-style/",
@@ -40,7 +67,7 @@
         "via": null
       },
       {
-        "id": "noticia-2",
+        "id": "noticia-4",
         "title": "Suno argues that judge should throw out musician’s publicity rights lawsuit",
         "summary": "Suno is fighting several music industry lawsuits, but one stands out - filed by musician Jason Isbell - because it accuses the AI company of infringing publicity rights by connecting artist names to musical styles in the back-end. Suno has responded to that lawsuit, urging the judge to dismiss it",
         "url": "https://completemusicupdate.com/suno-argues-that-judge-should-throw-out-musicians-publicity-rights-lawsuit/",
@@ -55,7 +82,7 @@
         "via": null
       },
       {
-        "id": "noticia-3",
+        "id": "noticia-5",
         "title": "Suno AI Music Generator Sued Again For Copyright Infringement",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMimwFBVV95cUxNd2RBdmNJNzV5YnFIM3JzclpLNDNuWXhtakVYcWVDUGt2blZOaUVya2U3cnk2QXNwbXZxcFM1QUVJSjIwOTJIZzFLWkpTQlhTYzdyS3gteG96TnY1c2stVFJIS0JxRGRrazNIR3RLT05QeWpPck5OQjdXNXEtX0QyRTd6NUY1UmV6QUdtZ3AtaWZhQ2lnTTd5UVlKTQ?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -70,13 +97,13 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-4",
-        "title": "Eminem’s Publisher Eight Mile Style Sues Suno Over Allegations of Copyright Infringement",
+        "id": "noticia-6",
+        "title": "Elvis Presley and Eminem rights holders sue Suno over alleged copyright infringement",
         "summary": "",
-        "url": "https://news.google.com/rss/articles/CBMimgFBVV95cUxOUUE5eEluOFlYa25qbkJES2wwYTFtZndEZmpjRzNkSlhZLTByUm1MajRvTlhjRHBKZjZUeGxnZ0JRRU5YSzZVU1dteXRxRGdJTTZ0SW5sSzhMSXd0eGxuRmUwZ19iNm5KQlFNSWhQOXl1bWprb3k5WFJhTi14dkRPZ2tsamxtMnRGTWZiWi1TQ3h5N3RsYzZaTnpR?oc=5&hl=es-419&gl=US&ceid=US:es-419",
-        "source": "Digital Music News",
+        "url": "https://news.google.com/rss/articles/CBMi5gFBVV95cUxOVFllaURTQzY0cHY4QVlXNkJ6b3NwYVlZa0Nia2xteDR1WDRPcDF5QnZ4dHdFYWxCZnhra0JfZWM5bUVtcTdmbWZvVnZIb3lqTVQ1dEphTEJPYVJKYXppX1B2aXgzZXpsZFU4Tm04WHBXcHFEd0ZwTGl5SGhkMkpLM2FuYjZxdy1WNmtSbHB4THUtTk1vYld0OXI2QVdXeXFvTGFsR2xkY2JBUkFsVXczVm9uQnlNZlRVd1RIaDh6bjREN2oxdUVJcVJ6OFJpaXVBWTJXalR3WDVHTElLaTQ0VmVqdVVld9IB6wFBVV95cUxQYjR2TzVJZmNuaTl4UlhlaUJpLXBON0RNaWdPLURqT0tkY1F5U3lKS2ZpSTJPNkNxWmZzNDJkUDRFY1VTanZXRTk3cEs0eFhkZDlCNl9DNmIxQzc4QjNYTnNuZW5JU3JvOVlFRnZRWU5kMF9HN2tTWFh0WGFLbmNpNHk4VXdPV0xJcS1QaThSempJbUhzSTNIQ1c4THJZcE1NN2k5Tk1rN0lnR0xBVnlDRnZGRm1BajlxVnJBTFh1ZTlpd3kyTklXREw0bEIxM09uT2xOaGRpVVNneXFqNVdyVHplcXpfTEEyUGY4?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "India Today",
         "domain": "news.google.com",
-        "publishedAt": "2026-11-09T05:20:46.000Z",
+        "publishedAt": "2026-11-10T13:08:48.000Z",
         "tags": [
           "lawsuit",
           "ai"
@@ -85,7 +112,37 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-5",
+        "id": "noticia-7",
+        "title": "Judge throws out copyright lawsuit over Flo Milli’s ‘Never Lose Me,’ ruling producer never signed plaintiff’s $200 exclusive beat license",
+        "summary": "Shamar Deal claimed he held a 10-year exclusive license to a beat used in the song, which he bought for $200 on the online marketplace Traktrain in 2019. Source",
+        "url": "https://www.musicbusinessworldwide.com/judge-throws-out-copyright-lawsuit-over-flo-millis-never-lose-me-ruling-producer-never-signed-plaintiffs-200-exclusive-beat-license/",
+        "source": "Music Business Worldwide",
+        "domain": "musicbusinessworldwide.com",
+        "publishedAt": "2026-11-10T12:00:45.000Z",
+        "tags": [
+          "lawsuit",
+          "licensing"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-8",
+        "title": "Robbie Williams speaks out on ‘disgusting’ plagiarism lawsuits",
+        "summary": "If you’ve heard Olivia Rodrigo’s ‘take me home (4 christmas)’ single, you may have noticed some similarities to Robbie Williams’ 2012 hit ‘Candy’. Is he going to demand a credit, royalties or even sue her? Nope. The post is from Music Ally .",
+        "url": "https://musically.com/2026/11/10/robbie-williams-speaks-out-on-disgusting-plagiarism-lawsuits/",
+        "source": "Music Ally",
+        "domain": "musically.com",
+        "publishedAt": "2026-11-10T13:30:00.000Z",
+        "tags": [
+          "lawsuit",
+          "royalties"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-9",
         "title": "Meta Employees ‘Interacted’ With Pirated Copies of Adult Films, Filing Shows",
         "summary": "A newly unredacted court filing shows that Meta’s internal investigation found several employees who appear to have interacted with Strike 3’s adult films. The adult content producers say these were torrented copies listed in their lawsuit, but Meta says there is no evidence of torrenting. The company also stresses tha…",
         "url": "https://torrentfreak.com/meta-employees-interacted-with-pirated-copies-of-adult-films-filing-shows/",
@@ -100,7 +157,7 @@
         "via": null
       },
       {
-        "id": "noticia-6",
+        "id": "noticia-10",
         "title": "Music industry intervenes in Open AI’s big legal battle with newspapers and authors",
         "summary": "All of the US music industry’s copyright lawsuits against AI companies swing on whether or not AI training is fair use under US law. A big legal battle involving authors, newspapers and Open AI also centres on fair use, and the music industry has now intervened in that case via an amicus brief",
         "url": "https://completemusicupdate.com/music-industry-intervenes-in-open-ais-big-legal-battle-with-newspapers-and-authors/",
@@ -115,7 +172,21 @@
         "via": null
       },
       {
-        "id": "noticia-7",
+        "id": "noticia-11",
+        "title": "Dua Lipa ‘Levitating’ Copyright Infringement Lawsuit Suddenly Dismissed",
+        "summary": "A copyright infringement lawsuit over Dua Lipa’s “Levitating” that’s been raging on for years has suddenly been dismissed with prejudice. A producer’s copyright infringement lawsuit over Dua Lipa’s “Levitating” has suddenly been dismissed with prejudice, meaning it cannot be refiled in the future. Los Angeles-based pro…",
+        "url": "https://www.digitalmusicnews.com/2026/11/09/dua-lipa-levitating-copyright-lawsuit-dismissed/",
+        "source": "Digital Music News",
+        "domain": "digitalmusicnews.com",
+        "publishedAt": "2026-11-10T04:38:57.000Z",
+        "tags": [
+          "lawsuit"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-12",
         "title": "AI platform reproduced Michigan music publishers' copyrighted works without authorization, lawsuit says",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMijAFBVV95cUxNN3NEUjkxX25lTGgzYXJtdG9nazU3VzRHMENEWG9RVjg3RndNajVWS1VPWHdBOXV6R3JoWE51RlJ1NGdSM3JXWFpQN1hKZmxEU2ZxYjU0S3BTNDhoYTFHd0Q3bHFrQTdlSFRlaTBOTEMydmRvcEpaeGU1dktFekp2VTZ4QjhvZUYyT1ZQRg?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -128,81 +199,6 @@
         ],
         "translated": false,
         "via": "Google News"
-      },
-      {
-        "id": "noticia-8",
-        "title": "Eminem song publisher seeks $41M in copyright lawsuit vs. AI platform",
-        "summary": "",
-        "url": "https://news.google.com/rss/articles/CBMiuwFBVV95cUxNV2Z1RzdMVDFtbTQwc1VqXy1SVFNPcTNrYjVNZWFUdldKY2psVnQ4TXQxUWhGQmwyLUZISE1CbWNnSGtaRmw5MDB2WjZhM3dYV0VRN2VMMXVmTUYzSm03S0VEemVwWXFhTDRLVXlsaGNzMkROR3p5SmpfTUJuYjJZS1BQMVFPNVJZNmlJNjJHM3d0ZmUzRHVHcUtybzZnUFpqTy0tM0dKLVRyS3Z1R1ZDNVBuVXhyaHBxbW1R?oc=5&hl=es-419&gl=US&ceid=US:es-419",
-        "source": "Detroit Free Press",
-        "domain": "news.google.com",
-        "publishedAt": "2026-11-07T17:09:00.000Z",
-        "tags": [
-          "lawsuit",
-          "ai"
-        ],
-        "translated": false,
-        "via": "Google News"
-      },
-      {
-        "id": "noticia-9",
-        "title": "Demanda a Suno por IA musical: herederos de Elvis y editorial de Eminem atacan el clonado de voz",
-        "summary": "",
-        "url": "https://news.google.com/rss/articles/CBMihwFBVV95cUxPMlhXREpweWhPUmNwUEhaU3A5bzVPUDlrOWg4LUFuTG52WHBtUEEwamlCMFFMWW10RmRSSWF4aGVxcFJRYmtvV21FeWFXNXowSUtJRHRYdHdXT3gwVnh5VEo4Y05PbDVQSFZ3OGdZWEgyUWRxMGF6WllHd25PTWtZLUJmTUdfUHc?oc=5&hl=es-419&gl=US&ceid=US:es-419",
-        "source": "MONCLOA.COM",
-        "domain": "news.google.com",
-        "publishedAt": "2026-11-09T06:04:08.000Z",
-        "tags": [
-          "lawsuit",
-          "ai"
-        ],
-        "translated": false,
-        "via": "Google News"
-      },
-      {
-        "id": "noticia-10",
-        "title": "Elvis Music Owners, Eminem Publisher File Sprawling New Lawsuits Against AI Music Generator Suno: ‘The Next Elvis Won’t Pick Up a Guitar’",
-        "summary": "A collection of Elvis Presley music rightsholders and the publisher of many of Eminem’s records have filed sprawling new federal lawsuits against the AI music generator Suno, with each party making separate allegations that add to the AI company’s legal challenges. The Presley lawsuit — brought by a group that includes…",
-        "url": "https://variety.com/2026/music/news/elvis-eminem-sue-suno-ai-music-generator-1236941798/",
-        "source": "Variety",
-        "domain": "variety.com",
-        "publishedAt": "2026-11-07T16:15:26.000Z",
-        "tags": [
-          "lawsuit",
-          "ai"
-        ],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-11",
-        "title": "Titulares de derechos de Elvis Presley demandan a Suno por clonación de voz mediante IA",
-        "summary": "",
-        "url": "https://news.google.com/rss/articles/CBMirAFBVV95cUxQZUgwelEtenUzV2x3anUxbHNxSmVIQkFidUhXMVdmbW1naHZYN0VHbFEtUDUyY2I4Qk1KMUhTcWhhS0ZxNGk4dl9XMXEyaFJWQkxFRnAzT0poQ00wZENVWTlMM3Z3NS1iNm5yZEtuZnV5N283TTRNdlFYT1dhd21xWW5ocFg1U2F1cVV4aXlJVXlFYVFiTEFWSkE4TTRoMVhJcEZuTTBjVUoxaE1n?oc=5&hl=es-419&gl=US&ceid=US:es-419",
-        "source": "Billboard",
-        "domain": "news.google.com",
-        "publishedAt": "2026-11-09T17:31:12.000Z",
-        "tags": [
-          "lawsuit",
-          "ai"
-        ],
-        "translated": false,
-        "via": "Google News"
-      },
-      {
-        "id": "noticia-12",
-        "title": "Rotor Videos opens Artist Unlimited to any artist from $9.99 a month, with unlimited release visuals and a library of 17M+, non-AI-generated clips",
-        "summary": "The plans give artists unlimited access to Rotor's tools for making visual assets for release campaigns, including music videos, lyric videos, Spotify Canvas, and Apple Music Album Motion. Source",
-        "url": "https://www.musicbusinessworldwide.com/rotor-videos-opens-artist-unlimited-to-any-artist-from-9-99-a-month-with-unlimited-release-visuals-and-a-library-of-17m-non-ai-generated-clips/",
-        "source": "Music Business Worldwide",
-        "domain": "musicbusinessworldwide.com",
-        "publishedAt": "2026-11-06T14:56:21.000Z",
-        "tags": [
-          "ai",
-          "streaming"
-        ],
-        "translated": false,
-        "via": null
       }
     ],
     "tip": {
@@ -216,6 +212,36 @@
     "items": [
       {
         "id": "noticia-1",
+        "title": "Eminem’s Publisher Eight Mile Style Sues Suno Over Allegations of Copyright Infringement",
+        "summary": "Eminem’s publishing company, Eight Mile Style, has now filed litigation against Suno for allegedly reproducing their copyrighted works without permission or compensation. Digital Music News was given a first look at the complaint. Eight Mile Style, Eminem’s publishing company that owns or controls the exclusivity to hi…",
+        "url": "https://www.digitalmusicnews.com/2026/11/08/eminem-publisher-sues-suno-copyright-infringement/",
+        "source": "Digital Music News",
+        "domain": "digitalmusicnews.com",
+        "publishedAt": "2026-11-09T05:16:52.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-2",
+        "title": "Elvis Presley Enterprises Slaps Suno With Copyright & NIL Suit, Says the Platform Was ‘Always Meant to Replace the Artists Whose Works and Identities Were Being Unlawfully Copied’",
+        "summary": "Another day, another AI infringement lawsuit – this time against Suno, which is accused of infringing a number of Elvis Presley copyrights as well as the King of Rock’s name, image, and likeness (NIL) rights. Plaintiffs including Elvis Presley Enterprises, Raleigh Music Publishing, and a subsidiary of Elvis IP owner Au…",
+        "url": "https://www.digitalmusicnews.com/2026/11/09/elvis-presley-enterprises-suno-lawsuit/",
+        "source": "Digital Music News",
+        "domain": "digitalmusicnews.com",
+        "publishedAt": "2026-11-09T13:00:56.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-3",
         "title": "Suno sued by Elvis Presley rights-owners and Eight Mile Style",
         "summary": "The flow of copyright-infringement lawsuits aimed at AI-music service Suno isn’t letting up yet. Two new legal actions have been added to the pile: from a group of Elvis Presley rights-owners and Eminem publisher Eight Mile Style. The post is from Music Ally .",
         "url": "https://musically.com/2026/11/09/suno-sued-by-elvis-presley-rights-owners-and-eight-mile-style/",
@@ -230,7 +256,7 @@
         "via": null
       },
       {
-        "id": "noticia-2",
+        "id": "noticia-4",
         "title": "Suno argues that judge should throw out musician’s publicity rights lawsuit",
         "summary": "Suno is fighting several music industry lawsuits, but one stands out - filed by musician Jason Isbell - because it accuses the AI company of infringing publicity rights by connecting artist names to musical styles in the back-end. Suno has responded to that lawsuit, urging the judge to dismiss it",
         "url": "https://completemusicupdate.com/suno-argues-that-judge-should-throw-out-musicians-publicity-rights-lawsuit/",
@@ -245,7 +271,7 @@
         "via": null
       },
       {
-        "id": "noticia-3",
+        "id": "noticia-5",
         "title": "Suno AI Music Generator Sued Again For Copyright Infringement",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMimwFBVV95cUxNd2RBdmNJNzV5YnFIM3JzclpLNDNuWXhtakVYcWVDUGt2blZOaUVya2U3cnk2QXNwbXZxcFM1QUVJSjIwOTJIZzFLWkpTQlhTYzdyS3gteG96TnY1c2stVFJIS0JxRGRrazNIR3RLT05QeWpPck5OQjdXNXEtX0QyRTd6NUY1UmV6QUdtZ3AtaWZhQ2lnTTd5UVlKTQ?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -260,13 +286,13 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-4",
-        "title": "Eminem’s Publisher Eight Mile Style Sues Suno Over Allegations of Copyright Infringement",
+        "id": "noticia-6",
+        "title": "Elvis Presley and Eminem rights holders sue Suno over alleged copyright infringement",
         "summary": "",
-        "url": "https://news.google.com/rss/articles/CBMimgFBVV95cUxOUUE5eEluOFlYa25qbkJES2wwYTFtZndEZmpjRzNkSlhZLTByUm1MajRvTlhjRHBKZjZUeGxnZ0JRRU5YSzZVU1dteXRxRGdJTTZ0SW5sSzhMSXd0eGxuRmUwZ19iNm5KQlFNSWhQOXl1bWprb3k5WFJhTi14dkRPZ2tsamxtMnRGTWZiWi1TQ3h5N3RsYzZaTnpR?oc=5&hl=es-419&gl=US&ceid=US:es-419",
-        "source": "Digital Music News",
+        "url": "https://news.google.com/rss/articles/CBMi5gFBVV95cUxOVFllaURTQzY0cHY4QVlXNkJ6b3NwYVlZa0Nia2xteDR1WDRPcDF5QnZ4dHdFYWxCZnhra0JfZWM5bUVtcTdmbWZvVnZIb3lqTVQ1dEphTEJPYVJKYXppX1B2aXgzZXpsZFU4Tm04WHBXcHFEd0ZwTGl5SGhkMkpLM2FuYjZxdy1WNmtSbHB4THUtTk1vYld0OXI2QVdXeXFvTGFsR2xkY2JBUkFsVXczVm9uQnlNZlRVd1RIaDh6bjREN2oxdUVJcVJ6OFJpaXVBWTJXalR3WDVHTElLaTQ0VmVqdVVld9IB6wFBVV95cUxQYjR2TzVJZmNuaTl4UlhlaUJpLXBON0RNaWdPLURqT0tkY1F5U3lKS2ZpSTJPNkNxWmZzNDJkUDRFY1VTanZXRTk3cEs0eFhkZDlCNl9DNmIxQzc4QjNYTnNuZW5JU3JvOVlFRnZRWU5kMF9HN2tTWFh0WGFLbmNpNHk4VXdPV0xJcS1QaThSempJbUhzSTNIQ1c4THJZcE1NN2k5Tk1rN0lnR0xBVnlDRnZGRm1BajlxVnJBTFh1ZTlpd3kyTklXREw0bEIxM09uT2xOaGRpVVNneXFqNVdyVHplcXpfTEEyUGY4?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "India Today",
         "domain": "news.google.com",
-        "publishedAt": "2026-11-09T05:20:46.000Z",
+        "publishedAt": "2026-11-10T13:08:48.000Z",
         "tags": [
           "lawsuit",
           "ai"
@@ -275,7 +301,37 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-5",
+        "id": "noticia-7",
+        "title": "Judge throws out copyright lawsuit over Flo Milli’s ‘Never Lose Me,’ ruling producer never signed plaintiff’s $200 exclusive beat license",
+        "summary": "Shamar Deal claimed he held a 10-year exclusive license to a beat used in the song, which he bought for $200 on the online marketplace Traktrain in 2019. Source",
+        "url": "https://www.musicbusinessworldwide.com/judge-throws-out-copyright-lawsuit-over-flo-millis-never-lose-me-ruling-producer-never-signed-plaintiffs-200-exclusive-beat-license/",
+        "source": "Music Business Worldwide",
+        "domain": "musicbusinessworldwide.com",
+        "publishedAt": "2026-11-10T12:00:45.000Z",
+        "tags": [
+          "lawsuit",
+          "licensing"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-8",
+        "title": "Robbie Williams speaks out on ‘disgusting’ plagiarism lawsuits",
+        "summary": "If you’ve heard Olivia Rodrigo’s ‘take me home (4 christmas)’ single, you may have noticed some similarities to Robbie Williams’ 2012 hit ‘Candy’. Is he going to demand a credit, royalties or even sue her? Nope. The post is from Music Ally .",
+        "url": "https://musically.com/2026/11/10/robbie-williams-speaks-out-on-disgusting-plagiarism-lawsuits/",
+        "source": "Music Ally",
+        "domain": "musically.com",
+        "publishedAt": "2026-11-10T13:30:00.000Z",
+        "tags": [
+          "lawsuit",
+          "royalties"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-9",
         "title": "Meta Employees ‘Interacted’ With Pirated Copies of Adult Films, Filing Shows",
         "summary": "A newly unredacted court filing shows that Meta’s internal investigation found several employees who appear to have interacted with Strike 3’s adult films. The adult content producers say these were torrented copies listed in their lawsuit, but Meta says there is no evidence of torrenting. The company also stresses tha…",
         "url": "https://torrentfreak.com/meta-employees-interacted-with-pirated-copies-of-adult-films-filing-shows/",
@@ -290,7 +346,7 @@
         "via": null
       },
       {
-        "id": "noticia-6",
+        "id": "noticia-10",
         "title": "Music industry intervenes in Open AI’s big legal battle with newspapers and authors",
         "summary": "All of the US music industry’s copyright lawsuits against AI companies swing on whether or not AI training is fair use under US law. A big legal battle involving authors, newspapers and Open AI also centres on fair use, and the music industry has now intervened in that case via an amicus brief",
         "url": "https://completemusicupdate.com/music-industry-intervenes-in-open-ais-big-legal-battle-with-newspapers-and-authors/",
@@ -305,7 +361,21 @@
         "via": null
       },
       {
-        "id": "noticia-7",
+        "id": "noticia-11",
+        "title": "Dua Lipa ‘Levitating’ Copyright Infringement Lawsuit Suddenly Dismissed",
+        "summary": "A copyright infringement lawsuit over Dua Lipa’s “Levitating” that’s been raging on for years has suddenly been dismissed with prejudice. A producer’s copyright infringement lawsuit over Dua Lipa’s “Levitating” has suddenly been dismissed with prejudice, meaning it cannot be refiled in the future. Los Angeles-based pro…",
+        "url": "https://www.digitalmusicnews.com/2026/11/09/dua-lipa-levitating-copyright-lawsuit-dismissed/",
+        "source": "Digital Music News",
+        "domain": "digitalmusicnews.com",
+        "publishedAt": "2026-11-10T04:38:57.000Z",
+        "tags": [
+          "lawsuit"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-12",
         "title": "AI platform reproduced Michigan music publishers' copyrighted works without authorization, lawsuit says",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMijAFBVV95cUxNN3NEUjkxX25lTGgzYXJtdG9nazU3VzRHMENEWG9RVjg3RndNajVWS1VPWHdBOXV6R3JoWE51RlJ1NGdSM3JXWFpQN1hKZmxEU2ZxYjU0S3BTNDhoYTFHd0Q3bHFrQTdlSFRlaTBOTEMydmRvcEpaeGU1dktFekp2VTZ4QjhvZUYyT1ZQRg?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -318,81 +388,6 @@
         ],
         "translated": false,
         "via": "Google News"
-      },
-      {
-        "id": "noticia-8",
-        "title": "Eminem song publisher seeks $41M in copyright lawsuit vs. AI platform",
-        "summary": "",
-        "url": "https://news.google.com/rss/articles/CBMiuwFBVV95cUxNV2Z1RzdMVDFtbTQwc1VqXy1SVFNPcTNrYjVNZWFUdldKY2psVnQ4TXQxUWhGQmwyLUZISE1CbWNnSGtaRmw5MDB2WjZhM3dYV0VRN2VMMXVmTUYzSm03S0VEemVwWXFhTDRLVXlsaGNzMkROR3p5SmpfTUJuYjJZS1BQMVFPNVJZNmlJNjJHM3d0ZmUzRHVHcUtybzZnUFpqTy0tM0dKLVRyS3Z1R1ZDNVBuVXhyaHBxbW1R?oc=5&hl=es-419&gl=US&ceid=US:es-419",
-        "source": "Detroit Free Press",
-        "domain": "news.google.com",
-        "publishedAt": "2026-11-07T17:09:00.000Z",
-        "tags": [
-          "lawsuit",
-          "ai"
-        ],
-        "translated": false,
-        "via": "Google News"
-      },
-      {
-        "id": "noticia-9",
-        "title": "Demanda a Suno por IA musical: herederos de Elvis y editorial de Eminem atacan el clonado de voz",
-        "summary": "",
-        "url": "https://news.google.com/rss/articles/CBMihwFBVV95cUxPMlhXREpweWhPUmNwUEhaU3A5bzVPUDlrOWg4LUFuTG52WHBtUEEwamlCMFFMWW10RmRSSWF4aGVxcFJRYmtvV21FeWFXNXowSUtJRHRYdHdXT3gwVnh5VEo4Y05PbDVQSFZ3OGdZWEgyUWRxMGF6WllHd25PTWtZLUJmTUdfUHc?oc=5&hl=es-419&gl=US&ceid=US:es-419",
-        "source": "MONCLOA.COM",
-        "domain": "news.google.com",
-        "publishedAt": "2026-11-09T06:04:08.000Z",
-        "tags": [
-          "lawsuit",
-          "ai"
-        ],
-        "translated": false,
-        "via": "Google News"
-      },
-      {
-        "id": "noticia-10",
-        "title": "Elvis Music Owners, Eminem Publisher File Sprawling New Lawsuits Against AI Music Generator Suno: ‘The Next Elvis Won’t Pick Up a Guitar’",
-        "summary": "A collection of Elvis Presley music rightsholders and the publisher of many of Eminem’s records have filed sprawling new federal lawsuits against the AI music generator Suno, with each party making separate allegations that add to the AI company’s legal challenges. The Presley lawsuit — brought by a group that includes…",
-        "url": "https://variety.com/2026/music/news/elvis-eminem-sue-suno-ai-music-generator-1236941798/",
-        "source": "Variety",
-        "domain": "variety.com",
-        "publishedAt": "2026-11-07T16:15:26.000Z",
-        "tags": [
-          "lawsuit",
-          "ai"
-        ],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-11",
-        "title": "Titulares de derechos de Elvis Presley demandan a Suno por clonación de voz mediante IA",
-        "summary": "",
-        "url": "https://news.google.com/rss/articles/CBMirAFBVV95cUxQZUgwelEtenUzV2x3anUxbHNxSmVIQkFidUhXMVdmbW1naHZYN0VHbFEtUDUyY2I4Qk1KMUhTcWhhS0ZxNGk4dl9XMXEyaFJWQkxFRnAzT0poQ00wZENVWTlMM3Z3NS1iNm5yZEtuZnV5N283TTRNdlFYT1dhd21xWW5ocFg1U2F1cVV4aXlJVXlFYVFiTEFWSkE4TTRoMVhJcEZuTTBjVUoxaE1n?oc=5&hl=es-419&gl=US&ceid=US:es-419",
-        "source": "Billboard",
-        "domain": "news.google.com",
-        "publishedAt": "2026-11-09T17:31:12.000Z",
-        "tags": [
-          "lawsuit",
-          "ai"
-        ],
-        "translated": false,
-        "via": "Google News"
-      },
-      {
-        "id": "noticia-12",
-        "title": "Rotor Videos opens Artist Unlimited to any artist from $9.99 a month, with unlimited release visuals and a library of 17M+, non-AI-generated clips",
-        "summary": "The plans give artists unlimited access to Rotor's tools for making visual assets for release campaigns, including music videos, lyric videos, Spotify Canvas, and Apple Music Album Motion. Source",
-        "url": "https://www.musicbusinessworldwide.com/rotor-videos-opens-artist-unlimited-to-any-artist-from-9-99-a-month-with-unlimited-release-visuals-and-a-library-of-17m-non-ai-generated-clips/",
-        "source": "Music Business Worldwide",
-        "domain": "musicbusinessworldwide.com",
-        "publishedAt": "2026-11-06T14:56:21.000Z",
-        "tags": [
-          "ai",
-          "streaming"
-        ],
-        "translated": false,
-        "via": null
       }
     ],
     "tip": {
