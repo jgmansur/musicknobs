@@ -1,0 +1,403 @@
+{
+  "lastUpdated": "2026-11-10T01:59:54.623Z",
+  "meta": {
+    "method": "rss-retrieval + link-verification + ai-translation",
+    "itemCount": 12,
+    "sources": [
+      "Billboard",
+      "CBS News",
+      "Complete Music Update",
+      "Detroit Free Press",
+      "Digital Music News",
+      "Engadget",
+      "MONCLOA.COM",
+      "Music Ally",
+      "Music Business Worldwide",
+      "TorrentFreak",
+      "Variety"
+    ],
+    "verifiedLinks": 12,
+    "aiTranslated": 0,
+    "note": "Los hechos provienen de los artículos originales enlazados. La IA solo traduce y resume; no genera noticias."
+  },
+  "es": {
+    "title": "Noticias de Copyright e Inteligencia Artificial",
+    "subtitle": "Notas publicadas por medios reales de la industria, con liga al artículo original. Sin noticias inventadas.",
+    "items": [
+      {
+        "id": "noticia-1",
+        "title": "Suno sued by Elvis Presley rights-owners and Eight Mile Style",
+        "summary": "The flow of copyright-infringement lawsuits aimed at AI-music service Suno isn’t letting up yet. Two new legal actions have been added to the pile: from a group of Elvis Presley rights-owners and Eminem publisher Eight Mile Style. The post is from Music Ally .",
+        "url": "https://musically.com/2026/11/09/suno-sued-by-elvis-presley-rights-owners-and-eight-mile-style/",
+        "source": "Music Ally",
+        "domain": "musically.com",
+        "publishedAt": "2026-11-09T12:30:00.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-2",
+        "title": "Suno argues that judge should throw out musician’s publicity rights lawsuit",
+        "summary": "Suno is fighting several music industry lawsuits, but one stands out - filed by musician Jason Isbell - because it accuses the AI company of infringing publicity rights by connecting artist names to musical styles in the back-end. Suno has responded to that lawsuit, urging the judge to dismiss it",
+        "url": "https://completemusicupdate.com/suno-argues-that-judge-should-throw-out-musicians-publicity-rights-lawsuit/",
+        "source": "Complete Music Update",
+        "domain": "completemusicupdate.com",
+        "publishedAt": "2026-11-04T17:20:05.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-3",
+        "title": "Suno AI Music Generator Sued Again For Copyright Infringement",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMimwFBVV95cUxNd2RBdmNJNzV5YnFIM3JzclpLNDNuWXhtakVYcWVDUGt2blZOaUVya2U3cnk2QXNwbXZxcFM1QUVJSjIwOTJIZzFLWkpTQlhTYzdyS3gteG96TnY1c2stVFJIS0JxRGRrazNIR3RLT05QeWpPck5OQjdXNXEtX0QyRTd6NUY1UmV6QUdtZ3AtaWZhQ2lnTTd5UVlKTQ?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "Engadget",
+        "domain": "news.google.com",
+        "publishedAt": "2026-11-08T19:42:14.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-4",
+        "title": "Eminem’s Publisher Eight Mile Style Sues Suno Over Allegations of Copyright Infringement",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMimgFBVV95cUxOUUE5eEluOFlYa25qbkJES2wwYTFtZndEZmpjRzNkSlhZLTByUm1MajRvTlhjRHBKZjZUeGxnZ0JRRU5YSzZVU1dteXRxRGdJTTZ0SW5sSzhMSXd0eGxuRmUwZ19iNm5KQlFNSWhQOXl1bWprb3k5WFJhTi14dkRPZ2tsamxtMnRGTWZiWi1TQ3h5N3RsYzZaTnpR?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "Digital Music News",
+        "domain": "news.google.com",
+        "publishedAt": "2026-11-09T05:20:46.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-5",
+        "title": "Meta Employees ‘Interacted’ With Pirated Copies of Adult Films, Filing Shows",
+        "summary": "A newly unredacted court filing shows that Meta’s internal investigation found several employees who appear to have interacted with Strike 3’s adult films. The adult content producers say these were torrented copies listed in their lawsuit, but Meta says there is no evidence of torrenting. The company also stresses tha…",
+        "url": "https://torrentfreak.com/meta-employees-interacted-with-pirated-copies-of-adult-films-filing-shows/",
+        "source": "TorrentFreak",
+        "domain": "torrentfreak.com",
+        "publishedAt": "2026-11-05T07:22:30.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-6",
+        "title": "Music industry intervenes in Open AI’s big legal battle with newspapers and authors",
+        "summary": "All of the US music industry’s copyright lawsuits against AI companies swing on whether or not AI training is fair use under US law. A big legal battle involving authors, newspapers and Open AI also centres on fair use, and the music industry has now intervened in that case via an amicus brief",
+        "url": "https://completemusicupdate.com/music-industry-intervenes-in-open-ais-big-legal-battle-with-newspapers-and-authors/",
+        "source": "Complete Music Update",
+        "domain": "completemusicupdate.com",
+        "publishedAt": "2026-11-03T17:31:31.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-7",
+        "title": "AI platform reproduced Michigan music publishers' copyrighted works without authorization, lawsuit says",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMijAFBVV95cUxNN3NEUjkxX25lTGgzYXJtdG9nazU3VzRHMENEWG9RVjg3RndNajVWS1VPWHdBOXV6R3JoWE51RlJ1NGdSM3JXWFpQN1hKZmxEU2ZxYjU0S3BTNDhoYTFHd0Q3bHFrQTdlSFRlaTBOTEMydmRvcEpaeGU1dktFekp2VTZ4QjhvZUYyT1ZQRg?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "CBS News",
+        "domain": "news.google.com",
+        "publishedAt": "2026-11-07T22:15:34.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-8",
+        "title": "Eminem song publisher seeks $41M in copyright lawsuit vs. AI platform",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMiuwFBVV95cUxNV2Z1RzdMVDFtbTQwc1VqXy1SVFNPcTNrYjVNZWFUdldKY2psVnQ4TXQxUWhGQmwyLUZISE1CbWNnSGtaRmw5MDB2WjZhM3dYV0VRN2VMMXVmTUYzSm03S0VEemVwWXFhTDRLVXlsaGNzMkROR3p5SmpfTUJuYjJZS1BQMVFPNVJZNmlJNjJHM3d0ZmUzRHVHcUtybzZnUFpqTy0tM0dKLVRyS3Z1R1ZDNVBuVXhyaHBxbW1R?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "Detroit Free Press",
+        "domain": "news.google.com",
+        "publishedAt": "2026-11-07T17:09:00.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-9",
+        "title": "Demanda a Suno por IA musical: herederos de Elvis y editorial de Eminem atacan el clonado de voz",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMihwFBVV95cUxPMlhXREpweWhPUmNwUEhaU3A5bzVPUDlrOWg4LUFuTG52WHBtUEEwamlCMFFMWW10RmRSSWF4aGVxcFJRYmtvV21FeWFXNXowSUtJRHRYdHdXT3gwVnh5VEo4Y05PbDVQSFZ3OGdZWEgyUWRxMGF6WllHd25PTWtZLUJmTUdfUHc?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "MONCLOA.COM",
+        "domain": "news.google.com",
+        "publishedAt": "2026-11-09T06:04:08.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-10",
+        "title": "Elvis Music Owners, Eminem Publisher File Sprawling New Lawsuits Against AI Music Generator Suno: ‘The Next Elvis Won’t Pick Up a Guitar’",
+        "summary": "A collection of Elvis Presley music rightsholders and the publisher of many of Eminem’s records have filed sprawling new federal lawsuits against the AI music generator Suno, with each party making separate allegations that add to the AI company’s legal challenges. The Presley lawsuit — brought by a group that includes…",
+        "url": "https://variety.com/2026/music/news/elvis-eminem-sue-suno-ai-music-generator-1236941798/",
+        "source": "Variety",
+        "domain": "variety.com",
+        "publishedAt": "2026-11-07T16:15:26.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-11",
+        "title": "Titulares de derechos de Elvis Presley demandan a Suno por clonación de voz mediante IA",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMirAFBVV95cUxQZUgwelEtenUzV2x3anUxbHNxSmVIQkFidUhXMVdmbW1naHZYN0VHbFEtUDUyY2I4Qk1KMUhTcWhhS0ZxNGk4dl9XMXEyaFJWQkxFRnAzT0poQ00wZENVWTlMM3Z3NS1iNm5yZEtuZnV5N283TTRNdlFYT1dhd21xWW5ocFg1U2F1cVV4aXlJVXlFYVFiTEFWSkE4TTRoMVhJcEZuTTBjVUoxaE1n?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "Billboard",
+        "domain": "news.google.com",
+        "publishedAt": "2026-11-09T17:31:12.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-12",
+        "title": "Rotor Videos opens Artist Unlimited to any artist from $9.99 a month, with unlimited release visuals and a library of 17M+, non-AI-generated clips",
+        "summary": "The plans give artists unlimited access to Rotor's tools for making visual assets for release campaigns, including music videos, lyric videos, Spotify Canvas, and Apple Music Album Motion. Source",
+        "url": "https://www.musicbusinessworldwide.com/rotor-videos-opens-artist-unlimited-to-any-artist-from-9-99-a-month-with-unlimited-release-visuals-and-a-library-of-17m-non-ai-generated-clips/",
+        "source": "Music Business Worldwide",
+        "domain": "musicbusinessworldwide.com",
+        "publishedAt": "2026-11-06T14:56:21.000Z",
+        "tags": [
+          "ai",
+          "streaming"
+        ],
+        "translated": false,
+        "via": null
+      }
+    ],
+    "tip": {
+      "title": "Voz clonada: el derecho en juego suele no ser el copyright",
+      "body": "Imitar la voz de un artista con IA rara vez es infracción de copyright de la canción; el reclamo típico va por derechos de imagen, voz y publicidad, que varían mucho entre jurisdicciones."
+    }
+  },
+  "en": {
+    "title": "Copyright & Artificial Intelligence News",
+    "subtitle": "Stories published by real industry outlets, each linked to its original article. No invented news.",
+    "items": [
+      {
+        "id": "noticia-1",
+        "title": "Suno sued by Elvis Presley rights-owners and Eight Mile Style",
+        "summary": "The flow of copyright-infringement lawsuits aimed at AI-music service Suno isn’t letting up yet. Two new legal actions have been added to the pile: from a group of Elvis Presley rights-owners and Eminem publisher Eight Mile Style. The post is from Music Ally .",
+        "url": "https://musically.com/2026/11/09/suno-sued-by-elvis-presley-rights-owners-and-eight-mile-style/",
+        "source": "Music Ally",
+        "domain": "musically.com",
+        "publishedAt": "2026-11-09T12:30:00.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-2",
+        "title": "Suno argues that judge should throw out musician’s publicity rights lawsuit",
+        "summary": "Suno is fighting several music industry lawsuits, but one stands out - filed by musician Jason Isbell - because it accuses the AI company of infringing publicity rights by connecting artist names to musical styles in the back-end. Suno has responded to that lawsuit, urging the judge to dismiss it",
+        "url": "https://completemusicupdate.com/suno-argues-that-judge-should-throw-out-musicians-publicity-rights-lawsuit/",
+        "source": "Complete Music Update",
+        "domain": "completemusicupdate.com",
+        "publishedAt": "2026-11-04T17:20:05.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-3",
+        "title": "Suno AI Music Generator Sued Again For Copyright Infringement",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMimwFBVV95cUxNd2RBdmNJNzV5YnFIM3JzclpLNDNuWXhtakVYcWVDUGt2blZOaUVya2U3cnk2QXNwbXZxcFM1QUVJSjIwOTJIZzFLWkpTQlhTYzdyS3gteG96TnY1c2stVFJIS0JxRGRrazNIR3RLT05QeWpPck5OQjdXNXEtX0QyRTd6NUY1UmV6QUdtZ3AtaWZhQ2lnTTd5UVlKTQ?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "Engadget",
+        "domain": "news.google.com",
+        "publishedAt": "2026-11-08T19:42:14.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-4",
+        "title": "Eminem’s Publisher Eight Mile Style Sues Suno Over Allegations of Copyright Infringement",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMimgFBVV95cUxOUUE5eEluOFlYa25qbkJES2wwYTFtZndEZmpjRzNkSlhZLTByUm1MajRvTlhjRHBKZjZUeGxnZ0JRRU5YSzZVU1dteXRxRGdJTTZ0SW5sSzhMSXd0eGxuRmUwZ19iNm5KQlFNSWhQOXl1bWprb3k5WFJhTi14dkRPZ2tsamxtMnRGTWZiWi1TQ3h5N3RsYzZaTnpR?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "Digital Music News",
+        "domain": "news.google.com",
+        "publishedAt": "2026-11-09T05:20:46.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-5",
+        "title": "Meta Employees ‘Interacted’ With Pirated Copies of Adult Films, Filing Shows",
+        "summary": "A newly unredacted court filing shows that Meta’s internal investigation found several employees who appear to have interacted with Strike 3’s adult films. The adult content producers say these were torrented copies listed in their lawsuit, but Meta says there is no evidence of torrenting. The company also stresses tha…",
+        "url": "https://torrentfreak.com/meta-employees-interacted-with-pirated-copies-of-adult-films-filing-shows/",
+        "source": "TorrentFreak",
+        "domain": "torrentfreak.com",
+        "publishedAt": "2026-11-05T07:22:30.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-6",
+        "title": "Music industry intervenes in Open AI’s big legal battle with newspapers and authors",
+        "summary": "All of the US music industry’s copyright lawsuits against AI companies swing on whether or not AI training is fair use under US law. A big legal battle involving authors, newspapers and Open AI also centres on fair use, and the music industry has now intervened in that case via an amicus brief",
+        "url": "https://completemusicupdate.com/music-industry-intervenes-in-open-ais-big-legal-battle-with-newspapers-and-authors/",
+        "source": "Complete Music Update",
+        "domain": "completemusicupdate.com",
+        "publishedAt": "2026-11-03T17:31:31.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-7",
+        "title": "AI platform reproduced Michigan music publishers' copyrighted works without authorization, lawsuit says",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMijAFBVV95cUxNN3NEUjkxX25lTGgzYXJtdG9nazU3VzRHMENEWG9RVjg3RndNajVWS1VPWHdBOXV6R3JoWE51RlJ1NGdSM3JXWFpQN1hKZmxEU2ZxYjU0S3BTNDhoYTFHd0Q3bHFrQTdlSFRlaTBOTEMydmRvcEpaeGU1dktFekp2VTZ4QjhvZUYyT1ZQRg?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "CBS News",
+        "domain": "news.google.com",
+        "publishedAt": "2026-11-07T22:15:34.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-8",
+        "title": "Eminem song publisher seeks $41M in copyright lawsuit vs. AI platform",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMiuwFBVV95cUxNV2Z1RzdMVDFtbTQwc1VqXy1SVFNPcTNrYjVNZWFUdldKY2psVnQ4TXQxUWhGQmwyLUZISE1CbWNnSGtaRmw5MDB2WjZhM3dYV0VRN2VMMXVmTUYzSm03S0VEemVwWXFhTDRLVXlsaGNzMkROR3p5SmpfTUJuYjJZS1BQMVFPNVJZNmlJNjJHM3d0ZmUzRHVHcUtybzZnUFpqTy0tM0dKLVRyS3Z1R1ZDNVBuVXhyaHBxbW1R?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "Detroit Free Press",
+        "domain": "news.google.com",
+        "publishedAt": "2026-11-07T17:09:00.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-9",
+        "title": "Demanda a Suno por IA musical: herederos de Elvis y editorial de Eminem atacan el clonado de voz",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMihwFBVV95cUxPMlhXREpweWhPUmNwUEhaU3A5bzVPUDlrOWg4LUFuTG52WHBtUEEwamlCMFFMWW10RmRSSWF4aGVxcFJRYmtvV21FeWFXNXowSUtJRHRYdHdXT3gwVnh5VEo4Y05PbDVQSFZ3OGdZWEgyUWRxMGF6WllHd25PTWtZLUJmTUdfUHc?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "MONCLOA.COM",
+        "domain": "news.google.com",
+        "publishedAt": "2026-11-09T06:04:08.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-10",
+        "title": "Elvis Music Owners, Eminem Publisher File Sprawling New Lawsuits Against AI Music Generator Suno: ‘The Next Elvis Won’t Pick Up a Guitar’",
+        "summary": "A collection of Elvis Presley music rightsholders and the publisher of many of Eminem’s records have filed sprawling new federal lawsuits against the AI music generator Suno, with each party making separate allegations that add to the AI company’s legal challenges. The Presley lawsuit — brought by a group that includes…",
+        "url": "https://variety.com/2026/music/news/elvis-eminem-sue-suno-ai-music-generator-1236941798/",
+        "source": "Variety",
+        "domain": "variety.com",
+        "publishedAt": "2026-11-07T16:15:26.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-11",
+        "title": "Titulares de derechos de Elvis Presley demandan a Suno por clonación de voz mediante IA",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMirAFBVV95cUxQZUgwelEtenUzV2x3anUxbHNxSmVIQkFidUhXMVdmbW1naHZYN0VHbFEtUDUyY2I4Qk1KMUhTcWhhS0ZxNGk4dl9XMXEyaFJWQkxFRnAzT0poQ00wZENVWTlMM3Z3NS1iNm5yZEtuZnV5N283TTRNdlFYT1dhd21xWW5ocFg1U2F1cVV4aXlJVXlFYVFiTEFWSkE4TTRoMVhJcEZuTTBjVUoxaE1n?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "Billboard",
+        "domain": "news.google.com",
+        "publishedAt": "2026-11-09T17:31:12.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-12",
+        "title": "Rotor Videos opens Artist Unlimited to any artist from $9.99 a month, with unlimited release visuals and a library of 17M+, non-AI-generated clips",
+        "summary": "The plans give artists unlimited access to Rotor's tools for making visual assets for release campaigns, including music videos, lyric videos, Spotify Canvas, and Apple Music Album Motion. Source",
+        "url": "https://www.musicbusinessworldwide.com/rotor-videos-opens-artist-unlimited-to-any-artist-from-9-99-a-month-with-unlimited-release-visuals-and-a-library-of-17m-non-ai-generated-clips/",
+        "source": "Music Business Worldwide",
+        "domain": "musicbusinessworldwide.com",
+        "publishedAt": "2026-11-06T14:56:21.000Z",
+        "tags": [
+          "ai",
+          "streaming"
+        ],
+        "translated": false,
+        "via": null
+      }
+    ],
+    "tip": {
+      "title": "Cloned vocals: copyright is usually not the issue",
+      "body": "Mimicking an artist's voice with AI is rarely a copyright infringement of the song itself; claims typically run through name, image, voice and publicity rights, which vary widely by jurisdiction."
+    }
+  }
+}
