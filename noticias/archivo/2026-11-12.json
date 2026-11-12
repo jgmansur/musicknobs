@@ -1,15 +1,15 @@
 {
-  "lastUpdated": "2026-11-12T01:28:37.685Z",
+  "lastUpdated": "2026-11-12T15:55:41.905Z",
   "meta": {
     "method": "rss-retrieval + link-verification + ai-translation",
     "itemCount": 12,
     "sources": [
       "ABA Journal",
+      "CBS News",
       "Complete Music Update",
       "Detroit Free Press",
       "Digital Music News",
       "Industria Musical",
-      "Music Ally",
       "Storyboard18",
       "TorrentFreak"
     ],
@@ -53,6 +53,21 @@
       },
       {
         "id": "noticia-3",
+        "title": "Why Choosing the Right DIY Music Distributor Will Matter More Than Ever in 2027",
+        "summary": "As streaming services push back on AI spam and copyright-infringing uploads, the distributor you pick can decide whether your catalog stays protected, or gets caught in the crossfire. The following comes from Amuse, a partner of DMN. When you release a song, it doesn’t go straight to Spotify or Apple Music. It goes thr…",
+        "url": "https://www.digitalmusicnews.com/2026/11/11/choosing-the-right-diy-music-distribution/",
+        "source": "Digital Music News",
+        "domain": "digitalmusicnews.com",
+        "publishedAt": "2026-11-12T04:00:07.000Z",
+        "tags": [
+          "ai",
+          "streaming"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-4",
         "title": "Suno argues that judge should throw out musician’s publicity rights lawsuit",
         "summary": "Suno is fighting several music industry lawsuits, but one stands out - filed by musician Jason Isbell - because it accuses the AI company of infringing publicity rights by connecting artist names to musical styles in the back-end. Suno has responded to that lawsuit, urging the judge to dismiss it",
         "url": "https://completemusicupdate.com/suno-argues-that-judge-should-throw-out-musicians-publicity-rights-lawsuit/",
@@ -62,21 +77,6 @@
         "tags": [
           "lawsuit",
           "ai"
-        ],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-4",
-        "title": "Why Choosing the Right DIY Music Distributor Will Matter More Than Ever in 2027",
-        "summary": "As streaming services push back on AI spam and copyright-infringing uploads, the distributor you pick can decide whether your catalog stays protected, or gets caught in the crossfire. The following comes from Amuse, a partner of DMN. When you release a song, it doesn’t go straight to Spotify or Apple Music. It goes thr…",
-        "url": "https://www.digitalmusicnews.com/2026/11/11/choosing-the-right-diy-music-distribution/",
-        "source": "Digital Music News",
-        "domain": "digitalmusicnews.com",
-        "publishedAt": "2026-11-11T13:03:07.000Z",
-        "tags": [
-          "ai",
-          "streaming"
         ],
         "translated": false,
         "via": null
@@ -114,15 +114,15 @@
       },
       {
         "id": "noticia-7",
-        "title": "Robbie Williams speaks out on ‘disgusting’ plagiarism lawsuits",
-        "summary": "If you’ve heard Olivia Rodrigo’s ‘take me home (4 christmas)’ single, you may have noticed some similarities to Robbie Williams’ 2012 hit ‘Candy’. Is he going to demand a credit, royalties or even sue her? Nope. The post is from Music Ally .",
-        "url": "https://musically.com/2026/11/10/robbie-williams-speaks-out-on-disgusting-plagiarism-lawsuits/",
-        "source": "Music Ally",
-        "domain": "musically.com",
-        "publishedAt": "2026-11-10T13:30:00.000Z",
+        "title": "Music industry intervenes in Open AI’s big legal battle with newspapers and authors",
+        "summary": "All of the US music industry’s copyright lawsuits against AI companies swing on whether or not AI training is fair use under US law. A big legal battle involving authors, newspapers and Open AI also centres on fair use, and the music industry has now intervened in that case via an amicus brief",
+        "url": "https://completemusicupdate.com/music-industry-intervenes-in-open-ais-big-legal-battle-with-newspapers-and-authors/",
+        "source": "Complete Music Update",
+        "domain": "completemusicupdate.com",
+        "publishedAt": "2026-11-03T17:31:31.000Z",
         "tags": [
           "lawsuit",
-          "royalties"
+          "ai"
         ],
         "translated": false,
         "via": null
@@ -159,21 +159,6 @@
       },
       {
         "id": "noticia-10",
-        "title": "Music industry intervenes in Open AI’s big legal battle with newspapers and authors",
-        "summary": "All of the US music industry’s copyright lawsuits against AI companies swing on whether or not AI training is fair use under US law. A big legal battle involving authors, newspapers and Open AI also centres on fair use, and the music industry has now intervened in that case via an amicus brief",
-        "url": "https://completemusicupdate.com/music-industry-intervenes-in-open-ais-big-legal-battle-with-newspapers-and-authors/",
-        "source": "Complete Music Update",
-        "domain": "completemusicupdate.com",
-        "publishedAt": "2026-11-03T17:31:31.000Z",
-        "tags": [
-          "lawsuit",
-          "ai"
-        ],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-11",
         "title": "Soundtrack firma con SESAC y suma las cuatro PRO de EE. UU.",
         "summary": "El servicio de música para negocios Soundtrack, conocido hasta hace unos años como Soundtrack Your Brand, ha firmado un acuerdo de licencias con SESAC, una de las entidades estadounidenses de derechos de…",
         "url": "https://industriamusical.com/soundtrack-acuerdo-sesac-cuatro-pro-eeuu/?utm_source=rss&utm_medium=rss&utm_campaign=soundtrack-acuerdo-sesac-cuatro-pro-eeuu",
@@ -187,7 +172,7 @@
         "via": null
       },
       {
-        "id": "noticia-12",
+        "id": "noticia-11",
         "title": "SoundCloud y ElevenLabs: publicación directa de música IA",
         "summary": "SoundCloud y ElevenLabs han anunciado una alianza que permite publicar directamente en SoundCloud las canciones creadas con ElevenMusic, la plataforma de generación de música con inteligencia artificial de ElevenLabs, sin tener que…",
         "url": "https://industriamusical.com/soundcloud-elevenlabs-publicacion-directa-musica-ia/?utm_source=rss&utm_medium=rss&utm_campaign=soundcloud-elevenlabs-publicacion-directa-musica-ia",
@@ -199,6 +184,21 @@
         ],
         "translated": false,
         "via": null
+      },
+      {
+        "id": "noticia-12",
+        "title": "AI platform reproduced Michigan music publishers' copyrighted works without authorization, lawsuit says",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMijAFBVV95cUxNN3NEUjkxX25lTGgzYXJtdG9nazU3VzRHMENEWG9RVjg3RndNajVWS1VPWHdBOXV6R3JoWE51RlJ1NGdSM3JXWFpQN1hKZmxEU2ZxYjU0S3BTNDhoYTFHd0Q3bHFrQTdlSFRlaTBOTEMydmRvcEpaeGU1dktFekp2VTZ4QjhvZUYyT1ZQRg?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "CBS News",
+        "domain": "news.google.com",
+        "publishedAt": "2026-11-07T22:15:34.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
       }
     ],
     "tip": {
@@ -242,6 +242,21 @@
       },
       {
         "id": "noticia-3",
+        "title": "Why Choosing the Right DIY Music Distributor Will Matter More Than Ever in 2027",
+        "summary": "As streaming services push back on AI spam and copyright-infringing uploads, the distributor you pick can decide whether your catalog stays protected, or gets caught in the crossfire. The following comes from Amuse, a partner of DMN. When you release a song, it doesn’t go straight to Spotify or Apple Music. It goes thr…",
+        "url": "https://www.digitalmusicnews.com/2026/11/11/choosing-the-right-diy-music-distribution/",
+        "source": "Digital Music News",
+        "domain": "digitalmusicnews.com",
+        "publishedAt": "2026-11-12T04:00:07.000Z",
+        "tags": [
+          "ai",
+          "streaming"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-4",
         "title": "Suno argues that judge should throw out musician’s publicity rights lawsuit",
         "summary": "Suno is fighting several music industry lawsuits, but one stands out - filed by musician Jason Isbell - because it accuses the AI company of infringing publicity rights by connecting artist names to musical styles in the back-end. Suno has responded to that lawsuit, urging the judge to dismiss it",
         "url": "https://completemusicupdate.com/suno-argues-that-judge-should-throw-out-musicians-publicity-rights-lawsuit/",
@@ -251,21 +266,6 @@
         "tags": [
           "lawsuit",
           "ai"
-        ],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-4",
-        "title": "Why Choosing the Right DIY Music Distributor Will Matter More Than Ever in 2027",
-        "summary": "As streaming services push back on AI spam and copyright-infringing uploads, the distributor you pick can decide whether your catalog stays protected, or gets caught in the crossfire. The following comes from Amuse, a partner of DMN. When you release a song, it doesn’t go straight to Spotify or Apple Music. It goes thr…",
-        "url": "https://www.digitalmusicnews.com/2026/11/11/choosing-the-right-diy-music-distribution/",
-        "source": "Digital Music News",
-        "domain": "digitalmusicnews.com",
-        "publishedAt": "2026-11-11T13:03:07.000Z",
-        "tags": [
-          "ai",
-          "streaming"
         ],
         "translated": false,
         "via": null
@@ -303,15 +303,15 @@
       },
       {
         "id": "noticia-7",
-        "title": "Robbie Williams speaks out on ‘disgusting’ plagiarism lawsuits",
-        "summary": "If you’ve heard Olivia Rodrigo’s ‘take me home (4 christmas)’ single, you may have noticed some similarities to Robbie Williams’ 2012 hit ‘Candy’. Is he going to demand a credit, royalties or even sue her? Nope. The post is from Music Ally .",
-        "url": "https://musically.com/2026/11/10/robbie-williams-speaks-out-on-disgusting-plagiarism-lawsuits/",
-        "source": "Music Ally",
-        "domain": "musically.com",
-        "publishedAt": "2026-11-10T13:30:00.000Z",
+        "title": "Music industry intervenes in Open AI’s big legal battle with newspapers and authors",
+        "summary": "All of the US music industry’s copyright lawsuits against AI companies swing on whether or not AI training is fair use under US law. A big legal battle involving authors, newspapers and Open AI also centres on fair use, and the music industry has now intervened in that case via an amicus brief",
+        "url": "https://completemusicupdate.com/music-industry-intervenes-in-open-ais-big-legal-battle-with-newspapers-and-authors/",
+        "source": "Complete Music Update",
+        "domain": "completemusicupdate.com",
+        "publishedAt": "2026-11-03T17:31:31.000Z",
         "tags": [
           "lawsuit",
-          "royalties"
+          "ai"
         ],
         "translated": false,
         "via": null
@@ -348,21 +348,6 @@
       },
       {
         "id": "noticia-10",
-        "title": "Music industry intervenes in Open AI’s big legal battle with newspapers and authors",
-        "summary": "All of the US music industry’s copyright lawsuits against AI companies swing on whether or not AI training is fair use under US law. A big legal battle involving authors, newspapers and Open AI also centres on fair use, and the music industry has now intervened in that case via an amicus brief",
-        "url": "https://completemusicupdate.com/music-industry-intervenes-in-open-ais-big-legal-battle-with-newspapers-and-authors/",
-        "source": "Complete Music Update",
-        "domain": "completemusicupdate.com",
-        "publishedAt": "2026-11-03T17:31:31.000Z",
-        "tags": [
-          "lawsuit",
-          "ai"
-        ],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-11",
         "title": "Soundtrack firma con SESAC y suma las cuatro PRO de EE. UU.",
         "summary": "El servicio de música para negocios Soundtrack, conocido hasta hace unos años como Soundtrack Your Brand, ha firmado un acuerdo de licencias con SESAC, una de las entidades estadounidenses de derechos de…",
         "url": "https://industriamusical.com/soundtrack-acuerdo-sesac-cuatro-pro-eeuu/?utm_source=rss&utm_medium=rss&utm_campaign=soundtrack-acuerdo-sesac-cuatro-pro-eeuu",
@@ -376,7 +361,7 @@
         "via": null
       },
       {
-        "id": "noticia-12",
+        "id": "noticia-11",
         "title": "SoundCloud y ElevenLabs: publicación directa de música IA",
         "summary": "SoundCloud y ElevenLabs han anunciado una alianza que permite publicar directamente en SoundCloud las canciones creadas con ElevenMusic, la plataforma de generación de música con inteligencia artificial de ElevenLabs, sin tener que…",
         "url": "https://industriamusical.com/soundcloud-elevenlabs-publicacion-directa-musica-ia/?utm_source=rss&utm_medium=rss&utm_campaign=soundcloud-elevenlabs-publicacion-directa-musica-ia",
@@ -388,6 +373,21 @@
         ],
         "translated": false,
         "via": null
+      },
+      {
+        "id": "noticia-12",
+        "title": "AI platform reproduced Michigan music publishers' copyrighted works without authorization, lawsuit says",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMijAFBVV95cUxNN3NEUjkxX25lTGgzYXJtdG9nazU3VzRHMENEWG9RVjg3RndNajVWS1VPWHdBOXV6R3JoWE51RlJ1NGdSM3JXWFpQN1hKZmxEU2ZxYjU0S3BTNDhoYTFHd0Q3bHFrQTdlSFRlaTBOTEMydmRvcEpaeGU1dktFekp2VTZ4QjhvZUYyT1ZQRg?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "CBS News",
+        "domain": "news.google.com",
+        "publishedAt": "2026-11-07T22:15:34.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
       }
     ],
     "tip": {
