@@ -1,10 +1,10 @@
 {
-  "lastUpdated": "2026-11-11T15:04:50.629Z",
+  "lastUpdated": "2026-11-12T01:28:37.685Z",
   "meta": {
     "method": "rss-retrieval + link-verification + ai-translation",
     "itemCount": 12,
     "sources": [
-      "CBS News",
+      "ABA Journal",
       "Complete Music Update",
       "Detroit Free Press",
       "Digital Music News",
@@ -14,7 +14,7 @@
       "TorrentFreak"
     ],
     "verifiedLinks": 12,
-    "aiTranslated": 2,
+    "aiTranslated": 0,
     "note": "Los hechos provienen de los artículos originales enlazados. La IA solo traduce y resume; no genera noticias."
   },
   "es": {
@@ -24,7 +24,7 @@
       {
         "id": "noticia-1",
         "title": "Eminem’s Publisher Eight Mile Style Sues Suno Over Allegations of Copyright Infringement",
-        "summary": "Eight Mile Style, la editorial de Eminem, presentó una demanda contra Suno alegando que la plataforma reprodujo obras protegidas por derechos de autor sin autorización ni compensación, según la denuncia vista por Digital Music News.",
+        "summary": "Eminem’s publishing company, Eight Mile Style, has now filed litigation against Suno for allegedly reproducing their copyrighted works without permission or compensation. Digital Music News was given a first look at the complaint. Eight Mile Style, Eminem’s publishing company that owns or controls the exclusivity to hi…",
         "url": "https://www.digitalmusicnews.com/2026/11/08/eminem-publisher-sues-suno-copyright-infringement/",
         "source": "Digital Music News",
         "domain": "digitalmusicnews.com",
@@ -33,13 +33,13 @@
           "lawsuit",
           "ai"
         ],
-        "translated": true,
+        "translated": false,
         "via": null
       },
       {
         "id": "noticia-2",
         "title": "Elvis Presley Enterprises Slaps Suno With Copyright & NIL Suit, Says the Platform Was ‘Always Meant to Replace the Artists Whose Works and Identities Were Being Unlawfully Copied’",
-        "summary": "Elvis Presley Enterprises, junto a Raleigh Music Publishing y una filial de Authentic Brands Group, presentó una demanda contra Suno por presunta infracción de derechos de autor y de nombre, imagen y semejanza del artista, alegando que la plataforma buscaba reemplazar obras copiadas ilegalmente.",
+        "summary": "Another day, another AI infringement lawsuit – this time against Suno, which is accused of infringing a number of Elvis Presley copyrights as well as the King of Rock’s name, image, and likeness (NIL) rights. Plaintiffs including Elvis Presley Enterprises, Raleigh Music Publishing, and a subsidiary of Elvis IP owner Au…",
         "url": "https://www.digitalmusicnews.com/2026/11/09/elvis-presley-enterprises-suno-lawsuit/",
         "source": "Digital Music News",
         "domain": "digitalmusicnews.com",
@@ -48,7 +48,7 @@
           "lawsuit",
           "ai"
         ],
-        "translated": true,
+        "translated": false,
         "via": null
       },
       {
@@ -98,6 +98,22 @@
       },
       {
         "id": "noticia-6",
+        "title": "Elvis Presley estate shakes up licensing, copyright lawsuit against AI music generator",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMiwwFBVV95cUxQbFZRcG53LWl5UllpanljX0xwTHdYeUtiamZoSmdfMnQxbDZTbmktcWk3bWJJQTFtVllJXy10aVpPLVFELVYzQlRHdlZjbkpsMzJXdEtMSWZ5aWs1NkxQUWxRYUhoanZsMGFYc3h6c242SHJkY0xvZVduYkNKcDg0ZU5Kejl6d1BISDByNzRoLV9lQlRucGRPeE56RzhYNDFhZzRXU2JTUGJLb3BMcnlKclRjRFkzOGs4T2J1bDJqYURjVGM?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "ABA Journal",
+        "domain": "news.google.com",
+        "publishedAt": "2026-11-11T16:36:00.000Z",
+        "tags": [
+          "lawsuit",
+          "ai",
+          "licensing"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-7",
         "title": "Robbie Williams speaks out on ‘disgusting’ plagiarism lawsuits",
         "summary": "If you’ve heard Olivia Rodrigo’s ‘take me home (4 christmas)’ single, you may have noticed some similarities to Robbie Williams’ 2012 hit ‘Candy’. Is he going to demand a credit, royalties or even sue her? Nope. The post is from Music Ally .",
         "url": "https://musically.com/2026/11/10/robbie-williams-speaks-out-on-disgusting-plagiarism-lawsuits/",
@@ -112,7 +128,7 @@
         "via": null
       },
       {
-        "id": "noticia-7",
+        "id": "noticia-8",
         "title": "Eminem song publisher seeks $41M in copyright lawsuit vs. AI platform",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMi7AFBVV95cUxNUnBPUU5kOW5GQjV3Ykw4R0F4OEJ0bmtpVnhRajNmbzNjTVFJZkRyWTl6cGtUWDJDYXZYTTJZTTZNUzJCZWI0SzlsWXFuQU1iampMS3NDenBjVFJ6QVNjemFVdXBHQ2t3YTBvVldoV1RRY0VNVmx6cFRaU2ZyZGZVNTNmV0tZM2YxeFJYX2lOWXhNSmt6U0RHLU1jRVFGQklqaHEzRWVhU2J1eDdZY01ZaHJQQzU2MktrVmFzcXkyaEFjc00zSlBaMXJoY3pkNFdvcXcwVTlQVzN6cWxNOXdDRmVPNElNeF9FVXd2bA?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -127,7 +143,7 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-8",
+        "id": "noticia-9",
         "title": "Meta Employees ‘Interacted’ With Pirated Copies of Adult Films, Filing Shows",
         "summary": "A newly unredacted court filing shows that Meta’s internal investigation found several employees who appear to have interacted with Strike 3’s adult films. The adult content producers say these were torrented copies listed in their lawsuit, but Meta says there is no evidence of torrenting. The company also stresses tha…",
         "url": "https://torrentfreak.com/meta-employees-interacted-with-pirated-copies-of-adult-films-filing-shows/",
@@ -142,7 +158,7 @@
         "via": null
       },
       {
-        "id": "noticia-9",
+        "id": "noticia-10",
         "title": "Music industry intervenes in Open AI’s big legal battle with newspapers and authors",
         "summary": "All of the US music industry’s copyright lawsuits against AI companies swing on whether or not AI training is fair use under US law. A big legal battle involving authors, newspapers and Open AI also centres on fair use, and the music industry has now intervened in that case via an amicus brief",
         "url": "https://completemusicupdate.com/music-industry-intervenes-in-open-ais-big-legal-battle-with-newspapers-and-authors/",
@@ -157,7 +173,7 @@
         "via": null
       },
       {
-        "id": "noticia-10",
+        "id": "noticia-11",
         "title": "Soundtrack firma con SESAC y suma las cuatro PRO de EE. UU.",
         "summary": "El servicio de música para negocios Soundtrack, conocido hasta hace unos años como Soundtrack Your Brand, ha firmado un acuerdo de licencias con SESAC, una de las entidades estadounidenses de derechos de…",
         "url": "https://industriamusical.com/soundtrack-acuerdo-sesac-cuatro-pro-eeuu/?utm_source=rss&utm_medium=rss&utm_campaign=soundtrack-acuerdo-sesac-cuatro-pro-eeuu",
@@ -171,7 +187,7 @@
         "via": null
       },
       {
-        "id": "noticia-11",
+        "id": "noticia-12",
         "title": "SoundCloud y ElevenLabs: publicación directa de música IA",
         "summary": "SoundCloud y ElevenLabs han anunciado una alianza que permite publicar directamente en SoundCloud las canciones creadas con ElevenMusic, la plataforma de generación de música con inteligencia artificial de ElevenLabs, sin tener que…",
         "url": "https://industriamusical.com/soundcloud-elevenlabs-publicacion-directa-musica-ia/?utm_source=rss&utm_medium=rss&utm_campaign=soundcloud-elevenlabs-publicacion-directa-musica-ia",
@@ -183,26 +199,11 @@
         ],
         "translated": false,
         "via": null
-      },
-      {
-        "id": "noticia-12",
-        "title": "AI platform reproduced Michigan music publishers' copyrighted works without authorization, lawsuit says",
-        "summary": "",
-        "url": "https://news.google.com/rss/articles/CBMijAFBVV95cUxNN3NEUjkxX25lTGgzYXJtdG9nazU3VzRHMENEWG9RVjg3RndNajVWS1VPWHdBOXV6R3JoWE51RlJ1NGdSM3JXWFpQN1hKZmxEU2ZxYjU0S3BTNDhoYTFHd0Q3bHFrQTdlSFRlaTBOTEMydmRvcEpaeGU1dktFekp2VTZ4QjhvZUYyT1ZQRg?oc=5&hl=es-419&gl=US&ceid=US:es-419",
-        "source": "CBS News",
-        "domain": "news.google.com",
-        "publishedAt": "2026-11-07T22:15:34.000Z",
-        "tags": [
-          "lawsuit",
-          "ai"
-        ],
-        "translated": false,
-        "via": "Google News"
       }
     ],
     "tip": {
-      "title": "Documenta tu aporte humano cuando uses IA",
-      "body": "Las oficinas de derechos de autor protegen la parte creada por una persona. Guarda prompts, versiones, ediciones y decisiones de mezcla: eso es lo que sostiene tu autoría sobre el resultado."
+      "title": "Lee los términos del generador de IA que usas",
+      "body": "Cada plataforma decide por contrato qué puedes hacer comercialmente con lo que generas y qué derechos se reserva. Dos herramientas parecidas pueden darte licencias completamente distintas."
     }
   },
   "en": {
@@ -212,7 +213,7 @@
       {
         "id": "noticia-1",
         "title": "Eminem’s Publisher Eight Mile Style Sues Suno Over Allegations of Copyright Infringement",
-        "summary": "Eight Mile Style, Eminem’s publishing company, filed a lawsuit against Suno claiming the AI platform reproduced copyrighted works without permission or compensation, with Digital Music News receiving a first look at the complaint.",
+        "summary": "Eminem’s publishing company, Eight Mile Style, has now filed litigation against Suno for allegedly reproducing their copyrighted works without permission or compensation. Digital Music News was given a first look at the complaint. Eight Mile Style, Eminem’s publishing company that owns or controls the exclusivity to hi…",
         "url": "https://www.digitalmusicnews.com/2026/11/08/eminem-publisher-sues-suno-copyright-infringement/",
         "source": "Digital Music News",
         "domain": "digitalmusicnews.com",
@@ -221,13 +222,13 @@
           "lawsuit",
           "ai"
         ],
-        "translated": true,
+        "translated": false,
         "via": null
       },
       {
         "id": "noticia-2",
         "title": "Elvis Presley Enterprises Slaps Suno With Copyright & NIL Suit, Says the Platform Was ‘Always Meant to Replace the Artists Whose Works and Identities Were Being Unlawfully Copied’",
-        "summary": "Elvis Presley Enterprises, together with Raleigh Music Publishing and an Authentic Brands Group subsidiary, sued Suno for alleged copyright infringement and violation of the singer’s name, image and likeness rights, stating the platform was intended to replace works unlawfully copied.",
+        "summary": "Another day, another AI infringement lawsuit – this time against Suno, which is accused of infringing a number of Elvis Presley copyrights as well as the King of Rock’s name, image, and likeness (NIL) rights. Plaintiffs including Elvis Presley Enterprises, Raleigh Music Publishing, and a subsidiary of Elvis IP owner Au…",
         "url": "https://www.digitalmusicnews.com/2026/11/09/elvis-presley-enterprises-suno-lawsuit/",
         "source": "Digital Music News",
         "domain": "digitalmusicnews.com",
@@ -236,7 +237,7 @@
           "lawsuit",
           "ai"
         ],
-        "translated": true,
+        "translated": false,
         "via": null
       },
       {
@@ -286,6 +287,22 @@
       },
       {
         "id": "noticia-6",
+        "title": "Elvis Presley estate shakes up licensing, copyright lawsuit against AI music generator",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMiwwFBVV95cUxQbFZRcG53LWl5UllpanljX0xwTHdYeUtiamZoSmdfMnQxbDZTbmktcWk3bWJJQTFtVllJXy10aVpPLVFELVYzQlRHdlZjbkpsMzJXdEtMSWZ5aWs1NkxQUWxRYUhoanZsMGFYc3h6c242SHJkY0xvZVduYkNKcDg0ZU5Kejl6d1BISDByNzRoLV9lQlRucGRPeE56RzhYNDFhZzRXU2JTUGJLb3BMcnlKclRjRFkzOGs4T2J1bDJqYURjVGM?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "ABA Journal",
+        "domain": "news.google.com",
+        "publishedAt": "2026-11-11T16:36:00.000Z",
+        "tags": [
+          "lawsuit",
+          "ai",
+          "licensing"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-7",
         "title": "Robbie Williams speaks out on ‘disgusting’ plagiarism lawsuits",
         "summary": "If you’ve heard Olivia Rodrigo’s ‘take me home (4 christmas)’ single, you may have noticed some similarities to Robbie Williams’ 2012 hit ‘Candy’. Is he going to demand a credit, royalties or even sue her? Nope. The post is from Music Ally .",
         "url": "https://musically.com/2026/11/10/robbie-williams-speaks-out-on-disgusting-plagiarism-lawsuits/",
@@ -300,7 +317,7 @@
         "via": null
       },
       {
-        "id": "noticia-7",
+        "id": "noticia-8",
         "title": "Eminem song publisher seeks $41M in copyright lawsuit vs. AI platform",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMi7AFBVV95cUxNUnBPUU5kOW5GQjV3Ykw4R0F4OEJ0bmtpVnhRajNmbzNjTVFJZkRyWTl6cGtUWDJDYXZYTTJZTTZNUzJCZWI0SzlsWXFuQU1iampMS3NDenBjVFJ6QVNjemFVdXBHQ2t3YTBvVldoV1RRY0VNVmx6cFRaU2ZyZGZVNTNmV0tZM2YxeFJYX2lOWXhNSmt6U0RHLU1jRVFGQklqaHEzRWVhU2J1eDdZY01ZaHJQQzU2MktrVmFzcXkyaEFjc00zSlBaMXJoY3pkNFdvcXcwVTlQVzN6cWxNOXdDRmVPNElNeF9FVXd2bA?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -315,7 +332,7 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-8",
+        "id": "noticia-9",
         "title": "Meta Employees ‘Interacted’ With Pirated Copies of Adult Films, Filing Shows",
         "summary": "A newly unredacted court filing shows that Meta’s internal investigation found several employees who appear to have interacted with Strike 3’s adult films. The adult content producers say these were torrented copies listed in their lawsuit, but Meta says there is no evidence of torrenting. The company also stresses tha…",
         "url": "https://torrentfreak.com/meta-employees-interacted-with-pirated-copies-of-adult-films-filing-shows/",
@@ -330,7 +347,7 @@
         "via": null
       },
       {
-        "id": "noticia-9",
+        "id": "noticia-10",
         "title": "Music industry intervenes in Open AI’s big legal battle with newspapers and authors",
         "summary": "All of the US music industry’s copyright lawsuits against AI companies swing on whether or not AI training is fair use under US law. A big legal battle involving authors, newspapers and Open AI also centres on fair use, and the music industry has now intervened in that case via an amicus brief",
         "url": "https://completemusicupdate.com/music-industry-intervenes-in-open-ais-big-legal-battle-with-newspapers-and-authors/",
@@ -345,7 +362,7 @@
         "via": null
       },
       {
-        "id": "noticia-10",
+        "id": "noticia-11",
         "title": "Soundtrack firma con SESAC y suma las cuatro PRO de EE. UU.",
         "summary": "El servicio de música para negocios Soundtrack, conocido hasta hace unos años como Soundtrack Your Brand, ha firmado un acuerdo de licencias con SESAC, una de las entidades estadounidenses de derechos de…",
         "url": "https://industriamusical.com/soundtrack-acuerdo-sesac-cuatro-pro-eeuu/?utm_source=rss&utm_medium=rss&utm_campaign=soundtrack-acuerdo-sesac-cuatro-pro-eeuu",
@@ -359,7 +376,7 @@
         "via": null
       },
       {
-        "id": "noticia-11",
+        "id": "noticia-12",
         "title": "SoundCloud y ElevenLabs: publicación directa de música IA",
         "summary": "SoundCloud y ElevenLabs han anunciado una alianza que permite publicar directamente en SoundCloud las canciones creadas con ElevenMusic, la plataforma de generación de música con inteligencia artificial de ElevenLabs, sin tener que…",
         "url": "https://industriamusical.com/soundcloud-elevenlabs-publicacion-directa-musica-ia/?utm_source=rss&utm_medium=rss&utm_campaign=soundcloud-elevenlabs-publicacion-directa-musica-ia",
@@ -371,26 +388,11 @@
         ],
         "translated": false,
         "via": null
-      },
-      {
-        "id": "noticia-12",
-        "title": "AI platform reproduced Michigan music publishers' copyrighted works without authorization, lawsuit says",
-        "summary": "",
-        "url": "https://news.google.com/rss/articles/CBMijAFBVV95cUxNN3NEUjkxX25lTGgzYXJtdG9nazU3VzRHMENEWG9RVjg3RndNajVWS1VPWHdBOXV6R3JoWE51RlJ1NGdSM3JXWFpQN1hKZmxEU2ZxYjU0S3BTNDhoYTFHd0Q3bHFrQTdlSFRlaTBOTEMydmRvcEpaeGU1dktFekp2VTZ4QjhvZUYyT1ZQRg?oc=5&hl=es-419&gl=US&ceid=US:es-419",
-        "source": "CBS News",
-        "domain": "news.google.com",
-        "publishedAt": "2026-11-07T22:15:34.000Z",
-        "tags": [
-          "lawsuit",
-          "ai"
-        ],
-        "translated": false,
-        "via": "Google News"
       }
     ],
     "tip": {
-      "title": "Document your human contribution when using AI",
-      "body": "Copyright offices protect the human-created portion. Keep prompts, versions, edits and mix decisions —that record is what supports your authorship over the final result."
+      "title": "Read the terms of the AI generator you use",
+      "body": "Each platform decides by contract what you may do commercially with your outputs and what rights it keeps. Two similar tools can grant completely different licenses."
     }
   }
 }
