@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-11-13T00:11:01.223Z",
+  "lastUpdated": "2026-11-13T15:18:31.957Z",
   "meta": {
     "method": "rss-retrieval + link-verification + ai-translation",
     "itemCount": 12,
@@ -14,7 +14,7 @@
       "TorrentFreak"
     ],
     "verifiedLinks": 12,
-    "aiTranslated": 0,
+    "aiTranslated": 1,
     "note": "Los hechos provienen de los artículos originales enlazados. La IA solo traduce y resume; no genera noticias."
   },
   "es": {
@@ -23,8 +23,8 @@
     "items": [
       {
         "id": "noticia-1",
-        "title": "Eminem’s Publisher Eight Mile Style Sues Suno Over Allegations of Copyright Infringement",
-        "summary": "Eminem’s publishing company, Eight Mile Style, has now filed litigation against Suno for allegedly reproducing their copyrighted works without permission or compensation. Digital Music News was given a first look at the complaint. Eight Mile Style, Eminem’s publishing company that owns or controls the exclusivity to hi…",
+        "title": "La editorial de Eminem, Eight Mile Style, demanda a Suno por presunta infracción de derechos de autor",
+        "summary": "Eight Mile Style, la editorial que controla el catálogo de Eminem, ha presentado una demanda contra Suno alegando que la plataforma reproduce obras protegidas sin autorización ni compensación, según el documento judicial recibido.",
         "url": "https://www.digitalmusicnews.com/2026/11/08/eminem-publisher-sues-suno-copyright-infringement/",
         "source": "Digital Music News",
         "domain": "digitalmusicnews.com",
@@ -33,17 +33,17 @@
           "lawsuit",
           "ai"
         ],
-        "translated": false,
+        "translated": true,
         "via": null
       },
       {
         "id": "noticia-2",
-        "title": "Reservoir Expands Its Suno and Anthropic Infringement Lawsuits, Now Seeks Nearly $450 Million in Statutory Damages",
+        "title": "Reservoir Expands Its Suno and Anthropic Infringement Lawsuits; Publisher Now Seeks Nearly $450 Million in Statutory Damages",
         "summary": "Reservoir Media has supersized its Suno and Anthropic copyright infringement complaints, which are now demanding a combined total of nearly $450 million in statutory damages. New York City-headquartered Reservoir fired off the expanded actions yesterday, weeks after submitting the original complaints. As we broke down…",
         "url": "https://www.digitalmusicnews.com/2026/11/12/reservoir-suno-lawsuit-anthropic-amended/",
         "source": "Digital Music News",
         "domain": "digitalmusicnews.com",
-        "publishedAt": "2026-11-12T18:03:16.000Z",
+        "publishedAt": "2026-11-13T04:00:16.000Z",
         "tags": [
           "lawsuit",
           "ai"
@@ -129,21 +129,6 @@
       },
       {
         "id": "noticia-8",
-        "title": "Eminem song publisher seeks $41M in copyright lawsuit vs. AI platform",
-        "summary": "",
-        "url": "https://news.google.com/rss/articles/CBMi7AFBVV95cUxNUnBPUU5kOW5GQjV3Ykw4R0F4OEJ0bmtpVnhRajNmbzNjTVFJZkRyWTl6cGtUWDJDYXZYTTJZTTZNUzJCZWI0SzlsWXFuQU1iampMS3NDenBjVFJ6QVNjemFVdXBHQ2t3YTBvVldoV1RRY0VNVmx6cFRaU2ZyZGZVNTNmV0tZM2YxeFJYX2lOWXhNSmt6U0RHLU1jRVFGQklqaHEzRWVhU2J1eDdZY01ZaHJQQzU2MktrVmFzcXkyaEFjc00zSlBaMXJoY3pkNFdvcXcwVTlQVzN6cWxNOXdDRmVPNElNeF9FVXd2bA?oc=5&hl=es-419&gl=US&ceid=US:es-419",
-        "source": "Detroit Free Press",
-        "domain": "news.google.com",
-        "publishedAt": "2026-11-10T20:58:46.000Z",
-        "tags": [
-          "lawsuit",
-          "ai"
-        ],
-        "translated": false,
-        "via": "Google News"
-      },
-      {
-        "id": "noticia-9",
         "title": "Meta Employees ‘Interacted’ With Pirated Copies of Adult Films, Filing Shows",
         "summary": "A newly unredacted court filing shows that Meta’s internal investigation found several employees who appear to have interacted with Strike 3’s adult films. The adult content producers say these were torrented copies listed in their lawsuit, but Meta says there is no evidence of torrenting. The company also stresses tha…",
         "url": "https://torrentfreak.com/meta-employees-interacted-with-pirated-copies-of-adult-films-filing-shows/",
@@ -156,6 +141,21 @@
         ],
         "translated": false,
         "via": null
+      },
+      {
+        "id": "noticia-9",
+        "title": "Eminem song publisher seeks $41M in copyright lawsuit vs. AI platform",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMi7AFBVV95cUxNUnBPUU5kOW5GQjV3Ykw4R0F4OEJ0bmtpVnhRajNmbzNjTVFJZkRyWTl6cGtUWDJDYXZYTTJZTTZNUzJCZWI0SzlsWXFuQU1iampMS3NDenBjVFJ6QVNjemFVdXBHQ2t3YTBvVldoV1RRY0VNVmx6cFRaU2ZyZGZVNTNmV0tZM2YxeFJYX2lOWXhNSmt6U0RHLU1jRVFGQklqaHEzRWVhU2J1eDdZY01ZaHJQQzU2MktrVmFzcXkyaEFjc00zSlBaMXJoY3pkNFdvcXcwVTlQVzN6cWxNOXdDRmVPNElNeF9FVXd2bA?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "Detroit Free Press",
+        "domain": "news.google.com",
+        "publishedAt": "2026-11-10T20:58:46.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
       },
       {
         "id": "noticia-10",
@@ -213,7 +213,7 @@
       {
         "id": "noticia-1",
         "title": "Eminem’s Publisher Eight Mile Style Sues Suno Over Allegations of Copyright Infringement",
-        "summary": "Eminem’s publishing company, Eight Mile Style, has now filed litigation against Suno for allegedly reproducing their copyrighted works without permission or compensation. Digital Music News was given a first look at the complaint. Eight Mile Style, Eminem’s publishing company that owns or controls the exclusivity to hi…",
+        "summary": "Eight Mile Style, the publisher that controls Eminem’s catalog, has filed a lawsuit against Suno claiming the AI service reproduces copyrighted works without permission or payment, as detailed in the complaint provided to Digital Music News.",
         "url": "https://www.digitalmusicnews.com/2026/11/08/eminem-publisher-sues-suno-copyright-infringement/",
         "source": "Digital Music News",
         "domain": "digitalmusicnews.com",
@@ -222,17 +222,17 @@
           "lawsuit",
           "ai"
         ],
-        "translated": false,
+        "translated": true,
         "via": null
       },
       {
         "id": "noticia-2",
-        "title": "Reservoir Expands Its Suno and Anthropic Infringement Lawsuits, Now Seeks Nearly $450 Million in Statutory Damages",
+        "title": "Reservoir Expands Its Suno and Anthropic Infringement Lawsuits; Publisher Now Seeks Nearly $450 Million in Statutory Damages",
         "summary": "Reservoir Media has supersized its Suno and Anthropic copyright infringement complaints, which are now demanding a combined total of nearly $450 million in statutory damages. New York City-headquartered Reservoir fired off the expanded actions yesterday, weeks after submitting the original complaints. As we broke down…",
         "url": "https://www.digitalmusicnews.com/2026/11/12/reservoir-suno-lawsuit-anthropic-amended/",
         "source": "Digital Music News",
         "domain": "digitalmusicnews.com",
-        "publishedAt": "2026-11-12T18:03:16.000Z",
+        "publishedAt": "2026-11-13T04:00:16.000Z",
         "tags": [
           "lawsuit",
           "ai"
@@ -318,21 +318,6 @@
       },
       {
         "id": "noticia-8",
-        "title": "Eminem song publisher seeks $41M in copyright lawsuit vs. AI platform",
-        "summary": "",
-        "url": "https://news.google.com/rss/articles/CBMi7AFBVV95cUxNUnBPUU5kOW5GQjV3Ykw4R0F4OEJ0bmtpVnhRajNmbzNjTVFJZkRyWTl6cGtUWDJDYXZYTTJZTTZNUzJCZWI0SzlsWXFuQU1iampMS3NDenBjVFJ6QVNjemFVdXBHQ2t3YTBvVldoV1RRY0VNVmx6cFRaU2ZyZGZVNTNmV0tZM2YxeFJYX2lOWXhNSmt6U0RHLU1jRVFGQklqaHEzRWVhU2J1eDdZY01ZaHJQQzU2MktrVmFzcXkyaEFjc00zSlBaMXJoY3pkNFdvcXcwVTlQVzN6cWxNOXdDRmVPNElNeF9FVXd2bA?oc=5&hl=es-419&gl=US&ceid=US:es-419",
-        "source": "Detroit Free Press",
-        "domain": "news.google.com",
-        "publishedAt": "2026-11-10T20:58:46.000Z",
-        "tags": [
-          "lawsuit",
-          "ai"
-        ],
-        "translated": false,
-        "via": "Google News"
-      },
-      {
-        "id": "noticia-9",
         "title": "Meta Employees ‘Interacted’ With Pirated Copies of Adult Films, Filing Shows",
         "summary": "A newly unredacted court filing shows that Meta’s internal investigation found several employees who appear to have interacted with Strike 3’s adult films. The adult content producers say these were torrented copies listed in their lawsuit, but Meta says there is no evidence of torrenting. The company also stresses tha…",
         "url": "https://torrentfreak.com/meta-employees-interacted-with-pirated-copies-of-adult-films-filing-shows/",
@@ -345,6 +330,21 @@
         ],
         "translated": false,
         "via": null
+      },
+      {
+        "id": "noticia-9",
+        "title": "Eminem song publisher seeks $41M in copyright lawsuit vs. AI platform",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMi7AFBVV95cUxNUnBPUU5kOW5GQjV3Ykw4R0F4OEJ0bmtpVnhRajNmbzNjTVFJZkRyWTl6cGtUWDJDYXZYTTJZTTZNUzJCZWI0SzlsWXFuQU1iampMS3NDenBjVFJ6QVNjemFVdXBHQ2t3YTBvVldoV1RRY0VNVmx6cFRaU2ZyZGZVNTNmV0tZM2YxeFJYX2lOWXhNSmt6U0RHLU1jRVFGQklqaHEzRWVhU2J1eDdZY01ZaHJQQzU2MktrVmFzcXkyaEFjc00zSlBaMXJoY3pkNFdvcXcwVTlQVzN6cWxNOXdDRmVPNElNeF9FVXd2bA?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "Detroit Free Press",
+        "domain": "news.google.com",
+        "publishedAt": "2026-11-10T20:58:46.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
       },
       {
         "id": "noticia-10",
