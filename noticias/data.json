@@ -1,15 +1,15 @@
 {
-  "lastUpdated": "2026-11-12T15:55:41.905Z",
+  "lastUpdated": "2026-11-13T00:11:01.223Z",
   "meta": {
     "method": "rss-retrieval + link-verification + ai-translation",
     "itemCount": 12,
     "sources": [
       "ABA Journal",
-      "CBS News",
       "Complete Music Update",
       "Detroit Free Press",
       "Digital Music News",
       "Industria Musical",
+      "Music Business Worldwide",
       "Storyboard18",
       "TorrentFreak"
     ],
@@ -38,12 +38,12 @@
       },
       {
         "id": "noticia-2",
-        "title": "Elvis Presley Enterprises Slaps Suno With Copyright & NIL Suit, Says the Platform Was ‘Always Meant to Replace the Artists Whose Works and Identities Were Being Unlawfully Copied’",
-        "summary": "Another day, another AI infringement lawsuit – this time against Suno, which is accused of infringing a number of Elvis Presley copyrights as well as the King of Rock’s name, image, and likeness (NIL) rights. Plaintiffs including Elvis Presley Enterprises, Raleigh Music Publishing, and a subsidiary of Elvis IP owner Au…",
-        "url": "https://www.digitalmusicnews.com/2026/11/09/elvis-presley-enterprises-suno-lawsuit/",
+        "title": "Reservoir Expands Its Suno and Anthropic Infringement Lawsuits, Now Seeks Nearly $450 Million in Statutory Damages",
+        "summary": "Reservoir Media has supersized its Suno and Anthropic copyright infringement complaints, which are now demanding a combined total of nearly $450 million in statutory damages. New York City-headquartered Reservoir fired off the expanded actions yesterday, weeks after submitting the original complaints. As we broke down…",
+        "url": "https://www.digitalmusicnews.com/2026/11/12/reservoir-suno-lawsuit-anthropic-amended/",
         "source": "Digital Music News",
         "domain": "digitalmusicnews.com",
-        "publishedAt": "2026-11-09T13:00:56.000Z",
+        "publishedAt": "2026-11-12T18:03:16.000Z",
         "tags": [
           "lawsuit",
           "ai"
@@ -53,15 +53,15 @@
       },
       {
         "id": "noticia-3",
-        "title": "Why Choosing the Right DIY Music Distributor Will Matter More Than Ever in 2027",
-        "summary": "As streaming services push back on AI spam and copyright-infringing uploads, the distributor you pick can decide whether your catalog stays protected, or gets caught in the crossfire. The following comes from Amuse, a partner of DMN. When you release a song, it doesn’t go straight to Spotify or Apple Music. It goes thr…",
-        "url": "https://www.digitalmusicnews.com/2026/11/11/choosing-the-right-diy-music-distribution/",
+        "title": "Elvis Presley Enterprises Slaps Suno With Copyright & NIL Suit, Says the Platform Was ‘Always Meant to Replace the Artists Whose Works and Identities Were Being Unlawfully Copied’",
+        "summary": "Another day, another AI infringement lawsuit – this time against Suno, which is accused of infringing a number of Elvis Presley copyrights as well as the King of Rock’s name, image, and likeness (NIL) rights. Plaintiffs including Elvis Presley Enterprises, Raleigh Music Publishing, and a subsidiary of Elvis IP owner Au…",
+        "url": "https://www.digitalmusicnews.com/2026/11/09/elvis-presley-enterprises-suno-lawsuit/",
         "source": "Digital Music News",
         "domain": "digitalmusicnews.com",
-        "publishedAt": "2026-11-12T04:00:07.000Z",
+        "publishedAt": "2026-11-09T13:00:56.000Z",
         "tags": [
-          "ai",
-          "streaming"
+          "lawsuit",
+          "ai"
         ],
         "translated": false,
         "via": null
@@ -187,23 +187,23 @@
       },
       {
         "id": "noticia-12",
-        "title": "AI platform reproduced Michigan music publishers' copyrighted works without authorization, lawsuit says",
-        "summary": "",
-        "url": "https://news.google.com/rss/articles/CBMijAFBVV95cUxNN3NEUjkxX25lTGgzYXJtdG9nazU3VzRHMENEWG9RVjg3RndNajVWS1VPWHdBOXV6R3JoWE51RlJ1NGdSM3JXWFpQN1hKZmxEU2ZxYjU0S3BTNDhoYTFHd0Q3bHFrQTdlSFRlaTBOTEMydmRvcEpaeGU1dktFekp2VTZ4QjhvZUYyT1ZQRg?oc=5&hl=es-419&gl=US&ceid=US:es-419",
-        "source": "CBS News",
-        "domain": "news.google.com",
-        "publishedAt": "2026-11-07T22:15:34.000Z",
+        "title": "NVIDIA’s venture arm asks court to block UMG and Sony’s demand for testimony in Suno lawsuit, calling itself a ‘passive minority investor’",
+        "summary": "NVentures says it has already handed the labels 6,324 documents running to 28,194 pages. Source",
+        "url": "https://www.musicbusinessworldwide.com/nvidias-venture-arm-asks-court-to-block-umg-and-sonys-demand-for-testimony-in-suno-lawsuit-calling-itself-a-passive-minority-investor/",
+        "source": "Music Business Worldwide",
+        "domain": "musicbusinessworldwide.com",
+        "publishedAt": "2026-11-12T19:49:08.000Z",
         "tags": [
           "lawsuit",
           "ai"
         ],
         "translated": false,
-        "via": "Google News"
+        "via": null
       }
     ],
     "tip": {
-      "title": "Lee los términos del generador de IA que usas",
-      "body": "Cada plataforma decide por contrato qué puedes hacer comercialmente con lo que generas y qué derechos se reserva. Dos herramientas parecidas pueden darte licencias completamente distintas."
+      "title": "Registra tu catálogo también en la sociedad de gestión",
+      "body": "El registro de autoría y la recaudación son trámites distintos. Si tu obra no está dada de alta en la sociedad correspondiente, las regalías de ejecución pública simplemente no te llegan."
     }
   },
   "en": {
@@ -227,12 +227,12 @@
       },
       {
         "id": "noticia-2",
-        "title": "Elvis Presley Enterprises Slaps Suno With Copyright & NIL Suit, Says the Platform Was ‘Always Meant to Replace the Artists Whose Works and Identities Were Being Unlawfully Copied’",
-        "summary": "Another day, another AI infringement lawsuit – this time against Suno, which is accused of infringing a number of Elvis Presley copyrights as well as the King of Rock’s name, image, and likeness (NIL) rights. Plaintiffs including Elvis Presley Enterprises, Raleigh Music Publishing, and a subsidiary of Elvis IP owner Au…",
-        "url": "https://www.digitalmusicnews.com/2026/11/09/elvis-presley-enterprises-suno-lawsuit/",
+        "title": "Reservoir Expands Its Suno and Anthropic Infringement Lawsuits, Now Seeks Nearly $450 Million in Statutory Damages",
+        "summary": "Reservoir Media has supersized its Suno and Anthropic copyright infringement complaints, which are now demanding a combined total of nearly $450 million in statutory damages. New York City-headquartered Reservoir fired off the expanded actions yesterday, weeks after submitting the original complaints. As we broke down…",
+        "url": "https://www.digitalmusicnews.com/2026/11/12/reservoir-suno-lawsuit-anthropic-amended/",
         "source": "Digital Music News",
         "domain": "digitalmusicnews.com",
-        "publishedAt": "2026-11-09T13:00:56.000Z",
+        "publishedAt": "2026-11-12T18:03:16.000Z",
         "tags": [
           "lawsuit",
           "ai"
@@ -242,15 +242,15 @@
       },
       {
         "id": "noticia-3",
-        "title": "Why Choosing the Right DIY Music Distributor Will Matter More Than Ever in 2027",
-        "summary": "As streaming services push back on AI spam and copyright-infringing uploads, the distributor you pick can decide whether your catalog stays protected, or gets caught in the crossfire. The following comes from Amuse, a partner of DMN. When you release a song, it doesn’t go straight to Spotify or Apple Music. It goes thr…",
-        "url": "https://www.digitalmusicnews.com/2026/11/11/choosing-the-right-diy-music-distribution/",
+        "title": "Elvis Presley Enterprises Slaps Suno With Copyright & NIL Suit, Says the Platform Was ‘Always Meant to Replace the Artists Whose Works and Identities Were Being Unlawfully Copied’",
+        "summary": "Another day, another AI infringement lawsuit – this time against Suno, which is accused of infringing a number of Elvis Presley copyrights as well as the King of Rock’s name, image, and likeness (NIL) rights. Plaintiffs including Elvis Presley Enterprises, Raleigh Music Publishing, and a subsidiary of Elvis IP owner Au…",
+        "url": "https://www.digitalmusicnews.com/2026/11/09/elvis-presley-enterprises-suno-lawsuit/",
         "source": "Digital Music News",
         "domain": "digitalmusicnews.com",
-        "publishedAt": "2026-11-12T04:00:07.000Z",
+        "publishedAt": "2026-11-09T13:00:56.000Z",
         "tags": [
-          "ai",
-          "streaming"
+          "lawsuit",
+          "ai"
         ],
         "translated": false,
         "via": null
@@ -376,23 +376,23 @@
       },
       {
         "id": "noticia-12",
-        "title": "AI platform reproduced Michigan music publishers' copyrighted works without authorization, lawsuit says",
-        "summary": "",
-        "url": "https://news.google.com/rss/articles/CBMijAFBVV95cUxNN3NEUjkxX25lTGgzYXJtdG9nazU3VzRHMENEWG9RVjg3RndNajVWS1VPWHdBOXV6R3JoWE51RlJ1NGdSM3JXWFpQN1hKZmxEU2ZxYjU0S3BTNDhoYTFHd0Q3bHFrQTdlSFRlaTBOTEMydmRvcEpaeGU1dktFekp2VTZ4QjhvZUYyT1ZQRg?oc=5&hl=es-419&gl=US&ceid=US:es-419",
-        "source": "CBS News",
-        "domain": "news.google.com",
-        "publishedAt": "2026-11-07T22:15:34.000Z",
+        "title": "NVIDIA’s venture arm asks court to block UMG and Sony’s demand for testimony in Suno lawsuit, calling itself a ‘passive minority investor’",
+        "summary": "NVentures says it has already handed the labels 6,324 documents running to 28,194 pages. Source",
+        "url": "https://www.musicbusinessworldwide.com/nvidias-venture-arm-asks-court-to-block-umg-and-sonys-demand-for-testimony-in-suno-lawsuit-calling-itself-a-passive-minority-investor/",
+        "source": "Music Business Worldwide",
+        "domain": "musicbusinessworldwide.com",
+        "publishedAt": "2026-11-12T19:49:08.000Z",
         "tags": [
           "lawsuit",
           "ai"
         ],
         "translated": false,
-        "via": "Google News"
+        "via": null
       }
     ],
     "tip": {
-      "title": "Read the terms of the AI generator you use",
-      "body": "Each platform decides by contract what you may do commercially with your outputs and what rights it keeps. Two similar tools can grant completely different licenses."
+      "title": "Register with your collecting society too",
+      "body": "Copyright registration and royalty collection are separate steps. If your work isn't registered with the right society, public performance royalties simply never reach you."
     }
   }
 }
