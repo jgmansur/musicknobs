@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-11-14T00:17:21.919Z",
+  "lastUpdated": "2026-11-14T14:04:33.684Z",
   "meta": {
     "method": "rss-retrieval + link-verification + ai-translation",
     "itemCount": 12,
@@ -10,7 +10,7 @@
       "Detroit Free Press",
       "Digital Music News",
       "Industria Musical",
-      "Music Business Worldwide",
+      "Music Ally",
       "Storyboard18",
       "TorrentFreak"
     ],
@@ -173,21 +173,6 @@
       },
       {
         "id": "noticia-11",
-        "title": "NVIDIA’s venture arm asks court to block UMG and Sony’s demand for testimony in Suno lawsuit, calling itself a ‘passive minority investor’",
-        "summary": "NVentures says it has already handed the labels 6,324 documents running to 28,194 pages. Source",
-        "url": "https://www.musicbusinessworldwide.com/nvidias-venture-arm-asks-court-to-block-umg-and-sonys-demand-for-testimony-in-suno-lawsuit-calling-itself-a-passive-minority-investor/",
-        "source": "Music Business Worldwide",
-        "domain": "musicbusinessworldwide.com",
-        "publishedAt": "2026-11-12T19:49:08.000Z",
-        "tags": [
-          "lawsuit",
-          "ai"
-        ],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-12",
         "title": "AI platform reproduced Michigan music publishers' copyrighted works without authorization, lawsuit says",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMijAFBVV95cUxNN3NEUjkxX25lTGgzYXJtdG9nazU3VzRHMENEWG9RVjg3RndNajVWS1VPWHdBOXV6R3JoWE51RlJ1NGdSM3JXWFpQN1hKZmxEU2ZxYjU0S3BTNDhoYTFHd0Q3bHFrQTdlSFRlaTBOTEMydmRvcEpaeGU1dktFekp2VTZ4QjhvZUYyT1ZQRg?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -200,6 +185,21 @@
         ],
         "translated": false,
         "via": "Google News"
+      },
+      {
+        "id": "noticia-12",
+        "title": "Suno boss talks streaming fraud: ‘AI music is not a crime’",
+        "summary": "Suno CEO Mikey Shulman has criticised what he describes as a “sleight of hand” of “equating streaming fraud with AI music”, while stressing that his company is doing more work behind the scenes to tackle fraud than people realise. The post is from Music Ally .",
+        "url": "https://musically.com/2026/11/13/suno-boss-talks-streaming-fraud-ai-music-is-not-a-crime/",
+        "source": "Music Ally",
+        "domain": "musically.com",
+        "publishedAt": "2026-11-13T12:30:00.000Z",
+        "tags": [
+          "ai",
+          "streaming"
+        ],
+        "translated": false,
+        "via": null
       }
     ],
     "tip": {
@@ -362,21 +362,6 @@
       },
       {
         "id": "noticia-11",
-        "title": "NVIDIA’s venture arm asks court to block UMG and Sony’s demand for testimony in Suno lawsuit, calling itself a ‘passive minority investor’",
-        "summary": "NVentures says it has already handed the labels 6,324 documents running to 28,194 pages. Source",
-        "url": "https://www.musicbusinessworldwide.com/nvidias-venture-arm-asks-court-to-block-umg-and-sonys-demand-for-testimony-in-suno-lawsuit-calling-itself-a-passive-minority-investor/",
-        "source": "Music Business Worldwide",
-        "domain": "musicbusinessworldwide.com",
-        "publishedAt": "2026-11-12T19:49:08.000Z",
-        "tags": [
-          "lawsuit",
-          "ai"
-        ],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-12",
         "title": "AI platform reproduced Michigan music publishers' copyrighted works without authorization, lawsuit says",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMijAFBVV95cUxNN3NEUjkxX25lTGgzYXJtdG9nazU3VzRHMENEWG9RVjg3RndNajVWS1VPWHdBOXV6R3JoWE51RlJ1NGdSM3JXWFpQN1hKZmxEU2ZxYjU0S3BTNDhoYTFHd0Q3bHFrQTdlSFRlaTBOTEMydmRvcEpaeGU1dktFekp2VTZ4QjhvZUYyT1ZQRg?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -389,6 +374,21 @@
         ],
         "translated": false,
         "via": "Google News"
+      },
+      {
+        "id": "noticia-12",
+        "title": "Suno boss talks streaming fraud: ‘AI music is not a crime’",
+        "summary": "Suno CEO Mikey Shulman has criticised what he describes as a “sleight of hand” of “equating streaming fraud with AI music”, while stressing that his company is doing more work behind the scenes to tackle fraud than people realise. The post is from Music Ally .",
+        "url": "https://musically.com/2026/11/13/suno-boss-talks-streaming-fraud-ai-music-is-not-a-crime/",
+        "source": "Music Ally",
+        "domain": "musically.com",
+        "publishedAt": "2026-11-13T12:30:00.000Z",
+        "tags": [
+          "ai",
+          "streaming"
+        ],
+        "translated": false,
+        "via": null
       }
     ],
     "tip": {
