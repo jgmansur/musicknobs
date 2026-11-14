@@ -1,12 +1,11 @@
 {
-  "lastUpdated": "2026-11-14T14:04:33.684Z",
+  "lastUpdated": "2026-11-14T22:56:18.696Z",
   "meta": {
     "method": "rss-retrieval + link-verification + ai-translation",
     "itemCount": 12,
     "sources": [
       "ABA Journal",
       "CBS News",
-      "Complete Music Update",
       "Detroit Free Press",
       "Digital Music News",
       "Industria Musical",
@@ -69,21 +68,6 @@
       },
       {
         "id": "noticia-4",
-        "title": "Suno argues that judge should throw out musician’s publicity rights lawsuit",
-        "summary": "Suno is fighting several music industry lawsuits, but one stands out - filed by musician Jason Isbell - because it accuses the AI company of infringing publicity rights by connecting artist names to musical styles in the back-end. Suno has responded to that lawsuit, urging the judge to dismiss it",
-        "url": "https://completemusicupdate.com/suno-argues-that-judge-should-throw-out-musicians-publicity-rights-lawsuit/",
-        "source": "Complete Music Update",
-        "domain": "completemusicupdate.com",
-        "publishedAt": "2026-11-04T17:20:05.000Z",
-        "tags": [
-          "lawsuit",
-          "ai"
-        ],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-5",
         "title": "Elvis Presley, Eminem music rights holders sue Suno over alleged copyright infringement",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMizwFBVV95cUxOSE8yWUl3MnBLRXdKNU9yT3JQaGdDTVBRUGFNTWx0c1k0Rm5RWHk4WjdOMVNtdV9oT0xrOG1ua1ZlcHhUaW10c0tMNVNSdDFQVUhELXBlUnI4ZjljVk16Wk5IckpxTEI3ZlBxWWwySVVISVhvQnYzcmlLZ0lHWDB5Z0pLLWFRMF93enRPWDBUVTBqU3hzN3VrYVU3ajZZN0xKTTJaN3pGMDhUUXZvcGlTdjlja050bkVaeDdHVVgySGVPMkc2ZFVfZndFai1LTkXSAdQBQVVfeXFMTWJJS0N5SnMxaENaZFY0LU44b0R5bHdNZW9sZmJFcklONUVWcnlhUXgxVXpLbXRlVUxlTm1BQ2lYeFBldlBEVUJwX2oySFphS0dBd3BzNmFEa21YWmE5TEFvclMzV19YbV9uMjQ2VTNWQlRWbHQ0aEI1VjhWZHhJeW43S1FhdzBJaElydXo3SjlOX2FkYk1jLUl0N044M2lRcS1PTWlYSVhWcVRxNlRXWDR2T0JYdjZmWV9GdUlLbTBZaVlxeXFPRDBiM2Y5TzZlbWtHbEU?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -98,7 +82,7 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-6",
+        "id": "noticia-5",
         "title": "Elvis Presley estate shakes up licensing, copyright lawsuit against AI music generator",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMiwwFBVV95cUxQbFZRcG53LWl5UllpanljX0xwTHdYeUtiamZoSmdfMnQxbDZTbmktcWk3bWJJQTFtVllJXy10aVpPLVFELVYzQlRHdlZjbkpsMzJXdEtMSWZ5aWs1NkxQUWxRYUhoanZsMGFYc3h6c242SHJkY0xvZVduYkNKcDg0ZU5Kejl6d1BISDByNzRoLV9lQlRucGRPeE56RzhYNDFhZzRXU2JTUGJLb3BMcnlKclRjRFkzOGs4T2J1bDJqYURjVGM?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -114,7 +98,7 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-7",
+        "id": "noticia-6",
         "title": "Meta Employees ‘Interacted’ With Pirated Copies of Adult Films, Filing Shows",
         "summary": "A newly unredacted court filing shows that Meta’s internal investigation found several employees who appear to have interacted with Strike 3’s adult films. The adult content producers say these were torrented copies listed in their lawsuit, but Meta says there is no evidence of torrenting. The company also stresses tha…",
         "url": "https://torrentfreak.com/meta-employees-interacted-with-pirated-copies-of-adult-films-filing-shows/",
@@ -129,7 +113,7 @@
         "via": null
       },
       {
-        "id": "noticia-8",
+        "id": "noticia-7",
         "title": "Eminem song publisher seeks $41M in copyright lawsuit vs. AI platform",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMi7AFBVV95cUxNUnBPUU5kOW5GQjV3Ykw4R0F4OEJ0bmtpVnhRajNmbzNjTVFJZkRyWTl6cGtUWDJDYXZYTTJZTTZNUzJCZWI0SzlsWXFuQU1iampMS3NDenBjVFJ6QVNjemFVdXBHQ2t3YTBvVldoV1RRY0VNVmx6cFRaU2ZyZGZVNTNmV0tZM2YxeFJYX2lOWXhNSmt6U0RHLU1jRVFGQklqaHEzRWVhU2J1eDdZY01ZaHJQQzU2MktrVmFzcXkyaEFjc00zSlBaMXJoY3pkNFdvcXcwVTlQVzN6cWxNOXdDRmVPNElNeF9FVXd2bA?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -144,7 +128,7 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-9",
+        "id": "noticia-8",
         "title": "Soundtrack firma con SESAC y suma las cuatro PRO de EE. UU.",
         "summary": "El servicio de música para negocios Soundtrack, conocido hasta hace unos años como Soundtrack Your Brand, ha firmado un acuerdo de licencias con SESAC, una de las entidades estadounidenses de derechos de…",
         "url": "https://industriamusical.com/soundtrack-acuerdo-sesac-cuatro-pro-eeuu/?utm_source=rss&utm_medium=rss&utm_campaign=soundtrack-acuerdo-sesac-cuatro-pro-eeuu",
@@ -158,7 +142,7 @@
         "via": null
       },
       {
-        "id": "noticia-10",
+        "id": "noticia-9",
         "title": "SoundCloud y ElevenLabs: publicación directa de música IA",
         "summary": "SoundCloud y ElevenLabs han anunciado una alianza que permite publicar directamente en SoundCloud las canciones creadas con ElevenMusic, la plataforma de generación de música con inteligencia artificial de ElevenLabs, sin tener que…",
         "url": "https://industriamusical.com/soundcloud-elevenlabs-publicacion-directa-musica-ia/?utm_source=rss&utm_medium=rss&utm_campaign=soundcloud-elevenlabs-publicacion-directa-musica-ia",
@@ -172,7 +156,7 @@
         "via": null
       },
       {
-        "id": "noticia-11",
+        "id": "noticia-10",
         "title": "AI platform reproduced Michigan music publishers' copyrighted works without authorization, lawsuit says",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMijAFBVV95cUxNN3NEUjkxX25lTGgzYXJtdG9nazU3VzRHMENEWG9RVjg3RndNajVWS1VPWHdBOXV6R3JoWE51RlJ1NGdSM3JXWFpQN1hKZmxEU2ZxYjU0S3BTNDhoYTFHd0Q3bHFrQTdlSFRlaTBOTEMydmRvcEpaeGU1dktFekp2VTZ4QjhvZUYyT1ZQRg?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -187,7 +171,7 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-12",
+        "id": "noticia-11",
         "title": "Suno boss talks streaming fraud: ‘AI music is not a crime’",
         "summary": "Suno CEO Mikey Shulman has criticised what he describes as a “sleight of hand” of “equating streaming fraud with AI music”, while stressing that his company is doing more work behind the scenes to tackle fraud than people realise. The post is from Music Ally .",
         "url": "https://musically.com/2026/11/13/suno-boss-talks-streaming-fraud-ai-music-is-not-a-crime/",
@@ -197,6 +181,21 @@
         "tags": [
           "ai",
           "streaming"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-12",
+        "title": "AI-powered label PaRa Music says it’s identified the next big Indian regional music sub-genre",
+        "summary": "In June, we wrote about the launch of “AI-powered” Indian label PaRa Music, which uses its in-house AI platform PaRaMeter to analyse “audience behaviour and demand patterns” to “guide investment […] The post is from Music Ally .",
+        "url": "https://musically.com/2026/11/12/ai-powered-label-para-music-says-its-identified-the-next-big-indian-regional-music-sub-genre/",
+        "source": "Music Ally",
+        "domain": "musically.com",
+        "publishedAt": "2026-11-12T20:00:11.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
         ],
         "translated": false,
         "via": null
@@ -258,21 +257,6 @@
       },
       {
         "id": "noticia-4",
-        "title": "Suno argues that judge should throw out musician’s publicity rights lawsuit",
-        "summary": "Suno is fighting several music industry lawsuits, but one stands out - filed by musician Jason Isbell - because it accuses the AI company of infringing publicity rights by connecting artist names to musical styles in the back-end. Suno has responded to that lawsuit, urging the judge to dismiss it",
-        "url": "https://completemusicupdate.com/suno-argues-that-judge-should-throw-out-musicians-publicity-rights-lawsuit/",
-        "source": "Complete Music Update",
-        "domain": "completemusicupdate.com",
-        "publishedAt": "2026-11-04T17:20:05.000Z",
-        "tags": [
-          "lawsuit",
-          "ai"
-        ],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-5",
         "title": "Elvis Presley, Eminem music rights holders sue Suno over alleged copyright infringement",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMizwFBVV95cUxOSE8yWUl3MnBLRXdKNU9yT3JQaGdDTVBRUGFNTWx0c1k0Rm5RWHk4WjdOMVNtdV9oT0xrOG1ua1ZlcHhUaW10c0tMNVNSdDFQVUhELXBlUnI4ZjljVk16Wk5IckpxTEI3ZlBxWWwySVVISVhvQnYzcmlLZ0lHWDB5Z0pLLWFRMF93enRPWDBUVTBqU3hzN3VrYVU3ajZZN0xKTTJaN3pGMDhUUXZvcGlTdjlja050bkVaeDdHVVgySGVPMkc2ZFVfZndFai1LTkXSAdQBQVVfeXFMTWJJS0N5SnMxaENaZFY0LU44b0R5bHdNZW9sZmJFcklONUVWcnlhUXgxVXpLbXRlVUxlTm1BQ2lYeFBldlBEVUJwX2oySFphS0dBd3BzNmFEa21YWmE5TEFvclMzV19YbV9uMjQ2VTNWQlRWbHQ0aEI1VjhWZHhJeW43S1FhdzBJaElydXo3SjlOX2FkYk1jLUl0N044M2lRcS1PTWlYSVhWcVRxNlRXWDR2T0JYdjZmWV9GdUlLbTBZaVlxeXFPRDBiM2Y5TzZlbWtHbEU?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -287,7 +271,7 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-6",
+        "id": "noticia-5",
         "title": "Elvis Presley estate shakes up licensing, copyright lawsuit against AI music generator",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMiwwFBVV95cUxQbFZRcG53LWl5UllpanljX0xwTHdYeUtiamZoSmdfMnQxbDZTbmktcWk3bWJJQTFtVllJXy10aVpPLVFELVYzQlRHdlZjbkpsMzJXdEtMSWZ5aWs1NkxQUWxRYUhoanZsMGFYc3h6c242SHJkY0xvZVduYkNKcDg0ZU5Kejl6d1BISDByNzRoLV9lQlRucGRPeE56RzhYNDFhZzRXU2JTUGJLb3BMcnlKclRjRFkzOGs4T2J1bDJqYURjVGM?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -303,7 +287,7 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-7",
+        "id": "noticia-6",
         "title": "Meta Employees ‘Interacted’ With Pirated Copies of Adult Films, Filing Shows",
         "summary": "A newly unredacted court filing shows that Meta’s internal investigation found several employees who appear to have interacted with Strike 3’s adult films. The adult content producers say these were torrented copies listed in their lawsuit, but Meta says there is no evidence of torrenting. The company also stresses tha…",
         "url": "https://torrentfreak.com/meta-employees-interacted-with-pirated-copies-of-adult-films-filing-shows/",
@@ -318,7 +302,7 @@
         "via": null
       },
       {
-        "id": "noticia-8",
+        "id": "noticia-7",
         "title": "Eminem song publisher seeks $41M in copyright lawsuit vs. AI platform",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMi7AFBVV95cUxNUnBPUU5kOW5GQjV3Ykw4R0F4OEJ0bmtpVnhRajNmbzNjTVFJZkRyWTl6cGtUWDJDYXZYTTJZTTZNUzJCZWI0SzlsWXFuQU1iampMS3NDenBjVFJ6QVNjemFVdXBHQ2t3YTBvVldoV1RRY0VNVmx6cFRaU2ZyZGZVNTNmV0tZM2YxeFJYX2lOWXhNSmt6U0RHLU1jRVFGQklqaHEzRWVhU2J1eDdZY01ZaHJQQzU2MktrVmFzcXkyaEFjc00zSlBaMXJoY3pkNFdvcXcwVTlQVzN6cWxNOXdDRmVPNElNeF9FVXd2bA?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -333,7 +317,7 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-9",
+        "id": "noticia-8",
         "title": "Soundtrack firma con SESAC y suma las cuatro PRO de EE. UU.",
         "summary": "El servicio de música para negocios Soundtrack, conocido hasta hace unos años como Soundtrack Your Brand, ha firmado un acuerdo de licencias con SESAC, una de las entidades estadounidenses de derechos de…",
         "url": "https://industriamusical.com/soundtrack-acuerdo-sesac-cuatro-pro-eeuu/?utm_source=rss&utm_medium=rss&utm_campaign=soundtrack-acuerdo-sesac-cuatro-pro-eeuu",
@@ -347,7 +331,7 @@
         "via": null
       },
       {
-        "id": "noticia-10",
+        "id": "noticia-9",
         "title": "SoundCloud y ElevenLabs: publicación directa de música IA",
         "summary": "SoundCloud y ElevenLabs han anunciado una alianza que permite publicar directamente en SoundCloud las canciones creadas con ElevenMusic, la plataforma de generación de música con inteligencia artificial de ElevenLabs, sin tener que…",
         "url": "https://industriamusical.com/soundcloud-elevenlabs-publicacion-directa-musica-ia/?utm_source=rss&utm_medium=rss&utm_campaign=soundcloud-elevenlabs-publicacion-directa-musica-ia",
@@ -361,7 +345,7 @@
         "via": null
       },
       {
-        "id": "noticia-11",
+        "id": "noticia-10",
         "title": "AI platform reproduced Michigan music publishers' copyrighted works without authorization, lawsuit says",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMijAFBVV95cUxNN3NEUjkxX25lTGgzYXJtdG9nazU3VzRHMENEWG9RVjg3RndNajVWS1VPWHdBOXV6R3JoWE51RlJ1NGdSM3JXWFpQN1hKZmxEU2ZxYjU0S3BTNDhoYTFHd0Q3bHFrQTdlSFRlaTBOTEMydmRvcEpaeGU1dktFekp2VTZ4QjhvZUYyT1ZQRg?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -376,7 +360,7 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-12",
+        "id": "noticia-11",
         "title": "Suno boss talks streaming fraud: ‘AI music is not a crime’",
         "summary": "Suno CEO Mikey Shulman has criticised what he describes as a “sleight of hand” of “equating streaming fraud with AI music”, while stressing that his company is doing more work behind the scenes to tackle fraud than people realise. The post is from Music Ally .",
         "url": "https://musically.com/2026/11/13/suno-boss-talks-streaming-fraud-ai-music-is-not-a-crime/",
@@ -386,6 +370,21 @@
         "tags": [
           "ai",
           "streaming"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-12",
+        "title": "AI-powered label PaRa Music says it’s identified the next big Indian regional music sub-genre",
+        "summary": "In June, we wrote about the launch of “AI-powered” Indian label PaRa Music, which uses its in-house AI platform PaRaMeter to analyse “audience behaviour and demand patterns” to “guide investment […] The post is from Music Ally .",
+        "url": "https://musically.com/2026/11/12/ai-powered-label-para-music-says-its-identified-the-next-big-indian-regional-music-sub-genre/",
+        "source": "Music Ally",
+        "domain": "musically.com",
+        "publishedAt": "2026-11-12T20:00:11.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
         ],
         "translated": false,
         "via": null
