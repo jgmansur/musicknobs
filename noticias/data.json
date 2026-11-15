@@ -1,15 +1,15 @@
 {
-  "lastUpdated": "2026-11-15T14:41:30.517Z",
+  "lastUpdated": "2026-11-15T23:21:46.535Z",
   "meta": {
     "method": "rss-retrieval + link-verification + ai-translation",
     "itemCount": 12,
     "sources": [
       "ABA Journal",
+      "AllHipHop",
       "CBS News",
       "Detroit Free Press",
       "DiarioBitcoin",
       "Digital Music News",
-      "Industria Musical",
       "Music Ally",
       "Storyboard18"
     ],
@@ -68,6 +68,21 @@
       },
       {
         "id": "noticia-4",
+        "title": "EXCLUSIVE: Suno Faces Demand To Open New AI Models To Copyright Discovery",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMiogFBVV95cUxQWjl1M1VadmNsUW1BSmxaeFdOWWJjRWppenVXNUp2YjZzamlBZUdicFVzWlJXa0x4aUMzb24yOUQ3Y2tlV2trZndpRmNNeExvZkQzZ01kdXVsNmtBaWlvSm50Q0lWUzZVdThuVmNUYUpxVElXbVVORzc0WUl5ajY2Xy13VzRUR3pBRkRJZXNvTUdLQnFEczZkVEJoWklEZEhlbUE?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "AllHipHop",
+        "domain": "news.google.com",
+        "publishedAt": "2026-11-15T17:10:09.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-5",
         "title": "Elvis Presley, Eminem music rights holders sue Suno over alleged copyright infringement",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMizwFBVV95cUxOSE8yWUl3MnBLRXdKNU9yT3JQaGdDTVBRUGFNTWx0c1k0Rm5RWHk4WjdOMVNtdV9oT0xrOG1ua1ZlcHhUaW10c0tMNVNSdDFQVUhELXBlUnI4ZjljVk16Wk5IckpxTEI3ZlBxWWwySVVISVhvQnYzcmlLZ0lHWDB5Z0pLLWFRMF93enRPWDBUVTBqU3hzN3VrYVU3ajZZN0xKTTJaN3pGMDhUUXZvcGlTdjlja050bkVaeDdHVVgySGVPMkc2ZFVfZndFai1LTkXSAdQBQVVfeXFMTWJJS0N5SnMxaENaZFY0LU44b0R5bHdNZW9sZmJFcklONUVWcnlhUXgxVXpLbXRlVUxlTm1BQ2lYeFBldlBEVUJwX2oySFphS0dBd3BzNmFEa21YWmE5TEFvclMzV19YbV9uMjQ2VTNWQlRWbHQ0aEI1VjhWZHhJeW43S1FhdzBJaElydXo3SjlOX2FkYk1jLUl0N044M2lRcS1PTWlYSVhWcVRxNlRXWDR2T0JYdjZmWV9GdUlLbTBZaVlxeXFPRDBiM2Y5TzZlbWtHbEU?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -82,7 +97,7 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-5",
+        "id": "noticia-6",
         "title": "Elvis Presley estate shakes up licensing, copyright lawsuit against AI music generator",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMiwwFBVV95cUxQbFZRcG53LWl5UllpanljX0xwTHdYeUtiamZoSmdfMnQxbDZTbmktcWk3bWJJQTFtVllJXy10aVpPLVFELVYzQlRHdlZjbkpsMzJXdEtMSWZ5aWs1NkxQUWxRYUhoanZsMGFYc3h6c242SHJkY0xvZVduYkNKcDg0ZU5Kejl6d1BISDByNzRoLV9lQlRucGRPeE56RzhYNDFhZzRXU2JTUGJLb3BMcnlKclRjRFkzOGs4T2J1bDJqYURjVGM?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -98,7 +113,7 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-6",
+        "id": "noticia-7",
         "title": "Eminem song publisher seeks $41M in copyright lawsuit vs. AI platform",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMi7AFBVV95cUxNUnBPUU5kOW5GQjV3Ykw4R0F4OEJ0bmtpVnhRajNmbzNjTVFJZkRyWTl6cGtUWDJDYXZYTTJZTTZNUzJCZWI0SzlsWXFuQU1iampMS3NDenBjVFJ6QVNjemFVdXBHQ2t3YTBvVldoV1RRY0VNVmx6cFRaU2ZyZGZVNTNmV0tZM2YxeFJYX2lOWXhNSmt6U0RHLU1jRVFGQklqaHEzRWVhU2J1eDdZY01ZaHJQQzU2MktrVmFzcXkyaEFjc00zSlBaMXJoY3pkNFdvcXcwVTlQVzN6cWxNOXdDRmVPNElNeF9FVXd2bA?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -113,35 +128,7 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-7",
-        "title": "Soundtrack firma con SESAC y suma las cuatro PRO de EE. UU.",
-        "summary": "El servicio de música para negocios Soundtrack, conocido hasta hace unos años como Soundtrack Your Brand, ha firmado un acuerdo de licencias con SESAC, una de las entidades estadounidenses de derechos de…",
-        "url": "https://industriamusical.com/soundtrack-acuerdo-sesac-cuatro-pro-eeuu/?utm_source=rss&utm_medium=rss&utm_campaign=soundtrack-acuerdo-sesac-cuatro-pro-eeuu",
-        "source": "Industria Musical",
-        "domain": "industriamusical.com",
-        "publishedAt": "2026-11-11T10:00:00.000Z",
-        "tags": [
-          "licensing"
-        ],
-        "translated": false,
-        "via": null
-      },
-      {
         "id": "noticia-8",
-        "title": "SoundCloud y ElevenLabs: publicación directa de música IA",
-        "summary": "SoundCloud y ElevenLabs han anunciado una alianza que permite publicar directamente en SoundCloud las canciones creadas con ElevenMusic, la plataforma de generación de música con inteligencia artificial de ElevenLabs, sin tener que…",
-        "url": "https://industriamusical.com/soundcloud-elevenlabs-publicacion-directa-musica-ia/?utm_source=rss&utm_medium=rss&utm_campaign=soundcloud-elevenlabs-publicacion-directa-musica-ia",
-        "source": "Industria Musical",
-        "domain": "industriamusical.com",
-        "publishedAt": "2026-11-11T09:00:00.000Z",
-        "tags": [
-          "ai"
-        ],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-9",
         "title": "AI platform reproduced Michigan music publishers' copyrighted works without authorization, lawsuit says",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMijAFBVV95cUxNN3NEUjkxX25lTGgzYXJtdG9nazU3VzRHMENEWG9RVjg3RndNajVWS1VPWHdBOXV6R3JoWE51RlJ1NGdSM3JXWFpQN1hKZmxEU2ZxYjU0S3BTNDhoYTFHd0Q3bHFrQTdlSFRlaTBOTEMydmRvcEpaeGU1dktFekp2VTZ4QjhvZUYyT1ZQRg?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -156,7 +143,7 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-10",
+        "id": "noticia-9",
         "title": "Suno boss talks streaming fraud: ‘AI music is not a crime’",
         "summary": "Suno CEO Mikey Shulman has criticised what he describes as a “sleight of hand” of “equating streaming fraud with AI music”, while stressing that his company is doing more work behind the scenes to tackle fraud than people realise. The post is from Music Ally .",
         "url": "https://musically.com/2026/11/13/suno-boss-talks-streaming-fraud-ai-music-is-not-a-crime/",
@@ -171,7 +158,7 @@
         "via": null
       },
       {
-        "id": "noticia-11",
+        "id": "noticia-10",
         "title": "Los primeros AI Music Awards buscan legitimar la música creada con inteligencia artificial",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMiygFBVV95cUxOMm1vYi0tNUV1em1zVFZFdHNwalIySFFYSHc3RFdULUtia3BMQ0t3MGJ3WHBSMng0ZVNoWjZoZnlhRG4tR0lhTjd2ZXRxZTZsQlFaY3F5MV9zOTVLdTBZdmJWWDVRVTFWc0JJUGtKMWx1MHhHcnM0MXVWOEJoTWVReEloV1JBV2xhdURVelAxOFJtdkxnd0RBVGU2dk9YUmNxQ1VCVTNQYkw2Y05Ybnhla3RsVnU1WTF2TFhEQTRvSHV1OU93bFdkVmV3?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -185,7 +172,7 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-12",
+        "id": "noticia-11",
         "title": "AI-powered label PaRa Music says it’s identified the next big Indian regional music sub-genre",
         "summary": "In June, we wrote about the launch of “AI-powered” Indian label PaRa Music, which uses its in-house AI platform PaRaMeter to analyse “audience behaviour and demand patterns” to “guide investment […] The post is from Music Ally .",
         "url": "https://musically.com/2026/11/12/ai-powered-label-para-music-says-its-identified-the-next-big-indian-regional-music-sub-genre/",
@@ -194,6 +181,20 @@
         "publishedAt": "2026-11-12T20:00:11.000Z",
         "tags": [
           "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-12",
+        "title": "BeatBread’s new advisory board included execs from Meta and Suno",
+        "summary": "Recently-appointed BeatBread CEO Andreea Gleeson has wasted no time in bringing in some additional expertise as the music-funding firm plans its next moves. The post is from Music Ally .",
+        "url": "https://musically.com/2026/11/13/beatbreads-new-advisory-board-included-execs-from-meta-and-suno/",
+        "source": "Music Ally",
+        "domain": "musically.com",
+        "publishedAt": "2026-11-13T13:30:00.000Z",
+        "tags": [
           "ai"
         ],
         "translated": false,
@@ -256,6 +257,21 @@
       },
       {
         "id": "noticia-4",
+        "title": "EXCLUSIVE: Suno Faces Demand To Open New AI Models To Copyright Discovery",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMiogFBVV95cUxQWjl1M1VadmNsUW1BSmxaeFdOWWJjRWppenVXNUp2YjZzamlBZUdicFVzWlJXa0x4aUMzb24yOUQ3Y2tlV2trZndpRmNNeExvZkQzZ01kdXVsNmtBaWlvSm50Q0lWUzZVdThuVmNUYUpxVElXbVVORzc0WUl5ajY2Xy13VzRUR3pBRkRJZXNvTUdLQnFEczZkVEJoWklEZEhlbUE?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "AllHipHop",
+        "domain": "news.google.com",
+        "publishedAt": "2026-11-15T17:10:09.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-5",
         "title": "Elvis Presley, Eminem music rights holders sue Suno over alleged copyright infringement",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMizwFBVV95cUxOSE8yWUl3MnBLRXdKNU9yT3JQaGdDTVBRUGFNTWx0c1k0Rm5RWHk4WjdOMVNtdV9oT0xrOG1ua1ZlcHhUaW10c0tMNVNSdDFQVUhELXBlUnI4ZjljVk16Wk5IckpxTEI3ZlBxWWwySVVISVhvQnYzcmlLZ0lHWDB5Z0pLLWFRMF93enRPWDBUVTBqU3hzN3VrYVU3ajZZN0xKTTJaN3pGMDhUUXZvcGlTdjlja050bkVaeDdHVVgySGVPMkc2ZFVfZndFai1LTkXSAdQBQVVfeXFMTWJJS0N5SnMxaENaZFY0LU44b0R5bHdNZW9sZmJFcklONUVWcnlhUXgxVXpLbXRlVUxlTm1BQ2lYeFBldlBEVUJwX2oySFphS0dBd3BzNmFEa21YWmE5TEFvclMzV19YbV9uMjQ2VTNWQlRWbHQ0aEI1VjhWZHhJeW43S1FhdzBJaElydXo3SjlOX2FkYk1jLUl0N044M2lRcS1PTWlYSVhWcVRxNlRXWDR2T0JYdjZmWV9GdUlLbTBZaVlxeXFPRDBiM2Y5TzZlbWtHbEU?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -270,7 +286,7 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-5",
+        "id": "noticia-6",
         "title": "Elvis Presley estate shakes up licensing, copyright lawsuit against AI music generator",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMiwwFBVV95cUxQbFZRcG53LWl5UllpanljX0xwTHdYeUtiamZoSmdfMnQxbDZTbmktcWk3bWJJQTFtVllJXy10aVpPLVFELVYzQlRHdlZjbkpsMzJXdEtMSWZ5aWs1NkxQUWxRYUhoanZsMGFYc3h6c242SHJkY0xvZVduYkNKcDg0ZU5Kejl6d1BISDByNzRoLV9lQlRucGRPeE56RzhYNDFhZzRXU2JTUGJLb3BMcnlKclRjRFkzOGs4T2J1bDJqYURjVGM?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -286,7 +302,7 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-6",
+        "id": "noticia-7",
         "title": "Eminem song publisher seeks $41M in copyright lawsuit vs. AI platform",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMi7AFBVV95cUxNUnBPUU5kOW5GQjV3Ykw4R0F4OEJ0bmtpVnhRajNmbzNjTVFJZkRyWTl6cGtUWDJDYXZYTTJZTTZNUzJCZWI0SzlsWXFuQU1iampMS3NDenBjVFJ6QVNjemFVdXBHQ2t3YTBvVldoV1RRY0VNVmx6cFRaU2ZyZGZVNTNmV0tZM2YxeFJYX2lOWXhNSmt6U0RHLU1jRVFGQklqaHEzRWVhU2J1eDdZY01ZaHJQQzU2MktrVmFzcXkyaEFjc00zSlBaMXJoY3pkNFdvcXcwVTlQVzN6cWxNOXdDRmVPNElNeF9FVXd2bA?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -301,35 +317,7 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-7",
-        "title": "Soundtrack firma con SESAC y suma las cuatro PRO de EE. UU.",
-        "summary": "El servicio de música para negocios Soundtrack, conocido hasta hace unos años como Soundtrack Your Brand, ha firmado un acuerdo de licencias con SESAC, una de las entidades estadounidenses de derechos de…",
-        "url": "https://industriamusical.com/soundtrack-acuerdo-sesac-cuatro-pro-eeuu/?utm_source=rss&utm_medium=rss&utm_campaign=soundtrack-acuerdo-sesac-cuatro-pro-eeuu",
-        "source": "Industria Musical",
-        "domain": "industriamusical.com",
-        "publishedAt": "2026-11-11T10:00:00.000Z",
-        "tags": [
-          "licensing"
-        ],
-        "translated": false,
-        "via": null
-      },
-      {
         "id": "noticia-8",
-        "title": "SoundCloud y ElevenLabs: publicación directa de música IA",
-        "summary": "SoundCloud y ElevenLabs han anunciado una alianza que permite publicar directamente en SoundCloud las canciones creadas con ElevenMusic, la plataforma de generación de música con inteligencia artificial de ElevenLabs, sin tener que…",
-        "url": "https://industriamusical.com/soundcloud-elevenlabs-publicacion-directa-musica-ia/?utm_source=rss&utm_medium=rss&utm_campaign=soundcloud-elevenlabs-publicacion-directa-musica-ia",
-        "source": "Industria Musical",
-        "domain": "industriamusical.com",
-        "publishedAt": "2026-11-11T09:00:00.000Z",
-        "tags": [
-          "ai"
-        ],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-9",
         "title": "AI platform reproduced Michigan music publishers' copyrighted works without authorization, lawsuit says",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMijAFBVV95cUxNN3NEUjkxX25lTGgzYXJtdG9nazU3VzRHMENEWG9RVjg3RndNajVWS1VPWHdBOXV6R3JoWE51RlJ1NGdSM3JXWFpQN1hKZmxEU2ZxYjU0S3BTNDhoYTFHd0Q3bHFrQTdlSFRlaTBOTEMydmRvcEpaeGU1dktFekp2VTZ4QjhvZUYyT1ZQRg?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -344,7 +332,7 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-10",
+        "id": "noticia-9",
         "title": "Suno boss talks streaming fraud: ‘AI music is not a crime’",
         "summary": "Suno CEO Mikey Shulman has criticised what he describes as a “sleight of hand” of “equating streaming fraud with AI music”, while stressing that his company is doing more work behind the scenes to tackle fraud than people realise. The post is from Music Ally .",
         "url": "https://musically.com/2026/11/13/suno-boss-talks-streaming-fraud-ai-music-is-not-a-crime/",
@@ -359,7 +347,7 @@
         "via": null
       },
       {
-        "id": "noticia-11",
+        "id": "noticia-10",
         "title": "Los primeros AI Music Awards buscan legitimar la música creada con inteligencia artificial",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMiygFBVV95cUxOMm1vYi0tNUV1em1zVFZFdHNwalIySFFYSHc3RFdULUtia3BMQ0t3MGJ3WHBSMng0ZVNoWjZoZnlhRG4tR0lhTjd2ZXRxZTZsQlFaY3F5MV9zOTVLdTBZdmJWWDVRVTFWc0JJUGtKMWx1MHhHcnM0MXVWOEJoTWVReEloV1JBV2xhdURVelAxOFJtdkxnd0RBVGU2dk9YUmNxQ1VCVTNQYkw2Y05Ybnhla3RsVnU1WTF2TFhEQTRvSHV1OU93bFdkVmV3?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -373,7 +361,7 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-12",
+        "id": "noticia-11",
         "title": "AI-powered label PaRa Music says it’s identified the next big Indian regional music sub-genre",
         "summary": "In June, we wrote about the launch of “AI-powered” Indian label PaRa Music, which uses its in-house AI platform PaRaMeter to analyse “audience behaviour and demand patterns” to “guide investment […] The post is from Music Ally .",
         "url": "https://musically.com/2026/11/12/ai-powered-label-para-music-says-its-identified-the-next-big-indian-regional-music-sub-genre/",
@@ -382,6 +370,20 @@
         "publishedAt": "2026-11-12T20:00:11.000Z",
         "tags": [
           "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-12",
+        "title": "BeatBread’s new advisory board included execs from Meta and Suno",
+        "summary": "Recently-appointed BeatBread CEO Andreea Gleeson has wasted no time in bringing in some additional expertise as the music-funding firm plans its next moves. The post is from Music Ally .",
+        "url": "https://musically.com/2026/11/13/beatbreads-new-advisory-board-included-execs-from-meta-and-suno/",
+        "source": "Music Ally",
+        "domain": "musically.com",
+        "publishedAt": "2026-11-13T13:30:00.000Z",
+        "tags": [
           "ai"
         ],
         "translated": false,
