@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-11-14T22:56:18.696Z",
+  "lastUpdated": "2026-11-15T14:41:30.517Z",
   "meta": {
     "method": "rss-retrieval + link-verification + ai-translation",
     "itemCount": 12,
@@ -7,11 +7,11 @@
       "ABA Journal",
       "CBS News",
       "Detroit Free Press",
+      "DiarioBitcoin",
       "Digital Music News",
       "Industria Musical",
       "Music Ally",
-      "Storyboard18",
-      "TorrentFreak"
+      "Storyboard18"
     ],
     "verifiedLinks": 12,
     "aiTranslated": 0,
@@ -99,21 +99,6 @@
       },
       {
         "id": "noticia-6",
-        "title": "Meta Employees ‘Interacted’ With Pirated Copies of Adult Films, Filing Shows",
-        "summary": "A newly unredacted court filing shows that Meta’s internal investigation found several employees who appear to have interacted with Strike 3’s adult films. The adult content producers say these were torrented copies listed in their lawsuit, but Meta says there is no evidence of torrenting. The company also stresses tha…",
-        "url": "https://torrentfreak.com/meta-employees-interacted-with-pirated-copies-of-adult-films-filing-shows/",
-        "source": "TorrentFreak",
-        "domain": "torrentfreak.com",
-        "publishedAt": "2026-11-05T07:22:30.000Z",
-        "tags": [
-          "lawsuit",
-          "ai"
-        ],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-7",
         "title": "Eminem song publisher seeks $41M in copyright lawsuit vs. AI platform",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMi7AFBVV95cUxNUnBPUU5kOW5GQjV3Ykw4R0F4OEJ0bmtpVnhRajNmbzNjTVFJZkRyWTl6cGtUWDJDYXZYTTJZTTZNUzJCZWI0SzlsWXFuQU1iampMS3NDenBjVFJ6QVNjemFVdXBHQ2t3YTBvVldoV1RRY0VNVmx6cFRaU2ZyZGZVNTNmV0tZM2YxeFJYX2lOWXhNSmt6U0RHLU1jRVFGQklqaHEzRWVhU2J1eDdZY01ZaHJQQzU2MktrVmFzcXkyaEFjc00zSlBaMXJoY3pkNFdvcXcwVTlQVzN6cWxNOXdDRmVPNElNeF9FVXd2bA?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -128,7 +113,7 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-8",
+        "id": "noticia-7",
         "title": "Soundtrack firma con SESAC y suma las cuatro PRO de EE. UU.",
         "summary": "El servicio de música para negocios Soundtrack, conocido hasta hace unos años como Soundtrack Your Brand, ha firmado un acuerdo de licencias con SESAC, una de las entidades estadounidenses de derechos de…",
         "url": "https://industriamusical.com/soundtrack-acuerdo-sesac-cuatro-pro-eeuu/?utm_source=rss&utm_medium=rss&utm_campaign=soundtrack-acuerdo-sesac-cuatro-pro-eeuu",
@@ -142,7 +127,7 @@
         "via": null
       },
       {
-        "id": "noticia-9",
+        "id": "noticia-8",
         "title": "SoundCloud y ElevenLabs: publicación directa de música IA",
         "summary": "SoundCloud y ElevenLabs han anunciado una alianza que permite publicar directamente en SoundCloud las canciones creadas con ElevenMusic, la plataforma de generación de música con inteligencia artificial de ElevenLabs, sin tener que…",
         "url": "https://industriamusical.com/soundcloud-elevenlabs-publicacion-directa-musica-ia/?utm_source=rss&utm_medium=rss&utm_campaign=soundcloud-elevenlabs-publicacion-directa-musica-ia",
@@ -156,7 +141,7 @@
         "via": null
       },
       {
-        "id": "noticia-10",
+        "id": "noticia-9",
         "title": "AI platform reproduced Michigan music publishers' copyrighted works without authorization, lawsuit says",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMijAFBVV95cUxNN3NEUjkxX25lTGgzYXJtdG9nazU3VzRHMENEWG9RVjg3RndNajVWS1VPWHdBOXV6R3JoWE51RlJ1NGdSM3JXWFpQN1hKZmxEU2ZxYjU0S3BTNDhoYTFHd0Q3bHFrQTdlSFRlaTBOTEMydmRvcEpaeGU1dktFekp2VTZ4QjhvZUYyT1ZQRg?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -171,7 +156,7 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-11",
+        "id": "noticia-10",
         "title": "Suno boss talks streaming fraud: ‘AI music is not a crime’",
         "summary": "Suno CEO Mikey Shulman has criticised what he describes as a “sleight of hand” of “equating streaming fraud with AI music”, while stressing that his company is doing more work behind the scenes to tackle fraud than people realise. The post is from Music Ally .",
         "url": "https://musically.com/2026/11/13/suno-boss-talks-streaming-fraud-ai-music-is-not-a-crime/",
@@ -184,6 +169,20 @@
         ],
         "translated": false,
         "via": null
+      },
+      {
+        "id": "noticia-11",
+        "title": "Los primeros AI Music Awards buscan legitimar la música creada con inteligencia artificial",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMiygFBVV95cUxOMm1vYi0tNUV1em1zVFZFdHNwalIySFFYSHc3RFdULUtia3BMQ0t3MGJ3WHBSMng0ZVNoWjZoZnlhRG4tR0lhTjd2ZXRxZTZsQlFaY3F5MV9zOTVLdTBZdmJWWDVRVTFWc0JJUGtKMWx1MHhHcnM0MXVWOEJoTWVReEloV1JBV2xhdURVelAxOFJtdkxnd0RBVGU2dk9YUmNxQ1VCVTNQYkw2Y05Ybnhla3RsVnU1WTF2TFhEQTRvSHV1OU93bFdkVmV3?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "DiarioBitcoin",
+        "domain": "news.google.com",
+        "publishedAt": "2026-11-15T14:25:32.000Z",
+        "tags": [
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
       },
       {
         "id": "noticia-12",
@@ -202,8 +201,8 @@
       }
     ],
     "tip": {
-      "title": "Los covers necesitan licencia aunque des crédito",
-      "body": "Acreditar al autor no sustituye la licencia. Para publicar un cover en plataformas necesitas la licencia mecánica correspondiente, y para usarlo en video, además, la sincronización."
+      "title": "Metadata incompleta es dinero que se queda en el limbo",
+      "body": "ISRC, ISWC, nombres legales completos y porcentajes correctos determinan a quién le pagan. Un solo campo mal escrito manda tus regalías a la bolsa de no identificados."
     }
   },
   "en": {
@@ -288,21 +287,6 @@
       },
       {
         "id": "noticia-6",
-        "title": "Meta Employees ‘Interacted’ With Pirated Copies of Adult Films, Filing Shows",
-        "summary": "A newly unredacted court filing shows that Meta’s internal investigation found several employees who appear to have interacted with Strike 3’s adult films. The adult content producers say these were torrented copies listed in their lawsuit, but Meta says there is no evidence of torrenting. The company also stresses tha…",
-        "url": "https://torrentfreak.com/meta-employees-interacted-with-pirated-copies-of-adult-films-filing-shows/",
-        "source": "TorrentFreak",
-        "domain": "torrentfreak.com",
-        "publishedAt": "2026-11-05T07:22:30.000Z",
-        "tags": [
-          "lawsuit",
-          "ai"
-        ],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-7",
         "title": "Eminem song publisher seeks $41M in copyright lawsuit vs. AI platform",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMi7AFBVV95cUxNUnBPUU5kOW5GQjV3Ykw4R0F4OEJ0bmtpVnhRajNmbzNjTVFJZkRyWTl6cGtUWDJDYXZYTTJZTTZNUzJCZWI0SzlsWXFuQU1iampMS3NDenBjVFJ6QVNjemFVdXBHQ2t3YTBvVldoV1RRY0VNVmx6cFRaU2ZyZGZVNTNmV0tZM2YxeFJYX2lOWXhNSmt6U0RHLU1jRVFGQklqaHEzRWVhU2J1eDdZY01ZaHJQQzU2MktrVmFzcXkyaEFjc00zSlBaMXJoY3pkNFdvcXcwVTlQVzN6cWxNOXdDRmVPNElNeF9FVXd2bA?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -317,7 +301,7 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-8",
+        "id": "noticia-7",
         "title": "Soundtrack firma con SESAC y suma las cuatro PRO de EE. UU.",
         "summary": "El servicio de música para negocios Soundtrack, conocido hasta hace unos años como Soundtrack Your Brand, ha firmado un acuerdo de licencias con SESAC, una de las entidades estadounidenses de derechos de…",
         "url": "https://industriamusical.com/soundtrack-acuerdo-sesac-cuatro-pro-eeuu/?utm_source=rss&utm_medium=rss&utm_campaign=soundtrack-acuerdo-sesac-cuatro-pro-eeuu",
@@ -331,7 +315,7 @@
         "via": null
       },
       {
-        "id": "noticia-9",
+        "id": "noticia-8",
         "title": "SoundCloud y ElevenLabs: publicación directa de música IA",
         "summary": "SoundCloud y ElevenLabs han anunciado una alianza que permite publicar directamente en SoundCloud las canciones creadas con ElevenMusic, la plataforma de generación de música con inteligencia artificial de ElevenLabs, sin tener que…",
         "url": "https://industriamusical.com/soundcloud-elevenlabs-publicacion-directa-musica-ia/?utm_source=rss&utm_medium=rss&utm_campaign=soundcloud-elevenlabs-publicacion-directa-musica-ia",
@@ -345,7 +329,7 @@
         "via": null
       },
       {
-        "id": "noticia-10",
+        "id": "noticia-9",
         "title": "AI platform reproduced Michigan music publishers' copyrighted works without authorization, lawsuit says",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMijAFBVV95cUxNN3NEUjkxX25lTGgzYXJtdG9nazU3VzRHMENEWG9RVjg3RndNajVWS1VPWHdBOXV6R3JoWE51RlJ1NGdSM3JXWFpQN1hKZmxEU2ZxYjU0S3BTNDhoYTFHd0Q3bHFrQTdlSFRlaTBOTEMydmRvcEpaeGU1dktFekp2VTZ4QjhvZUYyT1ZQRg?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -360,7 +344,7 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-11",
+        "id": "noticia-10",
         "title": "Suno boss talks streaming fraud: ‘AI music is not a crime’",
         "summary": "Suno CEO Mikey Shulman has criticised what he describes as a “sleight of hand” of “equating streaming fraud with AI music”, while stressing that his company is doing more work behind the scenes to tackle fraud than people realise. The post is from Music Ally .",
         "url": "https://musically.com/2026/11/13/suno-boss-talks-streaming-fraud-ai-music-is-not-a-crime/",
@@ -373,6 +357,20 @@
         ],
         "translated": false,
         "via": null
+      },
+      {
+        "id": "noticia-11",
+        "title": "Los primeros AI Music Awards buscan legitimar la música creada con inteligencia artificial",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMiygFBVV95cUxOMm1vYi0tNUV1em1zVFZFdHNwalIySFFYSHc3RFdULUtia3BMQ0t3MGJ3WHBSMng0ZVNoWjZoZnlhRG4tR0lhTjd2ZXRxZTZsQlFaY3F5MV9zOTVLdTBZdmJWWDVRVTFWc0JJUGtKMWx1MHhHcnM0MXVWOEJoTWVReEloV1JBV2xhdURVelAxOFJtdkxnd0RBVGU2dk9YUmNxQ1VCVTNQYkw2Y05Ybnhla3RsVnU1WTF2TFhEQTRvSHV1OU93bFdkVmV3?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "DiarioBitcoin",
+        "domain": "news.google.com",
+        "publishedAt": "2026-11-15T14:25:32.000Z",
+        "tags": [
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
       },
       {
         "id": "noticia-12",
@@ -391,8 +389,8 @@
       }
     ],
     "tip": {
-      "title": "Covers need a license even if you give credit",
-      "body": "Crediting the songwriter is not a license. Releasing a cover on platforms requires a mechanical license, and using it in a video also requires a sync license."
+      "title": "Incomplete metadata means money left unclaimed",
+      "body": "ISRC, ISWC, full legal names and correct splits decide who gets paid. A single mistyped field sends your royalties into the unidentified pool."
     }
   }
 }
