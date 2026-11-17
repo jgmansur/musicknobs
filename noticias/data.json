@@ -1,20 +1,16 @@
 {
-  "lastUpdated": "2026-11-16T16:56:37.223Z",
+  "lastUpdated": "2026-11-17T02:26:09.293Z",
   "meta": {
     "method": "rss-retrieval + link-verification + ai-translation",
-    "itemCount": 12,
+    "itemCount": 8,
     "sources": [
-      "ABA Journal",
       "AllHipHop",
-      "Billboard",
-      "DiarioBitcoin",
-      "Digital Music News",
       "Industria Musical",
       "Music Ally",
       "Music Business Worldwide"
     ],
-    "verifiedLinks": 12,
-    "aiTranslated": 1,
+    "verifiedLinks": 8,
+    "aiTranslated": 0,
     "note": "Los hechos provienen de los artículos originales enlazados. La IA solo traduce y resume; no genera noticias."
   },
   "es": {
@@ -23,51 +19,6 @@
     "items": [
       {
         "id": "noticia-1",
-        "title": "La editorial de Eminem, Eight Mile Style, demanda a Suno por presunta infracción de derechos de autor",
-        "summary": "Eight Mile Style, la editorial que controla el catálogo de Eminem, presentó una demanda contra Suno alegando que la plataforma reprodujo obras protegidas sin autorización ni compensación, según el documento legal recibido por Digital Music News.",
-        "url": "https://www.digitalmusicnews.com/2026/11/08/eminem-publisher-sues-suno-copyright-infringement/",
-        "source": "Digital Music News",
-        "domain": "digitalmusicnews.com",
-        "publishedAt": "2026-11-09T05:16:52.000Z",
-        "tags": [
-          "lawsuit",
-          "ai"
-        ],
-        "translated": true,
-        "via": null
-      },
-      {
-        "id": "noticia-2",
-        "title": "Reservoir Expands Its Suno and Anthropic Infringement Lawsuits; Publisher Now Seeks Nearly $450 Million in Statutory Damages",
-        "summary": "Reservoir Media has supersized its Suno and Anthropic copyright infringement complaints, which are now demanding a combined total of nearly $450 million in statutory damages. New York City-headquartered Reservoir fired off the expanded actions yesterday, weeks after submitting the original complaints. As we broke down…",
-        "url": "https://www.digitalmusicnews.com/2026/11/12/reservoir-suno-lawsuit-anthropic-amended/",
-        "source": "Digital Music News",
-        "domain": "digitalmusicnews.com",
-        "publishedAt": "2026-11-13T04:00:16.000Z",
-        "tags": [
-          "lawsuit",
-          "ai"
-        ],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-3",
-        "title": "Elvis Presley Enterprises Slaps Suno With Copyright & NIL Suit, Says the Platform Was ‘Always Meant to Replace the Artists Whose Works and Identities Were Being Unlawfully Copied’",
-        "summary": "Another day, another AI infringement lawsuit – this time against Suno, which is accused of infringing a number of Elvis Presley copyrights as well as the King of Rock’s name, image, and likeness (NIL) rights. Plaintiffs including Elvis Presley Enterprises, Raleigh Music Publishing, and a subsidiary of Elvis IP owner Au…",
-        "url": "https://www.digitalmusicnews.com/2026/11/09/elvis-presley-enterprises-suno-lawsuit/",
-        "source": "Digital Music News",
-        "domain": "digitalmusicnews.com",
-        "publishedAt": "2026-11-09T13:00:56.000Z",
-        "tags": [
-          "lawsuit",
-          "ai"
-        ],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-4",
         "title": "EXCLUSIVE: Suno Faces Demand To Open New AI Models To Copyright Discovery",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMiogFBVV95cUxQWjl1M1VadmNsUW1BSmxaeFdOWWJjRWppenVXNUp2YjZzamlBZUdicFVzWlJXa0x4aUMzb24yOUQ3Y2tlV2trZndpRmNNeExvZkQzZ01kdXVsNmtBaWlvSm50Q0lWUzZVdThuVmNUYUpxVElXbVVORzc0WUl5ajY2Xy13VzRUR3pBRkRJZXNvTUdLQnFEczZkVEJoWklEZEhlbUE?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -82,7 +33,22 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-5",
+        "id": "noticia-2",
+        "title": "Reservoir expands copyright lawsuits against Suno and Anthropic to more than 2,500 songs combined",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMi0gFBVV95cUxPTzlZcng3dTMxakZrRkVISkZQeXVTUGtvWVpKMExZMHEyNDYyblh6bnlKNUczVXpSb1ZNNkFrMm1idWZlREZDR1d6QkNXM0ZBaGpUdnQzRWhYeVpCLTk3TmFPX3FNay1oeG1sRjI1YkFxQU1ZWlhqYXZqZlBpYnlqeGpuRVB4TDJrZldtNkRIcG4tVFFSOE91WHVkZzNsT3JEcnBTOFI2bTA5Q2t3Tjd2bmUtbm1Kb195aFFFVnMtZXgtd2lCWUdNX3Y5N2E5TGM5RXc?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "Music Business Worldwide",
+        "domain": "news.google.com",
+        "publishedAt": "2026-11-13T20:10:22.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-3",
         "title": "Peanuts music catalog owner settles copyright lawsuit against GameMill over Snoopy video game soundtrack",
         "summary": "GameMill licensed the Peanuts characters but not Vince Guaraldi’s music, then copied Linus and Lucy and Skating, the complaint alleged. Source",
         "url": "https://www.musicbusinessworldwide.com/peanuts-music-catalog-owner-settles-copyright-lawsuit-against-gamemill-over-snoopy-video-game-soundtrack/",
@@ -97,35 +63,7 @@
         "via": null
       },
       {
-        "id": "noticia-6",
-        "title": "Elvis Presley estate shakes up licensing, copyright lawsuit against AI music generator",
-        "summary": "",
-        "url": "https://news.google.com/rss/articles/CBMiwwFBVV95cUxQbFZRcG53LWl5UllpanljX0xwTHdYeUtiamZoSmdfMnQxbDZTbmktcWk3bWJJQTFtVllJXy10aVpPLVFELVYzQlRHdlZjbkpsMzJXdEtMSWZ5aWs1NkxQUWxRYUhoanZsMGFYc3h6c242SHJkY0xvZVduYkNKcDg0ZU5Kejl6d1BISDByNzRoLV9lQlRucGRPeE56RzhYNDFhZzRXU2JTUGJLb3BMcnlKclRjRFkzOGs4T2J1bDJqYURjVGM?oc=5&hl=es-419&gl=US&ceid=US:es-419",
-        "source": "ABA Journal",
-        "domain": "news.google.com",
-        "publishedAt": "2026-11-11T16:36:00.000Z",
-        "tags": [
-          "lawsuit",
-          "ai",
-          "licensing"
-        ],
-        "translated": false,
-        "via": "Google News"
-      },
-      {
-        "id": "noticia-7",
-        "title": "ASCAP Names Samantha Saturn as General Manager, ASCAP Nashville",
-        "summary": "Most recently, Saturn served for nearly eight years as chief marketing officer of SESAC Music Group.",
-        "url": "https://www.billboard.com/pro/ascap-names-samantha-saturn-general-manager-nashville/",
-        "source": "Billboard",
-        "domain": "billboard.com",
-        "publishedAt": "2026-11-16T15:24:52.000Z",
-        "tags": [],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-8",
+        "id": "noticia-4",
         "title": "Suno Bridge takes AI music to DAWs – starting with Ableton Live",
         "summary": "Suno building a bridge? No, this isn’t news of a licensing deal with any of the AI-music firm’s current litigants. Instead, it’s the latest step in the company’s efforts to position itself as a legitimate music-making tool for professionals. The post is from Music Ally .",
         "url": "https://musically.com/2026/11/16/suno-bridge-takes-ai-music-to-daws-starting-with-ableton-live/",
@@ -140,7 +78,19 @@
         "via": null
       },
       {
-        "id": "noticia-9",
+        "id": "noticia-5",
+        "title": "Samantha Saturn appointed General Manager of ASCAP Nashville",
+        "summary": "The appointment takes effect on December 1, with Saturn filling a newly created role at the US performing rights organization. Source",
+        "url": "https://www.musicbusinessworldwide.com/samantha-saturn-appointed-general-manager-of-ascap-nashville/",
+        "source": "Music Business Worldwide",
+        "domain": "musicbusinessworldwide.com",
+        "publishedAt": "2026-11-16T16:44:05.000Z",
+        "tags": [],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-6",
         "title": "Soundtrack firma con SESAC y suma las cuatro PRO de EE. UU.",
         "summary": "El servicio de música para negocios Soundtrack, conocido hasta hace unos años como Soundtrack Your Brand, ha firmado un acuerdo de licencias con SESAC, una de las entidades estadounidenses de derechos de…",
         "url": "https://industriamusical.com/soundtrack-acuerdo-sesac-cuatro-pro-eeuu/?utm_source=rss&utm_medium=rss&utm_campaign=soundtrack-acuerdo-sesac-cuatro-pro-eeuu",
@@ -154,7 +104,7 @@
         "via": null
       },
       {
-        "id": "noticia-10",
+        "id": "noticia-7",
         "title": "SoundCloud y ElevenLabs: publicación directa de música IA",
         "summary": "SoundCloud y ElevenLabs han anunciado una alianza que permite publicar directamente en SoundCloud las canciones creadas con ElevenMusic, la plataforma de generación de música con inteligencia artificial de ElevenLabs, sin tener que…",
         "url": "https://industriamusical.com/soundcloud-elevenlabs-publicacion-directa-musica-ia/?utm_source=rss&utm_medium=rss&utm_campaign=soundcloud-elevenlabs-publicacion-directa-musica-ia",
@@ -168,7 +118,7 @@
         "via": null
       },
       {
-        "id": "noticia-11",
+        "id": "noticia-8",
         "title": "Suno boss talks streaming fraud: ‘AI music is not a crime’",
         "summary": "Suno CEO Mikey Shulman has criticised what he describes as a “sleight of hand” of “equating streaming fraud with AI music”, while stressing that his company is doing more work behind the scenes to tackle fraud than people realise. The post is from Music Ally .",
         "url": "https://musically.com/2026/11/13/suno-boss-talks-streaming-fraud-ai-music-is-not-a-crime/",
@@ -181,25 +131,11 @@
         ],
         "translated": false,
         "via": null
-      },
-      {
-        "id": "noticia-12",
-        "title": "Los primeros AI Music Awards buscan legitimar la música creada con inteligencia artificial",
-        "summary": "",
-        "url": "https://news.google.com/rss/articles/CBMiygFBVV95cUxOMm1vYi0tNUV1em1zVFZFdHNwalIySFFYSHc3RFdULUtia3BMQ0t3MGJ3WHBSMng0ZVNoWjZoZnlhRG4tR0lhTjd2ZXRxZTZsQlFaY3F5MV9zOTVLdTBZdmJWWDVRVTFWc0JJUGtKMWx1MHhHcnM0MXVWOEJoTWVReEloV1JBV2xhdURVelAxOFJtdkxnd0RBVGU2dk9YUmNxQ1VCVTNQYkw2Y05Ybnhla3RsVnU1WTF2TFhEQTRvSHV1OU93bFdkVmV3?oc=5&hl=es-419&gl=US&ceid=US:es-419",
-        "source": "DiarioBitcoin",
-        "domain": "news.google.com",
-        "publishedAt": "2026-11-15T14:25:32.000Z",
-        "tags": [
-          "ai"
-        ],
-        "translated": false,
-        "via": "Google News"
       }
     ],
     "tip": {
-      "title": "Guarda evidencia de la fecha de creación",
-      "body": "Un correo a ti mismo con el archivo adjunto, un repositorio con historial o un servicio de sellado de tiempo cuestan poco y construyen una línea de tiempo defendible."
+      "title": "Antes de firmar, revisa la reversión de derechos",
+      "body": "La pregunta clave de cualquier contrato no es cuánto te dan hoy, sino cuándo y cómo recuperas tu obra. Si no hay cláusula de reversión, estás cediendo por el plazo completo."
     }
   },
   "en": {
@@ -208,51 +144,6 @@
     "items": [
       {
         "id": "noticia-1",
-        "title": "Eminem’s Publisher Eight Mile Style Sues Suno Over Allegations of Copyright Infringement",
-        "summary": "Eight Mile Style, the publisher that controls Eminem’s catalog, filed a lawsuit against Suno claiming the AI platform reproduced copyrighted works without permission or compensation, with Digital Music News receiving an initial look at the complaint.",
-        "url": "https://www.digitalmusicnews.com/2026/11/08/eminem-publisher-sues-suno-copyright-infringement/",
-        "source": "Digital Music News",
-        "domain": "digitalmusicnews.com",
-        "publishedAt": "2026-11-09T05:16:52.000Z",
-        "tags": [
-          "lawsuit",
-          "ai"
-        ],
-        "translated": true,
-        "via": null
-      },
-      {
-        "id": "noticia-2",
-        "title": "Reservoir Expands Its Suno and Anthropic Infringement Lawsuits; Publisher Now Seeks Nearly $450 Million in Statutory Damages",
-        "summary": "Reservoir Media has supersized its Suno and Anthropic copyright infringement complaints, which are now demanding a combined total of nearly $450 million in statutory damages. New York City-headquartered Reservoir fired off the expanded actions yesterday, weeks after submitting the original complaints. As we broke down…",
-        "url": "https://www.digitalmusicnews.com/2026/11/12/reservoir-suno-lawsuit-anthropic-amended/",
-        "source": "Digital Music News",
-        "domain": "digitalmusicnews.com",
-        "publishedAt": "2026-11-13T04:00:16.000Z",
-        "tags": [
-          "lawsuit",
-          "ai"
-        ],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-3",
-        "title": "Elvis Presley Enterprises Slaps Suno With Copyright & NIL Suit, Says the Platform Was ‘Always Meant to Replace the Artists Whose Works and Identities Were Being Unlawfully Copied’",
-        "summary": "Another day, another AI infringement lawsuit – this time against Suno, which is accused of infringing a number of Elvis Presley copyrights as well as the King of Rock’s name, image, and likeness (NIL) rights. Plaintiffs including Elvis Presley Enterprises, Raleigh Music Publishing, and a subsidiary of Elvis IP owner Au…",
-        "url": "https://www.digitalmusicnews.com/2026/11/09/elvis-presley-enterprises-suno-lawsuit/",
-        "source": "Digital Music News",
-        "domain": "digitalmusicnews.com",
-        "publishedAt": "2026-11-09T13:00:56.000Z",
-        "tags": [
-          "lawsuit",
-          "ai"
-        ],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-4",
         "title": "EXCLUSIVE: Suno Faces Demand To Open New AI Models To Copyright Discovery",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMiogFBVV95cUxQWjl1M1VadmNsUW1BSmxaeFdOWWJjRWppenVXNUp2YjZzamlBZUdicFVzWlJXa0x4aUMzb24yOUQ3Y2tlV2trZndpRmNNeExvZkQzZ01kdXVsNmtBaWlvSm50Q0lWUzZVdThuVmNUYUpxVElXbVVORzc0WUl5ajY2Xy13VzRUR3pBRkRJZXNvTUdLQnFEczZkVEJoWklEZEhlbUE?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -267,7 +158,22 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-5",
+        "id": "noticia-2",
+        "title": "Reservoir expands copyright lawsuits against Suno and Anthropic to more than 2,500 songs combined",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMi0gFBVV95cUxPTzlZcng3dTMxakZrRkVISkZQeXVTUGtvWVpKMExZMHEyNDYyblh6bnlKNUczVXpSb1ZNNkFrMm1idWZlREZDR1d6QkNXM0ZBaGpUdnQzRWhYeVpCLTk3TmFPX3FNay1oeG1sRjI1YkFxQU1ZWlhqYXZqZlBpYnlqeGpuRVB4TDJrZldtNkRIcG4tVFFSOE91WHVkZzNsT3JEcnBTOFI2bTA5Q2t3Tjd2bmUtbm1Kb195aFFFVnMtZXgtd2lCWUdNX3Y5N2E5TGM5RXc?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "Music Business Worldwide",
+        "domain": "news.google.com",
+        "publishedAt": "2026-11-13T20:10:22.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-3",
         "title": "Peanuts music catalog owner settles copyright lawsuit against GameMill over Snoopy video game soundtrack",
         "summary": "GameMill licensed the Peanuts characters but not Vince Guaraldi’s music, then copied Linus and Lucy and Skating, the complaint alleged. Source",
         "url": "https://www.musicbusinessworldwide.com/peanuts-music-catalog-owner-settles-copyright-lawsuit-against-gamemill-over-snoopy-video-game-soundtrack/",
@@ -282,35 +188,7 @@
         "via": null
       },
       {
-        "id": "noticia-6",
-        "title": "Elvis Presley estate shakes up licensing, copyright lawsuit against AI music generator",
-        "summary": "",
-        "url": "https://news.google.com/rss/articles/CBMiwwFBVV95cUxQbFZRcG53LWl5UllpanljX0xwTHdYeUtiamZoSmdfMnQxbDZTbmktcWk3bWJJQTFtVllJXy10aVpPLVFELVYzQlRHdlZjbkpsMzJXdEtMSWZ5aWs1NkxQUWxRYUhoanZsMGFYc3h6c242SHJkY0xvZVduYkNKcDg0ZU5Kejl6d1BISDByNzRoLV9lQlRucGRPeE56RzhYNDFhZzRXU2JTUGJLb3BMcnlKclRjRFkzOGs4T2J1bDJqYURjVGM?oc=5&hl=es-419&gl=US&ceid=US:es-419",
-        "source": "ABA Journal",
-        "domain": "news.google.com",
-        "publishedAt": "2026-11-11T16:36:00.000Z",
-        "tags": [
-          "lawsuit",
-          "ai",
-          "licensing"
-        ],
-        "translated": false,
-        "via": "Google News"
-      },
-      {
-        "id": "noticia-7",
-        "title": "ASCAP Names Samantha Saturn as General Manager, ASCAP Nashville",
-        "summary": "Most recently, Saturn served for nearly eight years as chief marketing officer of SESAC Music Group.",
-        "url": "https://www.billboard.com/pro/ascap-names-samantha-saturn-general-manager-nashville/",
-        "source": "Billboard",
-        "domain": "billboard.com",
-        "publishedAt": "2026-11-16T15:24:52.000Z",
-        "tags": [],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-8",
+        "id": "noticia-4",
         "title": "Suno Bridge takes AI music to DAWs – starting with Ableton Live",
         "summary": "Suno building a bridge? No, this isn’t news of a licensing deal with any of the AI-music firm’s current litigants. Instead, it’s the latest step in the company’s efforts to position itself as a legitimate music-making tool for professionals. The post is from Music Ally .",
         "url": "https://musically.com/2026/11/16/suno-bridge-takes-ai-music-to-daws-starting-with-ableton-live/",
@@ -325,7 +203,19 @@
         "via": null
       },
       {
-        "id": "noticia-9",
+        "id": "noticia-5",
+        "title": "Samantha Saturn appointed General Manager of ASCAP Nashville",
+        "summary": "The appointment takes effect on December 1, with Saturn filling a newly created role at the US performing rights organization. Source",
+        "url": "https://www.musicbusinessworldwide.com/samantha-saturn-appointed-general-manager-of-ascap-nashville/",
+        "source": "Music Business Worldwide",
+        "domain": "musicbusinessworldwide.com",
+        "publishedAt": "2026-11-16T16:44:05.000Z",
+        "tags": [],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-6",
         "title": "Soundtrack firma con SESAC y suma las cuatro PRO de EE. UU.",
         "summary": "El servicio de música para negocios Soundtrack, conocido hasta hace unos años como Soundtrack Your Brand, ha firmado un acuerdo de licencias con SESAC, una de las entidades estadounidenses de derechos de…",
         "url": "https://industriamusical.com/soundtrack-acuerdo-sesac-cuatro-pro-eeuu/?utm_source=rss&utm_medium=rss&utm_campaign=soundtrack-acuerdo-sesac-cuatro-pro-eeuu",
@@ -339,7 +229,7 @@
         "via": null
       },
       {
-        "id": "noticia-10",
+        "id": "noticia-7",
         "title": "SoundCloud y ElevenLabs: publicación directa de música IA",
         "summary": "SoundCloud y ElevenLabs han anunciado una alianza que permite publicar directamente en SoundCloud las canciones creadas con ElevenMusic, la plataforma de generación de música con inteligencia artificial de ElevenLabs, sin tener que…",
         "url": "https://industriamusical.com/soundcloud-elevenlabs-publicacion-directa-musica-ia/?utm_source=rss&utm_medium=rss&utm_campaign=soundcloud-elevenlabs-publicacion-directa-musica-ia",
@@ -353,7 +243,7 @@
         "via": null
       },
       {
-        "id": "noticia-11",
+        "id": "noticia-8",
         "title": "Suno boss talks streaming fraud: ‘AI music is not a crime’",
         "summary": "Suno CEO Mikey Shulman has criticised what he describes as a “sleight of hand” of “equating streaming fraud with AI music”, while stressing that his company is doing more work behind the scenes to tackle fraud than people realise. The post is from Music Ally .",
         "url": "https://musically.com/2026/11/13/suno-boss-talks-streaming-fraud-ai-music-is-not-a-crime/",
@@ -366,25 +256,11 @@
         ],
         "translated": false,
         "via": null
-      },
-      {
-        "id": "noticia-12",
-        "title": "Los primeros AI Music Awards buscan legitimar la música creada con inteligencia artificial",
-        "summary": "",
-        "url": "https://news.google.com/rss/articles/CBMiygFBVV95cUxOMm1vYi0tNUV1em1zVFZFdHNwalIySFFYSHc3RFdULUtia3BMQ0t3MGJ3WHBSMng0ZVNoWjZoZnlhRG4tR0lhTjd2ZXRxZTZsQlFaY3F5MV9zOTVLdTBZdmJWWDVRVTFWc0JJUGtKMWx1MHhHcnM0MXVWOEJoTWVReEloV1JBV2xhdURVelAxOFJtdkxnd0RBVGU2dk9YUmNxQ1VCVTNQYkw2Y05Ybnhla3RsVnU1WTF2TFhEQTRvSHV1OU93bFdkVmV3?oc=5&hl=es-419&gl=US&ceid=US:es-419",
-        "source": "DiarioBitcoin",
-        "domain": "news.google.com",
-        "publishedAt": "2026-11-15T14:25:32.000Z",
-        "tags": [
-          "ai"
-        ],
-        "translated": false,
-        "via": "Google News"
       }
     ],
     "tip": {
-      "title": "Keep evidence of your creation date",
-      "body": "An email to yourself with the file attached, a repository with history, or a timestamping service cost little and build a defensible timeline."
+      "title": "Before signing, check the reversion clause",
+      "body": "The key question in any deal isn't what you get today —it's when and how you get your work back. With no reversion clause, you're assigning for the full term."
     }
   }
 }

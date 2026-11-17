@@ -1,0 +1,266 @@
+{
+  "lastUpdated": "2026-11-17T02:26:09.293Z",
+  "meta": {
+    "method": "rss-retrieval + link-verification + ai-translation",
+    "itemCount": 8,
+    "sources": [
+      "AllHipHop",
+      "Industria Musical",
+      "Music Ally",
+      "Music Business Worldwide"
+    ],
+    "verifiedLinks": 8,
+    "aiTranslated": 0,
+    "note": "Los hechos provienen de los artículos originales enlazados. La IA solo traduce y resume; no genera noticias."
+  },
+  "es": {
+    "title": "Noticias de Copyright e Inteligencia Artificial",
+    "subtitle": "Notas publicadas por medios reales de la industria, con liga al artículo original. Sin noticias inventadas.",
+    "items": [
+      {
+        "id": "noticia-1",
+        "title": "EXCLUSIVE: Suno Faces Demand To Open New AI Models To Copyright Discovery",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMiogFBVV95cUxQWjl1M1VadmNsUW1BSmxaeFdOWWJjRWppenVXNUp2YjZzamlBZUdicFVzWlJXa0x4aUMzb24yOUQ3Y2tlV2trZndpRmNNeExvZkQzZ01kdXVsNmtBaWlvSm50Q0lWUzZVdThuVmNUYUpxVElXbVVORzc0WUl5ajY2Xy13VzRUR3pBRkRJZXNvTUdLQnFEczZkVEJoWklEZEhlbUE?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "AllHipHop",
+        "domain": "news.google.com",
+        "publishedAt": "2026-11-15T17:10:09.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-2",
+        "title": "Reservoir expands copyright lawsuits against Suno and Anthropic to more than 2,500 songs combined",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMi0gFBVV95cUxPTzlZcng3dTMxakZrRkVISkZQeXVTUGtvWVpKMExZMHEyNDYyblh6bnlKNUczVXpSb1ZNNkFrMm1idWZlREZDR1d6QkNXM0ZBaGpUdnQzRWhYeVpCLTk3TmFPX3FNay1oeG1sRjI1YkFxQU1ZWlhqYXZqZlBpYnlqeGpuRVB4TDJrZldtNkRIcG4tVFFSOE91WHVkZzNsT3JEcnBTOFI2bTA5Q2t3Tjd2bmUtbm1Kb195aFFFVnMtZXgtd2lCWUdNX3Y5N2E5TGM5RXc?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "Music Business Worldwide",
+        "domain": "news.google.com",
+        "publishedAt": "2026-11-13T20:10:22.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-3",
+        "title": "Peanuts music catalog owner settles copyright lawsuit against GameMill over Snoopy video game soundtrack",
+        "summary": "GameMill licensed the Peanuts characters but not Vince Guaraldi’s music, then copied Linus and Lucy and Skating, the complaint alleged. Source",
+        "url": "https://www.musicbusinessworldwide.com/peanuts-music-catalog-owner-settles-copyright-lawsuit-against-gamemill-over-snoopy-video-game-soundtrack/",
+        "source": "Music Business Worldwide",
+        "domain": "musicbusinessworldwide.com",
+        "publishedAt": "2026-11-16T15:40:48.000Z",
+        "tags": [
+          "lawsuit",
+          "licensing"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-4",
+        "title": "Suno Bridge takes AI music to DAWs – starting with Ableton Live",
+        "summary": "Suno building a bridge? No, this isn’t news of a licensing deal with any of the AI-music firm’s current litigants. Instead, it’s the latest step in the company’s efforts to position itself as a legitimate music-making tool for professionals. The post is from Music Ally .",
+        "url": "https://musically.com/2026/11/16/suno-bridge-takes-ai-music-to-daws-starting-with-ableton-live/",
+        "source": "Music Ally",
+        "domain": "musically.com",
+        "publishedAt": "2026-11-16T13:33:40.000Z",
+        "tags": [
+          "ai",
+          "licensing"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-5",
+        "title": "Samantha Saturn appointed General Manager of ASCAP Nashville",
+        "summary": "The appointment takes effect on December 1, with Saturn filling a newly created role at the US performing rights organization. Source",
+        "url": "https://www.musicbusinessworldwide.com/samantha-saturn-appointed-general-manager-of-ascap-nashville/",
+        "source": "Music Business Worldwide",
+        "domain": "musicbusinessworldwide.com",
+        "publishedAt": "2026-11-16T16:44:05.000Z",
+        "tags": [],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-6",
+        "title": "Soundtrack firma con SESAC y suma las cuatro PRO de EE. UU.",
+        "summary": "El servicio de música para negocios Soundtrack, conocido hasta hace unos años como Soundtrack Your Brand, ha firmado un acuerdo de licencias con SESAC, una de las entidades estadounidenses de derechos de…",
+        "url": "https://industriamusical.com/soundtrack-acuerdo-sesac-cuatro-pro-eeuu/?utm_source=rss&utm_medium=rss&utm_campaign=soundtrack-acuerdo-sesac-cuatro-pro-eeuu",
+        "source": "Industria Musical",
+        "domain": "industriamusical.com",
+        "publishedAt": "2026-11-11T10:00:00.000Z",
+        "tags": [
+          "licensing"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-7",
+        "title": "SoundCloud y ElevenLabs: publicación directa de música IA",
+        "summary": "SoundCloud y ElevenLabs han anunciado una alianza que permite publicar directamente en SoundCloud las canciones creadas con ElevenMusic, la plataforma de generación de música con inteligencia artificial de ElevenLabs, sin tener que…",
+        "url": "https://industriamusical.com/soundcloud-elevenlabs-publicacion-directa-musica-ia/?utm_source=rss&utm_medium=rss&utm_campaign=soundcloud-elevenlabs-publicacion-directa-musica-ia",
+        "source": "Industria Musical",
+        "domain": "industriamusical.com",
+        "publishedAt": "2026-11-11T09:00:00.000Z",
+        "tags": [
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-8",
+        "title": "Suno boss talks streaming fraud: ‘AI music is not a crime’",
+        "summary": "Suno CEO Mikey Shulman has criticised what he describes as a “sleight of hand” of “equating streaming fraud with AI music”, while stressing that his company is doing more work behind the scenes to tackle fraud than people realise. The post is from Music Ally .",
+        "url": "https://musically.com/2026/11/13/suno-boss-talks-streaming-fraud-ai-music-is-not-a-crime/",
+        "source": "Music Ally",
+        "domain": "musically.com",
+        "publishedAt": "2026-11-13T12:30:00.000Z",
+        "tags": [
+          "ai",
+          "streaming"
+        ],
+        "translated": false,
+        "via": null
+      }
+    ],
+    "tip": {
+      "title": "Antes de firmar, revisa la reversión de derechos",
+      "body": "La pregunta clave de cualquier contrato no es cuánto te dan hoy, sino cuándo y cómo recuperas tu obra. Si no hay cláusula de reversión, estás cediendo por el plazo completo."
+    }
+  },
+  "en": {
+    "title": "Copyright & Artificial Intelligence News",
+    "subtitle": "Stories published by real industry outlets, each linked to its original article. No invented news.",
+    "items": [
+      {
+        "id": "noticia-1",
+        "title": "EXCLUSIVE: Suno Faces Demand To Open New AI Models To Copyright Discovery",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMiogFBVV95cUxQWjl1M1VadmNsUW1BSmxaeFdOWWJjRWppenVXNUp2YjZzamlBZUdicFVzWlJXa0x4aUMzb24yOUQ3Y2tlV2trZndpRmNNeExvZkQzZ01kdXVsNmtBaWlvSm50Q0lWUzZVdThuVmNUYUpxVElXbVVORzc0WUl5ajY2Xy13VzRUR3pBRkRJZXNvTUdLQnFEczZkVEJoWklEZEhlbUE?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "AllHipHop",
+        "domain": "news.google.com",
+        "publishedAt": "2026-11-15T17:10:09.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-2",
+        "title": "Reservoir expands copyright lawsuits against Suno and Anthropic to more than 2,500 songs combined",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMi0gFBVV95cUxPTzlZcng3dTMxakZrRkVISkZQeXVTUGtvWVpKMExZMHEyNDYyblh6bnlKNUczVXpSb1ZNNkFrMm1idWZlREZDR1d6QkNXM0ZBaGpUdnQzRWhYeVpCLTk3TmFPX3FNay1oeG1sRjI1YkFxQU1ZWlhqYXZqZlBpYnlqeGpuRVB4TDJrZldtNkRIcG4tVFFSOE91WHVkZzNsT3JEcnBTOFI2bTA5Q2t3Tjd2bmUtbm1Kb195aFFFVnMtZXgtd2lCWUdNX3Y5N2E5TGM5RXc?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "Music Business Worldwide",
+        "domain": "news.google.com",
+        "publishedAt": "2026-11-13T20:10:22.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-3",
+        "title": "Peanuts music catalog owner settles copyright lawsuit against GameMill over Snoopy video game soundtrack",
+        "summary": "GameMill licensed the Peanuts characters but not Vince Guaraldi’s music, then copied Linus and Lucy and Skating, the complaint alleged. Source",
+        "url": "https://www.musicbusinessworldwide.com/peanuts-music-catalog-owner-settles-copyright-lawsuit-against-gamemill-over-snoopy-video-game-soundtrack/",
+        "source": "Music Business Worldwide",
+        "domain": "musicbusinessworldwide.com",
+        "publishedAt": "2026-11-16T15:40:48.000Z",
+        "tags": [
+          "lawsuit",
+          "licensing"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-4",
+        "title": "Suno Bridge takes AI music to DAWs – starting with Ableton Live",
+        "summary": "Suno building a bridge? No, this isn’t news of a licensing deal with any of the AI-music firm’s current litigants. Instead, it’s the latest step in the company’s efforts to position itself as a legitimate music-making tool for professionals. The post is from Music Ally .",
+        "url": "https://musically.com/2026/11/16/suno-bridge-takes-ai-music-to-daws-starting-with-ableton-live/",
+        "source": "Music Ally",
+        "domain": "musically.com",
+        "publishedAt": "2026-11-16T13:33:40.000Z",
+        "tags": [
+          "ai",
+          "licensing"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-5",
+        "title": "Samantha Saturn appointed General Manager of ASCAP Nashville",
+        "summary": "The appointment takes effect on December 1, with Saturn filling a newly created role at the US performing rights organization. Source",
+        "url": "https://www.musicbusinessworldwide.com/samantha-saturn-appointed-general-manager-of-ascap-nashville/",
+        "source": "Music Business Worldwide",
+        "domain": "musicbusinessworldwide.com",
+        "publishedAt": "2026-11-16T16:44:05.000Z",
+        "tags": [],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-6",
+        "title": "Soundtrack firma con SESAC y suma las cuatro PRO de EE. UU.",
+        "summary": "El servicio de música para negocios Soundtrack, conocido hasta hace unos años como Soundtrack Your Brand, ha firmado un acuerdo de licencias con SESAC, una de las entidades estadounidenses de derechos de…",
+        "url": "https://industriamusical.com/soundtrack-acuerdo-sesac-cuatro-pro-eeuu/?utm_source=rss&utm_medium=rss&utm_campaign=soundtrack-acuerdo-sesac-cuatro-pro-eeuu",
+        "source": "Industria Musical",
+        "domain": "industriamusical.com",
+        "publishedAt": "2026-11-11T10:00:00.000Z",
+        "tags": [
+          "licensing"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-7",
+        "title": "SoundCloud y ElevenLabs: publicación directa de música IA",
+        "summary": "SoundCloud y ElevenLabs han anunciado una alianza que permite publicar directamente en SoundCloud las canciones creadas con ElevenMusic, la plataforma de generación de música con inteligencia artificial de ElevenLabs, sin tener que…",
+        "url": "https://industriamusical.com/soundcloud-elevenlabs-publicacion-directa-musica-ia/?utm_source=rss&utm_medium=rss&utm_campaign=soundcloud-elevenlabs-publicacion-directa-musica-ia",
+        "source": "Industria Musical",
+        "domain": "industriamusical.com",
+        "publishedAt": "2026-11-11T09:00:00.000Z",
+        "tags": [
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-8",
+        "title": "Suno boss talks streaming fraud: ‘AI music is not a crime’",
+        "summary": "Suno CEO Mikey Shulman has criticised what he describes as a “sleight of hand” of “equating streaming fraud with AI music”, while stressing that his company is doing more work behind the scenes to tackle fraud than people realise. The post is from Music Ally .",
+        "url": "https://musically.com/2026/11/13/suno-boss-talks-streaming-fraud-ai-music-is-not-a-crime/",
+        "source": "Music Ally",
+        "domain": "musically.com",
+        "publishedAt": "2026-11-13T12:30:00.000Z",
+        "tags": [
+          "ai",
+          "streaming"
+        ],
+        "translated": false,
+        "via": null
+      }
+    ],
+    "tip": {
+      "title": "Before signing, check the reversion clause",
+      "body": "The key question in any deal isn't what you get today —it's when and how you get your work back. With no reversion clause, you're assigning for the full term."
+    }
+  }
+}
