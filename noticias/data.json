@@ -1,16 +1,15 @@
 {
-  "lastUpdated": "2026-11-18T01:34:10.438Z",
+  "lastUpdated": "2026-11-18T16:23:00.762Z",
   "meta": {
     "method": "rss-retrieval + link-verification + ai-translation",
     "itemCount": 12,
     "sources": [
-      "AllHipHop",
       "Billboard",
       "Complete Music Update",
       "Digital Music News",
-      "Industria Musical",
       "Music Ally",
-      "Music Business Worldwide"
+      "Music Business Worldwide",
+      "Rolling Stone"
     ],
     "verifiedLinks": 12,
     "aiTranslated": 0,
@@ -22,12 +21,12 @@
     "items": [
       {
         "id": "noticia-1",
-        "title": "DistroKid Gives AI Upload Data to UMG and Sony for Suno Copyright Lawsuit After Initial Refusal",
-        "summary": "The leading DIY distributor responded to a subpoena requesting the data after UMG and Sony took legal action to force compliance.",
-        "url": "https://www.billboard.com/pro/distrokid-ai-data-umg-sony-lawsuit-suno/",
-        "source": "Billboard",
-        "domain": "billboard.com",
-        "publishedAt": "2026-11-18T00:49:19.000Z",
+        "title": "Eminem’s Publisher Eight Mile Style Sues Suno Over Allegations of Copyright Infringement",
+        "summary": "Eminem’s publishing company, Eight Mile Style, has now filed litigation against Suno for allegedly reproducing their copyrighted works without permission or compensation. Digital Music News was given a first look at the complaint. Eight Mile Style, Eminem’s publishing company that owns or controls the exclusivity to hi…",
+        "url": "https://www.digitalmusicnews.com/2026/11/08/eminem-publisher-sues-suno-copyright-infringement/",
+        "source": "Digital Music News",
+        "domain": "digitalmusicnews.com",
+        "publishedAt": "2026-11-09T05:16:52.000Z",
         "tags": [
           "lawsuit",
           "ai"
@@ -37,12 +36,12 @@
       },
       {
         "id": "noticia-2",
-        "title": "Eminem’s Publisher Eight Mile Style Sues Suno Over Allegations of Copyright Infringement",
-        "summary": "Eminem’s publishing company, Eight Mile Style, has now filed litigation against Suno for allegedly reproducing their copyrighted works without permission or compensation. Digital Music News was given a first look at the complaint. Eight Mile Style, Eminem’s publishing company that owns or controls the exclusivity to hi…",
-        "url": "https://www.digitalmusicnews.com/2026/11/08/eminem-publisher-sues-suno-copyright-infringement/",
+        "title": "Elvis Presley Enterprises Slaps Suno With Copyright & NIL Suit, Says the Platform Was ‘Always Meant to Replace the Artists Whose Works and Identities Were Being Unlawfully Copied’",
+        "summary": "Another day, another AI infringement lawsuit – this time against Suno, which is accused of infringing a number of Elvis Presley copyrights as well as the King of Rock’s name, image, and likeness (NIL) rights. Plaintiffs including Elvis Presley Enterprises, Raleigh Music Publishing, and a subsidiary of Elvis IP owner Au…",
+        "url": "https://www.digitalmusicnews.com/2026/11/09/elvis-presley-enterprises-suno-lawsuit/",
         "source": "Digital Music News",
         "domain": "digitalmusicnews.com",
-        "publishedAt": "2026-11-09T05:16:52.000Z",
+        "publishedAt": "2026-11-09T13:00:56.000Z",
         "tags": [
           "lawsuit",
           "ai"
@@ -67,51 +66,35 @@
       },
       {
         "id": "noticia-4",
-        "title": "Elvis Presley Enterprises Slaps Suno With Copyright & NIL Suit, Says the Platform Was ‘Always Meant to Replace the Artists Whose Works and Identities Were Being Unlawfully Copied’",
-        "summary": "Another day, another AI infringement lawsuit – this time against Suno, which is accused of infringing a number of Elvis Presley copyrights as well as the King of Rock’s name, image, and likeness (NIL) rights. Plaintiffs including Elvis Presley Enterprises, Raleigh Music Publishing, and a subsidiary of Elvis IP owner Au…",
-        "url": "https://www.digitalmusicnews.com/2026/11/09/elvis-presley-enterprises-suno-lawsuit/",
-        "source": "Digital Music News",
-        "domain": "digitalmusicnews.com",
-        "publishedAt": "2026-11-09T13:00:56.000Z",
+        "title": "DistroKid Gives AI Upload Data to UMG and Sony for Suno Copyright Lawsuit After Initial Refusal",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMiekFVX3lxTE9nWDRQTFlBMmxHLXROZkRtbTZaZVhzTktydHhJaVNzakVEUzU4YnVRSzdyUXowaVowalA2ZkVZM0I1YVktSjZrT29qWU1jRFJmZ1FocWVZSmp5U19KWnpKVjhaRFlHM3pmSEpQYlY1RFFjajBWcGZrakxR?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "Billboard",
+        "domain": "news.google.com",
+        "publishedAt": "2026-11-18T00:51:29.000Z",
         "tags": [
           "lawsuit",
           "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-5",
+        "title": "Travis Scott and Don Toliver Sued for Copyright Infringement Over 2019 Hit ‘What to Do?’",
+        "summary": "A music producer claims he received “zero compensation” for a sample used without permission",
+        "url": "https://www.rollingstone.com/music/music-news/travis-scott-don-toliver-copyright-lawsuit-what-to-do-song-1235660021/",
+        "source": "Rolling Stone",
+        "domain": "rollingstone.com",
+        "publishedAt": "2026-11-18T02:22:30.000Z",
+        "tags": [
+          "lawsuit"
         ],
         "translated": false,
         "via": null
       },
       {
-        "id": "noticia-5",
-        "title": "Elvis Presley rightsholders amend Suno lawsuit, adding more than 100 allegedly infringing AI tracks",
-        "summary": "",
-        "url": "https://news.google.com/rss/articles/CBMi1AFBVV95cUxPUTVTd3czU3dFY3RMS2NtOWV2VjdDUmx1b2xUUktYcE10QlN3eEo4bm1oaE5tU2pUWEtyTmJYYVN6MFZJRFZKdzdjdjdadlJHUDEzWE5JNFVlYW44b3BWVGtvR3c1bDdFOEEwTGV6blZ1Z3g2UXYtWGFReVJwYU11TWRkYlhSSmFiTGxzOTBuYzJ6QU9HcFN1TlZsUTJ6eDBJbEN4Q1ZlYjBXM0s2R3MwRXVCbFA0anZFeGliZ0RzMVR5NlF4UDFPWWcxT3c1d0VpSXpsdw?oc=5&hl=es-419&gl=US&ceid=US:es-419",
-        "source": "Music Business Worldwide",
-        "domain": "news.google.com",
-        "publishedAt": "2026-11-17T11:35:42.000Z",
-        "tags": [
-          "lawsuit",
-          "ai"
-        ],
-        "translated": false,
-        "via": "Google News"
-      },
-      {
         "id": "noticia-6",
-        "title": "EXCLUSIVE: Suno Faces Demand To Open New AI Models To Copyright Discovery",
-        "summary": "",
-        "url": "https://news.google.com/rss/articles/CBMiogFBVV95cUxQWjl1M1VadmNsUW1BSmxaeFdOWWJjRWppenVXNUp2YjZzamlBZUdicFVzWlJXa0x4aUMzb24yOUQ3Y2tlV2trZndpRmNNeExvZkQzZ01kdXVsNmtBaWlvSm50Q0lWUzZVdThuVmNUYUpxVElXbVVORzc0WUl5ajY2Xy13VzRUR3pBRkRJZXNvTUdLQnFEczZkVEJoWklEZEhlbUE?oc=5&hl=es-419&gl=US&ceid=US:es-419",
-        "source": "AllHipHop",
-        "domain": "news.google.com",
-        "publishedAt": "2026-11-15T17:10:09.000Z",
-        "tags": [
-          "lawsuit",
-          "ai"
-        ],
-        "translated": false,
-        "via": "Google News"
-      },
-      {
-        "id": "noticia-7",
         "title": "Tencent Music says AI content streams are ‘negligible’ – as it takes legal action over AI infringement",
         "summary": "TME says streams of AI-generated content are declining as a share of listening Source",
         "url": "https://www.musicbusinessworldwide.com/tencent-music-says-ai-content-streams-are-negligible-as-it-takes-legal-action-over-ai-infringement/",
@@ -125,7 +108,7 @@
         "via": null
       },
       {
-        "id": "noticia-8",
+        "id": "noticia-7",
         "title": "Australia’s creative industries join forces to launch campaign against copyright reforms that favour big tech and AI companies",
         "summary": "With mounting concerns that the Australian government is considering copyright reforms to make it easier for AI companies to copy existing content without getting permission first, the country’s music community has joined the wider creative industries to launch a new campaign opposing those reforms",
         "url": "https://completemusicupdate.com/australias-creative-industries-join-forces-to-launch-campaign-against-copyright-reforms-that-favour-big-tech-and-ai-companies/",
@@ -139,13 +122,27 @@
         "via": null
       },
       {
-        "id": "noticia-9",
+        "id": "noticia-8",
         "title": "Australia’s ‘Not AI’s to Take’ campaign defends human creativity",
         "summary": "The Australian music industry has been fighting hard to persuade the country’s government not to throw copyright protection under the bus in order to attract big AI companies’ investment. The latest initiative is a campaign called ‘Not AI’s to Take’ which launched today. The post is from Music Ally .",
         "url": "https://musically.com/2026/11/17/australias-not-ais-to-take-campaign-defends-human-creativity/",
         "source": "Music Ally",
         "domain": "musically.com",
         "publishedAt": "2026-11-17T13:30:00.000Z",
+        "tags": [
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-9",
+        "title": "Suno adds ‘Visuals’ tool for making lyric videos and album art",
+        "summary": "In a way, it’s surprising that it took this long for Suno to expand into AI-generated video. Its new ‘Visuals’ tool can be used to create lyric videos, album art and other clips to accompany songs made on its platform. The post is from Music Ally .",
+        "url": "https://musically.com/2026/11/18/suno-adds-visuals-tool-for-making-lyric-videos-and-album-art/",
+        "source": "Music Ally",
+        "domain": "musically.com",
+        "publishedAt": "2026-11-18T13:30:00.000Z",
         "tags": [
           "ai"
         ],
@@ -169,29 +166,30 @@
       },
       {
         "id": "noticia-11",
-        "title": "Suno Bridge takes AI music to DAWs – starting with Ableton Live",
-        "summary": "Suno building a bridge? No, this isn’t news of a licensing deal with any of the AI-music firm’s current litigants. Instead, it’s the latest step in the company’s efforts to position itself as a legitimate music-making tool for professionals. The post is from Music Ally .",
-        "url": "https://musically.com/2026/11/16/suno-bridge-takes-ai-music-to-daws-starting-with-ableton-live/",
-        "source": "Music Ally",
-        "domain": "musically.com",
-        "publishedAt": "2026-11-16T13:33:40.000Z",
+        "title": "Vast majority of consumers want AI music labelled, Deezer survey reveals, as SoundCloud and Spotify update AI policies and tools",
+        "summary": "Deezer has surveyed 9000 consumers in nine markets about their attitudes towards AI music, with 80% of respondents saying AI tracks should be clearly labelled. The new stats coincide with updates from SoundCloud on its AI policies and Spotify on the roll out of its Artist Profile Protection feature",
+        "url": "https://completemusicupdate.com/vast-majority-of-consumers-want-ai-music-labelled-deezer-survey-reveals-as-soundcloud-and-spotify-update-ai-policies-and-tools/",
+        "source": "Complete Music Update",
+        "domain": "completemusicupdate.com",
+        "publishedAt": "2026-11-18T16:07:58.000Z",
         "tags": [
           "ai",
-          "licensing"
+          "streaming"
         ],
         "translated": false,
         "via": null
       },
       {
         "id": "noticia-12",
-        "title": "Soundtrack firma con SESAC y suma las cuatro PRO de EE. UU.",
-        "summary": "El servicio de música para negocios Soundtrack, conocido hasta hace unos años como Soundtrack Your Brand, ha firmado un acuerdo de licencias con SESAC, una de las entidades estadounidenses de derechos de…",
-        "url": "https://industriamusical.com/soundtrack-acuerdo-sesac-cuatro-pro-eeuu/?utm_source=rss&utm_medium=rss&utm_campaign=soundtrack-acuerdo-sesac-cuatro-pro-eeuu",
-        "source": "Industria Musical",
-        "domain": "industriamusical.com",
-        "publishedAt": "2026-11-11T10:00:00.000Z",
+        "title": "SoundCloud cracks down on AI slop as Spotify expands Artist Profile Protection",
+        "summary": "Calls from the music industry for streaming services to do more to tackle AI slop, musical spam and streaming fraud are being answered – today by the latest moves from SoundCloud and Spotify. The post is from Music Ally .",
+        "url": "https://musically.com/2026/11/18/soundcloud-cracks-down-on-ai-slop-as-spotify-expands-artist-profile-protection/",
+        "source": "Music Ally",
+        "domain": "musically.com",
+        "publishedAt": "2026-11-18T12:30:00.000Z",
         "tags": [
-          "licensing"
+          "ai",
+          "streaming"
         ],
         "translated": false,
         "via": null
@@ -208,12 +206,12 @@
     "items": [
       {
         "id": "noticia-1",
-        "title": "DistroKid Gives AI Upload Data to UMG and Sony for Suno Copyright Lawsuit After Initial Refusal",
-        "summary": "The leading DIY distributor responded to a subpoena requesting the data after UMG and Sony took legal action to force compliance.",
-        "url": "https://www.billboard.com/pro/distrokid-ai-data-umg-sony-lawsuit-suno/",
-        "source": "Billboard",
-        "domain": "billboard.com",
-        "publishedAt": "2026-11-18T00:49:19.000Z",
+        "title": "Eminem’s Publisher Eight Mile Style Sues Suno Over Allegations of Copyright Infringement",
+        "summary": "Eminem’s publishing company, Eight Mile Style, has now filed litigation against Suno for allegedly reproducing their copyrighted works without permission or compensation. Digital Music News was given a first look at the complaint. Eight Mile Style, Eminem’s publishing company that owns or controls the exclusivity to hi…",
+        "url": "https://www.digitalmusicnews.com/2026/11/08/eminem-publisher-sues-suno-copyright-infringement/",
+        "source": "Digital Music News",
+        "domain": "digitalmusicnews.com",
+        "publishedAt": "2026-11-09T05:16:52.000Z",
         "tags": [
           "lawsuit",
           "ai"
@@ -223,12 +221,12 @@
       },
       {
         "id": "noticia-2",
-        "title": "Eminem’s Publisher Eight Mile Style Sues Suno Over Allegations of Copyright Infringement",
-        "summary": "Eminem’s publishing company, Eight Mile Style, has now filed litigation against Suno for allegedly reproducing their copyrighted works without permission or compensation. Digital Music News was given a first look at the complaint. Eight Mile Style, Eminem’s publishing company that owns or controls the exclusivity to hi…",
-        "url": "https://www.digitalmusicnews.com/2026/11/08/eminem-publisher-sues-suno-copyright-infringement/",
+        "title": "Elvis Presley Enterprises Slaps Suno With Copyright & NIL Suit, Says the Platform Was ‘Always Meant to Replace the Artists Whose Works and Identities Were Being Unlawfully Copied’",
+        "summary": "Another day, another AI infringement lawsuit – this time against Suno, which is accused of infringing a number of Elvis Presley copyrights as well as the King of Rock’s name, image, and likeness (NIL) rights. Plaintiffs including Elvis Presley Enterprises, Raleigh Music Publishing, and a subsidiary of Elvis IP owner Au…",
+        "url": "https://www.digitalmusicnews.com/2026/11/09/elvis-presley-enterprises-suno-lawsuit/",
         "source": "Digital Music News",
         "domain": "digitalmusicnews.com",
-        "publishedAt": "2026-11-09T05:16:52.000Z",
+        "publishedAt": "2026-11-09T13:00:56.000Z",
         "tags": [
           "lawsuit",
           "ai"
@@ -253,51 +251,35 @@
       },
       {
         "id": "noticia-4",
-        "title": "Elvis Presley Enterprises Slaps Suno With Copyright & NIL Suit, Says the Platform Was ‘Always Meant to Replace the Artists Whose Works and Identities Were Being Unlawfully Copied’",
-        "summary": "Another day, another AI infringement lawsuit – this time against Suno, which is accused of infringing a number of Elvis Presley copyrights as well as the King of Rock’s name, image, and likeness (NIL) rights. Plaintiffs including Elvis Presley Enterprises, Raleigh Music Publishing, and a subsidiary of Elvis IP owner Au…",
-        "url": "https://www.digitalmusicnews.com/2026/11/09/elvis-presley-enterprises-suno-lawsuit/",
-        "source": "Digital Music News",
-        "domain": "digitalmusicnews.com",
-        "publishedAt": "2026-11-09T13:00:56.000Z",
+        "title": "DistroKid Gives AI Upload Data to UMG and Sony for Suno Copyright Lawsuit After Initial Refusal",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMiekFVX3lxTE9nWDRQTFlBMmxHLXROZkRtbTZaZVhzTktydHhJaVNzakVEUzU4YnVRSzdyUXowaVowalA2ZkVZM0I1YVktSjZrT29qWU1jRFJmZ1FocWVZSmp5U19KWnpKVjhaRFlHM3pmSEpQYlY1RFFjajBWcGZrakxR?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "Billboard",
+        "domain": "news.google.com",
+        "publishedAt": "2026-11-18T00:51:29.000Z",
         "tags": [
           "lawsuit",
           "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-5",
+        "title": "Travis Scott and Don Toliver Sued for Copyright Infringement Over 2019 Hit ‘What to Do?’",
+        "summary": "A music producer claims he received “zero compensation” for a sample used without permission",
+        "url": "https://www.rollingstone.com/music/music-news/travis-scott-don-toliver-copyright-lawsuit-what-to-do-song-1235660021/",
+        "source": "Rolling Stone",
+        "domain": "rollingstone.com",
+        "publishedAt": "2026-11-18T02:22:30.000Z",
+        "tags": [
+          "lawsuit"
         ],
         "translated": false,
         "via": null
       },
       {
-        "id": "noticia-5",
-        "title": "Elvis Presley rightsholders amend Suno lawsuit, adding more than 100 allegedly infringing AI tracks",
-        "summary": "",
-        "url": "https://news.google.com/rss/articles/CBMi1AFBVV95cUxPUTVTd3czU3dFY3RMS2NtOWV2VjdDUmx1b2xUUktYcE10QlN3eEo4bm1oaE5tU2pUWEtyTmJYYVN6MFZJRFZKdzdjdjdadlJHUDEzWE5JNFVlYW44b3BWVGtvR3c1bDdFOEEwTGV6blZ1Z3g2UXYtWGFReVJwYU11TWRkYlhSSmFiTGxzOTBuYzJ6QU9HcFN1TlZsUTJ6eDBJbEN4Q1ZlYjBXM0s2R3MwRXVCbFA0anZFeGliZ0RzMVR5NlF4UDFPWWcxT3c1d0VpSXpsdw?oc=5&hl=es-419&gl=US&ceid=US:es-419",
-        "source": "Music Business Worldwide",
-        "domain": "news.google.com",
-        "publishedAt": "2026-11-17T11:35:42.000Z",
-        "tags": [
-          "lawsuit",
-          "ai"
-        ],
-        "translated": false,
-        "via": "Google News"
-      },
-      {
         "id": "noticia-6",
-        "title": "EXCLUSIVE: Suno Faces Demand To Open New AI Models To Copyright Discovery",
-        "summary": "",
-        "url": "https://news.google.com/rss/articles/CBMiogFBVV95cUxQWjl1M1VadmNsUW1BSmxaeFdOWWJjRWppenVXNUp2YjZzamlBZUdicFVzWlJXa0x4aUMzb24yOUQ3Y2tlV2trZndpRmNNeExvZkQzZ01kdXVsNmtBaWlvSm50Q0lWUzZVdThuVmNUYUpxVElXbVVORzc0WUl5ajY2Xy13VzRUR3pBRkRJZXNvTUdLQnFEczZkVEJoWklEZEhlbUE?oc=5&hl=es-419&gl=US&ceid=US:es-419",
-        "source": "AllHipHop",
-        "domain": "news.google.com",
-        "publishedAt": "2026-11-15T17:10:09.000Z",
-        "tags": [
-          "lawsuit",
-          "ai"
-        ],
-        "translated": false,
-        "via": "Google News"
-      },
-      {
-        "id": "noticia-7",
         "title": "Tencent Music says AI content streams are ‘negligible’ – as it takes legal action over AI infringement",
         "summary": "TME says streams of AI-generated content are declining as a share of listening Source",
         "url": "https://www.musicbusinessworldwide.com/tencent-music-says-ai-content-streams-are-negligible-as-it-takes-legal-action-over-ai-infringement/",
@@ -311,7 +293,7 @@
         "via": null
       },
       {
-        "id": "noticia-8",
+        "id": "noticia-7",
         "title": "Australia’s creative industries join forces to launch campaign against copyright reforms that favour big tech and AI companies",
         "summary": "With mounting concerns that the Australian government is considering copyright reforms to make it easier for AI companies to copy existing content without getting permission first, the country’s music community has joined the wider creative industries to launch a new campaign opposing those reforms",
         "url": "https://completemusicupdate.com/australias-creative-industries-join-forces-to-launch-campaign-against-copyright-reforms-that-favour-big-tech-and-ai-companies/",
@@ -325,13 +307,27 @@
         "via": null
       },
       {
-        "id": "noticia-9",
+        "id": "noticia-8",
         "title": "Australia’s ‘Not AI’s to Take’ campaign defends human creativity",
         "summary": "The Australian music industry has been fighting hard to persuade the country’s government not to throw copyright protection under the bus in order to attract big AI companies’ investment. The latest initiative is a campaign called ‘Not AI’s to Take’ which launched today. The post is from Music Ally .",
         "url": "https://musically.com/2026/11/17/australias-not-ais-to-take-campaign-defends-human-creativity/",
         "source": "Music Ally",
         "domain": "musically.com",
         "publishedAt": "2026-11-17T13:30:00.000Z",
+        "tags": [
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-9",
+        "title": "Suno adds ‘Visuals’ tool for making lyric videos and album art",
+        "summary": "In a way, it’s surprising that it took this long for Suno to expand into AI-generated video. Its new ‘Visuals’ tool can be used to create lyric videos, album art and other clips to accompany songs made on its platform. The post is from Music Ally .",
+        "url": "https://musically.com/2026/11/18/suno-adds-visuals-tool-for-making-lyric-videos-and-album-art/",
+        "source": "Music Ally",
+        "domain": "musically.com",
+        "publishedAt": "2026-11-18T13:30:00.000Z",
         "tags": [
           "ai"
         ],
@@ -355,29 +351,30 @@
       },
       {
         "id": "noticia-11",
-        "title": "Suno Bridge takes AI music to DAWs – starting with Ableton Live",
-        "summary": "Suno building a bridge? No, this isn’t news of a licensing deal with any of the AI-music firm’s current litigants. Instead, it’s the latest step in the company’s efforts to position itself as a legitimate music-making tool for professionals. The post is from Music Ally .",
-        "url": "https://musically.com/2026/11/16/suno-bridge-takes-ai-music-to-daws-starting-with-ableton-live/",
-        "source": "Music Ally",
-        "domain": "musically.com",
-        "publishedAt": "2026-11-16T13:33:40.000Z",
+        "title": "Vast majority of consumers want AI music labelled, Deezer survey reveals, as SoundCloud and Spotify update AI policies and tools",
+        "summary": "Deezer has surveyed 9000 consumers in nine markets about their attitudes towards AI music, with 80% of respondents saying AI tracks should be clearly labelled. The new stats coincide with updates from SoundCloud on its AI policies and Spotify on the roll out of its Artist Profile Protection feature",
+        "url": "https://completemusicupdate.com/vast-majority-of-consumers-want-ai-music-labelled-deezer-survey-reveals-as-soundcloud-and-spotify-update-ai-policies-and-tools/",
+        "source": "Complete Music Update",
+        "domain": "completemusicupdate.com",
+        "publishedAt": "2026-11-18T16:07:58.000Z",
         "tags": [
           "ai",
-          "licensing"
+          "streaming"
         ],
         "translated": false,
         "via": null
       },
       {
         "id": "noticia-12",
-        "title": "Soundtrack firma con SESAC y suma las cuatro PRO de EE. UU.",
-        "summary": "El servicio de música para negocios Soundtrack, conocido hasta hace unos años como Soundtrack Your Brand, ha firmado un acuerdo de licencias con SESAC, una de las entidades estadounidenses de derechos de…",
-        "url": "https://industriamusical.com/soundtrack-acuerdo-sesac-cuatro-pro-eeuu/?utm_source=rss&utm_medium=rss&utm_campaign=soundtrack-acuerdo-sesac-cuatro-pro-eeuu",
-        "source": "Industria Musical",
-        "domain": "industriamusical.com",
-        "publishedAt": "2026-11-11T10:00:00.000Z",
+        "title": "SoundCloud cracks down on AI slop as Spotify expands Artist Profile Protection",
+        "summary": "Calls from the music industry for streaming services to do more to tackle AI slop, musical spam and streaming fraud are being answered – today by the latest moves from SoundCloud and Spotify. The post is from Music Ally .",
+        "url": "https://musically.com/2026/11/18/soundcloud-cracks-down-on-ai-slop-as-spotify-expands-artist-profile-protection/",
+        "source": "Music Ally",
+        "domain": "musically.com",
+        "publishedAt": "2026-11-18T12:30:00.000Z",
         "tags": [
-          "licensing"
+          "ai",
+          "streaming"
         ],
         "translated": false,
         "via": null
