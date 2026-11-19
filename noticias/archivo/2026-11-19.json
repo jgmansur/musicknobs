@@ -1,0 +1,384 @@
+{
+  "lastUpdated": "2026-11-19T01:05:39.372Z",
+  "meta": {
+    "method": "rss-retrieval + link-verification + ai-translation",
+    "itemCount": 12,
+    "sources": [
+      "AllHipHop",
+      "Billboard",
+      "Complete Music Update",
+      "Industria Musical",
+      "Music Ally",
+      "Music Business Worldwide"
+    ],
+    "verifiedLinks": 12,
+    "aiTranslated": 0,
+    "note": "Los hechos provienen de los artículos originales enlazados. La IA solo traduce y resume; no genera noticias."
+  },
+  "es": {
+    "title": "Noticias de Copyright e Inteligencia Artificial",
+    "subtitle": "Notas publicadas por medios reales de la industria, con liga al artículo original. Sin noticias inventadas.",
+    "items": [
+      {
+        "id": "noticia-1",
+        "title": "DistroKid Gives AI Upload Data to UMG and Sony for Suno Copyright Lawsuit After Initial Refusal",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMiekFVX3lxTE9nWDRQTFlBMmxHLXROZkRtbTZaZVhzTktydHhJaVNzakVEUzU4YnVRSzdyUXowaVowalA2ZkVZM0I1YVktSjZrT29qWU1jRFJmZ1FocWVZSmp5U19KWnpKVjhaRFlHM3pmSEpQYlY1RFFjajBWcGZrakxR?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "Billboard",
+        "domain": "news.google.com",
+        "publishedAt": "2026-11-18T00:51:29.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-2",
+        "title": "EXCLUSIVE: Suno Faces Demand To Open New AI Models To Copyright Discovery",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMiogFBVV95cUxQWjl1M1VadmNsUW1BSmxaeFdOWWJjRWppenVXNUp2YjZzamlBZUdicFVzWlJXa0x4aUMzb24yOUQ3Y2tlV2trZndpRmNNeExvZkQzZ01kdXVsNmtBaWlvSm50Q0lWUzZVdThuVmNUYUpxVElXbVVORzc0WUl5ajY2Xy13VzRUR3pBRkRJZXNvTUdLQnFEczZkVEJoWklEZEhlbUE?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "AllHipHop",
+        "domain": "news.google.com",
+        "publishedAt": "2026-11-15T17:10:09.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-3",
+        "title": "Australia’s creative industries join forces to launch campaign against copyright reforms that favour big tech and AI companies",
+        "summary": "With mounting concerns that the Australian government is considering copyright reforms to make it easier for AI companies to copy existing content without getting permission first, the country’s music community has joined the wider creative industries to launch a new campaign opposing those reforms",
+        "url": "https://completemusicupdate.com/australias-creative-industries-join-forces-to-launch-campaign-against-copyright-reforms-that-favour-big-tech-and-ai-companies/",
+        "source": "Complete Music Update",
+        "domain": "completemusicupdate.com",
+        "publishedAt": "2026-11-17T16:09:31.000Z",
+        "tags": [
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-4",
+        "title": "Australia’s ‘Not AI’s to Take’ campaign defends human creativity",
+        "summary": "The Australian music industry has been fighting hard to persuade the country’s government not to throw copyright protection under the bus in order to attract big AI companies’ investment. The latest initiative is a campaign called ‘Not AI’s to Take’ which launched today. The post is from Music Ally .",
+        "url": "https://musically.com/2026/11/17/australias-not-ais-to-take-campaign-defends-human-creativity/",
+        "source": "Music Ally",
+        "domain": "musically.com",
+        "publishedAt": "2026-11-17T13:30:00.000Z",
+        "tags": [
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-5",
+        "title": "Suno adds ‘Visuals’ tool for making lyric videos and album art",
+        "summary": "In a way, it’s surprising that it took this long for Suno to expand into AI-generated video. Its new ‘Visuals’ tool can be used to create lyric videos, album art and other clips to accompany songs made on its platform. The post is from Music Ally .",
+        "url": "https://musically.com/2026/11/18/suno-adds-visuals-tool-for-making-lyric-videos-and-album-art/",
+        "source": "Music Ally",
+        "domain": "musically.com",
+        "publishedAt": "2026-11-18T13:30:00.000Z",
+        "tags": [
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-6",
+        "title": "Vast majority of consumers want AI music labelled, Deezer survey reveals, as SoundCloud and Spotify update AI policies and tools",
+        "summary": "Deezer has surveyed 9000 consumers in nine markets about their attitudes towards AI music, with 80% of respondents saying AI tracks should be clearly labelled. The new stats coincide with updates from SoundCloud on its AI policies and Spotify on the roll out of its Artist Profile Protection feature",
+        "url": "https://completemusicupdate.com/vast-majority-of-consumers-want-ai-music-labelled-deezer-survey-reveals-as-soundcloud-and-spotify-update-ai-policies-and-tools/",
+        "source": "Complete Music Update",
+        "domain": "completemusicupdate.com",
+        "publishedAt": "2026-11-18T16:07:58.000Z",
+        "tags": [
+          "ai",
+          "streaming"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-7",
+        "title": "SoundCloud cracks down on AI slop as Spotify expands Artist Profile Protection",
+        "summary": "Calls from the music industry for streaming services to do more to tackle AI slop, musical spam and streaming fraud are being answered – today by the latest moves from SoundCloud and Spotify. The post is from Music Ally .",
+        "url": "https://musically.com/2026/11/18/soundcloud-cracks-down-on-ai-slop-as-spotify-expands-artist-profile-protection/",
+        "source": "Music Ally",
+        "domain": "musically.com",
+        "publishedAt": "2026-11-18T12:30:00.000Z",
+        "tags": [
+          "ai",
+          "streaming"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-8",
+        "title": "Suno lanza Visuals con un modelo de la china MiniMax",
+        "summary": "Suno lanza Visuals, que genera vídeos e imágenes de hasta 15 segundos a partir de las canciones del usuario. Según su propia web, funciona con un modelo basado en el H3 de MiniMax, la compañía china demandada por Disney, Universal y Warner Bros. Discovery.",
+        "url": "https://industriamusical.com/suno-visuals-video-ia-minimax/?utm_source=rss&utm_medium=rss&utm_campaign=suno-visuals-video-ia-minimax",
+        "source": "Industria Musical",
+        "domain": "industriamusical.com",
+        "publishedAt": "2026-11-18T11:20:53.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-9",
+        "title": "Spotify deja a todos los artistas vetar lanzamientos falsos",
+        "summary": "Spotify abre a todos los artistas su Artist Profile Protection, que avisa cuando llega música con su nombre y permite desvincularse de lanzamientos ajenos. El mismo día, SoundCloud endurece sus normas contra el «slop» de IA, la subida masiva de pistas y el fraude.",
+        "url": "https://industriamusical.com/spotify-artist-profile-protection-soundcloud-slop-ia/?utm_source=rss&utm_medium=rss&utm_campaign=spotify-artist-profile-protection-soundcloud-slop-ia",
+        "source": "Industria Musical",
+        "domain": "industriamusical.com",
+        "publishedAt": "2026-11-18T11:20:00.000Z",
+        "tags": [
+          "ai",
+          "streaming"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-10",
+        "title": "UMG and Sony withdraw DistroKid subpoena motion in Suno case after distributor produces AI-detection documents",
+        "summary": "The labels sought data on how many DistroKid tracks were flagged as AI-generated, how many were attributed to Suno, and what they earned. Source",
+        "url": "https://www.musicbusinessworldwide.com/umg-and-sony-withdraw-distrokid-subpoena-motion-in-suno-case-after-distributor-produces-ai-detection-documents/",
+        "source": "Music Business Worldwide",
+        "domain": "musicbusinessworldwide.com",
+        "publishedAt": "2026-11-18T19:26:50.000Z",
+        "tags": [
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-11",
+        "title": "$11M-backed AI startup Sonilo, founded by TikTok veterans, inks licensing deal with Symphonic to train its model on opted-in indie recordings",
+        "summary": "The agreement allows Sonilo to train its AI music model on recordings from Symphonic’s independent artists and labels – but only those that choose to opt in. Source",
+        "url": "https://www.musicbusinessworldwide.com/11m-backed-ai-startup-sonilo-founded-by-tiktok-veterans-inks-licensing-deal-with-symphonic-to-train-its-model-on-opted-in-indie-recordings/",
+        "source": "Music Business Worldwide",
+        "domain": "musicbusinessworldwide.com",
+        "publishedAt": "2026-11-18T15:00:25.000Z",
+        "tags": [
+          "ai",
+          "licensing"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-12",
+        "title": "Carlyle-backed Litmus Music secures $475M in new capital, with KKR joining as an investor",
+        "summary": "Litmus' portfolio includes more than 100,000 copyrights and recordings, featuring music from Katy Perry, Benny Blanco, Randy Newman, and Keith Urban. Source",
+        "url": "https://www.musicbusinessworldwide.com/carlyle-backed-litmus-music-secures-475m-in-new-capital-with-kkr-joining-as-an-investor/",
+        "source": "Music Business Worldwide",
+        "domain": "musicbusinessworldwide.com",
+        "publishedAt": "2026-11-18T12:00:48.000Z",
+        "tags": [],
+        "translated": false,
+        "via": null
+      }
+    ],
+    "tip": {
+      "title": "Guarda los proyectos, no solo el master",
+      "body": "En una disputa de autoría, el archivo de sesión de tu DAW con fecha, stems y versiones intermedias pesa más que el WAV final. Respalda el proyecto completo, no nada más el bounce."
+    }
+  },
+  "en": {
+    "title": "Copyright & Artificial Intelligence News",
+    "subtitle": "Stories published by real industry outlets, each linked to its original article. No invented news.",
+    "items": [
+      {
+        "id": "noticia-1",
+        "title": "DistroKid Gives AI Upload Data to UMG and Sony for Suno Copyright Lawsuit After Initial Refusal",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMiekFVX3lxTE9nWDRQTFlBMmxHLXROZkRtbTZaZVhzTktydHhJaVNzakVEUzU4YnVRSzdyUXowaVowalA2ZkVZM0I1YVktSjZrT29qWU1jRFJmZ1FocWVZSmp5U19KWnpKVjhaRFlHM3pmSEpQYlY1RFFjajBWcGZrakxR?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "Billboard",
+        "domain": "news.google.com",
+        "publishedAt": "2026-11-18T00:51:29.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-2",
+        "title": "EXCLUSIVE: Suno Faces Demand To Open New AI Models To Copyright Discovery",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMiogFBVV95cUxQWjl1M1VadmNsUW1BSmxaeFdOWWJjRWppenVXNUp2YjZzamlBZUdicFVzWlJXa0x4aUMzb24yOUQ3Y2tlV2trZndpRmNNeExvZkQzZ01kdXVsNmtBaWlvSm50Q0lWUzZVdThuVmNUYUpxVElXbVVORzc0WUl5ajY2Xy13VzRUR3pBRkRJZXNvTUdLQnFEczZkVEJoWklEZEhlbUE?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "AllHipHop",
+        "domain": "news.google.com",
+        "publishedAt": "2026-11-15T17:10:09.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-3",
+        "title": "Australia’s creative industries join forces to launch campaign against copyright reforms that favour big tech and AI companies",
+        "summary": "With mounting concerns that the Australian government is considering copyright reforms to make it easier for AI companies to copy existing content without getting permission first, the country’s music community has joined the wider creative industries to launch a new campaign opposing those reforms",
+        "url": "https://completemusicupdate.com/australias-creative-industries-join-forces-to-launch-campaign-against-copyright-reforms-that-favour-big-tech-and-ai-companies/",
+        "source": "Complete Music Update",
+        "domain": "completemusicupdate.com",
+        "publishedAt": "2026-11-17T16:09:31.000Z",
+        "tags": [
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-4",
+        "title": "Australia’s ‘Not AI’s to Take’ campaign defends human creativity",
+        "summary": "The Australian music industry has been fighting hard to persuade the country’s government not to throw copyright protection under the bus in order to attract big AI companies’ investment. The latest initiative is a campaign called ‘Not AI’s to Take’ which launched today. The post is from Music Ally .",
+        "url": "https://musically.com/2026/11/17/australias-not-ais-to-take-campaign-defends-human-creativity/",
+        "source": "Music Ally",
+        "domain": "musically.com",
+        "publishedAt": "2026-11-17T13:30:00.000Z",
+        "tags": [
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-5",
+        "title": "Suno adds ‘Visuals’ tool for making lyric videos and album art",
+        "summary": "In a way, it’s surprising that it took this long for Suno to expand into AI-generated video. Its new ‘Visuals’ tool can be used to create lyric videos, album art and other clips to accompany songs made on its platform. The post is from Music Ally .",
+        "url": "https://musically.com/2026/11/18/suno-adds-visuals-tool-for-making-lyric-videos-and-album-art/",
+        "source": "Music Ally",
+        "domain": "musically.com",
+        "publishedAt": "2026-11-18T13:30:00.000Z",
+        "tags": [
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-6",
+        "title": "Vast majority of consumers want AI music labelled, Deezer survey reveals, as SoundCloud and Spotify update AI policies and tools",
+        "summary": "Deezer has surveyed 9000 consumers in nine markets about their attitudes towards AI music, with 80% of respondents saying AI tracks should be clearly labelled. The new stats coincide with updates from SoundCloud on its AI policies and Spotify on the roll out of its Artist Profile Protection feature",
+        "url": "https://completemusicupdate.com/vast-majority-of-consumers-want-ai-music-labelled-deezer-survey-reveals-as-soundcloud-and-spotify-update-ai-policies-and-tools/",
+        "source": "Complete Music Update",
+        "domain": "completemusicupdate.com",
+        "publishedAt": "2026-11-18T16:07:58.000Z",
+        "tags": [
+          "ai",
+          "streaming"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-7",
+        "title": "SoundCloud cracks down on AI slop as Spotify expands Artist Profile Protection",
+        "summary": "Calls from the music industry for streaming services to do more to tackle AI slop, musical spam and streaming fraud are being answered – today by the latest moves from SoundCloud and Spotify. The post is from Music Ally .",
+        "url": "https://musically.com/2026/11/18/soundcloud-cracks-down-on-ai-slop-as-spotify-expands-artist-profile-protection/",
+        "source": "Music Ally",
+        "domain": "musically.com",
+        "publishedAt": "2026-11-18T12:30:00.000Z",
+        "tags": [
+          "ai",
+          "streaming"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-8",
+        "title": "Suno lanza Visuals con un modelo de la china MiniMax",
+        "summary": "Suno lanza Visuals, que genera vídeos e imágenes de hasta 15 segundos a partir de las canciones del usuario. Según su propia web, funciona con un modelo basado en el H3 de MiniMax, la compañía china demandada por Disney, Universal y Warner Bros. Discovery.",
+        "url": "https://industriamusical.com/suno-visuals-video-ia-minimax/?utm_source=rss&utm_medium=rss&utm_campaign=suno-visuals-video-ia-minimax",
+        "source": "Industria Musical",
+        "domain": "industriamusical.com",
+        "publishedAt": "2026-11-18T11:20:53.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-9",
+        "title": "Spotify deja a todos los artistas vetar lanzamientos falsos",
+        "summary": "Spotify abre a todos los artistas su Artist Profile Protection, que avisa cuando llega música con su nombre y permite desvincularse de lanzamientos ajenos. El mismo día, SoundCloud endurece sus normas contra el «slop» de IA, la subida masiva de pistas y el fraude.",
+        "url": "https://industriamusical.com/spotify-artist-profile-protection-soundcloud-slop-ia/?utm_source=rss&utm_medium=rss&utm_campaign=spotify-artist-profile-protection-soundcloud-slop-ia",
+        "source": "Industria Musical",
+        "domain": "industriamusical.com",
+        "publishedAt": "2026-11-18T11:20:00.000Z",
+        "tags": [
+          "ai",
+          "streaming"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-10",
+        "title": "UMG and Sony withdraw DistroKid subpoena motion in Suno case after distributor produces AI-detection documents",
+        "summary": "The labels sought data on how many DistroKid tracks were flagged as AI-generated, how many were attributed to Suno, and what they earned. Source",
+        "url": "https://www.musicbusinessworldwide.com/umg-and-sony-withdraw-distrokid-subpoena-motion-in-suno-case-after-distributor-produces-ai-detection-documents/",
+        "source": "Music Business Worldwide",
+        "domain": "musicbusinessworldwide.com",
+        "publishedAt": "2026-11-18T19:26:50.000Z",
+        "tags": [
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-11",
+        "title": "$11M-backed AI startup Sonilo, founded by TikTok veterans, inks licensing deal with Symphonic to train its model on opted-in indie recordings",
+        "summary": "The agreement allows Sonilo to train its AI music model on recordings from Symphonic’s independent artists and labels – but only those that choose to opt in. Source",
+        "url": "https://www.musicbusinessworldwide.com/11m-backed-ai-startup-sonilo-founded-by-tiktok-veterans-inks-licensing-deal-with-symphonic-to-train-its-model-on-opted-in-indie-recordings/",
+        "source": "Music Business Worldwide",
+        "domain": "musicbusinessworldwide.com",
+        "publishedAt": "2026-11-18T15:00:25.000Z",
+        "tags": [
+          "ai",
+          "licensing"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-12",
+        "title": "Carlyle-backed Litmus Music secures $475M in new capital, with KKR joining as an investor",
+        "summary": "Litmus' portfolio includes more than 100,000 copyrights and recordings, featuring music from Katy Perry, Benny Blanco, Randy Newman, and Keith Urban. Source",
+        "url": "https://www.musicbusinessworldwide.com/carlyle-backed-litmus-music-secures-475m-in-new-capital-with-kkr-joining-as-an-investor/",
+        "source": "Music Business Worldwide",
+        "domain": "musicbusinessworldwide.com",
+        "publishedAt": "2026-11-18T12:00:48.000Z",
+        "tags": [],
+        "translated": false,
+        "via": null
+      }
+    ],
+    "tip": {
+      "title": "Keep the project files, not just the master",
+      "body": "In an authorship dispute, your dated DAW session with stems and work-in-progress versions carries more weight than the final WAV. Back up the whole project, not just the bounce."
+    }
+  }
+}
