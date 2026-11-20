@@ -1,15 +1,14 @@
 {
-  "lastUpdated": "2026-11-20T01:12:12.231Z",
+  "lastUpdated": "2026-11-20T16:03:21.719Z",
   "meta": {
     "method": "rss-retrieval + link-verification + ai-translation",
     "itemCount": 12,
     "sources": [
-      "AllHipHop",
-      "Castilla y León Televisión",
       "Complete Music Update",
       "Digital Music News",
       "Industria Musical",
       "Law Commentary",
+      "Music Ally",
       "Music Business Worldwide"
     ],
     "verifiedLinks": 12,
@@ -95,32 +94,31 @@
       },
       {
         "id": "noticia-6",
-        "title": "EXCLUSIVE: Suno Faces Demand To Open New AI Models To Copyright Discovery",
-        "summary": "",
-        "url": "https://news.google.com/rss/articles/CBMiogFBVV95cUxQWjl1M1VadmNsUW1BSmxaeFdOWWJjRWppenVXNUp2YjZzamlBZUdicFVzWlJXa0x4aUMzb24yOUQ3Y2tlV2trZndpRmNNeExvZkQzZ01kdXVsNmtBaWlvSm50Q0lWUzZVdThuVmNUYUpxVElXbVVORzc0WUl5ajY2Xy13VzRUR3pBRkRJZXNvTUdLQnFEczZkVEJoWklEZEhlbUE?oc=5&hl=es-419&gl=US&ceid=US:es-419",
-        "source": "AllHipHop",
-        "domain": "news.google.com",
-        "publishedAt": "2026-11-15T17:10:09.000Z",
+        "title": "Australian creative sector bristles at ‘permit’ AI training plans",
+        "summary": "It may seem like we’ve been writing a lot about AI-policy arguments in Australia recently, but there’s a bigger picture. The country’s music industry has been very clear about its belief that if AI companies persuade Australia’s government to weaken copyright protections in regard to training AI models, the ripples wil…",
+        "url": "https://musically.com/2026/11/20/australian-creative-sector-bristles-at-permit-ai-training-plans/",
+        "source": "Music Ally",
+        "domain": "musically.com",
+        "publishedAt": "2026-11-20T13:30:00.000Z",
         "tags": [
-          "lawsuit",
           "ai"
         ],
         "translated": false,
-        "via": "Google News"
+        "via": null
       },
       {
         "id": "noticia-7",
-        "title": "Las canciones creadas íntegramente con IA carecen de derechos de autor",
-        "summary": "",
-        "url": "https://news.google.com/rss/articles/CBMi0AFBVV95cUxPZDdhb3o4bFlrYWg4MVN4N1FBX0xZei1uLUt6bGVFdmxSaEVpSnF4ZFNxcUZZNzZ4RG9GcTlFU0NUWVp0TndvSjc4ZVhZemtsdUl2bGdwWUd6eUZ3ckVkLVEwY1BOaV9ZVWNodW8zZHN2R0o2VjlWaFZqMnNoa0Y1R2pGd25lZ0M2Und0X1Zub241QWY0d3dHZ0VaQ2l4OThKMzlQdXZRSWVDdWVQdzNWdW1jVWRzaEdQQ29DUWpTMndnWWZSLW1qeDdwcXlLdmNS?oc=5&hl=es-419&gl=US&ceid=US:es-419",
-        "source": "Castilla y León Televisión",
-        "domain": "news.google.com",
-        "publishedAt": "2026-11-19T09:06:45.000Z",
+        "title": "Opinion published on Belgium’s new artist-remuneration right",
+        "summary": "Not just any rando’s opinion either: this is an opinion by the advocate general at the Court of Justice of the European Union, Maciej Szpunar, so it carries weight. And the opinion is on a long-running battle over the way Belgium has implemented the European Copyright Directive. The post is from Music Ally .",
+        "url": "https://musically.com/2026/11/20/opinion-published-on-belgiums-new-artist-remuneration-right/",
+        "source": "Music Ally",
+        "domain": "musically.com",
+        "publishedAt": "2026-11-20T13:30:00.000Z",
         "tags": [
-          "ai"
+          "lawsuit"
         ],
         "translated": false,
-        "via": "Google News"
+        "via": null
       },
       {
         "id": "noticia-8",
@@ -153,6 +151,21 @@
       },
       {
         "id": "noticia-10",
+        "title": "WMG and Spotify talk AI remixes and the need for artist consent",
+        "summary": "This week’s Morgan Stanley European Technology, Media and Telecom Conference has been instructive – and not just for getting UMG’s view on AI-music ‘kill switches’. The post is from Music Ally .",
+        "url": "https://musically.com/2026/11/20/wmg-and-spotify-talk-ai-remixes-and-the-need-for-artist-consent/",
+        "source": "Music Ally",
+        "domain": "musically.com",
+        "publishedAt": "2026-11-20T12:30:00.000Z",
+        "tags": [
+          "ai",
+          "streaming"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-11",
         "title": "Suno lanza Visuals con un modelo de la china MiniMax",
         "summary": "Suno lanza Visuals, que genera vídeos e imágenes de hasta 15 segundos a partir de las canciones del usuario. Según su propia web, funciona con un modelo basado en el H3 de MiniMax, la compañía china demandada por Disney, Universal y Warner Bros. Discovery.",
         "url": "https://industriamusical.com/suno-visuals-video-ia-minimax/?utm_source=rss&utm_medium=rss&utm_campaign=suno-visuals-video-ia-minimax",
@@ -167,7 +180,7 @@
         "via": null
       },
       {
-        "id": "noticia-11",
+        "id": "noticia-12",
         "title": "Spotify deja a todos los artistas vetar lanzamientos falsos",
         "summary": "Spotify abre a todos los artistas su Artist Profile Protection, que avisa cuando llega música con su nombre y permite desvincularse de lanzamientos ajenos. El mismo día, SoundCloud endurece sus normas contra el «slop» de IA, la subida masiva de pistas y el fraude.",
         "url": "https://industriamusical.com/spotify-artist-profile-protection-soundcloud-slop-ia/?utm_source=rss&utm_medium=rss&utm_campaign=spotify-artist-profile-protection-soundcloud-slop-ia",
@@ -177,20 +190,6 @@
         "tags": [
           "ai",
           "streaming"
-        ],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-12",
-        "title": "UMG and Sony withdraw DistroKid subpoena motion in Suno case after distributor produces AI-detection documents",
-        "summary": "The labels sought data on how many DistroKid tracks were flagged as AI-generated, how many were attributed to Suno, and what they earned. Source",
-        "url": "https://www.musicbusinessworldwide.com/umg-and-sony-withdraw-distrokid-subpoena-motion-in-suno-case-after-distributor-produces-ai-detection-documents/",
-        "source": "Music Business Worldwide",
-        "domain": "musicbusinessworldwide.com",
-        "publishedAt": "2026-11-18T19:26:50.000Z",
-        "tags": [
-          "ai"
         ],
         "translated": false,
         "via": null
@@ -280,32 +279,31 @@
       },
       {
         "id": "noticia-6",
-        "title": "EXCLUSIVE: Suno Faces Demand To Open New AI Models To Copyright Discovery",
-        "summary": "",
-        "url": "https://news.google.com/rss/articles/CBMiogFBVV95cUxQWjl1M1VadmNsUW1BSmxaeFdOWWJjRWppenVXNUp2YjZzamlBZUdicFVzWlJXa0x4aUMzb24yOUQ3Y2tlV2trZndpRmNNeExvZkQzZ01kdXVsNmtBaWlvSm50Q0lWUzZVdThuVmNUYUpxVElXbVVORzc0WUl5ajY2Xy13VzRUR3pBRkRJZXNvTUdLQnFEczZkVEJoWklEZEhlbUE?oc=5&hl=es-419&gl=US&ceid=US:es-419",
-        "source": "AllHipHop",
-        "domain": "news.google.com",
-        "publishedAt": "2026-11-15T17:10:09.000Z",
+        "title": "Australian creative sector bristles at ‘permit’ AI training plans",
+        "summary": "It may seem like we’ve been writing a lot about AI-policy arguments in Australia recently, but there’s a bigger picture. The country’s music industry has been very clear about its belief that if AI companies persuade Australia’s government to weaken copyright protections in regard to training AI models, the ripples wil…",
+        "url": "https://musically.com/2026/11/20/australian-creative-sector-bristles-at-permit-ai-training-plans/",
+        "source": "Music Ally",
+        "domain": "musically.com",
+        "publishedAt": "2026-11-20T13:30:00.000Z",
         "tags": [
-          "lawsuit",
           "ai"
         ],
         "translated": false,
-        "via": "Google News"
+        "via": null
       },
       {
         "id": "noticia-7",
-        "title": "Las canciones creadas íntegramente con IA carecen de derechos de autor",
-        "summary": "",
-        "url": "https://news.google.com/rss/articles/CBMi0AFBVV95cUxPZDdhb3o4bFlrYWg4MVN4N1FBX0xZei1uLUt6bGVFdmxSaEVpSnF4ZFNxcUZZNzZ4RG9GcTlFU0NUWVp0TndvSjc4ZVhZemtsdUl2bGdwWUd6eUZ3ckVkLVEwY1BOaV9ZVWNodW8zZHN2R0o2VjlWaFZqMnNoa0Y1R2pGd25lZ0M2Und0X1Zub241QWY0d3dHZ0VaQ2l4OThKMzlQdXZRSWVDdWVQdzNWdW1jVWRzaEdQQ29DUWpTMndnWWZSLW1qeDdwcXlLdmNS?oc=5&hl=es-419&gl=US&ceid=US:es-419",
-        "source": "Castilla y León Televisión",
-        "domain": "news.google.com",
-        "publishedAt": "2026-11-19T09:06:45.000Z",
+        "title": "Opinion published on Belgium’s new artist-remuneration right",
+        "summary": "Not just any rando’s opinion either: this is an opinion by the advocate general at the Court of Justice of the European Union, Maciej Szpunar, so it carries weight. And the opinion is on a long-running battle over the way Belgium has implemented the European Copyright Directive. The post is from Music Ally .",
+        "url": "https://musically.com/2026/11/20/opinion-published-on-belgiums-new-artist-remuneration-right/",
+        "source": "Music Ally",
+        "domain": "musically.com",
+        "publishedAt": "2026-11-20T13:30:00.000Z",
         "tags": [
-          "ai"
+          "lawsuit"
         ],
         "translated": false,
-        "via": "Google News"
+        "via": null
       },
       {
         "id": "noticia-8",
@@ -338,6 +336,21 @@
       },
       {
         "id": "noticia-10",
+        "title": "WMG and Spotify talk AI remixes and the need for artist consent",
+        "summary": "This week’s Morgan Stanley European Technology, Media and Telecom Conference has been instructive – and not just for getting UMG’s view on AI-music ‘kill switches’. The post is from Music Ally .",
+        "url": "https://musically.com/2026/11/20/wmg-and-spotify-talk-ai-remixes-and-the-need-for-artist-consent/",
+        "source": "Music Ally",
+        "domain": "musically.com",
+        "publishedAt": "2026-11-20T12:30:00.000Z",
+        "tags": [
+          "ai",
+          "streaming"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-11",
         "title": "Suno lanza Visuals con un modelo de la china MiniMax",
         "summary": "Suno lanza Visuals, que genera vídeos e imágenes de hasta 15 segundos a partir de las canciones del usuario. Según su propia web, funciona con un modelo basado en el H3 de MiniMax, la compañía china demandada por Disney, Universal y Warner Bros. Discovery.",
         "url": "https://industriamusical.com/suno-visuals-video-ia-minimax/?utm_source=rss&utm_medium=rss&utm_campaign=suno-visuals-video-ia-minimax",
@@ -352,7 +365,7 @@
         "via": null
       },
       {
-        "id": "noticia-11",
+        "id": "noticia-12",
         "title": "Spotify deja a todos los artistas vetar lanzamientos falsos",
         "summary": "Spotify abre a todos los artistas su Artist Profile Protection, que avisa cuando llega música con su nombre y permite desvincularse de lanzamientos ajenos. El mismo día, SoundCloud endurece sus normas contra el «slop» de IA, la subida masiva de pistas y el fraude.",
         "url": "https://industriamusical.com/spotify-artist-profile-protection-soundcloud-slop-ia/?utm_source=rss&utm_medium=rss&utm_campaign=spotify-artist-profile-protection-soundcloud-slop-ia",
@@ -362,20 +375,6 @@
         "tags": [
           "ai",
           "streaming"
-        ],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-12",
-        "title": "UMG and Sony withdraw DistroKid subpoena motion in Suno case after distributor produces AI-detection documents",
-        "summary": "The labels sought data on how many DistroKid tracks were flagged as AI-generated, how many were attributed to Suno, and what they earned. Source",
-        "url": "https://www.musicbusinessworldwide.com/umg-and-sony-withdraw-distrokid-subpoena-motion-in-suno-case-after-distributor-produces-ai-detection-documents/",
-        "source": "Music Business Worldwide",
-        "domain": "musicbusinessworldwide.com",
-        "publishedAt": "2026-11-18T19:26:50.000Z",
-        "tags": [
-          "ai"
         ],
         "translated": false,
         "via": null
