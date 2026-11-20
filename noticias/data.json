@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-11-19T16:30:12.013Z",
+  "lastUpdated": "2026-11-20T01:12:12.231Z",
   "meta": {
     "method": "rss-retrieval + link-verification + ai-translation",
     "itemCount": 12,
@@ -80,6 +80,21 @@
       },
       {
         "id": "noticia-5",
+        "title": "Producer sues Travis Scott, Don Toliver, and Sony Music, claiming he owns half the master of JackBoys track ‘What To Do?’",
+        "summary": "Early Yellow claims Sony and Epic filed false counter-notices to get the 2019 track back on Spotify, Apple Music, and YouTube after his takedowns. Source",
+        "url": "https://www.musicbusinessworldwide.com/producer-sues-travis-scott-don-toliver-and-sony-music-claiming-he-owns-half-the-master-of-jackboys-track-what-to-do/",
+        "source": "Music Business Worldwide",
+        "domain": "musicbusinessworldwide.com",
+        "publishedAt": "2026-11-19T19:09:58.000Z",
+        "tags": [
+          "lawsuit",
+          "streaming"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-6",
         "title": "EXCLUSIVE: Suno Faces Demand To Open New AI Models To Copyright Discovery",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMiogFBVV95cUxQWjl1M1VadmNsUW1BSmxaeFdOWWJjRWppenVXNUp2YjZzamlBZUdicFVzWlJXa0x4aUMzb24yOUQ3Y2tlV2trZndpRmNNeExvZkQzZ01kdXVsNmtBaWlvSm50Q0lWUzZVdThuVmNUYUpxVElXbVVORzc0WUl5ajY2Xy13VzRUR3pBRkRJZXNvTUdLQnFEczZkVEJoWklEZEhlbUE?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -94,7 +109,7 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-6",
+        "id": "noticia-7",
         "title": "Las canciones creadas íntegramente con IA carecen de derechos de autor",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMi0AFBVV95cUxPZDdhb3o4bFlrYWg4MVN4N1FBX0xZei1uLUt6bGVFdmxSaEVpSnF4ZFNxcUZZNzZ4RG9GcTlFU0NUWVp0TndvSjc4ZVhZemtsdUl2bGdwWUd6eUZ3ckVkLVEwY1BOaV9ZVWNodW8zZHN2R0o2VjlWaFZqMnNoa0Y1R2pGd25lZ0M2Und0X1Zub241QWY0d3dHZ0VaQ2l4OThKMzlQdXZRSWVDdWVQdzNWdW1jVWRzaEdQQ29DUWpTMndnWWZSLW1qeDdwcXlLdmNS?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -108,7 +123,7 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-7",
+        "id": "noticia-8",
         "title": "Australia’s creative industries join forces to launch campaign against copyright reforms that favour big tech and AI companies",
         "summary": "With mounting concerns that the Australian government is considering copyright reforms to make it easier for AI companies to copy existing content without getting permission first, the country’s music community has joined the wider creative industries to launch a new campaign opposing those reforms",
         "url": "https://completemusicupdate.com/australias-creative-industries-join-forces-to-launch-campaign-against-copyright-reforms-that-favour-big-tech-and-ai-companies/",
@@ -122,7 +137,7 @@
         "via": null
       },
       {
-        "id": "noticia-8",
+        "id": "noticia-9",
         "title": "Vast majority of consumers want AI music labelled, Deezer survey reveals, as SoundCloud and Spotify update AI policies and tools",
         "summary": "Deezer has surveyed 9000 consumers in nine markets about their attitudes towards AI music, with 80% of respondents saying AI tracks should be clearly labelled. The new stats coincide with updates from SoundCloud on its AI policies and Spotify on the roll out of its Artist Profile Protection feature",
         "url": "https://completemusicupdate.com/vast-majority-of-consumers-want-ai-music-labelled-deezer-survey-reveals-as-soundcloud-and-spotify-update-ai-policies-and-tools/",
@@ -137,7 +152,7 @@
         "via": null
       },
       {
-        "id": "noticia-9",
+        "id": "noticia-10",
         "title": "Suno lanza Visuals con un modelo de la china MiniMax",
         "summary": "Suno lanza Visuals, que genera vídeos e imágenes de hasta 15 segundos a partir de las canciones del usuario. Según su propia web, funciona con un modelo basado en el H3 de MiniMax, la compañía china demandada por Disney, Universal y Warner Bros. Discovery.",
         "url": "https://industriamusical.com/suno-visuals-video-ia-minimax/?utm_source=rss&utm_medium=rss&utm_campaign=suno-visuals-video-ia-minimax",
@@ -152,7 +167,7 @@
         "via": null
       },
       {
-        "id": "noticia-10",
+        "id": "noticia-11",
         "title": "Spotify deja a todos los artistas vetar lanzamientos falsos",
         "summary": "Spotify abre a todos los artistas su Artist Profile Protection, que avisa cuando llega música con su nombre y permite desvincularse de lanzamientos ajenos. El mismo día, SoundCloud endurece sus normas contra el «slop» de IA, la subida masiva de pistas y el fraude.",
         "url": "https://industriamusical.com/spotify-artist-profile-protection-soundcloud-slop-ia/?utm_source=rss&utm_medium=rss&utm_campaign=spotify-artist-profile-protection-soundcloud-slop-ia",
@@ -167,7 +182,7 @@
         "via": null
       },
       {
-        "id": "noticia-11",
+        "id": "noticia-12",
         "title": "UMG and Sony withdraw DistroKid subpoena motion in Suno case after distributor produces AI-detection documents",
         "summary": "The labels sought data on how many DistroKid tracks were flagged as AI-generated, how many were attributed to Suno, and what they earned. Source",
         "url": "https://www.musicbusinessworldwide.com/umg-and-sony-withdraw-distrokid-subpoena-motion-in-suno-case-after-distributor-produces-ai-detection-documents/",
@@ -179,25 +194,11 @@
         ],
         "translated": false,
         "via": null
-      },
-      {
-        "id": "noticia-12",
-        "title": "Antonio Roma, el «cantaor» hecho con IA, sube al escenario",
-        "summary": "Antonio Roma, artista de flamenco generado con IA por el sello Criptik Sound, dará su primer concierto el 3 de febrero de 2027 en la sala Galileo Galilei de Madrid. Le pondrá voz el cantaor Diego Amador Jr., con cuatro músicos y sin hologramas.",
-        "url": "https://industriamusical.com/antonio-roma-cantaor-ia-concierto-galileo-galilei/?utm_source=rss&utm_medium=rss&utm_campaign=antonio-roma-cantaor-ia-concierto-galileo-galilei",
-        "source": "Industria Musical",
-        "domain": "industriamusical.com",
-        "publishedAt": "2026-11-19T15:34:34.000Z",
-        "tags": [
-          "ai"
-        ],
-        "translated": false,
-        "via": null
       }
     ],
     "tip": {
-      "title": "Guarda los proyectos, no solo el master",
-      "body": "En una disputa de autoría, el archivo de sesión de tu DAW con fecha, stems y versiones intermedias pesa más que el WAV final. Respalda el proyecto completo, no nada más el bounce."
+      "title": "Sample sin licencia no se arregla con 'menos de 7 segundos'",
+      "body": "No existe una cantidad de segundos legalmente segura. Cualquier fragmento reconocible puede ser infracción, y necesitas dos permisos: el de la grabación (sello) y el de la composición (editorial)."
     }
   },
   "en": {
@@ -264,6 +265,21 @@
       },
       {
         "id": "noticia-5",
+        "title": "Producer sues Travis Scott, Don Toliver, and Sony Music, claiming he owns half the master of JackBoys track ‘What To Do?’",
+        "summary": "Early Yellow claims Sony and Epic filed false counter-notices to get the 2019 track back on Spotify, Apple Music, and YouTube after his takedowns. Source",
+        "url": "https://www.musicbusinessworldwide.com/producer-sues-travis-scott-don-toliver-and-sony-music-claiming-he-owns-half-the-master-of-jackboys-track-what-to-do/",
+        "source": "Music Business Worldwide",
+        "domain": "musicbusinessworldwide.com",
+        "publishedAt": "2026-11-19T19:09:58.000Z",
+        "tags": [
+          "lawsuit",
+          "streaming"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-6",
         "title": "EXCLUSIVE: Suno Faces Demand To Open New AI Models To Copyright Discovery",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMiogFBVV95cUxQWjl1M1VadmNsUW1BSmxaeFdOWWJjRWppenVXNUp2YjZzamlBZUdicFVzWlJXa0x4aUMzb24yOUQ3Y2tlV2trZndpRmNNeExvZkQzZ01kdXVsNmtBaWlvSm50Q0lWUzZVdThuVmNUYUpxVElXbVVORzc0WUl5ajY2Xy13VzRUR3pBRkRJZXNvTUdLQnFEczZkVEJoWklEZEhlbUE?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -278,7 +294,7 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-6",
+        "id": "noticia-7",
         "title": "Las canciones creadas íntegramente con IA carecen de derechos de autor",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMi0AFBVV95cUxPZDdhb3o4bFlrYWg4MVN4N1FBX0xZei1uLUt6bGVFdmxSaEVpSnF4ZFNxcUZZNzZ4RG9GcTlFU0NUWVp0TndvSjc4ZVhZemtsdUl2bGdwWUd6eUZ3ckVkLVEwY1BOaV9ZVWNodW8zZHN2R0o2VjlWaFZqMnNoa0Y1R2pGd25lZ0M2Und0X1Zub241QWY0d3dHZ0VaQ2l4OThKMzlQdXZRSWVDdWVQdzNWdW1jVWRzaEdQQ29DUWpTMndnWWZSLW1qeDdwcXlLdmNS?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -292,7 +308,7 @@
         "via": "Google News"
       },
       {
-        "id": "noticia-7",
+        "id": "noticia-8",
         "title": "Australia’s creative industries join forces to launch campaign against copyright reforms that favour big tech and AI companies",
         "summary": "With mounting concerns that the Australian government is considering copyright reforms to make it easier for AI companies to copy existing content without getting permission first, the country’s music community has joined the wider creative industries to launch a new campaign opposing those reforms",
         "url": "https://completemusicupdate.com/australias-creative-industries-join-forces-to-launch-campaign-against-copyright-reforms-that-favour-big-tech-and-ai-companies/",
@@ -306,7 +322,7 @@
         "via": null
       },
       {
-        "id": "noticia-8",
+        "id": "noticia-9",
         "title": "Vast majority of consumers want AI music labelled, Deezer survey reveals, as SoundCloud and Spotify update AI policies and tools",
         "summary": "Deezer has surveyed 9000 consumers in nine markets about their attitudes towards AI music, with 80% of respondents saying AI tracks should be clearly labelled. The new stats coincide with updates from SoundCloud on its AI policies and Spotify on the roll out of its Artist Profile Protection feature",
         "url": "https://completemusicupdate.com/vast-majority-of-consumers-want-ai-music-labelled-deezer-survey-reveals-as-soundcloud-and-spotify-update-ai-policies-and-tools/",
@@ -321,7 +337,7 @@
         "via": null
       },
       {
-        "id": "noticia-9",
+        "id": "noticia-10",
         "title": "Suno lanza Visuals con un modelo de la china MiniMax",
         "summary": "Suno lanza Visuals, que genera vídeos e imágenes de hasta 15 segundos a partir de las canciones del usuario. Según su propia web, funciona con un modelo basado en el H3 de MiniMax, la compañía china demandada por Disney, Universal y Warner Bros. Discovery.",
         "url": "https://industriamusical.com/suno-visuals-video-ia-minimax/?utm_source=rss&utm_medium=rss&utm_campaign=suno-visuals-video-ia-minimax",
@@ -336,7 +352,7 @@
         "via": null
       },
       {
-        "id": "noticia-10",
+        "id": "noticia-11",
         "title": "Spotify deja a todos los artistas vetar lanzamientos falsos",
         "summary": "Spotify abre a todos los artistas su Artist Profile Protection, que avisa cuando llega música con su nombre y permite desvincularse de lanzamientos ajenos. El mismo día, SoundCloud endurece sus normas contra el «slop» de IA, la subida masiva de pistas y el fraude.",
         "url": "https://industriamusical.com/spotify-artist-profile-protection-soundcloud-slop-ia/?utm_source=rss&utm_medium=rss&utm_campaign=spotify-artist-profile-protection-soundcloud-slop-ia",
@@ -351,7 +367,7 @@
         "via": null
       },
       {
-        "id": "noticia-11",
+        "id": "noticia-12",
         "title": "UMG and Sony withdraw DistroKid subpoena motion in Suno case after distributor produces AI-detection documents",
         "summary": "The labels sought data on how many DistroKid tracks were flagged as AI-generated, how many were attributed to Suno, and what they earned. Source",
         "url": "https://www.musicbusinessworldwide.com/umg-and-sony-withdraw-distrokid-subpoena-motion-in-suno-case-after-distributor-produces-ai-detection-documents/",
@@ -363,25 +379,11 @@
         ],
         "translated": false,
         "via": null
-      },
-      {
-        "id": "noticia-12",
-        "title": "Antonio Roma, el «cantaor» hecho con IA, sube al escenario",
-        "summary": "Antonio Roma, artista de flamenco generado con IA por el sello Criptik Sound, dará su primer concierto el 3 de febrero de 2027 en la sala Galileo Galilei de Madrid. Le pondrá voz el cantaor Diego Amador Jr., con cuatro músicos y sin hologramas.",
-        "url": "https://industriamusical.com/antonio-roma-cantaor-ia-concierto-galileo-galilei/?utm_source=rss&utm_medium=rss&utm_campaign=antonio-roma-cantaor-ia-concierto-galileo-galilei",
-        "source": "Industria Musical",
-        "domain": "industriamusical.com",
-        "publishedAt": "2026-11-19T15:34:34.000Z",
-        "tags": [
-          "ai"
-        ],
-        "translated": false,
-        "via": null
       }
     ],
     "tip": {
-      "title": "Keep the project files, not just the master",
-      "body": "In an authorship dispute, your dated DAW session with stems and work-in-progress versions carries more weight than the final WAV. Back up the whole project, not just the bounce."
+      "title": "There is no safe 'under 7 seconds' rule for samples",
+      "body": "No number of seconds is legally safe. Any recognizable fragment can infringe, and you need two clearances: the master recording (label) and the composition (publisher)."
     }
   }
 }
