@@ -1,0 +1,389 @@
+{
+  "lastUpdated": "2026-11-22T15:13:10.906Z",
+  "meta": {
+    "method": "rss-retrieval + link-verification + ai-translation",
+    "itemCount": 12,
+    "sources": [
+      "AllHipHop",
+      "Castilla y León Televisión",
+      "Complete Music Update",
+      "Digital Music News",
+      "Law Commentary",
+      "Music Ally",
+      "Music Business Worldwide"
+    ],
+    "verifiedLinks": 12,
+    "aiTranslated": 0,
+    "note": "Los hechos provienen de los artículos originales enlazados. La IA solo traduce y resume; no genera noticias."
+  },
+  "es": {
+    "title": "Noticias de Copyright e Inteligencia Artificial",
+    "subtitle": "Notas publicadas por medios reales de la industria, con liga al artículo original. Sin noticias inventadas.",
+    "items": [
+      {
+        "id": "noticia-1",
+        "title": "Eminem Publisher Eight Mile Style Files Amended Suno Copyright and DMCA Suit, Adding 100+ Allegedly Infringing Outputs — ‘Lose Yourself,’ ‘Without Me,’ and More",
+        "summary": "Suno is facing yet another expanded copyright infringement lawsuit – this time from Eminem publisher Eight Mile Style, which has joined Elvis Presley Enterprises, Reservoir, and others in bolstering its high-stakes claims. Eight Mile made the amended action official yesterday, less than two weeks after initially suing…",
+        "url": "https://www.digitalmusicnews.com/2026/11/20/eight-mile-style-v-suno-amended-suit/",
+        "source": "Digital Music News",
+        "domain": "digitalmusicnews.com",
+        "publishedAt": "2026-11-20T21:28:48.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-2",
+        "title": "Reservoir Expands Its Suno and Anthropic Infringement Lawsuits; Publisher Now Seeks Nearly $450 Million in Statutory Damages",
+        "summary": "Reservoir Media has supersized its Suno and Anthropic copyright infringement complaints, which are now demanding a combined total of nearly $450 million in statutory damages. New York City-headquartered Reservoir fired off the expanded actions yesterday, weeks after submitting the original complaints. As we broke down…",
+        "url": "https://www.digitalmusicnews.com/2026/11/12/reservoir-suno-lawsuit-anthropic-amended/",
+        "source": "Digital Music News",
+        "domain": "digitalmusicnews.com",
+        "publishedAt": "2026-11-13T04:00:16.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-3",
+        "title": "DistroKid Hands Over AI Music Data in Suno Copyright Lawsuit",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMijgFBVV95cUxQMEtSblA3TmF6a3lLeFI5dnE1Vm8wekVDZkJqQlRGWjZiY21Cd0xrZXRqOHRJc2FuY2swSTZCTEZVTGRzQnNyQlFQdU8tR2tOZ1FqRGplSU9mRFlMcEdPLUZsV3hhVjhmNk9SY3dHUnNUVXkyM3g0ZDV5MmQ3OEt0RHk0c1djWTZsTnJCZ193?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "Law Commentary",
+        "domain": "news.google.com",
+        "publishedAt": "2026-11-19T04:58:16.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-4",
+        "title": "Suno Wants Into Your DAW: ‘Bridge’ Beta Starts With Ableton Live 12 on Mac",
+        "summary": "German music software company Ableton is the guinea pig on “Suno Bridge,” an initiative by the AI music heavyweight to integrate into the most popular DAWs. It might seem like a rough time for Suno to be rolling out new products, as the AI music company and its partners are actively facing major copyright infringement…",
+        "url": "https://www.digitalmusicnews.com/2026/11/16/suno-bridge-daw-integrations-ableton/",
+        "source": "Digital Music News",
+        "domain": "digitalmusicnews.com",
+        "publishedAt": "2026-11-17T05:00:26.000Z",
+        "tags": [
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-5",
+        "title": "Producer sues Travis Scott, Don Toliver, and Sony Music, claiming he owns half the master of JackBoys track ‘What To Do?’",
+        "summary": "Early Yellow claims Sony and Epic filed false counter-notices to get the 2019 track back on Spotify, Apple Music, and YouTube after his takedowns. Source",
+        "url": "https://www.musicbusinessworldwide.com/producer-sues-travis-scott-don-toliver-and-sony-music-claiming-he-owns-half-the-master-of-jackboys-track-what-to-do/",
+        "source": "Music Business Worldwide",
+        "domain": "musicbusinessworldwide.com",
+        "publishedAt": "2026-11-19T19:09:58.000Z",
+        "tags": [
+          "lawsuit",
+          "streaming"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-6",
+        "title": "Music may be excluded from Australia’s AI-friendly copyright reforms - though ARIA says “we stand with the rest of the creative and media industries”",
+        "summary": "This week the creative and media industries came together to oppose AI-friendly copyright reforms being considered by the Australian government. It’s now being reported that those reforms might not actually impact on music, though the music industry says it remains committed to the wider campaign",
+        "url": "https://completemusicupdate.com/music-may-be-excluded-from-australias-ai-friendly-copyright-reforms-though-aria-says-we-stand-with-the-rest-of-the-creative-and-media-industries/",
+        "source": "Complete Music Update",
+        "domain": "completemusicupdate.com",
+        "publishedAt": "2026-11-20T16:20:28.000Z",
+        "tags": [
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-7",
+        "title": "Australian creative sector bristles at ‘permit’ AI training plans",
+        "summary": "It may seem like we’ve been writing a lot about AI-policy arguments in Australia recently, but there’s a bigger picture. The country’s music industry has been very clear about its belief that if AI companies persuade Australia’s government to weaken copyright protections in regard to training AI models, the ripples wil…",
+        "url": "https://musically.com/2026/11/20/australian-creative-sector-bristles-at-permit-ai-training-plans/",
+        "source": "Music Ally",
+        "domain": "musically.com",
+        "publishedAt": "2026-11-20T13:30:00.000Z",
+        "tags": [
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-8",
+        "title": "EXCLUSIVE: Suno Faces Demand To Open New AI Models To Copyright Discovery",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMiogFBVV95cUxQWjl1M1VadmNsUW1BSmxaeFdOWWJjRWppenVXNUp2YjZzamlBZUdicFVzWlJXa0x4aUMzb24yOUQ3Y2tlV2trZndpRmNNeExvZkQzZ01kdXVsNmtBaWlvSm50Q0lWUzZVdThuVmNUYUpxVElXbVVORzc0WUl5ajY2Xy13VzRUR3pBRkRJZXNvTUdLQnFEczZkVEJoWklEZEhlbUE?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "AllHipHop",
+        "domain": "news.google.com",
+        "publishedAt": "2026-11-15T17:10:09.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-9",
+        "title": "Opinion published on Belgium’s new artist-remuneration right",
+        "summary": "Not just any rando’s opinion either: this is an opinion by the advocate general at the Court of Justice of the European Union, Maciej Szpunar, so it carries weight. And the opinion is on a long-running battle over the way Belgium has implemented the European Copyright Directive. The post is from Music Ally .",
+        "url": "https://musically.com/2026/11/20/opinion-published-on-belgiums-new-artist-remuneration-right/",
+        "source": "Music Ally",
+        "domain": "musically.com",
+        "publishedAt": "2026-11-20T13:30:00.000Z",
+        "tags": [
+          "lawsuit"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-10",
+        "title": "Las canciones creadas íntegramente con IA carecen de derechos de autor",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMi0AFBVV95cUxPZDdhb3o4bFlrYWg4MVN4N1FBX0xZei1uLUt6bGVFdmxSaEVpSnF4ZFNxcUZZNzZ4RG9GcTlFU0NUWVp0TndvSjc4ZVhZemtsdUl2bGdwWUd6eUZ3ckVkLVEwY1BOaV9ZVWNodW8zZHN2R0o2VjlWaFZqMnNoa0Y1R2pGd25lZ0M2Und0X1Zub241QWY0d3dHZ0VaQ2l4OThKMzlQdXZRSWVDdWVQdzNWdW1jVWRzaEdQQ29DUWpTMndnWWZSLW1qeDdwcXlLdmNS?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "Castilla y León Televisión",
+        "domain": "news.google.com",
+        "publishedAt": "2026-11-19T09:06:45.000Z",
+        "tags": [
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-11",
+        "title": "Vast majority of consumers want AI music labelled, Deezer survey reveals, as SoundCloud and Spotify update AI policies and tools",
+        "summary": "Deezer has surveyed 9000 consumers in nine markets about their attitudes towards AI music, with 80% of respondents saying AI tracks should be clearly labelled. The new stats coincide with updates from SoundCloud on its AI policies and Spotify on the roll out of its Artist Profile Protection feature",
+        "url": "https://completemusicupdate.com/vast-majority-of-consumers-want-ai-music-labelled-deezer-survey-reveals-as-soundcloud-and-spotify-update-ai-policies-and-tools/",
+        "source": "Complete Music Update",
+        "domain": "completemusicupdate.com",
+        "publishedAt": "2026-11-18T16:07:58.000Z",
+        "tags": [
+          "ai",
+          "streaming"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-12",
+        "title": "WMG and Spotify talk AI remixes and the need for artist consent",
+        "summary": "This week’s Morgan Stanley European Technology, Media and Telecom Conference has been instructive – and not just for getting UMG’s view on AI-music ‘kill switches’. The post is from Music Ally .",
+        "url": "https://musically.com/2026/11/20/wmg-and-spotify-talk-ai-remixes-and-the-need-for-artist-consent/",
+        "source": "Music Ally",
+        "domain": "musically.com",
+        "publishedAt": "2026-11-20T12:30:00.000Z",
+        "tags": [
+          "ai",
+          "streaming"
+        ],
+        "translated": false,
+        "via": null
+      }
+    ],
+    "tip": {
+      "title": "Trabajo por encargo: quién queda como autor se pacta por escrito",
+      "body": "Si produces para un cliente, define por contrato si cedes derechos, si conservas puntos de producción y si tu nombre aparece en los créditos. Sin contrato, la interpretación depende de la ley de cada país."
+    }
+  },
+  "en": {
+    "title": "Copyright & Artificial Intelligence News",
+    "subtitle": "Stories published by real industry outlets, each linked to its original article. No invented news.",
+    "items": [
+      {
+        "id": "noticia-1",
+        "title": "Eminem Publisher Eight Mile Style Files Amended Suno Copyright and DMCA Suit, Adding 100+ Allegedly Infringing Outputs — ‘Lose Yourself,’ ‘Without Me,’ and More",
+        "summary": "Suno is facing yet another expanded copyright infringement lawsuit – this time from Eminem publisher Eight Mile Style, which has joined Elvis Presley Enterprises, Reservoir, and others in bolstering its high-stakes claims. Eight Mile made the amended action official yesterday, less than two weeks after initially suing…",
+        "url": "https://www.digitalmusicnews.com/2026/11/20/eight-mile-style-v-suno-amended-suit/",
+        "source": "Digital Music News",
+        "domain": "digitalmusicnews.com",
+        "publishedAt": "2026-11-20T21:28:48.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-2",
+        "title": "Reservoir Expands Its Suno and Anthropic Infringement Lawsuits; Publisher Now Seeks Nearly $450 Million in Statutory Damages",
+        "summary": "Reservoir Media has supersized its Suno and Anthropic copyright infringement complaints, which are now demanding a combined total of nearly $450 million in statutory damages. New York City-headquartered Reservoir fired off the expanded actions yesterday, weeks after submitting the original complaints. As we broke down…",
+        "url": "https://www.digitalmusicnews.com/2026/11/12/reservoir-suno-lawsuit-anthropic-amended/",
+        "source": "Digital Music News",
+        "domain": "digitalmusicnews.com",
+        "publishedAt": "2026-11-13T04:00:16.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-3",
+        "title": "DistroKid Hands Over AI Music Data in Suno Copyright Lawsuit",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMijgFBVV95cUxQMEtSblA3TmF6a3lLeFI5dnE1Vm8wekVDZkJqQlRGWjZiY21Cd0xrZXRqOHRJc2FuY2swSTZCTEZVTGRzQnNyQlFQdU8tR2tOZ1FqRGplSU9mRFlMcEdPLUZsV3hhVjhmNk9SY3dHUnNUVXkyM3g0ZDV5MmQ3OEt0RHk0c1djWTZsTnJCZ193?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "Law Commentary",
+        "domain": "news.google.com",
+        "publishedAt": "2026-11-19T04:58:16.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-4",
+        "title": "Suno Wants Into Your DAW: ‘Bridge’ Beta Starts With Ableton Live 12 on Mac",
+        "summary": "German music software company Ableton is the guinea pig on “Suno Bridge,” an initiative by the AI music heavyweight to integrate into the most popular DAWs. It might seem like a rough time for Suno to be rolling out new products, as the AI music company and its partners are actively facing major copyright infringement…",
+        "url": "https://www.digitalmusicnews.com/2026/11/16/suno-bridge-daw-integrations-ableton/",
+        "source": "Digital Music News",
+        "domain": "digitalmusicnews.com",
+        "publishedAt": "2026-11-17T05:00:26.000Z",
+        "tags": [
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-5",
+        "title": "Producer sues Travis Scott, Don Toliver, and Sony Music, claiming he owns half the master of JackBoys track ‘What To Do?’",
+        "summary": "Early Yellow claims Sony and Epic filed false counter-notices to get the 2019 track back on Spotify, Apple Music, and YouTube after his takedowns. Source",
+        "url": "https://www.musicbusinessworldwide.com/producer-sues-travis-scott-don-toliver-and-sony-music-claiming-he-owns-half-the-master-of-jackboys-track-what-to-do/",
+        "source": "Music Business Worldwide",
+        "domain": "musicbusinessworldwide.com",
+        "publishedAt": "2026-11-19T19:09:58.000Z",
+        "tags": [
+          "lawsuit",
+          "streaming"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-6",
+        "title": "Music may be excluded from Australia’s AI-friendly copyright reforms - though ARIA says “we stand with the rest of the creative and media industries”",
+        "summary": "This week the creative and media industries came together to oppose AI-friendly copyright reforms being considered by the Australian government. It’s now being reported that those reforms might not actually impact on music, though the music industry says it remains committed to the wider campaign",
+        "url": "https://completemusicupdate.com/music-may-be-excluded-from-australias-ai-friendly-copyright-reforms-though-aria-says-we-stand-with-the-rest-of-the-creative-and-media-industries/",
+        "source": "Complete Music Update",
+        "domain": "completemusicupdate.com",
+        "publishedAt": "2026-11-20T16:20:28.000Z",
+        "tags": [
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-7",
+        "title": "Australian creative sector bristles at ‘permit’ AI training plans",
+        "summary": "It may seem like we’ve been writing a lot about AI-policy arguments in Australia recently, but there’s a bigger picture. The country’s music industry has been very clear about its belief that if AI companies persuade Australia’s government to weaken copyright protections in regard to training AI models, the ripples wil…",
+        "url": "https://musically.com/2026/11/20/australian-creative-sector-bristles-at-permit-ai-training-plans/",
+        "source": "Music Ally",
+        "domain": "musically.com",
+        "publishedAt": "2026-11-20T13:30:00.000Z",
+        "tags": [
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-8",
+        "title": "EXCLUSIVE: Suno Faces Demand To Open New AI Models To Copyright Discovery",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMiogFBVV95cUxQWjl1M1VadmNsUW1BSmxaeFdOWWJjRWppenVXNUp2YjZzamlBZUdicFVzWlJXa0x4aUMzb24yOUQ3Y2tlV2trZndpRmNNeExvZkQzZ01kdXVsNmtBaWlvSm50Q0lWUzZVdThuVmNUYUpxVElXbVVORzc0WUl5ajY2Xy13VzRUR3pBRkRJZXNvTUdLQnFEczZkVEJoWklEZEhlbUE?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "AllHipHop",
+        "domain": "news.google.com",
+        "publishedAt": "2026-11-15T17:10:09.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-9",
+        "title": "Opinion published on Belgium’s new artist-remuneration right",
+        "summary": "Not just any rando’s opinion either: this is an opinion by the advocate general at the Court of Justice of the European Union, Maciej Szpunar, so it carries weight. And the opinion is on a long-running battle over the way Belgium has implemented the European Copyright Directive. The post is from Music Ally .",
+        "url": "https://musically.com/2026/11/20/opinion-published-on-belgiums-new-artist-remuneration-right/",
+        "source": "Music Ally",
+        "domain": "musically.com",
+        "publishedAt": "2026-11-20T13:30:00.000Z",
+        "tags": [
+          "lawsuit"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-10",
+        "title": "Las canciones creadas íntegramente con IA carecen de derechos de autor",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMi0AFBVV95cUxPZDdhb3o4bFlrYWg4MVN4N1FBX0xZei1uLUt6bGVFdmxSaEVpSnF4ZFNxcUZZNzZ4RG9GcTlFU0NUWVp0TndvSjc4ZVhZemtsdUl2bGdwWUd6eUZ3ckVkLVEwY1BOaV9ZVWNodW8zZHN2R0o2VjlWaFZqMnNoa0Y1R2pGd25lZ0M2Und0X1Zub241QWY0d3dHZ0VaQ2l4OThKMzlQdXZRSWVDdWVQdzNWdW1jVWRzaEdQQ29DUWpTMndnWWZSLW1qeDdwcXlLdmNS?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "Castilla y León Televisión",
+        "domain": "news.google.com",
+        "publishedAt": "2026-11-19T09:06:45.000Z",
+        "tags": [
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-11",
+        "title": "Vast majority of consumers want AI music labelled, Deezer survey reveals, as SoundCloud and Spotify update AI policies and tools",
+        "summary": "Deezer has surveyed 9000 consumers in nine markets about their attitudes towards AI music, with 80% of respondents saying AI tracks should be clearly labelled. The new stats coincide with updates from SoundCloud on its AI policies and Spotify on the roll out of its Artist Profile Protection feature",
+        "url": "https://completemusicupdate.com/vast-majority-of-consumers-want-ai-music-labelled-deezer-survey-reveals-as-soundcloud-and-spotify-update-ai-policies-and-tools/",
+        "source": "Complete Music Update",
+        "domain": "completemusicupdate.com",
+        "publishedAt": "2026-11-18T16:07:58.000Z",
+        "tags": [
+          "ai",
+          "streaming"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-12",
+        "title": "WMG and Spotify talk AI remixes and the need for artist consent",
+        "summary": "This week’s Morgan Stanley European Technology, Media and Telecom Conference has been instructive – and not just for getting UMG’s view on AI-music ‘kill switches’. The post is from Music Ally .",
+        "url": "https://musically.com/2026/11/20/wmg-and-spotify-talk-ai-remixes-and-the-need-for-artist-consent/",
+        "source": "Music Ally",
+        "domain": "musically.com",
+        "publishedAt": "2026-11-20T12:30:00.000Z",
+        "tags": [
+          "ai",
+          "streaming"
+        ],
+        "translated": false,
+        "via": null
+      }
+    ],
+    "tip": {
+      "title": "Work for hire: put authorship in writing",
+      "body": "If you produce for a client, spell out in the contract whether you assign rights, keep producer points, and get credited. Without a contract, the outcome depends on each country's law."
+    }
+  }
+}
