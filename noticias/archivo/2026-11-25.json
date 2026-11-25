@@ -1,0 +1,391 @@
+{
+  "lastUpdated": "2026-11-25T03:00:06.438Z",
+  "meta": {
+    "method": "rss-retrieval + link-verification + ai-translation",
+    "itemCount": 12,
+    "sources": [
+      "Ciudad MCY",
+      "Complete Music Update",
+      "Digital Music News",
+      "Law Commentary",
+      "Music Business Worldwide",
+      "Rolling Stone",
+      "V 101.9 Charlotte"
+    ],
+    "verifiedLinks": 12,
+    "aiTranslated": 1,
+    "note": "Los hechos provienen de los artículos originales enlazados. La IA solo traduce y resume; no genera noticias."
+  },
+  "es": {
+    "title": "Noticias de Copyright e Inteligencia Artificial",
+    "subtitle": "Notas publicadas por medios reales de la industria, con liga al artículo original. Sin noticias inventadas.",
+    "items": [
+      {
+        "id": "noticia-1",
+        "title": "El editor de Eminem, Eight Mile Style, presenta demanda modificada contra Suno por infracción de derechos de autor y DMCA, añadiendo más de 100 supuestas obras infractoras — ‘Lose Yourself’, ‘Without Me’ y más",
+        "summary": "Eight Mile Style, Eminem’s publisher, filed a DMCA suit against AI company Suno, adding hundred outputs it says infringe songs such as “Lose Yourself” and “Without Me.” The filing also names Elvis Presley Enterprises and was submitted less than two weeks after the complaint.",
+        "url": "https://www.digitalmusicnews.com/2026/11/20/eight-mile-style-v-suno-amended-suit/",
+        "source": "Digital Music News",
+        "domain": "digitalmusicnews.com",
+        "publishedAt": "2026-11-20T21:28:48.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": true,
+        "via": null
+      },
+      {
+        "id": "noticia-2",
+        "title": "Total Hypocrisy? Disney Sued Over Multiple Instances of Alleged Copyright Infringement Violations on Social Media",
+        "summary": "LAA Music sues Disney over three copyrighted songs allegedly used across seven promotional social media clips for EPSN, Hulu, FX, and Disney Parks. On Tuesday, November 24, NFL agent Zac Hiller and his publishing company, LAA Music, filed a federal lawsuit against The Walt Disney Co., which was then shared with Digital…",
+        "url": "https://www.digitalmusicnews.com/2026/11/24/disney-social-media-copyright-infringement-lawsuit/",
+        "source": "Digital Music News",
+        "domain": "digitalmusicnews.com",
+        "publishedAt": "2026-11-25T02:44:58.000Z",
+        "tags": [
+          "lawsuit"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-3",
+        "title": "Eminem’s Publishers Add 108 Alleged AI Tracks to Suno Copyright Lawsuit",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMiogFBVV95cUxObWNnNTJMOGJkZThQZS1QdWlGaUtoNXZqblItYmhyUGo3aTdBZnh6NmNiQkp5cGx2RXVqUTlmOE84Rk16V1YwdnNQa1htNEMxazFUbGxxS3U2a1YyVDFlZXI2LWhoVEE5elZlMWlxQ0xlejNZa1BZZ0dUSTNlQVczSUFnM19xYlRWXzJlczFhdEFsSmZnYWJzcjFOVU1kNnNjTUE?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "V 101.9 Charlotte",
+        "domain": "news.google.com",
+        "publishedAt": "2026-11-24T21:09:05.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-4",
+        "title": "Federal Judge Rejects Dismissal Motion in Warner Music v. Designer Shoe Warehouse — As a Subpoena Sub-Dispute Boils Over",
+        "summary": "A federal judge has officially rejected Designer Shoe Warehouse’s push to dismiss a substantial portion of Warner Music’s social-media-focused copyright infringement lawsuit. DSW parent Designer Brands quietly submitted that dismissal motion back in May, after a number of Warner Music Group (WMG) subsidiaries fired off…",
+        "url": "https://www.digitalmusicnews.com/2026/11/24/warner-music-designer-shoe-warehouse-lawsuit/",
+        "source": "Digital Music News",
+        "domain": "digitalmusicnews.com",
+        "publishedAt": "2026-11-24T19:07:05.000Z",
+        "tags": [
+          "lawsuit"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-5",
+        "title": "Aussie MPs’ new AI proposals “disguise” pro-big tech copyright reforms as “a favour to creators”, says ARIA boss",
+        "summary": "Australian MPs have published a report on AI, which talks about the need to protect creators and rightsholders, but also proposes significant copyright reforms to provide “the certainty necessary” for AI companies. The music industry says no such reforms are required, accusing MPs of “gaslighting”",
+        "url": "https://completemusicupdate.com/aussie-mps-new-ai-proposals-disguise-pro-big-tech-copyright-reforms-as-a-favour-to-creators-says-aria-boss/",
+        "source": "Complete Music Update",
+        "domain": "completemusicupdate.com",
+        "publishedAt": "2026-11-24T15:22:22.000Z",
+        "tags": [
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-6",
+        "title": "Cher’s Victory in Royalties War Under Fire as Mary Bono Pushes for Reversal",
+        "summary": "The lower court “struggled with the concept that copyright terminations preempted Sonny’s right to contract freely and bargain away his heirs’ rights,\" the new filing reads",
+        "url": "https://www.rollingstone.com/music/music-news/cher-sonny-bono-mary-royalties-war-appeal-1235663741/",
+        "source": "Rolling Stone",
+        "domain": "rollingstone.com",
+        "publishedAt": "2026-11-24T21:24:18.000Z",
+        "tags": [
+          "lawsuit",
+          "royalties",
+          "licensing"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-7",
+        "title": "DistroKid Hands Over AI Music Data in Suno Copyright Lawsuit",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMijgFBVV95cUxQMEtSblA3TmF6a3lLeFI5dnE1Vm8wekVDZkJqQlRGWjZiY21Cd0xrZXRqOHRJc2FuY2swSTZCTEZVTGRzQnNyQlFQdU8tR2tOZ1FqRGplSU9mRFlMcEdPLUZsV3hhVjhmNk9SY3dHUnNUVXkyM3g0ZDV5MmQ3OEt0RHk0c1djWTZsTnJCZ193?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "Law Commentary",
+        "domain": "news.google.com",
+        "publishedAt": "2026-11-19T04:58:00.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-8",
+        "title": "Caracas debatirá sobre música, inteligencia artificial y derechos de autor",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMioAFBVV95cUxPSnM4aGJuNk5aUUo4ejVCekNkMDJDcU5aU01GNU1tbTYyZmJiM2FiSXgtZzdDSVR4WFZRa1hUVmpWSHB0YW9BSkxwMXlmRXVQbGVoR0JyZnhOWE9yNnFXN0labGcxNWlrTVBEZmRLNWhQZG1ORlZRSHVKSmtnd0dfR1F6VzFsbEVpRUoyWk1RMDFWblhHcFREZUJEbThvaG5a?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "Ciudad MCY",
+        "domain": "news.google.com",
+        "publishedAt": "2026-11-24T17:12:13.000Z",
+        "tags": [
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-9",
+        "title": "Music may be excluded from Australia’s AI-friendly copyright reforms - though ARIA says “we stand with the rest of the creative and media industries”",
+        "summary": "This week the creative and media industries came together to oppose AI-friendly copyright reforms being considered by the Australian government. It’s now being reported that those reforms might not actually impact on music, though the music industry says it remains committed to the wider campaign",
+        "url": "https://completemusicupdate.com/music-may-be-excluded-from-australias-ai-friendly-copyright-reforms-though-aria-says-we-stand-with-the-rest-of-the-creative-and-media-industries/",
+        "source": "Complete Music Update",
+        "domain": "completemusicupdate.com",
+        "publishedAt": "2026-11-20T16:20:28.000Z",
+        "tags": [
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-10",
+        "title": "Tidal Is the First Streaming Service to Ban AI Music",
+        "summary": "The platform will start removing songs wholly generated with artificial intelligence, as well as rejecting all future uploads",
+        "url": "https://www.rollingstone.com/music/music-news/tidal-bans-ai-music-1235663794/",
+        "source": "Rolling Stone",
+        "domain": "rollingstone.com",
+        "publishedAt": "2026-11-24T21:20:28.000Z",
+        "tags": [
+          "ai",
+          "streaming"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-11",
+        "title": "As The MLC hits $4.4B in royalties paid to songwriters and publishers, CEO Kris Ahrend sets out its priorities for the next five years",
+        "summary": "Mechanical Licensing Collective CEO Kris Ahrend talks milestones, market share payouts, AI-generated music, Phonorecords V, and more Source",
+        "url": "https://www.musicbusinessworldwide.com/as-the-mlc-hits-4-4b-in-royalties-paid-to-songwriters-and-publishers-ceo-kris-ahrend-sets-out-its-priorities-for-the-next-five-years/",
+        "source": "Music Business Worldwide",
+        "domain": "musicbusinessworldwide.com",
+        "publishedAt": "2026-11-24T11:56:22.000Z",
+        "tags": [
+          "ai",
+          "royalties",
+          "licensing"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-12",
+        "title": "Dutch collecting society BumaStemra threatens legal action against AI background music supplier YourNeuroTune, alleging it uses Suno",
+        "summary": "YourNeuroTune is based in the Netherlands, and markets its catalog to gyms, hospitality venues, and retailers Source",
+        "url": "https://www.musicbusinessworldwide.com/dutch-collecting-society-bumastemra-threatens-legal-action-against-ai-background-music-supplier-yourneurotune-alleging-it-uses-suno/",
+        "source": "Music Business Worldwide",
+        "domain": "musicbusinessworldwide.com",
+        "publishedAt": "2026-11-24T15:33:04.000Z",
+        "tags": [
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      }
+    ],
+    "tip": {
+      "title": "Documenta tu aporte humano cuando uses IA",
+      "body": "Las oficinas de derechos de autor protegen la parte creada por una persona. Guarda prompts, versiones, ediciones y decisiones de mezcla: eso es lo que sostiene tu autoría sobre el resultado."
+    }
+  },
+  "en": {
+    "title": "Copyright & Artificial Intelligence News",
+    "subtitle": "Stories published by real industry outlets, each linked to its original article. No invented news.",
+    "items": [
+      {
+        "id": "noticia-1",
+        "title": "Eminem Publisher Eight Mile Style Files Amended Suno Copyright and DMCA Suit, Adding 100+ Allegedly Infringing Outputs — ‘Lose Yourself,’ ‘Without Me,’ and More",
+        "summary": "Eight Mile Style, Eminem’s publisher, filed a DMCA suit against AI company Suno, adding hundred outputs it says infringe songs such as “Lose Yourself” and “Without Me.” The filing also names Elvis Presley Enterprises and was submitted less than two weeks after the complaint.",
+        "url": "https://www.digitalmusicnews.com/2026/11/20/eight-mile-style-v-suno-amended-suit/",
+        "source": "Digital Music News",
+        "domain": "digitalmusicnews.com",
+        "publishedAt": "2026-11-20T21:28:48.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": true,
+        "via": null
+      },
+      {
+        "id": "noticia-2",
+        "title": "Total Hypocrisy? Disney Sued Over Multiple Instances of Alleged Copyright Infringement Violations on Social Media",
+        "summary": "LAA Music sues Disney over three copyrighted songs allegedly used across seven promotional social media clips for EPSN, Hulu, FX, and Disney Parks. On Tuesday, November 24, NFL agent Zac Hiller and his publishing company, LAA Music, filed a federal lawsuit against The Walt Disney Co., which was then shared with Digital…",
+        "url": "https://www.digitalmusicnews.com/2026/11/24/disney-social-media-copyright-infringement-lawsuit/",
+        "source": "Digital Music News",
+        "domain": "digitalmusicnews.com",
+        "publishedAt": "2026-11-25T02:44:58.000Z",
+        "tags": [
+          "lawsuit"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-3",
+        "title": "Eminem’s Publishers Add 108 Alleged AI Tracks to Suno Copyright Lawsuit",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMiogFBVV95cUxObWNnNTJMOGJkZThQZS1QdWlGaUtoNXZqblItYmhyUGo3aTdBZnh6NmNiQkp5cGx2RXVqUTlmOE84Rk16V1YwdnNQa1htNEMxazFUbGxxS3U2a1YyVDFlZXI2LWhoVEE5elZlMWlxQ0xlejNZa1BZZ0dUSTNlQVczSUFnM19xYlRWXzJlczFhdEFsSmZnYWJzcjFOVU1kNnNjTUE?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "V 101.9 Charlotte",
+        "domain": "news.google.com",
+        "publishedAt": "2026-11-24T21:09:05.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-4",
+        "title": "Federal Judge Rejects Dismissal Motion in Warner Music v. Designer Shoe Warehouse — As a Subpoena Sub-Dispute Boils Over",
+        "summary": "A federal judge has officially rejected Designer Shoe Warehouse’s push to dismiss a substantial portion of Warner Music’s social-media-focused copyright infringement lawsuit. DSW parent Designer Brands quietly submitted that dismissal motion back in May, after a number of Warner Music Group (WMG) subsidiaries fired off…",
+        "url": "https://www.digitalmusicnews.com/2026/11/24/warner-music-designer-shoe-warehouse-lawsuit/",
+        "source": "Digital Music News",
+        "domain": "digitalmusicnews.com",
+        "publishedAt": "2026-11-24T19:07:05.000Z",
+        "tags": [
+          "lawsuit"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-5",
+        "title": "Aussie MPs’ new AI proposals “disguise” pro-big tech copyright reforms as “a favour to creators”, says ARIA boss",
+        "summary": "Australian MPs have published a report on AI, which talks about the need to protect creators and rightsholders, but also proposes significant copyright reforms to provide “the certainty necessary” for AI companies. The music industry says no such reforms are required, accusing MPs of “gaslighting”",
+        "url": "https://completemusicupdate.com/aussie-mps-new-ai-proposals-disguise-pro-big-tech-copyright-reforms-as-a-favour-to-creators-says-aria-boss/",
+        "source": "Complete Music Update",
+        "domain": "completemusicupdate.com",
+        "publishedAt": "2026-11-24T15:22:22.000Z",
+        "tags": [
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-6",
+        "title": "Cher’s Victory in Royalties War Under Fire as Mary Bono Pushes for Reversal",
+        "summary": "The lower court “struggled with the concept that copyright terminations preempted Sonny’s right to contract freely and bargain away his heirs’ rights,\" the new filing reads",
+        "url": "https://www.rollingstone.com/music/music-news/cher-sonny-bono-mary-royalties-war-appeal-1235663741/",
+        "source": "Rolling Stone",
+        "domain": "rollingstone.com",
+        "publishedAt": "2026-11-24T21:24:18.000Z",
+        "tags": [
+          "lawsuit",
+          "royalties",
+          "licensing"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-7",
+        "title": "DistroKid Hands Over AI Music Data in Suno Copyright Lawsuit",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMijgFBVV95cUxQMEtSblA3TmF6a3lLeFI5dnE1Vm8wekVDZkJqQlRGWjZiY21Cd0xrZXRqOHRJc2FuY2swSTZCTEZVTGRzQnNyQlFQdU8tR2tOZ1FqRGplSU9mRFlMcEdPLUZsV3hhVjhmNk9SY3dHUnNUVXkyM3g0ZDV5MmQ3OEt0RHk0c1djWTZsTnJCZ193?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "Law Commentary",
+        "domain": "news.google.com",
+        "publishedAt": "2026-11-19T04:58:00.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-8",
+        "title": "Caracas debatirá sobre música, inteligencia artificial y derechos de autor",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMioAFBVV95cUxPSnM4aGJuNk5aUUo4ejVCekNkMDJDcU5aU01GNU1tbTYyZmJiM2FiSXgtZzdDSVR4WFZRa1hUVmpWSHB0YW9BSkxwMXlmRXVQbGVoR0JyZnhOWE9yNnFXN0labGcxNWlrTVBEZmRLNWhQZG1ORlZRSHVKSmtnd0dfR1F6VzFsbEVpRUoyWk1RMDFWblhHcFREZUJEbThvaG5a?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "Ciudad MCY",
+        "domain": "news.google.com",
+        "publishedAt": "2026-11-24T17:12:13.000Z",
+        "tags": [
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-9",
+        "title": "Music may be excluded from Australia’s AI-friendly copyright reforms - though ARIA says “we stand with the rest of the creative and media industries”",
+        "summary": "This week the creative and media industries came together to oppose AI-friendly copyright reforms being considered by the Australian government. It’s now being reported that those reforms might not actually impact on music, though the music industry says it remains committed to the wider campaign",
+        "url": "https://completemusicupdate.com/music-may-be-excluded-from-australias-ai-friendly-copyright-reforms-though-aria-says-we-stand-with-the-rest-of-the-creative-and-media-industries/",
+        "source": "Complete Music Update",
+        "domain": "completemusicupdate.com",
+        "publishedAt": "2026-11-20T16:20:28.000Z",
+        "tags": [
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-10",
+        "title": "Tidal Is the First Streaming Service to Ban AI Music",
+        "summary": "The platform will start removing songs wholly generated with artificial intelligence, as well as rejecting all future uploads",
+        "url": "https://www.rollingstone.com/music/music-news/tidal-bans-ai-music-1235663794/",
+        "source": "Rolling Stone",
+        "domain": "rollingstone.com",
+        "publishedAt": "2026-11-24T21:20:28.000Z",
+        "tags": [
+          "ai",
+          "streaming"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-11",
+        "title": "As The MLC hits $4.4B in royalties paid to songwriters and publishers, CEO Kris Ahrend sets out its priorities for the next five years",
+        "summary": "Mechanical Licensing Collective CEO Kris Ahrend talks milestones, market share payouts, AI-generated music, Phonorecords V, and more Source",
+        "url": "https://www.musicbusinessworldwide.com/as-the-mlc-hits-4-4b-in-royalties-paid-to-songwriters-and-publishers-ceo-kris-ahrend-sets-out-its-priorities-for-the-next-five-years/",
+        "source": "Music Business Worldwide",
+        "domain": "musicbusinessworldwide.com",
+        "publishedAt": "2026-11-24T11:56:22.000Z",
+        "tags": [
+          "ai",
+          "royalties",
+          "licensing"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-12",
+        "title": "Dutch collecting society BumaStemra threatens legal action against AI background music supplier YourNeuroTune, alleging it uses Suno",
+        "summary": "YourNeuroTune is based in the Netherlands, and markets its catalog to gyms, hospitality venues, and retailers Source",
+        "url": "https://www.musicbusinessworldwide.com/dutch-collecting-society-bumastemra-threatens-legal-action-against-ai-background-music-supplier-yourneurotune-alleging-it-uses-suno/",
+        "source": "Music Business Worldwide",
+        "domain": "musicbusinessworldwide.com",
+        "publishedAt": "2026-11-24T15:33:04.000Z",
+        "tags": [
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      }
+    ],
+    "tip": {
+      "title": "Document your human contribution when using AI",
+      "body": "Copyright offices protect the human-created portion. Keep prompts, versions, edits and mix decisions —that record is what supports your authorship over the final result."
+    }
+  }
+}
