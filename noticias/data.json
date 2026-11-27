@@ -1,11 +1,12 @@
 {
-  "lastUpdated": "2026-11-26T17:40:36.558Z",
+  "lastUpdated": "2026-11-27T02:08:03.023Z",
   "meta": {
     "method": "rss-retrieval + link-verification + ai-translation",
     "itemCount": 12,
     "sources": [
       "Complete Music Update",
       "Digital Music News",
+      "Industria Musical",
       "Law Commentary",
       "Music Ally",
       "Music Business Worldwide",
@@ -166,6 +167,21 @@
       },
       {
         "id": "noticia-11",
+        "title": "Tidal veta la música generada con IA al 100 %",
+        "summary": "Tidal rechazará y retirará desde el 9 de diciembre toda la música generada íntegramente con IA. Según la compañía, el 43 % de lo que le llegó en 90 días lo era, y su responsable en Block habla de borrar 29 millones de canciones.",
+        "url": "https://industriamusical.com/tidal-veta-musica-generada-con-ia/?utm_source=rss&utm_medium=rss&utm_campaign=tidal-veta-musica-generada-con-ia",
+        "source": "Industria Musical",
+        "domain": "industriamusical.com",
+        "publishedAt": "2026-11-24T17:58:52.000Z",
+        "tags": [
+          "ai",
+          "streaming"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-12",
         "title": "Music may be excluded from Australia’s AI-friendly copyright reforms - though ARIA says “we stand with the rest of the creative and media industries”",
         "summary": "This week the creative and media industries came together to oppose AI-friendly copyright reforms being considered by the Australian government. It’s now being reported that those reforms might not actually impact on music, though the music industry says it remains committed to the wider campaign",
         "url": "https://completemusicupdate.com/music-may-be-excluded-from-australias-ai-friendly-copyright-reforms-though-aria-says-we-stand-with-the-rest-of-the-creative-and-media-industries/",
@@ -177,25 +193,11 @@
         ],
         "translated": false,
         "via": null
-      },
-      {
-        "id": "noticia-12",
-        "title": "ElevenLabs’ next funding round could see a UMG-sized valuation",
-        "summary": "Nvidia may have its CEO back, but worries about an AI bubble-burst in the US haven’t died down just yet. Witness Anthropic’s bumpy start to life as a publicly-listed company, with its share price having tumbled since its IPO earlier this month. The post is from Music Ally .",
-        "url": "https://musically.com/2026/11/26/elevenlabs-next-funding-round-could-see-a-umg-sized-valuation/",
-        "source": "Music Ally",
-        "domain": "musically.com",
-        "publishedAt": "2026-11-26T12:30:00.000Z",
-        "tags": [
-          "ai"
-        ],
-        "translated": false,
-        "via": null
       }
     ],
     "tip": {
-      "title": "Lee los términos del generador de IA que usas",
-      "body": "Cada plataforma decide por contrato qué puedes hacer comercialmente con lo que generas y qué derechos se reserva. Dos herramientas parecidas pueden darte licencias completamente distintas."
+      "title": "Registra tu catálogo también en la sociedad de gestión",
+      "body": "El registro de autoría y la recaudación son trámites distintos. Si tu obra no está dada de alta en la sociedad correspondiente, las regalías de ejecución pública simplemente no te llegan."
     }
   },
   "en": {
@@ -349,6 +351,21 @@
       },
       {
         "id": "noticia-11",
+        "title": "Tidal veta la música generada con IA al 100 %",
+        "summary": "Tidal rechazará y retirará desde el 9 de diciembre toda la música generada íntegramente con IA. Según la compañía, el 43 % de lo que le llegó en 90 días lo era, y su responsable en Block habla de borrar 29 millones de canciones.",
+        "url": "https://industriamusical.com/tidal-veta-musica-generada-con-ia/?utm_source=rss&utm_medium=rss&utm_campaign=tidal-veta-musica-generada-con-ia",
+        "source": "Industria Musical",
+        "domain": "industriamusical.com",
+        "publishedAt": "2026-11-24T17:58:52.000Z",
+        "tags": [
+          "ai",
+          "streaming"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-12",
         "title": "Music may be excluded from Australia’s AI-friendly copyright reforms - though ARIA says “we stand with the rest of the creative and media industries”",
         "summary": "This week the creative and media industries came together to oppose AI-friendly copyright reforms being considered by the Australian government. It’s now being reported that those reforms might not actually impact on music, though the music industry says it remains committed to the wider campaign",
         "url": "https://completemusicupdate.com/music-may-be-excluded-from-australias-ai-friendly-copyright-reforms-though-aria-says-we-stand-with-the-rest-of-the-creative-and-media-industries/",
@@ -360,25 +377,11 @@
         ],
         "translated": false,
         "via": null
-      },
-      {
-        "id": "noticia-12",
-        "title": "ElevenLabs’ next funding round could see a UMG-sized valuation",
-        "summary": "Nvidia may have its CEO back, but worries about an AI bubble-burst in the US haven’t died down just yet. Witness Anthropic’s bumpy start to life as a publicly-listed company, with its share price having tumbled since its IPO earlier this month. The post is from Music Ally .",
-        "url": "https://musically.com/2026/11/26/elevenlabs-next-funding-round-could-see-a-umg-sized-valuation/",
-        "source": "Music Ally",
-        "domain": "musically.com",
-        "publishedAt": "2026-11-26T12:30:00.000Z",
-        "tags": [
-          "ai"
-        ],
-        "translated": false,
-        "via": null
       }
     ],
     "tip": {
-      "title": "Read the terms of the AI generator you use",
-      "body": "Each platform decides by contract what you may do commercially with your outputs and what rights it keeps. Two similar tools can grant completely different licenses."
+      "title": "Register with your collecting society too",
+      "body": "Copyright registration and royalty collection are separate steps. If your work isn't registered with the right society, public performance royalties simply never reach you."
     }
   }
 }
