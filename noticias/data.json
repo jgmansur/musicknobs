@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-11-27T17:24:33.521Z",
+  "lastUpdated": "2026-11-28T01:53:53.620Z",
   "meta": {
     "method": "rss-retrieval + link-verification + ai-translation",
     "itemCount": 12,
@@ -10,10 +10,10 @@
       "Music Ally",
       "Music Business Worldwide",
       "Talla Politica",
-      "foxy99.com"
+      "V 101.9 Charlotte"
     ],
     "verifiedLinks": 12,
-    "aiTranslated": 3,
+    "aiTranslated": 0,
     "note": "Los hechos provienen de los artículos originales enlazados. La IA solo traduce y resume; no genera noticias."
   },
   "es": {
@@ -23,7 +23,7 @@
       {
         "id": "noticia-1",
         "title": "Judge declines to dismiss Suno publicity rights case, as sixteen more musicians join the legal battle",
-        "summary": "El juez rechazó la solicitud de Suno para desestimar la demanda original por infracción de derechos de publicidad de artistas, y una denuncia enmendada incorporó a dieciséis músicos adicionales como demandantes.",
+        "summary": "Earlier this week the Suno lawsuit that accuses the AI company of infringing the publicity rights of artists, instead of copyright, was expanded, with sixteen new musicians added as plaintiffs in an amended complaint. The judge has now also denied Suno’s motion to dismiss the original lawsuit",
         "url": "https://completemusicupdate.com/judge-declines-to-dismiss-suno-publicity-rights-case-as-sixteen-more-musicians-join-the-legal-battle/",
         "source": "Complete Music Update",
         "domain": "completemusicupdate.com",
@@ -32,13 +32,13 @@
           "lawsuit",
           "ai"
         ],
-        "translated": true,
+        "translated": false,
         "via": null
       },
       {
         "id": "noticia-2",
         "title": "Eminem Publisher Eight Mile Style Files Amended Suno Copyright and DMCA Suit, Adding 100+ Allegedly Infringing Outputs — ‘Lose Yourself,’ ‘Without Me,’ and More",
-        "summary": "Eight Mile Style, la editorial de Eminem, presentó una demanda ampliada por infracción de derechos de autor y DMCA contra Suno, añadiendo más de cien resultados de IA supuestamente infractores, entre ellos “Lose Yourself” y “Without Me”.",
+        "summary": "Suno is facing yet another expanded copyright infringement lawsuit – this time from Eminem publisher Eight Mile Style, which has joined Elvis Presley Enterprises, Reservoir, and others in bolstering its high-stakes claims. Eight Mile made the amended action official yesterday, less than two weeks after initially suing…",
         "url": "https://www.digitalmusicnews.com/2026/11/20/eight-mile-style-v-suno-amended-suit/",
         "source": "Digital Music News",
         "domain": "digitalmusicnews.com",
@@ -47,13 +47,13 @@
           "lawsuit",
           "ai"
         ],
-        "translated": true,
+        "translated": false,
         "via": null
       },
       {
         "id": "noticia-3",
         "title": "Total Hypocrisy? Disney Sued Over Multiple Instances of Alleged Copyright Infringement on Social Media",
-        "summary": "LAA Music, representada por el agente de la NFL Zac Hiller, presentó una demanda federal contra Disney acusando el uso de tres canciones con derechos de autor en siete clips promocionales en redes sociales para EPSN, Hulu, FX y los parques de Disney.",
+        "summary": "LAA Music sues Disney over three copyrighted songs allegedly used across seven promotional social media clips for EPSN, Hulu, FX, and Disney Parks. On Tuesday, November 24, NFL agent Zac Hiller and his publishing company, LAA Music, filed a federal lawsuit against The Walt Disney Co., which was then shared with Digital…",
         "url": "https://www.digitalmusicnews.com/2026/11/24/disney-social-media-copyright-infringement-lawsuit/",
         "source": "Digital Music News",
         "domain": "digitalmusicnews.com",
@@ -61,15 +61,15 @@
         "tags": [
           "lawsuit"
         ],
-        "translated": true,
+        "translated": false,
         "via": null
       },
       {
         "id": "noticia-4",
         "title": "Eminem’s Publishers Add 108 Alleged AI Tracks to Suno Copyright Lawsuit",
         "summary": "",
-        "url": "https://news.google.com/rss/articles/CBMiowFBVV95cUxPWENXS3lFYmVGektYSmw1eXhlelpBMlRqNzQzZmpiTjV5U0c2OUZTaGZlVnMtdllDRXNFNmt4TjhWQjBsUjNUY3pvNFlpWVE4MTJyRHNsR1Fsb0dBRlNCSjJsZHd0bTNGQUI0TXBYRVdlRDNKSW9mS2pYWk9KV0lOd3l5SXMyb1ZIenVFSGpLV3IyMTVpaXlfYTNlZU8wNTktQnQ4?oc=5&hl=es-419&gl=US&ceid=US:es-419",
-        "source": "foxy99.com",
+        "url": "https://news.google.com/rss/articles/CBMiogFBVV95cUxObWNnNTJMOGJkZThQZS1QdWlGaUtoNXZqblItYmhyUGo3aTdBZnh6NmNiQkp5cGx2RXVqUTlmOE84Rk16V1YwdnNQa1htNEMxazFUbGxxS3U2a1YyVDFlZXI2LWhoVEE5elZlMWlxQ0xlejNZa1BZZ0dUSTNlQVczSUFnM19xYlRWXzJlczFhdEFsSmZnYWJzcjFOVU1kNnNjTUE?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "V 101.9 Charlotte",
         "domain": "news.google.com",
         "publishedAt": "2026-11-24T21:09:05.000Z",
         "tags": [
@@ -123,21 +123,6 @@
       },
       {
         "id": "noticia-8",
-        "title": "More plaintiffs have joined artists’ class-action Suno lawsuit",
-        "summary": "The Chicks, Carl Craig and Ezra Furman sounds like an unlikely musical collaboration. But no, this isn’t the latest track popping out of the Grand Theft Auto VI soundtrack. The post is from Music Ally .",
-        "url": "https://musically.com/2026/11/26/more-plaintiffs-have-joined-artists-class-action-suno-lawsuit/",
-        "source": "Music Ally",
-        "domain": "musically.com",
-        "publishedAt": "2026-11-26T13:30:00.000Z",
-        "tags": [
-          "lawsuit",
-          "ai"
-        ],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-9",
         "title": "DistroKid Hands Over AI Music Data in Suno Copyright Lawsuit",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMijgFBVV95cUxQMEtSblA3TmF6a3lLeFI5dnE1Vm8wekVDZkJqQlRGWjZiY21Cd0xrZXRqOHRJc2FuY2swSTZCTEZVTGRzQnNyQlFQdU8tR2tOZ1FqRGplSU9mRFlMcEdPLUZsV3hhVjhmNk9SY3dHUnNUVXkyM3g0ZDV5MmQ3OEt0RHk0c1djWTZsTnJCZ193?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -150,6 +135,21 @@
         ],
         "translated": false,
         "via": "Google News"
+      },
+      {
+        "id": "noticia-9",
+        "title": "More plaintiffs have joined artists’ class-action Suno lawsuit",
+        "summary": "The Chicks, Carl Craig and Ezra Furman sounds like an unlikely musical collaboration. But no, this isn’t the latest track popping out of the Grand Theft Auto VI soundtrack. The post is from Music Ally .",
+        "url": "https://musically.com/2026/11/26/more-plaintiffs-have-joined-artists-class-action-suno-lawsuit/",
+        "source": "Music Ally",
+        "domain": "musically.com",
+        "publishedAt": "2026-11-26T13:30:00.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": null
       },
       {
         "id": "noticia-10",
@@ -195,8 +195,8 @@
       }
     ],
     "tip": {
-      "title": "Registra tu catálogo también en la sociedad de gestión",
-      "body": "El registro de autoría y la recaudación son trámites distintos. Si tu obra no está dada de alta en la sociedad correspondiente, las regalías de ejecución pública simplemente no te llegan."
+      "title": "Los covers necesitan licencia aunque des crédito",
+      "body": "Acreditar al autor no sustituye la licencia. Para publicar un cover en plataformas necesitas la licencia mecánica correspondiente, y para usarlo en video, además, la sincronización."
     }
   },
   "en": {
@@ -206,7 +206,7 @@
       {
         "id": "noticia-1",
         "title": "Judge declines to dismiss Suno publicity rights case, as sixteen more musicians join the legal battle",
-        "summary": "The judge denied Suno’s motion to dismiss the original lawsuit alleging infringement of artists’ publicity rights, and an amended complaint added sixteen additional musicians as plaintiffs to the ongoing case.",
+        "summary": "Earlier this week the Suno lawsuit that accuses the AI company of infringing the publicity rights of artists, instead of copyright, was expanded, with sixteen new musicians added as plaintiffs in an amended complaint. The judge has now also denied Suno’s motion to dismiss the original lawsuit",
         "url": "https://completemusicupdate.com/judge-declines-to-dismiss-suno-publicity-rights-case-as-sixteen-more-musicians-join-the-legal-battle/",
         "source": "Complete Music Update",
         "domain": "completemusicupdate.com",
@@ -215,13 +215,13 @@
           "lawsuit",
           "ai"
         ],
-        "translated": true,
+        "translated": false,
         "via": null
       },
       {
         "id": "noticia-2",
         "title": "Eminem Publisher Eight Mile Style Files Amended Suno Copyright and DMCA Suit, Adding 100+ Allegedly Infringing Outputs — ‘Lose Yourself,’ ‘Without Me,’ and More",
-        "summary": "Eight Mile Style, Eminem’s publisher, filed an amended copyright and DMCA lawsuit against Suno, adding over one hundred AI‑generated outputs alleged to infringe, including the songs “Lose Yourself” and “Without Me” among the claims.",
+        "summary": "Suno is facing yet another expanded copyright infringement lawsuit – this time from Eminem publisher Eight Mile Style, which has joined Elvis Presley Enterprises, Reservoir, and others in bolstering its high-stakes claims. Eight Mile made the amended action official yesterday, less than two weeks after initially suing…",
         "url": "https://www.digitalmusicnews.com/2026/11/20/eight-mile-style-v-suno-amended-suit/",
         "source": "Digital Music News",
         "domain": "digitalmusicnews.com",
@@ -230,13 +230,13 @@
           "lawsuit",
           "ai"
         ],
-        "translated": true,
+        "translated": false,
         "via": null
       },
       {
         "id": "noticia-3",
         "title": "Total Hypocrisy? Disney Sued Over Multiple Instances of Alleged Copyright Infringement on Social Media",
-        "summary": "LAA Music, through NFL agent Zac Hiller, filed a federal lawsuit against Disney alleging that three copyrighted songs were used in seven promotional social‑media clips for ESPN, Hulu, FX, and Disney Parks.",
+        "summary": "LAA Music sues Disney over three copyrighted songs allegedly used across seven promotional social media clips for EPSN, Hulu, FX, and Disney Parks. On Tuesday, November 24, NFL agent Zac Hiller and his publishing company, LAA Music, filed a federal lawsuit against The Walt Disney Co., which was then shared with Digital…",
         "url": "https://www.digitalmusicnews.com/2026/11/24/disney-social-media-copyright-infringement-lawsuit/",
         "source": "Digital Music News",
         "domain": "digitalmusicnews.com",
@@ -244,15 +244,15 @@
         "tags": [
           "lawsuit"
         ],
-        "translated": true,
+        "translated": false,
         "via": null
       },
       {
         "id": "noticia-4",
         "title": "Eminem’s Publishers Add 108 Alleged AI Tracks to Suno Copyright Lawsuit",
         "summary": "",
-        "url": "https://news.google.com/rss/articles/CBMiowFBVV95cUxPWENXS3lFYmVGektYSmw1eXhlelpBMlRqNzQzZmpiTjV5U0c2OUZTaGZlVnMtdllDRXNFNmt4TjhWQjBsUjNUY3pvNFlpWVE4MTJyRHNsR1Fsb0dBRlNCSjJsZHd0bTNGQUI0TXBYRVdlRDNKSW9mS2pYWk9KV0lOd3l5SXMyb1ZIenVFSGpLV3IyMTVpaXlfYTNlZU8wNTktQnQ4?oc=5&hl=es-419&gl=US&ceid=US:es-419",
-        "source": "foxy99.com",
+        "url": "https://news.google.com/rss/articles/CBMiogFBVV95cUxObWNnNTJMOGJkZThQZS1QdWlGaUtoNXZqblItYmhyUGo3aTdBZnh6NmNiQkp5cGx2RXVqUTlmOE84Rk16V1YwdnNQa1htNEMxazFUbGxxS3U2a1YyVDFlZXI2LWhoVEE5elZlMWlxQ0xlejNZa1BZZ0dUSTNlQVczSUFnM19xYlRWXzJlczFhdEFsSmZnYWJzcjFOVU1kNnNjTUE?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "V 101.9 Charlotte",
         "domain": "news.google.com",
         "publishedAt": "2026-11-24T21:09:05.000Z",
         "tags": [
@@ -306,21 +306,6 @@
       },
       {
         "id": "noticia-8",
-        "title": "More plaintiffs have joined artists’ class-action Suno lawsuit",
-        "summary": "The Chicks, Carl Craig and Ezra Furman sounds like an unlikely musical collaboration. But no, this isn’t the latest track popping out of the Grand Theft Auto VI soundtrack. The post is from Music Ally .",
-        "url": "https://musically.com/2026/11/26/more-plaintiffs-have-joined-artists-class-action-suno-lawsuit/",
-        "source": "Music Ally",
-        "domain": "musically.com",
-        "publishedAt": "2026-11-26T13:30:00.000Z",
-        "tags": [
-          "lawsuit",
-          "ai"
-        ],
-        "translated": false,
-        "via": null
-      },
-      {
-        "id": "noticia-9",
         "title": "DistroKid Hands Over AI Music Data in Suno Copyright Lawsuit",
         "summary": "",
         "url": "https://news.google.com/rss/articles/CBMijgFBVV95cUxQMEtSblA3TmF6a3lLeFI5dnE1Vm8wekVDZkJqQlRGWjZiY21Cd0xrZXRqOHRJc2FuY2swSTZCTEZVTGRzQnNyQlFQdU8tR2tOZ1FqRGplSU9mRFlMcEdPLUZsV3hhVjhmNk9SY3dHUnNUVXkyM3g0ZDV5MmQ3OEt0RHk0c1djWTZsTnJCZ193?oc=5&hl=es-419&gl=US&ceid=US:es-419",
@@ -333,6 +318,21 @@
         ],
         "translated": false,
         "via": "Google News"
+      },
+      {
+        "id": "noticia-9",
+        "title": "More plaintiffs have joined artists’ class-action Suno lawsuit",
+        "summary": "The Chicks, Carl Craig and Ezra Furman sounds like an unlikely musical collaboration. But no, this isn’t the latest track popping out of the Grand Theft Auto VI soundtrack. The post is from Music Ally .",
+        "url": "https://musically.com/2026/11/26/more-plaintiffs-have-joined-artists-class-action-suno-lawsuit/",
+        "source": "Music Ally",
+        "domain": "musically.com",
+        "publishedAt": "2026-11-26T13:30:00.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": null
       },
       {
         "id": "noticia-10",
@@ -378,8 +378,8 @@
       }
     ],
     "tip": {
-      "title": "Register with your collecting society too",
-      "body": "Copyright registration and royalty collection are separate steps. If your work isn't registered with the right society, public performance royalties simply never reach you."
+      "title": "Covers need a license even if you give credit",
+      "body": "Crediting the songwriter is not a license. Releasing a cover on platforms requires a mechanical license, and using it in a video also requires a sync license."
     }
   }
 }

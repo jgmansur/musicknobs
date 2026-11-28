@@ -1,0 +1,385 @@
+{
+  "lastUpdated": "2026-11-28T01:53:53.620Z",
+  "meta": {
+    "method": "rss-retrieval + link-verification + ai-translation",
+    "itemCount": 12,
+    "sources": [
+      "Complete Music Update",
+      "Digital Music News",
+      "Law Commentary",
+      "Music Ally",
+      "Music Business Worldwide",
+      "Talla Politica",
+      "V 101.9 Charlotte"
+    ],
+    "verifiedLinks": 12,
+    "aiTranslated": 0,
+    "note": "Los hechos provienen de los artículos originales enlazados. La IA solo traduce y resume; no genera noticias."
+  },
+  "es": {
+    "title": "Noticias de Copyright e Inteligencia Artificial",
+    "subtitle": "Notas publicadas por medios reales de la industria, con liga al artículo original. Sin noticias inventadas.",
+    "items": [
+      {
+        "id": "noticia-1",
+        "title": "Judge declines to dismiss Suno publicity rights case, as sixteen more musicians join the legal battle",
+        "summary": "Earlier this week the Suno lawsuit that accuses the AI company of infringing the publicity rights of artists, instead of copyright, was expanded, with sixteen new musicians added as plaintiffs in an amended complaint. The judge has now also denied Suno’s motion to dismiss the original lawsuit",
+        "url": "https://completemusicupdate.com/judge-declines-to-dismiss-suno-publicity-rights-case-as-sixteen-more-musicians-join-the-legal-battle/",
+        "source": "Complete Music Update",
+        "domain": "completemusicupdate.com",
+        "publishedAt": "2026-11-26T17:13:42.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-2",
+        "title": "Eminem Publisher Eight Mile Style Files Amended Suno Copyright and DMCA Suit, Adding 100+ Allegedly Infringing Outputs — ‘Lose Yourself,’ ‘Without Me,’ and More",
+        "summary": "Suno is facing yet another expanded copyright infringement lawsuit – this time from Eminem publisher Eight Mile Style, which has joined Elvis Presley Enterprises, Reservoir, and others in bolstering its high-stakes claims. Eight Mile made the amended action official yesterday, less than two weeks after initially suing…",
+        "url": "https://www.digitalmusicnews.com/2026/11/20/eight-mile-style-v-suno-amended-suit/",
+        "source": "Digital Music News",
+        "domain": "digitalmusicnews.com",
+        "publishedAt": "2026-11-20T21:28:48.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-3",
+        "title": "Total Hypocrisy? Disney Sued Over Multiple Instances of Alleged Copyright Infringement on Social Media",
+        "summary": "LAA Music sues Disney over three copyrighted songs allegedly used across seven promotional social media clips for EPSN, Hulu, FX, and Disney Parks. On Tuesday, November 24, NFL agent Zac Hiller and his publishing company, LAA Music, filed a federal lawsuit against The Walt Disney Co., which was then shared with Digital…",
+        "url": "https://www.digitalmusicnews.com/2026/11/24/disney-social-media-copyright-infringement-lawsuit/",
+        "source": "Digital Music News",
+        "domain": "digitalmusicnews.com",
+        "publishedAt": "2026-11-24T11:44:58.000Z",
+        "tags": [
+          "lawsuit"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-4",
+        "title": "Eminem’s Publishers Add 108 Alleged AI Tracks to Suno Copyright Lawsuit",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMiogFBVV95cUxObWNnNTJMOGJkZThQZS1QdWlGaUtoNXZqblItYmhyUGo3aTdBZnh6NmNiQkp5cGx2RXVqUTlmOE84Rk16V1YwdnNQa1htNEMxazFUbGxxS3U2a1YyVDFlZXI2LWhoVEE5elZlMWlxQ0xlejNZa1BZZ0dUSTNlQVczSUFnM19xYlRWXzJlczFhdEFsSmZnYWJzcjFOVU1kNnNjTUE?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "V 101.9 Charlotte",
+        "domain": "news.google.com",
+        "publishedAt": "2026-11-24T21:09:05.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-5",
+        "title": "Federal Judge Rejects Dismissal Motion in Warner Music v. Designer Shoe Warehouse — As a Subpoena Sub-Dispute Boils Over",
+        "summary": "A federal judge has officially rejected Designer Shoe Warehouse’s push to dismiss a substantial portion of Warner Music’s social-media-focused copyright infringement lawsuit. DSW parent Designer Brands quietly submitted that dismissal motion back in May, after a number of Warner Music Group (WMG) subsidiaries fired off…",
+        "url": "https://www.digitalmusicnews.com/2026/11/24/warner-music-designer-shoe-warehouse-lawsuit/",
+        "source": "Digital Music News",
+        "domain": "digitalmusicnews.com",
+        "publishedAt": "2026-11-25T03:35:05.000Z",
+        "tags": [
+          "lawsuit"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-6",
+        "title": "Inauguran el foro “Inteligencia Artificial: La Música, los Derechos de Autor, Retos y Posibilidades”",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMiyAFBVV95cUxPbUczN3Y3MVU3NTJadEkzS3luNC1xSjZHZXl5TEhHM2VOcExkeWM1dnJUSzIwekM1UHo4QzJoNV8zcXlYcmN6bEJ5R1FwY2xxTy1OR0RRUUJiWTFsckhkY0tjLVUwdXZOd3NfN3lRSjRXcjJoZjNmazJvd2MyYklNaGlsMkNNZjhXOTVINDFKQnJDaDgwNjN6TFVLcU1ZNkpIUTh1QW1ySGVHX2huVVc0cUs5M0hJVEpzZUtaZk91ODRlaUFJOFUtZw?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "Talla Politica",
+        "domain": "news.google.com",
+        "publishedAt": "2026-11-27T03:54:49.000Z",
+        "tags": [
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-7",
+        "title": "Aussie MPs’ new AI proposals “disguise” pro-big tech copyright reforms as “a favour to creators”, says ARIA boss",
+        "summary": "Australian MPs have published a report on AI, which talks about the need to protect creators and rightsholders, but also proposes significant copyright reforms to provide “the certainty necessary” for AI companies. The music industry says no such reforms are required, accusing MPs of “gaslighting”",
+        "url": "https://completemusicupdate.com/aussie-mps-new-ai-proposals-disguise-pro-big-tech-copyright-reforms-as-a-favour-to-creators-says-aria-boss/",
+        "source": "Complete Music Update",
+        "domain": "completemusicupdate.com",
+        "publishedAt": "2026-11-24T15:22:22.000Z",
+        "tags": [
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-8",
+        "title": "DistroKid Hands Over AI Music Data in Suno Copyright Lawsuit",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMijgFBVV95cUxQMEtSblA3TmF6a3lLeFI5dnE1Vm8wekVDZkJqQlRGWjZiY21Cd0xrZXRqOHRJc2FuY2swSTZCTEZVTGRzQnNyQlFQdU8tR2tOZ1FqRGplSU9mRFlMcEdPLUZsV3hhVjhmNk9SY3dHUnNUVXkyM3g0ZDV5MmQ3OEt0RHk0c1djWTZsTnJCZ193?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "Law Commentary",
+        "domain": "news.google.com",
+        "publishedAt": "2026-11-19T04:58:00.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-9",
+        "title": "More plaintiffs have joined artists’ class-action Suno lawsuit",
+        "summary": "The Chicks, Carl Craig and Ezra Furman sounds like an unlikely musical collaboration. But no, this isn’t the latest track popping out of the Grand Theft Auto VI soundtrack. The post is from Music Ally .",
+        "url": "https://musically.com/2026/11/26/more-plaintiffs-have-joined-artists-class-action-suno-lawsuit/",
+        "source": "Music Ally",
+        "domain": "musically.com",
+        "publishedAt": "2026-11-26T13:30:00.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-10",
+        "title": "ElevenLabs in early talks to raise at $33B valuation – more than six times that of AI music rival Suno (report)",
+        "summary": "ElevenLabs’ annual recurring revenue has reportedly hit USD $700 million, up from $600 million in September. Source",
+        "url": "https://www.musicbusinessworldwide.com/elevenlabs-in-early-talks-to-raise-at-33b-valuation-more-than-six-times-that-of-ai-music-rival-suno-report/",
+        "source": "Music Business Worldwide",
+        "domain": "musicbusinessworldwide.com",
+        "publishedAt": "2026-11-26T11:54:45.000Z",
+        "tags": [
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-11",
+        "title": "Music may be excluded from Australia’s AI-friendly copyright reforms - though ARIA says “we stand with the rest of the creative and media industries”",
+        "summary": "This week the creative and media industries came together to oppose AI-friendly copyright reforms being considered by the Australian government. It’s now being reported that those reforms might not actually impact on music, though the music industry says it remains committed to the wider campaign",
+        "url": "https://completemusicupdate.com/music-may-be-excluded-from-australias-ai-friendly-copyright-reforms-though-aria-says-we-stand-with-the-rest-of-the-creative-and-media-industries/",
+        "source": "Complete Music Update",
+        "domain": "completemusicupdate.com",
+        "publishedAt": "2026-11-20T16:20:28.000Z",
+        "tags": [
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-12",
+        "title": "ElevenLabs’ next funding round could see a UMG-sized valuation",
+        "summary": "Nvidia may have its CEO back, but worries about an AI bubble-burst in the US haven’t died down just yet. Witness Anthropic’s bumpy start to life as a publicly-listed company, with its share price having tumbled since its IPO earlier this month. The post is from Music Ally .",
+        "url": "https://musically.com/2026/11/26/elevenlabs-next-funding-round-could-see-a-umg-sized-valuation/",
+        "source": "Music Ally",
+        "domain": "musically.com",
+        "publishedAt": "2026-11-26T12:30:00.000Z",
+        "tags": [
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      }
+    ],
+    "tip": {
+      "title": "Los covers necesitan licencia aunque des crédito",
+      "body": "Acreditar al autor no sustituye la licencia. Para publicar un cover en plataformas necesitas la licencia mecánica correspondiente, y para usarlo en video, además, la sincronización."
+    }
+  },
+  "en": {
+    "title": "Copyright & Artificial Intelligence News",
+    "subtitle": "Stories published by real industry outlets, each linked to its original article. No invented news.",
+    "items": [
+      {
+        "id": "noticia-1",
+        "title": "Judge declines to dismiss Suno publicity rights case, as sixteen more musicians join the legal battle",
+        "summary": "Earlier this week the Suno lawsuit that accuses the AI company of infringing the publicity rights of artists, instead of copyright, was expanded, with sixteen new musicians added as plaintiffs in an amended complaint. The judge has now also denied Suno’s motion to dismiss the original lawsuit",
+        "url": "https://completemusicupdate.com/judge-declines-to-dismiss-suno-publicity-rights-case-as-sixteen-more-musicians-join-the-legal-battle/",
+        "source": "Complete Music Update",
+        "domain": "completemusicupdate.com",
+        "publishedAt": "2026-11-26T17:13:42.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-2",
+        "title": "Eminem Publisher Eight Mile Style Files Amended Suno Copyright and DMCA Suit, Adding 100+ Allegedly Infringing Outputs — ‘Lose Yourself,’ ‘Without Me,’ and More",
+        "summary": "Suno is facing yet another expanded copyright infringement lawsuit – this time from Eminem publisher Eight Mile Style, which has joined Elvis Presley Enterprises, Reservoir, and others in bolstering its high-stakes claims. Eight Mile made the amended action official yesterday, less than two weeks after initially suing…",
+        "url": "https://www.digitalmusicnews.com/2026/11/20/eight-mile-style-v-suno-amended-suit/",
+        "source": "Digital Music News",
+        "domain": "digitalmusicnews.com",
+        "publishedAt": "2026-11-20T21:28:48.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-3",
+        "title": "Total Hypocrisy? Disney Sued Over Multiple Instances of Alleged Copyright Infringement on Social Media",
+        "summary": "LAA Music sues Disney over three copyrighted songs allegedly used across seven promotional social media clips for EPSN, Hulu, FX, and Disney Parks. On Tuesday, November 24, NFL agent Zac Hiller and his publishing company, LAA Music, filed a federal lawsuit against The Walt Disney Co., which was then shared with Digital…",
+        "url": "https://www.digitalmusicnews.com/2026/11/24/disney-social-media-copyright-infringement-lawsuit/",
+        "source": "Digital Music News",
+        "domain": "digitalmusicnews.com",
+        "publishedAt": "2026-11-24T11:44:58.000Z",
+        "tags": [
+          "lawsuit"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-4",
+        "title": "Eminem’s Publishers Add 108 Alleged AI Tracks to Suno Copyright Lawsuit",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMiogFBVV95cUxObWNnNTJMOGJkZThQZS1QdWlGaUtoNXZqblItYmhyUGo3aTdBZnh6NmNiQkp5cGx2RXVqUTlmOE84Rk16V1YwdnNQa1htNEMxazFUbGxxS3U2a1YyVDFlZXI2LWhoVEE5elZlMWlxQ0xlejNZa1BZZ0dUSTNlQVczSUFnM19xYlRWXzJlczFhdEFsSmZnYWJzcjFOVU1kNnNjTUE?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "V 101.9 Charlotte",
+        "domain": "news.google.com",
+        "publishedAt": "2026-11-24T21:09:05.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-5",
+        "title": "Federal Judge Rejects Dismissal Motion in Warner Music v. Designer Shoe Warehouse — As a Subpoena Sub-Dispute Boils Over",
+        "summary": "A federal judge has officially rejected Designer Shoe Warehouse’s push to dismiss a substantial portion of Warner Music’s social-media-focused copyright infringement lawsuit. DSW parent Designer Brands quietly submitted that dismissal motion back in May, after a number of Warner Music Group (WMG) subsidiaries fired off…",
+        "url": "https://www.digitalmusicnews.com/2026/11/24/warner-music-designer-shoe-warehouse-lawsuit/",
+        "source": "Digital Music News",
+        "domain": "digitalmusicnews.com",
+        "publishedAt": "2026-11-25T03:35:05.000Z",
+        "tags": [
+          "lawsuit"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-6",
+        "title": "Inauguran el foro “Inteligencia Artificial: La Música, los Derechos de Autor, Retos y Posibilidades”",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMiyAFBVV95cUxPbUczN3Y3MVU3NTJadEkzS3luNC1xSjZHZXl5TEhHM2VOcExkeWM1dnJUSzIwekM1UHo4QzJoNV8zcXlYcmN6bEJ5R1FwY2xxTy1OR0RRUUJiWTFsckhkY0tjLVUwdXZOd3NfN3lRSjRXcjJoZjNmazJvd2MyYklNaGlsMkNNZjhXOTVINDFKQnJDaDgwNjN6TFVLcU1ZNkpIUTh1QW1ySGVHX2huVVc0cUs5M0hJVEpzZUtaZk91ODRlaUFJOFUtZw?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "Talla Politica",
+        "domain": "news.google.com",
+        "publishedAt": "2026-11-27T03:54:49.000Z",
+        "tags": [
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-7",
+        "title": "Aussie MPs’ new AI proposals “disguise” pro-big tech copyright reforms as “a favour to creators”, says ARIA boss",
+        "summary": "Australian MPs have published a report on AI, which talks about the need to protect creators and rightsholders, but also proposes significant copyright reforms to provide “the certainty necessary” for AI companies. The music industry says no such reforms are required, accusing MPs of “gaslighting”",
+        "url": "https://completemusicupdate.com/aussie-mps-new-ai-proposals-disguise-pro-big-tech-copyright-reforms-as-a-favour-to-creators-says-aria-boss/",
+        "source": "Complete Music Update",
+        "domain": "completemusicupdate.com",
+        "publishedAt": "2026-11-24T15:22:22.000Z",
+        "tags": [
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-8",
+        "title": "DistroKid Hands Over AI Music Data in Suno Copyright Lawsuit",
+        "summary": "",
+        "url": "https://news.google.com/rss/articles/CBMijgFBVV95cUxQMEtSblA3TmF6a3lLeFI5dnE1Vm8wekVDZkJqQlRGWjZiY21Cd0xrZXRqOHRJc2FuY2swSTZCTEZVTGRzQnNyQlFQdU8tR2tOZ1FqRGplSU9mRFlMcEdPLUZsV3hhVjhmNk9SY3dHUnNUVXkyM3g0ZDV5MmQ3OEt0RHk0c1djWTZsTnJCZ193?oc=5&hl=es-419&gl=US&ceid=US:es-419",
+        "source": "Law Commentary",
+        "domain": "news.google.com",
+        "publishedAt": "2026-11-19T04:58:00.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": "Google News"
+      },
+      {
+        "id": "noticia-9",
+        "title": "More plaintiffs have joined artists’ class-action Suno lawsuit",
+        "summary": "The Chicks, Carl Craig and Ezra Furman sounds like an unlikely musical collaboration. But no, this isn’t the latest track popping out of the Grand Theft Auto VI soundtrack. The post is from Music Ally .",
+        "url": "https://musically.com/2026/11/26/more-plaintiffs-have-joined-artists-class-action-suno-lawsuit/",
+        "source": "Music Ally",
+        "domain": "musically.com",
+        "publishedAt": "2026-11-26T13:30:00.000Z",
+        "tags": [
+          "lawsuit",
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-10",
+        "title": "ElevenLabs in early talks to raise at $33B valuation – more than six times that of AI music rival Suno (report)",
+        "summary": "ElevenLabs’ annual recurring revenue has reportedly hit USD $700 million, up from $600 million in September. Source",
+        "url": "https://www.musicbusinessworldwide.com/elevenlabs-in-early-talks-to-raise-at-33b-valuation-more-than-six-times-that-of-ai-music-rival-suno-report/",
+        "source": "Music Business Worldwide",
+        "domain": "musicbusinessworldwide.com",
+        "publishedAt": "2026-11-26T11:54:45.000Z",
+        "tags": [
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-11",
+        "title": "Music may be excluded from Australia’s AI-friendly copyright reforms - though ARIA says “we stand with the rest of the creative and media industries”",
+        "summary": "This week the creative and media industries came together to oppose AI-friendly copyright reforms being considered by the Australian government. It’s now being reported that those reforms might not actually impact on music, though the music industry says it remains committed to the wider campaign",
+        "url": "https://completemusicupdate.com/music-may-be-excluded-from-australias-ai-friendly-copyright-reforms-though-aria-says-we-stand-with-the-rest-of-the-creative-and-media-industries/",
+        "source": "Complete Music Update",
+        "domain": "completemusicupdate.com",
+        "publishedAt": "2026-11-20T16:20:28.000Z",
+        "tags": [
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      },
+      {
+        "id": "noticia-12",
+        "title": "ElevenLabs’ next funding round could see a UMG-sized valuation",
+        "summary": "Nvidia may have its CEO back, but worries about an AI bubble-burst in the US haven’t died down just yet. Witness Anthropic’s bumpy start to life as a publicly-listed company, with its share price having tumbled since its IPO earlier this month. The post is from Music Ally .",
+        "url": "https://musically.com/2026/11/26/elevenlabs-next-funding-round-could-see-a-umg-sized-valuation/",
+        "source": "Music Ally",
+        "domain": "musically.com",
+        "publishedAt": "2026-11-26T12:30:00.000Z",
+        "tags": [
+          "ai"
+        ],
+        "translated": false,
+        "via": null
+      }
+    ],
+    "tip": {
+      "title": "Covers need a license even if you give credit",
+      "body": "Crediting the songwriter is not a license. Releasing a cover on platforms requires a mechanical license, and using it in a video also requires a sync license."
+    }
+  }
+}
